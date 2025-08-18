@@ -1451,21 +1451,6 @@ function CheckSheetLemPeriode() {
                                               )}
                                             </select>
 
-                                            <input
-                                              type="number"
-                                              name="jumlah_up_defect"
-                                              placeholder="Jumlah UP Defect"
-                                              onChange={(e) =>
-                                                handleChangePointHasil(
-                                                  e,
-                                                  index,
-                                                  i,
-                                                  data2.kode,
-                                                )
-                                              }
-                                              className="w-full text-xs p-2 border border-gray-300 rounded focus:border-red-500 focus:outline-none"
-                                            />
-
                                             {/* Image Upload Section */}
                                             <div className="space-y-2">
                                               <label className="text-xs font-semibold text-gray-700">

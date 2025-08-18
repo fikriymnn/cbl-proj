@@ -1894,7 +1894,7 @@ function CheckSheetPondPeriode() {
                         ),
                     ) || [];
 
-                  // Group by kode and sum jumlah_defect and jumlah_up_defect with improved logic
+                  //// Group by kode and calculate defect * UP for each
                   const groupedDefects = allNotOkDefects.reduce(
                     (acc: any, defect: any) => {
                       const key = defect.kode;
@@ -1902,8 +1902,9 @@ function CheckSheetPondPeriode() {
                         acc[key] = {
                           kode: defect.kode,
                           masalah: defect.masalah,
-                          totalDefect: 0,
-                          totalUpDefect: 0,
+                          totalCalculatedDefect: 0, // This will store sum of (defect * UP)
+                          totalDefect: 0, // Raw defect count
+                          totalUpDefect: 0, // Raw UP count
                           periods: [],
                         };
                       }
@@ -1939,17 +1940,60 @@ function CheckSheetPondPeriode() {
                           ) || 0;
                       }
 
+                      // Calculate defect * UP
+                      const calculatedDefect = defectValue * upDefectValue;
+
+                      acc[key].totalCalculatedDefect += calculatedDefect;
                       acc[key].totalDefect += defectValue;
                       acc[key].totalUpDefect += upDefectValue;
-                      acc[key].periods.push(defect);
+                      acc[key].periods.push({
+                        ...defect,
+                        calculatedDefect: calculatedDefect,
+                      });
                       return acc;
                     },
                     {},
                   );
 
                   const groupedArray = Object.values(groupedDefects);
-
                   const grandTotal = allNotOkDefects.reduce(
+                    (sum: number, defect: any) => {
+                      let defectValue = 0;
+                      if (
+                        defect.jumlah_defect !== null &&
+                        defect.jumlah_defect !== undefined &&
+                        defect.jumlah_defect !== ''
+                      ) {
+                        defectValue =
+                          parseInt(
+                            String(defect.jumlah_defect).replace(/[^0-9]/g, ''),
+                          ) || 0;
+                      } else if (defect.hasil === 'not ok') {
+                        defectValue = 0;
+                      }
+
+                      let upDefectValue = 0;
+                      if (
+                        defect.jumlah_up_defect !== null &&
+                        defect.jumlah_up_defect !== undefined &&
+                        defect.jumlah_up_defect !== ''
+                      ) {
+                        upDefectValue =
+                          parseInt(
+                            String(defect.jumlah_up_defect).replace(
+                              /[^0-9]/g,
+                              '',
+                            ),
+                          ) || 0;
+                      }
+
+                      return sum + defectValue * upDefectValue;
+                    },
+                    0,
+                  );
+
+                  // Keep separate totals for display purposes
+                  const grandTotalRawDefects = allNotOkDefects.reduce(
                     (sum: number, defect: any) => {
                       let defectValue = 0;
                       if (
@@ -2008,24 +2052,29 @@ function CheckSheetPondPeriode() {
                                         {defectGroup.kode}
                                       </div>
                                       <div className="text-xs text-gray-600 mt-1">
+                                        (Temuan QC × Jumlah Up)
+                                      </div>
+                                      <div className="text-xs text-gray-600 mt-1">
                                         {defectGroup.masalah}
                                       </div>
                                     </div>
                                     <div className="text-right">
                                       <div className="text-lg font-bold text-red-600">
-                                        {formatInteger(defectGroup.totalDefect)}
-                                      </div>
-                                      <div className="text-sm font-semibold text-orange-600">
-                                        Jumlah UP:{' '}
                                         {formatInteger(
-                                          defectGroup.totalUpDefect,
+                                          defectGroup.totalCalculatedDefect,
                                         )}
                                       </div>
                                       <div className="text-xs text-gray-500">
+                                        (
+                                        {formatInteger(defectGroup.totalDefect)}{' '}
+                                        ×{' '}
+                                        {formatInteger(
+                                          defectGroup.totalUpDefect,
+                                        )}
+                                        )
+                                      </div>
+                                      <div className="text-xs text-gray-500">
                                         {defectGroup.periods.length} Temuan
-                                        {defectGroup.periods.length > 1
-                                          ? ''
-                                          : ''}
                                       </div>
                                     </div>
                                   </div>
@@ -2046,18 +2095,16 @@ function CheckSheetPondPeriode() {
                                   {pondMesinPeriode?.inspeksi_pond_periode[0]
                                     ?.inspeksi_pond_periode_point?.length ||
                                     0}{' '}
-                                  Periode
+                                  Periode (Temuan QC × Jumlah Up)
                                 </div>
                               </div>
                               <div className="text-right">
                                 <div className="text-3xl font-bold">
                                   {formatInteger(grandTotal)}
                                 </div>
-                                <div className="text-lg font-semibold text-orange-200">
-                                  Jumlah UP: {formatInteger(grandTotalUp)}
-                                </div>
                                 <div className="text-sm opacity-90">
-                                  Total Defects
+                                  ({formatInteger(grandTotalRawDefects)} ×{' '}
+                                  {formatInteger(grandTotalUp)})
                                 </div>
                               </div>
                             </div>
@@ -2081,9 +2128,51 @@ function CheckSheetPondPeriode() {
                                   const hasNotOkDefects =
                                     periodNotOk.length > 0;
 
-                                  const periodTotal = periodNotOk.reduce(
+                                  // Calculate period total using defect * UP formula
+                                  const periodCalculatedTotal =
+                                    periodNotOk.reduce(
+                                      (sum: number, defect: any) => {
+                                        let defectValue = 0;
+                                        if (
+                                          defect.jumlah_defect !== null &&
+                                          defect.jumlah_defect !== undefined &&
+                                          defect.jumlah_defect !== ''
+                                        ) {
+                                          defectValue =
+                                            parseInt(
+                                              String(
+                                                defect.jumlah_defect,
+                                              ).replace(/[^0-9]/g, ''),
+                                            ) || 0;
+                                        } else if (defect.hasil === 'not ok') {
+                                          defectValue = 0;
+                                        }
+
+                                        let upDefectValue = 0;
+                                        if (
+                                          defect.jumlah_up_defect !== null &&
+                                          defect.jumlah_up_defect !==
+                                            undefined &&
+                                          defect.jumlah_up_defect !== ''
+                                        ) {
+                                          upDefectValue =
+                                            parseInt(
+                                              String(
+                                                defect.jumlah_up_defect,
+                                              ).replace(/[^0-9]/g, ''),
+                                            ) || 0;
+                                        }
+
+                                        return (
+                                          sum + defectValue * upDefectValue
+                                        );
+                                      },
+                                      0,
+                                    );
+
+                                  // Get raw totals for display
+                                  const periodRawTotal = periodNotOk.reduce(
                                     (sum: number, defect: any) => {
-                                      // Handle various formats of jumlah_defect
                                       let defectValue = 0;
                                       if (
                                         defect.jumlah_defect !== null &&
@@ -2095,18 +2184,16 @@ function CheckSheetPondPeriode() {
                                             String(
                                               defect.jumlah_defect,
                                             ).replace(/[^0-9]/g, ''),
-                                          ) || 0; // Default to 0 if parsing fails but field exists
+                                          ) || 0;
                                       } else if (defect.hasil === 'not ok') {
-                                        defectValue = 0; // If marked as "not ok" but no quantity, count as 0
+                                        defectValue = 0;
                                       }
                                       return sum + defectValue;
                                     },
                                     0,
                                   );
-
                                   const periodUpTotal = periodNotOk.reduce(
                                     (sum: number, defect: any) => {
-                                      // Handle various formats of jumlah_up_defect
                                       let upDefectValue = 0;
                                       if (
                                         defect.jumlah_up_defect !== null &&
@@ -2136,7 +2223,7 @@ function CheckSheetPondPeriode() {
                                     >
                                       <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold">
-                                          Period {periodIndex + 1}
+                                          Periode {periodIndex + 1}
                                         </span>
                                         <div className="text-right">
                                           <div
@@ -2148,19 +2235,21 @@ function CheckSheetPondPeriode() {
                                           >
                                             {hasNotOkDefects
                                               ? `${formatInteger(
-                                                  periodTotal,
-                                                )} (${
-                                                  periodNotOk.length
-                                                } issues)`
+                                                  periodCalculatedTotal,
+                                                )}`
                                               : '✓ OK'}
                                           </div>
-                                          {hasNotOkDefects &&
-                                            periodUpTotal > 0 && (
-                                              <div className="text-xs font-semibold text-orange-600">
-                                                Jumlah UP:{' '}
-                                                {formatInteger(periodUpTotal)}
-                                              </div>
-                                            )}
+                                          {hasNotOkDefects && (
+                                            <div className="text-xs text-gray-600">
+                                              ({formatInteger(periodRawTotal)} ×{' '}
+                                              {formatInteger(periodUpTotal)})
+                                            </div>
+                                          )}
+                                          {hasNotOkDefects && (
+                                            <div className="text-xs text-gray-500">
+                                              {periodNotOk.length} Temuan
+                                            </div>
+                                          )}
                                         </div>
                                       </div>
                                     </div>
