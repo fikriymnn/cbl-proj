@@ -2240,7 +2240,8 @@ function CheckSheetCetakPeriode() {
                                       <div className="text-lg font-bold text-red-600">
                                         {formatInteger(
                                           defectGroup.totalCalculatedDefect,
-                                        )}
+                                        )}{' '}
+                                        Pcs
                                       </div>
                                       <div className="text-xs text-gray-500">
                                         (
@@ -2272,17 +2273,17 @@ function CheckSheetCetakPeriode() {
                                   {cetakMesinPeriode?.inspeksi_cetak_periode[0]
                                     ?.inspeksi_cetak_periode_point?.length ||
                                     0}{' '}
-                                  Periode (Temuan QC × Jumlah Up)
+                                  Periode
                                 </div>
                               </div>
                               <div className="text-right">
                                 <div className="text-3xl font-bold">
-                                  {formatInteger(grandTotal)}
+                                  {formatInteger(grandTotal)} Pcs
                                 </div>
-                                <div className="text-sm opacity-90">
+                                {/* <div className="text-sm opacity-90">
                                   ({formatInteger(grandTotalRawDefects)} ×{' '}
                                   {formatInteger(grandTotalUp)})
-                                </div>
+                                </div> */}
                               </div>
                             </div>
                           </div>
@@ -2413,7 +2414,7 @@ function CheckSheetCetakPeriode() {
                                             {hasNotOkDefects
                                               ? `${formatInteger(
                                                   periodCalculatedTotal,
-                                                )}`
+                                                )} Pcs`
                                               : '✓ OK'}
                                           </div>
                                           {hasNotOkDefects && (

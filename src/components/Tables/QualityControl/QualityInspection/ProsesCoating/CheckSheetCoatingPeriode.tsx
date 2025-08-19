@@ -2257,7 +2257,8 @@ function CheckSheetCoatingPeriode() {
                                       <div className="text-lg font-bold text-red-600">
                                         {formatInteger(
                                           defectGroup.totalCalculatedDefect,
-                                        )}
+                                        )}{' '}
+                                        Pcs
                                       </div>
                                       <div className="text-xs text-gray-500">
                                         (
@@ -2290,16 +2291,12 @@ function CheckSheetCoatingPeriode() {
                                   {CoatingMesinPeriode
                                     ?.inspeksi_coating_result_periode?.length ||
                                     0}{' '}
-                                  Periode (Temuan QC × Jumlah Up)
+                                  Periode
                                 </div>
                               </div>
                               <div className="text-right">
                                 <div className="text-3xl font-bold">
-                                  {formatInteger(grandTotal)}
-                                </div>
-                                <div className="text-sm opacity-90">
-                                  ({formatInteger(grandTotalRawDefects)} ×{' '}
-                                  {formatInteger(grandTotalUp)})
+                                  {formatInteger(grandTotal)} Pcs
                                 </div>
                               </div>
                             </div>
@@ -2429,7 +2426,7 @@ function CheckSheetCoatingPeriode() {
                                             {hasNotOkDefects
                                               ? `${formatInteger(
                                                   periodCalculatedTotal,
-                                                )}`
+                                                )} Pcs`
                                               : '✓ OK'}
                                           </div>
                                           {hasNotOkDefects && (
