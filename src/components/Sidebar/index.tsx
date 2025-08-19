@@ -903,11 +903,22 @@ const Sidebar = ({
       items: [
         {
           name: 'Rekap Breakdown',
-          path: '/produksi/breakdown',
+          path: '/master/marketing',
           icon: 'breakdown',
         },
         { name: 'Laporan Waste', path: '/produksi/waste', icon: 'waste' },
         { name: 'OS2', path: '/produksi/os2', icon: 'machine' },
+      ],
+    },
+    {
+      name: 'Marketing',
+      icon: ProductionIcon,
+      items: [
+        {
+          name: 'Master Marketing',
+          path: '/master/marketing',
+          icon: 'payroll',
+        },
       ],
     },
     {
@@ -923,6 +934,7 @@ const Sidebar = ({
       'supervisor',
       'admin',
       'super admin',
+      'developer',
     ];
     return departmentMasterDataRoles.includes(role?.toLowerCase());
   };
@@ -956,8 +968,16 @@ const Sidebar = ({
     }
     return items;
   };
+  const getFilteredMenuCategories = () => {
+    return menuCategories.filter((category) => {
+      if (category.name === 'Marketing') {
+        return role?.toLowerCase() === 'developer';
+      }
+      return true;
+    });
+  };
   const filterMasterDataItems = (items: MenuItem[]) => {
-    if (role !== 'super admin') {
+    if (role !== 'super admin' || role !== 'developer') {
       return items.filter(
         (item) =>
           item.name !== 'Role Master' &&
@@ -973,7 +993,8 @@ const Sidebar = ({
     return (
       bagian?.toLowerCase() === 'maintenance' ||
       bagian?.toLowerCase() === 'pemeliharaan' ||
-      role?.toLowerCase() === 'super admin'
+      role?.toLowerCase() === 'super admin' ||
+      role?.toLowerCase() === 'developer'
     );
   };
 
@@ -988,6 +1009,7 @@ const Sidebar = ({
         return (
           bagian?.toLowerCase() === 'maintenance' ||
           role?.toLowerCase() === 'super admin' ||
+          role?.toLowerCase() === 'developer' ||
           bagian?.toLowerCase() === 'pemeliharaan'
         );
       }
@@ -1179,9 +1201,13 @@ const Sidebar = ({
 
   // Role and bagian-based menu rendering
   const renderMenuByRoleAndBagian = () => {
+    const filteredMenuCategories = getFilteredMenuCategories();
     // Super admin can access everything
-    if (role?.toLowerCase() === 'super admin') {
-      return menuCategories.map((category) => renderCategory(category));
+    if (
+      role?.toLowerCase() === 'super admin' ||
+      role?.toLowerCase() === 'developer'
+    ) {
+      return filteredMenuCategories.map((category) => renderCategory(category));
     }
 
     // Payroll role - special case for HR
@@ -1281,6 +1307,11 @@ const Sidebar = ({
               bagian?.toLowerCase() === 'hr' || bagian?.toLowerCase() === 'sdm'
             );
           }
+        }
+
+        // Marketing access - only for developer role
+        if (category.name === 'Marketing') {
+          return role?.toLowerCase() === 'developer';
         }
 
         // Bagian-based access for regular menus
