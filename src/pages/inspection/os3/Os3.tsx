@@ -762,6 +762,8 @@ function TableOS3() {
 
                                       {showModalDetail[ii] && (
                                         <ModalDetailOS3
+                                          unit={proses.unit}
+                                          bagian={proses.bagian}
                                           children={undefined}
                                           isOpen={showModalDetail[ii]}
                                           onClose={() => closeModalDetail(ii)}
@@ -778,7 +780,9 @@ function TableOS3() {
                                           idTiket={data.id}
                                           kodeLkh={data.kode_lkh}
                                           analisisPenyebab={`${proses.kode_analisis_mtc} - ${proses.nama_analisis_mtc}`}
-                                          kebutuhanSparepart="undefined"
+                                          kebutuhanSparepart={
+                                            proses.masalah_spareparts
+                                          }
                                           tipeMaintenance={
                                             proses.cara_perbaikan
                                           }

@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import DefaultLayout from '../../../layout/DefaultLayout';
-
-import { Link } from 'react-router-dom';
-import ModalPM3Schedule from '../../../components/Modals/ModalPM3Schedule';
 import MyCalendar from '../../../components/Modals/Master/PM3/calender';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../utils/convertDate';
-import MyCalendar2 from '../../../components/Modals/Master/PM3/calendercoba';
 
 function Pm3() {
   const [isMobile, setIsMobile] = useState(false);
@@ -113,23 +108,20 @@ function Pm3() {
     setPm3(onchangeVal);
   };
 
-  const [nationalHolidays, setNationalHolidays] = useState<any[]>([])
+  const [nationalHolidays, setNationalHolidays] = useState<any[]>([]);
   useEffect(() => {
     getFinalInspection();
-
   }, []);
   const [libur, setLibur] = useState<any>([]);
   async function getFinalInspection() {
     const url = `https://api-harilibur.vercel.app/api`;
     try {
-      const res = await axios.get(url, {
-
-      });
+      const res = await axios.get(url, {});
       const filteredHolidays = res.data.filter(
-        (holiday: any) => holiday.is_national_holiday === true
+        (holiday: any) => holiday.is_national_holiday === true,
       );
       setNationalHolidays(filteredHolidays);
-      setLibur(res.data)
+      setLibur(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error);
@@ -175,16 +167,17 @@ function Pm3() {
                     className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                   >
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
-                        ? 'bg-green-600'
-                        : data.mesin.bagian_mesin == 'water base'
+                      className={`w-2 h-full sticky left-0 z-20 ${
+                        data.mesin.bagian_mesin == 'printing'
+                          ? 'bg-green-600'
+                          : data.mesin.bagian_mesin == 'water base'
                           ? 'bg-yellow-600'
                           : data.mesin.bagian_mesin == 'pond'
-                            ? 'bg-violet-900'
-                            : data.mesin.bagian_mesin == 'finishing'
-                              ? 'bg-red-900'
-                              : ''
-                        }`}
+                          ? 'bg-violet-900'
+                          : data.mesin.bagian_mesin == 'finishing'
+                          ? 'bg-red-900'
+                          : ''
+                      }`}
                     ></div>
 
                     <div className=" w-full h-full flex flex-col justify-center relative">
@@ -251,7 +244,7 @@ function Pm3() {
                                     </svg>
 
                                     <label className="flex w-10/12 text-blue-700 text-sm font-bold ">
-                                      Request PM 2 Inspection Schedule
+                                      Request PM 3 Inspection Schedule
                                     </label>
                                     <button
                                       type="button"
