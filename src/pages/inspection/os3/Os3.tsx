@@ -8,6 +8,9 @@ import ModalMtcDate from '../../../components/Modals/ModalMtcDate';
 import ModalDetailOS3 from '../../../components/Modals/ModalDetailOS3';
 import ModalStockCheckOs3 from '../../../components/Modals/ModalStockCheckOs3';
 import React from 'react';
+import { Stack, Pagination } from '@mui/material';
+import Select from 'react-select';
+import convertDateToTime from '../../../utils/converDateToTime';
 
 function TableOS3() {
   const [tiket, setTiket] = useState<any>(null);
@@ -17,6 +20,20 @@ function TableOS3() {
   const [showModalDetail, setShowModalDetail] = useState<any>([]);
   const [showDetail, setShowDetail] = useState<boolean[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Filter states
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [mesinNama, setMesinNama] = useState('');
+  const [statusTiket, setStatusTiket] = useState('');
+  const [noJo, setNoJo] = useState('');
+  const [masterMesin, setmasterMesin] = useState<any>(null);
+  const [options, setOptions] = useState<any>([]);
+  const [userList, setUserList] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const calculateResponTime = (startDate: any, endDate: any) => {
     const createdAtDate = new Date(startDate);
@@ -152,6 +169,15 @@ function TableOS3() {
     setShowModalDetail(onchangeVal);
   };
 
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
+  };
+
+  const handleChangePointDepatment = (selectedOption: any) => {
+    setSelectedUser(selectedOption);
+  };
+
   const getUser = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
@@ -166,11 +192,25 @@ function TableOS3() {
   const getTiket = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/ticketOs3?bagian_tiket=os3`;
     try {
+      const params: any = {
+        page: page,
+        limit: limit,
+      };
+
+      // Add filters if they have values
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
+      if (mesinNama) params.mesin = mesinNama;
+      if (statusTiket) params.status_tiket = statusTiket;
+      if (noJo) params.search = noJo;
+      if (selectedUser?.value) params.id_eksekutor = selectedUser.value;
+
       const res = await axios.get(url, {
+        params: params,
         withCredentials: true,
       });
-
-      setTiket(res.data.data);
+      console.log(params);
+      setTiket(res.data);
 
       const initialState = new Array(res.data.data.length).fill(false);
       setShowModal1(initialState);
@@ -182,6 +222,47 @@ function TableOS3() {
       console.log(error.response);
     }
   };
+
+  async function getMasterMesin() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      setIsLoading(false);
+      setmasterMesin(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error.data.msg);
+    }
+  }
+
+  async function getMasterUser() {
+    const url = `${import.meta.env.VITE_API_LINK}/users`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          status: 'aktif',
+          bagian: 'maintenance',
+        },
+        withCredentials: true,
+      });
+
+      setUserList(res.data);
+      console.log('user list', res.data);
+      setOptions(
+        res.data.map((item: any) => {
+          return {
+            value: item.id,
+            label: `${item.nama}`,
+          };
+        }),
+      );
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
 
   const responMTC = async (id: number) => {
     const url = `${import.meta.env.VITE_API_LINK}/ticketOs3/respon/${id}`;
@@ -212,15 +293,155 @@ function TableOS3() {
     }
   };
 
+  // Reset filters
+  const resetFilters = () => {
+    setStartDate('');
+    setEndDate('');
+    setMesinNama('');
+    setStatusTiket('');
+    setNoJo('');
+    setSelectedUser(null);
+    setPage(1);
+  };
+
   useEffect(() => {
     getTiket();
+  }, [page, limit]);
+
+  useEffect(() => {
     getUser();
+    getMasterMesin();
+    getMasterUser();
   }, []);
 
   if (!tiket) return null;
 
   return (
     <main>
+      {/* Filter Section - Fixed height to prevent overlapping */}
+      <div className="bg-white p-6 rounded-lg shadow-sm mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+          {/* Date Range - Takes 2 columns */}
+          <div className="col-span-1 sm:col-span-2 lg:col-span-2">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col gap-2 flex-1">
+                <p className="text-sm text-primary font-semibold">Dari:</p>
+                <input
+                  className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <p className="text-sm text-primary font-semibold">Sampai:</p>
+                <input
+                  className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Machine Filter */}
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-primary font-semibold">Pilih Mesin:</p>
+            <select
+              value={mesinNama}
+              onChange={(e) => {
+                setMesinNama(e.target.value);
+              }}
+              className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+            >
+              <option value="">Pilih Mesin</option>
+              {masterMesin?.map((data: any, i: any) => (
+                <option
+                  key={i}
+                  value={data.nama_mesin}
+                  className="text-gray-800 text-sm"
+                >
+                  {data.nama_mesin}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-primary font-semibold">Status Tiket:</p>
+            <select
+              value={statusTiket}
+              onChange={(e) => {
+                setStatusTiket(e.target.value);
+              }}
+              className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+            >
+              <option value="">Pilih Status Tiket</option>
+              <option value="open">Open</option>
+              <option value="request to qc">Request to QC</option>
+              <option value="temporary">Temporary</option>
+              <option value="monitoring">Monitoring</option>
+            </select>
+          </div>
+
+          {/* User Filter */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm text-primary font-semibold">Nama</label>
+            <Select
+              placeholder="Cari..."
+              options={options}
+              value={selectedUser}
+              onChange={handleChangePointDepatment}
+              isClearable
+              className="rounded-lg"
+              styles={{
+                control: (provided) => ({
+                  ...provided,
+                  backgroundColor: '#EBF5FF',
+                  borderColor: '#BFDBFE',
+                  minHeight: '40px',
+                  boxShadow: 'none',
+                  '&:hover': {
+                    borderColor: '#93C5FD',
+                  },
+                }),
+              }}
+            />
+          </div>
+
+          {/* Search Filter */}
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-primary font-semibold">Cari</p>
+            <input
+              className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+              placeholder="PM1 / PM2 / PM3"
+              type="text"
+              value={noJo}
+              onChange={(e) => setNoJo(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Action Buttons - Separate row to prevent overlapping */}
+        <div className="flex justify-end gap-3 mt-4">
+          <button
+            onClick={() => getTiket()}
+            className="bg-primary hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg transition-colors"
+          >
+            Tampilkan
+          </button>
+          <button
+            onClick={resetFilters}
+            className="bg-gray-500 hover:bg-gray-600 text-white font-medium px-5 py-2 rounded-lg transition-colors"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      {/* Table */}
       <div className="bg-white mt-2">
         <table className="w-full border-collapse">
           <thead>
@@ -267,7 +488,7 @@ function TableOS3() {
             </tr>
           </thead>
           <tbody>
-            {tiket.map((data: any, i: number) => {
+            {tiket.data?.map((data: any, i: number) => {
               const lengthProses = data.proses_mtc_os3s.length - 1;
               const dateMtc = convertDatetimeToDate(data.createdAt);
               const waktuRespon = calculateResponTime(
@@ -301,10 +522,12 @@ function TableOS3() {
               return (
                 <React.Fragment key={i}>
                   <tr className="bg-white border-b-5 border-blue">
-                    <td className="py-3 px-6 text-center">{i + 1}</td>
+                    <td className="py-3 px-6 text-center">
+                      {(page - 1) * limit + i + 1}
+                    </td>
 
                     <td className="px-2 py-3">
-                      <p className="text-xs font-light">{data.kode_tiket}</p>
+                      <p className="text-xs font-light">{data.kode_ticket}</p>
                     </td>
 
                     <td className="px-2 py-3">
@@ -316,7 +539,10 @@ function TableOS3() {
                     </td>
 
                     <td className="px-2 py-3">
-                      <p className="text-xs font-light"></p>
+                      <p className="text-xs font-light">
+                        {' '}
+                        {getSourceData(data, 'catatan')}
+                      </p>
                     </td>
 
                     <td className="px-2 py-3">
@@ -390,30 +616,6 @@ function TableOS3() {
                                 </button>
                               </div>
 
-                              {showModal1[i] && (
-                                <ModalStockCheckOs3
-                                  children={undefined}
-                                  isOpen={showModal1[i]}
-                                  onClose={() => closeModal1(i)}
-                                  onFinish={getTiket}
-                                  kendala="data.nama_kendala"
-                                  kodeLkh="data.kode_lkh"
-                                  machineName={data.nama_mesin}
-                                  tgl={data.waktu_respon}
-                                  jam="19.09"
-                                  namaPemeriksa={
-                                    data.proses_mtc_os3s[lengthProses]
-                                      ?.user_eksekutor.nama
-                                  }
-                                  no="109299"
-                                  idTiket={data.id}
-                                  idProses={
-                                    data.proses_mtc_os3s[lengthProses]?.id
-                                  }
-                                  namaMesin={data.nama_mesin}
-                                />
-                              )}
-
                               {showModal2 && (
                                 <ModalMtcDate
                                   isOpen={showModal2}
@@ -427,19 +629,41 @@ function TableOS3() {
                           )}
                         </div>
 
-                        <div>
-                          <button
-                            title="button"
-                            onClick={() => handleClickDetail(i)}
-                            className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                          >
-                            <img src={Arrow} alt="" className="mx-3" />
-                          </button>
-                        </div>
+                        {/* Only show arrow button if data.proses_mtc_os3s.length > 0 */}
+                        {data.proses_mtc_os3s.length > 0 && (
+                          <div>
+                            <button
+                              title="button"
+                              onClick={() => handleClickDetail(i)}
+                              className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                            >
+                              <img src={Arrow} alt="" className="mx-3" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
-
+                  {showModal1[i] && (
+                    <ModalStockCheckOs3
+                      children={undefined}
+                      isOpen={showModal1[i]}
+                      onClose={() => closeModal1(i)}
+                      onFinish={getTiket}
+                      kendala="data.nama_kendala"
+                      kodeLkh={data.sumber}
+                      machineName={data.nama_mesin}
+                      tgl={data.waktu_respon}
+                      jam={data.waktu_respon}
+                      namaPemeriksa={
+                        data.proses_mtc_os3s[lengthProses]?.user_eksekutor.nama
+                      }
+                      no="109299"
+                      idTiket={data.id}
+                      idProses={data.proses_mtc_os3s[lengthProses]?.id}
+                      namaMesin={data.nama_mesin}
+                    />
+                  )}
                   {data.proses_mtc_os3s.length > 0 && showDetail[i] && (
                     <tr>
                       <td colSpan={10} className="px-0 py-0">
@@ -601,6 +825,42 @@ function TableOS3() {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination Section */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Rows per page:</span>
+          <div className="flex gap-2">
+            {[10, 25, 50, 100].map((pageSize) => (
+              <button
+                key={pageSize}
+                onClick={() => handleLimitChange(pageSize)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  limit === pageSize
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {pageSize}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Stack spacing={2}>
+            <Pagination
+              count={tiket?.total_page}
+              color="primary"
+              page={page}
+              onChange={(e, i) => {
+                setPage(i);
+                console.log(i);
+              }}
+            />
+          </Stack>
+        </div>
       </div>
     </main>
   );
