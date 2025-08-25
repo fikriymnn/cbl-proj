@@ -4,23 +4,23 @@ import { Stack, Pagination } from '@mui/material';
 import DefaultLayout from '../../../layout/DefaultLayout';
 
 // Types
-interface MasterUnit {
+interface MarketingPengiriman {
   id: number;
-  kode_unit: string;
-  nama_unit: string;
+  nama_area: string;
+  harga: number;
 }
 
-interface MasterUnitForm {
-  kode_unit: string;
-  nama_unit: string;
+interface MarketingPengirimanForm {
+  nama_area: string;
+  harga: number | string;
 }
 
 interface SearchState {
-  units: string;
+  pengirimans: string;
 }
 
 interface TotalPages {
-  units: number;
+  pengirimans: number;
 }
 
 interface ApiResponse<T> {
@@ -28,39 +28,43 @@ interface ApiResponse<T> {
   total_page: number;
 }
 
-function MarketingUnit(): JSX.Element {
-  const [units, setUnits] = useState<MasterUnit[]>([]);
+function MasterMarketingPengiriman(): JSX.Element {
+  const [pengirimans, setPengirimans] = useState<MarketingPengiriman[]>([]);
   const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<TotalPages>({ units: 0 });
-  const [searches, setSearches] = useState<SearchState>({ units: '' });
-  const [unitForm, setUnitForm] = useState<MasterUnitForm>({
-    kode_unit: '',
-    nama_unit: '',
-  });
+  const [totalPages, setTotalPages] = useState<TotalPages>({ pengirimans: 0 });
+  const [searches, setSearches] = useState<SearchState>({ pengirimans: '' });
+  const [pengirimanForm, setPengirimanForm] = useState<MarketingPengirimanForm>(
+    {
+      nama_area: '',
+      harga: '',
+    },
+  );
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [editingUnit, setEditingUnit] = useState<MasterUnit | null>(null);
+  const [editingPengiriman, setEditingPengiriman] =
+    useState<MarketingPengiriman | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
+  // Updated: Only trigger on page changes, not search changes
   useEffect(() => {
-    getMasterUnit();
+    getMarketingPengiriman();
   }, [page]);
 
-  // Fetch master unit data
-  async function getMasterUnit(): Promise<void> {
-    const url = `${import.meta.env.VITE_API_LINK}/master/unit`;
+  // Fetch marketing pengiriman data
+  async function getMarketingPengiriman(): Promise<void> {
+    const url = `${import.meta.env.VITE_API_LINK}/master/marketing/pengiriman`;
     try {
       setLoading(true);
-      const res = await axios.get<ApiResponse<MasterUnit[]>>(url, {
+      const res = await axios.get<ApiResponse<MarketingPengiriman[]>>(url, {
         params: {
           page: page,
           limit: 15,
-          search: searches.units || undefined,
+          search: searches.pengirimans || undefined,
         },
         withCredentials: true,
       });
-      console.log('Fetched unit data:', res.data);
-      setUnits(res.data.data);
-      setTotalPages((prev) => ({ ...prev, units: res.data.total_page }));
+      console.log('Fetched pengiriman data:', res.data);
+      setPengirimans(res.data.data);
+      setTotalPages((prev) => ({ ...prev, pengirimans: res.data.total_page }));
     } catch (error: any) {
       console.log(error);
     } finally {
@@ -68,55 +72,69 @@ function MarketingUnit(): JSX.Element {
     }
   }
 
+  // Updated: Search functions now explicitly call API
   const handleSearch = (): void => {
     setPage(1);
-    getMasterUnit();
+    getMarketingPengiriman(); // Explicitly call the API
   };
 
   const handleReset = (): void => {
-    setSearches({ units: '' });
+    setSearches({ pengirimans: '' });
     setPage(1);
-    getMasterUnit();
+    getMarketingPengiriman(); // Explicitly call the API after reset
   };
 
-  const handleAddUnit = (): void => {
+  const handleAddPengiriman = (): void => {
     setShowForm(true);
-    setEditingUnit(null);
-    setUnitForm({ kode_unit: '', nama_unit: '' });
+    setEditingPengiriman(null);
+    setPengirimanForm({ nama_area: '', harga: '' });
   };
 
-  const openModal = (unit: MasterUnit): void => {
-    setEditingUnit(unit);
-    setUnitForm({
-      kode_unit: unit.kode_unit,
-      nama_unit: unit.nama_unit,
+  const openModal = (pengiriman: MarketingPengiriman): void => {
+    setEditingPengiriman(pengiriman);
+    setPengirimanForm({
+      nama_area: pengiriman.nama_area,
+      harga: pengiriman.harga,
     });
     setShowForm(true);
   };
 
   const closeModal = (): void => {
     setShowForm(false);
-    setEditingUnit(null);
-    setUnitForm({ kode_unit: '', nama_unit: '' });
+    setEditingPengiriman(null);
+    setPengirimanForm({ nama_area: '', harga: '' });
   };
 
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     try {
       setLoading(true);
-      const url = editingUnit
-        ? `${import.meta.env.VITE_API_LINK}/master/unit/${editingUnit.id}`
-        : `${import.meta.env.VITE_API_LINK}/master/unit`;
+      const url = editingPengiriman
+        ? `${import.meta.env.VITE_API_LINK}/master/marketing/pengiriman/${
+            editingPengiriman.id
+          }`
+        : `${import.meta.env.VITE_API_LINK}/master/marketing/pengiriman`;
 
-      const method = editingUnit ? 'put' : 'post';
+      const method = editingPengiriman ? 'put' : 'post';
+
+      // Convert harga to number if it's a string
+      const formData = {
+        ...pengirimanForm,
+        harga:
+          typeof pengirimanForm.harga === 'string'
+            ? parseFloat(pengirimanForm.harga) || 0
+            : pengirimanForm.harga,
+      };
 
       console.log(
-        editingUnit ? 'Updating unit with data:' : 'Creating unit with data:',
-        unitForm,
+        editingPengiriman
+          ? 'Updating pengiriman with data:'
+          : 'Creating pengiriman with data:',
+        formData,
       );
-      await axios[method](url, unitForm, { withCredentials: true });
+      await axios[method](url, formData, { withCredentials: true });
 
-      getMasterUnit();
+      getMarketingPengiriman();
       closeModal();
     } catch (error: any) {
       console.log(error);
@@ -132,12 +150,14 @@ function MarketingUnit(): JSX.Element {
     setPage(value);
   };
 
-  const deleteUnit = async (id: number): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/master/unit/${id}`;
+  const deletePengiriman = async (id: number): Promise<void> => {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/master/marketing/pengiriman/${id}`;
     try {
-      if (confirm('Are you sure you want to delete this unit data?')) {
+      if (confirm('Are you sure you want to delete this pengiriman data?')) {
         await axios.delete(url, { withCredentials: true });
-        getMasterUnit();
+        getMarketingPengiriman();
       }
     } catch (error: any) {
       console.log(error);
@@ -148,7 +168,7 @@ function MarketingUnit(): JSX.Element {
     <DefaultLayout>
       <div className="p-4">
         <p className="font-semibold md:text-[24px] text-[18px] text-primary mb-4">
-          Master Data &gt; Master Unit
+          Master Data Marketing &gt; Marketing Pengiriman
         </p>
 
         {/* Search and Add Button */}
@@ -156,10 +176,10 @@ function MarketingUnit(): JSX.Element {
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Search unit..."
-              value={searches.units}
+              placeholder="Search pengiriman..."
+              value={searches.pengirimans}
               onChange={(e) =>
-                setSearches({ ...searches, units: e.target.value })
+                setSearches({ ...searches, pengirimans: e.target.value })
               }
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -184,14 +204,14 @@ function MarketingUnit(): JSX.Element {
             </button>
           </div>
           <button
-            onClick={handleAddUnit}
+            onClick={handleAddPengiriman}
             className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
           >
-            + Unit
+            + Pengiriman
           </button>
         </div>
 
-        {/* Unit Table */}
+        {/* Pengiriman Table */}
         <div className="overflow-x-auto bg-white rounded shadow">
           <table className="min-w-full table-auto text-xs">
             <thead className="bg-gray-50">
@@ -200,10 +220,10 @@ function MarketingUnit(): JSX.Element {
                   No
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kode Unit
+                  Nama Area
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama Unit
+                  Harga
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -211,26 +231,26 @@ function MarketingUnit(): JSX.Element {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {units.map((unit, index) => (
-                <tr key={unit.id}>
+              {pengirimans.map((pengiriman, index) => (
+                <tr key={pengiriman.id}>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                     {(page - 1) * 15 + index + 1}
                   </td>
-                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                    {unit.kode_unit}
-                  </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900 max-w-[150px] truncate">
-                    {unit.nama_unit}
+                    {pengiriman.nama_area}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                    Rp {pengiriman.harga.toLocaleString('id-ID')}
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs font-medium space-x-1">
                     <button
-                      onClick={() => openModal(unit)}
+                      onClick={() => openModal(pengiriman)}
                       className="text-blue-600 hover:text-blue-900 px-1"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => deleteUnit(unit.id)}
+                      onClick={() => deletePengiriman(pengiriman.id)}
                       className="text-red-600 hover:text-red-900 px-1"
                     >
                       Delete
@@ -238,13 +258,13 @@ function MarketingUnit(): JSX.Element {
                   </td>
                 </tr>
               ))}
-              {units.length === 0 && (
+              {pengirimans.length === 0 && (
                 <tr>
                   <td
                     colSpan={4}
                     className="px-2 py-2 text-center text-xs text-gray-500"
                   >
-                    No unit data found
+                    No pengiriman data found
                   </td>
                 </tr>
               )}
@@ -255,7 +275,7 @@ function MarketingUnit(): JSX.Element {
         <div className="w-full flex justify-center mt-3 pb-2">
           <Stack spacing={2}>
             <Pagination
-              count={totalPages.units}
+              count={totalPages.pengirimans}
               page={page}
               color="primary"
               size="small"
@@ -264,27 +284,27 @@ function MarketingUnit(): JSX.Element {
           </Stack>
         </div>
 
-        {/* Add/Edit Unit Form Modal */}
+        {/* Add/Edit Pengiriman Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">
-                {editingUnit ? 'Edit Unit' : 'Add Unit'}
+                {editingPengiriman ? 'Edit Pengiriman' : 'Add Pengiriman'}
               </h2>
 
               <form onSubmit={handleSave} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Kode Unit
+                    Nama Area
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter kode unit"
-                    value={unitForm.kode_unit}
+                    placeholder="Enter nama area"
+                    value={pengirimanForm.nama_area}
                     onChange={(e) =>
-                      setUnitForm({
-                        ...unitForm,
-                        kode_unit: e.target.value,
+                      setPengirimanForm({
+                        ...pengirimanForm,
+                        nama_area: e.target.value,
                       })
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
@@ -294,20 +314,22 @@ function MarketingUnit(): JSX.Element {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Nama Unit
+                    Harga
                   </label>
                   <input
-                    type="text"
-                    placeholder="Enter nama unit"
-                    value={unitForm.nama_unit}
+                    type="number"
+                    placeholder="Enter harga"
+                    value={pengirimanForm.harga}
                     onChange={(e) =>
-                      setUnitForm({
-                        ...unitForm,
-                        nama_unit: e.target.value,
+                      setPengirimanForm({
+                        ...pengirimanForm,
+                        harga: e.target.value,
                       })
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     required
+                    min="0"
+                    step="0.01"
                   />
                 </div>
 
@@ -325,7 +347,11 @@ function MarketingUnit(): JSX.Element {
                     disabled={loading}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 text-sm"
                   >
-                    {loading ? 'Saving...' : editingUnit ? 'Update' : 'Save'}
+                    {loading
+                      ? 'Saving...'
+                      : editingPengiriman
+                      ? 'Update'
+                      : 'Save'}
                   </button>
                 </div>
               </form>
@@ -337,4 +363,4 @@ function MarketingUnit(): JSX.Element {
   );
 }
 
-export default MarketingUnit;
+export default MasterMarketingPengiriman;

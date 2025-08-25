@@ -213,6 +213,10 @@ import MasterUnit from './pages/MasterData/Marketing/MarketingUnit';
 import MasterMesinTahapan from './pages/MasterData/Marketing/MarketingMesinTahapan';
 import MasterTahapan from './pages/MasterData/Marketing/MarketingTahapan';
 import MasterTahapanMesin from './pages/MasterData/Marketing/MarketingTahapanMesin';
+import MasterMarketingPengiriman from './pages/MasterData/Marketing/MarketingPengiriman';
+import MarketingBrand from './pages/MasterData/Marketing/MarketingBrand';
+import MarketingUnit from './pages/MasterData/Marketing/MarketingUnit';
+import MarketingBarang from './pages/MasterData/Marketing/MarketingBarang.';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -253,6 +257,36 @@ function App() {
           }
         />
         <Route
+          path="/master/marketing"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MasterMarketing />
+            </>
+          }
+        />
+        <Route
+          path="/master/brand"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MarketingBrand />
+            </>
+          }
+        />
+        <Route
+          path="/master/pengiriman"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MasterMarketingPengiriman />
+            </>
+          }
+        />
+        <Route
           path="/master/produk"
           element={
             <>
@@ -268,7 +302,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
 
-              <MasterUnit />
+              <MarketingUnit />
             </>
           }
         />
@@ -278,7 +312,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
 
-              <MasterBarang />
+              <MarketingBarang />
             </>
           }
         />

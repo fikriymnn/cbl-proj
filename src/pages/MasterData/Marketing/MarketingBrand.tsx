@@ -4,23 +4,23 @@ import { Stack, Pagination } from '@mui/material';
 import DefaultLayout from '../../../layout/DefaultLayout';
 
 // Types
-interface MasterUnit {
+interface MasterBrand {
   id: number;
-  kode_unit: string;
-  nama_unit: string;
+  kode_brand: string;
+  nama_brand: string;
 }
 
-interface MasterUnitForm {
-  kode_unit: string;
-  nama_unit: string;
+interface MasterBrandForm {
+  kode_brand: string;
+  nama_brand: string;
 }
 
 interface SearchState {
-  units: string;
+  brands: string;
 }
 
 interface TotalPages {
-  units: number;
+  brands: number;
 }
 
 interface ApiResponse<T> {
@@ -28,39 +28,39 @@ interface ApiResponse<T> {
   total_page: number;
 }
 
-function MarketingUnit(): JSX.Element {
-  const [units, setUnits] = useState<MasterUnit[]>([]);
+function MasterBrand(): JSX.Element {
+  const [brands, setBrands] = useState<MasterBrand[]>([]);
   const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<TotalPages>({ units: 0 });
-  const [searches, setSearches] = useState<SearchState>({ units: '' });
-  const [unitForm, setUnitForm] = useState<MasterUnitForm>({
-    kode_unit: '',
-    nama_unit: '',
+  const [totalPages, setTotalPages] = useState<TotalPages>({ brands: 0 });
+  const [searches, setSearches] = useState<SearchState>({ brands: '' });
+  const [brandForm, setBrandForm] = useState<MasterBrandForm>({
+    kode_brand: '',
+    nama_brand: '',
   });
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [editingUnit, setEditingUnit] = useState<MasterUnit | null>(null);
+  const [editingBrand, setEditingBrand] = useState<MasterBrand | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    getMasterUnit();
+    getMasterBrand();
   }, [page]);
 
-  // Fetch master unit data
-  async function getMasterUnit(): Promise<void> {
-    const url = `${import.meta.env.VITE_API_LINK}/master/unit`;
+  // Fetch master brand data
+  async function getMasterBrand(): Promise<void> {
+    const url = `${import.meta.env.VITE_API_LINK}/master/brand`;
     try {
       setLoading(true);
-      const res = await axios.get<ApiResponse<MasterUnit[]>>(url, {
+      const res = await axios.get<ApiResponse<MasterBrand[]>>(url, {
         params: {
           page: page,
           limit: 15,
-          search: searches.units || undefined,
+          search: searches.brands || undefined,
         },
         withCredentials: true,
       });
-      console.log('Fetched unit data:', res.data);
-      setUnits(res.data.data);
-      setTotalPages((prev) => ({ ...prev, units: res.data.total_page }));
+      console.log('Fetched brand data:', res.data);
+      setBrands(res.data.data);
+      setTotalPages((prev) => ({ ...prev, brands: res.data.total_page }));
     } catch (error: any) {
       console.log(error);
     } finally {
@@ -70,53 +70,55 @@ function MarketingUnit(): JSX.Element {
 
   const handleSearch = (): void => {
     setPage(1);
-    getMasterUnit();
+    getMasterBrand();
   };
 
   const handleReset = (): void => {
-    setSearches({ units: '' });
+    setSearches({ brands: '' });
     setPage(1);
-    getMasterUnit();
+    getMasterBrand();
   };
 
-  const handleAddUnit = (): void => {
+  const handleAddBrand = (): void => {
     setShowForm(true);
-    setEditingUnit(null);
-    setUnitForm({ kode_unit: '', nama_unit: '' });
+    setEditingBrand(null);
+    setBrandForm({ kode_brand: '', nama_brand: '' });
   };
 
-  const openModal = (unit: MasterUnit): void => {
-    setEditingUnit(unit);
-    setUnitForm({
-      kode_unit: unit.kode_unit,
-      nama_unit: unit.nama_unit,
+  const openModal = (brand: MasterBrand): void => {
+    setEditingBrand(brand);
+    setBrandForm({
+      kode_brand: brand.kode_brand,
+      nama_brand: brand.nama_brand,
     });
     setShowForm(true);
   };
 
   const closeModal = (): void => {
     setShowForm(false);
-    setEditingUnit(null);
-    setUnitForm({ kode_unit: '', nama_unit: '' });
+    setEditingBrand(null);
+    setBrandForm({ kode_brand: '', nama_brand: '' });
   };
 
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     try {
       setLoading(true);
-      const url = editingUnit
-        ? `${import.meta.env.VITE_API_LINK}/master/unit/${editingUnit.id}`
-        : `${import.meta.env.VITE_API_LINK}/master/unit`;
+      const url = editingBrand
+        ? `${import.meta.env.VITE_API_LINK}/master/brand/${editingBrand.id}`
+        : `${import.meta.env.VITE_API_LINK}/master/brand`;
 
-      const method = editingUnit ? 'put' : 'post';
+      const method = editingBrand ? 'put' : 'post';
 
       console.log(
-        editingUnit ? 'Updating unit with data:' : 'Creating unit with data:',
-        unitForm,
+        editingBrand
+          ? 'Updating brand with data:'
+          : 'Creating brand with data:',
+        brandForm,
       );
-      await axios[method](url, unitForm, { withCredentials: true });
+      await axios[method](url, brandForm, { withCredentials: true });
 
-      getMasterUnit();
+      getMasterBrand();
       closeModal();
     } catch (error: any) {
       console.log(error);
@@ -132,12 +134,12 @@ function MarketingUnit(): JSX.Element {
     setPage(value);
   };
 
-  const deleteUnit = async (id: number): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/master/unit/${id}`;
+  const deleteBrand = async (id: number): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/brand/${id}`;
     try {
-      if (confirm('Are you sure you want to delete this unit data?')) {
+      if (confirm('Are you sure you want to delete this brand data?')) {
         await axios.delete(url, { withCredentials: true });
-        getMasterUnit();
+        getMasterBrand();
       }
     } catch (error: any) {
       console.log(error);
@@ -148,7 +150,7 @@ function MarketingUnit(): JSX.Element {
     <DefaultLayout>
       <div className="p-4">
         <p className="font-semibold md:text-[24px] text-[18px] text-primary mb-4">
-          Master Data &gt; Master Unit
+          Master Data &gt; Master Brand
         </p>
 
         {/* Search and Add Button */}
@@ -156,10 +158,10 @@ function MarketingUnit(): JSX.Element {
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Search unit..."
-              value={searches.units}
+              placeholder="Search brand..."
+              value={searches.brands}
               onChange={(e) =>
-                setSearches({ ...searches, units: e.target.value })
+                setSearches({ ...searches, brands: e.target.value })
               }
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -184,14 +186,14 @@ function MarketingUnit(): JSX.Element {
             </button>
           </div>
           <button
-            onClick={handleAddUnit}
+            onClick={handleAddBrand}
             className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
           >
-            + Unit
+            + Brand
           </button>
         </div>
 
-        {/* Unit Table */}
+        {/* Brand Table */}
         <div className="overflow-x-auto bg-white rounded shadow">
           <table className="min-w-full table-auto text-xs">
             <thead className="bg-gray-50">
@@ -200,10 +202,10 @@ function MarketingUnit(): JSX.Element {
                   No
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kode Unit
+                  Kode Brand
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama Unit
+                  Nama Brand
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -211,26 +213,26 @@ function MarketingUnit(): JSX.Element {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {units.map((unit, index) => (
-                <tr key={unit.id}>
+              {brands.map((brand, index) => (
+                <tr key={brand.id}>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                     {(page - 1) * 15 + index + 1}
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                    {unit.kode_unit}
+                    {brand.kode_brand}
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900 max-w-[150px] truncate">
-                    {unit.nama_unit}
+                    {brand.nama_brand}
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs font-medium space-x-1">
                     <button
-                      onClick={() => openModal(unit)}
+                      onClick={() => openModal(brand)}
                       className="text-blue-600 hover:text-blue-900 px-1"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={() => deleteUnit(unit.id)}
+                      onClick={() => deleteBrand(brand.id)}
                       className="text-red-600 hover:text-red-900 px-1"
                     >
                       Delete
@@ -238,13 +240,13 @@ function MarketingUnit(): JSX.Element {
                   </td>
                 </tr>
               ))}
-              {units.length === 0 && (
+              {brands.length === 0 && (
                 <tr>
                   <td
                     colSpan={4}
                     className="px-2 py-2 text-center text-xs text-gray-500"
                   >
-                    No unit data found
+                    No brand data found
                   </td>
                 </tr>
               )}
@@ -255,7 +257,7 @@ function MarketingUnit(): JSX.Element {
         <div className="w-full flex justify-center mt-3 pb-2">
           <Stack spacing={2}>
             <Pagination
-              count={totalPages.units}
+              count={totalPages.brands}
               page={page}
               color="primary"
               size="small"
@@ -264,27 +266,27 @@ function MarketingUnit(): JSX.Element {
           </Stack>
         </div>
 
-        {/* Add/Edit Unit Form Modal */}
+        {/* Add/Edit Brand Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold mb-4">
-                {editingUnit ? 'Edit Unit' : 'Add Unit'}
+                {editingBrand ? 'Edit Brand' : 'Add Brand'}
               </h2>
 
               <form onSubmit={handleSave} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Kode Unit
+                    Kode Brand
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter kode unit"
-                    value={unitForm.kode_unit}
+                    placeholder="Enter kode brand"
+                    value={brandForm.kode_brand}
                     onChange={(e) =>
-                      setUnitForm({
-                        ...unitForm,
-                        kode_unit: e.target.value,
+                      setBrandForm({
+                        ...brandForm,
+                        kode_brand: e.target.value,
                       })
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
@@ -294,16 +296,16 @@ function MarketingUnit(): JSX.Element {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Nama Unit
+                    Nama Brand
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter nama unit"
-                    value={unitForm.nama_unit}
+                    placeholder="Enter nama brand"
+                    value={brandForm.nama_brand}
                     onChange={(e) =>
-                      setUnitForm({
-                        ...unitForm,
-                        nama_unit: e.target.value,
+                      setBrandForm({
+                        ...brandForm,
+                        nama_brand: e.target.value,
                       })
                     }
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
@@ -325,7 +327,7 @@ function MarketingUnit(): JSX.Element {
                     disabled={loading}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 text-sm"
                   >
-                    {loading ? 'Saving...' : editingUnit ? 'Update' : 'Save'}
+                    {loading ? 'Saving...' : editingBrand ? 'Update' : 'Save'}
                   </button>
                 </div>
               </form>
@@ -337,4 +339,4 @@ function MarketingUnit(): JSX.Element {
   );
 }
 
-export default MarketingUnit;
+export default MasterBrand;

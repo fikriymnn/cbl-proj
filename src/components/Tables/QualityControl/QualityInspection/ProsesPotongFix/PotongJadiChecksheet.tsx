@@ -1052,14 +1052,14 @@ function PotongJadiChecksheet() {
                                   inspeksi_potong_result: array,
                                 });
                               }}
-                              type="number"
+                              type="text"
                               className="border-2 border-stroke w-[80%] rounded-sm"
                             />
                             <label className="text-neutral-500 text-sm font-semibold pt-1">
                               Lebar
                             </label>
                             <input
-                              type="number"
+                              type="text"
                               required
                               onChange={(e) => {
                                 let array = [
