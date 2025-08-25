@@ -206,6 +206,13 @@ import MasterKapasitasArmada from './pages/PPIC/MasterPPIC/MasterKapasitasArmada
 import PengajuanJabatanAllDept from './pages/AllDept/PengajuanJabatanAll';
 import PengajuanJabatanAllDeptHistory from './pages/AllDept/PengajuanJabatanAllHistory';
 import MasterMarketing from './pages/Marketing/MasterMarketing/MasterMarketing';
+import MasterCustomer from './pages/MasterData/Marketing/MarketingCustomer';
+import MasterProduk from './pages/MasterData/Marketing/MarketingProduk';
+import MasterBarang from './pages/MasterData/Marketing/MarketingBarang.';
+import MasterUnit from './pages/MasterData/Marketing/MarketingUnit';
+import MasterMesinTahapan from './pages/MasterData/Marketing/MarketingMesinTahapan';
+import MasterTahapan from './pages/MasterData/Marketing/MarketingTahapan';
+import MasterTahapanMesin from './pages/MasterData/Marketing/MarketingTahapanMesin';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -236,12 +243,72 @@ function App() {
         />
         {/* Marketing */}
         <Route
-          path="/master/marketing"
+          path="/master/customer"
           element={
             <>
               <PageTitle title="PT CBL" />
 
-              <MasterMarketing />
+              <MasterCustomer />
+            </>
+          }
+        />
+        <Route
+          path="/master/produk"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MasterProduk />
+            </>
+          }
+        />
+        <Route
+          path="/master/unit"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MasterUnit />
+            </>
+          }
+        />
+        <Route
+          path="/master/barang"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MasterBarang />
+            </>
+          }
+        />
+        <Route
+          path="/master/mesintahapan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MasterMesinTahapan />
+            </>
+          }
+        />
+        <Route
+          path="/master/tahapan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MasterTahapan />
+            </>
+          }
+        />
+        <Route
+          path="/master/tahapanmesin"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <MasterTahapanMesin />
             </>
           }
         />
@@ -744,7 +811,7 @@ function App() {
           }
         />
         <Route
-          path="/masterdataqc/kalibrasimaster"
+          path="/masterdata/kalibrasimaster"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -1368,7 +1435,7 @@ function App() {
           }
         />
         <Route
-          path="/masterdataqc/defect"
+          path="/masterdata/defect"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -1379,7 +1446,7 @@ function App() {
           }
         />
         <Route
-          path="/masterdataqc/nodoc"
+          path="/masterdata/nodoc"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -1390,7 +1457,7 @@ function App() {
           }
         />
         <Route
-          path="/masterdataqc/finalinspection"
+          path="/masterdata/finalinspection"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -1401,7 +1468,7 @@ function App() {
           }
         />
         <Route
-          path="/masterdataqc/users"
+          path="/masterdata/users"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -1412,7 +1479,7 @@ function App() {
           }
         />
         <Route
-          path="/masterdataqc/outsourcing_bj"
+          path="/masterdata/outsourcing_bj"
           element={
             <>
               <PageTitle title="PT CBL" />

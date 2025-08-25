@@ -609,23 +609,23 @@ const Sidebar = ({
       items: [
         {
           name: 'Document Master',
-          path: '/masterdataqc/nodoc',
+          path: '/masterdata/nodoc',
           icon: 'document',
         },
         {
           name: 'Final Inspection Master',
-          path: '/masterdataqc/finalinspection',
+          path: '/masterdata/finalinspection',
           icon: 'inspection',
         },
-        { name: 'QC User Master', path: '/masterdataqc/users', icon: 'users' },
+        { name: 'QC User Master', path: '/masterdata/users', icon: 'users' },
         {
           name: 'Outsourcing Barang Jadi Master',
-          path: '/masterdataqc/outsourcing_bj',
+          path: '/masterdata/outsourcing_bj',
           icon: 'outsourcing',
         },
         {
           name: 'Kalibrasi Master',
-          path: '/masterdataqc/kalibrasimaster',
+          path: '/masterdata/kalibrasimaster',
           icon: 'document',
         },
       ],
