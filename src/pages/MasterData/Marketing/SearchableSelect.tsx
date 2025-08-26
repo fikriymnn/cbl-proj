@@ -25,12 +25,13 @@ export default function SearchableSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [displayValue, setDisplayValue] = useState('');
+  const [isSelecting, setIsSelecting] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Update display value when value prop changes
   useEffect(() => {
     const selectedOption = options.find((opt) => opt.value === value);
-    setDisplayValue(selectedOption ? selectedOption.label : '');
+    setDisplayValue(selectedOption ? selectedOption.label || '' : '');
   }, [value, options]);
 
   // Close dropdown when clicking outside
@@ -42,6 +43,7 @@ export default function SearchableSelect({
       ) {
         setIsOpen(false);
         setSearchTerm('');
+        setIsSelecting(false);
       }
     };
 
@@ -49,20 +51,56 @@ export default function SearchableSelect({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  // Filter options with proper null/undefined handling
+  const filteredOptions = options.filter((option) => {
+    // Ensure option and option.label exist and are strings
+    if (!option || typeof option.label !== 'string') {
+      return false;
+    }
+
+    // Convert both to lowercase for case-insensitive search
+    const optionLabel = option.label.toLowerCase();
+    const search = (searchTerm || '').toLowerCase();
+
+    return optionLabel.includes(search);
+  });
 
   const handleSelect = (option: Option) => {
+    setIsSelecting(true);
     onChange(option.value);
-    setDisplayValue(option.label);
+    setDisplayValue(option.label || '');
     setIsOpen(false);
     setSearchTerm('');
+
+    // Reset selecting flag after a short delay
+    setTimeout(() => {
+      setIsSelecting(false);
+    }, 100);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    if (!isOpen) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleInputFocus = () => {
+    // Don't reset if we're in the middle of selecting an option
+    if (!isSelecting) {
+      setIsOpen(true);
+      setSearchTerm('');
+    }
+  };
+
+  const handleInputClick = (e: React.MouseEvent) => {
+    // Prevent the click from bubbling if we're selecting
+    if (isSelecting) {
+      e.preventDefault();
+      return;
+    }
     setIsOpen(true);
+    setSearchTerm('');
   };
 
   return (
@@ -71,10 +109,8 @@ export default function SearchableSelect({
         type="text"
         value={isOpen ? searchTerm : displayValue}
         onChange={handleInputChange}
-        onFocus={() => {
-          setIsOpen(true);
-          setSearchTerm('');
-        }}
+        onFocus={handleInputFocus}
+        onClick={handleInputClick}
         placeholder={placeholder}
         required={required}
         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -87,10 +123,14 @@ export default function SearchableSelect({
             filteredOptions.map((option) => (
               <div
                 key={option.value}
-                onClick={() => handleSelect(option)}
+                onMouseDown={(e) => {
+                  // Use onMouseDown instead of onClick to ensure it fires before onFocus
+                  e.preventDefault();
+                  handleSelect(option);
+                }}
                 className="px-3 py-2 cursor-pointer hover:bg-blue-50 text-sm border-b border-gray-100 last:border-b-0"
               >
-                {option.label}
+                {option.label || 'No label'}
               </div>
             ))
           ) : (

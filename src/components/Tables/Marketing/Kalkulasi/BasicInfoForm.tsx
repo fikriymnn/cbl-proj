@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { KalkulasiFormData } from './KalkulasiModal';
+import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface BasicInfoFormProps {
   formData: KalkulasiFormData;
@@ -10,10 +12,266 @@ interface BasicInfoFormProps {
   ) => void;
 }
 
+interface Customer {
+  id: number;
+  nama_customer: string;
+  id_marketing: number;
+  id_harga_pengiriman: number;
+}
+
+interface Marketing {
+  id: number;
+  nama_marketing: string;
+  kode: string;
+  data_karyawan?: {
+    name: string;
+  };
+}
+
+interface Product {
+  id: number;
+  nama_produk: string;
+}
+
+interface Pengiriman {
+  id: number;
+  nama_area: string;
+}
+
 const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   formData,
   onInputChange,
 }) => {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [marketingList, setMarketingList] = useState<Marketing[]>([]);
+  const [produks, setProduks] = useState<Product[]>([]);
+  const [pengirimans, setPengirimans] = useState<Pengiriman[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
+
+  useEffect(() => {
+    getMarketingCustomer();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCustomer) {
+      getMarketingList(selectedCustomer.id_marketing);
+      getMarketingPengiriman(selectedCustomer.id_harga_pengiriman);
+      getProduks(selectedCustomer.id);
+    } else {
+      setMarketingList([]);
+      setProduks([]);
+      setPengirimans([]);
+    }
+  }, [selectedCustomer]);
+
+  // Helper function to ensure array format
+  const ensureArray = (data: any): any[] => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    return [data];
+  };
+
+  async function getMarketingCustomer() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/marketing/customer`;
+    try {
+      setLoading(true);
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Fetched customers:', res.data);
+
+      // Handle different response structures
+      let customerData = [];
+      if (res.data?.data) {
+        customerData = ensureArray(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        customerData = res.data;
+      } else if (res.data) {
+        customerData = ensureArray(res.data);
+      }
+
+      setCustomers(customerData);
+    } catch (error: any) {
+      console.log('Error fetching customers:', error);
+      setCustomers([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function getMarketingList(marketingId?: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/master/marketing${
+      marketingId ? `/${marketingId}` : ''
+    }`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Fetched marketing list:', res.data);
+
+      // Handle different response structures
+      let marketingData = [];
+      if (res.data?.data) {
+        marketingData = ensureArray(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        marketingData = res.data;
+      } else if (res.data) {
+        marketingData = ensureArray(res.data);
+      }
+
+      setMarketingList(marketingData);
+    } catch (error: any) {
+      console.log('Error fetching marketing:', error);
+      setMarketingList([]);
+    }
+  }
+
+  async function getMarketingPengiriman(pengirimanId?: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/master/marketing/pengiriman${
+      pengirimanId ? `/${pengirimanId}` : ''
+    }`;
+    try {
+      setLoading(true);
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Fetched pengiriman data:', res.data);
+
+      // Handle different response structures
+      let pengirimanData = [];
+      if (res.data?.data) {
+        pengirimanData = ensureArray(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        pengirimanData = res.data;
+      } else if (res.data) {
+        pengirimanData = ensureArray(res.data);
+      }
+
+      setPengirimans(pengirimanData);
+    } catch (error: any) {
+      console.log('Error fetching pengiriman:', error);
+      setPengirimans([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function getProduks(customerId?: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/master/marketing/produk${
+      customerId ? `?id_customer=${customerId}` : ''
+    }`;
+    try {
+      setLoading(true);
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Fetched produks:', res.data);
+
+      // Handle different response structures
+      let produktData = [];
+      if (res.data?.data) {
+        produktData = ensureArray(res.data.data);
+      } else if (Array.isArray(res.data)) {
+        produktData = res.data;
+      } else if (res.data) {
+        produktData = ensureArray(res.data);
+      }
+
+      setProduks(produktData);
+    } catch (error: any) {
+      console.log('Error fetching produks:', error);
+      setProduks([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Handle customer selection
+  const handleCustomerChange = (value: any) => {
+    const customer = customers.find((c) => c.id === value);
+    setSelectedCustomer(customer || null);
+
+    onInputChange({
+      target: { name: 'nama_customer', value: customer?.nama_customer || '' },
+    } as React.ChangeEvent<HTMLSelectElement>);
+
+    // Clear dependent fields when customer changes
+    ['nama_marketing', 'nama_produk', 'nama_area_pengiriman'].forEach(
+      (field) => {
+        onInputChange({
+          target: { name: field, value: '' },
+        } as React.ChangeEvent<HTMLSelectElement>);
+      },
+    );
+  };
+
+  // Handle marketing selection
+  const handleMarketingChange = (value: any) => {
+    const marketing = marketingList.find((m) => m.id === value);
+    const marketingName =
+      marketing?.nama_marketing || marketing?.data_karyawan?.name || '';
+
+    onInputChange({
+      target: {
+        name: 'nama_marketing',
+        value: marketingName,
+      },
+    } as React.ChangeEvent<HTMLSelectElement>);
+  };
+
+  // Handle product selection
+  const handleProductChange = (value: any) => {
+    const product = produks.find((p) => p.id === value);
+    onInputChange({
+      target: { name: 'nama_produk', value: product?.nama_produk || '' },
+    } as React.ChangeEvent<HTMLSelectElement>);
+  };
+
+  // Handle pengiriman selection
+  const handlePengirimanChange = (value: any) => {
+    const pengiriman = pengirimans.find((p) => p.id === value);
+    onInputChange({
+      target: {
+        name: 'nama_area_pengiriman',
+        value: pengiriman?.nama_area || '',
+      },
+    } as React.ChangeEvent<HTMLSelectElement>);
+  };
+
+  // Get selected values for controlled components
+  const getSelectedCustomerId = () => {
+    const customer = customers.find(
+      (c) => c.nama_customer === formData.nama_customer,
+    );
+    return customer ? customer.id : 0;
+  };
+
+  const getSelectedMarketingId = () => {
+    const marketing = marketingList.find(
+      (m) =>
+        m.nama_marketing === formData.nama_marketing ||
+        m.data_karyawan?.name === formData.nama_marketing,
+    );
+    return marketing ? marketing.id : 0;
+  };
+
+  const getSelectedProductId = () => {
+    const product = produks.find((p) => p.nama_produk === formData.nama_produk);
+    return product ? product.id : 0;
+  };
+
+  const getSelectedPengirimanId = () => {
+    // Use nama_area_pengiriman as it's the actual field in formData
+    const pengiriman = pengirimans.find(
+      (p) => p.nama_area === formData.nama_area_pengiriman,
+    );
+    return pengiriman ? pengiriman.id : 0;
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-xs font-semibold text-gray-800 mb-6 flex items-center">
@@ -68,36 +326,42 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           <label className="block text-xs font-medium text-gray-700">
             Customer
           </label>
-          <select
-            name="nama_customer"
-            value={formData.nama_customer}
-            onChange={onInputChange}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          <SearchableSelect
+            options={[
+              { value: 0, label: 'Pilih Customer' },
+              ...customers.map((customer) => ({
+                value: customer.id,
+                label: customer.nama_customer,
+              })),
+            ]}
+            value={getSelectedCustomerId()}
+            onChange={handleCustomerChange}
+            placeholder="Pilih Customer"
             required
-          >
-            <option value="">Pilih Customer</option>
-            <option value="PT TROPICA MAS PHARMACEUTICALS">
-              PT TROPICA MAS PHARMACEUTICALS
-            </option>
-            <option value="TRIMAN">TRIMAN</option>
-          </select>
+          />
         </div>
 
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-700">
             Marketing
           </label>
-          <select
-            name="nama_marketing"
-            value={formData.nama_marketing}
-            onChange={onInputChange}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          <SearchableSelect
+            options={[
+              { value: 0, label: 'Pilih Marketing' },
+              ...marketingList.map((marketing: any) => ({
+                value: marketing.id,
+                label: `${marketing.kode} - ${
+                  marketing.data_karyawan?.name ||
+                  marketing.nama_marketing ||
+                  'Unknown'
+                }`,
+              })),
+            ]}
+            value={getSelectedMarketingId()}
+            onChange={handleMarketingChange}
+            placeholder="Pilih Marketing"
             required
-          >
-            <option value="">Pilih Marketing</option>
-            <option value="Marketing 1">Marketing 1</option>
-            <option value="Marketing 2">Marketing 2</option>
-          </select>
+          />
         </div>
       </div>
 
@@ -106,36 +370,37 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           <label className="block text-xs font-medium text-gray-700">
             Produk
           </label>
-          <select
-            name="nama_produk"
-            value={formData.nama_produk}
-            onChange={onInputChange}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          <SearchableSelect
+            options={[
+              { value: 0, label: 'Pilih Produk' },
+              ...produks.map((produk) => ({
+                value: produk.id,
+                label: produk.nama_produk,
+              })),
+            ]}
+            value={getSelectedProductId()}
+            onChange={handleProductChange}
+            placeholder="Pilih Produk"
             required
-          >
-            <option value="">Pilih Produk</option>
-            <option value="DUS ZULTROP SUSPENSI 60 ML">
-              DUS ZULTROP SUSPENSI 60 ML
-            </option>
-            <option value="BROSUR MELOXICAM">BROSUR MELOXICAM</option>
-          </select>
+          />
         </div>
 
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-700">
             Area Pengiriman
           </label>
-          <select
-            name="nama_area_pengiriman"
-            value={formData.nama_area_pengiriman}
-            onChange={onInputChange}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-          >
-            <option value="">Pilih Area Pengiriman</option>
-            <option value="Jakarta">Jakarta</option>
-            <option value="Bandung">Bandung</option>
-            <option value="Surabaya">Surabaya</option>
-          </select>
+          <SearchableSelect
+            options={[
+              { value: 0, label: 'Pilih Area Pengiriman' },
+              ...pengirimans.map((pengiriman) => ({
+                value: pengiriman.id,
+                label: pengiriman.nama_area,
+              })),
+            ]}
+            value={getSelectedPengirimanId()}
+            onChange={handlePengirimanChange}
+            placeholder="Pilih Area Pengiriman"
+          />
         </div>
 
         <div className="space-y-2">
