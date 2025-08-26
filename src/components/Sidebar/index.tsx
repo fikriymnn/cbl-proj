@@ -915,8 +915,58 @@ const Sidebar = ({
       icon: ProductionIcon,
       items: [
         {
+          name: 'Kalkulasi',
+          path: '/marketing/kalkulasi',
+          icon: 'payroll',
+        },
+        {
           name: 'Master Marketing',
           path: '/master/marketing',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Customer',
+          path: '/master/customer',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Brand',
+          path: '/master/brand',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Pengiriman',
+          path: '/master/pengiriman',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Produk',
+          path: '/master/produk',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Unit',
+          path: '/master/unit',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Barang',
+          path: '/master/barang',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Mesin Tahapan',
+          path: '/master/mesintahapan',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Tahapan',
+          path: '/master/tahapan',
+          icon: 'payroll',
+        },
+        {
+          name: 'Master Tahapan Mesin',
+          path: '/master/tahapanmesin',
           icon: 'payroll',
         },
       ],

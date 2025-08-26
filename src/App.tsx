@@ -12,7 +12,7 @@ import ProtectedRoute from './components/Protectedroute';
 import Machine from './pages/Maintenance/Machine';
 import Preparation from './pages/Maintenance/Preparation';
 import MAN from './pages/Maintenance/MAN';
-import Material from './pages/Maintenance/Material';
+
 import MaintenanceQC from './pages/QualityControl/validatenverify';
 import HistoryMtc from './pages/History/Maintenance';
 
@@ -24,8 +24,6 @@ import Pm1 from './pages/inspection/pm1/Pm1';
 import Pm2 from './pages/inspection/pm2/Pm2';
 import Pm2Form from './pages/inspection/pm2/Pm2Form';
 import Pm3Form from './pages/inspection/pm3/Pm3Form';
-import Pm3 from './pages/inspection/pm3/Pm3';
-import OS3 from './pages/inspection/os3/Os3';
 
 import KPI from './pages/Maintenance/KPI/KPI';
 import MasterSparepart from './pages/MasterData/MTC/MasterSparepart';
@@ -38,7 +36,7 @@ import HistoriPage from './pages/inspection/histori/HistoriPage';
 import KPIForm from './pages/Maintenance/KPI/KPIForm';
 import KPIInput from './pages/Maintenance/KPI/KPIInput';
 import MasterPM2 from './pages/MasterData/MTC/MasterPM2';
-import PM2Checklist from './components/Tables/MasterData/PM2/PM2Checklist';
+
 import MasterPM2Check from './pages/MasterData/MTC/MasterPM2Check';
 import MasterPM2TambahInspection from './pages/MasterData/MTC/MasterPM2TambahInspection';
 import MasterKPI from './pages/MasterData/MTC/MasterKPI';
@@ -47,8 +45,6 @@ import Sparepart from './pages/sparepart/submitOpname';
 import MasterUsers from './pages/MasterData/MasterUsers';
 import MasterRole from './pages/MasterData/MasterRole';
 import Adjustment from './pages/sparepart/adjustment';
-import HistoriOpname from './pages/sparepart/crumb/historiOpname';
-import CrumbSparepart from './pages/sparepart/crumb/header';
 import MainOpname from './pages/sparepart/crumb/main';
 import MasterMonitoring from './pages/MasterData/MTC/MasterMonitoring';
 import SpbService from './pages/Maintenance/SPB/spbService';
@@ -58,18 +54,13 @@ import AddStock from './pages/sparepart/stockmaster/addStock';
 import MonitoringSparepart from './pages/sparepart/monitoringSparepart/monitoringSparepart';
 import AddStockLifetimes from './pages/sparepart/monitoringSparepart/addStock';
 import SubmitOpname from './pages/sparepart/submitOpname';
-import ProjectMtc from './components/Tables/Maintenance/projectMtc';
-
 import MonitoringService from './pages/sparepart/monitoringService/monitoringService';
 import AddStockService from './pages/sparepart/monitoringService/addStock';
-import TabsPm from './pages/inspection/pm3/TabsPm';
 import Pm3page from './pages/inspection/pm3/Pm3page';
 import Qualityinspection from './pages/QualityControl/QualityInspection';
-import IncomingInspection from './components/Tables/QualityControl/QualityInspection/Incoming/IncomingInspection';
+
 import IncomingIns from './pages/QualityControl/Incoming/Incomingins';
 import ProsesPotong from './pages/QualityControl/Prosespotong/Prosespotong';
-import PotongJadi from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Bahan/potongbahan';
-import PotongBahan from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Bahan/potongbahan';
 import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage';
 import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
 import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
@@ -86,7 +77,6 @@ import ListJadiItoh from './pages/QualityControl/Prosespotong/ListJadiItoh';
 import ListJadiPolar from './pages/QualityControl/Prosespotong/ListJadiPolar';
 import HistoryBahanItoh from './pages/QualityControl/Prosespotong/History/HistoryBahanItohpage';
 import HistoryBahanPolar from './pages/QualityControl/Prosespotong/History/HistoryBahanPolarPage';
-import HistoryJadiPolar from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Jadi/HistoryJadiPolar';
 import HistoryJadiPolarPage from './pages/QualityControl/Prosespotong/History/HistoryJadiPolarPage';
 import HistoryJadiItohPage from './pages/QualityControl/Prosespotong/History/HistoryJadiItohPage';
 import JenisCetak from './pages/QualityControl/ProsesCetak/JenisCetak';
@@ -105,12 +95,9 @@ import CetakPeriode from './pages/QualityControl/ProsesCetak/CetakPeriode';
 import MasterDefect from './pages/MasterData/QC/MasterDefect';
 import PondPeriode from './pages/QualityControl/ProsesPond/PondPeriode';
 import LemPeriode from './pages/QualityControl/ProsesLem/LemPeriode';
-import CheckSheetCoatingPeriode from './components/Tables/QualityControl/QualityInspection/ProsesCoating/CheckSheetCoatingPeriode';
 import CoatingPeriode from './pages/QualityControl/ProsesCoating/CoatingPeriode';
-import TabSamplingHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/TabSamplingHasilRabut';
 import SamplingHasilRabut from './pages/QualityControl/SamplingRabut/SamplingHasilRabut';
 import AmparHasilLem from './pages/QualityControl/AmparHasilLem/AmparHasilLem';
-import CheckSheetHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/CheckSheetHAsilRabutAwal';
 import RabutAwal from './pages/QualityControl/SamplingRabut/RabutAwal';
 import AmparLemAwal from './pages/QualityControl/AmparHasilLem/AmparLemAwal';
 import NcrMtc from './pages/Maintenance/NCR/Ncrmtc';
@@ -138,7 +125,6 @@ import IncomingOutsourcing from './pages/QualityControl/incomingOutsourcing/Inco
 
 import IncomingOutsourcingAwal from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcingAwal';
 import ProsesPraplate from './pages/QualityControl/ProsesPraplate/ProsesPraplate';
-import ChecksheetPraplate from './components/Tables/QualityControl/QualityInspection/ProsesPraplate/ChekcsheetPraplate';
 import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/ChecksheetPraplate';
 import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
 import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
@@ -208,8 +194,6 @@ import PengajuanJabatanAllDeptHistory from './pages/AllDept/PengajuanJabatanAllH
 import MasterMarketing from './pages/Marketing/MasterMarketing/MasterMarketing';
 import MasterCustomer from './pages/MasterData/Marketing/MarketingCustomer';
 import MasterProduk from './pages/MasterData/Marketing/MarketingProduk';
-import MasterBarang from './pages/MasterData/Marketing/MarketingBarang.';
-import MasterUnit from './pages/MasterData/Marketing/MarketingUnit';
 import MasterMesinTahapan from './pages/MasterData/Marketing/MarketingMesinTahapan';
 import MasterTahapan from './pages/MasterData/Marketing/MarketingTahapan';
 import MasterTahapanMesin from './pages/MasterData/Marketing/MarketingTahapanMesin';
@@ -217,6 +201,7 @@ import MasterMarketingPengiriman from './pages/MasterData/Marketing/MarketingPen
 import MarketingBrand from './pages/MasterData/Marketing/MarketingBrand';
 import MarketingUnit from './pages/MasterData/Marketing/MarketingUnit';
 import MarketingBarang from './pages/MasterData/Marketing/MarketingBarang.';
+import KalkulasiPageMarketing from './pages/Marketing/Kalkulasi/KalkulasiPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -246,6 +231,16 @@ function App() {
           }
         />
         {/* Marketing */}
+        <Route
+          path="/marketing/kalkulasi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <KalkulasiPageMarketing />
+            </>
+          }
+        />
         <Route
           path="/master/customer"
           element={
