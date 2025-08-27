@@ -607,7 +607,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             <span className="text-xs text-gray-500 block">
               {selectedBarangData?.kategori?.toLowerCase().includes('duplex')
                 ? `(${formData.rawPercentage} / ${selectedBarangData.pajak}% + 100)`
-                : `(${formData.rawPercentage} / ${selectedBarangData?.pajak}% + 100)`}
+                : `(${formData.rawPercentage} / ${selectedBarangData?.pajak}% )`}
             </span>
           </label>
           <input
