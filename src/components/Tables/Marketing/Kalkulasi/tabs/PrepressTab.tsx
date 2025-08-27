@@ -22,6 +22,8 @@ interface BarangResponse {
   lebar: number;
   persentase: number;
   harga: number;
+  pajak: number; // Added pajak field
+  kategori: string; // Added kategori field
   // Add other fields as needed
 }
 
@@ -76,6 +78,8 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   const [selectedNamaKertas, setSelectedNamaKertas] = useState<number | string>(
     '',
   );
+  const [selectedBarangData, setSelectedBarangData] =
+    useState<BarangResponse | null>(null); // Store selected barang data
   const [isLoadingJenisKertas, setIsLoadingJenisKertas] = useState(false);
   const [isLoadingNamaKertas, setIsLoadingNamaKertas] = useState(false);
   const [isLoadingMesinPotong, setIsLoadingMesinPotong] = useState(false);
@@ -199,6 +203,26 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     fetchNamaKertas();
   }, [selectedJenisKertas, jenisKertasOptions]);
 
+  // Helper function to format numbers with thousand separators
+  const formatNumber = (value: number): string => {
+    return new Intl.NumberFormat('id-ID').format(value);
+  };
+
+  // Helper function to parse formatted number back to raw number
+  const parseFormattedNumber = (value: string): number => {
+    return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
+  };
+
+  // Calculate Percentage%Apki based on pajak conversion
+  const calculatePercentageApki = (
+    persentase: number,
+    pajak: number,
+  ): number => {
+    // Convert pajak: 11 -> 1.11, 12 -> 1.12
+    const pajakConverted = pajak === 11 ? 1.11 : pajak === 12 ? 1.12 : 1;
+    return persentase / pajakConverted;
+  };
+
   // Helper function to create synthetic events for auto-fill
   const createSyntheticEvent = (name: string, value: string | number) => {
     return {
@@ -209,8 +233,160 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     } as React.ChangeEvent<HTMLInputElement>;
   };
 
+  // Calculate Total Harga Kertas automatically
+  useEffect(() => {
+    const calculateTotalHargaKertas = () => {
+      if (!selectedBarangData || !formData.totalKertas) {
+        return;
+      }
+
+      const totalKertas = parseFormattedNumber(formData.totalKertas.toString());
+      if (totalKertas <= 0) {
+        return;
+      }
+
+      const { harga, persentase, pajak, kategori } = selectedBarangData;
+
+      // Calculate Percentage%Apki (persentase / pajak_converted)
+      const percentageApki = calculatePercentageApki(persentase, pajak);
+
+      // Check if kategori contains "DUPLEX" (case insensitive)
+      const isDuplex = kategori.toLowerCase().includes('duplex');
+
+      // Calculate total harga kertas based on formula
+      let totalHargaKertas = 0;
+
+      if (isDuplex) {
+        // For DUPLEX: (((harga * ((persentase / pajak_converted) + 100)) / 100 / 500) * total_kertas)
+        totalHargaKertas =
+          ((harga * (percentageApki + 100)) / 100 / 500) * totalKertas;
+      } else {
+        // For non-DUPLEX: (((harga * (persentase / pajak_converted)) / 100 / 500) * total_kertas)
+        totalHargaKertas = ((harga * percentageApki) / 100 / 500) * totalKertas;
+      }
+
+      // Update the total harga kertas field
+      const calculatedValue = Math.round(totalHargaKertas);
+      const formattedValue = formatNumber(calculatedValue);
+
+      // Only update if the calculated value is different from current value
+      const currentValue = parseFormattedNumber(
+        formData.totalHargaKertas?.toString() || '0',
+      );
+      if (calculatedValue !== currentValue) {
+        const syntheticEvent = createSyntheticEvent(
+          'totalHargaKertas',
+          formattedValue,
+        );
+        onInputChange(syntheticEvent);
+      }
+
+      // Also update the percentage%apki display
+      const percentageDisplay = isDuplex
+        ? percentageApki + 100
+        : percentageApki;
+      const currentPercentage = parseFloat(
+        formData.percentage?.toString() || '0',
+      );
+      if (Math.abs(percentageDisplay - currentPercentage) > 0.01) {
+        const percentageSyntheticEvent = createSyntheticEvent(
+          'percentage',
+          percentageDisplay.toFixed(2),
+        );
+        onInputChange(percentageSyntheticEvent);
+      }
+    };
+
+    calculateTotalHargaKertas();
+  }, [
+    selectedBarangData,
+    formData.totalKertas,
+    onInputChange,
+    formData.totalHargaKertas,
+    formData.percentage,
+  ]);
+
+  // Calculate Total Kertas automatically
+  useEffect(() => {
+    const calculateTotalKertas = () => {
+      // Parse numeric values from form data
+      const qtyKalkulasi = parseFloat(formData.qty_kalkulasi) || 0;
+      const ukuranCetakBagian1 =
+        parseFloat(formData.ukuran_cetak_bagian_1) || 0;
+      const ukuranCetakIsi1 = parseFloat(formData.ukuran_cetak_isi_1) || 0;
+      const ukuranCetakBagian2 =
+        parseFloat(formData.ukuran_cetak_bagian_2) || 0;
+      const ukuranCetakIsi2 = parseFloat(formData.ukuran_cetak_isi_2) || 0;
+      const printInsheet = parseFloat(formData.print_insheet || '0') || 0;
+      const ponsInsheet = parseFloat(formData.pons_insheet || '0') || 0;
+      const finishingInsheet =
+        parseFloat(formData.finishing_insheet || '0') || 0;
+
+      // Only calculate if we have the required values
+      if (
+        qtyKalkulasi > 0 &&
+        (ukuranCetakBagian1 > 0 || ukuranCetakBagian2 > 0)
+      ) {
+        let totalKertas = 0;
+
+        // First part of formula: qty_kalkulasi / (ukuran_cetak_bagian_1 * ukuran_cetak_isi_1)
+        if (ukuranCetakBagian1 > 0 && ukuranCetakIsi1 > 0) {
+          totalKertas += qtyKalkulasi / (ukuranCetakBagian1 * ukuranCetakIsi1);
+        }
+
+        // Second part: + (ukuran_cetak_bagian_2 * ukuran_cetak_isi_2)
+        if (ukuranCetakBagian2 > 0 && ukuranCetakIsi2 > 0) {
+          totalKertas += ukuranCetakBagian2 * ukuranCetakIsi2;
+        }
+
+        // Third part: + ((print_insheet + pons_insheet + finishing_insheet) / (ukuran_cetak_bagian_1 * ukuran_cetak_bagian_2))
+        const totalInsheet = printInsheet + ponsInsheet + finishingInsheet;
+        if (
+          totalInsheet > 0 &&
+          ukuranCetakBagian1 > 0 &&
+          ukuranCetakBagian2 > 0
+        ) {
+          totalKertas +=
+            totalInsheet / (ukuranCetakBagian1 * ukuranCetakBagian2);
+        }
+
+        // Update the total kertas field
+        const calculatedValue = Math.ceil(totalKertas); // Round up to nearest integer
+        const formattedValue = formatNumber(calculatedValue);
+
+        // Only update if the calculated value is different from current value
+        const currentValue = parseFormattedNumber(
+          formData.totalKertas?.toString() || '0',
+        );
+        if (calculatedValue !== currentValue) {
+          const syntheticEvent = createSyntheticEvent(
+            'totalKertas',
+            formattedValue,
+          );
+          onInputChange(syntheticEvent);
+        }
+      }
+    };
+
+    calculateTotalKertas();
+  }, [
+    formData.qty_kalkulasi,
+    formData.ukuran_cetak_bagian_1,
+    formData.ukuran_cetak_isi_1,
+    formData.ukuran_cetak_bagian_2,
+    formData.ukuran_cetak_isi_2,
+    formData.print_insheet,
+    formData.pons_insheet,
+    formData.finishing_insheet,
+    onInputChange,
+    formData.totalKertas,
+  ]);
+
   // Auto-fill fields when Nama Kertas is selected
   const autoFillFields = (selectedBarang: BarangResponse) => {
+    // Store the selected barang data for calculations
+    setSelectedBarangData(selectedBarang);
+
     // Auto-fill gramature
     onInputChange(
       createSyntheticEvent('gramature', selectedBarang.gramatur || 0),
@@ -224,25 +400,40 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     // Auto-fill lebar (lebarMm)
     onInputChange(createSyntheticEvent('lebarMm', selectedBarang.lebar || 0));
 
-    // Auto-fill percentage
+    // Set raw percentage (original persentase value)
     onInputChange(
-      createSyntheticEvent('percentage', selectedBarang.persentase || 0),
+      createSyntheticEvent(
+        'rawPercentage',
+        selectedBarang.persentase.toFixed(2),
+      ),
     );
 
-    // You can also auto-fill other fields based on your needs
-    // For example, if you want to set a base price or other calculations
+    // Calculate and auto-fill percentage%apki based on formula: persentase / pajak_converted
+    const percentageApki = calculatePercentageApki(
+      selectedBarang.persentase,
+      selectedBarang.pajak,
+    );
+    const isDuplex = selectedBarang.kategori.toLowerCase().includes('duplex');
+    const finalPercentage = isDuplex ? percentageApki + 100 : percentageApki;
+
+    onInputChange(
+      createSyntheticEvent('percentage', finalPercentage.toFixed(2)),
+    );
   };
 
   const handleJenisKertasChange = (value: number | string) => {
     setSelectedJenisKertas(value);
     // Reset nama kertas when jenis kertas changes
     setSelectedNamaKertas('');
+    setSelectedBarangData(null);
 
     // Clear auto-filled fields when jenis kertas changes
     onInputChange(createSyntheticEvent('gramature', ''));
     onInputChange(createSyntheticEvent('panjangMm', ''));
     onInputChange(createSyntheticEvent('lebarMm', ''));
+    onInputChange(createSyntheticEvent('rawPercentage', ''));
     onInputChange(createSyntheticEvent('percentage', ''));
+    onInputChange(createSyntheticEvent('totalHargaKertas', ''));
 
     // Create synthetic event for form handling
     const syntheticEvent = {
@@ -318,7 +509,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
               onChange={handleNamaKertasChange}
               placeholder={
                 !selectedJenisKertas
-                  ? 'Pilih jenis kertas dulu'
+                  ? 'Pilih jenis kertas'
                   : isLoadingNamaKertas
                   ? 'Loading...'
                   : 'Pilih Nama Kertas'
@@ -341,9 +532,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       </div>
 
       {/* Paper Specifications Grid - These will be auto-filled */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {/* Gramature */}
-        <div>
+        <div className="flex flex-col justify-between">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Gramature
           </label>
@@ -359,7 +550,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
         </div>
 
         {/* Panjang mm */}
-        <div>
+        <div className="flex flex-col justify-between">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Panjang mm
           </label>
@@ -375,7 +566,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
         </div>
 
         {/* Lebar mm */}
-        <div>
+        <div className="flex flex-col justify-between">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Lebar mm
           </label>
@@ -390,10 +581,34 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           />
         </div>
 
-        {/* Percentage */}
-        <div>
+        {/* Raw Percentage */}
+        <div className="flex flex-col justify-between">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Percentage
+            <span className="text-xs text-gray-500 block">
+              (Original Value)
+            </span>
+          </label>
+          <input
+            type="number"
+            name="rawPercentage"
+            value={formData.rawPercentage || ''}
+            onChange={handleInputChangeLocal}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="0"
+            readOnly
+          />
+        </div>
+
+        {/* Percentage%Apki */}
+        <div className="flex flex-col justify-between">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Percentage%Apki
+            <span className="text-xs text-gray-500 block">
+              {selectedBarangData?.kategori?.toLowerCase().includes('duplex')
+                ? `(${formData.rawPercentage} / ${selectedBarangData.pajak}% + 100)`
+                : `(${formData.rawPercentage} / ${selectedBarangData?.pajak}% + 100)`}
+            </span>
           </label>
           <input
             type="number"
@@ -409,32 +624,39 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
       {/* Bottom Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Total Kertas */}
+        {/* Total Kertas - Now calculated automatically */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Total Kertas
+            <span className="text-xs text-gray-500 ml-2">
+              (Auto-calculated)
+            </span>
           </label>
           <input
             type="number"
             name="totalKertas"
             value={formData.totalKertas || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
             placeholder="0"
+            readOnly
           />
         </div>
 
-        {/* Total Harga Kertas */}
+        {/* Total Harga Kertas - Now calculated automatically */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Total Harga Kertas
+            <span className="text-xs text-gray-500 ml-2">
+              (Auto-calculated)
+            </span>
           </label>
           <input
-            type="number"
+            type="text"
             name="totalHargaKertas"
             value={formData.totalHargaKertas || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
             placeholder="0"
             readOnly
           />

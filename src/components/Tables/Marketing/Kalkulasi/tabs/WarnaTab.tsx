@@ -20,7 +20,7 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
     const totalWarna = warnaDepan + warnaBelakang;
 
     if (isBBSYes) {
-      return totalWarna / 0.75;
+      return totalWarna * 0.75;
     } else {
       return totalWarna;
     }

@@ -14,6 +14,9 @@ export interface KalkulasiFormData {
   nama_area_pengiriman: string;
   qty_kalkulasi: string;
   presentase_insheet: string;
+  print_insheet?: string;
+  pons_insheet?: string;
+  finishing_insheet?: string;
   spesifikasi: string;
   ukuran_jadi_panjang: string;
   ukuran_jadi_lebar: string;
@@ -55,6 +58,7 @@ export interface KalkulasiFormData {
   totalKertas?: number;
   totalHargaKertas?: number;
   mesinPotong?: string;
+  rawPercentage?: number | string;
 }
 
 interface ApiResponse<T = any> {
