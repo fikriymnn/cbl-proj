@@ -3,6 +3,7 @@ import { KalkulasiFormData } from './KalkulasiModal';
 import UkuranJadiTab from './tabs/UkuranJadiTab';
 import WarnaTab from './tabs/WarnaTab';
 import PrepressTab from './tabs/PrepressTab';
+import PressTab from './tabs/PressTab';
 
 interface TabContentProps {
   activeTab: string;
@@ -31,6 +32,8 @@ const TabContent: React.FC<TabContentProps> = ({
         return (
           <PrepressTab formData={formData} onInputChange={onInputChange} />
         );
+      case 'press':
+        return <PressTab formData={formData} onInputChange={onInputChange} />;
       default:
         return (
           <div className="flex items-center justify-center py-16">

@@ -297,16 +297,6 @@ function MarketingBarang(): JSX.Element {
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
-    // Validation
-    if (
-      !barangForm.id_brand ||
-      !barangForm.id_purchase_unit ||
-      !barangForm.id_inventory_unit
-    ) {
-      alert('Please select brand, purchase unit, and inventory unit');
-      return;
-    }
-
     try {
       setLoading(true);
       const url = editingBarang
@@ -634,7 +624,7 @@ function MarketingBarang(): JSX.Element {
                   {/* Brand Selection */}
                   <div className="relative dropdown-container">
                     <label className="block text-sm font-medium text-gray-700">
-                      Brand *
+                      Brand
                     </label>
                     <input
                       type="text"
@@ -643,7 +633,6 @@ function MarketingBarang(): JSX.Element {
                       onChange={(e) => setBrandSearch(e.target.value)}
                       onFocus={() => setShowBrandDropdown(true)}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      required
                     />
                     {showBrandDropdown && (
                       <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
@@ -694,6 +683,8 @@ function MarketingBarang(): JSX.Element {
                       <option value="Duplex">Duplex</option>
                       <option value="Ivory">Ivory</option>
                       <option value="Duplex Khusus">Duplex Khusus</option>
+                      <option value="Plate">Plate</option>
+                      <option value="Coating">Coating</option>
                     </select>
                   </div>
                   {/*Sub Kategori */}
@@ -715,6 +706,8 @@ function MarketingBarang(): JSX.Element {
                     >
                       <option value="">Select Sub Kategori</option>
                       <option value="Kertas">Kertas</option>
+                      <option value="Mesin">Mesin</option>
+                      <option value="Coating">Coating</option>
                     </select>
                   </div>
                   {/* Gramatur */}
@@ -755,7 +748,7 @@ function MarketingBarang(): JSX.Element {
                       }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       min="0"
-                      step="0.01"
+                      step="0.00001"
                     />
                   </div>
 
@@ -773,14 +766,14 @@ function MarketingBarang(): JSX.Element {
                       }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       min="0"
-                      step="0.01"
+                      step="0.00001"
                     />
                   </div>
 
                   {/* Harga */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Harga *
+                      Harga
                     </label>
                     <input
                       type="number"
@@ -791,8 +784,7 @@ function MarketingBarang(): JSX.Element {
                       }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       min="0"
-                      step="0.01"
-                      required
+                      step="0.00001"
                     />
                   </div>
 
@@ -813,7 +805,7 @@ function MarketingBarang(): JSX.Element {
                       }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       min="0"
-                      step="0.01"
+                      step="0.00001"
                     />
                   </div>
 
@@ -834,7 +826,7 @@ function MarketingBarang(): JSX.Element {
                       }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       min="0"
-                      step="0.01"
+                      step="0.00001"
                     />
                   </div>
 
@@ -853,7 +845,7 @@ function MarketingBarang(): JSX.Element {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       min="0"
                       max="100"
-                      step="0.01"
+                      step="0.00001"
                     />
                   </div>
 
@@ -861,7 +853,7 @@ function MarketingBarang(): JSX.Element {
                     {/* Purchase Unit Selection */}
                     <div className="relative dropdown-container">
                       <label className="block text-sm font-medium text-gray-700">
-                        Purchase Unit *
+                        Purchase Unit
                       </label>
                       <input
                         type="text"
@@ -870,7 +862,6 @@ function MarketingBarang(): JSX.Element {
                         onChange={(e) => setPurchaseUnitSearch(e.target.value)}
                         onFocus={() => setShowPurchaseUnitDropdown(true)}
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        required
                       />
                       {showPurchaseUnitDropdown && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
@@ -904,7 +895,7 @@ function MarketingBarang(): JSX.Element {
                     {/* Inventory Unit Selection */}
                     <div className="relative dropdown-container">
                       <label className="block text-sm font-medium text-gray-700">
-                        Inventory Unit *
+                        Inventory Unit
                       </label>
                       <input
                         type="text"
@@ -913,7 +904,6 @@ function MarketingBarang(): JSX.Element {
                         onChange={(e) => setInventoryUnitSearch(e.target.value)}
                         onFocus={() => setShowInventoryUnitDropdown(true)}
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        required
                       />
                       {showInventoryUnitDropdown && (
                         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">

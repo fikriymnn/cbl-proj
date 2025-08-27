@@ -48,17 +48,18 @@ export interface KalkulasiFormData {
   warna_belakang: string;
   jumlah_warna: string;
   ppn: string;
-  jenisKertas?: number | string;
+  jenisKertas?: any;
   namaKertas?: number | string;
   gramature?: number;
   panjangMm?: number;
   lebarMm?: number;
   percentage?: number;
   apki?: number;
-  totalKertas?: number;
+  totalKertas?: number | string;
   totalHargaKertas?: number;
   mesinPotong?: string;
   rawPercentage?: number | string;
+  jumlah_harga_cetak?: number;
 }
 
 interface ApiResponse<T = any> {

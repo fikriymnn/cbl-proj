@@ -50,20 +50,7 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
       {/* Warna Cetakan Section */}
       <div>
         <h3 className="text-lg font-semibold text-blue-600 mb-6 flex items-center">
-          <svg
-            className="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a4 4 0 004-4V5z"
-            />
-          </svg>
-          Warna Cetakan
+          🎨 Warna Cetakan
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

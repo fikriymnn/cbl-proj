@@ -476,8 +476,8 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     <div className="space-y-6">
       {/* Pre-Press & Press Section */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Pre-Press & Press :
+        <h3 className="text-lg font-semibold text-blue-600 mb-6 flex items-center">
+          📋 Pre-Press & Press
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
