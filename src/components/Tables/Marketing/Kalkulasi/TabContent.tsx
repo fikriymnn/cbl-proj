@@ -1,6 +1,8 @@
 import React from 'react';
 import { KalkulasiFormData } from './KalkulasiModal';
 import UkuranJadiTab from './tabs/UkuranJadiTab';
+import WarnaTab from './tabs/WarnaTab';
+import PrepressTab from './tabs/PrepressTab';
 
 interface TabContentProps {
   activeTab: string;
@@ -22,6 +24,12 @@ const TabContent: React.FC<TabContentProps> = ({
       case 'ukuran-jadi':
         return (
           <UkuranJadiTab formData={formData} onInputChange={onInputChange} />
+        );
+      case 'warna':
+        return <WarnaTab formData={formData} onInputChange={onInputChange} />;
+      case 'prepress':
+        return (
+          <PrepressTab formData={formData} onInputChange={onInputChange} />
         );
       default:
         return (

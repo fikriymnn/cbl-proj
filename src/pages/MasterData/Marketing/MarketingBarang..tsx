@@ -673,7 +673,50 @@ function MarketingBarang(): JSX.Element {
                       </div>
                     )}
                   </div>
-
+                  {/* Kategori */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Kategori
+                    </label>
+                    <select
+                      name="kategori"
+                      id="kategori"
+                      value={barangForm.kategori}
+                      onChange={(e) =>
+                        setBarangForm({
+                          ...barangForm,
+                          kategori: e.target.value,
+                        })
+                      }
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select Kategori</option>
+                      <option value="Duplex">Duplex</option>
+                      <option value="Ivory">Ivory</option>
+                      <option value="Duplex Khusus">Duplex Khusus</option>
+                    </select>
+                  </div>
+                  {/*Sub Kategori */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Sub Kategori
+                    </label>
+                    <select
+                      name="sub_kategori"
+                      id="sub_kategori"
+                      value={barangForm.sub_kategori}
+                      onChange={(e) =>
+                        setBarangForm({
+                          ...barangForm,
+                          sub_kategori: e.target.value,
+                        })
+                      }
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select Sub Kategori</option>
+                      <option value="Kertas">Kertas</option>
+                    </select>
+                  </div>
                   {/* Gramatur */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
@@ -791,7 +834,6 @@ function MarketingBarang(): JSX.Element {
                       }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       min="0"
-                      max="100"
                       step="0.01"
                     />
                   </div>

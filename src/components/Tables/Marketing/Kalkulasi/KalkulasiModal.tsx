@@ -41,6 +41,20 @@ export interface KalkulasiFormData {
   total_harga_satuan_customer: string;
   keterangan_harga: string;
   keterangan_kerja: string;
+  warna_depan: string;
+  warna_belakang: string;
+  jumlah_warna: string;
+  ppn: string;
+  jenisKertas?: number | string;
+  namaKertas?: number | string;
+  gramature?: number;
+  panjangMm?: number;
+  lebarMm?: number;
+  percentage?: number;
+  apki?: number;
+  totalKertas?: number;
+  totalHargaKertas?: number;
+  mesinPotong?: string;
 }
 
 interface ApiResponse<T = any> {
@@ -83,6 +97,7 @@ const initialFormData: KalkulasiFormData = {
   profit_harga: '0',
   jumlah_harga_jual: '0',
   harga_ppn: '0',
+  ppn: '0',
   diskon: '0',
   harga_diskon: '0',
   total_harga: '0',
@@ -90,6 +105,9 @@ const initialFormData: KalkulasiFormData = {
   total_harga_satuan_customer: '0',
   keterangan_harga: '',
   keterangan_kerja: '',
+  warna_depan: '0',
+  warna_belakang: '0',
+  jumlah_warna: '0',
 };
 
 const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
