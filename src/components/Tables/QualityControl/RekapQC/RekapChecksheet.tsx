@@ -119,34 +119,6 @@ function RekapChecksheet() {
               {loading ? 'Loading...' : 'Tampilkan'}
             </button>
           </div>
-
-          <div className="flex flex-col">
-            <label htmlFor="searchTerm" className="mb-1 text-sm font-medium">
-              Filter (JO/IO/Item)
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                id="searchTerm"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                placeholder="Search by JO, IO, or Item..."
-                className="border border-gray-300 rounded pl-9 pr-3 py-2 w-full md:w-64"
-              />
-              <div className="absolute left-3 top-2.5 text-gray-400">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  fill="currentColor"
-                  className="bi bi-search"
-                  viewBox="0 0 16 16"
-                >
-                  <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -156,6 +128,35 @@ function RekapChecksheet() {
         </div>
       ) : (
         <div>
+          {rekapChecksheet && (
+            <div className="flex flex-col mb-4">
+              <label htmlFor="searchTerm" className="mb-1 text-sm font-medium">
+                Cari
+              </label>
+              <div className="relative ">
+                <input
+                  type="text"
+                  id="searchTerm"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  placeholder="Search by JO, IO, or Item..."
+                  className="border border-gray-300  pl-9 pr-3 py-1 w-full md:w-64 rounded-full"
+                />
+                <div className="absolute left-3 top-2.5 text-gray-400">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    className="bi bi-search"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          )}
           {rekapChecksheet ? (
             // Use the ProcessTable component with filter term
             <ProcessTable
