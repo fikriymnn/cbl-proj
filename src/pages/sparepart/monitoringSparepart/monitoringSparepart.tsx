@@ -18,6 +18,7 @@ function MonitoringSparepart() {
     actual_umur: number;
     sisa_umur: number;
     keterangan: string;
+    file?: string; // Added file property
   }
 
   const [masterSparepart, setMasterSparepart] = useState<Sparepart[] | null>(
@@ -34,6 +35,9 @@ function MonitoringSparepart() {
   const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [refreshData, setRefreshData] = useState(false);
+
+  // State for fullscreen image
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   useEffect(() => {
     getMasterSparepart();
@@ -102,15 +106,7 @@ function MonitoringSparepart() {
 
     return sorted;
   };
-  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const openFullscreen = () => {
-    setIsFullscreen(true);
-  };
-
-  const closeFullscreen = () => {
-    setIsFullscreen(false);
-  };
   // Filter function
   const filteredData = sortedData(
     masterSparepart?.filter(
@@ -124,6 +120,14 @@ function MonitoringSparepart() {
   const handleAddSuccess = () => {
     setShowAddModal(false);
     setRefreshData(!refreshData);
+  };
+
+  const openFullscreen = (imageSrc: string) => {
+    setFullscreenImage(imageSrc);
+  };
+
+  const closeFullscreen = () => {
+    setFullscreenImage(null);
   };
 
   return (
@@ -241,12 +245,15 @@ function MonitoringSparepart() {
                 <th className="py-3 px-2 text-xs font-semibold text-left">
                   Ket.
                 </th>
+                <th className="py-3 px-2 text-xs font-semibold text-center w-20">
+                  Image
+                </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={12} className="py-4 text-center">
+                  <td colSpan={13} className="py-4 text-center">
                     <div className="flex justify-center items-center">
                       <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                       <span className="ml-2 text-gray-600">
@@ -313,46 +320,36 @@ function MonitoringSparepart() {
                           {formatInteger(data.sisa_umur)}
                         </td>
                         <td className="py-2 px-2 text-xs">{data.keterangan}</td>
-                        <td className="py-2 px-2 text-xs">
+                        <td className="py-2 px-2 text-center">
                           {data.file ? (
-                            <div className="flex items-center">
+                            <div className="flex justify-center">
                               <img
                                 src={`${import.meta.env.VITE_API_LINK}/images/${
                                   data.file
                                 }`}
-                                alt="File"
-                                className="object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                                onClick={openFullscreen}
+                                alt="Sparepart"
+                                className="w-12 h-12 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity shadow-sm"
+                                onClick={() =>
+                                  openFullscreen(
+                                    `${import.meta.env.VITE_API_LINK}/images/${
+                                      data.file
+                                    }`,
+                                  )
+                                }
                                 onError={(e) => {
-                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.src =
+                                    '/placeholder-image.png'; // You can add a placeholder image
+                                  e.currentTarget.alt = 'Image not found';
+                                  e.currentTarget.className =
+                                    'w-12 h-12 object-cover rounded border bg-gray-100 flex items-center justify-center text-gray-400 text-xs';
                                 }}
                               />
                             </div>
                           ) : (
-                            <span className="text-gray-400 text-sm">-</span>
-                          )}
-                          {/* Full Screen Modal */}
-                          {isFullscreen && (
-                            <div
-                              className="fixed inset-0 bg-black bg-opacity-90 z-50 overflow-auto"
-                              onClick={closeFullscreen}
-                            >
-                              <div className="relative w-full min-h-screen flex justify-center p-4">
-                                <img
-                                  src={`${
-                                    import.meta.env.VITE_API_LINK
-                                  }/images/${data.file}`}
-                                  alt="File"
-                                  className="max-w-full h-auto block"
-                                  onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image
-                                />
-                                <button
-                                  className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
-                                  onClick={closeFullscreen}
-                                >
-                                  ×
-                                </button>
-                              </div>
+                            <div className="w-12 h-12 bg-gray-100 rounded border flex items-center justify-center mx-auto">
+                              <span className="text-gray-400 text-xs">
+                                No Image
+                              </span>
                             </div>
                           )}
                         </td>
@@ -363,7 +360,7 @@ function MonitoringSparepart() {
                   {(!filteredData || filteredData.length === 0) && (
                     <tr>
                       <td
-                        colSpan={12}
+                        colSpan={13}
                         className="py-4 text-center text-gray-500"
                       >
                         No sparepart data found
@@ -375,6 +372,33 @@ function MonitoringSparepart() {
             </tbody>
           </table>
         </div>
+
+        {/* Fullscreen Image Modal */}
+        {fullscreenImage && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex justify-center items-center p-4"
+            onClick={closeFullscreen}
+          >
+            <div className="relative overflow-scroll">
+              <img
+                src={fullscreenImage}
+                alt="Fullscreen view"
+                className="max-w-full max-h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder-image.png';
+                  e.currentTarget.alt = 'Image could not be loaded';
+                }}
+              />
+              <button
+                className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+                onClick={closeFullscreen}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Add Sparepart Modal */}
         {showAddModal && (
