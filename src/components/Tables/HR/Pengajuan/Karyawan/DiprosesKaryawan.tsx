@@ -62,62 +62,102 @@ function DiprosesKaryawan() {
     setTimeout(() => getIzin(), 100);
   };
 
-  const exportToExcel = () => {
-    if (!izin?.data || izin.data.length === 0) {
-      alert('No data to export');
-      return;
+  // Add a new function specifically for export data fetching
+  async function getLKHForExport() {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanKaryawan`;
+    try {
+      // Build params object without page and limit
+      const params: any = {
+        status_tiket: 'history',
+      };
+
+      // Add filters if they exist
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
+
+      const res = await axios.get(url, {
+        params,
+        withCredentials: true,
+      });
+
+      return res.data;
+    } catch (error: any) {
+      console.log(error);
+      throw error;
     }
+  }
 
-    // Prepare data for Excel
-    const excelData = izin.data.map((item: any, index: number) => ({
-      No: index + 1,
-      'Tanggal Diajukan': dateOnly(item.diajukan_tanggal),
-      Pemohon: item.karyawan_pengaju?.name || '',
-      'Department Pemohon':
-        item.karyawan_pengaju?.biodata_karyawan[0]?.department
-          ?.nama_department || '',
-      'Department yang Diajukan': item.department?.nama_department || '',
-      'Jabatan yang Diajukan': item.jabatan?.nama_jabatan || '',
-      'Jenis Kelamin': item.jenis_kelamin || '',
-      'Jumlah Dibutuhkan': item.jumlah_dibutuhkan || '',
-      Pendidikan: item.pendidikan || '',
-      Usia: item.usia || '',
-      Pengalaman: item.pengalaman || '',
-      'Syarat Khusus': item.syarat_khusus || '',
-      Status: item.status?.toUpperCase() || '',
-      'Catatan HR': item.catatan_hr || '',
-    }));
+  // Modify the export function to use the new data fetching function
+  const exportToExcel = async () => {
+    try {
+      // Show loading state
+      setIsLoading(true);
 
-    // Create workbook and worksheet
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(excelData);
+      // Fetch all data without pagination
+      const exportData = await getLKHForExport();
 
-    // Auto-size columns
-    const colWidths =
-      excelData.length > 0
-        ? Object.keys(excelData[0]).map((key) => ({
-            wch: Math.max(
-              key.length,
-              ...excelData.map((row: any) => String(row[key] || '').length),
-            ),
-          }))
-        : [];
-    ws['!cols'] = colWidths;
-    XLSX.utils.book_append_sheet(wb, ws, 'Data Pengajuan Karyawan');
-    const currentDate = new Date().toISOString().split('T')[0];
-    let filename = 'Data_Pengajuan_Karyawan';
+      if (!exportData?.data || exportData.data.length === 0) {
+        alert('No data to export');
+        setIsLoading(false);
+        return;
+      }
 
-    if (startDate && endDate) {
-      filename += `_${startDate}_to_${endDate}`;
-    } else if (startDate) {
-      filename += `_from_${startDate}`;
-    } else if (endDate) {
-      filename += `_until_${endDate}`;
+      // Prepare data for Excel
+      const excelData = exportData.data.map((item: any, index: number) => ({
+        No: index + 1,
+        'Tanggal Diajukan': dateOnly(item.diajukan_tanggal),
+        Pemohon: item.karyawan_pengaju?.name || '',
+        'Department Pemohon':
+          item.karyawan_pengaju?.biodata_karyawan[0]?.department
+            ?.nama_department || '',
+        'Department yang Diajukan': item.department?.nama_department || '',
+        'Jabatan yang Diajukan': item.jabatan?.nama_jabatan || '',
+        'Jenis Kelamin': item.jenis_kelamin || '',
+        'Jumlah Dibutuhkan': item.jumlah_dibutuhkan || '',
+        Pendidikan: item.pendidikan || '',
+        Usia: item.usia || '',
+        Pengalaman: item.pengalaman || '',
+        'Syarat Khusus': item.syarat_khusus || '',
+        Status: item.status?.toUpperCase() || '',
+        'Catatan HR': item.catatan_hr || '',
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Auto-size columns
+      const colWidths =
+        excelData.length > 0
+          ? Object.keys(excelData[0]).map((key) => ({
+              wch: Math.max(
+                key.length,
+                ...excelData.map((row: any) => String(row[key] || '').length),
+              ),
+            }))
+          : [];
+      ws['!cols'] = colWidths;
+      XLSX.utils.book_append_sheet(wb, ws, 'Data Pengajuan Karyawan');
+      const currentDate = new Date().toISOString().split('T')[0];
+      let filename = 'Data_Pengajuan_Karyawan';
+
+      if (startDate && endDate) {
+        filename += `_${startDate}_to_${endDate}`;
+      } else if (startDate) {
+        filename += `_from_${startDate}`;
+      } else if (endDate) {
+        filename += `_until_${endDate}`;
+      }
+
+      filename += `_exported_${currentDate}.xlsx`;
+
+      XLSX.writeFile(wb, filename);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+      setIsLoading(false);
     }
-
-    filename += `_exported_${currentDate}.xlsx`;
-
-    XLSX.writeFile(wb, filename);
   };
 
   const [showModal, setShowModal] = useState<boolean[]>([]);

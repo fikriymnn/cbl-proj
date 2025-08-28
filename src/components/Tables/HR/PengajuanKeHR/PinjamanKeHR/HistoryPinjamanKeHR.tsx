@@ -127,64 +127,105 @@ function HistoryPinjamanKeHR() {
     setTimeout(() => getPinjaman(idPengaju), 100);
   };
 
-  const exportToExcel = () => {
-    if (!pinjaman?.data || pinjaman.data.length === 0) {
-      alert('No data to export');
-      return;
+  // Add a new function specifically for export data fetching
+  async function getLKHForExport() {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanPinjaman`;
+    try {
+      // Build params object without page and limit
+      const params: any = {
+        status_tiket: 'history',
+      };
+
+      // Add filters if they exist
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
+      if (idKaryawan.length > 0) params.id_karyawan = idKaryawan.join(',');
+
+      const res = await axios.get(url, {
+        params,
+        withCredentials: true,
+      });
+
+      return res.data;
+    } catch (error: any) {
+      console.log(error);
+      throw error;
     }
+  }
 
-    // Prepare data for Excel
-    const excelData = pinjaman.data.map((item: any, index: number) => ({
-      No: index + 1,
-      'Nama Personnel': item.karyawan?.name || '',
-      Department:
-        item.karyawan_pengaju?.biodata_karyawan[0]?.department
-          ?.nama_department || '',
-      Supervisor: item.karyawan_pengaju?.name || '',
-      'Tanggal Pengajuan': dateOnly(item.createdAt),
-      Status: item.status?.toUpperCase(),
-      'Yang Menyetujui': item.karyawan_hr?.name || '',
-      'Jumlah Pinjaman': formatCurrency(item.jumlah_pinjaman),
-      'Tempo Cicilan': item.tempo_cicilan,
-      'Tipe Cicilan': item.tipe_cicilan?.toUpperCase(),
-      'Jumlah Cicilan': formatCurrency(item.jumlah_cicilan),
-      'Jaminan Pinjaman': item.jaminan_pinjaman?.toUpperCase(),
-      'Keperluan Pinjaman': item.keperluan_pinjaman,
-      'Sumber Pinjaman': item.sumber_pinjaman?.toUpperCase(),
-      'Respon HR': item.catatan_hr,
-    }));
+  // Modify the export function to use the new data fetching function
+  const exportToExcel = async () => {
+    try {
+      // Show loading state
+      setIsLoading(true);
 
-    // Create workbook and worksheet
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(excelData);
+      // Fetch all data without pagination
+      const exportData = await getLKHForExport();
 
-    // Auto-size columns
-    const colWidths =
-      excelData.length > 0
-        ? Object.keys(excelData[0]).map((key) => ({
-            wch: Math.max(
-              key.length,
-              ...excelData.map((row: any) => String(row[key] || '').length),
-            ),
-          }))
-        : [];
-    ws['!cols'] = colWidths;
-    XLSX.utils.book_append_sheet(wb, ws, 'Data Pinjaman');
+      if (!exportData?.data || exportData.data.length === 0) {
+        alert('No data to export');
+        setIsLoading(false);
+        return;
+      }
 
-    const currentDate = new Date().toISOString().split('T')[0];
-    let filename = 'Data_Pinjaman';
+      // Prepare data for Excel
+      const excelData = exportData.data.map((item: any, index: number) => ({
+        No: index + 1,
+        'Nama Personnel': item.karyawan?.name || '',
+        Department:
+          item.karyawan_pengaju?.biodata_karyawan[0]?.department
+            ?.nama_department || '',
+        Supervisor: item.karyawan_pengaju?.name || '',
+        'Tanggal Pengajuan': dateOnly(item.createdAt),
+        Status: item.status?.toUpperCase(),
+        'Yang Menyetujui': item.karyawan_hr?.name || '',
+        'Jumlah Pinjaman': formatCurrency(item.jumlah_pinjaman),
+        'Tempo Cicilan': item.tempo_cicilan,
+        'Tipe Cicilan': item.tipe_cicilan?.toUpperCase(),
+        'Jumlah Cicilan': formatCurrency(item.jumlah_cicilan),
+        'Jaminan Pinjaman': item.jaminan_pinjaman?.toUpperCase(),
+        'Keperluan Pinjaman': item.keperluan_pinjaman,
+        'Sumber Pinjaman': item.sumber_pinjaman?.toUpperCase(),
+        'Respon HR': item.catatan_hr,
+      }));
 
-    if (startDate && endDate) {
-      filename += `_${startDate}_to_${endDate}`;
-    } else if (startDate) {
-      filename += `_from_${startDate}`;
-    } else if (endDate) {
-      filename += `_until_${endDate}`;
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Auto-size columns
+      const colWidths =
+        excelData.length > 0
+          ? Object.keys(excelData[0]).map((key) => ({
+              wch: Math.max(
+                key.length,
+                ...excelData.map((row: any) => String(row[key] || '').length),
+              ),
+            }))
+          : [];
+      ws['!cols'] = colWidths;
+      XLSX.utils.book_append_sheet(wb, ws, 'Data Pinjaman');
+
+      const currentDate = new Date().toISOString().split('T')[0];
+      let filename = 'Data_Pinjaman';
+
+      if (startDate && endDate) {
+        filename += `_${startDate}_to_${endDate}`;
+      } else if (startDate) {
+        filename += `_from_${startDate}`;
+      } else if (endDate) {
+        filename += `_until_${endDate}`;
+      }
+
+      filename += `_exported_${currentDate}.xlsx`;
+
+      XLSX.writeFile(wb, filename);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+      setIsLoading(false);
     }
-
-    filename += `_exported_${currentDate}.xlsx`;
-
-    XLSX.writeFile(wb, filename);
   };
 
   const [showModal, setShowModal] = useState<boolean[]>([]);

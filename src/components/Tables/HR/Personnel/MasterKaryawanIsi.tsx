@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
+import * as XLSX from 'xlsx';
+
+// Add sorting types
+type SortField = 'nik' | 'name' | 'tgl_masuk';
+type SortDirection = 'asc' | 'desc' | null;
 
 function MasterKaryawanIsi() {
   useEffect(() => {
@@ -16,6 +21,11 @@ function MasterKaryawanIsi() {
   const [isLoading, setIsLoading] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
+  // Add sorting states
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+
+  // Existing functions remain the same...
   async function getKaryawan() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
@@ -93,7 +103,6 @@ function MasterKaryawanIsi() {
     setOpenDropdown(null);
   }
 
-  // New function to activate cut-off employees
   async function activateCutOffKaryawan(id: any) {
     if (
       window.confirm(
@@ -115,7 +124,6 @@ function MasterKaryawanIsi() {
     setOpenDropdown(null);
   }
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
       setOpenDropdown(null);
@@ -141,70 +149,242 @@ function MasterKaryawanIsi() {
     ),
   ];
 
-  const filteredAbsen = karyawan?.data?.filter((data: any) => {
-    const biodata = data.biodata_karyawan[0];
-
-    // Search filter - only NIK and Name
-    const searchLower = searchQuery.toLowerCase();
-    const nameMatches = data.name.toLowerCase().includes(searchLower);
-    const nikMatches =
-      biodata?.nik?.toLowerCase().includes(searchLower) || false;
-    const searchMatches = nameMatches || nikMatches;
-
-    // Status filter
-    const status = biodata?.status_active || '';
-    let statusMatches = true;
-    if (statusFilter !== 'all') {
-      if (statusFilter === 'lain-lain') {
-        statusMatches = status !== 'active' && status !== 'cut off';
+  // Add sorting function
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // If clicking the same field, cycle through: asc -> desc -> null
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortDirection(null);
+        setSortField(null);
       } else {
-        statusMatches = status === statusFilter;
+        setSortDirection('asc');
       }
+    } else {
+      // If clicking a different field, start with asc
+      setSortField(field);
+      setSortDirection('asc');
     }
+  };
 
-    // Divisi filter
-    let divisiFilterMatches = true;
-    if (divisiFilter !== 'all') {
-      divisiFilterMatches = biodata?.divisi?.id == divisiFilter;
-    }
+  // Modified filteredAbsen to include sorting
+  const filteredAbsen = karyawan?.data
+    ?.filter((data: any) => {
+      const biodata = data.biodata_karyawan[0];
 
-    // Department filter
-    let departmentFilterMatches = true;
-    if (departmentFilter !== 'all') {
-      departmentFilterMatches = biodata?.department?.id == departmentFilter;
-    }
+      // Search filter - only NIK and Name
+      const searchLower = searchQuery.toLowerCase();
+      const nameMatches = data.name.toLowerCase().includes(searchLower);
+      const nikMatches =
+        biodata?.nik?.toLowerCase().includes(searchLower) || false;
+      const searchMatches = nameMatches || nikMatches;
 
-    // Tipe Penggajian filter
-    let tipePenggajianMatches = true;
-    if (tipePenggajianFilter !== 'all') {
-      tipePenggajianMatches = biodata?.tipe_penggajian === tipePenggajianFilter;
-    }
+      // Status filter
+      const status = biodata?.status_active || '';
+      let statusMatches = true;
+      if (statusFilter !== 'all') {
+        if (statusFilter === 'lain-lain') {
+          statusMatches = status !== 'active' && status !== 'cut off';
+        } else {
+          statusMatches = status === statusFilter;
+        }
+      }
 
-    // Jenis Kelamin filter
-    let jenisKelaminFilterMatches = true;
-    if (jenisKelaminFilter !== 'all') {
-      jenisKelaminFilterMatches = biodata?.jenis_kelamin === jenisKelaminFilter;
-    }
+      // Divisi filter
+      let divisiFilterMatches = true;
+      if (divisiFilter !== 'all') {
+        divisiFilterMatches = biodata?.divisi?.id == divisiFilter;
+      }
 
-    return (
-      searchMatches &&
-      statusMatches &&
-      divisiFilterMatches &&
-      departmentFilterMatches &&
-      tipePenggajianMatches &&
-      jenisKelaminFilterMatches
-    );
-  });
+      // Department filter
+      let departmentFilterMatches = true;
+      if (departmentFilter !== 'all') {
+        departmentFilterMatches = biodata?.department?.id == departmentFilter;
+      }
+
+      // Tipe Penggajian filter
+      let tipePenggajianMatches = true;
+      if (tipePenggajianFilter !== 'all') {
+        tipePenggajianMatches =
+          biodata?.tipe_penggajian === tipePenggajianFilter;
+      }
+
+      // Jenis Kelamin filter
+      let jenisKelaminFilterMatches = true;
+      if (jenisKelaminFilter !== 'all') {
+        jenisKelaminFilterMatches =
+          biodata?.jenis_kelamin === jenisKelaminFilter;
+      }
+
+      return (
+        searchMatches &&
+        statusMatches &&
+        divisiFilterMatches &&
+        departmentFilterMatches &&
+        tipePenggajianMatches &&
+        jenisKelaminFilterMatches
+      );
+    })
+    ?.sort((a: any, b: any) => {
+      // Apply sorting if sortField and sortDirection are set
+      if (!sortField || !sortDirection) return 0;
+
+      let aValue: string | Date;
+      let bValue: string | Date;
+
+      switch (sortField) {
+        case 'nik':
+          aValue = a.biodata_karyawan[0]?.nik || '';
+          bValue = b.biodata_karyawan[0]?.nik || '';
+          break;
+        case 'name':
+          aValue = a.name || '';
+          bValue = b.name || '';
+          break;
+        case 'tgl_masuk':
+          aValue = a.biodata_karyawan[0]?.tgl_masuk
+            ? new Date(a.biodata_karyawan[0].tgl_masuk)
+            : new Date(0);
+          bValue = b.biodata_karyawan[0]?.tgl_masuk
+            ? new Date(b.biodata_karyawan[0].tgl_masuk)
+            : new Date(0);
+          break;
+        default:
+          return 0;
+      }
+
+      if (sortField === 'tgl_masuk') {
+        // For dates, compare as Date objects
+        const dateA = aValue as Date;
+        const dateB = bValue as Date;
+        if (sortDirection === 'asc') {
+          return dateA.getTime() - dateB.getTime();
+        } else {
+          return dateB.getTime() - dateA.getTime();
+        }
+      } else {
+        // For strings, compare as strings
+        const strA = (aValue as string).toLowerCase();
+        const strB = (bValue as string).toLowerCase();
+        if (sortDirection === 'asc') {
+          return strA.localeCompare(strB);
+        } else {
+          return strB.localeCompare(strA);
+        }
+      }
+    });
 
   const toggleDropdown = (userId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setOpenDropdown(openDropdown === userId ? null : userId);
   };
 
+  // Render sort icon component
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) {
+      return (
+        <div className="flex flex-col ml-1">
+          <svg
+            className="w-3 h-3 text-gray-300"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M5 8l5-5 5 5H5z" />
+          </svg>
+          <svg
+            className="w-3 h-3 text-gray-300 -mt-1"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M15 12l-5 5-5-5h10z" />
+          </svg>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col ml-1">
+        <svg
+          className={`w-3 h-3 ${
+            sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-300'
+          }`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M5 8l5-5 5 5H5z" />
+        </svg>
+        <svg
+          className={`w-3 h-3 -mt-1 ${
+            sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-300'
+          }`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M15 12l-5 5-5-5h10z" />
+        </svg>
+      </div>
+    );
+  };
+
+  // Export to Excel function remains the same...
+  const exportToExcel = () => {
+    if (!filteredAbsen || filteredAbsen.length === 0) {
+      alert('Tidak ada data untuk diekspor');
+      return;
+    }
+
+    const excelData = filteredAbsen.map((data: any, index: number) => ({
+      No: index + 1,
+      NIK: data.biodata_karyawan[0]?.nik || '-',
+      Nama: data.name || '-',
+      'Jenis Kelamin': data.biodata_karyawan[0]?.jenis_kelamin || '-',
+      Divisi: data.biodata_karyawan[0]?.divisi?.nama_divisi || '-',
+      Department: data.biodata_karyawan[0]?.department?.nama_department || '-',
+      Jabatan: data.biodata_karyawan[0]?.jabatan?.nama_jabatan || '-',
+      'Tipe Penggajian': data.biodata_karyawan[0]?.tipe_penggajian || '-',
+      'Tanggal Masuk': data.biodata_karyawan[0]?.tgl_masuk
+        ? convertTimeStampToDateOnly(data.biodata_karyawan[0].tgl_masuk)
+        : '-',
+      'Tanggal Keluar': data.biodata_karyawan[0]?.tgl_keluar
+        ? convertTimeStampToDateOnly(data.biodata_karyawan[0].tgl_keluar)
+        : '-',
+      Status:
+        data.biodata_karyawan[0]?.status?.nama_status ||
+        data.biodata_karyawan[0]?.status_active ||
+        '-',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Karyawan');
+
+    const columnWidths = [
+      { wch: 5 }, // No
+      { wch: 15 }, // NIK
+      { wch: 25 }, // Nama
+      { wch: 15 }, // Jenis Kelamin
+      { wch: 20 }, // Divisi
+      { wch: 20 }, // Department
+      { wch: 20 }, // Jabatan
+      { wch: 15 }, // Tipe Penggajian
+      { wch: 15 }, // Tanggal Masuk
+      { wch: 15 }, // Tanggal Keluar
+      { wch: 15 }, // Status
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    const currentDate = new Date();
+    const dateString = currentDate.toISOString().split('T')[0];
+    const filename = `Data_Karyawan_${dateString}.xlsx`;
+
+    XLSX.writeFile(workbook, filename);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-full mx-auto">
-        {/* Header Section */}
+        {/* Header Section - remains the same */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
@@ -237,7 +417,7 @@ function MasterKaryawanIsi() {
             </div>
           </div>
 
-          {/* Search Section */}
+          {/* Search Section - remains the same */}
           <div className="px-6 py-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -265,9 +445,9 @@ function MasterKaryawanIsi() {
             </div>
           </div>
 
-          {/* Filters Section */}
+          {/* Filters Section - remains the same */}
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
               {/* Status Filter */}
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-700">
@@ -371,10 +551,38 @@ function MasterKaryawanIsi() {
                     setTipePenggajianFilter('all');
                     setJenisKelaminFilter('all');
                     setSearchQuery('');
+                    setSortField(null);
+                    setSortDirection(null);
                   }}
                   className="w-full px-3 py-2 text-sm bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-md transition-colors duration-200"
                 >
                   Reset Filter
+                </button>
+              </div>
+
+              {/* Export Button */}
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-transparent">
+                  Export
+                </label>
+                <button
+                  onClick={exportToExcel}
+                  className="w-full flex items-center justify-center px-3 py-2 text-sm bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors duration-200"
+                >
+                  <svg
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  Excel
                 </button>
               </div>
             </div>
@@ -396,7 +604,7 @@ function MasterKaryawanIsi() {
           </div>
         </div>
 
-        {/* Table Section */}
+        {/* Table Section - Updated with sorting */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto flex flex-col min-h-screen">
             <table
@@ -409,10 +617,22 @@ function MasterKaryawanIsi() {
                     No
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                    NIK
+                    <button
+                      onClick={() => handleSort('nik')}
+                      className="flex items-center hover:text-gray-700 transition-colors duration-150"
+                    >
+                      NIK
+                      <SortIcon field="nik" />
+                    </button>
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                    Nama
+                    <button
+                      onClick={() => handleSort('name')}
+                      className="flex items-center hover:text-gray-700 transition-colors duration-150"
+                    >
+                      Nama
+                      <SortIcon field="name" />
+                    </button>
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                     Gender
@@ -430,7 +650,13 @@ function MasterKaryawanIsi() {
                     Tipe
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-18">
-                    Tgl Masuk
+                    <button
+                      onClick={() => handleSort('tgl_masuk')}
+                      className="flex items-center hover:text-gray-700 transition-colors duration-150"
+                    >
+                      Tgl Masuk
+                      <SortIcon field="tgl_masuk" />
+                    </button>
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-18">
                     Tgl Keluar

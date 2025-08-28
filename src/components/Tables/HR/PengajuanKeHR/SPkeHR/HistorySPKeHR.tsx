@@ -130,61 +130,101 @@ function HistorySPKeHR() {
     setTimeout(() => getIzin(idPengaju), 100);
   };
 
-  const exportToExcel = () => {
-    if (!izin?.data || izin.data.length === 0) {
-      alert('No data to export');
-      return;
+  // Add a new function specifically for export data fetching
+  async function getLKHForExport() {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanSP`;
+    try {
+      // Build params object without page and limit
+      const params: any = {
+        status_tiket: 'history',
+      };
+
+      // Add filters if they exist
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
+
+      const res = await axios.get(url, {
+        params,
+        withCredentials: true,
+      });
+
+      return res.data;
+    } catch (error: any) {
+      console.log(error);
+      throw error;
     }
+  }
 
-    // Prepare data for Excel
-    const excelData = izin.data.map((item: any, index: number) => ({
-      No: index + 1,
-      'Nama Personnel': item.karyawan?.name || '',
-      Department:
-        item.karyawan_pengaju?.biodata_karyawan[0]?.department
-          ?.nama_department || '',
-      Supervisor: item.karyawan_pengaju?.name || '',
-      'Tanggal Pengajuan': dateOnly(item.createdAt),
-      'Tanggal Dari': dateOnly(item.dari),
-      'Tanggal Sampai': dateOnly(item.sampai),
-      'Masa Berlaku': `${item.masa_berlaku} Hari`,
-      Status: item.status?.toUpperCase(),
-      'Yang Menyetujui': item.karyawan_hr?.name || '',
-      Alasan: item.alasan,
-      'Respon HR': item.catatan_hr,
-    }));
+  // Modify the export function to use the new data fetching function
+  const exportToExcel = async () => {
+    try {
+      // Show loading state
+      setIsLoading(true);
 
-    // Create workbook and worksheet
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(excelData);
+      // Fetch all data without pagination
+      const exportData = await getLKHForExport();
 
-    // Auto-size columns
-    const colWidths =
-      excelData.length > 0
-        ? Object.keys(excelData[0]).map((key) => ({
-            wch: Math.max(
-              key.length,
-              ...excelData.map((row: any) => String(row[key] || '').length),
-            ),
-          }))
-        : [];
-    ws['!cols'] = colWidths;
-    XLSX.utils.book_append_sheet(wb, ws, 'Data SP Teguran');
+      if (!exportData?.data || exportData.data.length === 0) {
+        alert('No data to export');
+        setIsLoading(false);
+        return;
+      }
 
-    const currentDate = new Date().toISOString().split('T')[0];
-    let filename = 'Data_SP_Teguran';
+      // Prepare data for Excel
+      const excelData = exportData.data.map((item: any, index: number) => ({
+        No: index + 1,
+        'Nama Personnel': item.karyawan?.name || '',
+        Department:
+          item.karyawan_pengaju?.biodata_karyawan[0]?.department
+            ?.nama_department || '',
+        Supervisor: item.karyawan_pengaju?.name || '',
+        'Tanggal Pengajuan': dateOnly(item.createdAt),
+        'Tanggal Dari': dateOnly(item.dari),
+        'Tanggal Sampai': dateOnly(item.sampai),
+        'Masa Berlaku': `${item.masa_berlaku} Hari`,
+        Status: item.status?.toUpperCase(),
+        'Yang Menyetujui': item.karyawan_hr?.name || '',
+        Alasan: item.alasan,
+        'Respon HR': item.catatan_hr,
+      }));
 
-    if (startDate && endDate) {
-      filename += `_${startDate}_to_${endDate}`;
-    } else if (startDate) {
-      filename += `_from_${startDate}`;
-    } else if (endDate) {
-      filename += `_until_${endDate}`;
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Auto-size columns
+      const colWidths =
+        excelData.length > 0
+          ? Object.keys(excelData[0]).map((key) => ({
+              wch: Math.max(
+                key.length,
+                ...excelData.map((row: any) => String(row[key] || '').length),
+              ),
+            }))
+          : [];
+      ws['!cols'] = colWidths;
+      XLSX.utils.book_append_sheet(wb, ws, 'Data SP Teguran');
+
+      const currentDate = new Date().toISOString().split('T')[0];
+      let filename = 'Data_SP_Teguran';
+
+      if (startDate && endDate) {
+        filename += `_${startDate}_to_${endDate}`;
+      } else if (startDate) {
+        filename += `_from_${startDate}`;
+      } else if (endDate) {
+        filename += `_until_${endDate}`;
+      }
+
+      filename += `_exported_${currentDate}.xlsx`;
+
+      XLSX.writeFile(wb, filename);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+      setIsLoading(false);
     }
-
-    filename += `_exported_${currentDate}.xlsx`;
-
-    XLSX.writeFile(wb, filename);
   };
 
   const [showModal, setShowModal] = useState<boolean[]>([]);
