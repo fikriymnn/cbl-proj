@@ -18,6 +18,7 @@ interface MesinOption {
   harga: number;
   kode_barang: string;
   kategori: string;
+  batas_harga?: number;
 }
 
 interface TahapanResponse {
@@ -61,6 +62,10 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
   >([]);
   const [mesinCoatingBelakangOptions, setMesinCoatingBelakangOptions] =
     useState<Option[]>([]);
+  const [selectedMesinCoatingDepan, setSelectedMesinCoatingDepan] =
+    useState<number>(0);
+  const [selectedMesinCoatingBelakang, setSelectedMesinCoatingBelakang] =
+    useState<number>(0);
   const [isLoadingMesinCoatingDepan, setIsLoadingMesinCoatingDepan] =
     useState(false);
   const [isLoadingMesinCoatingBelakang, setIsLoadingMesinCoatingBelakang] =
@@ -224,6 +229,53 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     fetchMesinCoatingBelakang();
   }, []);
 
+  // Initialize selected options from formData when options are loaded
+  useEffect(() => {
+    if (formData.selectedMesinId && mesinOptions.length > 0) {
+      const mesin = mesinOptions.find(
+        (m) => m.id === Number(formData.selectedMesinId),
+      );
+      setSelectedMesin(mesin || null);
+    }
+  }, [formData.selectedMesinId, mesinOptions]);
+
+  useEffect(() => {
+    if (formData.selectedCoatingDepanId && coatingDepanOptions.length > 0) {
+      const coating = coatingDepanOptions.find(
+        (c) => c.id === Number(formData.selectedCoatingDepanId),
+      );
+      setSelectedCoatingDepan(coating || null);
+    }
+  }, [formData.selectedCoatingDepanId, coatingDepanOptions]);
+
+  useEffect(() => {
+    if (
+      formData.selectedCoatingBelakangId &&
+      coatingBelakangOptions.length > 0
+    ) {
+      const coating = coatingBelakangOptions.find(
+        (c) => c.id === Number(formData.selectedCoatingBelakangId),
+      );
+      setSelectedCoatingBelakang(coating || null);
+    }
+  }, [formData.selectedCoatingBelakangId, coatingBelakangOptions]);
+
+  useEffect(() => {
+    if (formData.selectedMesinCoatingDepanId) {
+      setSelectedMesinCoatingDepan(
+        Number(formData.selectedMesinCoatingDepanId),
+      );
+    }
+  }, [formData.selectedMesinCoatingDepanId]);
+
+  useEffect(() => {
+    if (formData.selectedMesinCoatingBelakangId) {
+      setSelectedMesinCoatingBelakang(
+        Number(formData.selectedMesinCoatingBelakangId),
+      );
+    }
+  }, [formData.selectedMesinCoatingBelakangId]);
+
   // Function to parse number with thousand separators
   const parseNumberWithSeparator = (
     value: string | number | undefined,
@@ -319,7 +371,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     }
   };
 
-  // Calculate coating depan cost
+  // Calculate coating depan cost with batas_harga condition
   const calculateHargaCoatingDepan = (): number => {
     if (!selectedCoatingDepan || !formData.totalKertas) {
       return 0;
@@ -333,15 +385,18 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     const ukuranCetakLebar1 = Number(formData.ukuran_cetak_lebar_1) || 0;
     const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
 
-    // Formula: totalKertas × (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2) × ((ukuran_cetak_panjang_1 + ukuran_cetak_panjang_2) × (ukuran_cetak_lebar_1 + ukuran_cetak_lebar_2)) × selected_barang.harga
-    const result =
+    // Calculate the result using the formula
+    const calculatedResult =
       totalKertas *
       (ukuranCetakBagian1 + ukuranCetakBagian2) *
       ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
         (ukuranCetakLebar1 + ukuranCetakLebar2)) *
       selectedCoatingDepan.harga;
 
-    return result;
+    // Check if calculated result is below batas_harga, use batas_harga instead
+    const batasHarga = selectedCoatingDepan.batas_harga || 0;
+
+    return calculatedResult < batasHarga ? batasHarga : calculatedResult;
   };
 
   // Calculate coating belakang cost
@@ -358,15 +413,63 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     const ukuranCetakLebar1 = Number(formData.ukuran_cetak_lebar_1) || 0;
     const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
 
-    // Same formula as coating depan
-    const result =
+    // Calculate the result using the formula
+    const calculatedResult =
       totalKertas *
       (ukuranCetakBagian1 + ukuranCetakBagian2) *
       ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
         (ukuranCetakLebar1 + ukuranCetakLebar2)) *
       selectedCoatingBelakang.harga;
 
-    return result;
+    // Check if calculated result is below batas_harga, use batas_harga instead
+    const batasHarga = selectedCoatingBelakang.batas_harga || 0;
+
+    return calculatedResult < batasHarga ? batasHarga : calculatedResult;
+  };
+
+  // Add helper functions to check if batas_harga is being used
+  const isUsingBatasHargaDepan = (): boolean => {
+    if (!selectedCoatingDepan || !formData.totalKertas) return false;
+
+    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
+    const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
+    const ukuranCetakPanjang1 = Number(formData.ukuran_cetak_panjang_1) || 0;
+    const ukuranCetakPanjang2 = Number(formData.ukuran_cetak_panjang_2) || 0;
+    const ukuranCetakLebar1 = Number(formData.ukuran_cetak_lebar_1) || 0;
+    const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
+
+    const calculatedResult =
+      totalKertas *
+      (ukuranCetakBagian1 + ukuranCetakBagian2) *
+      ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
+        (ukuranCetakLebar1 + ukuranCetakLebar2)) *
+      selectedCoatingDepan.harga;
+
+    const batasHarga = selectedCoatingDepan.batas_harga || 0;
+    return calculatedResult < batasHarga && batasHarga > 0;
+  };
+
+  const isUsingBatasHargaBelakang = (): boolean => {
+    if (!selectedCoatingBelakang || !formData.totalKertas) return false;
+
+    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
+    const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
+    const ukuranCetakPanjang1 = Number(formData.ukuran_cetak_panjang_1) || 0;
+    const ukuranCetakPanjang2 = Number(formData.ukuran_cetak_panjang_2) || 0;
+    const ukuranCetakLebar1 = Number(formData.ukuran_cetak_lebar_1) || 0;
+    const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
+
+    const calculatedResult =
+      totalKertas *
+      (ukuranCetakBagian1 + ukuranCetakBagian2) *
+      ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
+        (ukuranCetakLebar1 + ukuranCetakLebar2)) *
+      selectedCoatingBelakang.harga;
+
+    const batasHarga = selectedCoatingBelakang.batas_harga || 0;
+    return calculatedResult < batasHarga && batasHarga > 0;
   };
 
   // Calculate total coating cost
@@ -387,25 +490,100 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     return selectedMesin.harga * plateCount;
   };
 
-  // Handle mesin selection change
+  // Modified handle functions to save to formData
   const handleMesinChange = (value: any) => {
     const selected = mesinOptions.find((mesin) => mesin.id === value) || null;
     setSelectedMesin(selected);
+
+    // Save to formData
+    const event = {
+      target: {
+        name: 'selectedMesinId',
+        value: value || '',
+        type: 'select',
+      },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(event);
   };
 
-  // Handle coating depan selection change
   const handleCoatingDepanChange = (value: any) => {
     const selected =
       coatingDepanOptions.find((coating) => coating.id === value) || null;
     setSelectedCoatingDepan(selected);
+
+    // Save to formData
+    const event = {
+      target: {
+        name: 'selectedCoatingDepanId',
+        value: value || '',
+        type: 'select',
+      },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(event);
   };
 
-  // Handle coating belakang selection change
   const handleCoatingBelakangChange = (value: any) => {
     const selected =
       coatingBelakangOptions.find((coating) => coating.id === value) || null;
     setSelectedCoatingBelakang(selected);
+
+    // Save to formData
+    const event = {
+      target: {
+        name: 'selectedCoatingBelakangId',
+        value: value || '',
+        type: 'select',
+      },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(event);
   };
+
+  const handleMesinCoatingDepanChange = (value: any) => {
+    setSelectedMesinCoatingDepan(value);
+
+    // Save to formData
+    const event = {
+      target: {
+        name: 'selectedMesinCoatingDepanId',
+        value: value || '',
+        type: 'select',
+      },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(event);
+  };
+
+  const handleMesinCoatingBelakangChange = (value: any) => {
+    setSelectedMesinCoatingBelakang(value);
+
+    // Save to formData
+    const event = {
+      target: {
+        name: 'selectedMesinCoatingBelakangId',
+        value: value || '',
+        type: 'select',
+      },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(event);
+  };
+
+  // Update jumlah_harga_cetak in formData whenever it changes
+  useEffect(() => {
+    const hargaCetak = calculateJumlahHargaCetak();
+    const event = {
+      target: {
+        name: 'jumlah_harga_cetak',
+        value: hargaCetak.toString(),
+        type: 'number',
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(event);
+  }, [
+    selectedMesin,
+    formData.totalKertas,
+    formData.ukuran_cetak_bagian_1,
+    formData.ukuran_cetak_bagian_2,
+    formData.jumlah_warna,
+  ]);
 
   // Debug effect - UPDATED
   useEffect(() => {
@@ -434,7 +612,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       {/* Press Section */}
       <div>
         <h3 className="text-lg font-semibold text-blue-600 mb-6 flex items-center">
-          🖨️ Press Information
+          Press Information
         </h3>
 
         <div className="grid grid-cols-5 gap-4">
@@ -465,7 +643,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
             ) : (
               <SearchableSelect
                 options={[
-                  { value: 0, label: 'Select Machine' },
+                  { value: 0, label: 'Pilih Mesin' },
                   ...mesinOptions.map((mesin) => ({
                     value: mesin.id,
                     label: `${mesin.kode_barang} - ${mesin.nama_barang}`,
@@ -473,7 +651,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                 ]}
                 value={selectedMesin?.id || 0}
                 onChange={handleMesinChange}
-                placeholder="Select Machine"
+                placeholder="Pilih Mesin"
                 required
               />
             )}
@@ -576,11 +754,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       {/* Printing Cost Calculation Section */}
       <div>
         <h3 className="text-lg font-semibold text-green-600 mb-6 flex items-center">
-          💰 Printing Cost Calculation
+          Printing Cost Calculation
         </h3>
 
         <div className="grid grid-cols-4 gap-4">
-          {/* Rate Calculation - UPDATED */}
+          {/* Rate Calculation */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Rate Calculation
@@ -650,7 +828,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
           </div>
         </div>
 
-        {/* Calculation Details - UPDATED */}
+        {/* Calculation Details */}
         {selectedMesin && formData.totalKertas && (
           <div className="pb-4 mt-4 border-b ">
             <h4 className="text-sm font-medium text-gray-600 mb-2">
@@ -761,7 +939,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       {/* Coating Section */}
       <div>
         <h3 className="text-lg font-semibold text-purple-600 mb-6 flex items-center">
-          🎨 Coating Information
+          Coating Information
         </h3>
 
         <div className="grid grid-cols-5 gap-4 mb-4">
@@ -881,8 +1059,8 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                   { value: 0, label: 'Pilih Coating Depan' },
                   ...mesinCoatingDepanOptions,
                 ]}
-                value={0}
-                onChange={() => {}}
+                value={selectedMesinCoatingDepan}
+                onChange={handleMesinCoatingDepanChange}
                 placeholder="Pilih Coating Depan"
               />
             )}
@@ -903,8 +1081,8 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                   { value: 0, label: 'Pilih Coating Belakang' },
                   ...mesinCoatingBelakangOptions,
                 ]}
-                value={0}
-                onChange={() => {}}
+                value={selectedMesinCoatingBelakang}
+                onChange={handleMesinCoatingBelakangChange}
                 placeholder="Pilih Coating Belakang"
               />
             )}
@@ -931,29 +1109,42 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                           {selectedCoatingDepan.nama_barang}
                         </span>
                       </div>
-                      <div>
-                        <span className="text-gray-500">Unit Price:</span>
-                        <span className="font-medium ml-2">
-                          {new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            minimumFractionDigits: 0,
-                          }).format(selectedCoatingDepan.harga)}
-                        </span>
-                      </div>
+
+                      {selectedCoatingDepan.batas_harga && (
+                        <div>
+                          <span className="text-gray-500">Minimum Price:</span>
+                          <span className="font-medium ml-2">
+                            {new Intl.NumberFormat('id-ID', {
+                              style: 'currency',
+                              currency: 'IDR',
+                              minimumFractionDigits: 0,
+                            }).format(selectedCoatingDepan.batas_harga)}
+                          </span>
+                        </div>
+                      )}
                       <div>
                         <span className="text-gray-500">Formula:</span>
                         <div className="font-medium text-xs mt-1">
-                          {parseNumberWithSeparator(
-                            formData.totalKertas,
-                          ).toLocaleString('id-ID')}{' '}
-                          × ({formData.ukuran_cetak_bagian_1 || 0} +{' '}
-                          {formData.ukuran_cetak_bagian_2 || 0}) × ((
-                          {formData.ukuran_cetak_panjang_1 || 0} +{' '}
-                          {formData.ukuran_cetak_panjang_2 || 0}) × (
-                          {formData.ukuran_cetak_lebar_1 || 0} +{' '}
-                          {formData.ukuran_cetak_lebar_2 || 0})) ×{' '}
-                          {selectedCoatingDepan.harga.toLocaleString('id-ID')}
+                          {isUsingBatasHargaDepan() ? (
+                            <span className="text-orange-600">
+                              Using minimum price (batas harga) because
+                              calculated result is below minimum
+                            </span>
+                          ) : (
+                            `${parseNumberWithSeparator(
+                              formData.totalKertas,
+                            ).toLocaleString('id-ID')} × (${
+                              formData.ukuran_cetak_bagian_1 || 0
+                            } + ${formData.ukuran_cetak_bagian_2 || 0}) × ((${
+                              formData.ukuran_cetak_panjang_1 || 0
+                            } + ${formData.ukuran_cetak_panjang_2 || 0}) × (${
+                              formData.ukuran_cetak_lebar_1 || 0
+                            } + ${
+                              formData.ukuran_cetak_lebar_2 || 0
+                            })) × ${selectedCoatingDepan.harga.toLocaleString(
+                              'id-ID',
+                            )}`
+                          )}
                         </div>
                       </div>
                       <div>
@@ -965,6 +1156,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                             minimumFractionDigits: 0,
                           }).format(calculateHargaCoatingDepan())}
                         </span>
+                        {isUsingBatasHargaDepan() && (
+                          <span className="text-xs text-orange-600 block">
+                            (Applied minimum price)
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -982,30 +1178,41 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                           {selectedCoatingBelakang.nama_barang}
                         </span>
                       </div>
-                      <div>
-                        <span className="text-gray-500">Unit Price:</span>
-                        <span className="font-medium ml-2">
-                          {new Intl.NumberFormat('id-ID', {
-                            style: 'currency',
-                            currency: 'IDR',
-                            minimumFractionDigits: 0,
-                          }).format(selectedCoatingBelakang.harga)}
-                        </span>
-                      </div>
+
+                      {selectedCoatingBelakang.batas_harga && (
+                        <div>
+                          <span className="text-gray-500">Minimum Price:</span>
+                          <span className="font-medium ml-2">
+                            {new Intl.NumberFormat('id-ID', {
+                              style: 'currency',
+                              currency: 'IDR',
+                              minimumFractionDigits: 0,
+                            }).format(selectedCoatingBelakang.batas_harga)}
+                          </span>
+                        </div>
+                      )}
                       <div>
                         <span className="text-gray-500">Formula:</span>
                         <div className="font-medium text-xs mt-1">
-                          {parseNumberWithSeparator(
-                            formData.totalKertas,
-                          ).toLocaleString('id-ID')}{' '}
-                          × ({formData.ukuran_cetak_bagian_1 || 0} +{' '}
-                          {formData.ukuran_cetak_bagian_2 || 0}) × ((
-                          {formData.ukuran_cetak_panjang_1 || 0} +{' '}
-                          {formData.ukuran_cetak_panjang_2 || 0}) × (
-                          {formData.ukuran_cetak_lebar_1 || 0} +{' '}
-                          {formData.ukuran_cetak_lebar_2 || 0})) ×{' '}
-                          {selectedCoatingBelakang.harga.toLocaleString(
-                            'id-ID',
+                          {isUsingBatasHargaBelakang() ? (
+                            <span className="text-orange-600">
+                              Using minimum price (batas harga) because
+                              calculated result is below minimum
+                            </span>
+                          ) : (
+                            `${parseNumberWithSeparator(
+                              formData.totalKertas,
+                            ).toLocaleString('id-ID')} × (${
+                              formData.ukuran_cetak_bagian_1 || 0
+                            } + ${formData.ukuran_cetak_bagian_2 || 0}) × ((${
+                              formData.ukuran_cetak_panjang_1 || 0
+                            } + ${formData.ukuran_cetak_panjang_2 || 0}) × (${
+                              formData.ukuran_cetak_lebar_1 || 0
+                            } + ${
+                              formData.ukuran_cetak_lebar_2 || 0
+                            })) × ${selectedCoatingBelakang.harga.toLocaleString(
+                              'id-ID',
+                            )}`
                           )}
                         </div>
                       </div>
@@ -1018,6 +1225,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                             minimumFractionDigits: 0,
                           }).format(calculateHargaCoatingBelakang())}
                         </span>
+                        {isUsingBatasHargaBelakang() && (
+                          <span className="text-xs text-orange-600 block">
+                            (Applied minimum price)
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

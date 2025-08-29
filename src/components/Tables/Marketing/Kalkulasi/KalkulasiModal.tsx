@@ -60,6 +60,43 @@ export interface KalkulasiFormData {
   mesinPotong?: string;
   rawPercentage?: number | string;
   jumlah_harga_cetak?: number;
+  selectedMesinId?: any;
+
+  // Coating fields
+  selectedCoatingDepanId?: any;
+  selectedCoatingBelakangId?: any;
+  selectedMesinCoatingDepanId?: any;
+  selectedMesinCoatingBelakangId?: any;
+
+  // PostPress fields
+  jenis_pons?: string;
+  mesin_pons?: string;
+  harga_pisau?: string;
+  ongkos_pons?: string;
+  ongkos_pons_qty?: string;
+  harga_satuan_ongkos_pons?: string;
+  total_harga_ongkos_pons?: string;
+
+  // Lipat fields
+  lipat?: string;
+  mesin_lipat?: string;
+  qty_lipat?: string;
+  harga_lipat?: string;
+
+  // Potong Jadi fields
+  potong_jadi?: string;
+  qty_potong?: string;
+  harga_potong_jadi?: string;
+
+  // PostPress2 fields
+  lem?: string;
+  jumlah_harga_lem?: string;
+  mesin_finishing?: string;
+  foil?: string;
+  spot_foil?: string;
+  harga_foil_manual?: string;
+  harga_spot_foil_manual?: string;
+  harga_polimer_manual?: string;
 }
 
 interface ApiResponse<T = any> {

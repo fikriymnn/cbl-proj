@@ -5,6 +5,7 @@ import WarnaTab from './tabs/WarnaTab';
 import PrepressTab from './tabs/PrepressTab';
 import PressTab from './tabs/PressTab';
 import PostPressTab from './tabs/PostPressTab';
+import PostPress2Tab from './tabs/PostPress2Tab';
 
 interface TabContentProps {
   activeTab: string;
@@ -38,6 +39,10 @@ const TabContent: React.FC<TabContentProps> = ({
       case 'post-press':
         return (
           <PostPressTab formData={formData} onInputChange={onInputChange} />
+        );
+      case 'postpress':
+        return (
+          <PostPress2Tab formData={formData} onInputChange={onInputChange} />
         );
       default:
         return (

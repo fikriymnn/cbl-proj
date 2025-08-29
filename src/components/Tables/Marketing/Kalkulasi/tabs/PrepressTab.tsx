@@ -72,17 +72,15 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   const [namaKertasOptions, setNamaKertasOptions] = useState<Option[]>([]);
   const [namaKertasData, setNamaKertasData] = useState<BarangResponse[]>([]); // Store full data
   const [mesinPotongOptions, setMesinPotongOptions] = useState<Option[]>([]);
-  const [selectedJenisKertas, setSelectedJenisKertas] = useState<
-    number | string
-  >('');
-  const [selectedNamaKertas, setSelectedNamaKertas] = useState<number | string>(
-    '',
-  );
   const [selectedBarangData, setSelectedBarangData] =
     useState<BarangResponse | null>(null); // Store selected barang data
   const [isLoadingJenisKertas, setIsLoadingJenisKertas] = useState(false);
   const [isLoadingNamaKertas, setIsLoadingNamaKertas] = useState(false);
   const [isLoadingMesinPotong, setIsLoadingMesinPotong] = useState(false);
+
+  // Use formData values instead of local state
+  const selectedJenisKertas = formData.jenisKertas || '';
+  const selectedNamaKertas = formData.namaKertas || '';
 
   // Fetch Jenis Kertas options
   useEffect(() => {
@@ -202,6 +200,18 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
     fetchNamaKertas();
   }, [selectedJenisKertas, jenisKertasOptions]);
+
+  // Restore selectedBarangData when component mounts or namaKertas changes
+  useEffect(() => {
+    if (selectedNamaKertas && namaKertasData.length > 0) {
+      const selectedBarang = namaKertasData.find(
+        (item) => item.id === Number(selectedNamaKertas),
+      );
+      if (selectedBarang) {
+        setSelectedBarangData(selectedBarang);
+      }
+    }
+  }, [selectedNamaKertas, namaKertasData]);
 
   // Helper function to format numbers with thousand separators
   const formatNumber = (value: number): string => {
@@ -428,9 +438,24 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   };
 
   const handleJenisKertasChange = (value: number | string) => {
-    setSelectedJenisKertas(value);
+    // Update jenis kertas in main formData
+    const jenisKertasEvent = {
+      target: {
+        name: 'jenisKertas',
+        value: value,
+      },
+    } as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(jenisKertasEvent);
+
     // Reset nama kertas when jenis kertas changes
-    setSelectedNamaKertas('');
+    const namaKertasEvent = {
+      target: {
+        name: 'namaKertas',
+        value: '',
+      },
+    } as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(namaKertasEvent);
+
     setSelectedBarangData(null);
 
     // Clear auto-filled fields when jenis kertas changes
@@ -440,20 +465,17 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     onInputChange(createSyntheticEvent('rawPercentage', ''));
     onInputChange(createSyntheticEvent('percentage', ''));
     onInputChange(createSyntheticEvent('totalHargaKertas', ''));
-
-    // Create synthetic event for form handling
-    const syntheticEvent = {
-      target: {
-        name: 'jenisKertas',
-        value: value,
-      },
-    } as React.ChangeEvent<HTMLSelectElement>;
-
-    onInputChange(syntheticEvent);
   };
 
   const handleNamaKertasChange = (value: number | string) => {
-    setSelectedNamaKertas(value);
+    // Update nama kertas in main formData
+    const namaKertasEvent = {
+      target: {
+        name: 'namaKertas',
+        value: value,
+      },
+    } as React.ChangeEvent<HTMLSelectElement>;
+    onInputChange(namaKertasEvent);
 
     // Find the selected barang data and auto-fill fields
     const selectedBarang = namaKertasData.find(
@@ -462,15 +484,15 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     if (selectedBarang) {
       autoFillFields(selectedBarang);
     }
+  };
 
-    // Create synthetic event for form handling
+  const handleMesinPotongChange = (value: number | string) => {
     const syntheticEvent = {
       target: {
-        name: 'namaKertas',
+        name: 'mesinPotong',
         value: value,
       },
     } as React.ChangeEvent<HTMLSelectElement>;
-
     onInputChange(syntheticEvent);
   };
 
@@ -639,7 +661,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             </span>
           </label>
           <input
-            type="number"
+            type="text"
             name="totalKertas"
             value={formData.totalKertas || ''}
             onChange={handleInputChangeLocal}
@@ -676,15 +698,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           <SearchableSelect
             options={mesinPotongOptions}
             value={formData.mesinPotong || ''}
-            onChange={(value) => {
-              const syntheticEvent = {
-                target: {
-                  name: 'mesinPotong',
-                  value: value,
-                },
-              } as React.ChangeEvent<HTMLSelectElement>;
-              onInputChange(syntheticEvent);
-            }}
+            onChange={handleMesinPotongChange}
             placeholder={
               isLoadingMesinPotong ? 'Loading...' : 'Pilih Mesin Potong'
             }

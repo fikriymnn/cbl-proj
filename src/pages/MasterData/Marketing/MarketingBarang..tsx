@@ -688,6 +688,10 @@ function MarketingBarang(): JSX.Element {
                       <option value="Pond">Pond</option>
                       <option value="Pons Pisau">Pons Pisau</option>
                       <option value="Ongkos Pons">Ongkos Pons</option>
+                      <option value="Special Finishing">
+                        Special Finishing
+                      </option>
+                      <option value="LEM">LEM</option>
                     </select>
                   </div>
                   {/*Sub Kategori */}
@@ -711,6 +715,8 @@ function MarketingBarang(): JSX.Element {
                       <option value="Kertas">Kertas</option>
                       <option value="Mesin">Mesin</option>
                       <option value="Coating">Coating</option>
+                      <option value="Lipat">Lipat</option>
+                      <option value="Potong Jadi">Potong Jadi</option>
                     </select>
                   </div>
                   {/* Gramatur */}
