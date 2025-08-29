@@ -785,7 +785,7 @@ export default function DetailMasterKaryawanIsi() {
                   </div>
                 </div>
               </div>
-              {/* KETERLAMBATAN SECTION */}
+              {/* KETERLAMBATAN SECTION
               <div
                 className="bg-gray-200 px-6 py-2 flex justify-between items-center cursor-pointer"
                 onClick={toggleStatusFilter}
@@ -819,7 +819,7 @@ export default function DetailMasterKaryawanIsi() {
               {filteredAttendance.length > 0 ? (
                 <>
                   {/* Display only first 10 items or all if showAll is true */}
-                  {(showAll
+              {/* {(showAll
                     ? filteredAttendance
                     : filteredAttendance.slice(0, 10)
                   ).map((entry, index) => (
@@ -848,7 +848,7 @@ export default function DetailMasterKaryawanIsi() {
                   ))}
 
                   {/* Show "Lihat Semua" button if there are more than 10 items */}
-                  {filteredAttendance.length > 10 && (
+              {/* {filteredAttendance.length > 10 && (
                     <div className="px-6 py-2 text-center">
                       <button
                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
@@ -865,7 +865,7 @@ export default function DetailMasterKaryawanIsi() {
                     ? 'Memuat data...'
                     : `Tidak ada data ${statusFilter.toLowerCase()} yang ditemukan.`}
                 </div>
-              )}
+              )}   */}
             </>
           </DetailTabMasterKaryawan>
         </TabPanel>
