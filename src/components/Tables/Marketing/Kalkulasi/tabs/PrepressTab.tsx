@@ -213,6 +213,11 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
   };
 
+  // Helper function to round percentage (< 0.50 rounds down, >= 0.50 rounds up)
+  const roundPercentage = (value: number): number => {
+    return Math.round(value);
+  };
+
   // Calculate Percentage%Apki based on pajak conversion
   const calculatePercentageApki = (
     persentase: number,
@@ -220,7 +225,8 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   ): number => {
     // Convert pajak: 11 -> 1.11, 12 -> 1.12
     const pajakConverted = pajak === 11 ? 1.11 : pajak === 12 ? 1.12 : 1;
-    return persentase / pajakConverted;
+    const rawPercentage = persentase / pajakConverted;
+    return roundPercentage(rawPercentage); // Apply rounding here
   };
 
   // Helper function to create synthetic events for auto-fill
@@ -247,21 +253,21 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
       const { harga, persentase, pajak, kategori } = selectedBarangData;
 
-      // Calculate Percentage%Apki (persentase / pajak_converted)
+      // Calculate rounded Percentage%Apki (persentase / pajak_converted)
       const percentageApki = calculatePercentageApki(persentase, pajak);
 
       // Check if kategori contains "DUPLEX" (case insensitive)
       const isDuplex = kategori.toLowerCase().includes('duplex');
 
-      // Calculate total harga kertas based on formula
+      // Calculate total harga kertas based on formula using rounded percentage
       let totalHargaKertas = 0;
 
       if (isDuplex) {
-        // For DUPLEX: (((harga * ((persentase / pajak_converted) + 100)) / 100 / 500) * total_kertas)
+        // For DUPLEX: (((harga * ((rounded_percentage + 100)) / 100 / 500) * total_kertas)
         totalHargaKertas =
           ((harga * (percentageApki + 100)) / 100 / 500) * totalKertas;
       } else {
-        // For non-DUPLEX: (((harga * (persentase / pajak_converted)) / 100 / 500) * total_kertas)
+        // For non-DUPLEX: (((harga * rounded_percentage) / 100 / 500) * total_kertas)
         totalHargaKertas = ((harga * percentageApki) / 100 / 500) * totalKertas;
       }
 
@@ -281,7 +287,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
         onInputChange(syntheticEvent);
       }
 
-      // Also update the percentage%apki display
+      // Also update the percentage%apki display with rounded value
       const percentageDisplay = isDuplex
         ? percentageApki + 100
         : percentageApki;
@@ -291,7 +297,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       if (Math.abs(percentageDisplay - currentPercentage) > 0.01) {
         const percentageSyntheticEvent = createSyntheticEvent(
           'percentage',
-          percentageDisplay.toFixed(2),
+          percentageDisplay.toString(), // Use rounded value as integer
         );
         onInputChange(percentageSyntheticEvent);
       }
@@ -417,7 +423,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     const finalPercentage = isDuplex ? percentageApki + 100 : percentageApki;
 
     onInputChange(
-      createSyntheticEvent('percentage', finalPercentage.toFixed(2)),
+      createSyntheticEvent('percentage', finalPercentage.toString()), // Use rounded value as integer
     );
   };
 
@@ -606,8 +612,8 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             Percentage%Apki
             <span className="text-xs text-gray-500 block">
               {selectedBarangData?.kategori?.toLowerCase().includes('duplex')
-                ? `(${formData.rawPercentage} / ${selectedBarangData.pajak}% + 100)`
-                : `(${formData.rawPercentage} / ${selectedBarangData?.pajak}% )`}
+                ? `(${formData.rawPercentage} / ${selectedBarangData.pajak}% + 100) [Rounded]`
+                : `(${formData.rawPercentage} / ${selectedBarangData?.pajak}%) [Rounded]`}
             </span>
           </label>
           <input

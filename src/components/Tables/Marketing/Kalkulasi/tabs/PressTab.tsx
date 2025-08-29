@@ -20,21 +20,51 @@ interface MesinOption {
   kategori: string;
 }
 
+interface TahapanResponse {
+  id: number;
+  nama_tahapan: string;
+}
+
+interface MesinTahapanResponse {
+  id_mesin_tahapan: number;
+  mesin: {
+    nama_mesin: string;
+  };
+}
+
+interface Option {
+  value: number;
+  label: string;
+}
+
 const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
   const [mesinOptions, setMesinOptions] = useState<MesinOption[]>([]);
   const [selectedMesin, setSelectedMesin] = useState<MesinOption | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Define rate tables based on the image - updated with correct values
-  const sanbeRateTable = {
-    R700: { base: 225000, rates: [65, 60, 55, 50, 45, 40] },
-    RR: { base: 200000, rates: [65, 60, 55, 50, 45, 40] },
-    PM: { base: 130000, rates: [40, 35, 30, 25, 22.5, 22.5] },
-    SM: { base: 130000, rates: [40, 35, 30, 25, 22.5, 22.5] },
-    GTO1: { base: 75000, rates: [24, 22, 20, 18, 15, 15] },
-    GTO2: { base: 75000, rates: [24, 22, 20, 18, 15, 15] },
-    GTO4: { base: 75000, rates: [24, 22, 20, 18, 15, 15] },
-  };
+  // Coating states
+  const [coatingDepanOptions, setCoatingDepanOptions] = useState<MesinOption[]>(
+    [],
+  );
+  const [coatingBelakangOptions, setCoatingBelakangOptions] = useState<
+    MesinOption[]
+  >([]);
+  const [selectedCoatingDepan, setSelectedCoatingDepan] =
+    useState<MesinOption | null>(null);
+  const [selectedCoatingBelakang, setSelectedCoatingBelakang] =
+    useState<MesinOption | null>(null);
+  const [loadingCoating, setLoadingCoating] = useState(false);
+
+  // Mesin coating states
+  const [mesinCoatingDepanOptions, setMesinCoatingDepanOptions] = useState<
+    Option[]
+  >([]);
+  const [mesinCoatingBelakangOptions, setMesinCoatingBelakangOptions] =
+    useState<Option[]>([]);
+  const [isLoadingMesinCoatingDepan, setIsLoadingMesinCoatingDepan] =
+    useState(false);
+  const [isLoadingMesinCoatingBelakang, setIsLoadingMesinCoatingBelakang] =
+    useState(false);
 
   const normalRateTable = {
     R700: { base: 225000, rates: [65, 60, 55, 50, 45, 40] },
@@ -45,8 +75,6 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     GTO2: { base: 80000, rates: [26, 25, 20, 18, 15, 15] },
     GTO4: { base: 80000, rates: [26, 25, 20, 18, 15, 15] },
   };
-
-  const rateThresholds = [3000, 5000, 10000, 20000, 30000, 50000];
 
   // Fetch mesin options on component mount
   useEffect(() => {
@@ -73,6 +101,127 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     };
 
     fetchMesinOptions();
+  }, []);
+
+  // Fetch coating options
+  useEffect(() => {
+    const fetchCoatingOptions = async () => {
+      setLoadingCoating(true);
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_LINK}/master/barang`,
+          {
+            params: {
+              kategori: 'Coating',
+            },
+          },
+        );
+
+        if (response.data && response.data.data) {
+          const coatingData = response.data.data || [];
+          setCoatingDepanOptions(coatingData);
+          setCoatingBelakangOptions(coatingData);
+        }
+      } catch (error) {
+        console.error('Error fetching coating options:', error);
+      } finally {
+        setLoadingCoating(false);
+      }
+    };
+
+    fetchCoatingOptions();
+  }, []);
+
+  // Fetch mesin coating depan
+  useEffect(() => {
+    const fetchMesinCoatingDepan = async () => {
+      setIsLoadingMesinCoatingDepan(true);
+      try {
+        // First, get all tahapan
+        const tahapanResponse = await axios.get(
+          `${import.meta.env.VITE_API_LINK}/master/tahapan`,
+        );
+
+        // Find tahapan with nama_tahapan containing "coating" (case insensitive)
+        const coatingTahapan = tahapanResponse.data.data.find(
+          (tahapan: TahapanResponse) =>
+            tahapan.nama_tahapan.toLowerCase().includes('coating'),
+        );
+
+        if (coatingTahapan) {
+          // Get mesin for this tahapan
+          const mesinResponse = await axios.get(
+            `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`,
+            {
+              params: {
+                id_tahapan: coatingTahapan.id,
+              },
+            },
+          );
+
+          const options: Option[] = mesinResponse.data.data.map(
+            (item: MesinTahapanResponse) => ({
+              value: item.id_mesin_tahapan,
+              label: item.mesin.nama_mesin,
+            }),
+          );
+
+          setMesinCoatingDepanOptions(options);
+        }
+      } catch (error) {
+        console.error('Error fetching mesin coating depan:', error);
+      } finally {
+        setIsLoadingMesinCoatingDepan(false);
+      }
+    };
+
+    fetchMesinCoatingDepan();
+  }, []);
+
+  // Fetch mesin coating belakang (same as depan for now)
+  useEffect(() => {
+    const fetchMesinCoatingBelakang = async () => {
+      setIsLoadingMesinCoatingBelakang(true);
+      try {
+        // First, get all tahapan
+        const tahapanResponse = await axios.get(
+          `${import.meta.env.VITE_API_LINK}/master/tahapan`,
+        );
+
+        // Find tahapan with nama_tahapan containing "coating" (case insensitive)
+        const coatingTahapan = tahapanResponse.data.data.find(
+          (tahapan: TahapanResponse) =>
+            tahapan.nama_tahapan.toLowerCase().includes('coating'),
+        );
+
+        if (coatingTahapan) {
+          // Get mesin for this tahapan
+          const mesinResponse = await axios.get(
+            `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`,
+            {
+              params: {
+                id_tahapan: coatingTahapan.id,
+              },
+            },
+          );
+
+          const options: Option[] = mesinResponse.data.data.map(
+            (item: MesinTahapanResponse) => ({
+              value: item.id_mesin_tahapan,
+              label: item.mesin.nama_mesin,
+            }),
+          );
+
+          setMesinCoatingBelakangOptions(options);
+        }
+      } catch (error) {
+        console.error('Error fetching mesin coating belakang:', error);
+      } finally {
+        setIsLoadingMesinCoatingBelakang(false);
+      }
+    };
+
+    fetchMesinCoatingBelakang();
   }, []);
 
   // Function to parse number with thousand separators
@@ -106,13 +255,13 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
   // Function to get rate index based on rate value - CORRECTED
   const getRateIndex = (rate: number): number => {
-    if (rate < 3000) return -1; // Use base rate
-    if (rate >= 3000 && rate < 5000) return 0;
-    if (rate >= 5000 && rate < 10000) return 1;
-    if (rate >= 10000 && rate < 20000) return 2;
-    if (rate >= 20000 && rate < 30000) return 3;
-    if (rate >= 30000 && rate < 50000) return 4;
-    if (rate >= 50000) return 5;
+    if (rate <= 3000) return -1; // Use base rate
+    if (rate > 3000 && rate <= 5000) return 0;
+    if (rate > 5000 && rate <= 10000) return 1;
+    if (rate > 10000 && rate <= 20000) return 2;
+    if (rate > 20000 && rate <= 30000) return 3;
+    if (rate > 30000 && rate <= 50000) return 4;
+    if (rate > 50000) return 5;
     return 0; // fallback
   };
 
@@ -147,10 +296,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     // Calculate rate: totalKertas × (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)
     const rate = totalKertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
-    // Determine which rate table to use
-    const customerName = getSafeStringValue(formData.nama_customer);
-    const isSanbe = isSanbeCustomer(customerName);
-    const rateTable = isSanbe ? sanbeRateTable : normalRateTable;
+    const rateTable = normalRateTable;
 
     // Get machine type
     const machineType = getMachineType(selectedMesin.nama_barang);
@@ -173,6 +319,61 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     }
   };
 
+  // Calculate coating depan cost
+  const calculateHargaCoatingDepan = (): number => {
+    if (!selectedCoatingDepan || !formData.totalKertas) {
+      return 0;
+    }
+
+    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
+    const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
+    const ukuranCetakPanjang1 = Number(formData.ukuran_cetak_panjang_1) || 0;
+    const ukuranCetakPanjang2 = Number(formData.ukuran_cetak_panjang_2) || 0;
+    const ukuranCetakLebar1 = Number(formData.ukuran_cetak_lebar_1) || 0;
+    const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
+
+    // Formula: totalKertas × (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2) × ((ukuran_cetak_panjang_1 + ukuran_cetak_panjang_2) × (ukuran_cetak_lebar_1 + ukuran_cetak_lebar_2)) × selected_barang.harga
+    const result =
+      totalKertas *
+      (ukuranCetakBagian1 + ukuranCetakBagian2) *
+      ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
+        (ukuranCetakLebar1 + ukuranCetakLebar2)) *
+      selectedCoatingDepan.harga;
+
+    return result;
+  };
+
+  // Calculate coating belakang cost
+  const calculateHargaCoatingBelakang = (): number => {
+    if (!selectedCoatingBelakang || !formData.totalKertas) {
+      return 0;
+    }
+
+    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
+    const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
+    const ukuranCetakPanjang1 = Number(formData.ukuran_cetak_panjang_1) || 0;
+    const ukuranCetakPanjang2 = Number(formData.ukuran_cetak_panjang_2) || 0;
+    const ukuranCetakLebar1 = Number(formData.ukuran_cetak_lebar_1) || 0;
+    const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
+
+    // Same formula as coating depan
+    const result =
+      totalKertas *
+      (ukuranCetakBagian1 + ukuranCetakBagian2) *
+      ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
+        (ukuranCetakLebar1 + ukuranCetakLebar2)) *
+      selectedCoatingBelakang.harga;
+
+    return result;
+  };
+
+  // Calculate total coating cost
+  const calculateJumlahHargaCoating = (): number => {
+    return calculateHargaCoatingDepan() + calculateHargaCoatingBelakang();
+  };
+
   // Calculate plate count using real jumlah_warna (no rounding)
   const getPlateCount = () => {
     const jumlahWarna = Number(formData.jumlah_warna) || 0;
@@ -190,6 +391,20 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
   const handleMesinChange = (value: any) => {
     const selected = mesinOptions.find((mesin) => mesin.id === value) || null;
     setSelectedMesin(selected);
+  };
+
+  // Handle coating depan selection change
+  const handleCoatingDepanChange = (value: any) => {
+    const selected =
+      coatingDepanOptions.find((coating) => coating.id === value) || null;
+    setSelectedCoatingDepan(selected);
+  };
+
+  // Handle coating belakang selection change
+  const handleCoatingBelakangChange = (value: any) => {
+    const selected =
+      coatingBelakangOptions.find((coating) => coating.id === value) || null;
+    setSelectedCoatingBelakang(selected);
   };
 
   // Debug effect - UPDATED
@@ -313,6 +528,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
           </div>
         </div>
       </div>
+
       {/* Selected Machine Details - Only show if machine is selected */}
       {selectedMesin && (
         <div className="border-b pb-4">
@@ -356,6 +572,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
           </div>
         </div>
       )}
+
       {/* Printing Cost Calculation Section */}
       <div>
         <h3 className="text-lg font-semibold text-green-600 mb-6 flex items-center">
@@ -459,13 +676,8 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                       return `Base Rate`;
                     } else {
                       const rateIndex = getRateIndex(rate);
-                      const customerName = getSafeStringValue(
-                        formData.nama_customer,
-                      );
-                      const isSanbe = isSanbeCustomer(customerName);
-                      const rateTable = isSanbe
-                        ? sanbeRateTable
-                        : normalRateTable;
+
+                      const rateTable = normalRateTable;
                       const machineType = getMachineType(
                         selectedMesin.nama_barang,
                       );
@@ -494,13 +706,13 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                     const rate =
                       totalKertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
-                    if (rate < 3000) return '< 3,000 (Base Rate)';
-                    if (rate >= 3000 && rate < 5000) return '3,000 - 4,999';
-                    if (rate >= 5000 && rate < 10000) return '5,000 - 9,999';
-                    if (rate >= 10000 && rate < 20000) return '10,000 - 19,999';
-                    if (rate >= 20000 && rate < 30000) return '20,000 - 29,999';
-                    if (rate >= 30000 && rate < 50000) return '30,000 - 49,999';
-                    return '≥ 50,000';
+                    if (rate <= 3000) return '< 3,000 (Base Rate)';
+                    if (rate > 3000 && rate <= 5000) return '3,001 - 5,000';
+                    if (rate > 5000 && rate <= 10000) return '5,001 - 10,000';
+                    if (rate > 10000 && rate <= 20000) return '10,001 - 20,000';
+                    if (rate > 20000 && rate <= 30000) return '20,001 - 30,000';
+                    if (rate > 30000 && rate <= 50000) return '30,001 - 50,000';
+                    return '> 50,000';
                   })()}
                 </div>
               </div>
@@ -518,13 +730,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                     const rate =
                       totalKertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
-                    const customerName = getSafeStringValue(
-                      formData.nama_customer,
-                    );
-                    const isSanbe = isSanbeCustomer(customerName);
-                    const rateTable = isSanbe
-                      ? sanbeRateTable
-                      : normalRateTable;
+                    const rateTable = normalRateTable;
                     const machineType = getMachineType(
                       selectedMesin.nama_barang,
                     );
@@ -550,6 +756,275 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Coating Section */}
+      <div>
+        <h3 className="text-lg font-semibold text-purple-600 mb-6 flex items-center">
+          🎨 Coating Information
+        </h3>
+
+        <div className="grid grid-cols-5 gap-4 mb-4">
+          {/* Coating Depan */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Coating Depan
+            </label>
+            {loadingCoating ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
+                Loading...
+              </div>
+            ) : (
+              <SearchableSelect
+                options={[
+                  { value: 0, label: 'Pilih Coating Depan' },
+                  ...coatingDepanOptions.map((coating) => ({
+                    value: coating.id,
+                    label: `${coating.kode_barang} - ${coating.nama_barang}`,
+                  })),
+                ]}
+                value={selectedCoatingDepan?.id || 0}
+                onChange={handleCoatingDepanChange}
+                placeholder="Pilih Coating Depan"
+              />
+            )}
+          </div>
+
+          {/* Harga Coating Depan */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Harga Coating Depan
+            </label>
+            <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50">
+              <span className="font-medium">
+                {new Intl.NumberFormat('id-ID', {
+                  style: 'currency',
+                  currency: 'IDR',
+                  minimumFractionDigits: 0,
+                }).format(calculateHargaCoatingDepan())}
+              </span>
+            </div>
+          </div>
+
+          {/* Coating Belakang */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Coating Belakang
+            </label>
+            {loadingCoating ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
+                Loading...
+              </div>
+            ) : (
+              <SearchableSelect
+                options={[
+                  { value: 0, label: 'Pilih Coating Belakang' },
+                  ...coatingBelakangOptions.map((coating) => ({
+                    value: coating.id,
+                    label: `${coating.kode_barang} - ${coating.nama_barang}`,
+                  })),
+                ]}
+                value={selectedCoatingBelakang?.id || 0}
+                onChange={handleCoatingBelakangChange}
+                placeholder="Pilih Coating Belakang"
+              />
+            )}
+          </div>
+
+          {/* Harga Coating Belakang */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Harga Coating Belakang
+            </label>
+            <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50">
+              <span className="font-medium">
+                {new Intl.NumberFormat('id-ID', {
+                  style: 'currency',
+                  currency: 'IDR',
+                  minimumFractionDigits: 0,
+                }).format(calculateHargaCoatingBelakang())}
+              </span>
+            </div>
+          </div>
+
+          {/* Jumlah Harga Coating */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Jumlah Harga Coating
+            </label>
+            <div className="w-full px-3 py-2 border border-gray-300 rounded bg-purple-50">
+              <span className="font-semibold text-purple-700">
+                {new Intl.NumberFormat('id-ID', {
+                  style: 'currency',
+                  currency: 'IDR',
+                  minimumFractionDigits: 0,
+                }).format(calculateJumlahHargaCoating())}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Mesin Coating Section */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Mesin Coating Depan */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mesin Coating Depan
+            </label>
+            {isLoadingMesinCoatingDepan ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
+                Loading...
+              </div>
+            ) : (
+              <SearchableSelect
+                options={[
+                  { value: 0, label: 'Pilih Coating Depan' },
+                  ...mesinCoatingDepanOptions,
+                ]}
+                value={0}
+                onChange={() => {}}
+                placeholder="Pilih Coating Depan"
+              />
+            )}
+          </div>
+
+          {/* Mesin Coating Belakang */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mesin Coating Belakang
+            </label>
+            {isLoadingMesinCoatingBelakang ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
+                Loading...
+              </div>
+            ) : (
+              <SearchableSelect
+                options={[
+                  { value: 0, label: 'Pilih Coating Belakang' },
+                  ...mesinCoatingBelakangOptions,
+                ]}
+                value={0}
+                onChange={() => {}}
+                placeholder="Pilih Coating Belakang"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Coating Calculation Details */}
+        {(selectedCoatingDepan || selectedCoatingBelakang) &&
+          formData.totalKertas && (
+            <div className="mt-4 border-t pt-4">
+              <h4 className="text-sm font-medium text-gray-600 mb-2">
+                Coating Calculation Details
+              </h4>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                {selectedCoatingDepan && (
+                  <div className="border rounded p-3 bg-gray-50">
+                    <h5 className="font-medium text-purple-600 mb-2">
+                      Coating Depan
+                    </h5>
+                    <div className="space-y-1">
+                      <div>
+                        <span className="text-gray-500">Material:</span>
+                        <span className="font-medium ml-2">
+                          {selectedCoatingDepan.nama_barang}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Unit Price:</span>
+                        <span className="font-medium ml-2">
+                          {new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0,
+                          }).format(selectedCoatingDepan.harga)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Formula:</span>
+                        <div className="font-medium text-xs mt-1">
+                          {parseNumberWithSeparator(
+                            formData.totalKertas,
+                          ).toLocaleString('id-ID')}{' '}
+                          × ({formData.ukuran_cetak_bagian_1 || 0} +{' '}
+                          {formData.ukuran_cetak_bagian_2 || 0}) × ((
+                          {formData.ukuran_cetak_panjang_1 || 0} +{' '}
+                          {formData.ukuran_cetak_panjang_2 || 0}) × (
+                          {formData.ukuran_cetak_lebar_1 || 0} +{' '}
+                          {formData.ukuran_cetak_lebar_2 || 0})) ×{' '}
+                          {selectedCoatingDepan.harga.toLocaleString('id-ID')}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Result:</span>
+                        <span className="font-semibold ml-2 text-purple-600">
+                          {new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0,
+                          }).format(calculateHargaCoatingDepan())}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedCoatingBelakang && (
+                  <div className="border rounded p-3 bg-gray-50">
+                    <h5 className="font-medium text-purple-600 mb-2">
+                      Coating Belakang
+                    </h5>
+                    <div className="space-y-1">
+                      <div>
+                        <span className="text-gray-500">Material:</span>
+                        <span className="font-medium ml-2">
+                          {selectedCoatingBelakang.nama_barang}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Unit Price:</span>
+                        <span className="font-medium ml-2">
+                          {new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0,
+                          }).format(selectedCoatingBelakang.harga)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Formula:</span>
+                        <div className="font-medium text-xs mt-1">
+                          {parseNumberWithSeparator(
+                            formData.totalKertas,
+                          ).toLocaleString('id-ID')}{' '}
+                          × ({formData.ukuran_cetak_bagian_1 || 0} +{' '}
+                          {formData.ukuran_cetak_bagian_2 || 0}) × ((
+                          {formData.ukuran_cetak_panjang_1 || 0} +{' '}
+                          {formData.ukuran_cetak_panjang_2 || 0}) × (
+                          {formData.ukuran_cetak_lebar_1 || 0} +{' '}
+                          {formData.ukuran_cetak_lebar_2 || 0})) ×{' '}
+                          {selectedCoatingBelakang.harga.toLocaleString(
+                            'id-ID',
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Result:</span>
+                        <span className="font-semibold ml-2 text-purple-600">
+                          {new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0,
+                          }).format(calculateHargaCoatingBelakang())}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );
