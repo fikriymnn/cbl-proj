@@ -60,7 +60,6 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
     mesin_pons: '',
     harga_pisau: '',
     ongkos_pons: 'No',
-    // Remove this line: selected_ongkos_pons: '',
     ongkos_pons_qty: '1',
     harga_satuan_ongkos_pons: '0.00',
     total_harga_ongkos_pons: '0.00',
@@ -69,7 +68,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
     potong_jadi_qty: '0',
     harga_potong_jadi: '0.00',
   });
-  // Fetch Pons options (POND category)
+
+  // Fetch functions remain the same...
   const fetchPonsOptions = async () => {
     setLoadingPons(true);
     try {
@@ -93,7 +93,6 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
     }
   };
 
-  // Fetch Ongkos Pons options
   const fetchOngkosPonsOptions = async () => {
     setLoadingOngkosPons(true);
     try {
@@ -117,23 +116,19 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
     }
   };
 
-  // Fetch Mesin Pons options
   const fetchMesinPons = async () => {
     setLoadingMesinPons(true);
     try {
-      // First, get all tahapan
       const tahapanResponse = await axios.get(
         `${import.meta.env.VITE_API_LINK}/master/tahapan`,
       );
 
-      // Find tahapan with nama_tahapan containing "pond" (case insensitive)
       const pondTahapan = tahapanResponse.data.data.find(
         (tahapan: TahapanResponse) =>
           tahapan.nama_tahapan.toLowerCase().includes('pond'),
       );
 
       if (pondTahapan) {
-        // Get mesin for this tahapan
         const mesinResponse = await axios.get(
           `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`,
           {
@@ -168,7 +163,6 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   // Calculate everything when dependencies change
   useEffect(() => {
     if (postPressData.ongkos_pons === 'Yes' && ongkosPonsOptions.length > 0) {
-      // Convert totalKertas string to number properly (remove dots and convert)
       const totalKertasString = formData.totalKertas?.toString() || '0';
       const totalKertas = parseFloat(totalKertasString.replace(/\./g, ''));
 
@@ -179,10 +173,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
         formData.ukuran_cetak_bagian_2 || '0',
       );
 
-      // Use the first ongkos pons option (index 0)
       const ongkosPonsHarga = ongkosPonsOptions[0]?.harga || 0;
 
-      // Formula: totalKertas * (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2) * ongkos_pons.harga
       const hargaSatuan =
         totalKertas *
         (ukuranCetakBagian1 + ukuranCetakBagian2) *
@@ -203,7 +195,6 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
         }),
       }));
     } else {
-      // Reset values when "No" is selected
       setPostPressData((prev) => ({
         ...prev,
         harga_satuan_ongkos_pons: '0.00',
@@ -231,265 +222,362 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       [name]: value,
     }));
 
-    // Also trigger the parent's onInputChange for form data sync
     onInputChange(e);
   };
 
+  // Get current formula values for display
+  const getFormulaDisplay = () => {
+    const totalKertasString = formData.totalKertas?.toString() || '0';
+    const totalKertas = parseFloat(totalKertasString.replace(/\./g, ''));
+
+    const ukuranCetakBagian1 = parseFloat(
+      formData.ukuran_cetak_bagian_1 || '0',
+    );
+    const ukuranCetakBagian2 = parseFloat(
+      formData.ukuran_cetak_bagian_2 || '0',
+    );
+    const ongkosPonsHarga = ongkosPonsOptions[0]?.harga || 0;
+    const qty = parseFloat(postPressData.ongkos_pons_qty || '1');
+
+    return {
+      totalKertas,
+      ukuranCetakBagian1,
+      ukuranCetakBagian2,
+      ongkosPonsHarga,
+      qty,
+    };
+  };
+
+  const formulaValues = getFormulaDisplay();
+
   return (
-    <div className="space-y-6">
-      {/* Pons Insheet Section */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Pons Insheet</h3>
+    <div className="space-y-8">
+      {/* Pons Information Section */}
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-5 h-5 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Pons Information
+          </h2>
         </div>
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Pons Insheet */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Pons Insheet
-              </label>
-              <input
-                type="text"
-                name="pons_insheet"
-                value={postPressData.pons_insheet}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Masukkan pons insheet"
-              />
-            </div>
 
-            {/* Jenis Pons */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Jenis Pons
-              </label>
-              <select
-                name="jenis_pons"
-                value={postPressData.jenis_pons}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={loadingPons}
-              >
-                <option value="">
-                  {loadingPons ? 'Loading...' : 'Pilih Jenis Pons'}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Pons Insheet
+            </label>
+            <input
+              type="text"
+              name="pons_insheet"
+              value={postPressData.pons_insheet}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="Enter insheet"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Jenis Pons
+            </label>
+            <select
+              name="jenis_pons"
+              value={postPressData.jenis_pons}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              disabled={loadingPons}
+            >
+              <option value="">
+                {loadingPons ? 'Loading...' : 'Select Pons Type'}
+              </option>
+              {ponsOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.nama_barang}
                 </option>
-                {ponsOptions.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.nama_barang}
-                  </option>
-                ))}
-              </select>
-            </div>
+              ))}
+            </select>
+          </div>
 
-            {/* Mesin Pons */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mesin Pons
-              </label>
-              <select
-                name="mesin_pons"
-                value={postPressData.mesin_pons}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={loadingMesinPons}
-              >
-                <option value="">
-                  {loadingMesinPons ? 'Loading...' : 'Pilih Mesin Pons'}
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Mesin Pons
+            </label>
+            <select
+              name="mesin_pons"
+              value={postPressData.mesin_pons}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              disabled={loadingMesinPons}
+            >
+              <option value="">
+                {loadingMesinPons ? 'Loading...' : 'Select Machine'}
+              </option>
+              {mesinPonsOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
-                {mesinPonsOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+              ))}
+            </select>
+          </div>
 
-            {/* Harga Pisau */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Harga Pisau
-              </label>
-              <input
-                type="number"
-                name="harga_pisau"
-                value={postPressData.harga_pisau}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0"
-                step="0.01"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Harga Pisau
+            </label>
+            <input
+              type="number"
+              name="harga_pisau"
+              value={postPressData.harga_pisau}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="0"
+              step="0.01"
+            />
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Ongkos Pons</h3>
+      {/* Pons Cost Calculation Section */}
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-5 h-5 text-yellow-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Pons Cost Calculation
+          </h2>
         </div>
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Ongkos Pons */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ongkos Pons
-              </label>
-              <select
-                name="ongkos_pons"
-                value={postPressData.ongkos_pons}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </select>
-            </div>
 
-            {/* Remove this entire div - Jenis Ongkos Pons field */}
-
-            {/* Qty Ongkos Pons */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Qty Ongkos Pons
-              </label>
-              <input
-                type="number"
-                name="ongkos_pons_qty"
-                value={postPressData.ongkos_pons_qty}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="1"
-                step="1"
-                min="1"
-                disabled={postPressData.ongkos_pons === 'No'}
-              />
-            </div>
-
-            {/* Harga Satuan Ongkos Pons (calculated) */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Harga Satuan Ongkos Pons
-              </label>
-              <input
-                type="text"
-                value={postPressData.harga_satuan_ongkos_pons}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50"
-                readOnly
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Ongkos Pons
+            </label>
+            <select
+              name="ongkos_pons"
+              value={postPressData.ongkos_pons}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+              <option value="No">No</option>
+              <option value="Yes">Yes</option>
+            </select>
           </div>
 
-          {/* Total Harga Ongkos Pons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Harga Ongkos Pons
-              </label>
-              <input
-                type="text"
-                value={postPressData.total_harga_ongkos_pons}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50"
-                readOnly
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Qty Ongkos Pons
+            </label>
+            <input
+              type="number"
+              name="ongkos_pons_qty"
+              value={postPressData.ongkos_pons_qty}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="1"
+              step="1"
+              min="1"
+              disabled={postPressData.ongkos_pons === 'No'}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Harga Satuan
+            </label>
+            <input
+              type="text"
+              value={postPressData.harga_satuan_ongkos_pons}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50"
+              readOnly
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Total Harga
+            </label>
+            <input
+              type="text"
+              value={postPressData.total_harga_ongkos_pons}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50"
+              readOnly
+            />
           </div>
         </div>
+
+        {/* Formula Display */}
+        {postPressData.ongkos_pons === 'Yes' && (
+          <div className="p-6 bg-blue-50 rounded-xl border border-blue-200">
+            <h4 className="text-sm font-semibold text-blue-900 mb-4">
+              Formula Calculation:
+            </h4>
+            <div className="space-y-3 text-sm">
+              <div className="font-mono bg-white p-3 rounded-lg border border-blue-100">
+                <strong className="text-blue-800">Unit Price =</strong> Total
+                Paper × (Print Size Part 1 + Print Size Part 2) × Pons Cost
+              </div>
+              <div className="font-mono bg-white p-3 rounded-lg border border-blue-100">
+                <strong className="text-blue-800">Unit Price =</strong>{' '}
+                {formulaValues.totalKertas.toLocaleString('id-ID')} × (
+                {formulaValues.ukuranCetakBagian1} +{' '}
+                {formulaValues.ukuranCetakBagian2}) ×{' '}
+                {formulaValues.ongkosPonsHarga.toLocaleString('id-ID')}
+              </div>
+              <div className="font-mono bg-white p-3 rounded-lg border border-blue-100">
+                <strong className="text-blue-800">Total =</strong> Unit Price ×
+                Qty = {postPressData.harga_satuan_ongkos_pons} ×{' '}
+                {formulaValues.qty}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Lipat Section */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Lipat</h3>
+      {/* Lipat Information Section */}
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-5 h-5 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Lipat Information
+          </h2>
         </div>
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Mesin Lipat */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mesin Lipat
-              </label>
-              <select
-                name="mesin_lipat"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Pilih Mesin Lipat</option>
-              </select>
-            </div>
 
-            {/* Qty Lipat */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Qty Lipat
-              </label>
-              <input
-                type="number"
-                name="qty_lipat"
-                value={postPressData.qty_lipat}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0"
-                step="1"
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Mesin Lipat
+            </label>
+            <select
+              name="mesin_lipat"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            >
+              <option value="">Select Folding Machine</option>
+            </select>
+          </div>
 
-            {/* Harga Lipat */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Harga Lipat
-              </label>
-              <input
-                type="number"
-                name="harga_lipat"
-                value={postPressData.harga_lipat}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0"
-                step="0.01"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Qty Lipat
+            </label>
+            <input
+              type="number"
+              name="qty_lipat"
+              value={postPressData.qty_lipat}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="0"
+              step="1"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Harga Lipat
+            </label>
+            <input
+              type="number"
+              name="harga_lipat"
+              value={postPressData.harga_lipat}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="0"
+              step="0.01"
+            />
           </div>
         </div>
       </div>
 
       {/* Potong Jadi Section */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Potong Jadi</h3>
+      <div className="space-y-6">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-5 h-5 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6.4-6.4l.707-.707a1 1 0 011.414 0l.707.707M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900">Potong Jadi</h2>
         </div>
-        <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Qty Potong Jadi */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Qty Potong Jadi
-              </label>
-              <input
-                type="number"
-                name="potong_jadi_qty"
-                value={postPressData.potong_jadi_qty}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0"
-                step="1"
-              />
-            </div>
 
-            {/* Harga Potong Jadi */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Harga Potong Jadi
-              </label>
-              <input
-                type="number"
-                name="harga_potong_jadi"
-                value={postPressData.harga_potong_jadi}
-                onChange={handlePostPressInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0.00"
-                step="0.01"
-              />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Qty Potong Jadi
+            </label>
+            <input
+              type="number"
+              name="potong_jadi_qty"
+              value={postPressData.potong_jadi_qty}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="0"
+              step="1"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">
+              Harga Potong Jadi
+            </label>
+            <input
+              type="number"
+              name="harga_potong_jadi"
+              value={postPressData.harga_potong_jadi}
+              onChange={handlePostPressInputChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              placeholder="0.00"
+              step="0.01"
+            />
           </div>
         </div>
       </div>
