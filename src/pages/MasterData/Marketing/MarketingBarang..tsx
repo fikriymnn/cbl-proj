@@ -685,6 +685,9 @@ function MarketingBarang(): JSX.Element {
                       <option value="Duplex Khusus">Duplex Khusus</option>
                       <option value="Plate">Plate</option>
                       <option value="Coating">Coating</option>
+                      <option value="Pond">Pond</option>
+                      <option value="Pons Pisau">Pons Pisau</option>
+                      <option value="Ongkos Pons">Ongkos Pons</option>
                     </select>
                   </div>
                   {/*Sub Kategori */}
