@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import convertTimeStampToDate from '../../../../../../utils/converDateTime';
 import dateOnly from '../../../../../../utils/convertDateOnly';
 import Loading from '../../../../../Loading';
 import ModalXL from '../../../../PPIC/JadwalProduksi/ModalXL';
@@ -245,14 +244,6 @@ function DiprosesPromosi() {
     setShowModal(onchangeVal);
   };
 
-  // Status and Type options
-  const statusOptions = [
-    { value: '', label: 'Semua Status' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'rejected', label: 'Rejected' },
-    { value: 'pending', label: 'Pending' },
-  ];
-
   const typeOptions = [
     { value: '', label: 'Semua Tipe' },
     { value: 'promosi', label: 'Promosi' },
@@ -313,24 +304,6 @@ function DiprosesPromosi() {
                       onChange={(e) => setEndDate(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                     />
-                  </div>
-
-                  {/* Status Filter */}
-                  <div className="flex flex-col">
-                    <label className="text-sm font-semibold text-gray-700 mb-2">
-                      Status
-                    </label>
-                    <select
-                      value={selectedStatus}
-                      onChange={(e) => setSelectedStatus(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    >
-                      {statusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
                   </div>
 
                   {/* Type Filter */}
