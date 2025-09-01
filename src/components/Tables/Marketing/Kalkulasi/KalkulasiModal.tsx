@@ -4,6 +4,12 @@ import BasicInfoForm from './BasicInfoForm';
 import TabNavigation from './TabNavigation';
 import TabContent from './TabContent';
 import ProfitSidebar from './ProfitSidedbar';
+import {
+  calculateHargaProduksi,
+  calculateFinancialData,
+  PRODUCTION_COST_FIELDS,
+  FINANCIAL_FIELDS,
+} from './utils/Calulations';
 
 export interface KalkulasiFormData {
   tgl_kalkulasi: string;
@@ -49,7 +55,7 @@ export interface KalkulasiFormData {
   lebarMm?: number;
   percentage?: number;
   apki?: number;
-  totalKertas?: number | string;
+  totalKertas?: number;
   totalHargaKertas?: number;
   rawPercentage?: number | string;
   jumlah_harga_cetak?: number;
@@ -63,6 +69,11 @@ export interface KalkulasiFormData {
   id_mesin_coating_depan?: any;
   id_mesin_coating_belakang?: any;
   id_mesin_potong?: string;
+
+  // Add coating price fields
+  jumlah_harga_coating_depan?: number;
+  jumlah_harga_coating_belakang?: number;
+  total_harga_coating?: number;
 
   // PostPress fields
   id_jenis_pons?: string;
@@ -209,12 +220,42 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
-  ): void => {
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: value,
+      };
+
+      // Check if the changed field affects production cost
+      if (PRODUCTION_COST_FIELDS.includes(name)) {
+        const newHargaProduksi = calculateHargaProduksi(updated);
+        updated.harga_produksi = newHargaProduksi.toString();
+      }
+
+      // Check if any financial field changed, then recalculate all financial data
+      if (
+        PRODUCTION_COST_FIELDS.includes(name) ||
+        FINANCIAL_FIELDS.includes(name)
+      ) {
+        const financialData = calculateFinancialData(updated);
+
+        // Update all calculated fields
+        updated.harga_produksi = financialData.harga_produksi.toString();
+        updated.jumlah_harga_jual = financialData.jumlah_harga_jual.toString();
+        updated.harga_ppn = financialData.harga_ppn.toString();
+        updated.harga_diskon = financialData.harga_diskon.toString();
+        updated.total_harga = financialData.total_harga.toString();
+        updated.harga_satuan = financialData.harga_satuan.toString();
+        updated.total_harga_satuan_customer =
+          financialData.total_harga_satuan_customer.toString();
+      }
+
+      return updated;
+    });
+
     setHasUnsavedChanges(true);
   };
 
@@ -289,7 +330,79 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
       }
     }
   };
+  useEffect(() => {
+    const newHargaProduksi = calculateHargaProduksi(formData);
+    const currentHargaProduksi = formData.harga_produksi
+      ? parseFloat(formData.harga_produksi.toString().replace(/[Rp.\s,]/g, ''))
+      : 0;
 
+    if (currentHargaProduksi !== newHargaProduksi) {
+      setFormData((prev) => ({
+        ...prev,
+        harga_produksi: newHargaProduksi.toString(),
+      }));
+    }
+    console.log(
+      formData.totalHargaKertas,
+      formData.jumlah_harga_cetak,
+      formData.jumlah_harga_coating_depan,
+      formData.jumlah_harga_coating_belakang,
+      formData.total_harga_coating,
+      formData.total_harga_ongkos_pons,
+      formData.harga_pisau,
+      formData.harga_lipat,
+      formData.harga_potong_jadi,
+      formData.jumlah_harga_lem,
+      formData.harga_foil_manual,
+      formData.harga_spot_foil_manual,
+      formData.harga_polimer_manual,
+    );
+  }, [
+    formData.totalHargaKertas,
+    formData.jumlah_harga_cetak,
+    formData.jumlah_harga_coating_depan,
+    formData.jumlah_harga_coating_belakang,
+    formData.total_harga_coating,
+    formData.total_harga_ongkos_pons,
+    formData.harga_pisau,
+    formData.harga_lipat,
+    formData.harga_potong_jadi,
+    formData.jumlah_harga_lem,
+    formData.harga_foil_manual,
+    formData.harga_spot_foil_manual,
+    formData.harga_polimer_manual,
+  ]);
+  useEffect(() => {
+    const financialData = calculateFinancialData(formData);
+
+    // Only update if values have actually changed to avoid infinite loops
+    const needsUpdate =
+      parseFloat(formData.jumlah_harga_jual || '0') !==
+        financialData.jumlah_harga_jual ||
+      parseFloat(formData.harga_ppn || '0') !== financialData.harga_ppn ||
+      parseFloat(formData.harga_diskon || '0') !== financialData.harga_diskon ||
+      parseFloat(formData.total_harga || '0') !== financialData.total_harga ||
+      parseFloat(formData.harga_satuan || '0') !== financialData.harga_satuan;
+
+    if (needsUpdate) {
+      setFormData((prev) => ({
+        ...prev,
+        jumlah_harga_jual: financialData.jumlah_harga_jual.toString(),
+        harga_ppn: financialData.harga_ppn.toString(),
+        harga_diskon: financialData.harga_diskon.toString(),
+        total_harga: financialData.total_harga.toString(),
+        harga_satuan: financialData.harga_satuan.toString(),
+        total_harga_satuan_customer:
+          financialData.total_harga_satuan_customer.toString(),
+      }));
+    }
+  }, [
+    formData.harga_produksi,
+    formData.profit_harga,
+    formData.ppn,
+    formData.diskon,
+    formData.qty_kalkulasi,
+  ]);
   return (
     <div className="fixed inset-0 bg-white z-50 flex">
       <div className="flex-1 flex flex-col">
@@ -383,8 +496,10 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
             formData={formData}
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
-            onCancel={handleCancelClick}
             isSubmitting={isSubmitting}
+            onCancel={function (): void {
+              throw new Error('Function not implemented.');
+            }}
           />
         </div>
       </div>

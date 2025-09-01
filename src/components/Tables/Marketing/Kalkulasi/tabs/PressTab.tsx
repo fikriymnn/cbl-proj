@@ -579,7 +579,72 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     formData.ukuran_cetak_bagian_2,
     formData.jumlah_warna,
   ]);
+  // Update jumlah_harga_coating_depan in formData whenever it changes
+  useEffect(() => {
+    const hargaCoatingDepan = calculateHargaCoatingDepan();
+    const event = {
+      target: {
+        name: 'jumlah_harga_coating_depan',
+        value: hargaCoatingDepan.toString(),
+        type: 'number',
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(event);
+  }, [
+    selectedCoatingDepan,
+    formData.totalKertas,
+    formData.ukuran_cetak_bagian_1,
+    formData.ukuran_cetak_bagian_2,
+    formData.ukuran_cetak_panjang_1,
+    formData.ukuran_cetak_panjang_2,
+    formData.ukuran_cetak_lebar_1,
+    formData.ukuran_cetak_lebar_2,
+  ]);
 
+  // Update jumlah_harga_coating_belakang in formData whenever it changes
+  useEffect(() => {
+    const hargaCoatingBelakang = calculateHargaCoatingBelakang();
+    const event = {
+      target: {
+        name: 'jumlah_harga_coating_belakang',
+        value: hargaCoatingBelakang.toString(),
+        type: 'number',
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(event);
+  }, [
+    selectedCoatingBelakang,
+    formData.totalKertas,
+    formData.ukuran_cetak_bagian_1,
+    formData.ukuran_cetak_bagian_2,
+    formData.ukuran_cetak_panjang_1,
+    formData.ukuran_cetak_panjang_2,
+    formData.ukuran_cetak_lebar_1,
+    formData.ukuran_cetak_lebar_2,
+  ]);
+
+  // Update total_harga_coating in formData whenever it changes
+  useEffect(() => {
+    const totalHargaCoating = calculateJumlahHargaCoating();
+    const event = {
+      target: {
+        name: 'total_harga_coating',
+        value: totalHargaCoating.toString(),
+        type: 'number',
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(event);
+  }, [
+    selectedCoatingDepan,
+    selectedCoatingBelakang,
+    formData.totalKertas,
+    formData.ukuran_cetak_bagian_1,
+    formData.ukuran_cetak_bagian_2,
+    formData.ukuran_cetak_panjang_1,
+    formData.ukuran_cetak_panjang_2,
+    formData.ukuran_cetak_lebar_1,
+    formData.ukuran_cetak_lebar_2,
+  ]);
   // Debug effect - UPDATED
   useEffect(() => {
     const totalKertasOriginal = formData.totalKertas;

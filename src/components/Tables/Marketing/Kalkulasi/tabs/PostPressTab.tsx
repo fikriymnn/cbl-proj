@@ -78,7 +78,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   };
 
   // Get current values from formData with fallbacks
-  const getCurrentValue = (fieldName: string, defaultValue: string = '1') => {
+  const getCurrentValue = (fieldName: string, defaultValue: string = '0') => {
     return (formData as any)[fieldName] || defaultValue;
   };
 
@@ -303,7 +303,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
 
       if (lipatOption) {
         const qtyKalkulasi = parseFloat(formData.qty_kalkulasi || '0');
-        const qtyLipat = parseFloat(getCurrentValue('qty_lipat', '0'));
+        const qtyLipat = parseFloat(getCurrentValue('qty_lipat', '1'));
         const baseHarga = lipatOption.harga * qtyKalkulasi;
         const totalHargaLipat = baseHarga * qtyLipat;
 

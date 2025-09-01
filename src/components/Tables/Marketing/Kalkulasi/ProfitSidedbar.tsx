@@ -13,6 +13,50 @@ interface ProfitSidebarProps {
   isSubmitting: boolean;
 }
 
+const parseCurrencyForDisplay = (
+  value: string | number | undefined,
+): number => {
+  if (typeof value === 'number') return value;
+  if (!value || value === '') return 0;
+
+  let cleanValue = value.toString();
+
+  // Remove 'Rp' and spaces first
+  cleanValue = cleanValue.replace(/Rp\s*/g, '');
+
+  // Handle different number formats
+  if (cleanValue.includes(',') && cleanValue.includes('.')) {
+    // Format like "175.000,00" (European style) - dots for thousands, comma for decimal
+    if (cleanValue.lastIndexOf(',') > cleanValue.lastIndexOf('.')) {
+      cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
+    }
+    // Format like "8,395.625" (US style) - commas for thousands, dot for decimal
+    else {
+      cleanValue = cleanValue.replace(/,/g, '');
+    }
+  } else if (cleanValue.includes('.')) {
+    // Check if it's likely a thousand separator or decimal
+    const parts = cleanValue.split('.');
+    if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+      // Multiple dots or last part has 3 digits = thousand separators
+      cleanValue = cleanValue.replace(/\./g, '');
+    }
+  } else if (cleanValue.includes(',')) {
+    // Only commas - could be thousand separator or decimal
+    const parts = cleanValue.split(',');
+    if (parts.length === 2 && parts[1].length <= 2) {
+      // Likely decimal separator
+      cleanValue = cleanValue.replace(',', '.');
+    } else {
+      // Likely thousand separator
+      cleanValue = cleanValue.replace(/,/g, '');
+    }
+  }
+
+  const parsed = parseFloat(cleanValue);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
 const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
   formData,
   onInputChange,
@@ -72,6 +116,7 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
               Detail Keuangan
             </h3>
           </div>
+
           <div className="p-3">
             <table className="w-full text-xs">
               <tbody className="space-y-1">
@@ -80,7 +125,10 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                     Harga Produksi
                   </td>
                   <td className="py-1 text-right font-semibold text-blue-600">
-                    Rp {Number(formData.harga_produksi).toLocaleString()}
+                    Rp{' '}
+                    {parseCurrencyForDisplay(
+                      formData.harga_produksi,
+                    ).toLocaleString()}
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">
@@ -101,7 +149,10 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                 <tr className="border-b border-gray-100">
                   <td className="py-1 font-medium text-gray-600">Harga Jual</td>
                   <td className="py-1 text-right font-semibold text-green-600">
-                    Rp {Number(formData.jumlah_harga_jual).toLocaleString()}
+                    Rp{' '}
+                    {parseCurrencyForDisplay(
+                      formData.jumlah_harga_jual,
+                    ).toLocaleString()}
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">
@@ -123,7 +174,10 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                 <tr className="border-b border-gray-100">
                   <td className="py-1 font-medium text-gray-600">Nilai PPN</td>
                   <td className="py-1 text-right font-semibold text-orange-600">
-                    Rp {Number(formData.harga_ppn).toLocaleString()}
+                    Rp{' '}
+                    {parseCurrencyForDisplay(
+                      formData.harga_ppn,
+                    ).toLocaleString()}
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">
@@ -131,13 +185,19 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                     Nilai Diskon
                   </td>
                   <td className="py-1 text-right font-semibold text-red-600">
-                    Rp {Number(formData.harga_diskon).toLocaleString()}
+                    Rp{' '}
+                    {parseCurrencyForDisplay(
+                      formData.harga_diskon,
+                    ).toLocaleString()}
                   </td>
                 </tr>
                 <tr className="bg-blue-50 border-b-2 border-blue-200">
                   <td className="py-2 font-bold text-blue-800">Total Harga</td>
                   <td className="py-2 text-right font-bold text-lg text-blue-800">
-                    Rp {Number(formData.total_harga).toLocaleString()}
+                    Rp{' '}
+                    {parseCurrencyForDisplay(
+                      formData.total_harga,
+                    ).toLocaleString()}
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">
@@ -145,7 +205,10 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                     Harga per Unit
                   </td>
                   <td className="py-1 text-right font-semibold text-purple-600">
-                    Rp {Number(formData.harga_satuan).toLocaleString()}
+                    Rp{' '}
+                    {parseCurrencyForDisplay(
+                      formData.harga_satuan,
+                    ).toLocaleString()}
                   </td>
                 </tr>
               </tbody>
@@ -160,7 +223,10 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
               Harga untuk Customer
             </div>
             <div className="text-xl font-bold text-yellow-900">
-              Rp {Number(formData.total_harga_satuan_customer).toLocaleString()}
+              Rp{' '}
+              {parseCurrencyForDisplay(
+                formData.total_harga_satuan_customer,
+              ).toLocaleString()}
             </div>
             <div className="text-xs text-yellow-700">per unit</div>
           </div>
