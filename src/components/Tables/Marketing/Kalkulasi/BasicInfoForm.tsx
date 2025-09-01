@@ -57,6 +57,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     getMarketingCustomer();
   }, []);
 
+  // NEW: Sync selectedCustomer when formData changes (for editing existing data)
+  useEffect(() => {
+    if (formData.id_customer && customers.length > 0) {
+      const customer = customers.find((c) => c.id === formData.id_customer);
+      if (customer && customer !== selectedCustomer) {
+        setSelectedCustomer(customer);
+      }
+    }
+  }, [formData.id_customer, customers]);
+
   useEffect(() => {
     if (selectedCustomer) {
       getMarketingList(selectedCustomer.id_marketing);
@@ -196,18 +206,30 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     const customer = customers.find((c) => c.id === value);
     setSelectedCustomer(customer || null);
 
+    // Update formData with customer info
+    onInputChange({
+      target: { name: 'id_customer', value: customer?.id || 0 },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>);
+
     onInputChange({
       target: { name: 'nama_customer', value: customer?.nama_customer || '' },
-    } as React.ChangeEvent<HTMLSelectElement>);
+    } as unknown as React.ChangeEvent<HTMLSelectElement>);
 
     // Clear dependent fields when customer changes
-    ['nama_marketing', 'nama_produk', 'nama_area_pengiriman'].forEach(
-      (field) => {
-        onInputChange({
-          target: { name: field, value: '' },
-        } as React.ChangeEvent<HTMLSelectElement>);
-      },
-    );
+    const fieldsToReset = [
+      'id_marketing',
+      'nama_marketing',
+      'id_produk',
+      'nama_produk',
+      'id_area_pengiriman',
+      'nama_area_pengiriman',
+    ];
+
+    fieldsToReset.forEach((field) => {
+      onInputChange({
+        target: { name: field, value: field.startsWith('id_') ? 0 : '' },
+      } as React.ChangeEvent<HTMLSelectElement>);
+    });
   };
 
   // Handle marketing selection
@@ -217,16 +239,22 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       marketing?.nama_marketing || marketing?.data_karyawan?.name || '';
 
     onInputChange({
-      target: {
-        name: 'nama_marketing',
-        value: marketingName,
-      },
+      target: { name: 'id_marketing', value: marketing?.id || 0 },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>);
+
+    onInputChange({
+      target: { name: 'nama_marketing', value: marketingName },
     } as React.ChangeEvent<HTMLSelectElement>);
   };
 
   // Handle product selection
   const handleProductChange = (value: any) => {
     const product = produks.find((p) => p.id === value);
+
+    onInputChange({
+      target: { name: 'id_produk', value: product?.id || 0 },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>);
+
     onInputChange({
       target: { name: 'nama_produk', value: product?.nama_produk || '' },
     } as React.ChangeEvent<HTMLSelectElement>);
@@ -235,6 +263,11 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   // Handle pengiriman selection
   const handlePengirimanChange = (value: any) => {
     const pengiriman = pengirimans.find((p) => p.id === value);
+
+    onInputChange({
+      target: { name: 'id_area_pengiriman', value: pengiriman?.id || 0 },
+    } as unknown as React.ChangeEvent<HTMLSelectElement>);
+
     onInputChange({
       target: {
         name: 'nama_area_pengiriman',
@@ -243,34 +276,21 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     } as React.ChangeEvent<HTMLSelectElement>);
   };
 
-  // Get selected values for controlled components
+  // FIXED: Get selected values for controlled components
   const getSelectedCustomerId = () => {
-    const customer = customers.find(
-      (c) => c.nama_customer === formData.nama_customer,
-    );
-    return customer ? customer.id : 0;
+    return formData.id_customer || 0;
   };
 
   const getSelectedMarketingId = () => {
-    const marketing = marketingList.find(
-      (m) =>
-        m.nama_marketing === formData.nama_marketing ||
-        m.data_karyawan?.name === formData.nama_marketing,
-    );
-    return marketing ? marketing.id : 0;
+    return formData.id_marketing || 0;
   };
 
   const getSelectedProductId = () => {
-    const product = produks.find((p) => p.nama_produk === formData.nama_produk);
-    return product ? product.id : 0;
+    return formData.id_produk || 0;
   };
 
   const getSelectedPengirimanId = () => {
-    // Use nama_area_pengiriman as it's the actual field in formData
-    const pengiriman = pengirimans.find(
-      (p) => p.nama_area === formData.nama_area_pengiriman,
-    );
-    return pengiriman ? pengiriman.id : 0;
+    return formData.id_area_pengiriman || 0;
   };
 
   return (

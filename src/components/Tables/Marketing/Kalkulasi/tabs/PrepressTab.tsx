@@ -78,9 +78,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   const [isLoadingNamaKertas, setIsLoadingNamaKertas] = useState(false);
   const [isLoadingMesinPotong, setIsLoadingMesinPotong] = useState(false);
 
-  // Use formData values instead of local state
-  const selectedJenisKertas = formData.jenisKertas || '';
-  const selectedNamaKertas = formData.namaKertas || '';
+  // Use formData values directly
+  const selectedJenisKertas = formData.jenis_kertas || '';
+  const selectedNamaKertas = formData.nama_kertas || '';
 
   // Fetch Jenis Kertas options
   useEffect(() => {
@@ -441,7 +441,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     // Update jenis kertas in main formData
     const jenisKertasEvent = {
       target: {
-        name: 'jenisKertas',
+        name: 'jenis_kertas',
         value: value,
       },
     } as React.ChangeEvent<HTMLSelectElement>;
@@ -450,7 +450,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     // Reset nama kertas when jenis kertas changes
     const namaKertasEvent = {
       target: {
-        name: 'namaKertas',
+        name: 'nama_kertas',
         value: '',
       },
     } as React.ChangeEvent<HTMLSelectElement>;
@@ -471,7 +471,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     // Update nama kertas in main formData
     const namaKertasEvent = {
       target: {
-        name: 'namaKertas',
+        name: 'nama_kertas',
         value: value,
       },
     } as React.ChangeEvent<HTMLSelectElement>;
@@ -489,7 +489,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   const handleMesinPotongChange = (value: number | string) => {
     const syntheticEvent = {
       target: {
-        name: 'mesinPotong',
+        name: 'id_mesin_potong',
         value: value,
       },
     } as React.ChangeEvent<HTMLSelectElement>;
@@ -498,6 +498,19 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
   const handleInputChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
     onInputChange(e);
+  };
+
+  // Helper functions to get selected values for controlled components
+  const getSelectedJenisKertasValue = () => {
+    return formData.jenis_kertas || '';
+  };
+
+  const getSelectedNamaKertasValue = () => {
+    return formData.nama_kertas || '';
+  };
+
+  const getSelectedMesinPotongValue = () => {
+    return formData.id_mesin_potong || '';
   };
 
   return (
@@ -516,7 +529,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             </label>
             <SearchableSelect
               options={jenisKertasOptions}
-              value={selectedJenisKertas}
+              value={getSelectedJenisKertasValue()}
               onChange={handleJenisKertasChange}
               placeholder={
                 isLoadingJenisKertas ? 'Loading...' : '--Pilih Jenis Kertas--'
@@ -533,7 +546,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             </label>
             <SearchableSelect
               options={namaKertasOptions}
-              value={selectedNamaKertas}
+              value={getSelectedNamaKertasValue()}
               onChange={handleNamaKertasChange}
               placeholder={
                 !selectedJenisKertas
@@ -697,7 +710,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           </label>
           <SearchableSelect
             options={mesinPotongOptions}
-            value={formData.mesinPotong || ''}
+            value={getSelectedMesinPotongValue()}
             onChange={handleMesinPotongChange}
             placeholder={
               isLoadingMesinPotong ? 'Loading...' : 'Pilih Mesin Potong'

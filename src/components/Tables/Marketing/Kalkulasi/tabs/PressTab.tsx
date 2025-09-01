@@ -231,50 +231,45 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
   // Initialize selected options from formData when options are loaded
   useEffect(() => {
-    if (formData.selectedMesinId && mesinOptions.length > 0) {
+    if (formData.id_jenis_mesin_cetak && mesinOptions.length > 0) {
       const mesin = mesinOptions.find(
-        (m) => m.id === Number(formData.selectedMesinId),
+        (m) => m.id === Number(formData.id_jenis_mesin_cetak),
       );
       setSelectedMesin(mesin || null);
     }
-  }, [formData.selectedMesinId, mesinOptions]);
+  }, [formData.id_jenis_mesin_cetak, mesinOptions]);
 
   useEffect(() => {
-    if (formData.selectedCoatingDepanId && coatingDepanOptions.length > 0) {
+    if (formData.id_coating_depan && coatingDepanOptions.length > 0) {
       const coating = coatingDepanOptions.find(
-        (c) => c.id === Number(formData.selectedCoatingDepanId),
+        (c) => c.id === Number(formData.id_coating_depan),
       );
       setSelectedCoatingDepan(coating || null);
     }
-  }, [formData.selectedCoatingDepanId, coatingDepanOptions]);
+  }, [formData.id_coating_depan, coatingDepanOptions]);
 
   useEffect(() => {
-    if (
-      formData.selectedCoatingBelakangId &&
-      coatingBelakangOptions.length > 0
-    ) {
+    if (formData.id_coating_belakang && coatingBelakangOptions.length > 0) {
       const coating = coatingBelakangOptions.find(
-        (c) => c.id === Number(formData.selectedCoatingBelakangId),
+        (c) => c.id === Number(formData.id_coating_belakang),
       );
       setSelectedCoatingBelakang(coating || null);
     }
-  }, [formData.selectedCoatingBelakangId, coatingBelakangOptions]);
+  }, [formData.id_coating_belakang, coatingBelakangOptions]);
 
   useEffect(() => {
-    if (formData.selectedMesinCoatingDepanId) {
-      setSelectedMesinCoatingDepan(
-        Number(formData.selectedMesinCoatingDepanId),
-      );
+    if (formData.id_mesin_coating_depan) {
+      setSelectedMesinCoatingDepan(Number(formData.id_mesin_coating_depan));
     }
-  }, [formData.selectedMesinCoatingDepanId]);
+  }, [formData.id_mesin_coating_depan]);
 
   useEffect(() => {
-    if (formData.selectedMesinCoatingBelakangId) {
+    if (formData.id_mesin_coating_belakang) {
       setSelectedMesinCoatingBelakang(
-        Number(formData.selectedMesinCoatingBelakangId),
+        Number(formData.id_mesin_coating_belakang),
       );
     }
-  }, [formData.selectedMesinCoatingBelakangId]);
+  }, [formData.id_mesin_coating_belakang]);
 
   // Function to parse number with thousand separators
   const parseNumberWithSeparator = (
@@ -498,7 +493,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     // Save to formData
     const event = {
       target: {
-        name: 'selectedMesinId',
+        name: 'id_jenis_mesin_cetak',
         value: value || '',
         type: 'select',
       },
@@ -514,7 +509,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     // Save to formData
     const event = {
       target: {
-        name: 'selectedCoatingDepanId',
+        name: 'id_coating_depan',
         value: value || '',
         type: 'select',
       },
@@ -530,7 +525,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     // Save to formData
     const event = {
       target: {
-        name: 'selectedCoatingBelakangId',
+        name: 'id_coating_belakang',
         value: value || '',
         type: 'select',
       },
@@ -544,7 +539,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     // Save to formData
     const event = {
       target: {
-        name: 'selectedMesinCoatingDepanId',
+        name: 'id_mesin_coating_depan',
         value: value || '',
         type: 'select',
       },
@@ -558,7 +553,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     // Save to formData
     const event = {
       target: {
-        name: 'selectedMesinCoatingBelakangId',
+        name: 'id_mesin_coating_belakang',
         value: value || '',
         type: 'select',
       },
@@ -788,7 +783,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
             </label>
             <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50">
               <span className="font-medium">
-                {isSanbeCustomer(getSafeStringValue(formData.nama_customer)) ? (
+                {isSanbeCustomer(getSafeStringValue(formData.id_customer)) ? (
                   <span className="text-orange-600">Sanbe Rate</span>
                 ) : (
                   <span className="text-blue-600">Normal Rate</span>

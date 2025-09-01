@@ -78,7 +78,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   };
 
   // Get current values from formData with fallbacks
-  const getCurrentValue = (fieldName: string, defaultValue: string = '') => {
+  const getCurrentValue = (fieldName: string, defaultValue: string = '1') => {
     return (formData as any)[fieldName] || defaultValue;
   };
 
@@ -428,8 +428,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               Jenis Pons
             </label>
             <select
-              name="jenis_pons"
-              value={getCurrentValue('jenis_pons')}
+              name="id_jenis_pons"
+              value={getCurrentValue('id_jenis_pons', '')}
               onChange={onInputChange}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               disabled={loadingPons}
@@ -450,8 +450,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               Mesin Pons
             </label>
             <select
-              name="mesin_pons"
-              value={getCurrentValue('mesin_pons')}
+              name="id_mesin_pons"
+              value={getCurrentValue('id_mesin_pons', '')}
               onChange={onInputChange}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               disabled={loadingMesinPons}
@@ -616,14 +616,14 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               Mesin Lipat
             </label>
             <select
-              name="mesin_lipat"
-              value={getCurrentValue('mesin_lipat')}
+              name="id_mesin_lipat"
+              value={getCurrentValue('id_mesin_lipat', '')}
               onChange={onInputChange}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               disabled={loadingMesinLipat || getCurrentValue('lipat') === 'No'}
             >
               <option value="">
-                {loadingMesinLipat ? 'Loading...' : 'Pilih Mesin Lipat'}
+                {loadingMesinLipat ? 'Loading...' : 'Select Mesin Lipat'}
               </option>
               {mesinLipatOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -643,9 +643,9 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               value={getCurrentValue('qty_lipat', '1')}
               onChange={onInputChange}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="0"
+              placeholder="1"
               step="1"
-              min="0"
+              min="1"
               disabled={getCurrentValue('lipat') === 'No'}
             />
           </div>
@@ -659,7 +659,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
                 {new Intl.NumberFormat('id-ID', {
                   style: 'currency',
                   currency: 'IDR',
-                  minimumFractionDigits: 0,
+                  minimumFractionDigits: 1,
                 }).format(
                   parseFloat(
                     getCurrentValue('harga_lipat', '0.00')
@@ -741,7 +741,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               value={getCurrentValue('qty_potong', '1')}
               onChange={onInputChange}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              placeholder="0"
+              placeholder="1"
               step="1"
               min="0"
               disabled={getCurrentValue('potong_jadi') === 'No'}

@@ -143,9 +143,10 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
 
   // Calculate Jumlah Harga Lem and update formData
   useEffect(() => {
-    if (getCurrentValue('lem') && lemOptions.length > 0) {
+    if (getCurrentValue('id_lem') && lemOptions.length > 0) {
+      // Changed from 'lem' to 'id_lem'
       const selectedLem = lemOptions.find(
-        (option) => option.id.toString() === getCurrentValue('lem'),
+        (option) => option.id.toString() === getCurrentValue('id_lem'), // Changed from 'lem' to 'id_lem'
       );
 
       if (selectedLem) {
@@ -170,7 +171,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
       createSyntheticEvent('jumlah_harga_lem', '0.00');
     }
   }, [
-    getCurrentValue('lem'),
+    getCurrentValue('id_lem'), // Changed from 'lem' to 'id_lem'
     formData.ukuran_jadi_tinggi,
     formData.qty_kalkulasi,
     lemOptions,
@@ -215,7 +216,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     const ukuranJadiTinggiCm =
       parseFloat(formData.ukuran_jadi_tinggi || '0') / 10;
     const selectedLem = lemOptions.find(
-      (option) => option.id.toString() === getCurrentValue('lem'),
+      (option) => option.id.toString() === getCurrentValue('id_lem'), // Changed from 'lem' to 'id_lem'
     );
     const qtyKalkulasi = parseFloat(formData.qty_kalkulasi || '0');
 
@@ -265,8 +266,8 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               Lem
             </label>
             <select
-              name="lem"
-              value={getCurrentValue('lem')}
+              name="id_lem" // Changed from "lem" to "id_lem"
+              value={getCurrentValue('id_lem')}
               onChange={handlePostPressInputChange}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               disabled={loadingLem}
@@ -310,8 +311,8 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               Mesin Finishing
             </label>
             <select
-              name="mesin_finishing"
-              value={getCurrentValue('mesin_finishing')}
+              name="id_mesin_finishing" // Already correct
+              value={getCurrentValue('id_mesin_finishing')}
               onChange={handlePostPressInputChange}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               disabled={loadingMesinFinishing}
@@ -331,7 +332,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
         </div>
 
         {/* Formula Display for Lem */}
-        {getCurrentValue('lem') && (
+        {getCurrentValue('id_lem') && ( // Changed from 'lem' to 'id_lem'
           <div className="p-6 bg-purple-50 rounded-xl border border-purple-200">
             <h4 className="text-sm font-semibold text-purple-900 mb-4">
               Lem Formula Calculation:

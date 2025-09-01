@@ -8,12 +8,17 @@ import ProfitSidebar from './ProfitSidedbar';
 export interface KalkulasiFormData {
   tgl_kalkulasi: string;
   status_kalkulasi: string;
+  id_customer: number;
+  id_marketing: number;
   nama_customer: string;
   nama_marketing: string;
-  nama_produk: string;
-  nama_area_pengiriman: string;
+  id_produk: number;
+  id_area_pengiriman: number;
   qty_kalkulasi: string;
   presentase_insheet: string;
+  nama_area_pengiriman: string;
+  nama_produk: string;
+
   print_insheet?: string;
   pons_insheet?: string;
   finishing_insheet?: string;
@@ -33,6 +38,63 @@ export interface KalkulasiFormData {
   ukuran_cetak_bagian_2: string;
   ukuran_cetak_isi_2: string;
   ukuran_cetak_bbs_2: string;
+
+  warna_depan: string;
+  warna_belakang: string;
+  jumlah_warna: string;
+  ppn: string;
+
+  gramature?: number;
+  panjangMm?: number;
+  lebarMm?: number;
+  percentage?: number;
+  apki?: number;
+  totalKertas?: number | string;
+  totalHargaKertas?: number;
+  rawPercentage?: number | string;
+  jumlah_harga_cetak?: number;
+
+  jenis_kertas?: any;
+  nama_kertas?: number | string;
+
+  id_jenis_mesin_cetak?: any;
+  id_coating_depan?: any;
+  id_coating_belakang?: any;
+  id_mesin_coating_depan?: any;
+  id_mesin_coating_belakang?: any;
+  id_mesin_potong?: string;
+
+  // PostPress fields
+  id_jenis_pons?: string;
+  id_mesin_pons?: string;
+  harga_pisau?: string;
+  ongkos_pons?: string;
+  ongkos_pons_qty?: string;
+  harga_satuan_ongkos_pons?: string;
+  total_harga_ongkos_pons?: string;
+
+  // Lipat fields
+  lipat?: string;
+  id_mesin_lipat?: string;
+  qty_lipat?: string;
+  harga_lipat?: string;
+
+  // Potong Jadi fields
+  potong_jadi?: string;
+  qty_potong?: string;
+  harga_potong_jadi?: string;
+
+  // PostPress2 fields
+  id_lem?: string;
+  jumlah_harga_lem?: string;
+  id_mesin_finishing?: string;
+  foil?: string;
+  spot_foil?: string;
+  harga_foil_manual?: string;
+  harga_spot_foil_manual?: string;
+  harga_polimer_manual?: string;
+
+  //profit bar
   harga_produksi: string;
   profit_harga: string;
   jumlah_harga_jual: string;
@@ -44,59 +106,6 @@ export interface KalkulasiFormData {
   total_harga_satuan_customer: string;
   keterangan_harga: string;
   keterangan_kerja: string;
-  warna_depan: string;
-  warna_belakang: string;
-  jumlah_warna: string;
-  ppn: string;
-  jenisKertas?: any;
-  namaKertas?: number | string;
-  gramature?: number;
-  panjangMm?: number;
-  lebarMm?: number;
-  percentage?: number;
-  apki?: number;
-  totalKertas?: number | string;
-  totalHargaKertas?: number;
-  mesinPotong?: string;
-  rawPercentage?: number | string;
-  jumlah_harga_cetak?: number;
-  selectedMesinId?: any;
-
-  // Coating fields
-  selectedCoatingDepanId?: any;
-  selectedCoatingBelakangId?: any;
-  selectedMesinCoatingDepanId?: any;
-  selectedMesinCoatingBelakangId?: any;
-
-  // PostPress fields
-  jenis_pons?: string;
-  mesin_pons?: string;
-  harga_pisau?: string;
-  ongkos_pons?: string;
-  ongkos_pons_qty?: string;
-  harga_satuan_ongkos_pons?: string;
-  total_harga_ongkos_pons?: string;
-
-  // Lipat fields
-  lipat?: string;
-  mesin_lipat?: string;
-  qty_lipat?: string;
-  harga_lipat?: string;
-
-  // Potong Jadi fields
-  potong_jadi?: string;
-  qty_potong?: string;
-  harga_potong_jadi?: string;
-
-  // PostPress2 fields
-  lem?: string;
-  jumlah_harga_lem?: string;
-  mesin_finishing?: string;
-  foil?: string;
-  spot_foil?: string;
-  harga_foil_manual?: string;
-  harga_spot_foil_manual?: string;
-  harga_polimer_manual?: string;
 }
 
 interface ApiResponse<T = any> {
@@ -113,10 +122,10 @@ interface KalkulasiModalProps {
 const initialFormData: KalkulasiFormData = {
   tgl_kalkulasi: new Date().toISOString().split('T')[0],
   status_kalkulasi: 'baru',
-  nama_customer: '',
-  nama_marketing: '',
-  nama_produk: '',
-  nama_area_pengiriman: '',
+  id_customer: 0,
+  id_marketing: 0,
+  id_produk: 0,
+  id_area_pengiriman: 0,
   qty_kalkulasi: '0',
   presentase_insheet: '',
   spesifikasi: '',
@@ -150,6 +159,10 @@ const initialFormData: KalkulasiFormData = {
   warna_depan: '0',
   warna_belakang: '0',
   jumlah_warna: '0',
+  nama_customer: '',
+  nama_marketing: '',
+  nama_area_pengiriman: '',
+  nama_produk: '',
 };
 
 const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
