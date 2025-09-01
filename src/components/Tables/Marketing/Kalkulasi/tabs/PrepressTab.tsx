@@ -80,7 +80,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
   // Use formData values directly
   const selectedJenisKertas = formData.jenis_kertas || '';
-  const selectedNamaKertas = formData.nama_kertas || '';
+  const selectedNamaKertas = formData.id_kertas || '';
 
   // Fetch Jenis Kertas options
   useEffect(() => {
@@ -450,7 +450,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     // Reset nama kertas when jenis kertas changes
     const namaKertasEvent = {
       target: {
-        name: 'nama_kertas',
+        name: 'id_kertas',
         value: '',
       },
     } as React.ChangeEvent<HTMLSelectElement>;
@@ -471,7 +471,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     // Update nama kertas in main formData
     const namaKertasEvent = {
       target: {
-        name: 'nama_kertas',
+        name: 'id_kertas',
         value: value,
       },
     } as React.ChangeEvent<HTMLSelectElement>;
@@ -506,7 +506,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   };
 
   const getSelectedNamaKertasValue = () => {
-    return formData.nama_kertas || '';
+    return formData.id_kertas || '';
   };
 
   const getSelectedMesinPotongValue = () => {

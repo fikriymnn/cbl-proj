@@ -64,6 +64,7 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
   onCancel,
   isSubmitting,
 }) => {
+  console.log(formData.qty_kalkulasi);
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col shadow-lg h-screen overflow-y-auto pb-3">
       {/* Compact Header */}
@@ -181,6 +182,22 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">
+                  <td className="py-1 font-medium text-gray-600">Diskon (%)</td>
+                  <td className="py-1 text-right">
+                    <input
+                      type="number"
+                      name="diskon"
+                      value={formData.diskon}
+                      onChange={onInputChange}
+                      className="w-16 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-orange-500"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                    />
+                    <span className="text-xs text-gray-500 ml-1">%</span>
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100">
                   <td className="py-1 font-medium text-gray-600">
                     Nilai Diskon
                   </td>
@@ -230,26 +247,6 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
             </div>
             <div className="text-xs text-yellow-700">per unit</div>
           </div>
-        </div>
-
-        {/* Discount Input */}
-        <div className="bg-orange-50 rounded-lg p-3">
-          <label className="block text-xs font-medium text-orange-800 mb-1">
-            Diskon (%){' '}
-            {formData.diskon &&
-              Number(formData.diskon) > 0 &&
-              `- ${formData.diskon}%`}
-          </label>
-          <input
-            type="number"
-            name="diskon"
-            value={formData.diskon}
-            onChange={onInputChange}
-            className="w-full px-2 py-1 text-sm border border-orange-300 rounded focus:ring-1 focus:ring-orange-500 focus:border-transparent"
-            min="0"
-            max="100"
-            step="0.01"
-          />
         </div>
 
         {/* Keterangan Harga */}

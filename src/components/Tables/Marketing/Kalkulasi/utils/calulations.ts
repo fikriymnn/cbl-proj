@@ -1,41 +1,54 @@
 // utils/calculations.ts
 import { KalkulasiFormData } from '../KalkulasiModal';
 
-// Enhanced function to parse various currency and number formats
+// utils/calculations.ts
 const parseCurrencyString = (value: string | number | undefined): number => {
   if (typeof value === 'number') return value;
   if (!value || value === '') return 0;
 
-  let cleanValue = value.toString();
+  let cleanValue = value.toString().trim();
 
   // Remove 'Rp' and spaces first
   cleanValue = cleanValue.replace(/Rp\s*/g, '');
 
-  // Handle different number formats
+  // Handle specific formats from your console:
+  // "8.395.625" -> 8395625
+  // "175.000,00" -> 175000
+  // "80.000,00" -> 80000
+  // "731250" -> 731250
+
   if (cleanValue.includes(',') && cleanValue.includes('.')) {
-    // Format like "175.000,00" (European style) - dots for thousands, comma for decimal
-    if (cleanValue.lastIndexOf(',') > cleanValue.lastIndexOf('.')) {
+    // European format like "175.000,00"
+    const lastCommaIndex = cleanValue.lastIndexOf(',');
+    const lastDotIndex = cleanValue.lastIndexOf('.');
+
+    if (lastCommaIndex > lastDotIndex) {
+      // Dots are thousand separators, comma is decimal
+      // "175.000,00" -> "175000.00"
       cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
-    }
-    // Format like "8,395.625" (US style) - commas for thousands, dot for decimal
-    else {
+    } else {
+      // Commas are thousand separators, dot is decimal
+      // "8,395.625" -> "8395.625"
       cleanValue = cleanValue.replace(/,/g, '');
     }
   } else if (cleanValue.includes('.')) {
-    // Check if it's likely a thousand separator or decimal
+    // Only dots - determine if thousand separator or decimal
     const parts = cleanValue.split('.');
+
+    // If more than 2 parts OR last part has exactly 3 digits, treat as thousand separator
     if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
-      // Multiple dots or last part has 3 digits = thousand separators
+      // "8.395.625" or "175.000" -> remove all dots
       cleanValue = cleanValue.replace(/\./g, '');
     }
+    // Otherwise keep as decimal: "123.45" stays "123.45"
   } else if (cleanValue.includes(',')) {
-    // Only commas - could be thousand separator or decimal
+    // Only commas
     const parts = cleanValue.split(',');
     if (parts.length === 2 && parts[1].length <= 2) {
-      // Likely decimal separator
+      // Decimal separator: "175,00" -> "175.00"
       cleanValue = cleanValue.replace(',', '.');
     } else {
-      // Likely thousand separator
+      // Thousand separator: remove commas
       cleanValue = cleanValue.replace(/,/g, '');
     }
   }
@@ -46,22 +59,25 @@ const parseCurrencyString = (value: string | number | undefined): number => {
 
 export const calculateHargaProduksi = (formData: KalkulasiFormData): number => {
   const fields = [
-    parseCurrencyString(formData.totalHargaKertas),
-    parseCurrencyString(formData.jumlah_harga_cetak),
-    parseCurrencyString(formData.jumlah_harga_coating_depan),
-    parseCurrencyString(formData.jumlah_harga_coating_belakang),
-    parseCurrencyString(formData.total_harga_coating),
-    parseCurrencyString(formData.total_harga_ongkos_pons),
-    parseCurrencyString(formData.harga_pisau),
-    parseCurrencyString(formData.harga_lipat),
-    parseCurrencyString(formData.harga_potong_jadi),
-    parseCurrencyString(formData.jumlah_harga_lem),
-    parseCurrencyString(formData.harga_foil_manual),
-    parseCurrencyString(formData.harga_spot_foil_manual),
-    parseCurrencyString(formData.harga_polimer_manual),
+    parseCurrencyString(formData.totalHargaKertas), // 8.395.625 -> 8395625
+    parseCurrencyString(formData.jumlah_harga_cetak), // 731250 -> 731250
+    parseCurrencyString(formData.total_harga_coating), // 400000 -> 400000
+    parseCurrencyString(formData.total_harga_ongkos_pons), // 175.000,00 -> 175000
+    parseCurrencyString(formData.harga_pisau), // Should be parsed correctly
+    parseCurrencyString(formData.harga_lipat), // 80.000,00 -> 80000
+    parseCurrencyString(formData.harga_potong_jadi), // 25.000,00 -> 25000
+    parseCurrencyString(formData.jumlah_harga_lem), // 150.000,00 -> 150000
+    parseCurrencyString(formData.harga_foil_manual), // Should be parsed correctly
+    parseCurrencyString(formData.harga_spot_foil_manual), // Should be parsed correctly
+    parseCurrencyString(formData.harga_polimer_manual), // Should be parsed correctly
+    parseCurrencyString(formData.harga_plate),
   ];
 
-  return fields.reduce((total, value) => total + value, 0);
+  console.log('Individual parsed values:', fields);
+  const total = fields.reduce((total, value) => total + value, 0);
+  console.log('Total Harga Produksi:', total);
+
+  return total;
 };
 
 // utils/calculations.ts

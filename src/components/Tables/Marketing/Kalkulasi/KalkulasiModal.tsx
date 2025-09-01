@@ -61,7 +61,7 @@ export interface KalkulasiFormData {
   jumlah_harga_cetak?: number;
 
   jenis_kertas?: any;
-  nama_kertas?: number | string;
+  id_kertas?: number | string;
 
   id_jenis_mesin_cetak?: any;
   id_coating_depan?: any;
@@ -69,6 +69,7 @@ export interface KalkulasiFormData {
   id_mesin_coating_depan?: any;
   id_mesin_coating_belakang?: any;
   id_mesin_potong?: string;
+  harga_plate?: string;
 
   // Add coating price fields
   jumlah_harga_coating_depan?: number;
@@ -345,8 +346,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     console.log(
       formData.totalHargaKertas,
       formData.jumlah_harga_cetak,
-      formData.jumlah_harga_coating_depan,
-      formData.jumlah_harga_coating_belakang,
+      formData.harga_plate,
       formData.total_harga_coating,
       formData.total_harga_ongkos_pons,
       formData.harga_pisau,
@@ -360,8 +360,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
   }, [
     formData.totalHargaKertas,
     formData.jumlah_harga_cetak,
-    formData.jumlah_harga_coating_depan,
-    formData.jumlah_harga_coating_belakang,
+    formData.harga_plate,
     formData.total_harga_coating,
     formData.total_harga_ongkos_pons,
     formData.harga_pisau,

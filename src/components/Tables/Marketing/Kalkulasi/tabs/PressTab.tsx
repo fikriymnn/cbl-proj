@@ -579,6 +579,18 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     formData.ukuran_cetak_bagian_2,
     formData.jumlah_warna,
   ]);
+  // Update harga_plate in formData whenever it changes
+  useEffect(() => {
+    const hargaPlate = calculateHargaPlate();
+    const event = {
+      target: {
+        name: 'harga_plate',
+        value: hargaPlate.toString(),
+        type: 'number',
+      },
+    } as React.ChangeEvent<HTMLInputElement>;
+    onInputChange(event);
+  }, [selectedMesin, formData.jumlah_warna]);
   // Update jumlah_harga_coating_depan in formData whenever it changes
   useEffect(() => {
     const hargaCoatingDepan = calculateHargaCoatingDepan();
