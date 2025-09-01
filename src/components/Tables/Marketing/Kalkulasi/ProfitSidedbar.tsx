@@ -133,17 +133,30 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-1 font-medium text-gray-600">
-                    Profit Harga (Input)
+                    Profit (%) - Input
                   </td>
                   <td className="py-1 text-right">
                     <input
                       type="number"
-                      name="profit_harga"
-                      value={formData.profit_harga}
+                      name="profit"
+                      value={formData.profit}
                       onChange={onInputChange}
-                      className="w-20 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-green-500"
+                      className="w-16 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-green-500"
                       min="0"
+                      step="0.01"
                     />
+                    <span className="text-xs text-gray-500 ml-1">%</span>
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="py-1 font-medium text-gray-600">
+                    Profit Harga
+                  </td>
+                  <td className="py-1 text-right font-semibold text-green-600">
+                    Rp{' '}
+                    {parseCurrencyForDisplay(
+                      formData.profit_harga,
+                    ).toLocaleString()}
                   </td>
                 </tr>
                 <tr className="border-b border-gray-100">

@@ -108,6 +108,7 @@ export interface KalkulasiFormData {
 
   //profit bar
   harga_produksi: string;
+  profit: string; // NEW: Profit percentage
   profit_harga: string;
   jumlah_harga_jual: string;
   harga_ppn: string;
@@ -175,6 +176,7 @@ const initialFormData: KalkulasiFormData = {
   nama_marketing: '',
   nama_area_pengiriman: '',
   nama_produk: '',
+  profit: '',
 };
 
 const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
@@ -273,7 +275,8 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
         ...formData,
         qty_kalkulasi: Number(formData.qty_kalkulasi),
         harga_produksi: Number(formData.harga_produksi),
-        profit_harga: Number(formData.profit_harga),
+        profit: Number(formData.profit), // NEW: Profit percentage
+        profit_harga: Number(formData.profit_harga), // CHANGED: Now calculated profit amount
         total_harga: Number(formData.total_harga),
         harga_satuan: Number(formData.harga_satuan),
         total_harga_satuan_customer: Number(
@@ -362,6 +365,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
 
     // Only update if values have actually changed to avoid infinite loops
     const needsUpdate =
+      parseFloat(formData.profit_harga || '0') !== financialData.profit_harga ||
       parseFloat(formData.jumlah_harga_jual || '0') !==
         financialData.jumlah_harga_jual ||
       parseFloat(formData.harga_ppn || '0') !== financialData.harga_ppn ||
@@ -372,6 +376,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     if (needsUpdate) {
       setFormData((prev) => ({
         ...prev,
+        profit_harga: financialData.profit_harga.toString(), // CHANGED: Now calculated amount
         jumlah_harga_jual: financialData.jumlah_harga_jual.toString(),
         harga_ppn: financialData.harga_ppn.toString(),
         harga_diskon: financialData.harga_diskon.toString(),
@@ -383,7 +388,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     }
   }, [
     formData.harga_produksi,
-    formData.profit_harga,
+    formData.profit, // CHANGED: Now 'profit' instead of 'profit_harga'
     formData.ppn,
     formData.diskon,
     formData.qty_kalkulasi,

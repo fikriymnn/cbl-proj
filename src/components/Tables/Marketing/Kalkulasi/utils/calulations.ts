@@ -83,30 +83,33 @@ export const calculateHargaProduksi = (formData: KalkulasiFormData): number => {
 // utils/calculations.ts
 export const calculateFinancialData = (formData: KalkulasiFormData) => {
   const hargaProduksi = parseCurrencyString(formData.harga_produksi);
-  const profitPercentage = parseCurrencyString(formData.profit_harga);
+  const profitPercentage = parseCurrencyString(formData.profit); // CHANGED: Now using 'profit' for percentage
   const ppnPercentage = parseCurrencyString(formData.ppn);
   const diskonPercentage = parseCurrencyString(formData.diskon);
   const qty = parseCurrencyString(formData.qty_kalkulasi);
 
-  // Step 1: Calculate Harga Jual = Harga Produksi + (Harga Produksi * Profit%)
+  // Step 1: Calculate Profit Amount = Harga Produksi * Profit%
   const profitAmount = hargaProduksi * (profitPercentage / 100);
+
+  // Step 2: Calculate Harga Jual = Harga Produksi + Profit Amount
   const hargaJual = hargaProduksi + profitAmount;
 
-  // Step 2: Calculate PPN = Harga Jual * PPN%
+  // Step 3: Calculate PPN = Harga Jual * PPN%
   const hargaPpn = hargaJual * (ppnPercentage / 100);
 
-  // Step 3: Calculate Discount = (Harga Jual + PPN) * Discount%
+  // Step 4: Calculate Discount = (Harga Jual + PPN) * Discount%
   const subtotalBeforeDiscount = hargaJual + hargaPpn;
   const hargaDiskon = subtotalBeforeDiscount * (diskonPercentage / 100);
 
-  // Step 4: Calculate Total = Harga Jual + PPN - Discount
+  // Step 5: Calculate Total = Harga Jual + PPN - Discount
   const totalHarga = hargaJual + hargaPpn - hargaDiskon;
 
-  // Step 5: Calculate per unit price
+  // Step 6: Calculate per unit price
   const hargaSatuan = qty > 0 ? totalHarga / qty : 0;
 
   return {
     harga_produksi: hargaProduksi,
+    profit_harga: profitAmount, // CHANGED: Now calculated profit amount
     jumlah_harga_jual: hargaJual,
     harga_ppn: hargaPpn,
     harga_diskon: hargaDiskon,
@@ -131,12 +134,13 @@ export const PRODUCTION_COST_FIELDS = [
   'harga_foil_manual',
   'harga_spot_foil_manual',
   'harga_polimer_manual',
+  'harga_plate',
 ];
 
 // Fields that affect financial calculations
 export const FINANCIAL_FIELDS = [
   'harga_produksi',
-  'profit_harga',
+  'profit', // CHANGED: Now 'profit' instead of 'profit_harga'
   'ppn',
   'diskon',
   'qty_kalkulasi',
