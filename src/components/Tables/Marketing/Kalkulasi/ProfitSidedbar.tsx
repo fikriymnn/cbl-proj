@@ -64,7 +64,6 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
   onCancel,
   isSubmitting,
 }) => {
-  console.log(formData.qty_kalkulasi);
   return (
     <div className="w-80 bg-white border-l border-gray-200 flex flex-col shadow-lg h-screen overflow-y-auto pb-3">
       {/* Compact Header */}
@@ -219,7 +218,7 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="py-1 font-medium text-gray-600">
-                    Harga per Unit
+                    Harga per PCS
                   </td>
                   <td className="py-1 text-right font-semibold text-purple-600">
                     Rp{' '}
@@ -233,19 +232,28 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
           </div>
         </div>
 
-        {/* Customer Price Highlight */}
+        {/* Manual Customer Price Input */}
         <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg p-3 border border-yellow-300">
-          <div className="text-center">
-            <div className="text-xs font-medium text-yellow-800 mb-1">
-              Harga untuk Customer
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-yellow-800">
+              Harga untuk Customer (per pcs)
+            </label>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-yellow-800">Rp</span>
+              <input
+                type="number"
+                name="total_harga_satuan_customer"
+                value={formData.total_harga_satuan_customer || ''}
+                onChange={onInputChange}
+                className="flex-1 px-2 py-1 text-sm border border-yellow-400 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white text-right font-semibold"
+                placeholder="0"
+                min="0"
+                step="0.01"
+              />
             </div>
-            <div className="text-xl font-bold text-yellow-900">
-              Rp{' '}
-              {parseCurrencyForDisplay(
-                formData.total_harga_satuan_customer,
-              ).toLocaleString()}
+            <div className="text-xs text-yellow-700 text-center">
+              Masukkan harga Satuan untuk customer
             </div>
-            <div className="text-xs text-yellow-700">per unit</div>
           </div>
         </div>
 

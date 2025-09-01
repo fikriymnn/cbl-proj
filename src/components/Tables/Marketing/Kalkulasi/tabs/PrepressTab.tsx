@@ -251,13 +251,15 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
   // Calculate Total Harga Kertas automatically
   useEffect(() => {
-    const calculateTotalHargaKertas = () => {
-      if (!selectedBarangData || !formData.totalKertas) {
+    const calculatetotal_harga_kertas = () => {
+      if (!selectedBarangData || !formData.total_kertas) {
         return;
       }
 
-      const totalKertas = parseFormattedNumber(formData.totalKertas.toString());
-      if (totalKertas <= 0) {
+      const total_kertas = parseFormattedNumber(
+        formData.total_kertas.toString(),
+      );
+      if (total_kertas <= 0) {
         return;
       }
 
@@ -270,28 +272,29 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       const isDuplex = kategori.toLowerCase().includes('duplex');
 
       // Calculate total harga kertas based on formula using rounded percentage
-      let totalHargaKertas = 0;
+      let total_harga_kertas = 0;
 
       if (isDuplex) {
         // For DUPLEX: (((harga * ((rounded_percentage + 100)) / 100 / 500) * total_kertas)
-        totalHargaKertas =
-          ((harga * (percentageApki + 100)) / 100 / 500) * totalKertas;
+        total_harga_kertas =
+          ((harga * (percentageApki + 100)) / 100 / 500) * total_kertas;
       } else {
         // For non-DUPLEX: (((harga * rounded_percentage) / 100 / 500) * total_kertas)
-        totalHargaKertas = ((harga * percentageApki) / 100 / 500) * totalKertas;
+        total_harga_kertas =
+          ((harga * percentageApki) / 100 / 500) * total_kertas;
       }
 
       // Update the total harga kertas field
-      const calculatedValue = Math.round(totalHargaKertas);
+      const calculatedValue = Math.round(total_harga_kertas);
       const formattedValue = formatNumber(calculatedValue);
 
       // Only update if the calculated value is different from current value
       const currentValue = parseFormattedNumber(
-        formData.totalHargaKertas?.toString() || '0',
+        formData.total_harga_kertas?.toString() || '0',
       );
       if (calculatedValue !== currentValue) {
         const syntheticEvent = createSyntheticEvent(
-          'totalHargaKertas',
+          'total_harga_kertas',
           formattedValue,
         );
         onInputChange(syntheticEvent);
@@ -313,18 +316,18 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       }
     };
 
-    calculateTotalHargaKertas();
+    calculatetotal_harga_kertas();
   }, [
     selectedBarangData,
-    formData.totalKertas,
+    formData.total_kertas,
     onInputChange,
-    formData.totalHargaKertas,
+    formData.total_harga_kertas,
     formData.percentage,
   ]);
 
   // Calculate Total Kertas automatically
   useEffect(() => {
-    const calculateTotalKertas = () => {
+    const calculatetotal_kertas = () => {
       // Parse numeric values from form data
       const qtyKalkulasi = parseFloat(formData.qty_kalkulasi) || 0;
       const ukuranCetakBagian1 =
@@ -343,16 +346,16 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
         qtyKalkulasi > 0 &&
         (ukuranCetakBagian1 > 0 || ukuranCetakBagian2 > 0)
       ) {
-        let totalKertas = 0;
+        let total_kertas = 0;
 
         // First part of formula: qty_kalkulasi / (ukuran_cetak_bagian_1 * ukuran_cetak_isi_1)
         if (ukuranCetakBagian1 > 0 && ukuranCetakIsi1 > 0) {
-          totalKertas += qtyKalkulasi / (ukuranCetakBagian1 * ukuranCetakIsi1);
+          total_kertas += qtyKalkulasi / (ukuranCetakBagian1 * ukuranCetakIsi1);
         }
 
         // Second part: + (ukuran_cetak_bagian_2 * ukuran_cetak_isi_2)
         if (ukuranCetakBagian2 > 0 && ukuranCetakIsi2 > 0) {
-          totalKertas += ukuranCetakBagian2 * ukuranCetakIsi2;
+          total_kertas += ukuranCetakBagian2 * ukuranCetakIsi2;
         }
 
         // Third part: + ((print_insheet + pons_insheet + finishing_insheet) / (ukuran_cetak_bagian_1 * ukuran_cetak_bagian_2))
@@ -362,21 +365,21 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           ukuranCetakBagian1 > 0 &&
           ukuranCetakBagian2 > 0
         ) {
-          totalKertas +=
+          total_kertas +=
             totalInsheet / (ukuranCetakBagian1 * ukuranCetakBagian2);
         }
 
         // Update the total kertas field
-        const calculatedValue = Math.ceil(totalKertas); // Round up to nearest integer
+        const calculatedValue = Math.ceil(total_kertas); // Round up to nearest integer
         const formattedValue = formatNumber(calculatedValue);
 
         // Only update if the calculated value is different from current value
         const currentValue = parseFormattedNumber(
-          formData.totalKertas?.toString() || '0',
+          formData.total_kertas?.toString() || '0',
         );
         if (calculatedValue !== currentValue) {
           const syntheticEvent = createSyntheticEvent(
-            'totalKertas',
+            'total_kertas',
             formattedValue,
           );
           onInputChange(syntheticEvent);
@@ -384,7 +387,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       }
     };
 
-    calculateTotalKertas();
+    calculatetotal_kertas();
   }, [
     formData.qty_kalkulasi,
     formData.ukuran_cetak_bagian_1,
@@ -395,7 +398,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     formData.pons_insheet,
     formData.finishing_insheet,
     onInputChange,
-    formData.totalKertas,
+    formData.total_kertas,
   ]);
 
   // Auto-fill fields when Nama Kertas is selected
@@ -464,7 +467,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     onInputChange(createSyntheticEvent('lebarMm', ''));
     onInputChange(createSyntheticEvent('rawPercentage', ''));
     onInputChange(createSyntheticEvent('percentage', ''));
-    onInputChange(createSyntheticEvent('totalHargaKertas', ''));
+    onInputChange(createSyntheticEvent('total_harga_kertas', ''));
   };
 
   const handleNamaKertasChange = (value: number | string) => {
@@ -675,8 +678,8 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           </label>
           <input
             type="text"
-            name="totalKertas"
-            value={formData.totalKertas || ''}
+            name="total_kertas"
+            value={formData.total_kertas || ''}
             onChange={handleInputChangeLocal}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
             placeholder="0"
@@ -694,8 +697,8 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           </label>
           <input
             type="text"
-            name="totalHargaKertas"
-            value={formData.totalHargaKertas || ''}
+            name="total_harga_kertas"
+            value={formData.total_harga_kertas || ''}
             onChange={handleInputChangeLocal}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
             placeholder="0"

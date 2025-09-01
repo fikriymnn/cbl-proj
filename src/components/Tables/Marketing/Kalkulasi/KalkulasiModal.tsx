@@ -55,8 +55,8 @@ export interface KalkulasiFormData {
   lebarMm?: number;
   percentage?: number;
   apki?: number;
-  totalKertas?: number;
-  totalHargaKertas?: number;
+  total_kertas?: number;
+  total_harga_kertas?: number;
   rawPercentage?: number | string;
   jumlah_harga_cetak?: number;
 
@@ -343,22 +343,8 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
         harga_produksi: newHargaProduksi.toString(),
       }));
     }
-    console.log(
-      formData.totalHargaKertas,
-      formData.jumlah_harga_cetak,
-      formData.harga_plate,
-      formData.total_harga_coating,
-      formData.total_harga_ongkos_pons,
-      formData.harga_pisau,
-      formData.harga_lipat,
-      formData.harga_potong_jadi,
-      formData.jumlah_harga_lem,
-      formData.harga_foil_manual,
-      formData.harga_spot_foil_manual,
-      formData.harga_polimer_manual,
-    );
   }, [
-    formData.totalHargaKertas,
+    formData.total_harga_kertas,
     formData.jumlah_harga_cetak,
     formData.harga_plate,
     formData.total_harga_coating,

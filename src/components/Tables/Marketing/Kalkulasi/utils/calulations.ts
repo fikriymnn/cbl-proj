@@ -59,7 +59,7 @@ const parseCurrencyString = (value: string | number | undefined): number => {
 
 export const calculateHargaProduksi = (formData: KalkulasiFormData): number => {
   const fields = [
-    parseCurrencyString(formData.totalHargaKertas), // 8.395.625 -> 8395625
+    parseCurrencyString(formData.total_harga_kertas), // 8.395.625 -> 8395625
     parseCurrencyString(formData.jumlah_harga_cetak), // 731250 -> 731250
     parseCurrencyString(formData.total_harga_coating), // 400000 -> 400000
     parseCurrencyString(formData.total_harga_ongkos_pons), // 175.000,00 -> 175000
@@ -118,7 +118,7 @@ export const calculateFinancialData = (formData: KalkulasiFormData) => {
 
 // Fields that affect production cost
 export const PRODUCTION_COST_FIELDS = [
-  'totalHargaKertas',
+  'total_harga_kertas',
   'jumlah_harga_cetak',
   'jumlah_harga_coating_depan',
   'jumlah_harga_coating_belakang',

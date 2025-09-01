@@ -242,8 +242,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       getCurrentValue('ongkos_pons') === 'Yes' &&
       ongkosPonsOptions.length > 0
     ) {
-      const totalKertasString = formData.totalKertas?.toString() || '0';
-      const totalKertas = parseFloat(totalKertasString.replace(/\./g, ''));
+      const total_kertasString = formData.total_kertas?.toString() || '0';
+      const total_kertas = parseFloat(total_kertasString.replace(/\./g, ''));
 
       const ukuranCetakBagian1 = parseFloat(
         formData.ukuran_cetak_bagian_1 || '0',
@@ -255,7 +255,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       const ongkosPonsHarga = ongkosPonsOptions[0]?.harga || 0;
 
       const hargaSatuan =
-        totalKertas *
+        total_kertas *
         (ukuranCetakBagian1 + ukuranCetakBagian2) *
         ongkosPonsHarga;
 
@@ -285,7 +285,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   }, [
     getCurrentValue('ongkos_pons'),
     getCurrentValue('ongkos_pons_qty'),
-    formData.totalKertas,
+    formData.total_kertas,
     formData.ukuran_cetak_bagian_1,
     formData.ukuran_cetak_bagian_2,
     ongkosPonsOptions,
@@ -336,10 +336,10 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       );
 
       if (potongJadiOption) {
-        const totalKertasString = formData.totalKertas?.toString() || '0';
-        const totalKertas = parseFloat(totalKertasString.replace(/\./g, ''));
+        const total_kertasString = formData.total_kertas?.toString() || '0';
+        const total_kertas = parseFloat(total_kertasString.replace(/\./g, ''));
         const qtyPotong = parseFloat(getCurrentValue('qty_potong', '0'));
-        const baseHarga = (totalKertas / 500) * potongJadiOption.harga;
+        const baseHarga = (total_kertas / 500) * potongJadiOption.harga;
         const totalHargaPotongJadi = baseHarga * qtyPotong;
 
         createSyntheticEvent(
@@ -356,14 +356,14 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   }, [
     getCurrentValue('potong_jadi'),
     getCurrentValue('qty_potong'),
-    formData.totalKertas,
+    formData.total_kertas,
     specialFinishingOptions,
   ]);
 
   // Get current formula values for display
   const getFormulaDisplay = () => {
-    const totalKertasString = formData.totalKertas?.toString() || '0';
-    const totalKertas = parseFloat(totalKertasString.replace(/\./g, ''));
+    const total_kertasString = formData.total_kertas?.toString() || '0';
+    const total_kertas = parseFloat(total_kertasString.replace(/\./g, ''));
 
     const ukuranCetakBagian1 = parseFloat(
       formData.ukuran_cetak_bagian_1 || '0',
@@ -385,7 +385,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
     );
 
     return {
-      totalKertas,
+      total_kertas,
       ukuranCetakBagian1,
       ukuranCetakBagian2,
       ongkosPonsHarga,
@@ -572,7 +572,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               </div>
               <div className="font-mono bg-white p-3 rounded-lg border border-blue-100">
                 <strong className="text-blue-800">Unit Price =</strong>{' '}
-                {formulaValues.totalKertas.toLocaleString('id-ID')} × (
+                {formulaValues.total_kertas.toLocaleString('id-ID')} × (
                 {formulaValues.ukuranCetakBagian1} +{' '}
                 {formulaValues.ukuranCetakBagian2}) ×{' '}
                 {formulaValues.ongkosPonsHarga.toLocaleString('id-ID')}
@@ -783,7 +783,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               </div>
               <div className="font-mono bg-white p-3 rounded-lg border border-red-100">
                 <strong className="text-red-800">Harga Potong Jadi =</strong> ((
-                {formulaValues.totalKertas.toLocaleString('id-ID')} / 500) ×{' '}
+                {formulaValues.total_kertas.toLocaleString('id-ID')} / 500) ×{' '}
                 {formulaValues.potongJadiHarga.toLocaleString('id-ID')}) ×{' '}
                 {formulaValues.qtyPotong}
               </div>

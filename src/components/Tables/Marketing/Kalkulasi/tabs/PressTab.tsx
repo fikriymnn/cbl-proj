@@ -323,14 +323,14 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     // Check if required fields are available
     if (
       !selectedMesin ||
-      !formData.totalKertas ||
+      !formData.total_kertas ||
       (!formData.ukuran_cetak_bagian_1 && !formData.ukuran_cetak_bagian_2)
     ) {
       return 0;
     }
 
     // Parse numbers correctly with thousand separators
-    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const totalWarna = Number(formData.jumlah_warna) || 0;
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
@@ -340,8 +340,8 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       return 0;
     }
 
-    // Calculate rate: totalKertas × (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)
-    const rate = totalKertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
+    // Calculate rate: total_kertas × (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)
+    const rate = total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
     const rateTable = normalRateTable;
 
@@ -368,11 +368,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
   // Calculate coating depan cost with batas_harga condition
   const calculateHargaCoatingDepan = (): number => {
-    if (!selectedCoatingDepan || !formData.totalKertas) {
+    if (!selectedCoatingDepan || !formData.total_kertas) {
       return 0;
     }
 
-    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
     const ukuranCetakPanjang1 = Number(formData.ukuran_cetak_panjang_1) || 0;
@@ -382,7 +382,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
     // Calculate the result using the formula
     const calculatedResult =
-      totalKertas *
+      total_kertas *
       (ukuranCetakBagian1 + ukuranCetakBagian2) *
       ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
         (ukuranCetakLebar1 + ukuranCetakLebar2)) *
@@ -396,11 +396,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
   // Calculate coating belakang cost
   const calculateHargaCoatingBelakang = (): number => {
-    if (!selectedCoatingBelakang || !formData.totalKertas) {
+    if (!selectedCoatingBelakang || !formData.total_kertas) {
       return 0;
     }
 
-    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
     const ukuranCetakPanjang1 = Number(formData.ukuran_cetak_panjang_1) || 0;
@@ -410,7 +410,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
     // Calculate the result using the formula
     const calculatedResult =
-      totalKertas *
+      total_kertas *
       (ukuranCetakBagian1 + ukuranCetakBagian2) *
       ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
         (ukuranCetakLebar1 + ukuranCetakLebar2)) *
@@ -424,9 +424,9 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
   // Add helper functions to check if batas_harga is being used
   const isUsingBatasHargaDepan = (): boolean => {
-    if (!selectedCoatingDepan || !formData.totalKertas) return false;
+    if (!selectedCoatingDepan || !formData.total_kertas) return false;
 
-    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
     const ukuranCetakPanjang1 = Number(formData.ukuran_cetak_panjang_1) || 0;
@@ -435,7 +435,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
 
     const calculatedResult =
-      totalKertas *
+      total_kertas *
       (ukuranCetakBagian1 + ukuranCetakBagian2) *
       ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
         (ukuranCetakLebar1 + ukuranCetakLebar2)) *
@@ -446,9 +446,9 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
   };
 
   const isUsingBatasHargaBelakang = (): boolean => {
-    if (!selectedCoatingBelakang || !formData.totalKertas) return false;
+    if (!selectedCoatingBelakang || !formData.total_kertas) return false;
 
-    const totalKertas = parseNumberWithSeparator(formData.totalKertas);
+    const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
     const ukuranCetakPanjang1 = Number(formData.ukuran_cetak_panjang_1) || 0;
@@ -457,7 +457,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
 
     const calculatedResult =
-      totalKertas *
+      total_kertas *
       (ukuranCetakBagian1 + ukuranCetakBagian2) *
       ((ukuranCetakPanjang1 + ukuranCetakPanjang2) *
         (ukuranCetakLebar1 + ukuranCetakLebar2)) *
@@ -574,7 +574,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     onInputChange(event);
   }, [
     selectedMesin,
-    formData.totalKertas,
+    formData.total_kertas,
     formData.ukuran_cetak_bagian_1,
     formData.ukuran_cetak_bagian_2,
     formData.jumlah_warna,
@@ -604,7 +604,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     onInputChange(event);
   }, [
     selectedCoatingDepan,
-    formData.totalKertas,
+    formData.total_kertas,
     formData.ukuran_cetak_bagian_1,
     formData.ukuran_cetak_bagian_2,
     formData.ukuran_cetak_panjang_1,
@@ -626,7 +626,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     onInputChange(event);
   }, [
     selectedCoatingBelakang,
-    formData.totalKertas,
+    formData.total_kertas,
     formData.ukuran_cetak_bagian_1,
     formData.ukuran_cetak_bagian_2,
     formData.ukuran_cetak_panjang_1,
@@ -649,7 +649,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
   }, [
     selectedCoatingDepan,
     selectedCoatingBelakang,
-    formData.totalKertas,
+    formData.total_kertas,
     formData.ukuran_cetak_bagian_1,
     formData.ukuran_cetak_bagian_2,
     formData.ukuran_cetak_panjang_1,
@@ -659,22 +659,22 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
   ]);
   // Debug effect - UPDATED
   useEffect(() => {
-    const totalKertasOriginal = formData.totalKertas;
-    const totalKertasParsed = parseNumberWithSeparator(formData.totalKertas);
+    const total_kertasOriginal = formData.total_kertas;
+    const total_kertasParsed = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
     const calculatedRate =
-      totalKertasParsed * (ukuranCetakBagian1 + ukuranCetakBagian2);
+      total_kertasParsed * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
     console.log('Debug values:', {
-      totalKertasOriginal,
-      totalKertasParsed,
+      total_kertasOriginal,
+      total_kertasParsed,
       ukuran_cetak_bagian_1: formData.ukuran_cetak_bagian_1,
       ukuran_cetak_bagian_2: formData.ukuran_cetak_bagian_2,
       calculatedRate,
     });
   }, [
-    formData.totalKertas,
+    formData.total_kertas,
     formData.ukuran_cetak_bagian_1,
     formData.ukuran_cetak_bagian_2,
   ]);
@@ -838,15 +838,15 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
             <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50">
               <span className="font-medium">
                 {(() => {
-                  const totalKertas = parseNumberWithSeparator(
-                    formData.totalKertas,
+                  const total_kertas = parseNumberWithSeparator(
+                    formData.total_kertas,
                   );
                   const ukuranCetakBagian1 =
                     Number(formData.ukuran_cetak_bagian_1) || 0;
                   const ukuranCetakBagian2 =
                     Number(formData.ukuran_cetak_bagian_2) || 0;
                   const rate =
-                    totalKertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
+                    total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
                   return new Intl.NumberFormat('id-ID').format(rate);
                 })()}
               </span>
@@ -901,7 +901,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
         </div>
 
         {/* Calculation Details */}
-        {selectedMesin && formData.totalKertas && (
+        {selectedMesin && formData.total_kertas && (
           <div className="pb-4 mt-4 border-b ">
             <h4 className="text-sm font-medium text-gray-600 mb-2">
               Calculation Details
@@ -911,8 +911,8 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                 <span className="text-gray-500">Formula:</span>
                 <div className="font-medium">
                   {(() => {
-                    const totalKertas = parseNumberWithSeparator(
-                      formData.totalKertas,
+                    const total_kertas = parseNumberWithSeparator(
+                      formData.total_kertas,
                     );
                     const totalWarna = Number(formData.jumlah_warna) || 0;
                     const ukuranCetakBagian1 =
@@ -920,7 +920,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                     const ukuranCetakBagian2 =
                       Number(formData.ukuran_cetak_bagian_2) || 0;
                     const rate =
-                      totalKertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
+                      total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
                     if (rate < 3000) {
                       return `Base Rate`;
@@ -946,15 +946,15 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                 <span className="text-gray-500">Rate Category:</span>
                 <div className="font-medium">
                   {(() => {
-                    const totalKertas = parseNumberWithSeparator(
-                      formData.totalKertas,
+                    const total_kertas = parseNumberWithSeparator(
+                      formData.total_kertas,
                     );
                     const ukuranCetakBagian1 =
                       Number(formData.ukuran_cetak_bagian_1) || 0;
                     const ukuranCetakBagian2 =
                       Number(formData.ukuran_cetak_bagian_2) || 0;
                     const rate =
-                      totalKertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
+                      total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
                     if (rate <= 3000) return '< 3,000 (Base Rate)';
                     if (rate > 3000 && rate <= 5000) return '3,001 - 5,000';
@@ -970,15 +970,15 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                 <span className="text-gray-500">Applied Rate:</span>
                 <div className="font-medium">
                   {(() => {
-                    const totalKertas = parseNumberWithSeparator(
-                      formData.totalKertas,
+                    const total_kertas = parseNumberWithSeparator(
+                      formData.total_kertas,
                     );
                     const ukuranCetakBagian1 =
                       Number(formData.ukuran_cetak_bagian_1) || 0;
                     const ukuranCetakBagian2 =
                       Number(formData.ukuran_cetak_bagian_2) || 0;
                     const rate =
-                      totalKertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
+                      total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
                     const rateTable = normalRateTable;
                     const machineType = getMachineType(
@@ -1163,7 +1163,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
         {/* Coating Calculation Details */}
         {(selectedCoatingDepan || selectedCoatingBelakang) &&
-          formData.totalKertas && (
+          formData.total_kertas && (
             <div className="mt-4 border-t pt-4">
               <h4 className="text-sm font-medium text-gray-600 mb-2">
                 Coating Calculation Details
@@ -1204,7 +1204,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                             </span>
                           ) : (
                             `${parseNumberWithSeparator(
-                              formData.totalKertas,
+                              formData.total_kertas,
                             ).toLocaleString('id-ID')} × (${
                               formData.ukuran_cetak_bagian_1 || 0
                             } + ${formData.ukuran_cetak_bagian_2 || 0}) × ((${
@@ -1273,7 +1273,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                             </span>
                           ) : (
                             `${parseNumberWithSeparator(
-                              formData.totalKertas,
+                              formData.total_kertas,
                             ).toLocaleString('id-ID')} × (${
                               formData.ukuran_cetak_bagian_1 || 0
                             } + ${formData.ukuran_cetak_bagian_2 || 0}) × ((${
