@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import OKPModal from './OKPModal';
 
 interface OKPItem {
-  id: number; // Added ID field for detail view
+  okp_proses: any;
+  id: number;
   id_kalkulasi: number;
   no_okp: string;
   status_okp: string;
@@ -16,6 +17,7 @@ interface OKPItem {
   status_po: string;
   keterangan_cetak: string;
   tahapan: string[];
+  posisi_proses: string;
 }
 
 interface ApiResponse<T> {
@@ -27,20 +29,32 @@ interface ApiError {
   message: string;
 }
 
-const OKPMarketing: React.FC = () => {
+const OKPDesain: React.FC = () => {
   const [data, setData] = useState<OKPItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [modalMode, setModalMode] = useState<'create' | 'detail'>('create');
   const [selectedOKPId, setSelectedOKPId] = useState<number | undefined>();
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [showActionModal, setShowActionModal] = useState<boolean>(false);
+  const [actionType, setActionType] = useState<'approve' | 'reject'>('approve');
+  const [selectedProcessId, setSelectedProcessId] = useState<
+    number | undefined
+  >();
+  const [formData, setFormData] = useState({
+    tgl_okp_desain: '',
+    note_okp_desain: '',
+  });
 
   const fetchOKPData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/okp`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/marketing/okp?posisi_proses=desain`;
     try {
       setLoading(true);
-      const res: AxiosResponse<ApiResponse<OKPItem[]>> = await axios.get(url);
-      console.log('Fetched OKP data:', res.data);
+      const res: AxiosResponse<ApiResponse<OKPItem[]>> = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Fetched OKP Desain data:', res.data);
       if (res.data && res.data.data) {
         setData(res.data.data);
       } else {
@@ -60,25 +74,75 @@ const OKPMarketing: React.FC = () => {
     fetchOKPData();
   }, []);
 
-  const handleAddOKP = () => {
-    setModalMode('create');
-    setSelectedOKPId(undefined);
-    setShowModal(true);
-  };
-
   const handleDetailOKP = (okpId: number) => {
-    setModalMode('detail');
     setSelectedOKPId(okpId);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setModalMode('create');
     setSelectedOKPId(undefined);
-    // Only refresh data if we were creating/editing
-    if (modalMode === 'create') {
+  };
+
+  const handleAction = (processId: number, type: 'approve' | 'reject') => {
+    setSelectedProcessId(processId);
+    setActionType(type);
+    setShowActionModal(true);
+    if (type === 'approve') {
+      setFormData({
+        tgl_okp_desain: new Date().toISOString().split('T')[0],
+        note_okp_desain: '',
+      });
+    } else {
+      setFormData({
+        tgl_okp_desain: '',
+        note_okp_desain: '',
+      });
+    }
+  };
+
+  const handleSubmitAction = async () => {
+    if (!selectedProcessId) return;
+
+    try {
+      if (actionType === 'approve') {
+        const url = `${
+          import.meta.env.VITE_API_LINK
+        }/marketing/okp/proses/action/${selectedProcessId}`;
+        await axios.put(
+          url,
+          {
+            bagian: 'desain',
+            tgl_okp_desain: formData.tgl_okp_desain,
+            note_okp_desain: formData.note_okp_desain,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+        alert('OKP berhasil diproses!');
+      } else {
+        const url = `${
+          import.meta.env.VITE_API_LINK
+        }/marketing/okp/proses/reject/${selectedProcessId}`;
+        await axios.put(
+          url,
+          {
+            bagian: 'desain',
+            note_reject: formData.note_okp_desain,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+        alert('OKP berhasil direject!');
+      }
+
+      setShowActionModal(false);
       fetchOKPData();
+    } catch (error) {
+      console.error('Error processing action:', error);
+      alert('Error processing action');
     }
   };
 
@@ -92,7 +156,6 @@ const OKPMarketing: React.FC = () => {
     });
   };
 
-  // Filter data based on search term
   const filteredData = data.filter(
     (item) =>
       item.no_okp.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -127,13 +190,6 @@ const OKPMarketing: React.FC = () => {
             </span>
           )}
         </div>
-        <button
-          onClick={handleAddOKP}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
-        >
-          <span className="text-lg">+</span>
-          Create OKP
-        </button>
       </div>
 
       {/* Data Table */}
@@ -161,9 +217,6 @@ const OKPMarketing: React.FC = () => {
                   RENCANA QTY PO
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  TGL KIRIM
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   STATUS PO
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -175,18 +228,18 @@ const OKPMarketing: React.FC = () => {
               {filteredData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={8}
                     className="px-6 py-8 text-center text-gray-500"
                   >
                     {searchTerm
                       ? 'No OKP found matching your search'
-                      : 'No OKP data available'}
+                      : 'No OKP data available for Desain'}
                   </td>
                 </tr>
               ) : (
                 filteredData.map((item, index) => (
                   <tr
-                    key={item.id || item.id_kalkulasi}
+                    key={item.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -198,17 +251,7 @@ const OKPMarketing: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`text-sm px-2 py-1 rounded font-medium ${
-                          item.status_okp === 'Baru'
-                            ? 'bg-blue-100 text-blue-800'
-                            : item.status_okp === 'Approved'
-                            ? 'bg-green-100 text-green-800'
-                            : item.status_okp === 'Draft'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
+                      <span className="bg-orange-100 text-orange-800 text-sm px-2 py-1 rounded font-medium">
                         {item.status_okp}
                       </span>
                     </td>
@@ -222,9 +265,6 @@ const OKPMarketing: React.FC = () => {
                       {item.rencana_qty_po
                         ? item.rencana_qty_po.toLocaleString('id-ID')
                         : '0'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(item.rencana_tgl_kirim)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
@@ -242,22 +282,37 @@ const OKPMarketing: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
                         <button
-                          onClick={() =>
-                            handleDetailOKP(item.id || item.id_kalkulasi)
-                          }
+                          onClick={() => handleDetailOKP(item.id)}
                           className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors"
                           title="View Details"
                         >
                           Detail
                         </button>
-                        {/* You can add more action buttons here if needed */}
-                        {/* <button 
-                          onClick={() => handleEditOKP(item.id)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm transition-colors ml-2"
-                          title="Edit OKP"
-                        >
-                          Edit
-                        </button> */}
+                        {item.okp_proses &&
+                          item.okp_proses
+                            .filter((p: any) => p.status === 'active')
+                            .map((process: any) => (
+                              <React.Fragment key={process.id}>
+                                <button
+                                  onClick={() =>
+                                    handleAction(process.id, 'approve')
+                                  }
+                                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors"
+                                  title="Process OKP"
+                                >
+                                  Process
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleAction(process.id, 'reject')
+                                  }
+                                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors"
+                                  title="Reject OKP"
+                                >
+                                  Reject
+                                </button>
+                              </React.Fragment>
+                            ))}
                       </div>
                     </td>
                   </tr>
@@ -268,49 +323,84 @@ const OKPMarketing: React.FC = () => {
         </div>
       </div>
 
-      {/* Empty State */}
-      {data.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
-            <svg
-              className="mx-auto h-12 w-12"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No OKP Records
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Get started by creating your first OKP record.
-          </p>
-          <button
-            onClick={handleAddOKP}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-          >
-            Create First OKP
-          </button>
-        </div>
-      )}
-
-      {/* Modal */}
+      {/* Detail Modal */}
       {showModal && (
         <OKPModal
           onClose={handleCloseModal}
-          mode={modalMode}
+          mode="detail"
           okpId={selectedOKPId}
         />
+      )}
+
+      {/* Action Modal */}
+      {showActionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h2 className="text-xl font-bold mb-4">
+              {actionType === 'approve'
+                ? 'Process OKP Desain'
+                : 'Reject OKP Desain'}
+            </h2>
+
+            {actionType === 'approve' && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tanggal OKP Desain
+                </label>
+                <input
+                  type="date"
+                  value={formData.tgl_okp_desain}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tgl_okp_desain: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {actionType === 'approve' ? 'Note OKP Desain' : 'Note Reject'}
+              </label>
+              <textarea
+                value={formData.note_okp_desain}
+                onChange={(e) =>
+                  setFormData({ ...formData, note_okp_desain: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={3}
+                placeholder={
+                  actionType === 'approve'
+                    ? 'Masukkan note untuk desain...'
+                    : 'Masukkan alasan reject...'
+                }
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowActionModal(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitAction}
+                className={`px-4 py-2 text-white rounded-md ${
+                  actionType === 'approve'
+                    ? 'bg-blue-500 hover:bg-blue-600'
+                    : 'bg-red-500 hover:bg-red-600'
+                }`}
+              >
+                {actionType === 'approve' ? 'Process' : 'Reject'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 };
 
-export default OKPMarketing;
+export default OKPDesain;
