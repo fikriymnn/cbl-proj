@@ -329,7 +329,11 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   useEffect(() => {
     const calculatetotal_kertas = () => {
       // Parse numeric values from form data
-      const qtyKalkulasi = parseFloat(formData.qty_kalkulasi) || 0;
+      const qtyKalkulasi =
+        parseFloat(formData.qty_kalkulasi?.toString() || '0') +
+        parseFloat(formData.print_insheet?.toString() || '0') +
+        parseFloat(formData.pons_insheet?.toString() || '0') +
+        parseFloat(formData.finishing_insheet?.toString() || '0');
       const ukuranCetakBagian1 =
         parseFloat(formData.ukuran_cetak_bagian_1) || 0;
       const ukuranCetakIsi1 = parseFloat(formData.ukuran_cetak_isi_1) || 0;

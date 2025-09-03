@@ -9,7 +9,7 @@ import {
   calculateFinancialData,
   PRODUCTION_COST_FIELDS,
   FINANCIAL_FIELDS,
-} from './utils/Calulations';
+} from './utils/calulations';
 
 export interface KalkulasiFormData {
   tgl_kalkulasi: string;
@@ -21,8 +21,10 @@ export interface KalkulasiFormData {
   id_produk: number;
   id_area_pengiriman: number;
   qty_kalkulasi: string;
+
   presentase_insheet: string;
   nama_area_pengiriman: string;
+  harga_pengiriman_awal?: string;
   nama_produk: string;
 
   print_insheet?: string;
@@ -106,6 +108,18 @@ export interface KalkulasiFormData {
   harga_spot_foil_manual?: string;
   harga_polimer_manual?: string;
 
+  //package
+  panjang_packaging?: string;
+  lebar_packaging?: string;
+  no_packaging?: string;
+  jumlah_kirim?: string;
+  harga_packaging?: string;
+  harga_pengiriman?: string;
+  jenis_packing?: string;
+  id_packing?: string;
+  qty_packing?: string;
+  harga_packing?: string;
+
   //profit bar
   harga_produksi: string;
   profit: string; // NEW: Profit percentage
@@ -119,6 +133,13 @@ export interface KalkulasiFormData {
   total_harga_satuan_customer: string;
   keterangan_harga: string;
   keterangan_kerja: string;
+
+  //lain lain
+  lain_lain?: Array<{
+    nama_item: string;
+    harga: number;
+  }>;
+  total_harga_lain_lain?: string; // Add calculated total
 }
 
 interface ApiResponse<T = any> {
@@ -177,6 +198,8 @@ const initialFormData: KalkulasiFormData = {
   nama_area_pengiriman: '',
   nama_produk: '',
   profit: '',
+  lain_lain: [], // Add initial empty array
+  total_harga_lain_lain: '0', // Add initial total
 };
 
 const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
@@ -227,10 +250,21 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     const { name, value } = e.target;
 
     setFormData((prev) => {
-      const updated = {
-        ...prev,
-        [name]: value,
-      };
+      let updated = { ...prev };
+
+      // Special handling for lain_lain array
+      if (name === 'lain_lain') {
+        try {
+          // Parse the JSON string back to array
+          updated.lain_lain = JSON.parse(value);
+        } catch (error) {
+          console.error('Error parsing lain_lain:', error);
+          updated.lain_lain = [];
+        }
+      } else {
+        // Regular field handling
+        (updated as any)[name] = value;
+      }
 
       // Check if the changed field affects production cost
       if (PRODUCTION_COST_FIELDS.includes(name)) {
@@ -299,6 +333,9 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
         ukuran_cetak_lebar_2: Number(formData.ukuran_cetak_lebar_2),
         ukuran_cetak_bagian_2: Number(formData.ukuran_cetak_bagian_2),
         ukuran_cetak_isi_2: Number(formData.ukuran_cetak_isi_2),
+        // Include lain_lain in submission
+        lain_lain: formData.lain_lain || [],
+        total_harga_lain_lain: Number(formData.total_harga_lain_lain || 0),
       };
 
       const res: AxiosResponse<ApiResponse> = await axios.post(url, submitData);
@@ -334,6 +371,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
       }
     }
   };
+
   useEffect(() => {
     const newHargaProduksi = calculateHargaProduksi(formData);
     const currentHargaProduksi = formData.harga_produksi
@@ -359,7 +397,10 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     formData.harga_foil_manual,
     formData.harga_spot_foil_manual,
     formData.harga_polimer_manual,
+    formData.total_harga_lain_lain, // Add this dependency
+    formData.lain_lain, // Add this dependency
   ]);
+
   useEffect(() => {
     const financialData = calculateFinancialData(formData);
 
@@ -393,6 +434,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     formData.diskon,
     formData.qty_kalkulasi,
   ]);
+
   return (
     <div className="fixed inset-0 bg-white z-50 flex">
       <div className="flex-1 flex flex-col">
@@ -487,9 +529,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
-            onCancel={function (): void {
-              throw new Error('Function not implemented.');
-            }}
+            onCancel={handleCancelClick} // Fix this function reference
           />
         </div>
       </div>

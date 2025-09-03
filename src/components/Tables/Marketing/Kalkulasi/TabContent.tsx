@@ -6,6 +6,7 @@ import PrepressTab from './tabs/PrepressTab';
 import PressTab from './tabs/PressTab';
 import PostPressTab from './tabs/PostPressTab';
 import PostPress2Tab from './tabs/PostPress2Tab';
+import LainLainTab from './tabs/LainLainTab'; // Add this import
 
 interface TabContentProps {
   activeTab: string;
@@ -43,6 +44,10 @@ const TabContent: React.FC<TabContentProps> = ({
       case 'postpress':
         return (
           <PostPress2Tab formData={formData} onInputChange={onInputChange} />
+        );
+      case 'lain-lain': // Add this case
+        return (
+          <LainLainTab formData={formData} onInputChange={onInputChange} />
         );
       default:
         return (

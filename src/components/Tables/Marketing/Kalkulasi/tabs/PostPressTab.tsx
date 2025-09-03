@@ -338,7 +338,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       if (potongJadiOption) {
         const total_kertasString = formData.total_kertas?.toString() || '0';
         const total_kertas = parseFloat(total_kertasString.replace(/\./g, ''));
-        const qtyPotong = parseFloat(getCurrentValue('qty_potong', '0'));
+        const qtyPotong = parseFloat(getCurrentValue('qty_potong', '1'));
         const baseHarga = (total_kertas / 500) * potongJadiOption.harga;
         const totalHargaPotongJadi = baseHarga * qtyPotong;
 
@@ -743,7 +743,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="1"
               step="1"
-              min="0"
+              min="1"
               disabled={getCurrentValue('potong_jadi') === 'No'}
             />
           </div>

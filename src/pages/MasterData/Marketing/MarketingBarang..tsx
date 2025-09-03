@@ -692,6 +692,8 @@ function MarketingBarang(): JSX.Element {
                         Special Finishing
                       </option>
                       <option value="LEM">LEM</option>
+                      <option value="CORRUGATED">CORRUGATED</option>
+                      <option value="CASSING">CASSING</option>
                     </select>
                   </div>
                   {/*Sub Kategori */}

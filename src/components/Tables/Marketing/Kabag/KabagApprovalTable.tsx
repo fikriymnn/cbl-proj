@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
-import KalkulasiModal from './KalkulasiModal';
-import KalkulasiDetailModal from './KalkulasiDetailModal';
+import KalkulasiDetailModal from '../Kalkulasi/KalkulasiDetailModal';
+
 // Keep all the interfaces at the top
 interface KalkulasiItem {
   status_proses: string;
@@ -160,7 +160,7 @@ interface LainLainItem {
   createdAt: string;
   updatedAt: string;
 }
-const KalkulasiNormal: React.FC = () => {
+const KabagApprovalTable: React.FC = () => {
   const [data, setData] = useState<KalkulasiItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -199,14 +199,6 @@ const KalkulasiNormal: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleCloseModal = (): void => {
-    setShowModal(false);
-  };
-
-  const handleModalSuccess = (): void => {
-    fetchKalkulasiData();
-    setShowModal(false);
-  };
   const fetchKalkulasiDetail = async (id: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi/${id}`;
     try {
@@ -236,11 +228,11 @@ const KalkulasiNormal: React.FC = () => {
     setSelectedDetailData(null);
   };
   async function RequestKabag(id: any) {
-    if (window.confirm('Apakah Anda yakin ingin Submit Kalkulasi Ini?')) {
+    if (window.confirm('Apakah Anda yakin ingin Approve Kalkulasi Ini?')) {
       try {
         const url = `${
           import.meta.env.VITE_API_LINK
-        }/marketing/kalkulasi/submit/${id}`;
+        }/marketing/kalkulasi/approve/${id}`;
         const res = await axios.put(url, {
           withCredentials: true,
         });
@@ -258,28 +250,31 @@ const KalkulasiNormal: React.FC = () => {
       </div>
     );
   }
+  async function RejectKabag(id: any) {
+    if (window.confirm('Apakah Anda yakin ingin Reject Kalkulasi Ini?')) {
+      try {
+        const url = `${
+          import.meta.env.VITE_API_LINK
+        }/marketing/kalkulasi/reject/${id}`;
+        const res = await axios.put(url, {
+          withCredentials: true,
+        });
 
+        fetchKalkulasiData();
+      } catch (error: any) {
+        console.log(error);
+      }
+    }
+  }
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
   return (
     <div className="container mx-auto py-1">
-      {/* Header - remains the same */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            className="border border-gray-300 rounded px-2 py-1"
-          />
-        </div>
-        <div className="">
-          <button
-            onClick={handleOpenModal}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg"
-            type="button"
-          >
-            + KALKULASI
-          </button>
-        </div>
-      </div>
-
       {/* Data Table - Add Actions column */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
@@ -310,6 +305,7 @@ const KalkulasiNormal: React.FC = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Harga Per PCS
                 </th>
+
                 <th className="px-4 py-3  text-xs font-medium text-gray-500 uppercase text-center">
                   Status
                 </th>
@@ -365,12 +361,20 @@ const KalkulasiNormal: React.FC = () => {
                       >
                         {detailLoading ? 'Loading...' : 'Detail'}
                       </button>
-                      {item.status == 'draft' && (
+                      {item.status == 'requested' && (
                         <button
                           onClick={() => RequestKabag(item.id)}
                           className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
                         >
-                          Submit
+                          Approve
+                        </button>
+                      )}
+                      {item.status == 'requested' && (
+                        <button
+                          onClick={() => RejectKabag(item.id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
+                        >
+                          Reject
                         </button>
                       )}
                     </td>
@@ -391,14 +395,6 @@ const KalkulasiNormal: React.FC = () => {
         </div>
       </div>
 
-      {/* Existing Modal */}
-      {showModal && (
-        <KalkulasiModal
-          onClose={handleCloseModal}
-          onSuccess={handleModalSuccess}
-        />
-      )}
-
       {/* Detail Modal */}
       {showDetailModal && selectedDetailData && (
         <KalkulasiDetailModal
@@ -410,4 +406,4 @@ const KalkulasiNormal: React.FC = () => {
   );
 };
 
-export default KalkulasiNormal;
+export default KabagApprovalTable;

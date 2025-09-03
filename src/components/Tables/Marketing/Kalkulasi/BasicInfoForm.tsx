@@ -274,6 +274,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         value: pengiriman?.nama_area || '',
       },
     } as React.ChangeEvent<HTMLSelectElement>);
+    onInputChange({
+      target: {
+        name: 'harga_pengiriman_awal',
+        value: pengiriman?.harga || '',
+      },
+    } as React.ChangeEvent<HTMLSelectElement>);
   };
 
   // FIXED: Get selected values for controlled components

@@ -596,6 +596,11 @@ export const menuCategories: MenuCategory[] = [
         icon: 'payroll',
       },
       {
+        name: 'Kabag Approval',
+        path: '/marketing/kabagapproval',
+        icon: 'payroll',
+      },
+      {
         name: 'Master Marketing',
         path: '/master/marketing',
         icon: 'payroll',

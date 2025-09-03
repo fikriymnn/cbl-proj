@@ -59,27 +59,36 @@ const parseCurrencyString = (value: string | number | undefined): number => {
 
 export const calculateHargaProduksi = (formData: KalkulasiFormData): number => {
   const fields = [
-    parseCurrencyString(formData.total_harga_kertas), // 8.395.625 -> 8395625
-    parseCurrencyString(formData.jumlah_harga_cetak), // 731250 -> 731250
-    parseCurrencyString(formData.total_harga_coating), // 400000 -> 400000
-    parseCurrencyString(formData.total_harga_ongkos_pons), // 175.000,00 -> 175000
-    parseCurrencyString(formData.harga_pisau), // Should be parsed correctly
-    parseCurrencyString(formData.harga_lipat), // 80.000,00 -> 80000
-    parseCurrencyString(formData.harga_potong_jadi), // 25.000,00 -> 25000
-    parseCurrencyString(formData.jumlah_harga_lem), // 150.000,00 -> 150000
-    parseCurrencyString(formData.harga_foil_manual), // Should be parsed correctly
-    parseCurrencyString(formData.harga_spot_foil_manual), // Should be parsed correctly
-    parseCurrencyString(formData.harga_polimer_manual), // Should be parsed correctly
+    parseCurrencyString(formData.total_harga_kertas),
+    parseCurrencyString(formData.jumlah_harga_cetak),
+    parseCurrencyString(formData.total_harga_coating),
+    parseCurrencyString(formData.total_harga_ongkos_pons),
+    parseCurrencyString(formData.harga_pisau),
+    parseCurrencyString(formData.harga_lipat),
+    parseCurrencyString(formData.harga_potong_jadi),
+    parseCurrencyString(formData.jumlah_harga_lem),
+    parseCurrencyString(formData.harga_foil_manual),
+    parseCurrencyString(formData.harga_spot_foil_manual),
+    parseCurrencyString(formData.harga_polimer_manual),
     parseCurrencyString(formData.harga_plate),
+    parseCurrencyString(formData.harga_packaging),
+    parseCurrencyString(formData.harga_packing),
+    parseCurrencyString(formData.harga_pengiriman),
+    parseCurrencyString(formData.total_harga_lain_lain), // Add this line
   ];
 
-  console.log('Individual parsed values:', fields);
   const total = fields.reduce((total, value) => total + value, 0);
-  console.log('Total Harga Produksi:', total);
-
   return total;
 };
+export const calculateLainLainTotal = (
+  lainLain?: Array<{ nama_item: string; harga: number }>,
+): number => {
+  if (!lainLain || lainLain.length === 0) return 0;
 
+  return lainLain.reduce((total, item) => {
+    return total + (parseCurrencyString(item.harga) || 0);
+  }, 0);
+};
 // utils/calculations.ts
 export const calculateFinancialData = (formData: KalkulasiFormData) => {
   const hargaProduksi = parseCurrencyString(formData.harga_produksi);
@@ -119,7 +128,6 @@ export const calculateFinancialData = (formData: KalkulasiFormData) => {
   };
 };
 
-// Fields that affect production cost
 export const PRODUCTION_COST_FIELDS = [
   'total_harga_kertas',
   'jumlah_harga_cetak',
@@ -128,6 +136,8 @@ export const PRODUCTION_COST_FIELDS = [
   'total_harga_coating',
   'total_harga_ongkos_pons',
   'harga_pisau',
+  'harga_packaging',
+  'harga_pengiriman',
   'harga_lipat',
   'harga_potong_jadi',
   'jumlah_harga_lem',
@@ -135,6 +145,9 @@ export const PRODUCTION_COST_FIELDS = [
   'harga_spot_foil_manual',
   'harga_polimer_manual',
   'harga_plate',
+  'harga_packing',
+  'lain_lain', // This will trigger recalculation when lain_lain changes
+  'total_harga_lain_lain', // This will be included in the production cost
 ];
 
 // Fields that affect financial calculations
