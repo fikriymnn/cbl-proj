@@ -203,6 +203,7 @@ import MarketingUnit from './pages/MasterData/Marketing/MarketingUnit';
 import MarketingBarang from './pages/MasterData/Marketing/MarketingBarang.';
 import KalkulasiPageMarketing from './pages/Marketing/Kalkulasi/KalkulasiPage';
 import KabagApproval from './pages/Marketing/Kabag/KabagApproval';
+import OKPPage from './pages/Marketing/OKP/OKPPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -249,6 +250,16 @@ function App() {
               <PageTitle title="PT CBL" />
 
               <KabagApproval />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/okp"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <OKPPage />
             </>
           }
         />

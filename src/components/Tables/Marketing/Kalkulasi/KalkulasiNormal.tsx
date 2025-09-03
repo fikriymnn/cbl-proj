@@ -4,6 +4,7 @@ import KalkulasiModal from './KalkulasiModal';
 import KalkulasiDetailModal from './KalkulasiDetailModal';
 // Keep all the interfaces at the top
 interface KalkulasiItem {
+  note_kabag?: string | null;
   status_proses: string;
   id: number;
   kode_kalkulasi: string | null;
@@ -356,6 +357,12 @@ const KalkulasiNormal: React.FC = () => {
                       <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs uppercase ">
                         {item.status_proses}
                       </span>
+                      <br />
+                      {item.status_proses == 'reject kabag' && (
+                        <span className="text-red-500 text-xs">
+                          {item?.note_kabag}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs flex flex-col gap-2">
                       <button

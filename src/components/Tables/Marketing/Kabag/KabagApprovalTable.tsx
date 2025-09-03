@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import KalkulasiDetailModal from '../Kalkulasi/KalkulasiDetailModal';
+import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 
 // Keep all the interfaces at the top
 interface KalkulasiItem {
@@ -163,8 +164,11 @@ interface LainLainItem {
 const KabagApprovalTable: React.FC = () => {
   const [data, setData] = useState<KalkulasiItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [showModal, setShowModal] = useState<boolean>(false);
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
+  const [alasanPending, setalasanPending] = useState<any>();
+  const [showPending, setShowPending] = useState(false);
+  const openModalPending = () => setShowPending(true);
+  const closeModalPending = () => setShowPending(false);
   const [selectedDetailData, setSelectedDetailData] =
     useState<KalkulasiDetailItem | null>(null);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
@@ -193,10 +197,6 @@ const KabagApprovalTable: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleOpenModal = (): void => {
-    setShowModal(true);
   };
 
   const fetchKalkulasiDetail = async (id: number): Promise<void> => {
@@ -256,16 +256,23 @@ const KabagApprovalTable: React.FC = () => {
         const url = `${
           import.meta.env.VITE_API_LINK
         }/marketing/kalkulasi/reject/${id}`;
-        const res = await axios.put(url, {
-          withCredentials: true,
-        });
-
+        const res = await axios.put(
+          url,
+          {
+            note_kabag: alasanPending,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+        closeModalPending();
         fetchKalkulasiData();
       } catch (error: any) {
         console.log(error);
       }
     }
   }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -273,6 +280,7 @@ const KabagApprovalTable: React.FC = () => {
       </div>
     );
   }
+
   return (
     <div className="container mx-auto py-1">
       {/* Data Table - Add Actions column */}
@@ -371,11 +379,40 @@ const KabagApprovalTable: React.FC = () => {
                       )}
                       {item.status == 'requested' && (
                         <button
-                          onClick={() => RejectKabag(item.id)}
+                          onClick={() => openModalPending()}
                           className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
                         >
                           Reject
                         </button>
+                      )}
+                      {showPending == true && (
+                        <>
+                          <ModalKosonganSmall
+                            isOpen={showPending}
+                            onClose={() => closeModalPending()}
+                            judul={'Alasan Reject'}
+                          >
+                            <>
+                              <div className="flex flex-col gap-2 px-4 py-4">
+                                <div className="flex gap-2 flex-col w-full">
+                                  <input
+                                    onChange={(e) =>
+                                      setalasanPending(e.target.value)
+                                    }
+                                    type="text"
+                                    className="border-2 border-stroke w-full rounded-sm col-span-2 h-10"
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => RejectKabag(item.id)}
+                                  className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                                >
+                                  REJECT
+                                </button>
+                              </div>
+                            </>
+                          </ModalKosonganSmall>
+                        </>
                       )}
                     </td>
                   </tr>
