@@ -329,11 +329,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   useEffect(() => {
     const calculatetotal_kertas = () => {
       // Parse numeric values from form data
-      const qtyKalkulasi =
-        parseFloat(formData.qty_kalkulasi?.toString() || '0') +
-        parseFloat(formData.print_insheet?.toString() || '0') +
-        parseFloat(formData.pons_insheet?.toString() || '0') +
-        parseFloat(formData.finishing_insheet?.toString() || '0');
+      const qtyKalkulasi = parseFloat(
+        formData.qty_kalkulasi?.toString() || '0',
+      );
       const ukuranCetakBagian1 =
         parseFloat(formData.ukuran_cetak_bagian_1) || 0;
       const ukuranCetakIsi1 = parseFloat(formData.ukuran_cetak_isi_1) || 0;
@@ -345,33 +343,21 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       const finishingInsheet =
         parseFloat(formData.finishing_insheet || '0') || 0;
 
-      // Only calculate if we have the required values
+      const totalInsheet = printInsheet + ponsInsheet + finishingInsheet;
+
+      // Apply your desired formula: ((qty_kalkulasi / (ukuran_cetak_isi_1+ukuran_cetak_isi_2)) + totalInsheet) * (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)
+      const totalUkuranCetakIsi = ukuranCetakIsi1 + ukuranCetakIsi2;
+      const totalUkuranCetakBagian = ukuranCetakBagian1 + ukuranCetakBagian2;
+
+      // Only calculate if we have the required values to avoid division by zero
       if (
         qtyKalkulasi > 0 &&
-        (ukuranCetakBagian1 > 0 || ukuranCetakBagian2 > 0)
+        totalUkuranCetakIsi > 0 &&
+        totalUkuranCetakBagian > 0
       ) {
-        let total_kertas = 0;
-
-        // First part of formula: qty_kalkulasi / (ukuran_cetak_bagian_1 * ukuran_cetak_isi_1)
-        if (ukuranCetakBagian1 > 0 && ukuranCetakIsi1 > 0) {
-          total_kertas += qtyKalkulasi / (ukuranCetakBagian1 * ukuranCetakIsi1);
-        }
-
-        // Second part: + (ukuran_cetak_bagian_2 * ukuran_cetak_isi_2)
-        if (ukuranCetakBagian2 > 0 && ukuranCetakIsi2 > 0) {
-          total_kertas += ukuranCetakBagian2 * ukuranCetakIsi2;
-        }
-
-        // Third part: + ((print_insheet + pons_insheet + finishing_insheet) / (ukuran_cetak_bagian_1 * ukuran_cetak_bagian_2))
-        const totalInsheet = printInsheet + ponsInsheet + finishingInsheet;
-        if (
-          totalInsheet > 0 &&
-          ukuranCetakBagian1 > 0 &&
-          ukuranCetakBagian2 > 0
-        ) {
-          total_kertas +=
-            totalInsheet / (ukuranCetakBagian1 * ukuranCetakBagian2);
-        }
+        const total_kertas =
+          (qtyKalkulasi / totalUkuranCetakIsi + totalInsheet) /
+          totalUkuranCetakBagian;
 
         // Update the total kertas field
         const calculatedValue = Math.ceil(total_kertas); // Round up to nearest integer

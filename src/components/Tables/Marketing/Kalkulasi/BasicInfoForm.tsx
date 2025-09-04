@@ -421,14 +421,8 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               { value: 0, label: 'Pilih Area Pengiriman' },
               ...pengirimans.map((pengiriman) => ({
                 value: pengiriman.id,
-                label: `${pengiriman.nama_area} +  ${new Intl.NumberFormat(
-                  'id-ID',
-                  {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0,
-                  },
-                ).format(pengiriman.harga)}`,
+                label: `${pengiriman.nama_area} 
+               `,
               })),
             ]}
             value={getSelectedPengirimanId()}
