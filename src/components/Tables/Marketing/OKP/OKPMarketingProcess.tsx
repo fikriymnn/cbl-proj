@@ -35,15 +35,6 @@ const OKPMarketingProcess: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedOKPId, setSelectedOKPId] = useState<number | undefined>();
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [showActionModal, setShowActionModal] = useState<boolean>(false);
-  const [actionType, setActionType] = useState<'approve' | 'reject'>('approve');
-  const [selectedProcessId, setSelectedProcessId] = useState<
-    number | undefined
-  >();
-  const [formData, setFormData] = useState({
-    tgl_terima_marketing: '',
-    note_terima_marketing: '',
-  });
 
   const fetchOKPData = async (): Promise<void> => {
     const url = `${
@@ -51,7 +42,9 @@ const OKPMarketingProcess: React.FC = () => {
     }/marketing/okp?posisi_proses=marketing`;
     try {
       setLoading(true);
-      const res: AxiosResponse<ApiResponse<OKPItem[]>> = await axios.get(url);
+      const res: AxiosResponse<ApiResponse<OKPItem[]>> = await axios.get(url, {
+        withCredentials: true,
+      });
       console.log('Fetched OKP Marketing data:', res.data);
       if (res.data && res.data.data) {
         setData(res.data.data);
@@ -80,68 +73,6 @@ const OKPMarketingProcess: React.FC = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedOKPId(undefined);
-  };
-
-  const handleAction = (processId: number, type: 'approve' | 'reject') => {
-    setSelectedProcessId(processId);
-    setActionType(type);
-    setShowActionModal(true);
-    if (type === 'approve') {
-      setFormData({
-        tgl_terima_marketing: new Date().toISOString().split('T')[0],
-        note_terima_marketing: '',
-      });
-    } else {
-      setFormData({
-        tgl_terima_marketing: '',
-        note_terima_marketing: '',
-      });
-    }
-  };
-
-  const handleSubmitAction = async () => {
-    if (!selectedProcessId) return;
-
-    try {
-      if (actionType === 'approve') {
-        const url = `${
-          import.meta.env.VITE_API_LINK
-        }/marketing/okp/proses/action/${selectedProcessId}`;
-        await axios.put(
-          url,
-          {
-            bagian: 'marketing',
-            tgl_terima_marketing: formData.tgl_terima_marketing,
-            note_terima_marketing: formData.note_terima_marketing,
-          },
-          {
-            withCredentials: true,
-          },
-        );
-        alert('OKP berhasil diproses!');
-      } else {
-        const url = `${
-          import.meta.env.VITE_API_LINK
-        }/marketing/okp/proses/reject/${selectedProcessId}`;
-        await axios.put(
-          url,
-          {
-            bagian: 'marketing',
-            note_reject: formData.note_terima_marketing,
-          },
-          {
-            withCredentials: true,
-          },
-        );
-        alert('OKP berhasil direject!');
-      }
-
-      setShowActionModal(false);
-      fetchOKPData();
-    } catch (error) {
-      console.error('Error processing action:', error);
-      alert('Error processing action');
-    }
   };
 
   const formatDate = (dateString: string) => {
@@ -235,175 +166,81 @@ const OKPMarketingProcess: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredData.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded font-medium">
-                        {item.no_okp || '-'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="bg-indigo-100 text-indigo-800 text-sm px-2 py-1 rounded font-medium">
-                        {item.status_okp}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(item.tgl_target_marketing)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.id_pisau || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.rencana_qty_po
-                        ? item.rencana_qty_po.toLocaleString('id-ID')
-                        : '0'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`text-sm px-2 py-1 rounded font-medium ${
-                          item.status_po === 'tidak'
-                            ? 'bg-red-100 text-red-800'
-                            : item.status_po === 'ada'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {item.status_po}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleDetailOKP(item.id)}
-                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors"
-                          title="View Details"
+                filteredData.map((item, index) => {
+                  const hasActiveProcess = item.okp_proses?.some(
+                    (p: any) => p.status === 'active',
+                  );
+
+                  return (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded font-medium">
+                          {item.no_okp || '-'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="bg-indigo-100 text-indigo-800 text-sm px-2 py-1 rounded font-medium">
+                          {item.status_okp}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatDate(item.tgl_target_marketing)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.id_pisau || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.rencana_qty_po
+                          ? item.rencana_qty_po.toLocaleString('id-ID')
+                          : '0'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`text-sm px-2 py-1 rounded font-medium ${
+                            item.status_po === 'tidak'
+                              ? 'bg-red-100 text-red-800'
+                              : item.status_po === 'ada'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
                         >
-                          Detail
-                        </button>
-                        {item.okp_proses &&
-                          item.okp_proses
-                            .filter((p: any) => p.status === 'active')
-                            .map((process: any) => (
-                              <React.Fragment key={process.id}>
-                                <button
-                                  onClick={() =>
-                                    handleAction(process.id, 'approve')
-                                  }
-                                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors"
-                                  title="Process OKP"
-                                >
-                                  Process
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleAction(process.id, 'reject')
-                                  }
-                                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm transition-colors"
-                                  title="Reject OKP"
-                                >
-                                  Reject
-                                </button>
-                              </React.Fragment>
-                            ))}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {item.status_po}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleDetailOKP(item.id)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm transition-colors"
+                            title="View Details & Actions"
+                          >
+                            ACTION
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Detail Modal */}
+      {/* Modal for both detail and actions */}
       {showModal && (
         <OKPModal
           onClose={handleCloseModal}
-          mode="detail"
+          mode="marketing" // Add marketing mode
           okpId={selectedOKPId}
+          onActionComplete={fetchOKPData}
         />
-      )}
-
-      {/* Action Modal */}
-      {showActionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h2 className="text-xl font-bold mb-4">
-              {actionType === 'approve'
-                ? 'Process OKP Marketing'
-                : 'Reject OKP Marketing'}
-            </h2>
-
-            {actionType === 'approve' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tanggal Terima Marketing
-                </label>
-                <input
-                  type="date"
-                  value={formData.tgl_terima_marketing}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      tgl_terima_marketing: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            )}
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {actionType === 'approve'
-                  ? 'Note Terima Marketing'
-                  : 'Note Reject'}
-              </label>
-              <textarea
-                value={formData.note_terima_marketing}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    note_terima_marketing: e.target.value,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
-                placeholder={
-                  actionType === 'approve'
-                    ? 'Masukkan note untuk marketing...'
-                    : 'Masukkan alasan reject...'
-                }
-              />
-            </div>
-
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setShowActionModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmitAction}
-                className={`px-4 py-2 text-white rounded-md ${
-                  actionType === 'approve'
-                    ? 'bg-blue-500 hover:bg-blue-600'
-                    : 'bg-red-500 hover:bg-red-600'
-                }`}
-              >
-                {actionType === 'approve' ? 'Process' : 'Reject'}
-              </button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

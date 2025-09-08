@@ -29,11 +29,12 @@ const OKPForm: React.FC<OKPFormProps> = ({
   handleCancelClick,
 }) => {
   const [formData, setFormData] = useState<OKPFormData>({
+    id: 0,
     no_okp: '',
     status_okp: 'Baru',
     tgl_target_marketing: '',
     jenis_pekerjaan: [],
-    id_pisau: '',
+    id_pisau: '', // Don't pre-fill this, let it be filled during desain process
     file_spek_customer: '',
     rencana_qty_po: 0,
     rencana_tgl_kirim: '',
@@ -149,6 +150,7 @@ const OKPForm: React.FC<OKPFormProps> = ({
           kalkulasiList={kalkulasiList}
           loadingKalkulasi={loadingKalkulasi}
           disabled={false}
+          isDesain={false} // Set to false for create form
         />
 
         <FileUploadSection
@@ -205,7 +207,7 @@ const OKPForm: React.FC<OKPFormProps> = ({
         selectedPage={selectedPage}
         setSelectedPage={setSelectedPage}
         uploading={uploading}
-        setUploading={setUploading} // Add this
+        setUploading={setUploading}
         handleFileUpload={handleFileUpload}
         handleInputChange={handleInputChange}
         setFilePreview={setFilePreview}

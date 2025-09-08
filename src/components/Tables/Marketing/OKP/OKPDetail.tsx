@@ -12,6 +12,15 @@ interface OKPDetailProps {
   loadingKalkulasi: boolean;
   onClose: () => void;
   handleCancelClick: () => void;
+  isDesain?: boolean;
+  isQA?: boolean;
+  isCustomer?: boolean; // Add customer prop
+  isMarketing?: boolean; // Add marketing prop
+  onAction?: (
+    processId: number,
+    type: 'approve' | 'reject',
+    currentIdPisau?: string,
+  ) => void;
 }
 
 const OKPDetail: React.FC<OKPDetailProps> = ({
@@ -20,8 +29,14 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
   loadingKalkulasi,
   onClose,
   handleCancelClick,
+  isDesain = false,
+  isQA = false,
+  isCustomer = false, // Add customer prop
+  isMarketing = false, // Add marketing prop
+  onAction,
 }) => {
   const [formData, setFormData] = useState<OKPFormData>({
+    id: 0,
     no_okp: '',
     status_okp: 'Baru',
     tgl_target_marketing: '',
@@ -35,9 +50,11 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
     tahapan: [],
     id_kalkulasi: 0,
   });
+
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [okpProcesses, setOkpProcesses] = useState<any[]>([]);
 
   // Fetch OKP data
   useEffect(() => {
@@ -65,6 +82,7 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
           };
 
           setFormData({
+            id: okpData.id,
             no_okp: okpData.no_okp || '',
             status_okp: okpData.status_okp || 'Baru',
             tgl_target_marketing: okpData.tgl_target_marketing || '',
@@ -78,6 +96,11 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
             tahapan: parseArrayField(okpData.tahapan),
             id_kalkulasi: okpData.id_kalkulasi || 0,
           });
+
+          // Set OKP processes for desain, QA, and marketing actions
+          if (isDesain || isQA || isMarketing || isCustomer) {
+            setOkpProcesses(okpData.okp_proses || []);
+          }
         }
       } catch (error: any) {
         console.error('Error fetching OKP data:', error);
@@ -90,11 +113,33 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
     if (okpId) {
       fetchOKPData();
     }
-  }, [okpId]);
+  }, [okpId, isDesain, isQA, isMarketing]);
 
-  // Disabled handler - does nothing in detail mode
+  // Disabled handler for regular detail mode
   const handleInputChange = () => {};
   const handleCheckboxChange = () => {};
+
+  // Handle action button clicks (delegate to parent)
+  const handleActionClick = (processId: number, type: 'approve' | 'reject') => {
+    if (onAction) {
+      onAction(processId, type, formData.id_pisau);
+    }
+  };
+
+  // Get active processes for desain, QA, and marketing
+  const activeProcesses =
+    isDesain || isQA || isMarketing || isCustomer
+      ? okpProcesses.filter((p: any) => p.status === 'active')
+      : [];
+
+  // Get mode name for display
+  const getModeName = () => {
+    if (isDesain) return 'Design';
+    if (isQA) return 'QA';
+    if (isMarketing) return 'Marketing';
+    if (isCustomer) return 'Customer';
+    return '';
+  };
 
   if (loading) {
     return (
@@ -126,12 +171,44 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
   return (
     <>
       <div className="p-6 space-y-6">
+        {/* Show mode indicator for desain, QA, and marketing */}
+        {(isDesain || isQA || isMarketing || isCustomer) && (
+          <div
+            className={`${
+              isDesain
+                ? 'bg-blue-50 border-blue-400'
+                : isQA
+                ? 'bg-orange-50 border-orange-400'
+                : 'bg-green-50 border-green-400'
+            } border-l-4 p-4`}
+          >
+            <div className="flex">
+              <div className="ml-3">
+                <p
+                  className={`text-sm ${
+                    isDesain
+                      ? 'text-blue-800'
+                      : isQA
+                      ? 'text-orange-800'
+                      : 'text-green-800'
+                  }`}
+                >
+                  <strong>{getModeName()} Mode:</strong> You can process the{' '}
+                  {getModeName().toLowerCase()} workflow
+                  {isDesain ? ' and input ID Pisau' : ''}.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <BasicInfoSection
           formData={formData}
           handleInputChange={handleInputChange}
           kalkulasiList={kalkulasiList}
           loadingKalkulasi={loadingKalkulasi}
           disabled={true}
+          isDesain={isDesain}
         />
 
         <FileUploadSection
@@ -153,7 +230,7 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
           setShowPdfPreview={() => {}}
           disabled={true}
           uploading={false}
-          setUploading={setUploading} // Add this
+          setUploading={setUploading}
         />
 
         <CheckboxSection
@@ -167,6 +244,59 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
           handleInputChange={handleInputChange}
           disabled={true}
         />
+
+        {/* Actions Section - show for desain, QA, and marketing modes */}
+        {(isDesain || isQA || isMarketing || isCustomer) &&
+          activeProcesses.length > 0 && (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                {getModeName()} Process Actions
+              </h3>
+              <div className="flex gap-2">
+                {activeProcesses.map((process: any) => (
+                  <React.Fragment key={process.id}>
+                    <button
+                      onClick={() => handleActionClick(process.id, 'approve')}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm transition-colors"
+                    >
+                      Process
+                    </button>
+                    <button
+                      onClick={() => handleActionClick(process.id, 'reject')}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm transition-colors"
+                    >
+                      Reject
+                    </button>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+
+        {/* Info message when no active processes */}
+        {(isDesain || isQA || isMarketing || isCustomer) &&
+          activeProcesses.length === 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="text-center text-yellow-800">
+                <p className="text-sm">
+                  No active {getModeName().toLowerCase()} processes available
+                  for this OKP.
+                </p>
+              </div>
+            </div>
+          )}
+
+        {/* Info message for non-action modes */}
+        {!isDesain && !isQA && !isMarketing && !isCustomer && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="text-center text-gray-600">
+              <p className="text-sm">
+                This is a read-only view. Process actions are available from the
+                main list.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer */}

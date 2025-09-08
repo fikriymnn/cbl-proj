@@ -1,4 +1,8 @@
 export interface KalkulasiItem {
+  id_kalkulasi: number;
+  warna_belakang: string;
+  nama_kertas: string;
+  warna_depan: string;
   id: number;
   status: string;
   status_kalkulasi: string;
@@ -150,6 +154,7 @@ export interface KalkulasiItem {
 }
 
 export interface OKPFormData {
+  id: any;
   no_okp: string;
   status_okp: string;
   tgl_target_marketing: string;

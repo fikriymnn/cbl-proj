@@ -183,34 +183,25 @@ const OKPKabag: React.FC = () => {
                   NO
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  KODE
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  STATUS ITEM PRODUK
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  TANGGAL KALKULASI
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  CUSTOMER
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  PRODUK
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  QTY
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  HARGA PER PCS
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  STATUS
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  STATUS APPROVAL
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ACTIONS
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  NO OKP
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  STATUS OKP
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  TGL TARGET MARKETING
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID PISAU
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  RENCANA QTY PO
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  STATUS PO
                 </th>
               </tr>
             </thead>
@@ -235,43 +226,8 @@ const OKPKabag: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      -
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded font-medium">
-                        {item.status_okp}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(item.tgl_target_marketing)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ANEKA KREASI PANGAN
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      DUS PISBOL MINI MARON BADAN
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.rencana_qty_po
-                        ? item.rencana_qty_po.toLocaleString('id-ID')
-                        : '0'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      Rp 2,141.06
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="bg-yellow-100 text-yellow-800 text-sm px-2 py-1 rounded font-medium">
-                        HISTORY
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="bg-yellow-100 text-yellow-800 text-sm px-2 py-1 rounded font-medium">
-                        APPROVE KABAG
-                      </span>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2">
                         <button
                           onClick={() => handleDetailOKP(item.id)}
                           className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm transition-colors"
@@ -298,6 +254,40 @@ const OKPKabag: React.FC = () => {
                           </>
                         )}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded font-medium">
+                        {item.no_okp || '-'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="bg-teal-100 text-teal-800 text-sm px-2 py-1 rounded font-medium">
+                        {item.status_okp}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDate(item.tgl_target_marketing)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {item.id_pisau || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {item.rencana_qty_po
+                        ? item.rencana_qty_po.toLocaleString('id-ID')
+                        : '0'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`text-sm px-2 py-1 rounded font-medium ${
+                          item.status_po === 'tidak'
+                            ? 'bg-red-100 text-red-800'
+                            : item.status_po === 'ada'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {item.status_po}
+                      </span>
                     </td>
                   </tr>
                 ))
