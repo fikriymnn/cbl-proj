@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
-
+import IODetailPopup from './IODetailPopup';
 interface IOData {
   id: number;
   no_io: string;
@@ -33,6 +33,8 @@ const IOMarketing: React.FC = () => {
     id_okp: '',
     is_revisi: false,
   });
+  const [showDetailPopup, setShowDetailPopup] = useState<boolean>(false);
+  const [selectedIOId, setSelectedIOId] = useState<number | null>(null);
 
   // Generate auto number for IO
   const generateIONumber = (): string => {
@@ -48,7 +50,7 @@ const IOMarketing: React.FC = () => {
 
     const nextNumber =
       existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 305;
-    const paddedNumber = String(nextNumber).padStart(6, '0');
+    const paddedNumber = String(nextNumber).padStart(5, '0');
 
     return `IO-${paddedNumber}/${month}/${year}`;
   };
@@ -62,7 +64,7 @@ const IOMarketing: React.FC = () => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
     try {
       setLoading(true);
-      const res: AxiosResponse = await axios.put(
+      const res: AxiosResponse = await axios.post(
         url,
         {
           id_okp: formData.id_okp,
@@ -124,7 +126,20 @@ const IOMarketing: React.FC = () => {
       setLoading(false);
     }
   };
-
+  const fetchIODataOne = async (id: any): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${id}`;
+    try {
+      setLoading(true);
+      const res: AxiosResponse = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Fetched IO data:', res.data);
+    } catch (error) {
+      console.error('Error fetching IO data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('id-ID', {
       day: '2-digit',
@@ -157,7 +172,10 @@ const IOMarketing: React.FC = () => {
     e.preventDefault();
     PutIO();
   };
-
+  const handleShowDetail = (ioId: number) => {
+    setSelectedIOId(ioId);
+    setShowDetailPopup(true);
+  };
   return (
     <div className="p-4">
       {/* Header */}
@@ -179,6 +197,9 @@ const IOMarketing: React.FC = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   No
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Action
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   No IO
@@ -227,6 +248,14 @@ const IOMarketing: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {index + 1}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleShowDetail(item.id)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+                      >
+                        Detail
+                      </button>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
                         {item.no_io}
@@ -269,7 +298,16 @@ const IOMarketing: React.FC = () => {
           </table>
         </div>
       </div>
-
+      {showDetailPopup && selectedIOId && (
+        <IODetailPopup
+          ioId={selectedIOId}
+          isOpen={showDetailPopup}
+          onClose={() => {
+            setShowDetailPopup(false);
+            setSelectedIOId(null);
+          }}
+        />
+      )}
       {/* Create IO Modal */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
