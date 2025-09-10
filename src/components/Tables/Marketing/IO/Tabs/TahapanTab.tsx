@@ -46,7 +46,10 @@ interface TahapanTabProps {
   isEditMode: boolean;
 }
 
-type LocalTahapan = TahapanData & { _clientId?: string };
+type LocalTahapan = TahapanData & {
+  _clientId?: string;
+  id_mesin?: number;
+};
 
 interface DragState {
   isDragging: boolean;
@@ -70,11 +73,9 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
   const [loading, setLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // New state for mode management
   const [mode, setMode] = useState<'view' | 'edit' | 'drag'>('view');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
-  // Drag and drop state
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
     draggedIndex: null,
@@ -345,7 +346,6 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
     });
   };
 
-  // Keep all the existing fetch functions unchanged
   const fetchTahapanMesin = async () => {
     try {
       setLoading(true);
@@ -384,11 +384,9 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
       console.error('Error fetching drying time:', error);
     }
   };
-
   // Keep all the existing utility functions unchanged
   const addNewTahapan = () => {
-    if (mode === 'drag') return; // Prevent adding while in drag mode
-
+    if (mode === 'drag') return;
     const clientId = `new-${newTempIdRef.current++}`;
     const newTahapan: LocalTahapan = {
       id_tahapan_mesin: 0,
@@ -403,18 +401,13 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
   };
 
   const removeTahapan = (index: number) => {
-    if (mode === 'drag') return; // Prevent removing while in drag mode
-
+    if (mode === 'drag') return;
     const updatedList = tahapanList
       .filter((_, i) => i !== index)
       .map((item, i) => ({ ...item, index: i + 1 }));
     setTahapanList(updatedList);
     onInputChange('tahapan', updatedList);
-
-    // If we're editing this item, stop editing
-    if (editingIndex === index) {
-      stopEditing();
-    }
+    if (editingIndex === index) stopEditing();
   };
 
   const updateTahapan = (index: number, field: string, value: any) => {
@@ -428,6 +421,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
           );
           if (selectedTahapanMesin) {
             updatedItem.nama_mesin = selectedTahapanMesin.mesin.nama_mesin;
+            updatedItem.id_mesin = selectedTahapanMesin.mesin.id;
             updatedItem.nama_proses = selectedTahapanMesin.tahapan.nama_tahapan;
           }
         }
@@ -459,15 +453,25 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
     onInputChange('tahapan', updatedList);
   };
 
+  const normalizeName = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/\s+/g, '') // remove all spaces
+      .trim();
+  };
+
   const getFilteredSettingKapasitas = (tahapanIndex: number) => {
     const currentTahapan = tahapanList[tahapanIndex];
     if (!currentTahapan?.nama_mesin) return [];
 
-    return settingKapasitasList.filter(
-      (setting) =>
-        setting.nama_mesin.toLowerCase() ===
-        currentTahapan.nama_mesin.toLowerCase(),
-    );
+    const currentName = normalizeName(currentTahapan.nama_mesin);
+
+    return settingKapasitasList.filter((setting) => {
+      const settingName = normalizeName(setting.nama_mesin);
+      return (
+        currentName.includes(settingName) || settingName.includes(currentName)
+      );
+    });
   };
 
   const getTahapanMesinOptions = () => {
@@ -483,7 +487,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
       ...filteredSettings.flatMap((s) => [
         {
           value: `${s.id}_a`,
-          label: `${s.nama_kategori} - Kapasitas A (${s.kapasitas_a}) - Setting: ${s.setting_a}`,
+          label: `${s.nama_mesin} - ${s.nama_kategori} - Kapasitas A (${s.kapasitas_a}) - Setting: ${s.setting_a}`,
           settingData: {
             ...s,
             type: 'a',
@@ -493,7 +497,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
         },
         {
           value: `${s.id}_b`,
-          label: `${s.nama_kategori} - Kapasitas B (${s.kapasitas_b}) - Setting: ${s.setting_b}`,
+          label: `${s.nama_mesin} - ${s.nama_kategori} - Kapasitas B (${s.kapasitas_b}) - Setting: ${s.setting_b}`,
           settingData: {
             ...s,
             type: 'b',
@@ -503,7 +507,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
         },
         {
           value: `${s.id}_c`,
-          label: `${s.nama_kategori} - Kapasitas C (${s.kapasitas_c}) - Setting: ${s.setting_c}`,
+          label: `${s.nama_mesin} - ${s.nama_kategori} - Kapasitas C (${s.kapasitas_c}) - Setting: ${s.setting_c}`,
           settingData: {
             ...s,
             type: 'c',
@@ -556,27 +560,11 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
 
   if (!isMounted) {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-gray-800">
-            Tahapan Proses
-          </h3>
-          <button
-            type="button"
-            onClick={addNewTahapan}
-            className="px-3 py-1.5 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-1 text-sm"
-          >
-            <span>+</span>
-            Tambah Proses
-          </button>
-        </div>
-        <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
-          Loading...
-        </div>
+      <div className="text-center py-6 text-gray-500 bg-gray-50 rounded-lg">
+        Loading...
       </div>
     );
   }
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
