@@ -7,6 +7,9 @@ import WarnaTab from './Tabs/WarnaTab';
 import CoatingTab from './Tabs/CoatingTab';
 import PondTab from './Tabs/PondTab';
 import TahapanTab from './Tabs/TahapanTab';
+import LampiranTab from './Tabs/LampiratTab';
+import PartisiTab from './Tabs/PartisiTab';
+import TambahanTab from './Tabs/TambahanTab';
 interface MountingFormPopupProps {
   ioId: number;
   mountingData?: MountingData | null;
@@ -30,7 +33,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     nama_mounting: '',
     barcode: '',
     format_data: 'CTP',
-
+    untuk: '',
     ukuran_jadi_panjang: 0,
     ukuran_jadi_lebar: 0,
     ukuran_jadi_tinggi: 0,
@@ -86,9 +89,9 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     { id: 'coating', label: 'Coating & Kertas', component: CoatingTab },
     { id: 'pond', label: 'Pond, Finishing & Packing', component: PondTab },
     { id: 'tahapan', label: 'Tahapan', component: TahapanTab },
-    { id: 'lampiran', label: 'Lampiran' },
-    { id: 'partisi', label: 'Partisi' },
-    { id: 'tambahan', label: 'Tambahan Insheet' },
+    { id: 'lampiran', label: 'Lampiran', component: LampiranTab },
+    { id: 'partisi', label: 'Partisi', component: PartisiTab },
+    { id: 'tambahan', label: 'Tambahan Insheet', component: TambahanTab },
   ];
   // Generate next mounting name
   const generateNextMountingName = (): string => {
@@ -119,6 +122,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         nama_mounting: mountingData.nama_mounting || '',
         barcode: mountingData.barcode || '',
         format_data: mountingData.format_data || 'CTP',
+        untuk: mountingData.untuk || '',
         ukuran_jadi_panjang: mountingData.ukuran_jadi_panjang || 0,
         ukuran_jadi_lebar: mountingData.ukuran_jadi_lebar || 0,
         ukuran_jadi_tinggi: mountingData.ukuran_jadi_tinggi || 0,
@@ -176,6 +180,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         nama_mounting: nextName,
         barcode: templateMounting?.barcode || '',
         format_data: templateMounting?.format_data || 'CTP',
+        untuk: templateMounting?.untuk || '',
         ukuran_jadi_panjang: templateMounting?.ukuran_jadi_panjang || 0,
         ukuran_jadi_lebar: templateMounting?.ukuran_jadi_lebar || 0,
         ukuran_jadi_tinggi: templateMounting?.ukuran_jadi_tinggi || 0,
@@ -257,6 +262,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
       if (res.data.succes) {
         onClose();
       }
+      console.log(formData);
     } catch (error) {
       console.error('Error saving mounting:', error);
     } finally {
@@ -264,10 +270,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     }
   };
 
-  const handleInputChange = (
-    field: keyof MountingFormData,
-    value: string | number | boolean,
-  ) => {
+  const handleInputChange = (field: keyof MountingFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -281,13 +284,16 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
       activeTab === 'warna' ||
       activeTab === 'coating' ||
       activeTab === 'pond' ||
-      activeTab === 'tahapan' // Add this line
+      activeTab === 'tahapan' ||
+      activeTab === 'lampiran' ||
+      activeTab === 'partisi' ||
+      activeTab === 'tambahan'
     ) {
       return (
         <TabComponent
           formData={formData}
-          onInputChange={() => handleInputChange}
-          isEditMode={!!mountingData}
+          onInputChange={handleInputChange}
+          isEditMode={true}
         />
       );
     }

@@ -42,7 +42,7 @@ interface DryingTime {
 
 interface TahapanTabProps {
   formData: MountingFormData;
-  onInputChange: (field: string, value: any) => void;
+  onInputChange: (field: keyof MountingFormData, value: any) => void; // Changed from string to keyof MountingFormData
   isEditMode: boolean;
 }
 

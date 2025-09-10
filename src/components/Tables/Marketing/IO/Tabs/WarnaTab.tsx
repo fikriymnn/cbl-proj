@@ -4,10 +4,7 @@ import { MountingFormData } from '../Mounting';
 
 interface WarnaTabProps {
   formData: MountingFormData;
-  onInputChange: (
-    field: keyof MountingFormData,
-    value: string | number | boolean,
-  ) => void;
+  onInputChange: (field: keyof MountingFormData, value: any) => void;
 }
 
 const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
@@ -21,7 +18,8 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
           <input
             type="text"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            readOnly
+            value={formData.untuk}
+            onChange={(e) => onInputChange('untuk', e.target.value)}
           />
         </div>
         <div>
@@ -31,9 +29,7 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             value={formData.warna_depan}
-            onChange={(e) =>
-              onInputChange('warna_depan', Number(e.target.value))
-            }
+            onChange={(e) => onInputChange('warna_depan', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-pink-100"
           />
         </div>
@@ -44,9 +40,7 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             value={formData.warna_belakang}
-            onChange={(e) =>
-              onInputChange('warna_belakang', Number(e.target.value))
-            }
+            onChange={(e) => onInputChange('warna_belakang', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-pink-100"
           />
         </div>
@@ -57,9 +51,7 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             value={formData.jumlah_warna}
-            onChange={(e) =>
-              onInputChange('jumlah_warna', Number(e.target.value))
-            }
+            onChange={(e) => onInputChange('jumlah_warna', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-pink-100"
           />
         </div>

@@ -5,10 +5,7 @@ import SearchableSelect from '../../../../../pages/MasterData/Marketing/Searchab
 
 interface PondTabProps {
   formData: MountingFormData;
-  onInputChange: (
-    field: keyof MountingFormData,
-    value: string | number | boolean,
-  ) => void;
+  onInputChange: (field: keyof MountingFormData, value: any) => void;
   isEditMode: boolean;
 }
 

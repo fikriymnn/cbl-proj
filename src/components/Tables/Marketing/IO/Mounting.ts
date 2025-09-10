@@ -73,6 +73,7 @@ export interface MountingFormData {
   panjang_partisi_2: number;
   tambahan_insheet_druk: string;
   lampiran: string;
+  untuk: string;
   tahapan?: TahapanData[]; // Add this line
 }
 

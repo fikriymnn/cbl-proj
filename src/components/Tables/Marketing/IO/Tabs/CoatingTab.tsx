@@ -37,10 +37,7 @@ interface Option {
 
 interface CoatingTabProps {
   formData: MountingFormData;
-  onInputChange: (
-    field: keyof MountingFormData,
-    value: string | number | boolean,
-  ) => void;
+  onInputChange: (field: keyof MountingFormData, value: any) => void;
   isEditMode: boolean;
 }
 

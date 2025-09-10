@@ -4,10 +4,7 @@ import { MountingFormData } from '../Mounting';
 
 interface GeneralTabProps {
   formData: MountingFormData;
-  onInputChange: (
-    field: keyof MountingFormData,
-    value: string | number | boolean,
-  ) => void;
+  onInputChange: (field: keyof MountingFormData, value: any) => void;
   isEditMode: boolean;
 }
 
