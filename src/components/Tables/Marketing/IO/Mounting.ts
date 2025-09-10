@@ -1,4 +1,28 @@
 // types/mounting.ts
+
+// Add the TahapanData interface
+export interface TahapanData {
+  setting_type: number | undefined;
+  id?: number;
+  id_tahapan_mesin: number;
+  id_setting_kapasitas?: number;
+  id_drying_time?: number;
+  index: number;
+  nama_mesin?: any;
+  nama_proses?: string;
+  nama_setting_kapasitas?: string;
+  nama_drying_time?: string;
+  value_setting_kapasitas?: number;
+  value_drying_time?: number;
+  id_io?: number;
+  id_io_mounting?: number;
+  is_active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  clientId?: any;
+}
+
+// types/mounting.ts
 export interface MountingFormData {
   nama_mounting: string;
   barcode: string;
@@ -49,6 +73,7 @@ export interface MountingFormData {
   panjang_partisi_2: number;
   tambahan_insheet_druk: string;
   lampiran: string;
+  tahapan?: TahapanData[]; // Add this line
 }
 
 export interface MountingData extends MountingFormData {
@@ -62,5 +87,5 @@ export interface MountingData extends MountingFormData {
   nama_kertas?: string;
   nama_jenis_pons?: string;
   nama_lem?: string;
-  tahapan?: any[];
+  tahapan?: TahapanData[]; // Replace any[] with TahapanData[]
 }

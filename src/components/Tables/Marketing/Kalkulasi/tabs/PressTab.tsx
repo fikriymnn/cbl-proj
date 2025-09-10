@@ -302,7 +302,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
   // Function to get rate index based on rate value - CORRECTED
   const getRateIndex = (rate: number): number => {
-    if (rate <= 3000) return -1; // Use base rate
+    if (rate <= 3000) return -1; // This shouldn't be used anymore since base rate is handled separately
     if (rate > 3000 && rate <= 5000) return 0;
     if (rate > 5000 && rate <= 10000) return 1;
     if (rate > 10000 && rate <= 20000) return 2;
@@ -318,7 +318,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     return name.includes('sanbe') || name.includes('caprifarmindo');
   };
 
-  // Main calculation function for printing cost - CORRECTED
+  // Main calculation function for printing cost - FIXED
   const calculateJumlahHargaCetak = (): number => {
     // Check if required fields are available
     if (
@@ -340,8 +340,9 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       return 0;
     }
 
-    // Calculate rate: total_kertas × (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)
-    const rate = total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
+    // Calculate rate consistently: total_kertas × (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)
+    const calculatedRate =
+      total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
     const rateTable = normalRateTable;
 
@@ -354,15 +355,15 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       return 0;
     }
 
-    // Calculate printing cost
-    if (rate < 3000) {
-      // Use base rate for rates < 3000
+    // Calculate printing cost using the same calculatedRate for both threshold check and calculation
+    if (calculatedRate <= 3000) {
+      // Use base rate for calculatedRate <= 3000
       return machineRates.base;
     } else {
-      // Use tiered rate: (tierRate × totalWarna) × rate
-      const rateIndex = getRateIndex(rate);
+      // Use tiered rate: (tierRate × totalWarna) × calculatedRate
+      const rateIndex = getRateIndex(calculatedRate);
       const tierRate = machineRates.rates[rateIndex];
-      return tierRate * totalWarna * rate;
+      return tierRate * totalWarna * calculatedRate;
     }
   };
 
@@ -919,14 +920,23 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                       Number(formData.ukuran_cetak_bagian_1) || 0;
                     const ukuranCetakBagian2 =
                       Number(formData.ukuran_cetak_bagian_2) || 0;
-                    const rate =
+                    const calculatedRate =
                       total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
-                    if (rate < 3000) {
-                      return `Base Rate`;
+                    if (calculatedRate <= 3000) {
+                      return `Base Rate (${new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 0,
+                      }).format(
+                        normalRateTable[
+                          getMachineType(
+                            selectedMesin.nama_barang,
+                          ) as keyof typeof normalRateTable
+                        ].base,
+                      )})`;
                     } else {
-                      const rateIndex = getRateIndex(rate);
-
+                      const rateIndex = getRateIndex(calculatedRate);
                       const rateTable = normalRateTable;
                       const machineType = getMachineType(
                         selectedMesin.nama_barang,
@@ -937,7 +947,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
                       return `(${tierRate} × ${totalWarna}) × ${new Intl.NumberFormat(
                         'id-ID',
-                      ).format(rate)}`;
+                      ).format(calculatedRate)}`;
                     }
                   })()}
                 </div>
@@ -953,15 +963,20 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                       Number(formData.ukuran_cetak_bagian_1) || 0;
                     const ukuranCetakBagian2 =
                       Number(formData.ukuran_cetak_bagian_2) || 0;
-                    const rate =
+                    const calculatedRate =
                       total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
-                    if (rate <= 3000) return '< 3,000 (Base Rate)';
-                    if (rate > 3000 && rate <= 5000) return '3,001 - 5,000';
-                    if (rate > 5000 && rate <= 10000) return '5,001 - 10,000';
-                    if (rate > 10000 && rate <= 20000) return '10,001 - 20,000';
-                    if (rate > 20000 && rate <= 30000) return '20,001 - 30,000';
-                    if (rate > 30000 && rate <= 50000) return '30,001 - 50,000';
+                    if (calculatedRate <= 3000) return '≤ 3,000 (Base Rate)';
+                    if (calculatedRate > 3000 && calculatedRate <= 5000)
+                      return '3,001 - 5,000';
+                    if (calculatedRate > 5000 && calculatedRate <= 10000)
+                      return '5,001 - 10,000';
+                    if (calculatedRate > 10000 && calculatedRate <= 20000)
+                      return '10,001 - 20,000';
+                    if (calculatedRate > 20000 && calculatedRate <= 30000)
+                      return '20,001 - 30,000';
+                    if (calculatedRate > 30000 && calculatedRate <= 50000)
+                      return '30,001 - 50,000';
                     return '> 50,000';
                   })()}
                 </div>
@@ -977,7 +992,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                       Number(formData.ukuran_cetak_bagian_1) || 0;
                     const ukuranCetakBagian2 =
                       Number(formData.ukuran_cetak_bagian_2) || 0;
-                    const rate =
+                    const calculatedRate =
                       total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
 
                     const rateTable = normalRateTable;
@@ -989,16 +1004,16 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
                     if (!machineRates) return '0';
 
-                    if (rate < 3000) {
+                    if (calculatedRate <= 3000) {
                       return new Intl.NumberFormat('id-ID', {
                         style: 'currency',
                         currency: 'IDR',
                         minimumFractionDigits: 0,
                       }).format(machineRates.base);
                     } else {
-                      const rateIndex = getRateIndex(rate);
+                      const rateIndex = getRateIndex(calculatedRate);
                       const tierRate = machineRates.rates[rateIndex];
-                      return `${tierRate} `;
+                      return `${tierRate}`;
                     }
                   })()}
                 </div>

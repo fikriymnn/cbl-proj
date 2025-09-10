@@ -342,7 +342,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       const ponsInsheet = parseFloat(formData.pons_insheet || '0') || 0;
       const finishingInsheet =
         parseFloat(formData.finishing_insheet || '0') || 0;
-
+      console.log(printInsheet + ponsInsheet + finishingInsheet);
       const totalInsheet = printInsheet + ponsInsheet + finishingInsheet;
 
       // Apply your desired formula: ((qty_kalkulasi / (ukuran_cetak_isi_1+ukuran_cetak_isi_2)) + totalInsheet) * (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)

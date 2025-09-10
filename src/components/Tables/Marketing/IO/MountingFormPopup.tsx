@@ -1,14 +1,17 @@
 // components/MountingFormPopup.tsx
 import React, { useState, useEffect } from 'react';
 import axios, { AxiosResponse } from 'axios';
-import { MountingData, MountingFormData } from './Mounting';
+import { MountingData, MountingFormData, TahapanData } from './Mounting';
 import GeneralTab from './Tabs/GeneralTab';
 import WarnaTab from './Tabs/WarnaTab';
-
+import CoatingTab from './Tabs/CoatingTab';
+import PondTab from './Tabs/PondTab';
+import TahapanTab from './Tabs/TahapanTab';
 interface MountingFormPopupProps {
   ioId: number;
   mountingData?: MountingData | null;
   existingMountings?: MountingData[];
+  tahapan?: TahapanData[];
   isOpen: boolean;
   onClose: () => void;
 }
@@ -74,19 +77,19 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     panjang_partisi_2: 0,
     tambahan_insheet_druk: '',
     lampiran: '',
+    tahapan: [],
   });
 
   const tabs = [
     { id: 'general', label: 'General', component: GeneralTab },
     { id: 'warna', label: 'Warna', component: WarnaTab },
-    { id: 'coating', label: 'Coating & Kertas' },
-    { id: 'pond', label: 'Pond, Finishing & Packing' },
-    { id: 'tahapan', label: 'Tahapan' },
+    { id: 'coating', label: 'Coating & Kertas', component: CoatingTab },
+    { id: 'pond', label: 'Pond, Finishing & Packing', component: PondTab },
+    { id: 'tahapan', label: 'Tahapan', component: TahapanTab },
     { id: 'lampiran', label: 'Lampiran' },
     { id: 'partisi', label: 'Partisi' },
     { id: 'tambahan', label: 'Tambahan Insheet' },
   ];
-
   // Generate next mounting name
   const generateNextMountingName = (): string => {
     if (existingMountings.length === 0) return 'A';
@@ -162,6 +165,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         panjang_partisi_2: mountingData.panjang_partisi_2 || 0,
         tambahan_insheet_druk: mountingData.tambahan_insheet_druk || '',
         lampiran: mountingData.lampiran || '',
+        tahapan: mountingData.tahapan || [],
       });
     } else {
       // Create mode - use template mounting A if exists
@@ -221,6 +225,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         panjang_partisi_2: templateMounting?.panjang_partisi_2 || 0,
         tambahan_insheet_druk: templateMounting?.tambahan_insheet_druk || '',
         lampiran: templateMounting?.lampiran || '',
+        tahapan: templateMounting?.tahapan || [], // Add this line
       });
     }
   }, [mountingData, existingMountings]);
@@ -271,11 +276,17 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     if (!currentTab || !currentTab.component) return null;
 
     const TabComponent = currentTab.component;
-    if (activeTab === 'general' || activeTab === 'warna') {
+    if (
+      activeTab === 'general' ||
+      activeTab === 'warna' ||
+      activeTab === 'coating' ||
+      activeTab === 'pond' ||
+      activeTab === 'tahapan' // Add this line
+    ) {
       return (
         <TabComponent
           formData={formData}
-          onInputChange={handleInputChange}
+          onInputChange={() => handleInputChange}
           isEditMode={!!mountingData}
         />
       );
