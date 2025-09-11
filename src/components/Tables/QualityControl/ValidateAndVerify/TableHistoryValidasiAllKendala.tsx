@@ -1,38 +1,25 @@
-import { BRAND } from '../../../../types/brand';
-// import BrandOne from '../../images/brand/brand-01.svg';
-// import BrandTwo from '../../images/brand/brand-02.svg';
-// import BrandThree from '../../images/brand/brand-03.svg';
-// import BrandFour from '../../images/brand/brand-04.svg';
-// import BrandFive from '../../images/brand/brand-05.svg';
 import { useEffect, useState } from 'react';
-import Modal from '../../../Modals/ModalDetailPopup';
-// import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
+
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/converDateTime';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';
-import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
+
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
-import convertTimeStampToDateTime from '../../../../utils/converDateTime';
+
 import Loading from '../../../Loading';
 import * as XLSX from 'xlsx'; // Add this import at the top
-import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
+
 import ModalFull from '../../PPIC/JadwalProduksi/ModalFull';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
+
 const TableHistoryValidateAllKendala = () => {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [ticket, setTicket] = useState<any>(null);
-  const [showModalDetail, setShowModalDetail] = useState(null);
-  const handleClickDetail = (index: any) => {
-    setShowModalDetail((prevState: any) => {
-      return prevState === index ? null : index;
-    });
-  };
-  const closeModalDetail = () => setShowModalDetail(null);
+
   useEffect(() => {
     getMTC();
     getMasterMesin();
@@ -94,24 +81,7 @@ const TableHistoryValidateAllKendala = () => {
 
     setShowEdit(onchangeVal);
   };
-  function calculateResponTime2(startDate: any, endDate: any) {
-    const createdAtDate = new Date(startDate);
-    const waktuResponDate = new Date(endDate);
-    const millisecondsDiff =
-      waktuResponDate.getTime() - createdAtDate.getTime();
 
-    const secondsDiff = Math.floor(millisecondsDiff / 1000); // Total seconds difference
-    return secondsDiff;
-  }
-  function formatMinutesToHoursMinutesSeconds(totalSeconds: number) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return `${hours ? hours + ' hours ' : ''}${
-      minutes ? minutes + ' minutes ' : ''
-    }${seconds ? seconds + ' seconds' : ''}`.trim();
-  }
   const [showExportPreview, setShowExportPreview] = useState(false);
   const [previewData, setPreviewData] = useState([]);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
@@ -155,7 +125,7 @@ const TableHistoryValidateAllKendala = () => {
       let excelData: any = [];
 
       // Go through each ticket
-      allData.forEach((ticket: any, ticketIndex: any) => {
+      allData.forEach((ticket: any) => {
         // Format dates
         const tglTicket = ticket.createdAt
           ? convertTimeStampToDateOnly(ticket.createdAt)
@@ -163,14 +133,6 @@ const TableHistoryValidateAllKendala = () => {
         const jamTicket = ticket.createdAt
           ? convertDateToTime(ticket.createdAt)
           : '-';
-
-        // Calculate response time if available
-        const waktuBreakdown =
-          ticket.waktu_selesai && ticket.createdAt
-            ? formatMinutesToHoursMinutesSeconds(
-                calculateResponTime2(ticket.createdAt, ticket.waktu_selesai),
-              )
-            : '-';
 
         // Format departments
         const departments = ticket.data_department
@@ -298,298 +260,261 @@ const TableHistoryValidateAllKendala = () => {
       setIsLoadingPreview(false);
     }
   };
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex  gap-1 items-center bg-white ">
+      {/* Filters Section - Mobile Responsive */}
+      <div className="flex gap-1 items-center bg-white">
         {isLoading && <Loading />}
 
-        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3 items-center">
-          <div className="flex flex-col  gap-2 col-span-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 xl:grid-cols-12 px-4 py-1 gap-3 items-center w-full">
+          <div className="flex flex-col gap-2 md:col-span-1 lg:col-span-1 xl:col-span-2">
             <p className="text-sm text-primary font-semibold">Dari:</p>
             <input
-              className="rounded-full bg-[#D8EAFF] px-2 h-8"
+              className="rounded-full bg-[#D8EAFF] px-2 h-8 w-full"
               type="date"
               onChange={(e) => setStartDate(e.target.value)}
-            ></input>
+            />
           </div>
-          <div className="flex flex-col gap-2 col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
-              Sampai:
-            </p>
-
+          <div className="flex flex-col gap-2 md:col-span-1 lg:col-span-1 xl:col-span-2">
+            <p className="text-sm text-primary font-semibold">Sampai:</p>
             <input
-              className="rounded-full bg-[#D8EAFF] px-2 h-8"
+              className="rounded-full bg-[#D8EAFF] px-2 h-8 w-full"
               type="date"
               onChange={(e) => setEndDate(e.target.value)}
-            ></input>
+            />
           </div>
-          <div className="flex flex-col  gap-2 col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
-              Pilih Mesin:
-            </p>
-
+          <div className="flex flex-col gap-2 md:col-span-1 lg:col-span-1 xl:col-span-2">
+            <p className="text-sm text-primary font-semibold">Pilih Mesin:</p>
             <select
-              onChange={(e) => {
-                setMesinNama(e.target.value);
-              }}
-              className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
+              onChange={(e) => setMesinNama(e.target.value)}
+              className="w-full rounded-md bg-blue-200 h-8"
             >
               <option selected disabled>
                 Pilih Mesin
               </option>
-              {masterMesin?.map((data: any, i: number) => {
-                return (
-                  <option
-                    value={data.nama_mesin}
-                    className="text-gray-800 text-sm font-light dark:text-bodydark"
-                  >
-                    {data.nama_mesin}
-                  </option>
-                );
-              })}
+              {masterMesin?.map((data: any, i: number) => (
+                <option
+                  key={i}
+                  value={data.nama_mesin}
+                  className="text-gray-800 text-sm font-light"
+                >
+                  {data.nama_mesin}
+                </option>
+              ))}
             </select>
           </div>
-
-          <div className=" gap-2 flex flex-col col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">Cari</p>
+          <div className="flex flex-col gap-2 md:col-span-1 lg:col-span-1 xl:col-span-2">
+            <p className="text-sm text-primary font-semibold">Cari</p>
             <input
               className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
               placeholder="Jo, Io, So, Kendala, Customer, Kode LKH"
               type="text"
               onChange={(e) => setNoJo(e.target.value)}
-            ></input>
+            />
           </div>
-          <div className=" gap-2 flex flex-col col-span-2"></div>
-          <div className="flex flex-col gap-2 col-span-2">
+          <div className="md:col-span-1 lg:col-span-1 xl:col-span-2"></div>
+          <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1 xl:col-span-2">
             <button
-              onClick={() => {
-                getMTC();
-              }}
-              className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+              onClick={() => getMTC()}
+              className="bg-primary text-white px-5 py-2 rounded-md"
             >
               Tampilkan
             </button>
             <button
               onClick={() => prepareExportData()}
-              className="px-5 py-2 rounded-md my-auto text-white bg-green-500 justify-center items-center hover:cursor-pointer"
+              className="px-5 py-2 rounded-md text-white bg-green-500 hover:cursor-pointer"
               disabled={isLoadingPreview}
             >
               {isLoadingPreview ? 'Loading...' : 'EXPORT PREVIEW'}
             </button>
-            {showExportPreview && (
-              <ModalFull
-                isOpen={showExportPreview}
-                onClose={() => closeModalExport()}
-                judul={'Export Preview'}
-              >
-                <>
-                  <div className="flex flex-col h-[85vh]">
-                    {' '}
-                    {/* Full height container */}
-                    <div className="flex justify-between mb-4 px-2 pt-5">
-                      <div className="text-sm text-gray-500">
-                        Total Data: {previewData.length}
-                      </div>
-                      <button
-                        onClick={exportToExcel}
-                        className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600"
-                        disabled={isLoadingPreview}
-                      >
-                        {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
-                      </button>
-                    </div>
-                    <div className="overflow-auto flex-1 relative">
-                      {' '}
-                      {/* Flex grow to take available space */}
-                      <table className="min-w-full bg-white border">
-                        <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
-                          <tr>
-                            {previewData.length > 0 &&
-                              Object.keys(previewData[0]).map((key, index) => (
-                                <th
-                                  key={index}
-                                  className="py-3 px-4 border-b text-left text-xs font-semibold text-blue-700 uppercase tracking-wider"
-                                >
-                                  {key}
-                                </th>
-                              ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {previewData
-                            .slice(0, visibleRows)
-                            .map((row, rowIndex) => (
-                              <tr
-                                key={rowIndex}
-                                className={
-                                  rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                                }
-                              >
-                                {Object.values(row).map((value, colIndex) => (
-                                  <td
-                                    key={colIndex}
-                                    className="py-2 px-4 border-b text-sm"
-                                  >
-                                    {value?.toString() || '-'}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {/* Fixed footer with status and buttons */}
-                    <div className="flex items-center justify-between border-t bg-gray-50 py-3 px-4 mt-auto">
-                      <div className="text-sm text-gray-600">
-                        Showing {Math.min(visibleRows, previewData.length)} of{' '}
-                        {previewData.length} rows
-                      </div>
-
-                      {visibleRows < previewData.length && (
-                        <div className="space-x-3">
-                          <button
-                            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded font-medium text-sm"
-                            onClick={() =>
-                              setVisibleRows(
-                                Math.min(visibleRows + 20, previewData.length),
-                              )
-                            }
-                          >
-                            Show 20 More
-                          </button>
-                          <button
-                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium text-sm"
-                            onClick={() => setVisibleRows(previewData.length)}
-                          >
-                            Show All ({previewData.length} rows)
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </>
-              </ModalFull>
-            )}
           </div>
         </div>
       </div>
 
-      <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
+      {/* Table Header - Desktop Only */}
+      <div className="hidden lg:flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-8 gap-5 w-full dark:border-strokedark  ">
-            <div className="flex w-full justify-start ">
-              <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
+          <div className="grid grid-cols-8 gap-5 w-full dark:border-strokedark">
+            <div className="flex w-full justify-start">
+              <p className="text-slate-600 text-[14px] font-semibold dark:text-white">
                 Kode Tiket
               </p>
             </div>
-            <div className=" text-[14px] justify-start  ">
-              <p className="text-slate-600 font-semibold  dark:text-white">
+            <div className="text-[14px] justify-start">
+              <p className="text-slate-600 font-semibold dark:text-white">
                 Waktu Masuk
               </p>
             </div>
-            <div className=" text-[14px] justify-start  ">
-              <p className="text-slate-600 font-semibold  dark:text-white">
+            <div className="text-[14px] justify-start">
+              <p className="text-slate-600 font-semibold dark:text-white">
                 Status
               </p>
             </div>
-            <div className=" text-[14px] justify-start  ">
-              <p className="text-slate-600 font-semibold ">Nama Mesin</p>
+            <div className="text-[14px] justify-start">
+              <p className="text-slate-600 font-semibold">Nama Mesin</p>
             </div>
-            <div className=" text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">Kendala</p>
+            <div className="text-[14px] justify-start">
+              <p className="text-slate-600 font-semibold">Kendala</p>
             </div>
-
-            <div className=" text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">Operator</p>
+            <div className="text-[14px] justify-start">
+              <p className="text-slate-600 font-semibold">Operator</p>
             </div>
-            <div className=" text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">No.Jo,Io,So</p>
+            <div className="text-[14px] justify-start">
+              <p className="text-slate-600 font-semibold">No.Jo,Io,So</p>
             </div>
-            {/* <div className=" text-[14px] justify-center ">
-              <p className="text-slate-600 font-semibold ">Skor</p>
-            </div> */}
+            <div className="text-[14px] justify-start">
+              <p className="text-slate-600 font-semibold">Action</p>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Data Rows - Responsive Design */}
       {ticket?.data.map((data: any, index: number) => {
         const tglTicket = convertTimeStampToDate(data.createdAt);
-        const waktuRespon = calculateTime(data.createdAt, data.waktu_respon_qc);
-
         return (
           <div
             key={index}
-            className=" flex w-full rounded-xl border px-2  border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark "
+            className="w-full rounded-xl border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark"
           >
-            <div className="flex items-center">
-              <p className="text-neutral-500 text-sm font-light  dark:text-white w-5 mr-3">
-                {index + 1}{' '}
-              </p>
+            {/* Desktop Layout */}
+            <div className="hidden lg:flex px-2 py-3">
+              <div className="flex items-center">
+                <p className="text-neutral-500 text-sm font-light dark:text-white w-5 mr-3">
+                  {index + 1}
+                </p>
+              </div>
+              <div className="grid grid-cols-8 gap-5 w-full items-center dark:border-strokedark">
+                <div className="flex w-full justify-start gap-14">
+                  <p className="text-neutral-500 break-all text-sm font-light dark:text-white">
+                    {data.kode_ticket}
+                  </p>
+                </div>
+                <div className="flex w-full justify-start">
+                  <p className="text-neutral-500 text-sm font-light dark:text-white">
+                    {tglTicket}
+                  </p>
+                </div>
+                <div className="flex w-full justify-start">
+                  <p
+                    className={
+                      data.status_tiket == 'di validasi'
+                        ? 'text-white text-sm font-light bg-green-600 rounded-lg px-2'
+                        : 'text-white text-sm font-light dark:text-white bg-red-600 rounded-lg px-2'
+                    }
+                  >
+                    {data.status_tiket}
+                  </p>
+                </div>
+                <div className="flex w-full justify-start">
+                  <p className="text-neutral-500 text-sm font-light">
+                    {data.mesin}
+                  </p>
+                </div>
+                <div className="flex w-full justify-start">
+                  <p className="text-neutral-500 text-sm font-light">
+                    {data.kode_lkh + ' - ' + data.nama_kendala}
+                  </p>
+                </div>
+                <div className="flex w-full justify-start">
+                  <p className="text-neutral-500 text-sm font-light">
+                    {data.operator}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1 w-full justify-start">
+                  <p className="text-neutral-500 text-sm font-light">
+                    {data.no_jo}
+                  </p>
+                  <p className="text-neutral-500 text-sm font-light">
+                    {data.no_io}
+                  </p>
+                  <p className="text-neutral-500 text-sm font-light">
+                    {data.no_so}
+                  </p>
+                </div>
+                <div className="flex w-full justify-end">
+                  <button
+                    onClick={() => openEdit(index)}
+                    className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-sm"
+                  >
+                    Detail
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-8 gap-5 w-full items-center dark:border-strokedark">
-              <div className="flex w-full justify-start  gap-14">
-                <p className="text-neutral-500 break-all text-sm font-light  dark:text-white">
-                  {' '}
-                  {data.kode_ticket}
-                </p>
-              </div>
-              <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
-                  {tglTicket}
-                </p>
-              </div>
-              <div className="flex w-full  justify-start ">
-                <p
-                  className={
-                    data.status_tiket == 'di validasi'
-                      ? 'text-white text-sm font-light   bg-green-600 rounded-lg px-2'
-                      : 'text-white text-sm font-light  dark:text-white bg-red-600 rounded-lg px-2'
-                  }
-                >
-                  {data.status_tiket}
-                </p>
-              </div>
-              <div className="flex w-full  justify-start  ">
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.mesin}
-                </p>
-              </div>
-              <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.kode_lkh + ' - ' + data.nama_kendala}
-                </p>
-              </div>
 
-              <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.operator}
-                </p>
-              </div>
-              <div className="flex flex-col gap-1 w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.no_jo}
-                </p>
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.no_io}
-                </p>
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.no_so}
-                </p>
-              </div>
-              {/* <div className="flex w-full  justify-start col-span-3">
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.skor_mtc}
-                </p>
-              </div> */}
-              <div className="flex w-full justify-end">
+            {/* Mobile Layout - Card Style */}
+            <div className="lg:hidden p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center">
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full mr-2">
+                    #{index + 1}
+                  </span>
+                  <p className="font-semibold text-gray-800 text-sm">
+                    {data.kode_ticket}
+                  </p>
+                </div>
                 <button
                   onClick={() => openEdit(index)}
-                  className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-sm"
+                  className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-md"
                 >
                   Detail
                 </button>
               </div>
+
+              <div className="grid grid-cols-1 gap-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 font-medium">
+                    Waktu Masuk:
+                  </span>
+                  <span className="text-gray-800">{tglTicket}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 font-medium">Status:</span>
+                  <span
+                    className={
+                      data.status_tiket == 'di validasi'
+                        ? 'text-white text-xs font-medium bg-green-600 rounded-lg px-2 py-1'
+                        : 'text-white text-xs font-medium bg-red-600 rounded-lg px-2 py-1'
+                    }
+                  >
+                    {data.status_tiket}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 font-medium">Mesin:</span>
+                  <span className="text-gray-800">{data.mesin}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 font-medium">Kendala:</span>
+                  <span className="text-gray-800 text-right max-w-[60%]">
+                    {data.kode_lkh + ' - ' + data.nama_kendala}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 font-medium">Operator:</span>
+                  <span className="text-gray-800">{data.operator}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">No JO:</span>
+                    <span className="text-gray-800">{data.no_jo}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">No IO:</span>
+                    <span className="text-gray-800">{data.no_io}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">No SO:</span>
+                    <span className="text-gray-800">{data.no_so}</span>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Modal - Same for both desktop and mobile */}
             {showEdit[index] == true && (
               <ModalKosongan
                 isOpen={showEdit[index]}
@@ -598,7 +523,7 @@ const TableHistoryValidateAllKendala = () => {
               >
                 <>
                   <div className="grid grid-cols-2 gap-2 px-4 py-4">
-                    <div className="flex flex-col  ">
+                    <div className="flex flex-col">
                       <label
                         htmlFor=""
                         className="text-black text-xs font-bold"
@@ -612,7 +537,7 @@ const TableHistoryValidateAllKendala = () => {
                         {data.status_tiket}
                       </label>
                     </div>
-                    <div className="flex flex-col  ">
+                    <div className="flex flex-col">
                       <label
                         htmlFor=""
                         className="text-black text-xs font-bold"
@@ -629,8 +554,8 @@ const TableHistoryValidateAllKendala = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 px-4 py-4">
-                    <div className="flex flex-col gap-2 ">
-                      <div className="flex flex-col ">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -639,12 +564,12 @@ const TableHistoryValidateAllKendala = () => {
                         </label>
                         <label
                           htmlFor=""
-                          className="text-[#7a7a7a] text-xl font-normal"
+                          className="text-[#7a7a7a] text-xl font-normal line-clamp-1"
                         >
                           {data.kode_ticket}
                         </label>
                       </div>
-                      <div className="flex flex-col ">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -658,7 +583,7 @@ const TableHistoryValidateAllKendala = () => {
                           {data.no_jo}
                         </label>
                       </div>
-                      <div className="flex flex-col ">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -672,7 +597,7 @@ const TableHistoryValidateAllKendala = () => {
                           {data.no_io}
                         </label>
                       </div>
-                      <div className="flex flex-col ">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -686,7 +611,7 @@ const TableHistoryValidateAllKendala = () => {
                           {data.no_so}
                         </label>
                       </div>
-                      <div className="flex flex-col ">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -700,7 +625,7 @@ const TableHistoryValidateAllKendala = () => {
                           {data.nama_customer}
                         </label>
                       </div>
-                      <div className="flex flex-col ">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -715,8 +640,8 @@ const TableHistoryValidateAllKendala = () => {
                         </label>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-2 ">
-                      <div className="flex flex-col ">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -730,7 +655,7 @@ const TableHistoryValidateAllKendala = () => {
                           {data.kode_kendala} - {data.nama_kendala}
                         </label>
                       </div>
-                      <div className="flex flex-col ">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -744,7 +669,7 @@ const TableHistoryValidateAllKendala = () => {
                           {data.jenis_kendala}
                         </label>
                       </div>
-                      <div className="flex flex-col ">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -758,7 +683,7 @@ const TableHistoryValidateAllKendala = () => {
                           {data.mesin}
                         </label>
                       </div>
-                      <div className="flex flex-col ">
+                      <div className="flex flex-col">
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold"
@@ -775,7 +700,7 @@ const TableHistoryValidateAllKendala = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col w-full px-4 ">
+                  <div className="flex flex-col w-full px-4">
                     <label htmlFor="" className="text-black text-xs font-bold">
                       Note QC
                     </label>
@@ -791,7 +716,9 @@ const TableHistoryValidateAllKendala = () => {
           </div>
         );
       })}
-      <div className="w-full flex  mt-5 ">
+
+      {/* Pagination - Centered for better mobile experience */}
+      <div className="w-full flex mt-5 justify-center">
         <Stack spacing={2}>
           <Pagination
             count={ticket?.total_page}
@@ -803,6 +730,95 @@ const TableHistoryValidateAllKendala = () => {
           />
         </Stack>
       </div>
+
+      {/* Export Preview Modal - Same as original */}
+      {showExportPreview && (
+        <ModalFull
+          isOpen={showExportPreview}
+          onClose={() => closeModalExport()}
+          judul={'Export Preview'}
+        >
+          <>
+            <div className="flex flex-col h-[85vh]">
+              <div className="flex justify-between mb-4 px-2 pt-5">
+                <div className="text-sm text-gray-500">
+                  Total Data: {previewData.length}
+                </div>
+                <button
+                  onClick={exportToExcel}
+                  className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600"
+                  disabled={isLoadingPreview}
+                >
+                  {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
+                </button>
+              </div>
+              <div className="overflow-auto flex-1 relative">
+                <table className="min-w-full bg-white border">
+                  <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      {previewData.length > 0 &&
+                        Object.keys(previewData[0]).map((key, index) => (
+                          <th
+                            key={index}
+                            className="py-3 px-4 border-b text-left text-xs font-semibold text-blue-700 uppercase tracking-wider"
+                          >
+                            {key}
+                          </th>
+                        ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.slice(0, visibleRows).map((row, rowIndex) => (
+                      <tr
+                        key={rowIndex}
+                        className={
+                          rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                        }
+                      >
+                        {Object.values(row).map((value, colIndex) => (
+                          <td
+                            key={colIndex}
+                            className="py-2 px-4 border-b text-sm"
+                          >
+                            {value?.toString() || '-'}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-between border-t bg-gray-50 py-3 px-4 mt-auto">
+                <div className="text-sm text-gray-600">
+                  Showing {Math.min(visibleRows, previewData.length)} of{' '}
+                  {previewData.length} rows
+                </div>
+
+                {visibleRows < previewData.length && (
+                  <div className="space-x-3">
+                    <button
+                      className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded font-medium text-sm"
+                      onClick={() =>
+                        setVisibleRows(
+                          Math.min(visibleRows + 20, previewData.length),
+                        )
+                      }
+                    >
+                      Show 20 More
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium text-sm"
+                      onClick={() => setVisibleRows(previewData.length)}
+                    >
+                      Show All ({previewData.length} rows)
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        </ModalFull>
+      )}
     </div>
   );
 };

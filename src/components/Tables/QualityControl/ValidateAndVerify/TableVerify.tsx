@@ -1,12 +1,6 @@
 import { BRAND } from '../../../../types/brand';
-// import BrandOne from '../../images/brand/brand-01.svg';
-// import BrandTwo from '../../images/brand/brand-02.svg';
-// import BrandThree from '../../images/brand/brand-03.svg';
-// import BrandFour from '../../images/brand/brand-04.svg';
-// import BrandFive from '../../images/brand/brand-05.svg';
 import { useEffect, useState } from 'react';
 import Modal from '../../../Modals/ModalDetailPopup';
-// import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
 import Stack from '@mui/material/Stack';
@@ -22,21 +16,22 @@ const TableVerifikasi = () => {
   const [showModal1, setShowModal1] = useState<any>([]);
   const [ticketVerifikasi, setTicketVerifikasi] = useState<any>(null);
   const [note, setNote] = useState<any>();
+
   const handleClick = (index: any) => {
     setAksiOn((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
+
   const openModal1 = (i: any) => {
     const onchangeVal: any = [...showModal1];
     onchangeVal[i] = true;
-
     setShowModal1(onchangeVal);
   };
+
   const closeModal1 = (i: any) => {
     const onchangeVal: any = [...showModal1];
     onchangeVal[i] = false;
-
     setShowModal1(onchangeVal);
   };
 
@@ -49,11 +44,7 @@ const TableVerifikasi = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
         withCredentials: true,
-        // headers: {
-        //   Authorization: `Bearer ${cookies.access_token}`,
-        // },
       });
-
       setUser(res.data);
       console.log(res.data);
     } catch (error: any) {
@@ -73,9 +64,7 @@ const TableVerifikasi = () => {
         },
         withCredentials: true,
       });
-
       setTicketVerifikasi(res.data);
-
       console.log(res.data);
     } catch (error: any) {
       console.log(error.response);
@@ -96,9 +85,7 @@ const TableVerifikasi = () => {
           withCredentials: true,
         },
       );
-
       alert('success');
-
       getMTC();
     } catch (error: any) {
       console.log(error.response);
@@ -119,9 +106,7 @@ const TableVerifikasi = () => {
           withCredentials: true,
         },
       );
-
       alert('success');
-
       getMTC();
     } catch (error: any) {
       console.log(error.response);
@@ -130,95 +115,222 @@ const TableVerifikasi = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Outer container with horizontal scroll */}
-      <table className="w-full bg-white dark:bg-boxdark shadow-default text-xs">
-        <thead className="border border-stroke dark:border-strokedark">
-          <tr>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left w-8">
-              No
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              Kode Tiket
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              Waktu Masuk
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              Mesin
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              No JO
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              Nama Item
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              Kendala
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              Persentase
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              Eksekutor
-            </th>
-            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-center w-16">
-              Aksi
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {ticketVerifikasi?.data.map((data: any, index: number) => {
-            const lengthProses = data.proses_mtcs.length - 1;
-            const lengthProsesSebelum = lengthProses - 1;
-            const skorAwal =
-              lengthProses == 0
-                ? 0
-                : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
-            const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
-            const tglTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
-            const waktuPengerjaan = calculateTime(
-              data.proses_mtcs[lengthProses].waktu_mulai_mtc,
-              data.proses_mtcs[lengthProses].waktu_selesai_mtc,
-            );
+      {/* Desktop Table */}
+      <div className="hidden lg:block">
+        <div className="overflow-x-auto">
+          <table className="w-full bg-white dark:bg-boxdark shadow-default text-xs">
+            <thead className="border border-stroke dark:border-strokedark">
+              <tr>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left w-8">
+                  No
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                  Kode Tiket
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                  Waktu Masuk
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                  Mesin
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                  No JO
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                  Nama Item
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                  Kendala
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                  Persentase
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                  Eksekutor
+                </th>
+                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-center w-16">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {ticketVerifikasi?.data.map((data: any, index: number) => {
+                const lengthProses = data.proses_mtcs.length - 1;
+                const lengthProsesSebelum = lengthProses - 1;
+                const skorAwal =
+                  lengthProses == 0
+                    ? 0
+                    : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
+                const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
+                const tglTicket = convertTimeStampToDate(
+                  data.waktu_selesai_mtc,
+                );
+                const waktuPengerjaan = calculateTime(
+                  data.proses_mtcs[lengthProses].waktu_mulai_mtc,
+                  data.proses_mtcs[lengthProses].waktu_selesai_mtc,
+                );
 
-            return (
-              <tr
-                key={index}
-                className="border border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                <td className="py-2 px-1 text-xs font-light text-slate-600 dark:text-white">
-                  {index + 1}
-                </td>
-                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                  <div className="truncate max-w-[90px]">
-                    {data.kode_ticket}
+                return (
+                  <tr
+                    key={index}
+                    className="border border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-gray-800"
+                  >
+                    <td className="py-2 px-1 text-xs font-light text-slate-600 dark:text-white">
+                      {index + 1}
+                    </td>
+                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                      <div className="truncate max-w-[90px]">
+                        {data.kode_ticket}
+                      </div>
+                    </td>
+                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                      <div className=" max-w-[90px]">{tglTicket}</div>
+                    </td>
+                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                      <div className=" max-w-[60px]">{data.mesin}</div>
+                    </td>
+                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                      <div className=" max-w-[90px]">{data.no_jo}</div>
+                    </td>
+                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                      <div className=" max-w-[100px]">{data.nama_produk}</div>
+                    </td>
+                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                      <div className=" max-w-[100px]">
+                        {data.kode_lkh + ' - ' + data.nama_kendala}
+                      </div>
+                    </td>
+                    <td className="py-2 px-1">
+                      <div className="flex items-center gap-1">
+                        <p className="px-1 rounded-full text-[10px] font-light text-orange-600 bg-orange-200">
+                          {skorAwal}
+                        </p>
+                        <svg
+                          width="12"
+                          height="6"
+                          viewBox="0 0 23 8"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M0 3.82353H22M22 3.82353L19.25 1M22 3.82353L19.25 7"
+                            stroke="#0065DE"
+                          />
+                        </svg>
+                        <p className="px-1 rounded-full text-[10px] font-light text-[#FCBF11] bg-[#FFF2B1]">
+                          {skorBaru}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                      <div className="truncate max-w-[80px]">
+                        {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
+                      </div>
+                    </td>
+                    <td className="py-2 px-1 text-center">
+                      <button
+                        onClick={() => openModal1(index)}
+                        className="text-[10px] font-bold bg-blue-700 py-1 px-1 w-14 text-white rounded-sm"
+                      >
+                        Aksi
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Mobile Card Layout */}
+      <div className="block lg:hidden space-y-3">
+        {ticketVerifikasi?.data.map((data: any, index: number) => {
+          const lengthProses = data.proses_mtcs.length - 1;
+          const lengthProsesSebelum = lengthProses - 1;
+          const skorAwal =
+            lengthProses == 0
+              ? 0
+              : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
+          const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
+          const tglTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
+          const waktuPengerjaan = calculateTime(
+            data.proses_mtcs[lengthProses].waktu_mulai_mtc,
+            data.proses_mtcs[lengthProses].waktu_selesai_mtc,
+          );
+
+          return (
+            <div
+              key={index}
+              className="bg-white dark:bg-boxdark border border-stroke dark:border-strokedark rounded-lg p-4 shadow-sm"
+            >
+              {/* Header with ticket info and action button */}
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-slate-600 dark:text-white mb-1">
+                    #{index + 1} - {data.kode_ticket}
                   </div>
-                </td>
-                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                  <div className=" max-w-[90px]">{tglTicket}</div>
-                </td>
-                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                  <div className=" max-w-[60px]">{data.mesin}</div>
-                </td>
-                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                  <div className=" max-w-[90px]">{data.no_jo}</div>
-                </td>
-                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                  <div className=" max-w-[100px]">{data.nama_produk}</div>
-                </td>
-                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                  <div className=" max-w-[100px]">
+                  <div className="text-xs text-neutral-500 dark:text-white">
+                    {tglTicket}
+                  </div>
+                </div>
+                <button
+                  onClick={() => openModal1(index)}
+                  className="text-xs font-bold bg-blue-700 py-2 px-4 text-white rounded ml-2 flex-shrink-0"
+                >
+                  Aksi
+                </button>
+              </div>
+
+              {/* Main content grid */}
+              <div className="grid grid-cols-1 gap-2 text-xs">
+                <div className="flex">
+                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
+                    Mesin:
+                  </span>
+                  <span className="text-neutral-500 dark:text-white">
+                    {data.mesin}
+                  </span>
+                </div>
+
+                <div className="flex">
+                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
+                    No JO:
+                  </span>
+                  <span className="text-neutral-500 dark:text-white">
+                    {data.no_jo}
+                  </span>
+                </div>
+
+                <div className="flex">
+                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
+                    Item:
+                  </span>
+                  <span className="text-neutral-500 dark:text-white break-words">
+                    {data.nama_produk}
+                  </span>
+                </div>
+
+                <div className="flex">
+                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
+                    Kendala:
+                  </span>
+                  <span className="text-neutral-500 dark:text-white break-words">
                     {data.kode_lkh + ' - ' + data.nama_kendala}
-                  </div>
-                </td>
-                <td className="py-2 px-1">
-                  <div className="flex items-center gap-1">
-                    <p className="px-1 rounded-full text-[10px] font-light text-orange-600 bg-orange-200">
-                      {skorAwal}
-                    </p>
+                  </span>
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
+                    Progress:
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-1 rounded-full text-xs font-medium text-orange-600 bg-orange-200">
+                      {skorAwal}%
+                    </span>
                     <svg
-                      width="12"
-                      height="6"
+                      width="16"
+                      height="8"
                       viewBox="0 0 23 8"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
@@ -228,111 +340,128 @@ const TableVerifikasi = () => {
                         stroke="#0065DE"
                       />
                     </svg>
-                    <p className="px-1 rounded-full text-[10px] font-light text-[#FCBF11] bg-[#FFF2B1]">
-                      {skorBaru}
-                    </p>
+                    <span className="px-2 py-1 rounded-full text-xs font-medium text-[#FCBF11] bg-[#FFF2B1]">
+                      {skorBaru}%
+                    </span>
                   </div>
-                </td>
-                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                  <div className="truncate max-w-[80px]">
-                    {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
-                  </div>
-                </td>
-                <td className="py-2 px-1 text-center">
-                  <button
-                    onClick={() => openModal1(index)}
-                    className="text-[10px] font-bold bg-blue-700 py-1 px-1 w-14 text-white rounded-sm"
-                  >
-                    Aksi
-                  </button>
+                </div>
 
-                  {showModal1[index] == true && (
-                    <ModalVerifikasi
-                      kodeTiket={data.kode_ticket}
-                      isOpen={showModal1[index]}
-                      waktuMasuk={data.createdAt}
-                      persentaseAwal={skorAwal}
-                      onClose={() => closeModal1(index)}
-                      onFinish={undefined}
-                      kendala={data.kode_lkh + ' - ' + data.nama_kendala}
-                      kodeLkh={data.kode_lkh}
-                      machineName={data.kode_ticket}
-                      tgl={data.waktu_respon}
-                      jam={'19.09'}
-                      namaPemeriksa={
-                        data.proses_mtcs[lengthProses].user_eksekutor.nama
+                <div className="flex">
+                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
+                    Eksekutor:
+                  </span>
+                  <span className="text-neutral-500 dark:text-white break-words">
+                    {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modal - works for both desktop and mobile */}
+      {showModal1.some((show: boolean) => show) && (
+        <>
+          {ticketVerifikasi?.data.map((data: any, index: number) => {
+            if (!showModal1[index]) return null;
+
+            const lengthProses = data.proses_mtcs.length - 1;
+            const lengthProsesSebelum = lengthProses - 1;
+            const skorAwal =
+              lengthProses == 0
+                ? 0
+                : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
+            const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
+            const waktuPengerjaan = calculateTime(
+              data.proses_mtcs[lengthProses].waktu_mulai_mtc,
+              data.proses_mtcs[lengthProses].waktu_selesai_mtc,
+            );
+
+            return (
+              <ModalVerifikasi
+                key={index}
+                kodeTiket={data.kode_ticket}
+                isOpen={showModal1[index]}
+                waktuMasuk={data.createdAt}
+                persentaseAwal={skorAwal}
+                onClose={() => closeModal1(index)}
+                onFinish={undefined}
+                kendala={data.kode_lkh + ' - ' + data.nama_kendala}
+                kodeLkh={data.kode_lkh}
+                machineName={data.kode_ticket}
+                tgl={data.waktu_respon}
+                jam={'19.09'}
+                namaPemeriksa={
+                  data.proses_mtcs[lengthProses].user_eksekutor.nama
+                }
+                no={'109299'}
+                idTiket={data.id}
+                idProses={data.proses_mtcs[lengthProses].id}
+                namaMesin={data.mesin}
+                skor_mtc={skorAwal}
+                jenis_perbaikan={data.proses_mtcs[lengthProses].cara_perbaikan}
+                persentaseBelumVerif={skorBaru}
+                kode_analisis={
+                  data.proses_mtcs[lengthProses].kode_analisis_mtc +
+                  ' - ' +
+                  data.proses_mtcs[lengthProses].nama_analisis_mtc
+                }
+                durasiPerbaikan={waktuPengerjaan}
+                eksekutor={data.operator}
+                unit={data.proses_mtcs[lengthProses].unit}
+                bagian={data.proses_mtcs[lengthProses].bagian_mesin}
+              >
+                <div>
+                  <label
+                    htmlFor="namaPemeriksa"
+                    className="form-label block text-black text-xs font-extrabold my-2"
+                  >
+                    CATATAN
+                  </label>
+                  <textarea
+                    onChange={(e) => setNote(e.target.value)}
+                    className="w-full border border-neutral-600 h-32 md:h-56 p-2 rounded-sm"
+                    name="note_qc"
+                    value={note || ''}
+                  ></textarea>
+                </div>
+                <div className="z-50 my-5 rounded-md">
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() =>
+                        verifikasiTicket(
+                          data.id,
+                          data.proses_mtcs[lengthProses].id,
+                        )
                       }
-                      no={'109299'}
-                      idTiket={data.id}
-                      idProses={data.proses_mtcs[lengthProses].id}
-                      namaMesin={data.mesin}
-                      skor_mtc={skorAwal}
-                      jenis_perbaikan={
-                        data.proses_mtcs[lengthProses].cara_perbaikan
-                      }
-                      persentaseBelumVerif={skorBaru}
-                      kode_analisis={
-                        data.proses_mtcs[lengthProses].kode_analisis_mtc +
-                        ' - ' +
-                        data.proses_mtcs[lengthProses].nama_analisis_mtc
-                      }
-                      durasiPerbaikan={waktuPengerjaan}
-                      eksekutor={data.operator}
-                      unit={data.proses_mtcs[lengthProses].unit}
-                      bagian={data.proses_mtcs[lengthProses].bagian_mesin}
+                      className="text-xs font-bold bg-blue-700 py-4 px-5 text-white rounded-md"
                     >
-                      <div>
-                        <label
-                          htmlFor="namaPemeriksa"
-                          className="form-label block text-black text-xs font-extrabold my-2"
-                        >
-                          CATATAN
-                        </label>
-                        <textarea
-                          onChange={(e) => setNote(e.target.value)}
-                          className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
-                          name="note_qc"
-                        ></textarea>
-                      </div>
-                      <div className="z-50 my-5 rounded-md">
-                        <div className="flex flex-col gap-2">
-                          <button
-                            onClick={() =>
-                              verifikasiTicket(
-                                data.id,
-                                data.proses_mtcs[lengthProses].id,
-                              )
-                            }
-                            className="text-xs font-bold bg-blue-700 py-4 px-5 text-white rounded-md"
-                          >
-                            Verifikasi
-                          </button>
-                          <button
-                            onClick={() =>
-                              tolakTicket(
-                                data.id,
-                                data.proses_mtcs[lengthProses].id,
-                              )
-                            }
-                            className="text-xs font-bold bg-red-700 py-4 px-5 text-white rounded-md"
-                          >
-                            Tolak
-                          </button>
-                        </div>
-                      </div>
-                    </ModalVerifikasi>
-                  )}
-                </td>
-              </tr>
+                      Verifikasi
+                    </button>
+                    <button
+                      onClick={() =>
+                        tolakTicket(data.id, data.proses_mtcs[lengthProses].id)
+                      }
+                      className="text-xs font-bold bg-red-700 py-4 px-5 text-white rounded-md"
+                    >
+                      Tolak
+                    </button>
+                  </div>
+                </div>
+              </ModalVerifikasi>
             );
           })}
-        </tbody>
-      </table>
-      <div className="w-full flex justify-end mt-5 ">
+        </>
+      )}
+
+      {/* Pagination */}
+      <div className="w-full flex justify-center md:justify-end mt-5">
         <Stack spacing={2}>
           <Pagination
             count={ticketVerifikasi?.total_page}
             color="primary"
+            size={window.innerWidth < 768 ? 'small' : 'medium'}
             onChange={(e, i) => {
               setPage(i);
               console.log(i);
