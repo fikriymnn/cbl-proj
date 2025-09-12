@@ -47,6 +47,7 @@ interface TahapanTabProps {
 }
 
 type LocalTahapan = TahapanData & {
+  id: any;
   _clientId?: string;
   id_mesin?: number;
 };
@@ -389,6 +390,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
     if (mode === 'drag') return;
     const clientId = `new-${newTempIdRef.current++}`;
     const newTahapan: LocalTahapan = {
+      id: null,
       id_tahapan_mesin: 0,
       index: tahapanList.length + 1,
       setting_type: undefined,

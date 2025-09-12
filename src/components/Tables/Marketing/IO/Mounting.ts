@@ -45,6 +45,7 @@ export interface MountingFormData {
   id_kertas: number;
   id_jenis_pons: number;
   id_lem: number;
+  id_layout: string;
   merk_coating_depan: string;
   merk_coating_belakang: string;
   keterangan_warna_depan: string;
@@ -71,7 +72,7 @@ export interface MountingFormData {
   panjang_partisi_1: number;
   lebar_partisi_2: number;
   panjang_partisi_2: number;
-  tambahan_insheet_druk: string;
+  tambahan_insheet_druk: number;
   lampiran: string;
   untuk: string;
   tahapan?: TahapanData[]; // Add this line

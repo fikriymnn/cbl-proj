@@ -18,12 +18,12 @@ const TambahanTab: React.FC<TambahanTabProps> = ({
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Druk
         </label>
-        <textarea
+        <input
           value={formData.tambahan_insheet_druk}
+          itemType="number"
           onChange={(e) =>
             onInputChange('tambahan_insheet_druk', e.target.value)
           }
-          rows={6}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Masukkan tambahan insheet druk..."
         />

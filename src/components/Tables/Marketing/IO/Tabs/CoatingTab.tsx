@@ -621,8 +621,8 @@ const CoatingTab: React.FC<CoatingTabProps> = ({
         <div className="grid grid-cols-1 gap-4">
           <div>
             <textarea
-              value={formData.lampiran}
-              onChange={(e) => onInputChange('lampiran', e.target.value)}
+              value={formData.id_layout}
+              onChange={(e) => onInputChange('id_layout', e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 h-20"
               placeholder="ID Layout information..."
             />

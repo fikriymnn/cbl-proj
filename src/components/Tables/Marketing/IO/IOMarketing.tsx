@@ -126,14 +126,15 @@ const IOMarketing: React.FC = () => {
       setLoading(false);
     }
   };
-  const fetchIODataOne = async (id: any): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${id}`;
+  const putNextProcess = async (id: any): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/request/${id}`;
     try {
       setLoading(true);
-      const res: AxiosResponse = await axios.get(url, {
+      const res: AxiosResponse = await axios.put(url, {
         withCredentials: true,
       });
-      console.log('Fetched IO data:', res.data);
+      fetchIOData();
+      console.log('NextProcess:', res.data);
     } catch (error) {
       console.error('Error fetching IO data:', error);
     } finally {
@@ -162,7 +163,24 @@ const IOMarketing: React.FC = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
-
+  const getStatusColor2 = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'draft':
+        return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
+      case 'requested':
+        return 'bg-orange-100 text-orange-800 border border-orange-200';
+      case 'approved':
+        return 'bg-green-100 text-green-800 border border-green-200';
+      case 'rejected':
+        return 'bg-red-100 text-red-800 border border-red-200';
+      case 'pending':
+        return 'bg-blue-100 text-blue-800 border border-blue-200';
+      case 'completed':
+        return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border border-gray-200';
+    }
+  };
   useEffect(() => {
     fetchOKPData();
     fetchIOData();
@@ -244,17 +262,27 @@ const IOMarketing: React.FC = () => {
                 </tr>
               ) : (
                 ioData.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+                  <tr key={item.id} className="hover:bg-gray-50 ">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {index + 1}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => handleShowDetail(item.id)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
-                      >
-                        Detail
-                      </button>
+                      <div className="flex flex-col items-center gap-2">
+                        <button
+                          onClick={() => handleShowDetail(item.id)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-xs font-medium min-w-[80px] transition-colors"
+                        >
+                          Detail
+                        </button>
+                        {item.status == 'draft' && (
+                          <button
+                            onClick={() => putNextProcess(item.id)}
+                            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-xs font-medium min-w-[80px] transition-colors"
+                          >
+                            Next Process
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
@@ -281,7 +309,7 @@ const IOMarketing: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 py-1 rounded text-sm ${getStatusColor(
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor2(
                           item.status,
                         )}`}
                       >

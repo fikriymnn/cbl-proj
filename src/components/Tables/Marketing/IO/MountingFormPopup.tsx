@@ -12,6 +12,7 @@ import PartisiTab from './Tabs/PartisiTab';
 import TambahanTab from './Tabs/TambahanTab';
 interface MountingFormPopupProps {
   ioId: number;
+
   mountingData?: MountingData | null;
   existingMountings?: MountingData[];
   tahapan?: TahapanData[];
@@ -30,6 +31,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
   const [activeTab, setActiveTab] = useState<string>('general');
   const [formData, setFormData] = useState<MountingFormData>({
     // Initialize with default values...
+    id_layout: '',
     nama_mounting: '',
     barcode: '',
     format_data: 'CTP',
@@ -78,7 +80,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     panjang_partisi_1: 0,
     lebar_partisi_2: 0,
     panjang_partisi_2: 0,
-    tambahan_insheet_druk: '',
+    tambahan_insheet_druk: 0,
     lampiran: '',
     tahapan: [],
   });
@@ -121,6 +123,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
       setFormData({
         nama_mounting: mountingData.nama_mounting || '',
         barcode: mountingData.barcode || '',
+        id_layout: mountingData.id_layout || '',
         format_data: mountingData.format_data || 'CTP',
         untuk: mountingData.untuk || '',
         ukuran_jadi_panjang: mountingData.ukuran_jadi_panjang || 0,
@@ -167,7 +170,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         panjang_partisi_1: mountingData.panjang_partisi_1 || 0,
         lebar_partisi_2: mountingData.lebar_partisi_2 || 0,
         panjang_partisi_2: mountingData.panjang_partisi_2 || 0,
-        tambahan_insheet_druk: mountingData.tambahan_insheet_druk || '',
+        tambahan_insheet_druk: mountingData.tambahan_insheet_druk || 0,
         lampiran: mountingData.lampiran || '',
         tahapan: mountingData.tahapan || [],
       });
@@ -178,6 +181,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
 
       setFormData({
         nama_mounting: nextName,
+        id_layout: templateMounting?.id_layout || '',
         barcode: templateMounting?.barcode || '',
         format_data: templateMounting?.format_data || 'CTP',
         untuk: templateMounting?.untuk || '',
@@ -228,7 +232,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         panjang_partisi_1: templateMounting?.panjang_partisi_1 || 0,
         lebar_partisi_2: templateMounting?.lebar_partisi_2 || 0,
         panjang_partisi_2: templateMounting?.panjang_partisi_2 || 0,
-        tambahan_insheet_druk: templateMounting?.tambahan_insheet_druk || '',
+        tambahan_insheet_druk: templateMounting?.tambahan_insheet_druk || 0,
         lampiran: templateMounting?.lampiran || '',
         tahapan: templateMounting?.tahapan || [], // Add this line
       });
@@ -244,7 +248,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
           mountingData.id
         }`
       : `${import.meta.env.VITE_API_LINK}/marketing/io/mounting/${ioId}`;
-
+    console.log(formData);
     try {
       setLoading(true);
       const res: AxiosResponse = isEdit
