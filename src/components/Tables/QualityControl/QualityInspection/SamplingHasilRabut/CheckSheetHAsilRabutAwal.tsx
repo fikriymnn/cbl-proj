@@ -1174,30 +1174,39 @@ function CheckSheetHasilRabut() {
               className="grid grid-cols-12 gap-2 py-2 border-b border-gray-200"
             >
               <label className="text-stone-600 text-xs">{i + 1}.</label>
+              <label className="text-stone-600 text-xs">
+                {data?.createdAt && data.createdAt !== ''
+                  ? new Date(data.createdAt).toLocaleDateString('id-ID')
+                  : ''}
+              </label>
+
               <label className="text-stone-600 text-xs ">
-                {new Date(data.createdAt).toLocaleDateString('id-ID')}
+                {data?.operator || '-'}
               </label>
-              <label className="text-stone-600 text-xs ">{data.operator}</label>
-              <label className="text-stone-600 text-xs ">{data.mesin}</label>
-              <label className="text-stone-600 text-xs ">{data.kode}</label>
+              <label className="text-stone-600 text-xs ">
+                {data?.mesin || '-'}
+              </label>
+              <label className="text-stone-600 text-xs ">
+                {data?.kode || '-'}
+              </label>
               <label className="text-stone-600 text-xs col-span-2">
-                {data.masalah}
+                {data?.masalah || '-'}
               </label>
               <label className="text-stone-600 text-xs">
-                {convertDateToTime(data.updatedAt)}
+                {convertDateToTime(data?.updatedAt || '-')}
               </label>
               <label className="text-stone-600 text-xs">
-                {data.periode_ke}
+                {data?.periode_ke || '-'}
               </label>
 
               <label className="text-stone-600 text-xs">
-                {data.jumlah_defect || 0}
+                {data?.jumlah_defect || 0}
               </label>
               <label className="text-stone-600 text-xs ">
-                {data.sumber_masalah}
+                {data?.sumber_masalah || '-'}
               </label>
               <label className="text-stone-600 text-xs">
-                {data.nama_inspektor}
+                {data?.nama_inspektor || '-'}
               </label>
             </div>
           ))}
@@ -2257,61 +2266,6 @@ function CheckSheetHasilRabut() {
                                           isDisabled={!editSelectedOption}
                                         />
 
-                                        {/* Display Machine and Operator Info
-                                        {(editSelectedMesinJO ||
-                                          editSelectedOperatorJO ||
-                                          editIdDefect) && (
-                                          <div className="bg-blue-50 p-2 rounded border">
-                                            <label className="text-blue-800 text-xs font-semibold block mb-1">
-                                              Machine & Operator Info:
-                                            </label>
-                                            {editSelectedMesinJO && (
-                                              <div className="text-blue-700 text-xs">
-                                                <strong>Machine:</strong>{' '}
-                                                {editSelectedMesinJO}
-                                              </div>
-                                            )}
-                                            {editSelectedOperatorJO && (
-                                              <div className="text-blue-700 text-xs">
-                                                <strong>Operator:</strong>{' '}
-                                                {editSelectedOperatorJO}
-                                              </div>
-                                            )}
-                                            {editIdDefect && (
-                                              <>
-                                                {/* {editIdDefect.criteria && (
-                                                  <div className="text-blue-700 text-xs">
-                                                    <strong>Kriteria:</strong>{' '}
-                                                    {editIdDefect.criteria}
-                                                  </div>
-                                                )}
-                                                {editIdDefect.criteria_percent !==
-                                                  undefined && (
-                                                  <div className="text-blue-700 text-xs">
-                                                    <strong>
-                                                      Persen Kriteria:
-                                                    </strong>{' '}
-                                                    {
-                                                      editIdDefect.criteria_percent
-                                                    }
-                                                    %
-                                                  </div>
-                                                )}
-                                                {editIdDefect.kategori_kendala && (
-                                                  <div className="text-blue-700 text-xs">
-                                                    <strong>
-                                                      Sumber Masalah:
-                                                    </strong>{' '}
-                                                    {
-                                                      editIdDefect.kategori_kendala
-                                                    }
-                                                  </div>
-                                                )} 
-                                              </>
-                                            )}
-                                          </div>
-                                        )} */}
-
                                         <div className="flex gap-2">
                                           <button
                                             type="button"
@@ -2347,40 +2301,6 @@ function CheckSheetHasilRabut() {
                                                 {defect.masalah_lkh}
                                               </label>
                                             )}
-
-                                            {/* Display existing machine/operator info
-                                            <div className="mt-2 text-xs text-gray-600">
-                                              {defect.mesin && (
-                                                <div>
-                                                  <strong>Machine:</strong>{' '}
-                                                  {defect.mesin}
-                                                </div>
-                                              )}
-                                              {defect.operator && (
-                                                <div>
-                                                  <strong>Operator:</strong>{' '}
-                                                  {defect.operator}
-                                                </div>
-                                              )}
-                                              {defect.kriteria && (
-                                                <div>
-                                                  <strong>Kriteria:</strong>{' '}
-                                                  {defect.kriteria}
-                                                </div>
-                                              )}
-                                              {defect.persen_kriteria && (
-                                                <div>
-                                                  <strong>Persen:</strong>{' '}
-                                                  {defect.persen_kriteria}%
-                                                </div>
-                                              )}
-                                              {defect.sumber_masalah && (
-                                                <div>
-                                                  <strong>Sumber:</strong>{' '}
-                                                  {defect.sumber_masalah}
-                                                </div>
-                                              )}
-                                            </div> */}
                                           </div>
                                           <button
                                             type="button"
