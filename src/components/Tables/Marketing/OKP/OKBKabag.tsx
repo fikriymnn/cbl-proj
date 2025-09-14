@@ -144,19 +144,6 @@ const OKPKabag: React.FC = () => {
 
   return (
     <div className="container mx-auto py-1">
-      {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-500 ml-auto">
-            {new Date().toLocaleDateString('id-ID', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* Search */}
       <div className="mb-4 flex items-center gap-4">
         <input

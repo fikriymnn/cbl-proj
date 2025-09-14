@@ -12,6 +12,7 @@ import OKPQA from '../OKP/OKPQA';
 import OKPMarketingProcess from '../OKP/OKPMarketingProcess';
 import OKPCustomer from '../OKP/OKPCustomer';
 import OKPKabag from '../OKP/OKBKabag';
+import KabagApprovalIO from './KabagApprovalIO';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -147,6 +148,7 @@ export default function TabKabagApprove() {
               <Tab label="OKP MARKETING" {...a11yProps(3)} />
               <Tab label="OKP CUSTOMER" {...a11yProps(4)} />
               <Tab label="OKP KABAG" {...a11yProps(5)} />
+              <Tab label="IO" {...a11yProps(6)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -172,6 +174,9 @@ export default function TabKabagApprove() {
         </TabPanel>
         <TabPanel value={value} index={5} dir={theme.direction}>
           <OKPKabag />
+        </TabPanel>
+        <TabPanel value={value} index={6} dir={theme.direction}>
+          <KabagApprovalIO />
         </TabPanel>
       </Box>
     </>
