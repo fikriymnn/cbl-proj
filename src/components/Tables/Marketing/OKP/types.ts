@@ -167,4 +167,16 @@ export interface OKPFormData {
   keterangan_cetak: string;
   tahapan: string[];
   id_kalkulasi: number;
+  tgl_pembuatan_okp: string; // Add this
+  user_create?: {
+    id: number;
+    nama: string;
+    bagian: string;
+  };
+  user_approve?: {
+    id: number;
+    nama: string;
+    bagian: string;
+  };
+  okp_proses?: any[]; // Add this for the process data
 }

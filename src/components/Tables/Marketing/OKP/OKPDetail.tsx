@@ -49,6 +49,9 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
     keterangan_cetak: '',
     tahapan: [],
     id_kalkulasi: 0,
+    tgl_pembuatan_okp: '',
+    user_create: { id: 0, nama: '', bagian: '' },
+    user_approve: { id: 0, nama: '', bagian: '' },
   });
 
   const [uploading, setUploading] = useState(false);
@@ -95,6 +98,10 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
             keterangan_cetak: okpData.keterangan_cetak || '',
             tahapan: parseArrayField(okpData.tahapan),
             id_kalkulasi: okpData.id_kalkulasi || 0,
+            tgl_pembuatan_okp: okpData.tgl_pembuatan_okp || '', // Add this
+            user_create: okpData.user_create || null, // Add this
+            user_approve: okpData.user_approve || null, // Add this
+            okp_proses: okpData.okp_proses || [], // Add this
           });
 
           // Set OKP processes for desain, QA, and marketing actions
@@ -102,6 +109,7 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
             setOkpProcesses(okpData.okp_proses || []);
           }
         }
+        console.log('Fetched OKP data:', response.data.data);
       } catch (error: any) {
         console.error('Error fetching OKP data:', error);
         setError('Failed to load OKP data');

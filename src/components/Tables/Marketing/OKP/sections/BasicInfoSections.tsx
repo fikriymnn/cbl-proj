@@ -9,7 +9,7 @@ interface BasicInfoSectionProps {
   kalkulasiList: KalkulasiItem[];
   loadingKalkulasi: boolean;
   disabled: boolean;
-  isDesain?: boolean; // Add this new prop
+  isDesain?: boolean;
 }
 
 const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
@@ -179,7 +179,52 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </p>
           )}
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tanggal Pembuatan OKP
+          </label>
+          <input
+            type="date"
+            value={formatDateForInput(formData.tgl_pembuatan_okp)}
+            onChange={(e) =>
+              handleInputChange('tgl_pembuatan_okp', e.target.value)
+            }
+            className={`w-full p-2 border border-gray-300 rounded-md ${
+              disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
+            }`}
+            disabled={disabled}
+            readOnly={disabled}
+          />
+        </div>
       </div>
+      {/* Add User Information Section */}
+      {(formData.user_create || formData.user_approve) && (
+        <div className="mt-6 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {formData.user_create && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Created By
+                </label>
+                <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600">
+                  {formData.user_create.nama} ({formData.user_create.bagian})
+                </div>
+              </div>
+            )}
+
+            {formData.user_approve && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Approved By
+                </label>
+                <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600">
+                  {formData.user_approve.nama} ({formData.user_approve.bagian})
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* Add the new product info section */}
       <ProductInfoSection selectedKalkulasi={selectedKalkulasi} />
     </div>
