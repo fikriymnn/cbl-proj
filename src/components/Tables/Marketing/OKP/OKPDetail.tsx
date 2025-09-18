@@ -52,6 +52,7 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
     tgl_pembuatan_okp: '',
     user_create: { id: 0, nama: '', bagian: '' },
     user_approve: { id: 0, nama: '', bagian: '' },
+    keterangan: '',
   });
 
   const [uploading, setUploading] = useState(false);
@@ -102,6 +103,7 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
             user_create: okpData.user_create || null, // Add this
             user_approve: okpData.user_approve || null, // Add this
             okp_proses: okpData.okp_proses || [], // Add this
+            keterangan: okpData.keterangan || '', // Add this
           });
 
           // Set OKP processes for desain, QA, and marketing actions

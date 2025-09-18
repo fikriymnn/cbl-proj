@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 import { KalkulasiItem, OKPFormData } from '../types';
 import ProductInfoSection from './ProductInfoSection';
@@ -18,8 +18,16 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   kalkulasiList,
   loadingKalkulasi,
   disabled,
-  isDesain = false, // Default to false
+  isDesain = false,
 }) => {
+  // Auto-set today's date for tgl_pembuatan_okp when component mounts (only for new records)
+  useEffect(() => {
+    if (!formData.tgl_pembuatan_okp && !disabled) {
+      const today = new Date().toISOString().split('T')[0];
+      handleInputChange('tgl_pembuatan_okp', today);
+    }
+  }, [formData.tgl_pembuatan_okp, disabled, handleInputChange]);
+
   // Format date for input (convert from various formats to YYYY-MM-DD)
   const formatDateForInput = (dateValue: string) => {
     if (!dateValue) return '';
@@ -179,6 +187,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             </p>
           )}
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Tanggal Pembuatan OKP
@@ -193,39 +202,69 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
             }`}
             disabled={disabled}
+            readOnly={true}
+          />
+        </div>
+
+        {/* New Keterangan Field */}
+        <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Keterangan
+          </label>
+          <input
+            type="text"
+            value={formData.keterangan || ''}
+            onChange={(e) => handleInputChange('keterangan', e.target.value)}
+            className={`w-full p-2 border border-gray-300 rounded-md ${
+              disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
+            }`}
+            placeholder="keterangan..."
+            disabled={disabled}
             readOnly={disabled}
           />
         </div>
       </div>
-      {/* Add User Information Section */}
-      {(formData.user_create || formData.user_approve) && (
-        <div className="mt-6 bg-gray-50 rounded-lg">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {formData.user_create && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Created By
-                </label>
-                <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600">
-                  {formData.user_create.nama} ({formData.user_create.bagian})
-                </div>
-              </div>
-            )}
 
-            {formData.user_approve && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Approved By
-                </label>
-                <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600">
-                  {formData.user_approve.nama} ({formData.user_approve.bagian})
+      {/* User Information Section */}
+      {((formData.user_create &&
+        formData.user_create.id > 0 &&
+        formData.user_create.nama) ||
+        (formData.user_approve &&
+          formData.user_approve.id > 0 &&
+          formData.user_approve.nama)) && (
+        <div className="mt-6 bg-gray-50 rounded-lg ">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {formData.user_create &&
+              formData.user_create.id > 0 &&
+              formData.user_create.nama && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Created By
+                  </label>
+                  <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600">
+                    {formData.user_create.nama} ({formData.user_create.bagian})
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+
+            {formData.user_approve &&
+              formData.user_approve.id > 0 &&
+              formData.user_approve.nama && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Approved By
+                  </label>
+                  <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600">
+                    {formData.user_approve.nama} ({formData.user_approve.bagian}
+                    )
+                  </div>
+                </div>
+              )}
           </div>
         </div>
       )}
-      {/* Add the new product info section */}
+
+      {/* Product Info Section */}
       <ProductInfoSection selectedKalkulasi={selectedKalkulasi} />
     </div>
   );

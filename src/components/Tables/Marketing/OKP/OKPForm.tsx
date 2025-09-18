@@ -42,6 +42,10 @@ const OKPForm: React.FC<OKPFormProps> = ({
     keterangan_cetak: '',
     tahapan: [],
     id_kalkulasi: 0,
+    tgl_pembuatan_okp: '',
+    user_create: { id: 0, nama: '', bagian: '' },
+    user_approve: { id: 0, nama: '', bagian: '' },
+    keterangan: '',
   });
 
   // File handling states

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { OKPFormData } from '../types';
 
 interface AdditionalFieldsSectionProps {
@@ -12,6 +12,8 @@ const AdditionalFieldsSection: React.FC<AdditionalFieldsSectionProps> = ({
   handleInputChange,
   disabled,
 }) => {
+  const [showHistoricalProcesses, setShowHistoricalProcesses] = useState(false);
+
   // Format date for input (convert from various formats to YYYY-MM-DD)
   const formatDateForInput = (dateValue: string) => {
     if (!dateValue) return '';
@@ -60,6 +62,7 @@ const AdditionalFieldsSection: React.FC<AdditionalFieldsSectionProps> = ({
     const validOptions = ['in house', 'outsource'];
     return validOptions.includes(value) ? value : '';
   };
+
   // Format date for display
   const formatDateForDisplay = (dateValue: string) => {
     if (!dateValue) return '-';
@@ -68,9 +71,9 @@ const AdditionalFieldsSection: React.FC<AdditionalFieldsSectionProps> = ({
       const date = new Date(dateValue);
       if (!isNaN(date.getTime())) {
         return date.toLocaleDateString('id-ID', {
+          day: '2-digit',
+          month: '2-digit',
           year: 'numeric',
-          month: 'short',
-          day: 'numeric',
         });
       }
     } catch (error) {
@@ -80,11 +83,222 @@ const AdditionalFieldsSection: React.FC<AdditionalFieldsSectionProps> = ({
     return dateValue;
   };
 
-  // Get active OKP processes
+  // Separate active and non-active OKP processes
   const activeOkpProcesses =
     formData.okp_proses?.filter(
       (process: any) => process.status === 'active',
     ) || [];
+
+  const nonActiveOkpProcesses =
+    formData.okp_proses?.filter(
+      (process: any) => process.status === 'non active',
+    ) || [];
+
+  // Render process table
+  const renderProcessTable = (processes: any[], isActive: boolean = true) => (
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-sm">
+        <thead className={`${isActive ? 'bg-green-100' : 'bg-gray-100'}`}>
+          <tr>
+            <th className="px-3 py-2 text-left font-medium text-gray-700 border-b">
+              Process
+            </th>
+            <th className="px-3 py-2 text-left font-medium text-gray-700 border-b">
+              Date
+            </th>
+            <th className="px-3 py-2 text-left font-medium text-gray-700 border-b">
+              User
+            </th>
+            <th className="px-3 py-2 text-left font-medium text-gray-700 border-b">
+              Note
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {processes.map((process: any, processIndex: number) => {
+            const rows = [];
+
+            // Design Process Row
+            if (
+              process.tgl_okp_desain ||
+              process.user_desain ||
+              process.note_okp_desain
+            ) {
+              rows.push(
+                <tr
+                  key={`${process.id}-design`}
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td className="px-3 py-2 font-medium text-blue-700">
+                    Design
+                  </td>
+                  <td className="px-3 py-2">
+                    {formatDateForDisplay(process.tgl_okp_desain)}
+                  </td>
+                  <td className="px-3 py-2">
+                    {process.user_desain
+                      ? `${process.user_desain.nama} (${process.user_desain.bagian})`
+                      : '-'}
+                  </td>
+                  <td
+                    className="px-3 py-2 max-w-xs truncate"
+                    title={process.note_okp_desain}
+                  >
+                    {process.note_okp_desain || '-'}
+                  </td>
+                </tr>,
+              );
+            }
+
+            // QA Process Row
+            if (
+              process.tgl_terima_qa ||
+              process.user_qa ||
+              process.note_terima_qa
+            ) {
+              rows.push(
+                <tr
+                  key={`${process.id}-qa`}
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td className="px-3 py-2 font-medium text-purple-700">QA</td>
+                  <td className="px-3 py-2">
+                    {formatDateForDisplay(process.tgl_terima_qa)}
+                  </td>
+                  <td className="px-3 py-2">
+                    {process.user_qa
+                      ? `${process.user_qa.nama} (${process.user_qa.bagian})`
+                      : '-'}
+                  </td>
+                  <td
+                    className="px-3 py-2 max-w-xs truncate"
+                    title={process.note_terima_qa}
+                  >
+                    {process.note_terima_qa || '-'}
+                  </td>
+                </tr>,
+              );
+            }
+
+            // Marketing Process Row
+            if (
+              process.tgl_terima_marketing ||
+              process.user_terima_marketing ||
+              process.note_terima_marketing
+            ) {
+              rows.push(
+                <tr
+                  key={`${process.id}-marketing`}
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td className="px-3 py-2 font-medium text-orange-700">
+                    Marketing
+                  </td>
+                  <td className="px-3 py-2">
+                    {formatDateForDisplay(process.tgl_terima_marketing)}
+                  </td>
+                  <td className="px-3 py-2">
+                    {process.user_terima_marketing
+                      ? `${process.user_terima_marketing.nama} (${process.user_terima_marketing.bagian})`
+                      : '-'}
+                  </td>
+                  <td
+                    className="px-3 py-2 max-w-xs truncate"
+                    title={process.note_terima_marketing}
+                  >
+                    {process.note_terima_marketing || '-'}
+                  </td>
+                </tr>,
+              );
+            }
+
+            // Customer Process Row
+            if (
+              process.tgl_acc_customer ||
+              process.user_acc_customer ||
+              process.note_acc_customer
+            ) {
+              rows.push(
+                <tr
+                  key={`${process.id}-customer`}
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td className="px-3 py-2 font-medium text-green-700">
+                    Customer
+                  </td>
+                  <td className="px-3 py-2">
+                    {formatDateForDisplay(process.tgl_acc_customer)}
+                  </td>
+                  <td className="px-3 py-2">
+                    {process.user_acc_customer
+                      ? `${process.user_acc_customer.nama} (${process.user_acc_customer.bagian})`
+                      : '-'}
+                  </td>
+                  <td
+                    className="px-3 py-2 max-w-xs truncate"
+                    title={process.note_acc_customer}
+                  >
+                    {process.note_acc_customer || '-'}
+                  </td>
+                </tr>,
+              );
+            }
+
+            // Reject Process Row
+            if (
+              process.tgl_reject ||
+              process.user_reject ||
+              process.note_reject
+            ) {
+              rows.push(
+                <tr
+                  key={`${process.id}-reject`}
+                  className="border-b border-gray-100 hover:bg-red-50 bg-red-25"
+                >
+                  <td className="px-3 py-2 font-medium text-red-700">
+                    Reject{' '}
+                    {process.bagian_reject && `(${process.bagian_reject})`}
+                  </td>
+                  <td className="px-3 py-2">
+                    {formatDateForDisplay(process.tgl_reject)}
+                  </td>
+                  <td className="px-3 py-2">
+                    {process.user_reject
+                      ? `${process.user_reject.nama} (${process.user_reject.bagian})`
+                      : '-'}
+                  </td>
+                  <td
+                    className="px-3 py-2 max-w-xs truncate"
+                    title={process.note_reject}
+                  >
+                    {process.note_reject || '-'}
+                  </td>
+                </tr>,
+              );
+            }
+
+            // Add separator between different processes if there are multiple
+            if (processIndex < processes.length - 1 && rows.length > 0) {
+              rows.push(
+                <tr key={`separator-${process.id}`}>
+                  <td colSpan={4} className="px-3 py-1">
+                    <div
+                      className={`border-t-2 ${
+                        isActive ? 'border-green-200' : 'border-gray-300'
+                      }`}
+                    ></div>
+                  </td>
+                </tr>,
+              );
+            }
+
+            return rows;
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div>
@@ -160,176 +374,57 @@ const AdditionalFieldsSection: React.FC<AdditionalFieldsSectionProps> = ({
           <option value="outsource">Outsource</option>
         </select>
       </div>
+
+      {/* Active OKP Processes Table */}
       {activeOkpProcesses.length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 md:col-span-2 lg:col-span-4">
-          <h3 className="text-lg font-medium text-gray-800 mb-4">
-            OKP Process Information
-          </h3>
+        <div className="mt-6 bg-white rounded-lg border border-green-200 md:col-span-2 lg:col-span-4">
+          <div className="px-4 py-3 bg-green-50 rounded-t-lg border-b border-green-200">
+            <h3 className="text-lg font-medium text-gray-800 flex items-center">
+              <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+              Active OKP Process
+            </h3>
+          </div>
+          <div className="p-4">
+            {renderProcessTable(activeOkpProcesses, true)}
+          </div>
+        </div>
+      )}
 
-          {activeOkpProcesses.map((process: any, index: number) => (
-            <div key={process.id} className="mb-6 last:mb-0">
-              {activeOkpProcesses.length > 1 && (
-                <h4 className="text-md font-medium text-gray-700 mb-3">
-                  Process {index + 1}
-                </h4>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Design Information */}
-                {(process.tgl_okp_desain ||
-                  process.note_okp_desain ||
-                  process.user_desain) && (
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-sm text-gray-600">
-                      Design Process
-                    </h5>
-                    {process.tgl_okp_desain && (
-                      <div className="text-sm">
-                        <span className="font-medium">Date:</span>{' '}
-                        {formatDateForDisplay(process.tgl_okp_desain)}
-                      </div>
-                    )}
-                    {process.note_okp_desain && (
-                      <div className="text-sm">
-                        <span className="font-medium">Note:</span>{' '}
-                        {process.note_okp_desain}
-                      </div>
-                    )}
-                    {process.user_desain && (
-                      <div className="text-sm">
-                        <span className="font-medium">User:</span>{' '}
-                        {process.user_desain.nama} ({process.user_desain.bagian}
-                        )
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* QA Information */}
-                {(process.tgl_terima_qa ||
-                  process.note_terima_qa ||
-                  process.user_qa) && (
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-sm text-gray-600">
-                      QA Process
-                    </h5>
-                    {process.tgl_terima_qa && (
-                      <div className="text-sm">
-                        <span className="font-medium">Date:</span>{' '}
-                        {formatDateForDisplay(process.tgl_terima_qa)}
-                      </div>
-                    )}
-                    {process.note_terima_qa && (
-                      <div className="text-sm">
-                        <span className="font-medium">Note:</span>{' '}
-                        {process.note_terima_qa}
-                      </div>
-                    )}
-                    {process.user_qa && (
-                      <div className="text-sm">
-                        <span className="font-medium">User:</span>{' '}
-                        {process.user_qa.nama} ({process.user_qa.bagian})
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Marketing Information */}
-                {(process.tgl_terima_marketing ||
-                  process.note_terima_marketing ||
-                  process.user_terima_marketing) && (
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-sm text-gray-600">
-                      Marketing Process
-                    </h5>
-                    {process.tgl_terima_marketing && (
-                      <div className="text-sm">
-                        <span className="font-medium">Date:</span>{' '}
-                        {formatDateForDisplay(process.tgl_terima_marketing)}
-                      </div>
-                    )}
-                    {process.note_terima_marketing && (
-                      <div className="text-sm">
-                        <span className="font-medium">Note:</span>{' '}
-                        {process.note_terima_marketing}
-                      </div>
-                    )}
-                    {process.user_terima_marketing && (
-                      <div className="text-sm">
-                        <span className="font-medium">User:</span>{' '}
-                        {process.user_terima_marketing.nama} (
-                        {process.user_terima_marketing.bagian})
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Customer Information */}
-                {(process.tgl_acc_customer ||
-                  process.note_acc_customer ||
-                  process.user_acc_customer) && (
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-sm text-gray-600">
-                      Customer Process
-                    </h5>
-                    {process.tgl_acc_customer && (
-                      <div className="text-sm">
-                        <span className="font-medium">Date:</span>{' '}
-                        {formatDateForDisplay(process.tgl_acc_customer)}
-                      </div>
-                    )}
-                    {process.note_acc_customer && (
-                      <div className="text-sm">
-                        <span className="font-medium">Note:</span>{' '}
-                        {process.note_acc_customer}
-                      </div>
-                    )}
-                    {process.user_acc_customer && (
-                      <div className="text-sm">
-                        <span className="font-medium">User:</span>{' '}
-                        {process.user_acc_customer.nama} (
-                        {process.user_acc_customer.bagian})
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Reject Information (if any) */}
-                {(process.tgl_reject ||
-                  process.note_reject ||
-                  process.user_reject) && (
-                  <div className="space-y-2">
-                    <h5 className="font-medium text-sm text-red-600">
-                      Reject Information
-                    </h5>
-                    {process.tgl_reject && (
-                      <div className="text-sm">
-                        <span className="font-medium">Date:</span>{' '}
-                        {formatDateForDisplay(process.tgl_reject)}
-                      </div>
-                    )}
-                    {process.note_reject && (
-                      <div className="text-sm">
-                        <span className="font-medium">Note:</span>{' '}
-                        {process.note_reject}
-                      </div>
-                    )}
-                    {process.user_reject && (
-                      <div className="text-sm">
-                        <span className="font-medium">User:</span>{' '}
-                        {process.user_reject.nama} ({process.user_reject.bagian}
-                        )
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {index < activeOkpProcesses.length - 1 && (
-                <hr className="mt-4 border-blue-200" />
-              )}
+      {/* Historical/Non-Active OKP Processes Table */}
+      {nonActiveOkpProcesses.length > 0 && (
+        <div className="mt-6 bg-white rounded-lg border border-gray-200 md:col-span-2 lg:col-span-4">
+          <div
+            className="px-4 py-3 bg-gray-50 rounded-t-lg border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+            onClick={() => setShowHistoricalProcesses(!showHistoricalProcesses)}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium text-gray-800 flex items-center">
+                <span className="inline-block w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
+                Historical OKP Processes ({nonActiveOkpProcesses.length})
+              </h3>
+              <svg
+                className={`w-5 h-5 transform transition-transform text-gray-600 ${
+                  showHistoricalProcesses ? 'rotate-180' : ''
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
             </div>
-          ))}
+          </div>
+
+          {showHistoricalProcesses && (
+            <div className="p-4">
+              {renderProcessTable(nonActiveOkpProcesses, false)}
+            </div>
+          )}
         </div>
       )}
     </div>
