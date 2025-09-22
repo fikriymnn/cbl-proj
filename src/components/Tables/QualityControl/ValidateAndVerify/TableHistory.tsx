@@ -154,30 +154,53 @@ const TableHistory = () => {
         const jamTicket = tiketData.createdAt
           ? convertDateToTime(tiketData.createdAt)
           : '-';
-        const tglSelesaiTicket =
-          processData.waktu_selesai_mtc == null
-            ? '-'
-            : convertTimeStampToDate(processData.waktu_selesai_mtc);
+
+        // ADDED MISSING CALCULATIONS - matching the display section
+        const tglTicketFull = tiketData.createdAt
+          ? convertTimeStampToDate(tiketData.createdAt)
+          : '-';
+
+        const tglSelesaiTicket = processData.waktu_selesai_mtc
+          ? convertTimeStampToDate(processData.waktu_selesai_mtc)
+          : '-';
+
+        // Calculate response times - matching display section logic
+        const waktuRespon = calculateResponTime2(
+          tiketData.createdAt,
+          tiketData.waktu_respon_qc,
+        );
+        const waktuResponFormatted =
+          formatMinutesToHoursMinutesSeconds(waktuRespon);
 
         const waktuBreakdownMinutes = calculateResponTime2(
           tiketData.createdAt,
-          processData.waktu_selesai,
+          tiketData.waktu_selesai,
+        );
+        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
+          waktuBreakdownMinutes,
         );
 
         const waktuBreakdownMTCMinutes = calculateResponTime2(
           tiketData.waktu_respon_qc,
-          processData.waktu_selesai_mtc,
-        );
-
-        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
-          waktuBreakdownMinutes,
+          tiketData.waktu_selesai_mtc,
         );
         const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
           waktuBreakdownMTCMinutes,
         );
 
+        const waktuVerifikasiQCMinutes = calculateResponTime2(
+          tiketData.waktu_selesai_mtc,
+          tiketData.waktu_selesai,
+        );
+        const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(
+          waktuVerifikasiQCMinutes,
+        );
+
         return {
           No: index + 1,
+
+          // Process MTC information
+          'Process ID': processData.id || '-',
           'Bagian Mesin': processData.bagian_mesin || '-',
           Unit: processData.unit || '-',
           'Cara Perbaikan': processData.cara_perbaikan || '-',
@@ -189,14 +212,20 @@ const TableHistory = () => {
           'Skor MTC': processData.skor_mtc || '-',
           'Status Proses': processData.status_proses || '-',
           'Status QC': processData.status_qc || '-',
+          'Is Rework': processData.is_rework ? 'Yes' : 'No',
+
+          // User information
           'Eksekutor Nama': processData.user_eksekutor?.nama || '-',
           'Eksekutor Role': processData.user_eksekutor?.role || '-',
           'QC Nama': processData.user_qc?.nama || '-',
           'QC Role': processData.user_qc?.role || '-',
+
+          // Ticket information
           'Ticket ID': tiketData.id || '-',
           'Kode Tiket': tiketData.kode_ticket || '-',
           'Tanggal Tiket': tglTicket,
           'Jam Tiket': jamTicket,
+          'Tanggal Tiket ': tglTicketFull, // ADDED
           'No Jo': tiketData.no_jo || '-',
           'No SO': tiketData.no_so || '-',
           'No IO': tiketData.no_io || '-',
@@ -218,20 +247,30 @@ const TableHistory = () => {
           'Kode Analisis (Tiket)': tiketData.kode_analisis_mtc || '-',
           'Nama Analisis (Tiket)': tiketData.nama_analisis_mtc || '-',
           'Jenis Analisis MTC': tiketData.jenis_analisis_mtc || '-',
-          'Waktu Respon QC': tiketData.waktu_respon_qc
-            ? convertTimeStampToAllSecond(tiketData.waktu_respon_qc)
-            : '-',
+
           'Waktu Respon MTC (Tiket)': tiketData.waktu_respon
             ? convertTimeStampToAllSecond(tiketData.waktu_respon)
             : '-',
           'Waktu Mulai MTC (Tiket)': tiketData.waktu_mulai_mtc
             ? convertTimeStampToAllSecond(tiketData.waktu_mulai_mtc)
             : '-',
+          'Waktu Mulai MTC (Process)': processData.waktu_mulai_mtc
+            ? convertTimeStampToDate(processData.waktu_mulai_mtc)
+            : '-',
           'Waktu Selesai MTC': processData.waktu_selesai_mtc
             ? convertTimeStampToAllSecond(processData.waktu_selesai_mtc)
             : '-',
+          'Waktu Selesai Total': processData.waktu_selesai
+            ? convertTimeStampToDate(processData.waktu_selesai)
+            : '-',
+
+          // ADDED MISSING CALCULATED FIELDS - matching display section
+          'Tanggal Selesai Tiket': tglSelesaiTicket,
+          'Waktu Respon ': waktuResponFormatted,
           'Waktu Breakdown MTC': waktuBreakdownMTC,
+          'Waktu Verifikasi QC': waktuVerifikasiQC,
           'Waktu Breakdown Total': waktuBreakdown,
+
           _createdAtTimestamp: tiketData.createdAt
             ? new Date(tiketData.createdAt).getTime()
             : 0,
@@ -397,7 +436,7 @@ const TableHistory = () => {
               className="px-5 py-2 rounded-md text-white bg-green-500"
               disabled={isLoadingPreview}
             >
-              {isLoadingPreview ? 'Loading...' : 'EXPORT PREVIEW'}
+              {isLoadingPreview ? 'Loading...' : 'EXPORT'}
             </button>
           </div>
         </div>

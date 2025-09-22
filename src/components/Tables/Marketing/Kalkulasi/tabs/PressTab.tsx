@@ -358,7 +358,8 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     // Calculate printing cost using the same calculatedRate for both threshold check and calculation
     if (calculatedRate <= 3000) {
       // Use base rate for calculatedRate <= 3000
-      return machineRates.base;
+      const normalRate2 = machineRates.base * totalWarna;
+      return normalRate2;
     } else {
       // Use tiered rate: (tierRate × totalWarna) × calculatedRate
       const rateIndex = getRateIndex(calculatedRate);

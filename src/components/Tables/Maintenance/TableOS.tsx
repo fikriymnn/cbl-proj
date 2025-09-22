@@ -20,6 +20,7 @@ import convertTimeStampToDateOnly from '../../../utils/convertDateOnly';
 import * as XLSX from 'xlsx'; // Add this import at the top
 import ModalFull from '../PPIC/JadwalProduksi/ModalFull';
 import convertTimeStampToAllSecond from '../../../utils/ConverttimestametoAllSecond';
+import { union } from 'lodash';
 // import moment from 'moment';
 
 function TableOS() {
@@ -170,6 +171,7 @@ function TableOS() {
   const [mesinNama, setMesinNama] = useState<any>();
   const [statusTiket, setStatusTiket] = useState<any>();
   const [noJo, setNoJo] = useState<any>();
+  const [unit, setunit] = useState<any>();
   const [idKaryawan, setIdKaryawan] = useState<any>();
 
   async function getTiket(isRework?: boolean, idModal?: number) {
@@ -181,6 +183,7 @@ function TableOS() {
           search: noJo,
           bagian_tiket: 'os2',
           page: page,
+          unit: unit,
           limit: limit, // Use the limit state here instead of hardcoded 10
           start_date: startDate,
           end_date: endDate,
@@ -321,6 +324,7 @@ function TableOS() {
       const response = await axios.get(url, {
         params: {
           no_jo: noJo,
+          unit: unit,
           bagian_tiket: 'os2',
           page: page,
           start_date: startDate,
@@ -797,12 +801,21 @@ function TableOS() {
               <p className="text-sm text-primary font-semibold">Cari</p>
               <input
                 className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                placeholder="Kendala / No Jo / Unit"
+                placeholder="Kendala / No Jo "
                 type="text"
                 onChange={(e) => setNoJo(e.target.value)}
               />
             </div>
-
+            {/* Text Search */}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-primary font-semibold">Cari Unit</p>
+              <input
+                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                placeholder="Unit "
+                type="text"
+                onChange={(e) => setunit(e.target.value)}
+              />
+            </div>
             {/* Action Buttons */}
             <div className="flex items-end gap-3">
               <button

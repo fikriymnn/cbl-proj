@@ -1,16 +1,11 @@
 import { useEffect, useState } from 'react';
-
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/converDateTime';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
-import calculateTime from '../../../../utils/calculateTime';
-
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
-
 import Loading from '../../../Loading';
 import * as XLSX from 'xlsx'; // Add this import at the top
-
 import ModalFull from '../../PPIC/JadwalProduksi/ModalFull';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';

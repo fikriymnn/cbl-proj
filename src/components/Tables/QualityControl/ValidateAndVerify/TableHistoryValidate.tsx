@@ -141,44 +141,76 @@ const TableHistoryValidate = () => {
           ticket.proses_mtcs.forEach((process: any, processIndex: any) => {
             // Format dates
             const tglTicket = ticket.createdAt
-              ? convertTimeStampToDateOnly(ticket.createdAt)
+              ? convertTimeStampToDate(ticket.createdAt)
               : '-';
             const jamTicket = ticket.createdAt
               ? convertDateToTime(ticket.createdAt)
               : '-';
 
-            // Calculate times
-            const waktuRespon = calculateResponTime2(
-              process.waktu_selesai_mtc,
-              process.waktu_selesai,
-            );
+            // Calculate times - ADDED MISSING CALCULATIONS
+            const waktuResponQC = ticket.waktu_respon_qc
+              ? calculateResponTime2(ticket.createdAt, ticket.waktu_respon_qc)
+              : 0;
+            const waktuResponQCFormatted = ticket.waktu_respon_qc
+              ? formatMinutesToHoursMinutesSeconds(waktuResponQC)
+              : '-';
 
-            const waktuBreakdownMinutes = calculateResponTime2(
-              ticket.createdAt,
-              process.waktu_selesai,
-            );
-
-            const waktuBreakdownMTCMinutes = calculateResponTime2(
-              ticket.waktu_respon_qc,
-              process.waktu_selesai_mtc,
-            );
-
+            const waktuRespon =
+              process.waktu_selesai_mtc && process.waktu_selesai
+                ? calculateResponTime2(
+                    process.waktu_selesai_mtc,
+                    process.waktu_selesai,
+                  )
+                : 0;
             const waktuRespon2 =
-              formatMinutesToHoursMinutesSeconds(waktuRespon);
-            const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
-              waktuBreakdownMinutes,
-            );
-            const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
-              waktuBreakdownMTCMinutes,
-            );
+              process.waktu_selesai_mtc && process.waktu_selesai
+                ? formatMinutesToHoursMinutesSeconds(waktuRespon)
+                : '-';
+
+            const waktuBreakdownMinutes = process.waktu_selesai
+              ? calculateResponTime2(ticket.createdAt, process.waktu_selesai)
+              : 0;
+            const waktuBreakdown = process.waktu_selesai
+              ? formatMinutesToHoursMinutesSeconds(waktuBreakdownMinutes)
+              : '-';
+
+            const waktuBreakdownMTCMinutes =
+              ticket.waktu_respon_qc && process.waktu_selesai_mtc
+                ? calculateResponTime2(
+                    ticket.waktu_respon_qc,
+                    process.waktu_selesai_mtc,
+                  )
+                : 0;
+            const waktuBreakdownMTC =
+              ticket.waktu_respon_qc && process.waktu_selesai_mtc
+                ? formatMinutesToHoursMinutesSeconds(waktuBreakdownMTCMinutes)
+                : '-';
+
+            const tglSelesaiTicket = process.waktu_selesai_mtc
+              ? convertTimeStampToDate(process.waktu_selesai_mtc)
+              : '-';
+
+            const waktuVerifikasiQCMinutes =
+              process.waktu_selesai_mtc && process.waktu_selesai
+                ? calculateResponTime2(
+                    process.waktu_selesai_mtc,
+                    process.waktu_selesai,
+                  )
+                : 0;
+            const waktuVerifikasiQC =
+              process.waktu_selesai_mtc && process.waktu_selesai
+                ? formatMinutesToHoursMinutesSeconds(waktuVerifikasiQCMinutes)
+                : '-';
 
             excelData.push({
               No: excelData.length + 1,
               // Ticket information
               'Ticket ID': ticket.id || '-',
               'Kode Tiket': ticket.kode_ticket || '-',
-              'Tanggal Tiket': tglTicket,
+              'Tanggal Tiket':
+                convertTimeStampToDateOnly(ticket.createdAt) || '-',
               'Jam Tiket': jamTicket,
+              'Tanggal Tiket (Full)': tglTicket, // ADDED
               'No Jo': ticket.no_jo || '-',
               'No SO': ticket.no_so || '-',
               'No IO': ticket.no_io || '-',
@@ -235,8 +267,12 @@ const TableHistoryValidate = () => {
               'Waktu Selesai Total': process.waktu_selesai
                 ? convertTimeStampToDate(process.waktu_selesai)
                 : '-',
+
+              // ADDED MISSING CALCULATED FIELDS
+              'Tanggal Selesai Tiket': tglSelesaiTicket,
+              'Waktu Respon QC ': waktuResponQCFormatted,
               'Waktu Breakdown MTC': waktuBreakdownMTC,
-              'Waktu Respon Total': waktuRespon2,
+              'Waktu Verifikasi QC': waktuVerifikasiQC,
               'Waktu Breakdown Total': waktuBreakdown,
 
               // Add a sortable date field (for internal use)
@@ -248,10 +284,29 @@ const TableHistoryValidate = () => {
         } else {
           // If there are no processes, still create a row for the ticket
           const tglTicket = ticket.createdAt
-            ? convertTimeStampToDateOnly(ticket.createdAt)
+            ? convertTimeStampToDate(ticket.createdAt)
             : '-';
           const jamTicket = ticket.createdAt
             ? convertDateToTime(ticket.createdAt)
+            : '-';
+
+          // ADDED MISSING CALCULATIONS FOR TICKETS WITHOUT PROCESSES
+          const waktuResponQC = ticket.waktu_respon_qc
+            ? calculateResponTime2(ticket.createdAt, ticket.waktu_respon_qc)
+            : 0;
+          const waktuResponQCFormatted = ticket.waktu_respon_qc
+            ? formatMinutesToHoursMinutesSeconds(waktuResponQC)
+            : '-';
+
+          const waktuBreakdownTotal = ticket.waktu_selesai
+            ? calculateResponTime2(ticket.createdAt, ticket.waktu_selesai)
+            : 0;
+          const waktuBreakdownTotalFormatted = ticket.waktu_selesai
+            ? formatMinutesToHoursMinutesSeconds(waktuBreakdownTotal)
+            : '-';
+
+          const tglSelesaiTicket = ticket.waktu_selesai_mtc
+            ? convertTimeStampToDate(ticket.waktu_selesai_mtc)
             : '-';
 
           excelData.push({
@@ -259,8 +314,10 @@ const TableHistoryValidate = () => {
             // Ticket information
             'Ticket ID': ticket.id || '-',
             'Kode Tiket': ticket.kode_ticket || '-',
-            'Tanggal Tiket': tglTicket,
+            'Tanggal Tiket':
+              convertTimeStampToDateOnly(ticket.createdAt) || '-',
             'Jam Tiket': jamTicket,
+            'Tanggal Tiket ': tglTicket, // ADDED
             'No Jo': ticket.no_jo || '-',
             'No SO': ticket.no_so || '-',
             'No IO': ticket.no_io || '-',
@@ -311,9 +368,13 @@ const TableHistoryValidate = () => {
             'Waktu Mulai MTC': '-',
             'Waktu Selesai MTC': '-',
             'Waktu Selesai Total': '-',
+
+            // ADDED MISSING CALCULATED FIELDS
+            'Waktu Respon QC (Formatted)': waktuResponQCFormatted,
+            'Tanggal Selesai Tiket': tglSelesaiTicket,
             'Waktu Breakdown MTC': '-',
-            'Waktu Respon Total': '-',
-            'Waktu Breakdown Total': '-',
+            'Waktu Breakdown Total': waktuBreakdownTotalFormatted,
+            'Waktu Verifikasi QC': '-',
 
             // Add a sortable date field (for internal use)
             _createdAtTimestamp: ticket.createdAt
@@ -537,7 +598,7 @@ const TableHistoryValidate = () => {
               <p className="text-slate-600 font-semibold">Kendala</p>
             </div>
             <div className="text-[14px] justify-start">
-              <p className="text-slate-600 font-semibold">Waktu Respone</p>
+              <p className="text-slate-600 font-semibold">Waktu Respon</p>
             </div>
           </div>
         </div>
