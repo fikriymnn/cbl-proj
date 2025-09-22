@@ -2,7 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
-import { SOFormData, IOData, APIResponse } from './types/SOTypes';
+import {
+  SOFormData,
+  KalkulasiData,
+  APIResponse,
+  Gudang,
+} from './types/SOTypes';
 
 interface SOCreatePopupProps {
   isOpen: boolean;
@@ -20,7 +25,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   const [formData, setFormData] = useState<SOFormData>({
     tgl_input_po: new Date().toISOString().split('T')[0],
     no_so: '',
-    id_io: null,
+    id_kalkulasi: null, // Changed from id_io to id_kalkulasi
     id_so_cancel: null,
     so_cancel: '',
     no_booking: '',
@@ -42,48 +47,65 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     ada_standar_warna: 'Tidak',
   });
 
-  interface IOOption {
+  interface KalkulasiOption {
     value: string;
     label: string;
-    data: IOData;
+    data: KalkulasiData;
   }
-  const [ioOptions, setIoOptions] = useState<IOOption[]>([]);
-  const [ioLoading, setIoLoading] = useState(false);
-  const [selectedIOData, setSelectedIOData] = useState<IOData | null>(null);
 
-  // Fetch IO data from API using axios
-  const fetchIOData = async () => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
-    setIoLoading(true);
+  interface GudangOption {
+    value: string;
+    label: string;
+    data: Gudang;
+  }
+
+  const [kalkulasiOptions, setKalkulasiOptions] = useState<KalkulasiOption[]>(
+    [],
+  );
+  const [gudangOptions, setGudangOptions] = useState<GudangOption[]>([]);
+  const [kalkulasiLoading, setKalkulasiLoading] = useState(false);
+  const [selectedKalkulasiData, setSelectedKalkulasiData] =
+    useState<KalkulasiData | null>(null);
+
+  // Status Produk options
+  const statusProdukOptions = [
+    { value: 'OKP', label: 'OKP' },
+    { value: 'PROFF', label: 'PROFF' },
+    { value: 'ACC', label: 'ACC' },
+  ];
+
+  // Fetch Kalkulasi data from API using axios
+  const fetchKalkulasiData = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
+    setKalkulasiLoading(true);
     try {
       const response = await axios.get(url, {
         params: {
-          status: 'history',
-          is_active: true,
+          is_io_active: true,
         },
         withCredentials: true,
       });
-      console.log('Fetched IO data:', response.data);
+      console.log('Fetched Kalkulasi data:', response.data);
       if (response.data.succes && response.data.data) {
-        const options = response.data.data.map((item: IOData) => ({
+        const options = response.data.data.map((item: KalkulasiData) => ({
           value: item.id,
-          label: item.no_io,
+          // Enhanced label with customer name and product name
+          label: `${item.no_io} - ${item.nama_customer}, ${item.nama_produk}`,
           data: item,
         }));
-        setIoOptions(options);
+        setKalkulasiOptions(options);
       }
     } catch (error) {
-      console.error('Error fetching IO data:', error);
-      // You can add error handling here, e.g., show a toast notification
+      console.error('Error fetching Kalkulasi data:', error);
     } finally {
-      setIoLoading(false);
+      setKalkulasiLoading(false);
     }
   };
 
-  // Load IO data when component mounts
+  // Load Kalkulasi data when component mounts
   useEffect(() => {
     if (isOpen) {
-      fetchIOData();
+      fetchKalkulasiData();
     }
   }, [isOpen]);
 
@@ -93,43 +115,63 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       [field]: value,
     }));
 
-    // Handle IO selection
-    if (field === 'id_io') {
-      const selectedOption = ioOptions.find((option) => option.value === value);
+    // Handle Kalkulasi selection
+    if (field === 'id_kalkulasi') {
+      const selectedOption = kalkulasiOptions.find(
+        (option) => option.value === value,
+      );
       if (selectedOption) {
-        const ioData = selectedOption.data;
-        setSelectedIOData(ioData);
+        const kalkulasiData = selectedOption.data;
+        setSelectedKalkulasiData(kalkulasiData);
 
-        // Check if okp and kalkulasi exist
+        // Check if kalkulasi data exists
         if (
-          ioData.okp &&
-          ioData.okp.kalkulasi &&
-          ioData.okp.kalkulasi.total_harga_satuan_customer &&
-          ioData.okp.kalkulasi.qty_kalkulasi !== undefined &&
-          ioData.okp.kalkulasi.status_kalkulasi
+          kalkulasiData &&
+          kalkulasiData.total_harga_satuan_customer &&
+          kalkulasiData.qty_kalkulasi !== undefined &&
+          kalkulasiData.status_kalkulasi
         ) {
-          // Auto fill fields based on selected IO
+          // Auto fill fields based on selected Kalkulasi
           const hargaSatuanCustomer = parseFloat(
-            ioData.okp.kalkulasi.total_harga_satuan_customer,
+            kalkulasiData.total_harga_satuan_customer,
           );
-          const qtyKalkulasi = ioData.okp.kalkulasi.qty_kalkulasi;
+          const qtyKalkulasi = kalkulasiData.qty_kalkulasi;
+          const profitValue = kalkulasiData.profit || 0;
 
-          setFormData((prev) => ({
-            ...prev,
-            harga_jual: isNaN(hargaSatuanCustomer) ? 0 : hargaSatuanCustomer,
+          // Set up gudang options from customer data
+          if (kalkulasiData.customer && kalkulasiData.customer.gudang) {
+            const gudangOpts = kalkulasiData.customer.gudang.map(
+              (gudang: Gudang) => ({
+                value: gudang.id.toString(),
+                label: gudang.alamat_gudang,
+                data: gudang,
+              }),
+            );
+            setGudangOptions(gudangOpts);
 
-            total_harga: isNaN(hargaSatuanCustomer)
-              ? 0
-              : hargaSatuanCustomer * (qtyKalkulasi || 0),
-            status_jo: ioData.okp.kalkulasi.status_kalkulasi,
-            customer: ioData.customer || '',
-            produk: ioData.produk || '',
-          }));
+            // Auto fill alamat_pengiriman with first gudang (index 0)
+            const defaultGudang = kalkulasiData.customer.gudang[0];
+            const defaultAlamat = defaultGudang
+              ? defaultGudang.alamat_gudang
+              : '';
+
+            setFormData((prev) => ({
+              ...prev,
+              harga_jual: isNaN(hargaSatuanCustomer) ? 0 : hargaSatuanCustomer,
+              total_harga: isNaN(hargaSatuanCustomer)
+                ? 0
+                : hargaSatuanCustomer * (qtyKalkulasi || 0),
+              status_jo: kalkulasiData.status_kalkulasi,
+              customer: kalkulasiData.nama_customer || '',
+              produk: kalkulasiData.nama_produk || '',
+              profit: profitValue, // Auto fill profit
+              alamat_pengiriman: defaultAlamat, // Auto fill with first gudang
+            }));
+          }
         } else {
-          // If okp or kalkulasi data is incomplete, show a warning or handle gracefully
           console.warn(
-            'Selected IO does not have complete okp/kalkulasi data:',
-            ioData,
+            'Selected Kalkulasi does not have complete data:',
+            kalkulasiData,
           );
           setFormData((prev) => ({
             ...prev,
@@ -137,13 +179,17 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
             po_qty: 0,
             total_harga: 0,
             status_jo: '',
-            customer: ioData.customer || '',
-            produk: ioData.produk || '',
+            customer: kalkulasiData?.nama_customer || '',
+            produk: kalkulasiData?.nama_produk || '',
+            profit: kalkulasiData?.profit || 0,
+            alamat_pengiriman: '',
           }));
+          setGudangOptions([]);
         }
       } else {
-        setSelectedIOData(null);
-        // Reset fields when no IO is selected
+        setSelectedKalkulasiData(null);
+        setGudangOptions([]);
+        // Reset fields when no Kalkulasi is selected
         setFormData((prev) => ({
           ...prev,
           harga_jual: 0,
@@ -152,14 +198,24 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
           status_jo: '',
           customer: '',
           produk: '',
+          profit: 0,
+          alamat_pengiriman: '',
         }));
       }
       return;
     }
 
-    // Auto calculate total_harga only when harga_jual changes
+    // Auto calculate total_harga when harga_jual or po_qty changes
     if (field === 'harga_jual') {
       const total = value * formData.po_qty;
+      setFormData((prev) => ({
+        ...prev,
+        total_harga: isNaN(total) ? 0 : total,
+      }));
+    }
+
+    if (field === 'po_qty') {
+      const total = formData.harga_jual * value;
       setFormData((prev) => ({
         ...prev,
         total_harga: isNaN(total) ? 0 : total,
@@ -176,8 +232,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     setFormData({
       tgl_input_po: new Date().toISOString().split('T')[0],
       no_so: '',
-      id_io: '',
-      id_so_cancel: '',
+      id_kalkulasi: null,
+      id_so_cancel: null,
       so_cancel: '',
       no_booking: '',
       status_jo: '',
@@ -197,7 +253,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       alamat_pengiriman: '',
       ada_standar_warna: 'Tidak',
     });
-    setSelectedIOData(null);
+    setSelectedKalkulasiData(null);
+    setGudangOptions([]);
   };
 
   if (!isOpen) return null;
@@ -248,12 +305,12 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Nomor IO</label>
+              <label className="block text-sm font-medium mb-1">NOMOR IO</label>
               <SearchableSelect
-                placeholder={ioLoading ? 'Loading...' : 'Pilih Data'}
-                value={formData.id_io}
-                onChange={(value) => handleInputChange('id_io', value)}
-                options={ioOptions}
+                placeholder={kalkulasiLoading ? 'Loading...' : 'Pilih Data'}
+                value={formData.id_kalkulasi}
+                onChange={(value) => handleInputChange('id_kalkulasi', value)}
+                options={kalkulasiOptions}
               />
             </div>
 
@@ -291,14 +348,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 value={formData.status_jo}
                 className="w-full p-2 border border-gray-300 rounded bg-gray-100 focus:outline-none"
                 readOnly
-                placeholder="Auto filled from IO"
+                placeholder="Auto filled from Kalkulasi"
               />
-              {selectedIOData &&
-                (!selectedIOData.okp || !selectedIOData.okp.kalkulasi) && (
-                  <p className="text-red-500 text-xs mt-1">
-                    Selected IO has incomplete data
-                  </p>
-                )}
             </div>
 
             <div>
@@ -331,10 +382,10 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 Status Produk
               </label>
               <SearchableSelect
-                placeholder="Pilih Data"
+                placeholder="Pilih Status Produk"
                 value={formData.status_produk}
                 onChange={(value) => handleInputChange('status_produk', value)}
-                options={[]} // Add your options here
+                options={statusProdukOptions}
               />
             </div>
 
@@ -439,10 +490,10 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
 
             {/* Row 6 */}
             <div>
-              <label className="block text-sm font-medium mb-1">Profit %</label>
+              <label className="block text-sm font-medium mb-1">Profit</label>
               <input
                 type="number"
-                placeholder="Masukan Profit"
+                placeholder="Auto filled from Kalkulasi"
                 value={formData.profit}
                 onChange={(e) =>
                   handleInputChange('profit', parseInt(e.target.value) || 0)
@@ -481,22 +532,22 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
             </div>
 
             {/* Row 7 */}
-            <div>
+            <div className="col-span-2">
               <label className="block text-sm font-medium mb-1">
                 Alamat Pengiriman
               </label>
-              <textarea
+              <SearchableSelect
+                placeholder="Pilih Alamat Gudang"
                 value={formData.alamat_pengiriman}
-                onChange={(e) =>
-                  handleInputChange('alamat_pengiriman', e.target.value)
+                onChange={(value) =>
+                  handleInputChange('alamat_pengiriman', value)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
+                options={gudangOptions}
               />
             </div>
 
             {/* Row 8 */}
-            <div className="col-span-2">
+            <div>
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Ada Standar Warna?

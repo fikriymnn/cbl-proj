@@ -1,5 +1,37 @@
 // types/SOTypes.ts
 
+// Customer related interfaces
+export interface Gudang {
+  id: number;
+  id_customer: number;
+  alamat_gudang: string;
+  telepon_gudang: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Customer {
+  id: number;
+  nama_customer: string;
+  alamat_kantor: string;
+  email: string;
+  fax: string;
+  kontak_person: string;
+  telepon: string;
+  npwp: string;
+  no_legalitas: string;
+  toleransi_pengiriman: string;
+  top_faktur: string;
+  id_marketing: number;
+  id_harga_pengiriman: number;
+  kode_marketing: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  gudang: Gudang[];
+}
+
 export interface KalkulasiData {
   id: number;
   brand_kertas: string;
@@ -133,6 +165,7 @@ export interface KalkulasiData {
   updatedAt: string;
   warna_belakang: number;
   warna_depan: number;
+  customer: Customer; // Add the nested customer object
 }
 
 export interface OkpData {
@@ -203,7 +236,7 @@ export interface SOData {
 export interface SOFormData {
   no_so: string;
   tgl_input_po: string;
-  id_io: any;
+  id_kalkulasi: any; // Changed from id_io to id_kalkulasi
   id_so_cancel: any;
   so_cancel: string;
   no_booking: string;
@@ -224,6 +257,7 @@ export interface SOFormData {
   alamat_pengiriman: string;
   ada_standar_warna: string;
 }
+
 export interface APIResponse<T> {
   succes: boolean;
   status_code: number;
