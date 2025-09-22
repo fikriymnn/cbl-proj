@@ -205,6 +205,7 @@ import KalkulasiPageMarketing from './pages/Marketing/Kalkulasi/KalkulasiPage';
 import KabagApproval from './pages/Marketing/Kabag/KabagApproval';
 import OKPPage from './pages/Marketing/OKP/OKPPage';
 import IOMarketingPage from './pages/Marketing/IO/IOMarketingPage';
+import SOPage from './pages/Marketing/SO/SOPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -271,6 +272,16 @@ function App() {
               <PageTitle title="PT CBL" />
 
               <IOMarketingPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/so"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <SOPage />
             </>
           }
         />

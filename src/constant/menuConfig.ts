@@ -611,6 +611,11 @@ export const menuCategories: MenuCategory[] = [
         icon: 'payroll',
       },
       {
+        name: 'SO',
+        path: '/marketing/so',
+        icon: 'payroll',
+      },
+      {
         name: 'Master Marketing',
         path: '/master/marketing',
         icon: 'payroll',

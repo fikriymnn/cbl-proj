@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Stack, Pagination } from '@mui/material';
 import DefaultLayout from '../../../layout/DefaultLayout';
-import SearchableSelect from '../../MasterData/Marketing/SearchableSelect';
+import SearchableSelect from '../../MasterData/Marketing/SelectMarketing';
 
 // Types
 interface Marketing {
@@ -14,10 +14,12 @@ interface Marketing {
 }
 
 interface Karyawan {
-  data_karyawan: any;
-  id: number;
-  nama?: string;
-  name?: string;
+  userid: number;
+  name: string;
+  badgenumber: string;
+  biodata_karyawan: any[];
+  pinjaman_karyawan: any[];
+  sp_karyawan: any[];
 }
 
 interface MarketingForm {
@@ -97,6 +99,8 @@ function MasterMarketing(): JSX.Element {
         params: {},
         withCredentials: true,
       });
+      console.log('✅ Karyawan raw data:', res.data.data);
+      console.log('✅ First karyawan:', res.data.data[0]);
       setKaryawans(res.data.data);
     } catch (error: any) {
       console.log(error);
@@ -139,6 +143,17 @@ function MasterMarketing(): JSX.Element {
 
   const handleSave = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
+
+    console.log('💾 Form data being submitted:', marketingForm);
+    console.log('💾 id_karyawan value:', marketingForm.id_karyawan);
+    console.log('💾 id_karyawan type:', typeof marketingForm.id_karyawan);
+
+    // Check if karyawan is selected
+    if (!marketingForm.id_karyawan || marketingForm.id_karyawan === '') {
+      alert('Please select a karyawan');
+      return;
+    }
+
     try {
       setLoading(true);
       const url = editingMarketing
@@ -149,18 +164,19 @@ function MasterMarketing(): JSX.Element {
 
       const method = editingMarketing ? 'put' : 'post';
 
-      console.log(
-        editingMarketing
-          ? 'Updating marketing with data:'
-          : 'Creating marketing with data:',
-        marketingForm,
-      );
-      await axios[method](url, marketingForm, { withCredentials: true });
+      console.log('💾 Sending request to:', url);
+      console.log('💾 Request method:', method);
+      console.log('💾 Request data:', marketingForm);
+
+      const response = await axios[method](url, marketingForm, {
+        withCredentials: true,
+      });
+      console.log('💾 API Response:', response.data);
 
       getMarketing();
       closeModal();
     } catch (error: any) {
-      console.log(error);
+      console.log('💾 Save error:', error.response?.data || error);
     } finally {
       setLoading(false);
     }
@@ -174,9 +190,17 @@ function MasterMarketing(): JSX.Element {
   };
 
   const handleKaryawanChange = (value: number | string): void => {
-    setMarketingForm({
-      ...marketingForm,
-      id_karyawan: value,
+    console.log('🚀 Karyawan changed to:', value);
+    console.log('🚀 Value type:', typeof value);
+    console.log('🚀 Current form state before update:', marketingForm);
+
+    setMarketingForm((prev) => {
+      const newForm = {
+        ...prev,
+        id_karyawan: value,
+      };
+      console.log('🚀 New form state:', newForm);
+      return newForm;
     });
   };
 
@@ -191,6 +215,18 @@ function MasterMarketing(): JSX.Element {
       console.log(error);
     }
   };
+
+  // Debug the options being passed to select
+  const karyawanOptions = [
+    { value: '', label: 'Select Karyawan' },
+    ...karyawans.map((karyawan) => ({
+      value: karyawan.userid, // ✅ Use userid instead of id
+      label: karyawan.name || '', // ✅ Use name
+    })),
+  ];
+
+  console.log('Current marketingForm.id_karyawan:', marketingForm.id_karyawan);
+  console.log('All karyawan options:', karyawanOptions);
 
   return (
     <DefaultLayout>
@@ -359,13 +395,7 @@ function MasterMarketing(): JSX.Element {
                     Karyawan
                   </label>
                   <SearchableSelect
-                    options={[
-                      { value: '', label: 'Select Karyawan' },
-                      ...karyawans.map((karyawan) => ({
-                        value: karyawan.id,
-                        label: karyawan.nama || karyawan.name || '',
-                      })),
-                    ]}
+                    options={karyawanOptions}
                     value={marketingForm.id_karyawan}
                     onChange={handleKaryawanChange}
                     placeholder="Select Karyawan"
