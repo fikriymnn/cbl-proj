@@ -256,6 +256,7 @@ export interface SOFormData {
   tgl_pengiriman: string;
   alamat_pengiriman: string;
   ada_standar_warna: string;
+  is_io_selesai: boolean;
 }
 
 export interface APIResponse<T> {

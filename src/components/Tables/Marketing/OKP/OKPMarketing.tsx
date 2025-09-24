@@ -17,6 +17,7 @@ interface OKPItem {
   status_po: string;
   keterangan_cetak: string;
   tahapan: string[];
+  is_active: boolean;
 }
 
 interface ApiResponse<T> {
@@ -45,7 +46,9 @@ const OKPMarketing: React.FC = () => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/okp`;
     try {
       setLoading(true);
-      const res: AxiosResponse<ApiResponse<OKPItem[]>> = await axios.get(url);
+      const res: AxiosResponse<ApiResponse<OKPItem[]>> = await axios.get(url, {
+        withCredentials: true,
+      });
       console.log('Fetched OKP data:', res.data);
       if (res.data && res.data.data) {
         const parsedData = res.data.data.map((item) => ({
@@ -331,12 +334,8 @@ const OKPMarketing: React.FC = () => {
                   </button>
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('id_pisau')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    ID PISAU
-                    {getSortIcon('id_pisau')}
+                  <button className="flex items-center hover:text-gray-700 focus:outline-none">
+                    ACTIVE
                   </button>
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -467,9 +466,7 @@ const OKPMarketing: React.FC = () => {
                       )}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      <span title={item.id_pisau}>
-                        {item.id_pisau ? truncateText(item.id_pisau, 10) : '-'}
-                      </span>
+                      <span>{item.is_active == true ? 'Ya' : 'Tidak'}</span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                       <span

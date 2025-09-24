@@ -59,7 +59,12 @@ const OKPModal: React.FC<OKPModalProps> = ({
       setLoadingKalkulasi(true);
       const res: AxiosResponse<{ data: KalkulasiItem[] }> = await axios.get(
         url,
+        {
+          params: { is_okp_done: false },
+          withCredentials: true,
+        },
       );
+
       if (res.data && res.data.data) {
         setKalkulasiList(res.data.data);
       } else {

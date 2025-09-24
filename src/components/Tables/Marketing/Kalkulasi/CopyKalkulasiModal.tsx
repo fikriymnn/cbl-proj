@@ -318,46 +318,31 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
         ongkos_pons_qty: formData.ongkos_pons_qty
           ? Number(formData.ongkos_pons_qty)
           : 1,
-        harga_satuan_ongkos_pons: formData.harga_satuan_ongkos_pons
-          ? Number(formData.harga_satuan_ongkos_pons.replace(/[^\d.-]/g, ''))
-          : 0,
-        total_harga_ongkos_pons: formData.total_harga_ongkos_pons
-          ? Number(formData.total_harga_ongkos_pons.replace(/[^\d.-]/g, ''))
-          : 0,
+        harga_satuan_ongkos_pons: formData.harga_satuan_ongkos_pons,
+        total_harga_ongkos_pons: formData.total_harga_ongkos_pons,
+
         lipat: formData.lipat || 'No',
         id_mesin_lipat: formData.id_mesin_lipat
           ? Number(formData.id_mesin_lipat)
           : null,
         qty_lipat: formData.qty_lipat ? Number(formData.qty_lipat) : 1,
-        harga_lipat: formData.harga_lipat
-          ? Number(formData.harga_lipat.replace(/[^\d.-]/g, ''))
-          : 0,
+        harga_lipat: formData.harga_lipat,
         potong_jadi: formData.potong_jadi || 'No',
         qty_potong: formData.qty_potong ? Number(formData.qty_potong) : 1,
-        harga_potong_jadi: formData.harga_potong_jadi
-          ? Number(formData.harga_potong_jadi.replace(/[^\d.-]/g, ''))
-          : 0,
+        harga_potong_jadi: formData.harga_potong_jadi,
 
         // PostPress2 fields
         finishing_insheet: formData.finishing_insheet || '',
         id_lem: formData.id_lem ? Number(formData.id_lem) : null,
-        jumlah_harga_lem: formData.jumlah_harga_lem
-          ? Number(formData.jumlah_harga_lem.replace(/[^\d.-]/g, ''))
-          : 0,
+        jumlah_harga_lem: formData.jumlah_harga_lem,
         id_mesin_finishing: formData.id_mesin_finishing
           ? Number(formData.id_mesin_finishing)
           : null,
         foil: formData.foil || '-',
         spot_foil: formData.spot_foil || '-',
-        harga_foil_manual: formData.harga_foil_manual
-          ? Number(formData.harga_foil_manual.replace(/[^\d.-]/g, ''))
-          : 0,
-        harga_spot_foil_manual: formData.harga_spot_foil_manual
-          ? Number(formData.harga_spot_foil_manual.replace(/[^\d.-]/g, ''))
-          : 0,
-        harga_polimer_manual: formData.harga_polimer_manual
-          ? Number(formData.harga_polimer_manual.replace(/[^\d.-]/g, ''))
-          : 0,
+        harga_foil_manual: formData.harga_foil_manual,
+        harga_spot_foil_manual: formData.harga_spot_foil_manual,
+        harga_polimer_manual: formData.harga_polimer_manual,
         jenis_packing: formData.jenis_packing || '-',
         id_packing: formData.id_packing ? Number(formData.id_packing) : null,
         qty_packing: formData.qty_packing ? Number(formData.qty_packing) : 1,

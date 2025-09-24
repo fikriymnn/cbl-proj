@@ -26,8 +26,22 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
       const today = new Date().toISOString().split('T')[0];
       handleInputChange('tgl_pembuatan_okp', today);
     }
+    if (!formData.status_okp && !disabled) {
+      handleInputChange(
+        'status_okp',
+        selectedKalkulasi?.status_kalkulasi || 'baru',
+      );
+    }
   }, [formData.tgl_pembuatan_okp, disabled, handleInputChange]);
 
+  useEffect(() => {
+    const statusKalkulasi = selectedKalkulasi?.status_kalkulasi || 'baru';
+    if (formData.status_okp !== statusKalkulasi && !disabled) {
+      handleInputChange('status_okp', statusKalkulasi);
+    }
+
+    console.log('Status OKP set to:', statusKalkulasi);
+  }, [formData.status_okp, disabled, handleInputChange]);
   // Format date for input (convert from various formats to YYYY-MM-DD)
   const formatDateForInput = (dateValue: string) => {
     if (!dateValue) return '';
@@ -48,12 +62,6 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     }
 
     return '';
-  };
-
-  // Ensure valid status_okp value
-  const getValidStatusOKP = (value: string) => {
-    const validOptions = ['Baru', 'Draft', 'Approved'];
-    return validOptions.includes(value) ? value : 'Baru';
   };
 
   // Get the current kalkulasi ID (don't validate against list for display)
@@ -127,18 +135,15 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Status OKP
           </label>
-          <select
-            value={getValidStatusOKP(formData.status_okp)}
+          <input
+            type="text"
+            value={selectedKalkulasi?.status_kalkulasi}
             onChange={(e) => handleInputChange('status_okp', e.target.value)}
             className={`w-full p-2 border border-gray-300 rounded-md ${
               disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
             }`}
             disabled={disabled}
-          >
-            <option value="Baru">Baru</option>
-            <option value="Draft">Draft</option>
-            <option value="Approved">Approved</option>
-          </select>
+          ></input>
         </div>
 
         <div>

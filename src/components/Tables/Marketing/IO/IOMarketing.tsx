@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 import IODetailPopup from './IODetailPopup';
+
 interface IOData {
   id: number;
   no_io: string;
@@ -12,6 +13,7 @@ interface IOData {
   tgl_pembuatan_io: string;
   is_revisi: boolean;
   revisi_no_io: string;
+  active: boolean; // Add this new field
 }
 
 interface OKPData {
@@ -23,6 +25,9 @@ interface OKPData {
   rencana_qty_po: number;
   rencana_tgl_kirim: string;
 }
+
+type SortField = keyof IOData;
+type SortDirection = 'asc' | 'desc';
 
 const IOMarketing: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -36,22 +41,191 @@ const IOMarketing: React.FC = () => {
   const [showDetailPopup, setShowDetailPopup] = useState<boolean>(false);
   const [selectedIOId, setSelectedIOId] = useState<number | null>(null);
 
-  // Generate auto number for IO
-  const generateIONumber = (): string => {
+  // Add sorting state
+  const [sortKey, setSortKey] = useState<SortField>('id');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [generatedIONumber, setGeneratedIONumber] = useState<string>('');
+
+  // Add sorting functions
+  const handleSort = (field: SortField) => {
+    if (sortKey === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (key: SortField) => {
+    if (sortKey !== key) {
+      return (
+        <svg
+          className="w-3 h-3 ml-1 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+          />
+        </svg>
+      );
+    }
+    return sortDirection === 'asc' ? (
+      <svg
+        className="w-3 h-3 ml-1 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M5 15l7-7 7 7"
+        />
+      </svg>
+    ) : (
+      <svg
+        className="w-3 h-3 ml-1 text-blue-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M19 9l-7 7-7-7"
+        />
+      </svg>
+    );
+  };
+
+  // Create sorted data
+  const sortedData = React.useMemo(() => {
+    const sorted = [...ioData].sort((a, b) => {
+      let aValue = a[sortKey];
+      let bValue = b[sortKey];
+
+      // Handle different data types
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) {
+        return sortDirection === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortDirection === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+    return sorted;
+  }, [ioData, sortKey, sortDirection]);
+
+  // Utility function to truncate text
+  const truncateText = (text: string, maxLength: number) => {
+    if (!text) return '-';
+    return text.length > maxLength
+      ? `${text.substring(0, maxLength)}...`
+      : text;
+  };
+
+  // Add this new function to fetch IO count
+  const fetchIOCount = async (): Promise<number> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/ioJumlahData`;
+    try {
+      const res: AxiosResponse = await axios.get(url, {
+        withCredentials: true,
+      });
+      if (res.data.succes) {
+        return res.data.total_data;
+      }
+      return 0;
+    } catch (error) {
+      console.error('Error fetching IO count:', error);
+      return 0;
+    }
+  };
+
+  // Add this new function to fetch previous OKP data
+  const fetchPreviousOKPData = async (
+    okpId: number,
+  ): Promise<string | null> => {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/marketing/ioPreviousByOkp/${okpId}`;
+    try {
+      const res: AxiosResponse = await axios.get(url, {
+        withCredentials: true,
+      });
+      if (res.data.succes && res.data.data && res.data.data.no_io) {
+        return res.data.data.no_io;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching previous OKP data:', error);
+      return null;
+    }
+  };
+
+  // Updated Generate auto number for IO
+  const generateIONumber = async (): Promise<string> => {
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
 
-    // Get the highest existing IO number to generate next one
-    const existingNumbers = ioData.map((io) => {
-      const match = io.no_io.match(/IO-(\d+)/);
-      return match ? parseInt(match[1]) : 0;
-    });
+    const selectedOKP = okpData.find(
+      (okp) => okp.id.toString() === formData.id_okp,
+    );
 
-    const nextNumber =
-      existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 305;
+    if (!selectedOKP) {
+      return `IO-00001/${month}/${year}`;
+    }
+
+    // If status is 'baru', generate new IO number
+    if (selectedOKP.status_okp === 'baru') {
+      const totalData = await fetchIOCount();
+      const nextNumber = totalData + 1;
+      const paddedNumber = String(nextNumber).padStart(5, '0');
+      return `IO-${paddedNumber}/${month}/${year}`;
+    }
+
+    // If status is 'repeat' or 'repeat perubahan', get previous IO and increment revision
+    const previousIONumber = await fetchPreviousOKPData(selectedOKP.id);
+
+    if (!previousIONumber) {
+      // Fallback if no previous IO found
+      const totalData = await fetchIOCount();
+      const nextNumber = totalData + 1;
+      const paddedNumber = String(nextNumber).padStart(5, '0');
+      return `IO-${paddedNumber}/${month}/${year}`;
+    }
+
+    // Parse the previous IO number to extract revision number
+    const ioMatch = previousIONumber.match(
+      /^IO-(\d+)(?:-(\d+))?\/(\d{2})\/(\d{4})$/,
+    );
+
+    if (ioMatch) {
+      const baseNumber = ioMatch[1]; // e.g., "00306"
+      const currentRevision = ioMatch[2] ? parseInt(ioMatch[2]) : 0; // e.g., 1 or 0 if no revision
+      const prevMonth = ioMatch[3];
+      const prevYear = ioMatch[4];
+
+      const nextRevision = currentRevision + 1;
+      return `IO-${baseNumber}-${nextRevision}/${prevMonth}/${prevYear}`;
+    }
+
+    // Fallback if parsing fails
+    const totalData = await fetchIOCount();
+    const nextNumber = totalData + 1;
     const paddedNumber = String(nextNumber).padStart(5, '0');
-
     return `IO-${paddedNumber}/${month}/${year}`;
   };
 
@@ -64,13 +238,16 @@ const IOMarketing: React.FC = () => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
     try {
       setLoading(true);
+      const ioNumber = await generateIONumber();
+
       const res: AxiosResponse = await axios.post(
         url,
         {
           id_okp: formData.id_okp,
-          no_io: generateIONumber(),
+          no_io: ioNumber,
           status_io: selectedOKP.status_okp,
-          is_revisi: formData.is_revisi,
+          base_no_io: ioNumber,
+          is_revisi: null,
           revisi_no_io: '',
         },
         {
@@ -95,13 +272,43 @@ const IOMarketing: React.FC = () => {
     try {
       setLoading(true);
       const res: AxiosResponse = await axios.get(url, {
-        params: { status: 'history' },
+        params: { status: 'history', is_io_done: false },
         withCredentials: true,
       });
       console.log('Fetched OKP data:', res.data);
       if (res.data.succes) {
         setOKPData(res.data.data);
       }
+    } catch (error) {
+      console.error('Error fetching OKP data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchIOLength = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/ioJumlahData`;
+    try {
+      setLoading(true);
+      const res: AxiosResponse = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Fetched IO Length data:', res.data);
+    } catch (error) {
+      console.error('Error fetching OKP data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPreviousOKP = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/ioPreviousByOkp/3`;
+    try {
+      setLoading(true);
+      const res: AxiosResponse = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Fetched Previous OKP data:', res.data);
     } catch (error) {
       console.error('Error fetching OKP data:', error);
     } finally {
@@ -126,6 +333,7 @@ const IOMarketing: React.FC = () => {
       setLoading(false);
     }
   };
+
   const putNextProcess = async (id: any): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io/request/${id}`;
     try {
@@ -141,6 +349,7 @@ const IOMarketing: React.FC = () => {
       setLoading(false);
     }
   };
+
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('id-ID', {
       day: '2-digit',
@@ -153,16 +362,15 @@ const IOMarketing: React.FC = () => {
     switch (status.toLowerCase()) {
       case 'baru':
         return 'bg-blue-100 text-blue-800';
-      case 'draft':
-        return 'bg-gray-100 text-gray-800';
-      case 'approved':
+      case 'repeat perubahan':
         return 'bg-green-100 text-green-800';
-      case 'rejected':
+      case 'repeat':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
+
   const getStatusColor2 = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'draft':
@@ -181,19 +389,33 @@ const IOMarketing: React.FC = () => {
         return 'bg-gray-100 text-gray-800 border border-gray-200';
     }
   };
+
   useEffect(() => {
     fetchOKPData();
     fetchIOData();
+    fetchIOLength();
+    fetchPreviousOKP();
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     PutIO();
   };
+
   const handleShowDetail = (ioId: number) => {
     setSelectedIOId(ioId);
     setShowDetailPopup(true);
   };
+
+  // Add effect to update IO number when OKP is selected
+  useEffect(() => {
+    if (formData.id_okp) {
+      generateIONumber().then(setGeneratedIONumber);
+    } else {
+      setGeneratedIONumber('');
+    }
+  }, [formData.id_okp, okpData]);
+
   return (
     <div className="p-4">
       {/* Header */}
@@ -208,116 +430,203 @@ const IOMarketing: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full text-xs">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  No
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                  <button className="flex items-center hover:text-gray-700 focus:outline-none">
+                    NO
+                  </button>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                  ACTION
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  No IO
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('no_io')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    NO IO
+                    {getSortIcon('no_io')}
+                  </button>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status IO
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('status_io')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    STATUS IO
+                    {getSortIcon('status_io')}
+                  </button>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('customer')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    CUSTOMER
+                    {getSortIcon('customer')}
+                  </button>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Produk
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('produk')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    PRODUK
+                    {getSortIcon('produk')}
+                  </button>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tgl Pembuatan
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('tgl_pembuatan_io')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    TGL BUAT
+                    {getSortIcon('tgl_pembuatan_io')}
+                  </button>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('status')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    STATUS
+                    {getSortIcon('status')}
+                  </button>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Revisi
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('is_revisi')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    REVISI
+                    {getSortIcon('is_revisi')}
+                  </button>
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('active')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    ACTIVE
+                    {getSortIcon('active')}
+                  </button>
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center">
+                  <td colSpan={10} className="px-4 py-6 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
                   </td>
                 </tr>
-              ) : ioData.length === 0 ? (
+              ) : sortedData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
-                    className="px-6 py-4 text-center text-gray-500"
+                    colSpan={10}
+                    className="px-4 py-6 text-center text-gray-500 text-sm"
                   >
-                    No data available
+                    No IO data available
                   </td>
                 </tr>
               ) : (
-                ioData.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50 ">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                sortedData.map((item, index) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex flex-col items-center gap-2">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                      <div className="flex flex-col gap-1">
                         <button
                           onClick={() => handleShowDetail(item.id)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-xs font-medium min-w-[80px] transition-colors"
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                          title="View Details"
                         >
-                          Detail
+                          DETAIL
                         </button>
                         {item.status == 'draft' && (
                           <button
                             onClick={() => putNextProcess(item.id)}
-                            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-xs font-medium min-w-[80px] transition-colors"
+                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors"
                           >
-                            Next Process
+                            NEXT
                           </button>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                        {item.no_io}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <span
+                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                        title={item.no_io}
+                      >
+                        {item.no_io ? truncateText(item.no_io, 12) : '-'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 py-2 whitespace-nowrap">
                       <span
-                        className={`px-2 py-1 rounded text-sm ${getStatusColor(
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor(
                           item.status_io,
                         )}`}
+                        title={item.status_io}
                       >
-                        {item.status_io}
+                        {truncateText(item.status_io, 8)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.customer}
+                    <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
+                      <span title={item.customer}>
+                        {truncateText(item.customer, 12)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {item.produk}
+                    <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
+                      <span title={item.produk}>
+                        {truncateText(item.produk, 12)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatDate(item.tgl_pembuatan_io)}
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                      <span title={item.tgl_pembuatan_io}>
+                        {formatDate(item.tgl_pembuatan_io)}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 py-2 whitespace-nowrap">
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor2(
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(
                           item.status,
                         )}`}
+                        title={item.status}
                       >
-                        {item.status}
+                        {truncateText(item.status, 8)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.is_revisi ? 'Ya' : 'Tidak'}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <span
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                          item.is_revisi
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {item.is_revisi ? 'YA' : 'TIDAK'}
+                      </span>
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <span
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                          item.active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {item.active ? 'YA' : 'TIDAK'}
+                      </span>
                     </td>
                   </tr>
                 ))
@@ -326,6 +635,7 @@ const IOMarketing: React.FC = () => {
           </table>
         </div>
       </div>
+
       {showDetailPopup && selectedIOId && (
         <IODetailPopup
           ioId={selectedIOId}
@@ -336,6 +646,7 @@ const IOMarketing: React.FC = () => {
           }}
         />
       )}
+
       {/* Create IO Modal */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -380,7 +691,7 @@ const IOMarketing: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={generateIONumber()}
+                  value={generatedIONumber}
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
                 />
@@ -404,39 +715,6 @@ const IOMarketing: React.FC = () => {
                   />
                 </div>
               )}
-
-              {/* Revisi */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Revisi?
-                </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="is_revisi"
-                      checked={!formData.is_revisi}
-                      onChange={() =>
-                        setFormData({ ...formData, is_revisi: false })
-                      }
-                      className="mr-2"
-                    />
-                    Tidak
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="is_revisi"
-                      checked={formData.is_revisi}
-                      onChange={() =>
-                        setFormData({ ...formData, is_revisi: true })
-                      }
-                      className="mr-2"
-                    />
-                    Ya
-                  </label>
-                </div>
-              </div>
 
               {/* Submit Buttons */}
               <div className="flex justify-end gap-2 pt-4">

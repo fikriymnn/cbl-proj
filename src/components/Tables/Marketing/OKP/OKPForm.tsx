@@ -31,7 +31,7 @@ const OKPForm: React.FC<OKPFormProps> = ({
   const [formData, setFormData] = useState<OKPFormData>({
     id: 0,
     no_okp: '',
-    status_okp: 'Baru',
+    status_okp: 'baru',
     tgl_target_marketing: '',
     jenis_pekerjaan: [],
     id_pisau: '', // Don't pre-fill this, let it be filled during desain process
@@ -126,7 +126,7 @@ const OKPForm: React.FC<OKPFormProps> = ({
         const fileName = await handleFileUpload(selectedFile);
         formData.file_spek_customer = fileName;
       }
-
+      console.log('Submitting OKP form data:', formData);
       // Submit form data
       const response = await axios.post(
         `${import.meta.env.VITE_API_LINK}/marketing/okp`,

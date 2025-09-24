@@ -45,6 +45,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     tgl_pengiriman: '',
     alamat_pengiriman: '',
     ada_standar_warna: 'Tidak',
+    is_io_selesai: true,
   });
 
   interface KalkulasiOption {
@@ -252,6 +253,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       tgl_pengiriman: '',
       alamat_pengiriman: '',
       ada_standar_warna: 'Tidak',
+      is_io_selesai: true,
     });
     setSelectedKalkulasiData(null);
     setGudangOptions([]);
