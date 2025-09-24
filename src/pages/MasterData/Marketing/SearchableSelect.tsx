@@ -13,6 +13,7 @@ interface SearchableSelectProps {
   required?: boolean;
   className?: string;
   zIndexBase?: number;
+  disabled?: boolean;
 }
 
 export default function SearchableSelect({
@@ -23,6 +24,7 @@ export default function SearchableSelect({
   required = false,
   className = '',
   zIndexBase = 10,
+  disabled = false,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,6 +70,8 @@ export default function SearchableSelect({
   });
 
   const handleSelect = (option: Option) => {
+    if (disabled) return;
+
     setIsSelecting(true);
     onChange(option.value);
     setDisplayValue(option.label || '');
@@ -81,6 +85,8 @@ export default function SearchableSelect({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
+
     setSearchTerm(e.target.value);
     if (!isOpen) {
       setIsOpen(true);
@@ -88,6 +94,8 @@ export default function SearchableSelect({
   };
 
   const handleInputFocus = () => {
+    if (disabled) return;
+
     // Don't reset if we're in the middle of selecting an option
     if (!isSelecting) {
       setIsOpen(true);
@@ -96,6 +104,8 @@ export default function SearchableSelect({
   };
 
   const handleInputClick = (e: React.MouseEvent) => {
+    if (disabled) return;
+
     // Prevent the click from bubbling if we're selecting
     if (isSelecting) {
       e.preventDefault();
@@ -114,14 +124,19 @@ export default function SearchableSelect({
         onFocus={handleInputFocus}
         onClick={handleInputClick}
         placeholder={placeholder}
+        disabled={disabled}
         required={required}
-        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none transition-all ${
+          disabled
+            ? 'bg-gray-100 cursor-not-allowed text-gray-500'
+            : 'focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white'
+        }`}
         autoComplete="off"
       />
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div
-          className=" z-9999 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+          className="z-9999 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
           style={{ zIndex: zIndexBase + 1000 }}
         >
           {filteredOptions.length > 0 ? (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { KalkulasiFormData } from '../KalkulasiModal';
+import { KalkulasiFormData } from '../types/kalkulasi';
+import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface PostPressTabProps {
   formData: KalkulasiFormData;
@@ -9,6 +10,8 @@ interface PostPressTabProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
 interface PonsOption {
@@ -50,6 +53,8 @@ interface Option {
 const PostPressTab: React.FC<PostPressTabProps> = ({
   formData,
   onInputChange,
+  isReadOnly = false,
+  copyType,
 }) => {
   const [ponsOptions, setPonsOptions] = useState<PonsOption[]>([]);
   const [mesinPonsOptions, setMesinPonsOptions] = useState<Option[]>([]);
@@ -60,11 +65,33 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   const [specialFinishingOptions, setSpecialFinishingOptions] = useState<
     SpecialFinishingOption[]
   >([]);
+
+  // Loading states
   const [loadingPons, setLoadingPons] = useState(false);
   const [loadingMesinPons, setLoadingMesinPons] = useState(false);
   const [loadingMesinLipat, setLoadingMesinLipat] = useState(false);
   const [loadingOngkosPons, setLoadingOngkosPons] = useState(false);
   const [loadingSpecialFinishing, setLoadingSpecialFinishing] = useState(false);
+
+  // Selected values - following PrepressTab pattern
+  const [selectedJenisPons, setSelectedJenisPons] = useState<number>(0);
+  const [selectedMesinPons, setSelectedMesinPons] = useState<number>(0);
+  const [selectedMesinLipat, setSelectedMesinLipat] = useState<number>(0);
+  const [selectedOngkosPons, setSelectedOngkosPons] = useState<string>('No');
+  const [selectedLipat, setSelectedLipat] = useState<string>('No');
+  const [selectedPotongJadi, setSelectedPotongJadi] = useState<string>('No');
+
+  const getInputClassName = (baseClassName: string) => {
+    return isReadOnly
+      ? `${baseClassName} bg-gray-100 cursor-not-allowed`
+      : baseClassName;
+  };
+
+  const getSectionHeaderColor = () => {
+    if (copyType === 'repeat') return 'text-blue-600';
+    if (copyType === 'repeat_perubahan') return 'text-green-600';
+    return 'text-blue-600';
+  };
 
   // Function to create synthetic events for updating parent formData
   const createSyntheticEvent = (name: string, value: string) => {
@@ -82,7 +109,53 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
     return (formData as any)[fieldName] || defaultValue;
   };
 
-  // Fetch functions remain the same
+  // Sync selected values when formData changes
+  useEffect(() => {
+    if (
+      formData.id_jenis_pons &&
+      Number(formData.id_jenis_pons) !== selectedJenisPons
+    ) {
+      setSelectedJenisPons(Number(formData.id_jenis_pons));
+    }
+  }, [formData.id_jenis_pons]);
+
+  useEffect(() => {
+    if (
+      formData.id_mesin_pons &&
+      Number(formData.id_mesin_pons) !== selectedMesinPons
+    ) {
+      setSelectedMesinPons(Number(formData.id_mesin_pons));
+    }
+  }, [formData.id_mesin_pons]);
+
+  useEffect(() => {
+    if (
+      formData.id_mesin_lipat &&
+      Number(formData.id_mesin_lipat) !== selectedMesinLipat
+    ) {
+      setSelectedMesinLipat(Number(formData.id_mesin_lipat));
+    }
+  }, [formData.id_mesin_lipat]);
+
+  useEffect(() => {
+    if (formData.ongkos_pons && formData.ongkos_pons !== selectedOngkosPons) {
+      setSelectedOngkosPons(formData.ongkos_pons);
+    }
+  }, [formData.ongkos_pons]);
+
+  useEffect(() => {
+    if (formData.lipat && formData.lipat !== selectedLipat) {
+      setSelectedLipat(formData.lipat);
+    }
+  }, [formData.lipat]);
+
+  useEffect(() => {
+    if (formData.potong_jadi && formData.potong_jadi !== selectedPotongJadi) {
+      setSelectedPotongJadi(formData.potong_jadi);
+    }
+  }, [formData.potong_jadi]);
+
+  // Fetch functions
   const fetchPonsOptions = async () => {
     setLoadingPons(true);
     try {
@@ -238,10 +311,9 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
 
   // Calculate Ongkos Pons and update formData
   useEffect(() => {
-    if (
-      getCurrentValue('ongkos_pons') === 'Yes' &&
-      ongkosPonsOptions.length > 0
-    ) {
+    if (isReadOnly) return;
+
+    if (selectedOngkosPons === 'Yes' && ongkosPonsOptions.length > 0) {
       const total_kertasString = formData.total_kertas?.toString() || '0';
       const total_kertas = parseFloat(total_kertasString.replace(/\./g, ''));
 
@@ -251,18 +323,15 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       const ukuranCetakBagian2 = parseFloat(
         formData.ukuran_cetak_bagian_2 || '0',
       );
-
       const ongkosPonsHarga = ongkosPonsOptions[0]?.harga || 0;
+      const qty = parseFloat(getCurrentValue('ongkos_pons_qty', '1'));
 
       const hargaSatuan =
         total_kertas *
         (ukuranCetakBagian1 + ukuranCetakBagian2) *
         ongkosPonsHarga;
-
-      const qty = parseFloat(getCurrentValue('ongkos_pons_qty', '1'));
       const total = hargaSatuan * qty;
 
-      // Update formData through synthetic events
       createSyntheticEvent(
         'harga_satuan_ongkos_pons',
         hargaSatuan.toLocaleString('id-ID', {
@@ -283,20 +352,20 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       createSyntheticEvent('total_harga_ongkos_pons', '0.00');
     }
   }, [
-    getCurrentValue('ongkos_pons'),
+    selectedOngkosPons,
     getCurrentValue('ongkos_pons_qty'),
     formData.total_kertas,
     formData.ukuran_cetak_bagian_1,
     formData.ukuran_cetak_bagian_2,
     ongkosPonsOptions,
+    isReadOnly,
   ]);
 
   // Calculate Lipat price and update formData
   useEffect(() => {
-    if (
-      getCurrentValue('lipat') === 'Yes' &&
-      specialFinishingOptions.length > 0
-    ) {
+    if (isReadOnly) return;
+
+    if (selectedLipat === 'Yes' && specialFinishingOptions.length > 0) {
       const lipatOption = specialFinishingOptions.find(
         (option) => option.sub_kategori === 'Lipat',
       );
@@ -319,18 +388,18 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       createSyntheticEvent('harga_lipat', '0.00');
     }
   }, [
-    getCurrentValue('lipat'),
+    selectedLipat,
     getCurrentValue('qty_lipat'),
     formData.qty_kalkulasi,
     specialFinishingOptions,
+    isReadOnly,
   ]);
 
   // Calculate Potong Jadi price and update formData
   useEffect(() => {
-    if (
-      getCurrentValue('potong_jadi') === 'Yes' &&
-      specialFinishingOptions.length > 0
-    ) {
+    if (isReadOnly) return;
+
+    if (selectedPotongJadi === 'Yes' && specialFinishingOptions.length > 0) {
       const potongJadiOption = specialFinishingOptions.find(
         (option) => option.sub_kategori === 'Potong Jadi',
       );
@@ -354,17 +423,59 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       createSyntheticEvent('harga_potong_jadi', '0.00');
     }
   }, [
-    getCurrentValue('potong_jadi'),
+    selectedPotongJadi,
     getCurrentValue('qty_potong'),
     formData.total_kertas,
     specialFinishingOptions,
+    isReadOnly,
   ]);
+
+  // Handle change functions
+  const handleJenisPonsChange = (value: number | string) => {
+    if (isReadOnly) return;
+    setSelectedJenisPons(Number(value));
+    createSyntheticEvent('id_jenis_pons', value.toString());
+  };
+
+  const handleMesinPonsChange = (value: number | string) => {
+    if (isReadOnly) return;
+    setSelectedMesinPons(Number(value));
+    createSyntheticEvent('id_mesin_pons', value.toString());
+  };
+
+  const handleMesinLipatChange = (value: number | string) => {
+    if (isReadOnly) return;
+    setSelectedMesinLipat(Number(value));
+    createSyntheticEvent('id_mesin_lipat', value.toString());
+  };
+
+  const handleOngkosPonsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (isReadOnly) return;
+    setSelectedOngkosPons(e.target.value);
+    onInputChange(e);
+  };
+
+  const handleLipatChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (isReadOnly) return;
+    setSelectedLipat(e.target.value);
+    onInputChange(e);
+  };
+
+  const handlePotongJadiChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (isReadOnly) return;
+    setSelectedPotongJadi(e.target.value);
+    onInputChange(e);
+  };
+
+  const handleInputChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isReadOnly) return;
+    onInputChange(e);
+  };
 
   // Get current formula values for display
   const getFormulaDisplay = () => {
     const total_kertasString = formData.total_kertas?.toString() || '0';
     const total_kertas = parseFloat(total_kertasString.replace(/\./g, ''));
-
     const ukuranCetakBagian1 = parseFloat(
       formData.ukuran_cetak_bagian_1 || '0',
     );
@@ -373,10 +484,9 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
     );
     const ongkosPonsHarga = ongkosPonsOptions[0]?.harga || 0;
     const qty = parseFloat(getCurrentValue('ongkos_pons_qty', '1'));
-
     const qtyKalkulasi = parseFloat(formData.qty_kalkulasi || '0');
-    const qtyLipat = parseFloat(getCurrentValue('qty_lipat', '0'));
-    const qtyPotong = parseFloat(getCurrentValue('qty_potong', '0'));
+    const qtyLipat = parseFloat(getCurrentValue('qty_lipat', '1'));
+    const qtyPotong = parseFloat(getCurrentValue('qty_potong', '1'));
     const lipatOption = specialFinishingOptions.find(
       (option) => option.sub_kategori === 'Lipat',
     );
@@ -404,8 +514,15 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
     <div className="space-y-8">
       {/* Pons Information Section */}
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-blue-600 mb-6 flex items-center">
+        <h3
+          className={`text-lg font-semibold mb-6 flex items-center ${getSectionHeaderColor()}`}
+        >
           📄 Pons Information
+          {isReadOnly && (
+            <span className="ml-2 text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              View Only
+            </span>
+          )}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -417,9 +534,12 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               type="text"
               name="pons_insheet"
               value={getCurrentValue('pons_insheet')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={handleInputChangeLocal}
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="Enter insheet"
+              readOnly={isReadOnly}
             />
           </div>
 
@@ -427,44 +547,31 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Jenis Pons
             </label>
-            <select
-              name="id_jenis_pons"
-              value={getCurrentValue('id_jenis_pons', '')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              disabled={loadingPons}
-            >
-              <option value="">
-                {loadingPons ? 'Loading...' : 'Select Pons Type'}
-              </option>
-              {ponsOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.nama_barang}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              options={ponsOptions.map((option) => ({
+                value: option.id,
+                label: option.nama_barang,
+              }))}
+              value={selectedJenisPons}
+              onChange={handleJenisPonsChange}
+              placeholder={loadingPons ? 'Loading...' : 'Select Pons Type'}
+              className="w-full"
+              disabled={isReadOnly || loadingPons}
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Mesin Pons
             </label>
-            <select
-              name="id_mesin_pons"
-              value={getCurrentValue('id_mesin_pons', '')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              disabled={loadingMesinPons}
-            >
-              <option value="">
-                {loadingMesinPons ? 'Loading...' : 'Select Machine'}
-              </option>
-              {mesinPonsOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              options={mesinPonsOptions}
+              value={selectedMesinPons}
+              onChange={handleMesinPonsChange}
+              placeholder={loadingMesinPons ? 'Loading...' : 'Select Machine'}
+              className="w-full"
+              disabled={isReadOnly || loadingMesinPons}
+            />
           </div>
 
           <div>
@@ -475,10 +582,13 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               type="number"
               name="harga_pisau"
               value={getCurrentValue('harga_pisau')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={handleInputChangeLocal}
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="0"
               step="0.01"
+              readOnly={isReadOnly}
             />
           </div>
         </div>
@@ -499,9 +609,12 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
             </label>
             <select
               name="ongkos_pons"
-              value={getCurrentValue('ongkos_pons', 'No')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              value={selectedOngkosPons}
+              onChange={handleOngkosPonsChange}
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
+              disabled={isReadOnly}
             >
               <option value="No">No</option>
               <option value="Yes">Yes</option>
@@ -516,12 +629,15 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               type="number"
               name="ongkos_pons_qty"
               value={getCurrentValue('ongkos_pons_qty', '1')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={handleInputChangeLocal}
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="1"
               step="1"
               min="1"
-              disabled={getCurrentValue('ongkos_pons') === 'No'}
+              disabled={selectedOngkosPons === 'No' || isReadOnly}
+              readOnly={isReadOnly}
             />
           </div>
 
@@ -532,7 +648,9 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
             <input
               type="text"
               value={getCurrentValue('harga_satuan_ongkos_pons', '0.00')}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-50',
+              )}
               readOnly
             />
           </div>
@@ -550,8 +668,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
                 }).format(
                   parseFloat(
                     getCurrentValue('total_harga_ongkos_pons', '0.00')
-                      .replace(/\./g, '') // remove thousands separator
-                      .replace(',', '.'), // fix decimal separator
+                      .replace(/\./g, '')
+                      .replace(',', '.'),
                   ),
                 )}
               </span>
@@ -559,8 +677,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
           </div>
         </div>
 
-        {/* Formula Display for Ongkos Pons */}
-        {getCurrentValue('ongkos_pons') === 'Yes' && (
+        {/* Formula Display for Ongkos Pons - Only show if not readonly or if Yes */}
+        {selectedOngkosPons === 'Yes' && (
           <div className="p-6 bg-blue-50 rounded-xl border border-blue-200">
             <h4 className="text-sm font-semibold text-blue-900 mb-4">
               Ongkos Pons Formula Calculation:
@@ -602,9 +720,12 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
             </label>
             <select
               name="lipat"
-              value={getCurrentValue('lipat', 'No')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              value={selectedLipat}
+              onChange={handleLipatChange}
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
+              disabled={isReadOnly}
             >
               <option value="No">No</option>
               <option value="Yes">Yes</option>
@@ -615,22 +736,18 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Mesin Lipat
             </label>
-            <select
-              name="id_mesin_lipat"
-              value={getCurrentValue('id_mesin_lipat', '')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              disabled={loadingMesinLipat || getCurrentValue('lipat') === 'No'}
-            >
-              <option value="">
-                {loadingMesinLipat ? 'Loading...' : 'Select Mesin Lipat'}
-              </option>
-              {mesinLipatOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <SearchableSelect
+              options={mesinLipatOptions}
+              value={selectedMesinLipat}
+              onChange={handleMesinLipatChange}
+              placeholder={
+                loadingMesinLipat ? 'Loading...' : 'Select Mesin Lipat'
+              }
+              className="w-full"
+              disabled={
+                isReadOnly || loadingMesinLipat || selectedLipat === 'No'
+              }
+            />
           </div>
 
           <div>
@@ -641,12 +758,15 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               type="number"
               name="qty_lipat"
               value={getCurrentValue('qty_lipat', '1')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={handleInputChangeLocal}
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="1"
               step="1"
               min="1"
-              disabled={getCurrentValue('lipat') === 'No'}
+              disabled={selectedLipat === 'No' || isReadOnly}
+              readOnly={isReadOnly}
             />
           </div>
 
@@ -659,12 +779,12 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
                 {new Intl.NumberFormat('id-ID', {
                   style: 'currency',
                   currency: 'IDR',
-                  minimumFractionDigits: 1,
+                  minimumFractionDigits: 0,
                 }).format(
                   parseFloat(
                     getCurrentValue('harga_lipat', '0.00')
-                      .replace(/\./g, '') // remove thousands separator
-                      .replace(',', '.'), // fix decimal separator
+                      .replace(/\./g, '')
+                      .replace(',', '.'),
                   ),
                 )}
               </span>
@@ -673,7 +793,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
         </div>
 
         {/* Formula Display for Lipat */}
-        {getCurrentValue('lipat') === 'Yes' && (
+        {selectedLipat === 'Yes' && (
           <div className="p-6 bg-green-50 rounded-xl border border-green-200">
             <h4 className="text-sm font-semibold text-green-900 mb-4">
               Lipat Formula Calculation:
@@ -722,9 +842,12 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
             </label>
             <select
               name="potong_jadi"
-              value={getCurrentValue('potong_jadi', 'No')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              value={selectedPotongJadi}
+              onChange={handlePotongJadiChange}
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
+              disabled={isReadOnly}
             >
               <option value="No">No</option>
               <option value="Yes">Yes</option>
@@ -739,12 +862,15 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               type="number"
               name="qty_potong"
               value={getCurrentValue('qty_potong', '1')}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              onChange={handleInputChangeLocal}
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="1"
               step="1"
               min="1"
-              disabled={getCurrentValue('potong_jadi') === 'No'}
+              disabled={selectedPotongJadi === 'No' || isReadOnly}
+              readOnly={isReadOnly}
             />
           </div>
 
@@ -761,8 +887,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
                 }).format(
                   parseFloat(
                     getCurrentValue('harga_potong_jadi', '0.00')
-                      .replace(/\./g, '') // remove thousands separator
-                      .replace(',', '.'), // fix decimal separator
+                      .replace(/\./g, '')
+                      .replace(',', '.'),
                   ),
                 )}
               </span>
@@ -771,7 +897,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
         </div>
 
         {/* Formula Display for Potong Jadi */}
-        {getCurrentValue('potong_jadi') === 'Yes' && (
+        {selectedPotongJadi === 'Yes' && (
           <div className="p-6 bg-red-50 rounded-xl border border-red-200">
             <h4 className="text-sm font-semibold text-red-900 mb-4">
               Potong Jadi Formula Calculation:
@@ -791,6 +917,52 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
           </div>
         )}
       </div>
+
+      {/* Readonly Information Panel - Only show when readonly and has data */}
+      {isReadOnly &&
+        (selectedJenisPons > 0 ||
+          selectedOngkosPons === 'Yes' ||
+          selectedLipat === 'Yes' ||
+          selectedPotongJadi === 'Yes') && (
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 className="text-sm font-semibold text-blue-800 mb-2">
+              Post Press Configuration Summary
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              {selectedJenisPons > 0 && (
+                <div>
+                  <span className="text-blue-600 font-medium">Jenis Pons:</span>
+                  <div className="text-blue-800">
+                    {ponsOptions.find((opt) => opt.id === selectedJenisPons)
+                      ?.nama_barang || 'Selected'}
+                  </div>
+                </div>
+              )}
+              {selectedOngkosPons === 'Yes' && (
+                <div>
+                  <span className="text-blue-600 font-medium">
+                    Ongkos Pons:
+                  </span>
+                  <div className="text-blue-800">Active</div>
+                </div>
+              )}
+              {selectedLipat === 'Yes' && (
+                <div>
+                  <span className="text-blue-600 font-medium">Lipat:</span>
+                  <div className="text-blue-800">Active</div>
+                </div>
+              )}
+              {selectedPotongJadi === 'Yes' && (
+                <div>
+                  <span className="text-blue-600 font-medium">
+                    Potong Jadi:
+                  </span>
+                  <div className="text-blue-800">Active</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { KalkulasiFormData } from '../KalkulasiModal';
+import { KalkulasiFormData } from '../types/kalkulasi';
 
 interface WarnaTabProps {
   formData: KalkulasiFormData;
@@ -8,9 +8,22 @@ interface WarnaTabProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
-const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
+const WarnaTab: React.FC<WarnaTabProps> = ({
+  formData,
+  onInputChange,
+  isReadOnly = false,
+  copyType,
+}) => {
+  const getInputClassName = (baseClassName: string) => {
+    return isReadOnly
+      ? `${baseClassName} bg-gray-100 cursor-not-allowed`
+      : baseClassName;
+  };
+
   // Calculate Jumlah Warna based on the formula
   const calculateJumlahWarna = () => {
     const warnaDepan = Number(formData.warna_depan) || 0;
@@ -27,7 +40,10 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
   };
 
   // Update jumlah_warna whenever warna_depan, warna_belakang, or ukuran_cetak_bbs_1 changes
+  // Only run calculations if not in readonly mode
   useEffect(() => {
+    if (isReadOnly) return;
+
     const jumlahWarna = calculateJumlahWarna();
 
     // Create a synthetic event to update the form data
@@ -43,14 +59,29 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
     formData.warna_depan,
     formData.warna_belakang,
     formData.ukuran_cetak_bbs_1,
+    isReadOnly, // Add isReadOnly as dependency
+    onInputChange,
   ]);
+
+  const getSectionHeaderColor = () => {
+    if (copyType === 'repeat') return 'text-blue-600';
+    if (copyType === 'repeat_perubahan') return 'text-green-600';
+    return 'text-blue-600';
+  };
 
   return (
     <div className="space-y-8">
       {/* Warna Cetakan Section */}
       <div>
-        <h3 className="text-lg font-semibold text-blue-600 mb-6 flex items-center">
+        <h3
+          className={`text-lg font-semibold mb-6 flex items-center ${getSectionHeaderColor()}`}
+        >
           🎨 Warna Cetakan
+          {isReadOnly && (
+            <span className="ml-2 text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              View Only
+            </span>
+          )}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -64,9 +95,12 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
               name="warna_depan"
               value={formData.warna_depan || '0'}
               onChange={onInputChange}
-              className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              readOnly={isReadOnly}
+              className={getInputClassName(
+                'w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               min="0"
-              placeholder="Masukkan jumlah warna depan"
+              placeholder={isReadOnly ? '0' : 'Masukkan jumlah warna depan'}
             />
           </div>
 
@@ -80,9 +114,12 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
               name="warna_belakang"
               value={formData.warna_belakang || '0'}
               onChange={onInputChange}
-              className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              readOnly={isReadOnly}
+              className={getInputClassName(
+                'w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               min="0"
-              placeholder="Masukkan jumlah warna belakang"
+              placeholder={isReadOnly ? '0' : 'Masukkan jumlah warna belakang'}
             />
           </div>
 
@@ -142,30 +179,112 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
             />
           </svg>
           Ringkasan Warna
+          {isReadOnly && (
+            <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+              Data Asli
+            </span>
+          )}
         </h4>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <div className="text-red-600 font-semibold text-lg">
+          <div
+            className={`p-4 rounded-lg border ${
+              isReadOnly
+                ? 'bg-gray-50 border-gray-200'
+                : 'bg-red-50 border-red-200'
+            }`}
+          >
+            <div
+              className={`font-semibold text-lg ${
+                isReadOnly ? 'text-gray-600' : 'text-red-600'
+              }`}
+            >
               {formData.warna_depan || '0'}
             </div>
-            <div className="text-red-500 text-sm">Warna Depan</div>
+            <div
+              className={`text-sm ${
+                isReadOnly ? 'text-gray-500' : 'text-red-500'
+              }`}
+            >
+              Warna Depan
+            </div>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="text-blue-600 font-semibold text-lg">
+          <div
+            className={`p-4 rounded-lg border ${
+              isReadOnly
+                ? 'bg-gray-50 border-gray-200'
+                : 'bg-blue-50 border-blue-200'
+            }`}
+          >
+            <div
+              className={`font-semibold text-lg ${
+                isReadOnly ? 'text-gray-600' : 'text-blue-600'
+              }`}
+            >
               {formData.warna_belakang || '0'}
             </div>
-            <div className="text-blue-500 text-sm">Warna Belakang</div>
+            <div
+              className={`text-sm ${
+                isReadOnly ? 'text-gray-500' : 'text-blue-500'
+              }`}
+            >
+              Warna Belakang
+            </div>
           </div>
 
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="text-green-600 font-semibold text-lg">
+          <div
+            className={`p-4 rounded-lg border ${
+              copyType === 'repeat'
+                ? 'bg-blue-50 border-blue-200'
+                : copyType === 'repeat_perubahan'
+                ? 'bg-green-50 border-green-200'
+                : isReadOnly
+                ? 'bg-gray-50 border-gray-200'
+                : 'bg-green-50 border-green-200'
+            }`}
+          >
+            <div
+              className={`font-semibold text-lg ${
+                copyType === 'repeat'
+                  ? 'text-blue-600'
+                  : copyType === 'repeat_perubahan'
+                  ? 'text-green-600'
+                  : isReadOnly
+                  ? 'text-gray-600'
+                  : 'text-green-600'
+              }`}
+            >
               {calculateJumlahWarna().toFixed(2)}
             </div>
-            <div className="text-green-500 text-sm">Total Jumlah Warna</div>
+            <div
+              className={`text-sm ${
+                copyType === 'repeat'
+                  ? 'text-blue-500'
+                  : copyType === 'repeat_perubahan'
+                  ? 'text-green-500'
+                  : isReadOnly
+                  ? 'text-gray-500'
+                  : 'text-green-500'
+              }`}
+            >
+              Total Jumlah Warna
+            </div>
           </div>
         </div>
+
+        {/* Show calculation explanation in readonly mode */}
+        {isReadOnly && (
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="text-sm text-blue-700">
+              <strong>Perhitungan:</strong> {formData.warna_depan || '0'} +{' '}
+              {formData.warna_belakang || '0'}
+              {formData.ukuran_cetak_bbs_1?.toLowerCase() === 'yes' &&
+                ' × 0.75 (BBS)'}{' '}
+              = {calculateJumlahWarna().toFixed(2)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

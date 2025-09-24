@@ -1,6 +1,5 @@
 import React from 'react';
-import { KalkulasiFormData } from './KalkulasiModal';
-
+import { KalkulasiFormData } from './types/kalkulasi';
 interface ProfitSidebarProps {
   formData: KalkulasiFormData;
   onInputChange: (
@@ -11,6 +10,9 @@ interface ProfitSidebarProps {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
   onCancel: () => void;
   isSubmitting: boolean;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
+  submitButtonText?: string;
 }
 
 const parseCurrencyForDisplay = (
@@ -63,11 +65,54 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
   onSubmit,
   onCancel,
   isSubmitting,
+  isReadOnly = false,
+  copyType,
+  submitButtonText = 'Simpan Kalkulasi',
 }) => {
+  const getSidebarColors = () => {
+    if (copyType === 'repeat') {
+      return {
+        header: 'from-blue-600 to-blue-700',
+        accent: 'blue',
+        border: 'border-blue-200',
+        bg: 'bg-blue-50',
+      };
+    }
+    if (copyType === 'repeat_perubahan') {
+      return {
+        header: 'from-green-600 to-green-700',
+        accent: 'green',
+        border: 'border-green-200',
+        bg: 'bg-green-50',
+      };
+    }
+    return {
+      header: 'from-green-600 to-green-700',
+      accent: 'blue',
+      border: 'border-gray-200',
+      bg: 'bg-white',
+    };
+  };
+
+  const colors = getSidebarColors();
+
+  const getInputClassName = (baseClassName: string) => {
+    if (isReadOnly) {
+      return `${baseClassName} bg-gray-100 cursor-not-allowed`;
+    }
+    return baseClassName;
+  };
+
+  const getFormId = () => {
+    return copyType ? 'copy-kalkulasi-form' : 'kalkulasi-form';
+  };
+
   return (
-    <div className="w-80 bg-white border-l border-gray-200 flex flex-col shadow-lg h-screen overflow-y-auto pb-3">
-      {/* Compact Header */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-3">
+    <div
+      className={`w-80 ${colors.bg} border-l ${colors.border} flex flex-col shadow-lg h-screen overflow-y-auto pb-3`}
+    >
+      {/* Header with conditional styling */}
+      <div className={`bg-gradient-to-r ${colors.header} text-white p-3`}>
         <h2 className="text-lg font-bold flex items-center">
           <svg
             className="w-5 h-5 mr-2"
@@ -84,6 +129,9 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
           </svg>
           Kalkulasi Profit
         </h2>
+        {isReadOnly && (
+          <p className="text-sm text-white/80 mt-1">Mode View Only</p>
+        )}
       </div>
 
       {/* Compact Info Table */}
@@ -141,7 +189,10 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                       name="profit"
                       value={formData.profit}
                       onChange={onInputChange}
-                      className="w-16 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-green-500"
+                      readOnly={isReadOnly}
+                      className={getInputClassName(
+                        'w-16 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-green-500',
+                      )}
                       min="0"
                       step="0.01"
                     />
@@ -176,7 +227,10 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                       name="ppn"
                       value={formData.ppn}
                       onChange={onInputChange}
-                      className="w-16 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-orange-500"
+                      readOnly={isReadOnly}
+                      className={getInputClassName(
+                        'w-16 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-orange-500',
+                      )}
                       min="0"
                       max="100"
                       step="0.01"
@@ -201,7 +255,10 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                       name="diskon"
                       value={formData.diskon}
                       onChange={onInputChange}
-                      className="w-16 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-orange-500"
+                      readOnly={isReadOnly}
+                      className={getInputClassName(
+                        'w-16 px-1 py-0.5 text-xs border border-gray-300 rounded text-right focus:ring-1 focus:ring-orange-500',
+                      )}
                       min="0"
                       max="100"
                       step="0.01"
@@ -246,26 +303,55 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
         </div>
 
         {/* Manual Customer Price Input */}
-        <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg p-3 border border-yellow-300">
+        <div
+          className={`rounded-lg p-3 border ${
+            isReadOnly
+              ? 'bg-gray-100 border-gray-300'
+              : 'bg-gradient-to-r from-yellow-100 to-yellow-200 border-yellow-300'
+          }`}
+        >
           <div className="space-y-2">
-            <label className="block text-xs font-medium text-yellow-800">
+            <label
+              className={`block text-xs font-medium ${
+                isReadOnly ? 'text-gray-600' : 'text-yellow-800'
+              }`}
+            >
               Harga untuk Customer (per pcs)
             </label>
             <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-yellow-800">Rp</span>
+              <span
+                className={`text-sm font-medium ${
+                  isReadOnly ? 'text-gray-600' : 'text-yellow-800'
+                }`}
+              >
+                Rp
+              </span>
               <input
                 type="number"
                 name="total_harga_satuan_customer"
                 value={formData.total_harga_satuan_customer || ''}
                 onChange={onInputChange}
-                className="flex-1 px-2 py-1 text-sm border border-yellow-400 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent bg-white text-right font-semibold"
+                readOnly={isReadOnly}
+                className={getInputClassName(
+                  `flex-1 px-2 py-1 text-sm border ${
+                    isReadOnly
+                      ? 'border-gray-300'
+                      : 'border-yellow-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent'
+                  } rounded bg-white text-right font-semibold`,
+                )}
                 placeholder="0"
                 min="0"
                 step="0.01"
               />
             </div>
-            <div className="text-xs text-yellow-700 text-center">
-              Masukkan harga Satuan untuk customer
+            <div
+              className={`text-xs text-center ${
+                isReadOnly ? 'text-gray-500' : 'text-yellow-700'
+              }`}
+            >
+              {isReadOnly
+                ? 'Harga satuan untuk customer'
+                : 'Masukkan harga Satuan untuk customer'}
             </div>
           </div>
         </div>
@@ -279,21 +365,32 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
             name="keterangan_harga"
             value={formData.keterangan_harga}
             onChange={onInputChange}
+            readOnly={isReadOnly}
             rows={3}
-            className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Informasi tambahan..."
+            className={getInputClassName(
+              'w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-transparent',
+            )}
+            placeholder={
+              isReadOnly ? 'Tidak ada keterangan' : 'Informasi tambahan...'
+            }
           />
         </div>
       </div>
 
-      {/* Compact Action Buttons */}
+      {/* Action Buttons */}
       <div className="p-4 border-t border-gray-200 bg-gray-50">
         <div className="space-y-2">
           <button
             type="submit"
-            form="kalkulasi-form"
+            form={getFormId()}
             disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            className={`w-full font-semibold py-2 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
+              copyType === 'repeat'
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
+                : copyType === 'repeat_perubahan'
+                ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white'
+                : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
+            }`}
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center">
@@ -319,7 +416,7 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                 Menyimpan...
               </div>
             ) : (
-              'Simpan Kalkulasi'
+              submitButtonText
             )}
           </button>
 
@@ -329,7 +426,7 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
             disabled={isSubmitting}
             className="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
-            Batal
+            {isReadOnly ? 'Tutup' : 'Batal'}
           </button>
         </div>
       </div>

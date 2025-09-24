@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { KalkulasiFormData } from '../KalkulasiModal';
+import { KalkulasiFormData } from '../types/kalkulasi';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface PressTabProps {
@@ -10,6 +10,8 @@ interface PressTabProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
 interface MesinOption {
@@ -38,7 +40,12 @@ interface Option {
   label: string;
 }
 
-const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
+const PressTab: React.FC<PressTabProps> = ({
+  formData,
+  onInputChange,
+  isReadOnly = false,
+  copyType,
+}) => {
   const [mesinOptions, setMesinOptions] = useState<MesinOption[]>([]);
   const [selectedMesin, setSelectedMesin] = useState<MesinOption | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,6 +78,9 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
   const [isLoadingMesinCoatingBelakang, setIsLoadingMesinCoatingBelakang] =
     useState(false);
 
+  // Determine if component should be read-only
+  const componentIsReadOnly = isReadOnly || copyType === 'repeat';
+
   const normalRateTable = {
     R700: { base: 225000, rates: [65, 60, 55, 50, 45, 40] },
     RR: { base: 200000, rates: [65, 60, 55, 50, 45, 40] },
@@ -79,6 +89,16 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     GTO1: { base: 80000, rates: [26, 25, 20, 18, 15, 15] },
     GTO2: { base: 80000, rates: [26, 25, 20, 18, 15, 15] },
     GTO4: { base: 80000, rates: [26, 25, 20, 18, 15, 15] },
+  };
+
+  // Helper function to create synthetic events
+  const createSyntheticEvent = (name: string, value: string | number) => {
+    return {
+      target: {
+        name,
+        value: value.toString(),
+      },
+    } as React.ChangeEvent<HTMLSelectElement>;
   };
 
   // Fetch mesin options on component mount
@@ -142,19 +162,16 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     const fetchMesinCoatingDepan = async () => {
       setIsLoadingMesinCoatingDepan(true);
       try {
-        // First, get all tahapan
         const tahapanResponse = await axios.get(
           `${import.meta.env.VITE_API_LINK}/master/tahapan`,
         );
 
-        // Find tahapan with nama_tahapan containing "coating" (case insensitive)
         const coatingTahapan = tahapanResponse.data.data.find(
           (tahapan: TahapanResponse) =>
             tahapan.nama_tahapan.toLowerCase().includes('coating'),
         );
 
         if (coatingTahapan) {
-          // Get mesin for this tahapan
           const mesinResponse = await axios.get(
             `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`,
             {
@@ -183,24 +200,21 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     fetchMesinCoatingDepan();
   }, []);
 
-  // Fetch mesin coating belakang (same as depan for now)
+  // Fetch mesin coating belakang
   useEffect(() => {
     const fetchMesinCoatingBelakang = async () => {
       setIsLoadingMesinCoatingBelakang(true);
       try {
-        // First, get all tahapan
         const tahapanResponse = await axios.get(
           `${import.meta.env.VITE_API_LINK}/master/tahapan`,
         );
 
-        // Find tahapan with nama_tahapan containing "coating" (case insensitive)
         const coatingTahapan = tahapanResponse.data.data.find(
           (tahapan: TahapanResponse) =>
             tahapan.nama_tahapan.toLowerCase().includes('coating'),
         );
 
         if (coatingTahapan) {
-          // Get mesin for this tahapan
           const mesinResponse = await axios.get(
             `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`,
             {
@@ -229,13 +243,15 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     fetchMesinCoatingBelakang();
   }, []);
 
-  // Initialize selected options from formData when options are loaded
+  // Auto-select fields from formData when options are loaded
   useEffect(() => {
     if (formData.id_jenis_mesin_cetak && mesinOptions.length > 0) {
       const mesin = mesinOptions.find(
         (m) => m.id === Number(formData.id_jenis_mesin_cetak),
       );
-      setSelectedMesin(mesin || null);
+      if (mesin) {
+        setSelectedMesin(mesin);
+      }
     }
   }, [formData.id_jenis_mesin_cetak, mesinOptions]);
 
@@ -244,7 +260,9 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       const coating = coatingDepanOptions.find(
         (c) => c.id === Number(formData.id_coating_depan),
       );
-      setSelectedCoatingDepan(coating || null);
+      if (coating) {
+        setSelectedCoatingDepan(coating);
+      }
     }
   }, [formData.id_coating_depan, coatingDepanOptions]);
 
@@ -253,7 +271,9 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       const coating = coatingBelakangOptions.find(
         (c) => c.id === Number(formData.id_coating_belakang),
       );
-      setSelectedCoatingBelakang(coating || null);
+      if (coating) {
+        setSelectedCoatingBelakang(coating);
+      }
     }
   }, [formData.id_coating_belakang, coatingBelakangOptions]);
 
@@ -277,7 +297,6 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
   ): number => {
     if (!value) return 0;
     if (typeof value === 'number') return value;
-    // Remove dots (thousand separators) and convert to number
     return Number(String(value).replace(/\./g, ''));
   };
 
@@ -297,19 +316,19 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     if (name.includes('GTO1')) return 'GTO1';
     if (name.includes('GTO2')) return 'GTO2';
     if (name.includes('GTO4')) return 'GTO4';
-    return 'R700'; // default
+    return 'R700';
   };
 
-  // Function to get rate index based on rate value - CORRECTED
+  // Function to get rate index based on rate value
   const getRateIndex = (rate: number): number => {
-    if (rate <= 3000) return -1; // This shouldn't be used anymore since base rate is handled separately
+    if (rate <= 3000) return -1;
     if (rate > 3000 && rate <= 5000) return 0;
     if (rate > 5000 && rate <= 10000) return 1;
     if (rate > 10000 && rate <= 20000) return 2;
     if (rate > 20000 && rate <= 30000) return 3;
     if (rate > 30000 && rate <= 50000) return 4;
     if (rate > 50000) return 5;
-    return 0; // fallback
+    return 0;
   };
 
   // Function to check if customer is Sanbe
@@ -318,9 +337,8 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     return name.includes('sanbe') || name.includes('caprifarmindo');
   };
 
-  // Main calculation function for printing cost - FIXED
+  // Main calculation function for printing cost
   const calculateJumlahHargaCetak = (): number => {
-    // Check if required fields are available
     if (
       !selectedMesin ||
       !formData.total_kertas ||
@@ -329,24 +347,18 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       return 0;
     }
 
-    // Parse numbers correctly with thousand separators
     const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const totalWarna = Number(formData.jumlah_warna) || 0;
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
 
-    // If both ukuran_cetak_bagian are 0, return 0
     if (ukuranCetakBagian1 === 0 && ukuranCetakBagian2 === 0) {
       return 0;
     }
 
-    // Calculate rate consistently: total_kertas × (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)
     const calculatedRate =
       total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
-
     const rateTable = normalRateTable;
-
-    // Get machine type
     const machineType = getMachineType(selectedMesin.nama_barang);
     const machineRates = rateTable[machineType as keyof typeof rateTable];
 
@@ -355,20 +367,16 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       return 0;
     }
 
-    // Calculate printing cost using the same calculatedRate for both threshold check and calculation
     if (calculatedRate <= 3000) {
-      // Use base rate for calculatedRate <= 3000
-      const normalRate2 = machineRates.base * totalWarna;
-      return normalRate2;
+      return machineRates.base * totalWarna;
     } else {
-      // Use tiered rate: (tierRate × totalWarna) × calculatedRate
       const rateIndex = getRateIndex(calculatedRate);
       const tierRate = machineRates.rates[rateIndex];
       return tierRate * totalWarna * calculatedRate;
     }
   };
 
-  // Calculate coating depan cost with batas_harga condition
+  // Calculate coating depan cost
   const calculateHargaCoatingDepan = (): number => {
     if (!selectedCoatingDepan || !formData.total_kertas) {
       return 0;
@@ -382,7 +390,6 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     const ukuranCetakLebar1 = Number(formData.ukuran_cetak_lebar_1) || 0;
     const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
 
-    // Calculate the result using the formula
     const calculatedResult =
       total_kertas *
       (ukuranCetakBagian1 + ukuranCetakBagian2) *
@@ -390,9 +397,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
         (ukuranCetakLebar1 + ukuranCetakLebar2)) *
       selectedCoatingDepan.harga;
 
-    // Check if calculated result is below batas_harga, use batas_harga instead
     const batasHarga = selectedCoatingDepan.batas_harga || 0;
-
     return calculatedResult < batasHarga ? batasHarga : calculatedResult;
   };
 
@@ -410,7 +415,6 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     const ukuranCetakLebar1 = Number(formData.ukuran_cetak_lebar_1) || 0;
     const ukuranCetakLebar2 = Number(formData.ukuran_cetak_lebar_2) || 0;
 
-    // Calculate the result using the formula
     const calculatedResult =
       total_kertas *
       (ukuranCetakBagian1 + ukuranCetakBagian2) *
@@ -418,13 +422,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
         (ukuranCetakLebar1 + ukuranCetakLebar2)) *
       selectedCoatingBelakang.harga;
 
-    // Check if calculated result is below batas_harga, use batas_harga instead
     const batasHarga = selectedCoatingBelakang.batas_harga || 0;
-
     return calculatedResult < batasHarga ? batasHarga : calculatedResult;
   };
 
-  // Add helper functions to check if batas_harga is being used
+  // Helper functions to check if batas_harga is being used
   const isUsingBatasHargaDepan = (): boolean => {
     if (!selectedCoatingDepan || !formData.total_kertas) return false;
 
@@ -474,7 +476,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     return calculateHargaCoatingDepan() + calculateHargaCoatingBelakang();
   };
 
-  // Calculate plate count using real jumlah_warna (no rounding)
+  // Calculate plate count
   const getPlateCount = () => {
     const jumlahWarna = Number(formData.jumlah_warna) || 0;
     return jumlahWarna;
@@ -487,93 +489,63 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     return selectedMesin.harga * plateCount;
   };
 
-  // Modified handle functions to save to formData
+  // Modified handle functions with read-only checks
   const handleMesinChange = (value: any) => {
+    if (componentIsReadOnly) return;
+
     const selected = mesinOptions.find((mesin) => mesin.id === value) || null;
     setSelectedMesin(selected);
 
-    // Save to formData
-    const event = {
-      target: {
-        name: 'id_jenis_mesin_cetak',
-        value: value || '',
-        type: 'select',
-      },
-    } as unknown as React.ChangeEvent<HTMLSelectElement>;
-    onInputChange(event);
+    onInputChange(createSyntheticEvent('id_jenis_mesin_cetak', value || ''));
   };
 
   const handleCoatingDepanChange = (value: any) => {
+    if (componentIsReadOnly) return;
+
     const selected =
       coatingDepanOptions.find((coating) => coating.id === value) || null;
     setSelectedCoatingDepan(selected);
 
-    // Save to formData
-    const event = {
-      target: {
-        name: 'id_coating_depan',
-        value: value || '',
-        type: 'select',
-      },
-    } as unknown as React.ChangeEvent<HTMLSelectElement>;
-    onInputChange(event);
+    onInputChange(createSyntheticEvent('id_coating_depan', value || ''));
   };
 
   const handleCoatingBelakangChange = (value: any) => {
+    if (componentIsReadOnly) return;
+
     const selected =
       coatingBelakangOptions.find((coating) => coating.id === value) || null;
     setSelectedCoatingBelakang(selected);
 
-    // Save to formData
-    const event = {
-      target: {
-        name: 'id_coating_belakang',
-        value: value || '',
-        type: 'select',
-      },
-    } as unknown as React.ChangeEvent<HTMLSelectElement>;
-    onInputChange(event);
+    onInputChange(createSyntheticEvent('id_coating_belakang', value || ''));
   };
 
   const handleMesinCoatingDepanChange = (value: any) => {
-    setSelectedMesinCoatingDepan(value);
+    if (componentIsReadOnly) return;
 
-    // Save to formData
-    const event = {
-      target: {
-        name: 'id_mesin_coating_depan',
-        value: value || '',
-        type: 'select',
-      },
-    } as unknown as React.ChangeEvent<HTMLSelectElement>;
-    onInputChange(event);
+    setSelectedMesinCoatingDepan(value);
+    onInputChange(createSyntheticEvent('id_mesin_coating_depan', value || ''));
   };
 
   const handleMesinCoatingBelakangChange = (value: any) => {
-    setSelectedMesinCoatingBelakang(value);
+    if (componentIsReadOnly) return;
 
-    // Save to formData
-    const event = {
-      target: {
-        name: 'id_mesin_coating_belakang',
-        value: value || '',
-        type: 'select',
-      },
-    } as unknown as React.ChangeEvent<HTMLSelectElement>;
-    onInputChange(event);
+    setSelectedMesinCoatingBelakang(value);
+    onInputChange(
+      createSyntheticEvent('id_mesin_coating_belakang', value || ''),
+    );
   };
 
-  // Update jumlah_harga_cetak in formData whenever it changes
+  const handlePrintInsheetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (componentIsReadOnly) return;
+    onInputChange(e);
+  };
+
+  // Update calculated values in formData
   useEffect(() => {
     const hargaCetak = calculateJumlahHargaCetak();
-    const event = {
-      target: {
-        name: 'jumlah_harga_cetak',
-        value: hargaCetak.toString(),
-        type: 'number',
-      },
-    } as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(event);
+    onInputChange(
+      createSyntheticEvent('jumlah_harga_cetak', hargaCetak.toString()),
+    );
   }, [
     selectedMesin,
     formData.total_kertas,
@@ -581,29 +553,20 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     formData.ukuran_cetak_bagian_2,
     formData.jumlah_warna,
   ]);
-  // Update harga_plate in formData whenever it changes
+
   useEffect(() => {
     const hargaPlate = calculateHargaPlate();
-    const event = {
-      target: {
-        name: 'harga_plate',
-        value: hargaPlate.toString(),
-        type: 'number',
-      },
-    } as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(event);
+    onInputChange(createSyntheticEvent('harga_plate', hargaPlate.toString()));
   }, [selectedMesin, formData.jumlah_warna]);
-  // Update jumlah_harga_coating_depan in formData whenever it changes
+
   useEffect(() => {
     const hargaCoatingDepan = calculateHargaCoatingDepan();
-    const event = {
-      target: {
-        name: 'jumlah_harga_coating_depan',
-        value: hargaCoatingDepan.toString(),
-        type: 'number',
-      },
-    } as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(event);
+    onInputChange(
+      createSyntheticEvent(
+        'jumlah_harga_coating_depan',
+        hargaCoatingDepan.toString(),
+      ),
+    );
   }, [
     selectedCoatingDepan,
     formData.total_kertas,
@@ -615,17 +578,14 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     formData.ukuran_cetak_lebar_2,
   ]);
 
-  // Update jumlah_harga_coating_belakang in formData whenever it changes
   useEffect(() => {
     const hargaCoatingBelakang = calculateHargaCoatingBelakang();
-    const event = {
-      target: {
-        name: 'jumlah_harga_coating_belakang',
-        value: hargaCoatingBelakang.toString(),
-        type: 'number',
-      },
-    } as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(event);
+    onInputChange(
+      createSyntheticEvent(
+        'jumlah_harga_coating_belakang',
+        hargaCoatingBelakang.toString(),
+      ),
+    );
   }, [
     selectedCoatingBelakang,
     formData.total_kertas,
@@ -637,17 +597,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     formData.ukuran_cetak_lebar_2,
   ]);
 
-  // Update total_harga_coating in formData whenever it changes
   useEffect(() => {
     const totalHargaCoating = calculateJumlahHargaCoating();
-    const event = {
-      target: {
-        name: 'total_harga_coating',
-        value: totalHargaCoating.toString(),
-        type: 'number',
-      },
-    } as React.ChangeEvent<HTMLInputElement>;
-    onInputChange(event);
+    onInputChange(
+      createSyntheticEvent('total_harga_coating', totalHargaCoating.toString()),
+    );
   }, [
     selectedCoatingDepan,
     selectedCoatingBelakang,
@@ -658,27 +612,6 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
     formData.ukuran_cetak_panjang_2,
     formData.ukuran_cetak_lebar_1,
     formData.ukuran_cetak_lebar_2,
-  ]);
-  // Debug effect - UPDATED
-  useEffect(() => {
-    const total_kertasOriginal = formData.total_kertas;
-    const total_kertasParsed = parseNumberWithSeparator(formData.total_kertas);
-    const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
-    const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
-    const calculatedRate =
-      total_kertasParsed * (ukuranCetakBagian1 + ukuranCetakBagian2);
-
-    console.log('Debug values:', {
-      total_kertasOriginal,
-      total_kertasParsed,
-      ukuran_cetak_bagian_1: formData.ukuran_cetak_bagian_1,
-      ukuran_cetak_bagian_2: formData.ukuran_cetak_bagian_2,
-      calculatedRate,
-    });
-  }, [
-    formData.total_kertas,
-    formData.ukuran_cetak_bagian_1,
-    formData.ukuran_cetak_bagian_2,
   ]);
 
   return (
@@ -687,6 +620,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
       <div>
         <h3 className="text-lg font-semibold text-blue-600 mb-6 flex items-center">
           Press Information
+          {isReadOnly && (
+            <span className="ml-2 text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              View Only
+            </span>
+          )}
         </h3>
 
         <div className="grid grid-cols-5 gap-4">
@@ -699,8 +637,11 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
               type="text"
               name="print_insheet"
               value={getSafeStringValue(formData.print_insheet)}
-              onChange={onInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              onChange={handlePrintInsheetChange}
+              readOnly={componentIsReadOnly}
+              className={`w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
+                componentIsReadOnly ? 'bg-gray-100 cursor-not-allowed' : ''
+              }`}
               placeholder="Enter insheet"
             />
           </div>
@@ -713,6 +654,12 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
             {loading ? (
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
+              </div>
+            ) : componentIsReadOnly ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
+                {selectedMesin
+                  ? `${selectedMesin.kode_barang} - ${selectedMesin.nama_barang}`
+                  : 'No mesin selected'}
               </div>
             ) : (
               <SearchableSelect
@@ -781,7 +728,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
         </div>
       </div>
 
-      {/* Selected Machine Details - Only show if machine is selected */}
+      {/* Selected Machine Details */}
       {selectedMesin && (
         <div className="border-b pb-4">
           <h4 className="text-sm font-medium text-gray-600 mb-2">
@@ -904,7 +851,7 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
 
         {/* Calculation Details */}
         {selectedMesin && formData.total_kertas && (
-          <div className="pb-4 mt-4 border-b ">
+          <div className="pb-4 mt-4 border-b">
             <h4 className="text-sm font-medium text-gray-600 mb-2">
               Calculation Details
             </h4>
@@ -945,7 +892,6 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                       const machineRates =
                         rateTable[machineType as keyof typeof rateTable];
                       const tierRate = machineRates?.rates[rateIndex] || 0;
-
                       return `(${tierRate} × ${totalWarna}) × ${new Intl.NumberFormat(
                         'id-ID',
                       ).format(calculatedRate)}`;
@@ -1040,6 +986,12 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
               </div>
+            ) : componentIsReadOnly ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
+                {selectedCoatingDepan
+                  ? `${selectedCoatingDepan.kode_barang} - ${selectedCoatingDepan.nama_barang}`
+                  : 'No coating selected'}
+              </div>
             ) : (
               <SearchableSelect
                 options={[
@@ -1080,6 +1032,12 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
             {loadingCoating ? (
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
+              </div>
+            ) : componentIsReadOnly ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
+                {selectedCoatingBelakang
+                  ? `${selectedCoatingBelakang.kode_barang} - ${selectedCoatingBelakang.nama_barang}`
+                  : 'No coating selected'}
               </div>
             ) : (
               <SearchableSelect
@@ -1141,6 +1099,12 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
               </div>
+            ) : componentIsReadOnly ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
+                {mesinCoatingDepanOptions.find(
+                  (opt) => opt.value === selectedMesinCoatingDepan,
+                )?.label || 'No mesin selected'}
+              </div>
             ) : (
               <SearchableSelect
                 options={[
@@ -1162,6 +1126,12 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
             {isLoadingMesinCoatingBelakang ? (
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
+              </div>
+            ) : componentIsReadOnly ? (
+              <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
+                {mesinCoatingBelakangOptions.find(
+                  (opt) => opt.value === selectedMesinCoatingBelakang,
+                )?.label || 'No mesin selected'}
               </div>
             ) : (
               <SearchableSelect
@@ -1197,7 +1167,6 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                           {selectedCoatingDepan.nama_barang}
                         </span>
                       </div>
-
                       {selectedCoatingDepan.batas_harga && (
                         <div>
                           <span className="text-gray-500">Minimum Price:</span>
@@ -1266,7 +1235,6 @@ const PressTab: React.FC<PressTabProps> = ({ formData, onInputChange }) => {
                           {selectedCoatingBelakang.nama_barang}
                         </span>
                       </div>
-
                       {selectedCoatingBelakang.batas_harga && (
                         <div>
                           <span className="text-gray-500">Minimum Price:</span>

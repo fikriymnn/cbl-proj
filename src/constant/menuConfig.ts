@@ -594,76 +594,144 @@ export const menuCategories: MenuCategory[] = [
         name: 'Kalkulasi',
         path: '/marketing/kalkulasi',
         icon: 'payroll',
+        children: [
+          {
+            name: 'Create Kalkulasi',
+            path: '/marketing/kalkulasi/create',
+            icon: 'ncr',
+          },
+          {
+            name: 'History Kalkulasi',
+            path: '/marketing/kalkulasi/history',
+            icon: 'capa',
+          },
+        ],
       },
       {
         name: 'Kabag Approval',
         path: '/marketing/kabagapproval',
         icon: 'payroll',
+        children: [
+          {
+            name: 'Approval',
+            path: '/marketing/kabagapproval/list',
+            icon: 'ncr',
+          },
+          {
+            name: 'History Approval',
+            path: '/marketing/kabagapproval/history',
+            icon: 'capa',
+          },
+        ],
       },
+
       {
         name: 'OKP',
         path: '/marketing/okp',
         icon: 'payroll',
+        children: [
+          {
+            name: 'Create OKP',
+            path: '/marketing/okp/create',
+            icon: 'ncr',
+          },
+          {
+            name: 'History OKP',
+            path: '/marketing/okp/history',
+            icon: 'capa',
+          },
+        ],
       },
       {
         name: 'IO',
         path: '/marketing/io',
         icon: 'payroll',
+        children: [
+          {
+            name: 'Create IO',
+            path: '/marketing/io/create',
+            icon: 'ncr',
+          },
+          {
+            name: 'History IO',
+            path: '/marketing/io/history',
+            icon: 'capa',
+          },
+        ],
       },
       {
         name: 'SO',
         path: '/marketing/so',
         icon: 'payroll',
+        children: [
+          {
+            name: 'Create SO',
+            path: '/marketing/so/create',
+            icon: 'ncr',
+          },
+          {
+            name: 'History SO',
+            path: '/marketing/so/history',
+            icon: 'capa',
+          },
+        ],
       },
       {
         name: 'Master Marketing',
-        path: '/master/marketing',
+        path: '/marketing/master',
         icon: 'payroll',
-      },
-      {
-        name: 'Master Customer',
-        path: '/master/customer',
-        icon: 'payroll',
-      },
-      {
-        name: 'Master Brand',
-        path: '/master/brand',
-        icon: 'payroll',
-      },
-      {
-        name: 'Master Pengiriman',
-        path: '/master/pengiriman',
-        icon: 'payroll',
-      },
-      {
-        name: 'Master Produk',
-        path: '/master/produk',
-        icon: 'payroll',
-      },
-      {
-        name: 'Master Unit',
-        path: '/master/unit',
-        icon: 'payroll',
-      },
-      {
-        name: 'Master Barang',
-        path: '/master/barang',
-        icon: 'payroll',
-      },
-      {
-        name: 'Master Mesin Tahapan',
-        path: '/master/mesintahapan',
-        icon: 'payroll',
-      },
-      {
-        name: 'Master Tahapan',
-        path: '/master/tahapan',
-        icon: 'payroll',
-      },
-      {
-        name: 'Master Tahapan Mesin',
-        path: '/master/tahapanmesin',
-        icon: 'payroll',
+        children: [
+          {
+            name: 'Master Marketing',
+            path: '/master/marketing',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Customer',
+            path: '/master/customer',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Brand',
+            path: '/master/brand',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Pengiriman',
+            path: '/master/pengiriman',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Produk',
+            path: '/master/produk',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Unit',
+            path: '/master/unit',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Barang',
+            path: '/master/barang',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Mesin Tahapan',
+            path: '/master/mesintahapan',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Tahapan',
+            path: '/master/tahapan',
+            icon: 'payroll',
+          },
+          {
+            name: 'Master Tahapan Mesin',
+            path: '/master/tahapanmesin',
+            icon: 'payroll',
+          },
+        ],
       },
     ],
   },

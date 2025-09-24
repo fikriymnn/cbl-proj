@@ -206,6 +206,7 @@ import KabagApproval from './pages/Marketing/Kabag/KabagApproval';
 import OKPPage from './pages/Marketing/OKP/OKPPage';
 import IOMarketingPage from './pages/Marketing/IO/IOMarketingPage';
 import SOPage from './pages/Marketing/SO/SOPage';
+import KalkulasiHistoryPage from './pages/Marketing/Kalkulasi/KalkulasiHistoryPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -236,7 +237,7 @@ function App() {
         />
         {/* Marketing */}
         <Route
-          path="/marketing/kalkulasi"
+          path="/marketing/kalkulasi/create"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -245,8 +246,19 @@ function App() {
             </>
           }
         />
+
         <Route
-          path="/marketing/kabagapproval"
+          path="/marketing/kalkulasi/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <KalkulasiHistoryPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/kabagapproval/list"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -256,7 +268,17 @@ function App() {
           }
         />
         <Route
-          path="/marketing/okp"
+          path="/marketing/kabagapproval/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <KabagApproval />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/okp/create"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -266,7 +288,17 @@ function App() {
           }
         />
         <Route
-          path="/marketing/io"
+          path="/marketing/okp/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <OKPPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/io/create"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -276,7 +308,27 @@ function App() {
           }
         />
         <Route
-          path="/marketing/so"
+          path="/marketing/io/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <IOMarketingPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/so/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <SOPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/so/history"
           element={
             <>
               <PageTitle title="PT CBL" />

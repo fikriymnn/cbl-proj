@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { KalkulasiFormData } from '../KalkulasiModal';
+import { KalkulasiFormData } from '../types/kalkulasi';
 
 interface LainLainTabProps {
   formData: KalkulasiFormData;
@@ -8,13 +8,32 @@ interface LainLainTabProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
 const LainLainTab: React.FC<LainLainTabProps> = ({
   formData,
   onInputChange,
+  isReadOnly = false,
+  copyType,
 }) => {
   const lainLainItems = formData.lain_lain || [];
+
+  // Determine if component should be read-only
+  const isComponentReadOnly = isReadOnly || copyType === 'repeat';
+
+  const getInputClassName = (baseClassName: string) => {
+    return isComponentReadOnly
+      ? `${baseClassName} bg-gray-100 cursor-not-allowed`
+      : baseClassName;
+  };
+
+  const getSectionHeaderColor = () => {
+    if (copyType === 'repeat') return 'text-blue-600';
+    if (copyType === 'repeat_perubahan') return 'text-green-600';
+    return 'text-blue-600';
+  };
 
   // Calculate total whenever items change
   const calculateTotal = () => {
@@ -26,6 +45,8 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
 
   // Update total_harga_lain_lain whenever lain_lain items change
   useEffect(() => {
+    if (isComponentReadOnly) return;
+
     const total = calculateTotal();
 
     // Create synthetic event to update the calculated total
@@ -37,12 +58,14 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
     } as React.ChangeEvent<HTMLInputElement>;
 
     onInputChange(syntheticEvent);
-  }, [lainLainItems]);
+  }, [lainLainItems, isComponentReadOnly]);
 
   // Helper function to update lain_lain array
   const updateLainLain = (
     updatedItems: Array<{ nama_item: string; harga: number }>,
   ) => {
+    if (isComponentReadOnly) return;
+
     // Create synthetic event to update lain_lain array
     const syntheticEvent = {
       target: {
@@ -56,6 +79,8 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
 
   // Add new item
   const handleAddItem = () => {
+    if (isComponentReadOnly) return;
+
     const newItem = { nama_item: '', harga: 0 };
     const updatedItems = [...lainLainItems, newItem];
     updateLainLain(updatedItems);
@@ -63,6 +88,8 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
 
   // Remove item
   const handleRemoveItem = (index: number) => {
+    if (isComponentReadOnly) return;
+
     const updatedItems = lainLainItems.filter((_, i) => i !== index);
     updateLainLain(updatedItems);
   };
@@ -73,6 +100,8 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
     field: 'nama_item' | 'harga',
     value: string | number,
   ) => {
+    if (isComponentReadOnly) return;
+
     const updatedItems = lainLainItems.map((item, i) => {
       if (i === index) {
         return { ...item, [field]: value };
@@ -94,29 +123,38 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-blue-600 flex items-center">
-          ⚙️ Lain-lain
-        </h3>
-        <button
-          type="button"
-          onClick={handleAddItem}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        <h3
+          className={`text-lg font-semibold flex items-center ${getSectionHeaderColor()}`}
         >
-          <svg
-            className="w-4 h-4 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+          ⚙️ Lain-lain
+          {isComponentReadOnly && (
+            <span className="ml-2 text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              View Only
+            </span>
+          )}
+        </h3>
+        {!isComponentReadOnly && (
+          <button
+            type="button"
+            onClick={handleAddItem}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Tambah Item
-        </button>
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Tambah Item
+          </button>
+        )}
       </div>
 
       {/* Items List */}
@@ -137,9 +175,11 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
               />
             </svg>
             <p>Belum ada item lain-lain</p>
-            <p className="text-sm">
-              Klik "Tambah Item" untuk menambah item baru
-            </p>
+            {!isComponentReadOnly && (
+              <p className="text-sm">
+                Klik "Tambah Item" untuk menambah item baru
+              </p>
+            )}
           </div>
         ) : (
           lainLainItems.map((item, index) => (
@@ -159,8 +199,11 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
                     onChange={(e) =>
                       handleItemChange(index, 'nama_item', e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className={getInputClassName(
+                      'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+                    )}
                     placeholder="Masukkan nama item"
+                    readOnly={isComponentReadOnly}
                   />
                 </div>
 
@@ -179,34 +222,39 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
                         Number(e.target.value) || 0,
                       )
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className={getInputClassName(
+                      'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+                    )}
                     placeholder="0"
                     min="0"
+                    readOnly={isComponentReadOnly}
                   />
                 </div>
 
                 {/* Remove Button */}
                 <div className="md:col-span-2 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(index)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Hapus item"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  {!isComponentReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(index)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Hapus item"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -271,6 +319,19 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
               </span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Readonly Information Panel */}
+      {isComponentReadOnly && lainLainItems.length > 0 && (
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="text-sm font-semibold text-blue-800 mb-2">
+            Lain-lain Information
+          </h4>
+          <p className="text-sm text-blue-600">
+            This section is in read-only mode because this is a repeat
+            calculation. To make changes, create a "repeat perubahan" instead.
+          </p>
         </div>
       )}
     </div>

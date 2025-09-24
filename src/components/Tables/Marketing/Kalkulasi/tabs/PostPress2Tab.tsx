@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { KalkulasiFormData } from '../KalkulasiModal';
+import { KalkulasiFormData } from '../types/kalkulasi';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface PostPressTabProps {
@@ -10,6 +10,8 @@ interface PostPressTabProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
 interface LemOption {
@@ -31,18 +33,16 @@ interface MesinTahapanResponse {
 }
 
 interface Option {
-  value: string; // Changed from number to string
+  value: string;
   label: string;
 }
 
-// New interface for packing options
 interface PackingOption {
   id: number;
   nama_barang: string;
   harga: number;
 }
 
-// Fixed: More specific interface for API responses
 interface ApiResponse<T> {
   data: T[];
 }
@@ -58,6 +58,8 @@ interface MesinTahapanApiResponse {
 const PostPress2Tab: React.FC<PostPressTabProps> = ({
   formData,
   onInputChange,
+  isReadOnly = false,
+  copyType,
 }) => {
   const [lemOptions, setLemOptions] = useState<LemOption[]>([]);
   const [mesinFinishingOptions, setMesinFinishingOptions] = useState<Option[]>(
@@ -68,6 +70,58 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   const [loadingMesinFinishing, setLoadingMesinFinishing] =
     useState<boolean>(false);
   const [loadingPacking, setLoadingPacking] = useState<boolean>(false);
+
+  // Selected values state
+  const [selectedLem, setSelectedLem] = useState<string>('');
+  const [selectedMesinFinishing, setSelectedMesinFinishing] =
+    useState<string>('');
+  const [selectedJenisPacking, setSelectedJenisPacking] = useState<string>('');
+  const [selectedNamaPacking, setSelectedNamaPacking] = useState<string>('');
+  const [selectedFoil, setSelectedFoil] = useState<string>('');
+  const [selectedSpotFoil, setSelectedSpotFoil] = useState<string>('');
+
+  // Determine if component should be read-only
+  const isComponentReadOnly = isReadOnly || copyType === 'repeat';
+
+  const getInputClassName = (baseClassName: string) => {
+    return isComponentReadOnly
+      ? `${baseClassName} bg-gray-100 cursor-not-allowed`
+      : baseClassName;
+  };
+
+  const getSectionHeaderColor = () => {
+    if (copyType === 'repeat') return 'text-blue-600';
+    if (copyType === 'repeat_perubahan') return 'text-green-600';
+    return 'text-blue-600';
+  };
+
+  // Sync selected values when formData changes
+  useEffect(() => {
+    if (formData.id_lem && formData.id_lem !== selectedLem) {
+      setSelectedLem(formData.id_lem.toString());
+    }
+    if (
+      formData.id_mesin_finishing &&
+      formData.id_mesin_finishing !== selectedMesinFinishing
+    ) {
+      setSelectedMesinFinishing(formData.id_mesin_finishing.toString());
+    }
+    if (
+      formData.jenis_packing &&
+      formData.jenis_packing !== selectedJenisPacking
+    ) {
+      setSelectedJenisPacking(formData.jenis_packing);
+    }
+    if (formData.id_packing && formData.id_packing !== selectedNamaPacking) {
+      setSelectedNamaPacking(formData.id_packing.toString());
+    }
+    if (formData.foil && formData.foil !== selectedFoil) {
+      setSelectedFoil(formData.foil);
+    }
+    if (formData.spot_foil && formData.spot_foil !== selectedSpotFoil) {
+      setSelectedSpotFoil(formData.spot_foil);
+    }
+  }, [formData]);
 
   // Function to create synthetic events for updating parent formData
   const createSyntheticEvent = (name: string, value: string): void => {
@@ -90,6 +144,9 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
 
   // Helper functions to handle SearchableSelect changes
   const handleLemChange = (value: number | string) => {
+    if (isComponentReadOnly) return;
+
+    setSelectedLem(String(value));
     const syntheticEvent = {
       target: {
         name: 'id_lem',
@@ -100,6 +157,9 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   };
 
   const handleMesinFinishingChange = (value: number | string) => {
+    if (isComponentReadOnly) return;
+
+    setSelectedMesinFinishing(String(value));
     const syntheticEvent = {
       target: {
         name: 'id_mesin_finishing',
@@ -110,6 +170,9 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   };
 
   const handleJenisPackingChange = (value: number | string) => {
+    if (isComponentReadOnly) return;
+
+    setSelectedJenisPacking(String(value));
     const syntheticEvent = {
       target: {
         name: 'jenis_packing',
@@ -120,6 +183,9 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   };
 
   const handleNamaPackingChange = (value: number | string) => {
+    if (isComponentReadOnly) return;
+
+    setSelectedNamaPacking(String(value));
     const syntheticEvent = {
       target: {
         name: 'id_packing',
@@ -130,6 +196,9 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   };
 
   const handleFoilChange = (value: number | string) => {
+    if (isComponentReadOnly) return;
+
+    setSelectedFoil(String(value));
     const syntheticEvent = {
       target: {
         name: 'foil',
@@ -140,6 +209,9 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   };
 
   const handleSpotFoilChange = (value: number | string) => {
+    if (isComponentReadOnly) return;
+
+    setSelectedSpotFoil(String(value));
     const syntheticEvent = {
       target: {
         name: 'spot_foil',
@@ -149,42 +221,10 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     onInputChange(syntheticEvent);
   };
 
-  // Helper functions to get selected values for controlled components
-  const getSelectedLemValue = (): string => {
-    const value = getCurrentValue('id_lem');
-    return value ? String(value) : '';
-  };
-
-  const getSelectedMesinFinishingValue = (): string => {
-    const value = getCurrentValue('id_mesin_finishing');
-    return value ? String(value) : '';
-  };
-
-  const getSelectedJenisPackingValue = (): string => {
-    const value = getCurrentValue('jenis_packing');
-    return value ? String(value) : '';
-  };
-
-  const getSelectedNamaPackingValue = (): string => {
-    const value = getCurrentValue('id_packing');
-    return value ? String(value) : '';
-  };
-
-  const getSelectedFoilValue = (): string => {
-    const value = getCurrentValue('foil', '-');
-    return String(value);
-  };
-
-  const getSelectedSpotFoilValue = (): string => {
-    const value = getCurrentValue('spot_foil', '-');
-    return String(value);
-  };
-
   // Format currency input
   const formatCurrency = (value: string): string => {
     const numericValue = value.replace(/[^\d]/g, '');
     if (!numericValue) return '';
-
     const number = parseInt(numericValue);
     return new Intl.NumberFormat('id-ID').format(number);
   };
@@ -241,7 +281,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
 
         const options: Option[] = mesinResponse.data.data.map(
           (item: MesinTahapanResponse) => ({
-            value: String(item.id_mesin_tahapan), // Convert to string
+            value: String(item.id_mesin_tahapan),
             label: item.mesin.nama_mesin,
           }),
         );
@@ -255,7 +295,6 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     }
   };
 
-  // New function to fetch packing options
   const fetchPackingOptions = async (kategori: string): Promise<void> => {
     if (!kategori) {
       setPackingOptions([]);
@@ -272,7 +311,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
           },
         },
       );
-      console.log('Packing response:', response.data.data);
+
       if (response.data && response.data.data) {
         const packingData = response.data.data || [];
         setPackingOptions(packingData);
@@ -296,28 +335,25 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
       fetchPackingOptions(jenisPacking);
     } else {
       setPackingOptions([]);
-      // Clear related fields when jenis_packing is cleared
-      createSyntheticEvent('id_packing', '');
-      createSyntheticEvent('harga_packing', '0');
+      if (!isComponentReadOnly) {
+        createSyntheticEvent('id_packing', '');
+        createSyntheticEvent('harga_packing', '0');
+      }
     }
   }, [getCurrentValue('jenis_packing')]);
 
   // Calculate harga_packing
   useEffect(() => {
-    console.log('Packing calculation triggered');
-    console.log('Current id_packing:', getCurrentValue('id_packing'));
-    console.log('Available packing options:', packingOptions);
+    if (isComponentReadOnly) return;
 
     if (getCurrentValue('id_packing') && packingOptions.length > 0) {
       const selectedPacking = packingOptions.find(
         (option) => String(option.id) === String(getCurrentValue('id_packing')),
       );
-      console.log('Found selected packing:', selectedPacking);
 
       if (selectedPacking) {
         const qtyPacking = parseFloat(getCurrentValue('qty_packing') || '0');
         const hargaPacking = selectedPacking.harga * qtyPacking;
-
         createSyntheticEvent('harga_packing', hargaPacking.toString());
       }
     } else {
@@ -327,25 +363,25 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     getCurrentValue('id_packing'),
     getCurrentValue('qty_packing'),
     packingOptions,
+    isComponentReadOnly,
   ]);
 
   // Calculate Jumlah Harga Lem and update formData
   useEffect(() => {
+    if (isComponentReadOnly) return;
+
     if (getCurrentValue('id_lem') && lemOptions.length > 0) {
       const selectedLem = lemOptions.find(
         (option) => String(option.id) === String(getCurrentValue('id_lem')),
       );
 
       if (selectedLem) {
-        // Convert mm to cm
         const ukuranJadiTinggiCm =
           parseFloat(formData.ukuran_jadi_tinggi || '0') / 10;
         const qtyKalkulasi = parseFloat(formData.qty_kalkulasi || '0');
-
         const jumlahHargaLem =
           ukuranJadiTinggiCm * selectedLem.harga * qtyKalkulasi;
 
-        // Update formData through synthetic event
         createSyntheticEvent(
           'jumlah_harga_lem',
           jumlahHargaLem.toLocaleString('id-ID', {
@@ -362,10 +398,13 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     formData.ukuran_jadi_tinggi,
     formData.qty_kalkulasi,
     lemOptions,
+    isComponentReadOnly,
   ]);
 
   // Calculate No Packaging and update formData
   useEffect(() => {
+    if (isComponentReadOnly) return;
+
     const panjangPackaging = parseFloat(
       getCurrentValue('panjang_packaging') || '0',
     );
@@ -377,7 +416,6 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     if (panjangPackaging > 0 && lebarPackaging > 0) {
       const noPackaging =
         qtyKalkulasi / (36000 / (panjangPackaging * lebarPackaging * 0.003));
-
       createSyntheticEvent('no_packaging', noPackaging.toFixed(2));
     } else {
       createSyntheticEvent('no_packaging', '0.00');
@@ -386,18 +424,22 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     getCurrentValue('panjang_packaging'),
     getCurrentValue('lebar_packaging'),
     formData.qty_kalkulasi,
+    isComponentReadOnly,
   ]);
 
   // Calculate Harga Packaging and update formData
   useEffect(() => {
+    if (isComponentReadOnly) return;
+
     const noPackaging = parseFloat(getCurrentValue('no_packaging') || '0');
     const hargaPackaging = noPackaging * 1000;
-
     createSyntheticEvent('harga_packaging', hargaPackaging.toString());
-  }, [getCurrentValue('no_packaging')]);
+  }, [getCurrentValue('no_packaging'), isComponentReadOnly]);
 
   // Calculate Harga Pengiriman automatically and update formData
   useEffect(() => {
+    if (isComponentReadOnly) return;
+
     const hargaPengirimanAwal = parseFloat(
       formData.harga_pengiriman_awal || '0',
     );
@@ -409,13 +451,19 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     } else {
       createSyntheticEvent('harga_pengiriman', '0');
     }
-  }, [formData.harga_pengiriman_awal, getCurrentValue('jumlah_kirim')]);
+  }, [
+    formData.harga_pengiriman_awal,
+    getCurrentValue('jumlah_kirim'),
+    isComponentReadOnly,
+  ]);
 
   const handlePostPressInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ): void => {
+    if (isComponentReadOnly) return;
+
     const { name, value } = e.target;
 
     // Handle currency formatting for manual price inputs
@@ -427,7 +475,6 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
       const formattedValue = formatCurrency(value);
       const unformattedValue = parseCurrency(value);
 
-      // Send unformatted value to parent
       const syntheticEvent = {
         ...e,
         target: {
@@ -441,7 +488,6 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
       return;
     }
 
-    // For all other fields, pass directly to parent
     onInputChange(e);
   };
 
@@ -509,14 +555,14 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   // Transform data for SearchableSelect options
   const getLemSearchableOptions = () => {
     return lemOptions.map((option) => ({
-      value: String(option.id), // Convert to string
+      value: String(option.id),
       label: option.nama_barang,
     }));
   };
 
   const getPackingSearchableOptions = () => {
     return packingOptions.map((option) => ({
-      value: String(option.id), // Convert to string
+      value: String(option.id),
       label: option.nama_barang,
     }));
   };
@@ -542,8 +588,15 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     <div className="space-y-8">
       {/* Finishing Insheet Section */}
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-blue-600 mb-6 flex items-center">
+        <h3
+          className={`text-lg font-semibold mb-6 flex items-center ${getSectionHeaderColor()}`}
+        >
           📦 Finishing
+          {isComponentReadOnly && (
+            <span className="ml-2 text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              View Only
+            </span>
+          )}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -557,22 +610,26 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               name="finishing_insheet"
               value={getCurrentValue('finishing_insheet')}
               onChange={handlePostPressInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="Enter finishing insheet"
+              readOnly={isComponentReadOnly}
             />
           </div>
 
-          {/* Lem Dropdown - Changed to SearchableSelect */}
+          {/* Lem Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Lem
             </label>
             <SearchableSelect
               options={getLemSearchableOptions()}
-              value={getSelectedLemValue()}
+              value={selectedLem}
               onChange={handleLemChange}
               placeholder={loadingLem ? 'Loading...' : 'Select Lem'}
               className="w-full"
+              disabled={isComponentReadOnly}
             />
           </div>
 
@@ -598,19 +655,20 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
             </div>
           </div>
 
-          {/* Mesin Finishing - Changed to SearchableSelect */}
+          {/* Mesin Finishing */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Mesin Finishing
             </label>
             <SearchableSelect
               options={mesinFinishingOptions}
-              value={getSelectedMesinFinishingValue()}
+              value={selectedMesinFinishing}
               onChange={handleMesinFinishingChange}
               placeholder={
                 loadingMesinFinishing ? 'Loading...' : 'Select Mesin Finishing'
               }
               className="w-full"
+              disabled={isComponentReadOnly}
             />
           </div>
         </div>
@@ -643,31 +701,33 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
           <h2 className="text-xl font-semibold text-gray-900">💰 Harga Foil</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Foil Dropdown - Changed to SearchableSelect */}
+          {/* Foil Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Foil
             </label>
             <SearchableSelect
               options={getFoilOptions()}
-              value={getSelectedFoilValue()}
+              value={selectedFoil}
               onChange={handleFoilChange}
               placeholder="Select Foil"
               className="w-full"
+              disabled={isComponentReadOnly}
             />
           </div>
 
-          {/* Spot Foil Dropdown - Changed to SearchableSelect */}
+          {/* Spot Foil Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Spot Foil
             </label>
             <SearchableSelect
               options={getFoilOptions()}
-              value={getSelectedSpotFoilValue()}
+              value={selectedSpotFoil}
               onChange={handleSpotFoilChange}
               placeholder="Select Spot Foil"
               className="w-full"
+              disabled={isComponentReadOnly}
             />
           </div>
         </div>
@@ -683,8 +743,11 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               name="harga_foil_manual"
               value={getFormattedCurrencyValue('harga_foil_manual')}
               onChange={handlePostPressInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="0"
+              readOnly={isComponentReadOnly}
             />
           </div>
 
@@ -698,8 +761,11 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               name="harga_spot_foil_manual"
               value={getFormattedCurrencyValue('harga_spot_foil_manual')}
               onChange={handlePostPressInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="0"
+              readOnly={isComponentReadOnly}
             />
           </div>
 
@@ -713,8 +779,11 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               name="harga_polimer_manual"
               value={getFormattedCurrencyValue('harga_polimer_manual')}
               onChange={handlePostPressInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+              )}
               placeholder="0"
+              readOnly={isComponentReadOnly}
             />
           </div>
         </div>
@@ -722,33 +791,36 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
 
       {/* New Packing Section */}
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-orange-600 mb-6 flex items-center">
+        <h3
+          className={`text-lg font-semibold mb-6 flex items-center ${getSectionHeaderColor()}`}
+        >
           📋 Packing
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Jenis Packing - Changed to SearchableSelect */}
+          {/* Jenis Packing */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Jenis Packing
             </label>
             <SearchableSelect
               options={getJenisPackingOptions()}
-              value={getSelectedJenisPackingValue()}
+              value={selectedJenisPacking}
               onChange={handleJenisPackingChange}
               placeholder="Select Jenis Packing"
               className="w-full"
+              disabled={isComponentReadOnly}
             />
           </div>
 
-          {/* Nama Packing - Changed to SearchableSelect */}
+          {/* Nama Packing */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Nama Packing
             </label>
             <SearchableSelect
               options={getPackingSearchableOptions()}
-              value={getSelectedNamaPackingValue()}
+              value={selectedNamaPacking}
               onChange={handleNamaPackingChange}
               placeholder={
                 loadingPacking
@@ -758,6 +830,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
                   : 'Select Jenis Packing first'
               }
               className="w-full"
+              disabled={isComponentReadOnly}
             />
           </div>
 
@@ -771,10 +844,13 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               name="qty_packing"
               value={getCurrentValue('qty_packing')}
               onChange={handlePostPressInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all',
+              )}
               placeholder="1"
               min="0"
               step="0.01"
+              readOnly={isComponentReadOnly}
             />
           </div>
 
@@ -818,7 +894,9 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
 
       {/* Packaging Section */}
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-green-600 mb-6 flex items-center">
+        <h3
+          className={`text-lg font-semibold mb-6 flex items-center ${getSectionHeaderColor()}`}
+        >
           📦 Packaging
         </h3>
 
@@ -833,10 +911,14 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               name="panjang_packaging"
               value={getCurrentValue('panjang_packaging')}
               onChange={handlePostPressInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all',
+              )}
               placeholder="100"
+              readOnly={isComponentReadOnly}
             />
           </div>
+
           {/* Lebar MM */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
@@ -847,8 +929,11 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               name="lebar_packaging"
               value={getCurrentValue('lebar_packaging')}
               onChange={handlePostPressInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all',
+              )}
               placeholder="200"
+              readOnly={isComponentReadOnly}
             />
           </div>
 
@@ -876,8 +961,11 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               name="jumlah_kirim"
               value={getCurrentValue('jumlah_kirim')}
               onChange={handlePostPressInputChange}
-              className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+              className={getInputClassName(
+                'w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all',
+              )}
               placeholder="1"
+              readOnly={isComponentReadOnly}
             />
           </div>
 
@@ -897,7 +985,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
             </div>
           </div>
 
-          {/* Harga Pengiriman - Auto Calculated (CHANGED) */}
+          {/* Harga Pengiriman - Auto Calculated */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Harga Pengiriman
@@ -955,6 +1043,19 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
           </div>
         )}
       </div>
+
+      {/* Readonly Information Panel */}
+      {isComponentReadOnly && (
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="text-sm font-semibold text-blue-800 mb-2">
+            PostPress Information
+          </h4>
+          <p className="text-sm text-blue-600">
+            This section is in read-only mode because this is a repeat
+            calculation. To make changes, create a "repeat perubahan" instead.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

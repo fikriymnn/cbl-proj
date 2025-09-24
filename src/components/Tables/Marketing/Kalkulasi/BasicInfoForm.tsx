@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { KalkulasiFormData } from './KalkulasiModal';
+import { KalkulasiFormData } from '../Kalkulasi/types/kalkulasi';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface BasicInfoFormProps {
@@ -10,6 +10,8 @@ interface BasicInfoFormProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean; // Add this
+  copyType?: 'repeat' | 'repeat_perubahan'; // Add this
 }
 
 interface Customer {
@@ -42,6 +44,8 @@ interface Pengiriman {
 const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   formData,
   onInputChange,
+  copyType,
+  isReadOnly = false,
 }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [marketingList, setMarketingList] = useState<Marketing[]>([]);
@@ -52,7 +56,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
-
+  const isFieldDisabled = (fieldType: 'basic' | 'select') => {
+    if (copyType === 'repeat') return true; // All fields disabled for repeat
+    if (copyType === 'repeat_perubahan' && fieldType === 'basic') return false; // Basic fields editable for repeat_perubahan
+    if (copyType === 'repeat_perubahan' && fieldType === 'select') return false; // Select fields editable for repeat_perubahan
+    return isReadOnly;
+  };
   useEffect(() => {
     getMarketingCustomer();
   }, []);
@@ -201,12 +210,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     }
   }
 
-  // Handle customer selection
   const handleCustomerChange = (value: any) => {
+    if (isFieldDisabled('select')) return;
+
     const customer = customers.find((c) => c.id === value);
     setSelectedCustomer(customer || null);
 
-    // Update formData with customer info
     onInputChange({
       target: { name: 'id_customer', value: customer?.id || 0 },
     } as unknown as React.ChangeEvent<HTMLSelectElement>);
@@ -232,8 +241,9 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     });
   };
 
-  // Handle marketing selection
   const handleMarketingChange = (value: any) => {
+    if (isFieldDisabled('select')) return;
+
     const marketing = marketingList.find((m) => m.id === value);
     const marketingName =
       marketing?.nama_marketing || marketing?.data_karyawan?.name || '';
@@ -247,8 +257,9 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     } as React.ChangeEvent<HTMLSelectElement>);
   };
 
-  // Handle product selection
   const handleProductChange = (value: any) => {
+    if (isFieldDisabled('select')) return;
+
     const product = produks.find((p) => p.id === value);
 
     onInputChange({
@@ -260,8 +271,9 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     } as React.ChangeEvent<HTMLSelectElement>);
   };
 
-  // Handle pengiriman selection
   const handlePengirimanChange = (value: any) => {
+    if (isFieldDisabled('select')) return;
+
     const pengiriman = pengirimans.find((p) => p.id === value);
 
     onInputChange({
@@ -274,6 +286,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         value: pengiriman?.nama_area || '',
       },
     } as React.ChangeEvent<HTMLSelectElement>);
+
     onInputChange({
       target: {
         name: 'harga_pengiriman_awal',
@@ -328,8 +341,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             name="tgl_kalkulasi"
             value={formData.tgl_kalkulasi}
             onChange={onInputChange}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            disabled
+            className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
+              isFieldDisabled('basic')
+                ? 'bg-gray-100 cursor-not-allowed'
+                : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+            }`}
+            disabled={isFieldDisabled('basic')}
           />
         </div>
 
@@ -341,11 +358,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             name="status_kalkulasi"
             value={formData.status_kalkulasi}
             onChange={onInputChange}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
+              isFieldDisabled('basic')
+                ? 'bg-gray-100 cursor-not-allowed'
+                : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+            }`}
+            disabled={isFieldDisabled('basic')}
           >
-            <option value="Baru">Baru</option>
-            <option value="Draft">Draft</option>
-            <option value="Approved">Approved</option>
+            <option value="baru">Baru</option>
+            <option value="repeat">Repeat</option>
+            <option value="repeat perubahan">Repeat Perubahan</option>
           </select>
         </div>
 
@@ -365,6 +387,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             onChange={handleCustomerChange}
             placeholder="Pilih Customer"
             required
+            disabled={isFieldDisabled('select')}
           />
         </div>
 
@@ -388,6 +411,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             onChange={handleMarketingChange}
             placeholder="Pilih Marketing"
             required
+            disabled={isFieldDisabled('select')}
           />
         </div>
       </div>
@@ -409,6 +433,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             onChange={handleProductChange}
             placeholder="Pilih Produk"
             required
+            disabled={isFieldDisabled('select')}
           />
         </div>
 
@@ -421,13 +446,13 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
               { value: 0, label: 'Pilih Area Pengiriman' },
               ...pengirimans.map((pengiriman) => ({
                 value: pengiriman.id,
-                label: `${pengiriman.nama_area} 
-               `,
+                label: `${pengiriman.nama_area}`,
               })),
             ]}
             value={getSelectedPengirimanId()}
             onChange={handlePengirimanChange}
             placeholder="Pilih Area Pengiriman"
+            disabled={isFieldDisabled('select')}
           />
         </div>
 
@@ -438,9 +463,14 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             name="qty_kalkulasi"
             value={formData.qty_kalkulasi}
             onChange={onInputChange}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
+              isFieldDisabled('basic')
+                ? 'bg-gray-100 cursor-not-allowed'
+                : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+            }`}
             required
             min="0"
+            disabled={isFieldDisabled('basic')}
           />
         </div>
 
@@ -453,10 +483,15 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             name="presentase_insheet"
             value={formData.presentase_insheet}
             onChange={onInputChange}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
+              isFieldDisabled('basic')
+                ? 'bg-gray-100 cursor-not-allowed'
+                : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+            }`}
             min="0"
             max="100"
             step="0.01"
+            disabled={isFieldDisabled('basic')}
           />
         </div>
       </div>
@@ -470,8 +505,13 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           value={formData.spesifikasi}
           onChange={onInputChange}
           rows={3}
-          className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
+            isFieldDisabled('basic')
+              ? 'bg-gray-100 cursor-not-allowed'
+              : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+          }`}
           placeholder="Masukkan spesifikasi produk..."
+          disabled={isFieldDisabled('basic')}
         />
       </div>
     </div>

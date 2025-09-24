@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { KalkulasiFormData } from '../KalkulasiModal';
+import { KalkulasiFormData } from '../types/kalkulasi';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface Option {
@@ -11,7 +11,6 @@ interface Option {
 interface JenisKertasResponse {
   id: number;
   kategori: string;
-  // Add other fields as needed
 }
 
 interface BarangResponse {
@@ -22,9 +21,8 @@ interface BarangResponse {
   lebar: number;
   persentase: number;
   harga: number;
-  pajak: number; // Added pajak field
-  kategori: string; // Added kategori field
-  // Add other fields as needed
+  pajak: number;
+  kategori: string;
 }
 
 interface TahapanResponse {
@@ -62,25 +60,72 @@ interface PrepressTabProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
 const PrepressTab: React.FC<PrepressTabProps> = ({
   formData,
   onInputChange,
+  isReadOnly = false,
+  copyType,
 }) => {
   const [jenisKertasOptions, setJenisKertasOptions] = useState<Option[]>([]);
   const [namaKertasOptions, setNamaKertasOptions] = useState<Option[]>([]);
-  const [namaKertasData, setNamaKertasData] = useState<BarangResponse[]>([]); // Store full data
+  const [namaKertasData, setNamaKertasData] = useState<BarangResponse[]>([]);
   const [mesinPotongOptions, setMesinPotongOptions] = useState<Option[]>([]);
   const [selectedBarangData, setSelectedBarangData] =
-    useState<BarangResponse | null>(null); // Store selected barang data
+    useState<BarangResponse | null>(null);
   const [isLoadingJenisKertas, setIsLoadingJenisKertas] = useState(false);
   const [isLoadingNamaKertas, setIsLoadingNamaKertas] = useState(false);
   const [isLoadingMesinPotong, setIsLoadingMesinPotong] = useState(false);
 
-  // Use formData values directly
-  const selectedJenisKertas = formData.jenis_kertas || '';
-  const selectedNamaKertas = formData.id_kertas || '';
+  // Selected values - using the same pattern as BasicInfoForm
+  const [selectedJenisKertas, setSelectedJenisKertas] = useState<string>('');
+  const [selectedNamaKertas, setSelectedNamaKertas] = useState<number>(0);
+  const [selectedMesinPotong, setSelectedMesinPotong] = useState<number>(0);
+
+  const getInputClassName = (baseClassName: string) => {
+    return isReadOnly
+      ? `${baseClassName} bg-gray-100 cursor-not-allowed`
+      : baseClassName;
+  };
+
+  const getSectionHeaderColor = () => {
+    if (copyType === 'repeat') return 'text-blue-600';
+    if (copyType === 'repeat_perubahan') return 'text-green-600';
+    return 'text-blue-600';
+  };
+
+  // Sync selectedJenisKertas when formData changes (same pattern as BasicInfoForm)
+  useEffect(() => {
+    if (
+      formData.jenis_kertas &&
+      formData.jenis_kertas !== selectedJenisKertas
+    ) {
+      setSelectedJenisKertas(formData.jenis_kertas);
+    }
+  }, [formData.jenis_kertas]);
+
+  // Sync selectedNamaKertas when formData changes
+  useEffect(() => {
+    if (
+      formData.id_kertas &&
+      Number(formData.id_kertas) !== selectedNamaKertas
+    ) {
+      setSelectedNamaKertas(Number(formData.id_kertas));
+    }
+  }, [formData.id_kertas]);
+
+  // Sync selectedMesinPotong when formData changes
+  useEffect(() => {
+    if (
+      formData.id_mesin_potong &&
+      Number(formData.id_mesin_potong) !== selectedMesinPotong
+    ) {
+      setSelectedMesinPotong(Number(formData.id_mesin_potong));
+    }
+  }, [formData.id_mesin_potong]);
 
   // Fetch Jenis Kertas options
   useEffect(() => {
@@ -97,7 +142,6 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             label: item.kategori,
           }),
         );
-        console.log(response.data.data);
         setJenisKertasOptions(options);
       } catch (error) {
         console.error('Error fetching jenis kertas:', error);
@@ -114,19 +158,16 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     const fetchMesinPotong = async () => {
       setIsLoadingMesinPotong(true);
       try {
-        // First, get all tahapan
         const tahapanResponse = await axios.get(
           `${import.meta.env.VITE_API_LINK}/master/tahapan`,
         );
 
-        // Find tahapan with nama_tahapan containing "POTONG" (case insensitive)
         const potongTahapan = tahapanResponse.data.data.find(
           (tahapan: TahapanResponse) =>
             tahapan.nama_tahapan.toLowerCase().includes('potong'),
         );
 
         if (potongTahapan) {
-          // Get mesin for this tahapan
           const mesinResponse = await axios.get(
             `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`,
             {
@@ -135,7 +176,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
               },
             },
           );
-
+          console.log('Fetched Mesin Potong:', mesinResponse.data.data);
           const options: Option[] = mesinResponse.data.data.map(
             (item: MesinTahapanResponse) => ({
               value: item.id_mesin_tahapan,
@@ -155,7 +196,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     fetchMesinPotong();
   }, []);
 
-  // Fetch Nama Kertas options when Jenis Kertas changes
+  // Fetch Nama Kertas options when selectedJenisKertas changes
   useEffect(() => {
     const fetchNamaKertas = async () => {
       if (!selectedJenisKertas) {
@@ -166,31 +207,24 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
       setIsLoadingNamaKertas(true);
       try {
-        const selectedOption = jenisKertasOptions.find(
-          (option) => option.value === selectedJenisKertas,
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_LINK}/master/barang`,
+          {
+            params: {
+              kategori: selectedJenisKertas,
+            },
+          },
         );
 
-        if (selectedOption) {
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_LINK}/master/barang`,
-            {
-              params: {
-                kategori: selectedOption.label,
-              },
-            },
-          );
-          console.log(response.data.data);
+        const fullData: BarangResponse[] = response.data.data;
+        setNamaKertasData(fullData);
 
-          const fullData: BarangResponse[] = response.data.data;
-          setNamaKertasData(fullData); // Store full data
+        const options: Option[] = fullData.map((item: BarangResponse) => ({
+          value: item.id,
+          label: item.nama_barang,
+        }));
 
-          const options: Option[] = fullData.map((item: BarangResponse) => ({
-            value: item.id,
-            label: item.nama_barang,
-          }));
-
-          setNamaKertasOptions(options);
-        }
+        setNamaKertasOptions(options);
       } catch (error) {
         console.error('Error fetching nama kertas:', error);
       } finally {
@@ -199,16 +233,20 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     };
 
     fetchNamaKertas();
-  }, [selectedJenisKertas, jenisKertasOptions]);
+  }, [selectedJenisKertas]);
 
-  // Restore selectedBarangData when component mounts or namaKertas changes
+  // Restore selectedBarangData when selectedNamaKertas changes
   useEffect(() => {
     if (selectedNamaKertas && namaKertasData.length > 0) {
       const selectedBarang = namaKertasData.find(
-        (item) => item.id === Number(selectedNamaKertas),
+        (item) => item.id === selectedNamaKertas,
       );
       if (selectedBarang) {
         setSelectedBarangData(selectedBarang);
+        // Auto-fill fields when data is restored
+        if (copyType) {
+          autoFillFields(selectedBarang);
+        }
       }
     }
   }, [selectedNamaKertas, namaKertasData]);
@@ -223,7 +261,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     return parseFloat(value.replace(/\./g, '').replace(',', '.')) || 0;
   };
 
-  // Helper function to round percentage (< 0.50 rounds down, >= 0.50 rounds up)
+  // Helper function to round percentage
   const roundPercentage = (value: number): number => {
     return Math.round(value);
   };
@@ -233,10 +271,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     persentase: number,
     pajak: number,
   ): number => {
-    // Convert pajak: 11 -> 1.11, 12 -> 1.12
     const pajakConverted = pajak === 11 ? 1.11 : pajak === 12 ? 1.12 : 1;
     const rawPercentage = persentase / pajakConverted;
-    return roundPercentage(rawPercentage); // Apply rounding here
+    return roundPercentage(rawPercentage);
   };
 
   // Helper function to create synthetic events for auto-fill
@@ -251,6 +288,8 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
   // Calculate Total Harga Kertas automatically
   useEffect(() => {
+    if (isReadOnly) return;
+
     const calculatetotal_harga_kertas = () => {
       if (!selectedBarangData || !formData.total_kertas) {
         return;
@@ -264,31 +303,22 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       }
 
       const { harga, persentase, pajak, kategori } = selectedBarangData;
-
-      // Calculate rounded Percentage%Apki (persentase / pajak_converted)
       const percentageApki = calculatePercentageApki(persentase, pajak);
-
-      // Check if kategori contains "DUPLEX" (case insensitive)
       const isDuplex = kategori.toLowerCase().includes('duplex');
 
-      // Calculate total harga kertas based on formula using rounded percentage
       let total_harga_kertas = 0;
 
       if (isDuplex) {
-        // For DUPLEX: (((harga * ((rounded_percentage + 100)) / 100 / 500) * total_kertas)
         total_harga_kertas =
           ((harga * (percentageApki + 100)) / 100 / 500) * total_kertas;
       } else {
-        // For non-DUPLEX: (((harga * rounded_percentage) / 100 / 500) * total_kertas)
         total_harga_kertas =
           ((harga * percentageApki) / 100 / 500) * total_kertas;
       }
 
-      // Update the total harga kertas field
       const calculatedValue = Math.round(total_harga_kertas);
       const formattedValue = formatNumber(calculatedValue);
 
-      // Only update if the calculated value is different from current value
       const currentValue = parseFormattedNumber(
         formData.total_harga_kertas?.toString() || '0',
       );
@@ -300,7 +330,6 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
         onInputChange(syntheticEvent);
       }
 
-      // Also update the percentage%apki display with rounded value
       const percentageDisplay = isDuplex
         ? percentageApki + 100
         : percentageApki;
@@ -310,7 +339,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       if (Math.abs(percentageDisplay - currentPercentage) > 0.01) {
         const percentageSyntheticEvent = createSyntheticEvent(
           'percentage',
-          percentageDisplay.toString(), // Use rounded value as integer
+          percentageDisplay.toString(),
         );
         onInputChange(percentageSyntheticEvent);
       }
@@ -323,12 +352,14 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     onInputChange,
     formData.total_harga_kertas,
     formData.percentage,
+    isReadOnly,
   ]);
 
   // Calculate Total Kertas automatically
   useEffect(() => {
+    if (isReadOnly) return;
+
     const calculatetotal_kertas = () => {
-      // Parse numeric values from form data
       const qtyKalkulasi = parseFloat(
         formData.qty_kalkulasi?.toString() || '0',
       );
@@ -342,14 +373,11 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       const ponsInsheet = parseFloat(formData.pons_insheet || '0') || 0;
       const finishingInsheet =
         parseFloat(formData.finishing_insheet || '0') || 0;
-      console.log(printInsheet + ponsInsheet + finishingInsheet);
       const totalInsheet = printInsheet + ponsInsheet + finishingInsheet;
 
-      // Apply your desired formula: ((qty_kalkulasi / (ukuran_cetak_isi_1+ukuran_cetak_isi_2)) + totalInsheet) * (ukuran_cetak_bagian_1 + ukuran_cetak_bagian_2)
       const totalUkuranCetakIsi = ukuranCetakIsi1 + ukuranCetakIsi2;
       const totalUkuranCetakBagian = ukuranCetakBagian1 + ukuranCetakBagian2;
 
-      // Only calculate if we have the required values to avoid division by zero
       if (
         qtyKalkulasi > 0 &&
         totalUkuranCetakIsi > 0 &&
@@ -359,11 +387,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           (qtyKalkulasi / totalUkuranCetakIsi + totalInsheet) /
           totalUkuranCetakBagian;
 
-        // Update the total kertas field
-        const calculatedValue = Math.ceil(total_kertas); // Round up to nearest integer
+        const calculatedValue = Math.ceil(total_kertas);
         const formattedValue = formatNumber(calculatedValue);
 
-        // Only update if the calculated value is different from current value
         const currentValue = parseFormattedNumber(
           formData.total_kertas?.toString() || '0',
         );
@@ -389,27 +415,25 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     formData.finishing_insheet,
     onInputChange,
     formData.total_kertas,
+    isReadOnly,
   ]);
 
   // Auto-fill fields when Nama Kertas is selected
   const autoFillFields = (selectedBarang: BarangResponse) => {
-    // Store the selected barang data for calculations
+    if (isReadOnly) return;
+
     setSelectedBarangData(selectedBarang);
 
-    // Auto-fill gramature
     onInputChange(
       createSyntheticEvent('gramature', selectedBarang.gramatur || 0),
     );
 
-    // Auto-fill panjang (panjangMm)
     onInputChange(
       createSyntheticEvent('panjangMm', selectedBarang.panjang || 0),
     );
 
-    // Auto-fill lebar (lebarMm)
     onInputChange(createSyntheticEvent('lebarMm', selectedBarang.lebar || 0));
 
-    // Set raw percentage (original persentase value)
     onInputChange(
       createSyntheticEvent(
         'rawPercentage',
@@ -417,7 +441,6 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       ),
     );
 
-    // Calculate and auto-fill percentage%apki based on formula: persentase / pajak_converted
     const percentageApki = calculatePercentageApki(
       selectedBarang.persentase,
       selectedBarang.pajak,
@@ -426,12 +449,15 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     const finalPercentage = isDuplex ? percentageApki + 100 : percentageApki;
 
     onInputChange(
-      createSyntheticEvent('percentage', finalPercentage.toString()), // Use rounded value as integer
+      createSyntheticEvent('percentage', finalPercentage.toString()),
     );
   };
 
   const handleJenisKertasChange = (value: number | string) => {
-    // Update jenis kertas in main formData
+    if (isReadOnly) return;
+
+    setSelectedJenisKertas(value.toString());
+
     const jenisKertasEvent = {
       target: {
         name: 'jenis_kertas',
@@ -441,6 +467,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     onInputChange(jenisKertasEvent);
 
     // Reset nama kertas when jenis kertas changes
+    setSelectedNamaKertas(0);
     const namaKertasEvent = {
       target: {
         name: 'id_kertas',
@@ -451,7 +478,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
     setSelectedBarangData(null);
 
-    // Clear auto-filled fields when jenis kertas changes
+    // Clear auto-filled fields
     onInputChange(createSyntheticEvent('gramature', ''));
     onInputChange(createSyntheticEvent('panjangMm', ''));
     onInputChange(createSyntheticEvent('lebarMm', ''));
@@ -461,7 +488,10 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   };
 
   const handleNamaKertasChange = (value: number | string) => {
-    // Update nama kertas in main formData
+    if (isReadOnly) return;
+
+    setSelectedNamaKertas(Number(value));
+
     const namaKertasEvent = {
       target: {
         name: 'id_kertas',
@@ -470,7 +500,6 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     } as React.ChangeEvent<HTMLSelectElement>;
     onInputChange(namaKertasEvent);
 
-    // Find the selected barang data and auto-fill fields
     const selectedBarang = namaKertasData.find(
       (item) => item.id === Number(value),
     );
@@ -480,6 +509,10 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   };
 
   const handleMesinPotongChange = (value: number | string) => {
+    if (isReadOnly) return;
+
+    setSelectedMesinPotong(Number(value));
+
     const syntheticEvent = {
       target: {
         name: 'id_mesin_potong',
@@ -488,30 +521,36 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     } as React.ChangeEvent<HTMLSelectElement>;
     onInputChange(syntheticEvent);
   };
-
+  // Add this useEffect for debugging
+  useEffect(() => {
+    console.log('Debug Mesin Potong:', {
+      formDataMesinPotong: formData.id_mesin_potong,
+      selectedMesinPotong,
+      mesinPotongOptions: mesinPotongOptions.map((opt) => ({
+        value: opt.value,
+        label: opt.label,
+      })),
+      optionsLoaded: mesinPotongOptions.length > 0,
+    });
+  }, [formData.id_mesin_potong, selectedMesinPotong, mesinPotongOptions]);
   const handleInputChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isReadOnly) return;
     onInputChange(e);
-  };
-
-  // Helper functions to get selected values for controlled components
-  const getSelectedJenisKertasValue = () => {
-    return formData.jenis_kertas || '';
-  };
-
-  const getSelectedNamaKertasValue = () => {
-    return formData.id_kertas || '';
-  };
-
-  const getSelectedMesinPotongValue = () => {
-    return formData.id_mesin_potong || '';
   };
 
   return (
     <div className="space-y-6">
       {/* Pre-Press & Press Section */}
       <div>
-        <h3 className="text-lg font-semibold text-blue-600 mb-6 flex items-center">
+        <h3
+          className={`text-lg font-semibold mb-6 flex items-center ${getSectionHeaderColor()}`}
+        >
           📋 Pre-Press & Press
+          {isReadOnly && (
+            <span className="ml-2 text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
+              View Only
+            </span>
+          )}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -522,13 +561,14 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             </label>
             <SearchableSelect
               options={jenisKertasOptions}
-              value={getSelectedJenisKertasValue()}
+              value={selectedJenisKertas}
               onChange={handleJenisKertasChange}
               placeholder={
                 isLoadingJenisKertas ? 'Loading...' : '--Pilih Jenis Kertas--'
               }
               className="w-full"
               required
+              disabled={isReadOnly}
             />
           </div>
 
@@ -539,7 +579,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             </label>
             <SearchableSelect
               options={namaKertasOptions}
-              value={getSelectedNamaKertasValue()}
+              value={selectedNamaKertas}
               onChange={handleNamaKertasChange}
               placeholder={
                 !selectedJenisKertas
@@ -550,22 +590,25 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
               }
               className="w-full"
               required
+              disabled={isReadOnly}
             />
           </div>
         </div>
 
-        {/* Mark Jenis Kertas */}
-        <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            className="px-4 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition-colors"
-          >
-            Pilih
-          </button>
-        </div>
+        {/* Mark Jenis Kertas - Hide in readonly mode */}
+        {!isReadOnly && (
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              className="px-4 py-2 bg-gray-800 text-white text-sm rounded hover:bg-gray-700 transition-colors"
+            >
+              Pilih
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Paper Specifications Grid - These will be auto-filled */}
+      {/* Paper Specifications Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {/* Gramature */}
         <div className="flex flex-col justify-between">
@@ -577,7 +620,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             name="gramature"
             value={formData.gramature || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={getInputClassName(
+              'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            )}
             placeholder="0"
             readOnly
           />
@@ -593,7 +638,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             name="panjangMm"
             value={formData.panjangMm || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={getInputClassName(
+              'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            )}
             placeholder="0"
             readOnly
           />
@@ -609,7 +656,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             name="lebarMm"
             value={formData.lebarMm || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={getInputClassName(
+              'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            )}
             placeholder="0"
             readOnly
           />
@@ -628,7 +677,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             name="rawPercentage"
             value={formData.rawPercentage || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={getInputClassName(
+              'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            )}
             placeholder="0"
             readOnly
           />
@@ -649,7 +700,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             name="percentage"
             value={formData.percentage || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={getInputClassName(
+              'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            )}
             placeholder="0"
             readOnly
           />
@@ -658,7 +711,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
       {/* Bottom Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Total Kertas - Now calculated automatically */}
+        {/* Total Kertas */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Total Kertas
@@ -671,13 +724,15 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             name="total_kertas"
             value={formData.total_kertas || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+            className={getInputClassName(
+              'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50',
+            )}
             placeholder="0"
             readOnly
           />
         </div>
 
-        {/* Total Harga Kertas - Now calculated automatically */}
+        {/* Total Harga Kertas */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Total Harga Kertas
@@ -690,7 +745,9 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
             name="total_harga_kertas"
             value={formData.total_harga_kertas || ''}
             onChange={handleInputChangeLocal}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
+            className={getInputClassName(
+              'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50',
+            )}
             placeholder="0"
             readOnly
           />
@@ -703,15 +760,49 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           </label>
           <SearchableSelect
             options={mesinPotongOptions}
-            value={getSelectedMesinPotongValue()}
+            value={selectedMesinPotong}
             onChange={handleMesinPotongChange}
             placeholder={
               isLoadingMesinPotong ? 'Loading...' : 'Pilih Mesin Potong'
             }
             className="w-full"
+            disabled={isReadOnly}
           />
         </div>
       </div>
+
+      {/* Readonly Information Panel */}
+      {isReadOnly && selectedBarangData && (
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="text-sm font-semibold text-blue-800 mb-2">
+            Detail Kertas Terpilih
+          </h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+            <div>
+              <span className="text-blue-600 font-medium">Jenis:</span>
+              <div className="text-blue-800">{selectedBarangData.kategori}</div>
+            </div>
+            <div>
+              <span className="text-blue-600 font-medium">Nama:</span>
+              <div className="text-blue-800">
+                {selectedBarangData.nama_barang}
+              </div>
+            </div>
+            <div>
+              <span className="text-blue-600 font-medium">Gramatur:</span>
+              <div className="text-blue-800">
+                {selectedBarangData.gramatur}g
+              </div>
+            </div>
+            <div>
+              <span className="text-blue-600 font-medium">Ukuran:</span>
+              <div className="text-blue-800">
+                {selectedBarangData.panjang} × {selectedBarangData.lebar} mm
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,24 +1,35 @@
+// Update your HistoryKalkulasi.tsx
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
-import KalkulasiModal from './KalkulasiModal';
 import KalkulasiDetailModal from './KalkulasiDetailModal';
+import CopyOptionsModal from './CopyOptionModal'; // Add this import
+import CopyKalkulasiModal from './CopyKalkulasiModal'; // Add this import
 import {
   KalkulasiItem,
   KalkulasiDetailItem,
-  LainLainItem,
   ApiResponse,
   ApiError,
 } from '../Kalkulasi/types/kalkulasi';
-// Keep all the interfaces at the top
 
-const KalkulasiNormal: React.FC = () => {
+const HistoryKalkulasi: React.FC = () => {
   const [data, setData] = useState<KalkulasiItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [showModal, setShowModal] = useState<boolean>(false);
+
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
   const [selectedDetailData, setSelectedDetailData] =
     useState<KalkulasiDetailItem | null>(null);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
+
+  // Add new states for copy functionality
+  const [showCopyOptionsModal, setShowCopyOptionsModal] =
+    useState<boolean>(false);
+  const [showCopyModal, setShowCopyModal] = useState<boolean>(false);
+  const [copyType, setCopyType] = useState<'repeat' | 'repeat_perubahan'>(
+    'repeat',
+  );
+  const [selectedCopyData, setSelectedCopyData] =
+    useState<KalkulasiDetailItem | null>(null);
+
   useEffect(() => {
     fetchKalkulasiData();
   }, []);
@@ -30,7 +41,7 @@ const KalkulasiNormal: React.FC = () => {
       const res: AxiosResponse<ApiResponse<KalkulasiItem[]>> = await axios.get(
         url,
         {
-          params: { status: 'draft' },
+          params: { status: 'history' },
           withCredentials: true,
         },
       );
@@ -50,18 +61,6 @@ const KalkulasiNormal: React.FC = () => {
     }
   };
 
-  const handleOpenModal = (): void => {
-    setShowModal(true);
-  };
-
-  const handleCloseModal = (): void => {
-    setShowModal(false);
-  };
-
-  const handleModalSuccess = (): void => {
-    fetchKalkulasiData();
-    setShowModal(false);
-  };
   const fetchKalkulasiDetail = async (id: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi/${id}`;
     try {
@@ -82,6 +81,27 @@ const KalkulasiNormal: React.FC = () => {
     }
   };
 
+  // Add new function to fetch data for copy
+  const fetchKalkulasiDetailForCopy = async (id: number): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi/${id}`;
+    try {
+      setDetailLoading(true);
+      const res: AxiosResponse<ApiResponse<KalkulasiDetailItem>> =
+        await axios.get(url);
+      console.log('Fetched kalkulasi detail for copy:', res.data);
+      if (res.data && res.data.data) {
+        setSelectedCopyData(res.data.data);
+        setShowCopyOptionsModal(true);
+      }
+    } catch (error) {
+      console.error('Error fetching kalkulasi detail for copy:', error);
+      const apiError = error as ApiError;
+      alert(`Error: ${apiError.message || 'Failed to fetch detail data'}`);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
   const handleViewDetail = (id: number): void => {
     fetchKalkulasiDetail(id);
   };
@@ -90,6 +110,40 @@ const KalkulasiNormal: React.FC = () => {
     setShowDetailModal(false);
     setSelectedDetailData(null);
   };
+
+  // Add new handlers for copy functionality
+  const handleCopyClick = (id: number): void => {
+    fetchKalkulasiDetailForCopy(id);
+  };
+
+  const handleCloseCopyOptionsModal = (): void => {
+    setShowCopyOptionsModal(false);
+    setSelectedCopyData(null);
+  };
+
+  const handleSelectRepeat = (): void => {
+    setCopyType('repeat');
+    setShowCopyOptionsModal(false);
+    setShowCopyModal(true);
+  };
+
+  const handleSelectRepeatPerubahan = (): void => {
+    setCopyType('repeat_perubahan');
+    setShowCopyOptionsModal(false);
+    setShowCopyModal(true);
+  };
+
+  const handleCloseCopyModal = (): void => {
+    setShowCopyModal(false);
+    setSelectedCopyData(null);
+  };
+
+  const handleCopySuccess = (): void => {
+    setShowCopyModal(false);
+    setSelectedCopyData(null);
+    fetchKalkulasiData(); // Refresh the data
+  };
+
   async function RequestKabag(id: any) {
     if (window.confirm('Apakah Anda yakin ingin Submit Kalkulasi Ini?')) {
       try {
@@ -99,13 +153,13 @@ const KalkulasiNormal: React.FC = () => {
         const res = await axios.put(url, {
           withCredentials: true,
         });
-
         fetchKalkulasiData();
       } catch (error: any) {
         console.log(error);
       }
     }
   }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -124,18 +178,9 @@ const KalkulasiNormal: React.FC = () => {
             className="border border-gray-300 rounded px-2 py-1"
           />
         </div>
-        <div className="">
-          <button
-            onClick={handleOpenModal}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg"
-            type="button"
-          >
-            + KALKULASI
-          </button>
-        </div>
       </div>
 
-      {/* Data Table - Add Actions column */}
+      {/* Data Table - Update Copy button */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full table-auto text-xs">
@@ -143,6 +188,9 @@ const KalkulasiNormal: React.FC = () => {
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   No
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Actions
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Kode
@@ -171,9 +219,6 @@ const KalkulasiNormal: React.FC = () => {
                 <th className="px-4 py-3  text-xs font-medium text-gray-500 uppercase text-center">
                   Status Approval
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -181,6 +226,32 @@ const KalkulasiNormal: React.FC = () => {
                 data.map((item: KalkulasiItem, index: number) => (
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-xs">{index + 1}</td>
+                    <td className="px-4 py-3 text-xs flex flex-col gap-2">
+                      <button
+                        onClick={() => handleViewDetail(item.id)}
+                        disabled={detailLoading}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
+                      >
+                        {detailLoading ? 'Loading...' : 'Detail'}
+                      </button>
+                      {item.status == 'draft' && (
+                        <button
+                          onClick={() => RequestKabag(item.id)}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
+                        >
+                          Submit
+                        </button>
+                      )}
+                      {item.status == 'history' && (
+                        <button
+                          onClick={() => handleCopyClick(item.id)} // Updated to use the new handler
+                          disabled={detailLoading}
+                          className="bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
+                        >
+                          {detailLoading ? 'Loading...' : 'Copy'}
+                        </button>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-xs">
                       {item.kode_kalkulasi || '-'}
                     </td>
@@ -218,23 +289,6 @@ const KalkulasiNormal: React.FC = () => {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs flex flex-col gap-2">
-                      <button
-                        onClick={() => handleViewDetail(item.id)}
-                        disabled={detailLoading}
-                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
-                      >
-                        {detailLoading ? 'Loading...' : 'Detail'}
-                      </button>
-                      {item.status == 'draft' && (
-                        <button
-                          onClick={() => RequestKabag(item.id)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
-                        >
-                          Submit
-                        </button>
-                      )}
-                    </td>
                   </tr>
                 ))
               ) : (
@@ -252,14 +306,6 @@ const KalkulasiNormal: React.FC = () => {
         </div>
       </div>
 
-      {/* Existing Modal */}
-      {showModal && (
-        <KalkulasiModal
-          onClose={handleCloseModal}
-          onSuccess={handleModalSuccess}
-        />
-      )}
-
       {/* Detail Modal */}
       {showDetailModal && selectedDetailData && (
         <KalkulasiDetailModal
@@ -267,8 +313,27 @@ const KalkulasiNormal: React.FC = () => {
           onClose={handleCloseDetailModal}
         />
       )}
+
+      {/* Copy Options Modal */}
+      {showCopyOptionsModal && (
+        <CopyOptionsModal
+          onClose={handleCloseCopyOptionsModal}
+          onSelectRepeat={handleSelectRepeat}
+          onSelectRepeatPerubahan={handleSelectRepeatPerubahan}
+        />
+      )}
+
+      {/* Copy Kalkulasi Modal */}
+      {showCopyModal && selectedCopyData && (
+        <CopyKalkulasiModal
+          originalData={selectedCopyData}
+          copyType={copyType}
+          onClose={handleCloseCopyModal}
+          onSuccess={handleCopySuccess}
+        />
+      )}
     </div>
   );
 };
 
-export default KalkulasiNormal;
+export default HistoryKalkulasi;

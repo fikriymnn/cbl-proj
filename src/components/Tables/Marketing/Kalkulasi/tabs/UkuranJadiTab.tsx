@@ -1,5 +1,5 @@
 import React from 'react';
-import { KalkulasiFormData } from '../KalkulasiModal';
+import { KalkulasiFormData } from '../types/kalkulasi';
 
 interface UkuranJadiTabProps {
   formData: KalkulasiFormData;
@@ -8,12 +8,22 @@ interface UkuranJadiTabProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
 const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
   formData,
   onInputChange,
+  isReadOnly = false,
+  copyType,
 }) => {
+  const getInputClassName = (baseClassName: string) => {
+    return isReadOnly
+      ? `${baseClassName} bg-gray-100 cursor-not-allowed`
+      : baseClassName;
+  };
+
   return (
     <div className="space-y-8">
       {/* Ukuran Jadi Produk Section */}
@@ -58,7 +68,10 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
                 name={field.name}
                 value={field.value}
                 onChange={onInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                readOnly={isReadOnly}
+                className={getInputClassName(
+                  'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+                )}
                 min="0"
               />
             </div>
@@ -130,7 +143,10 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
                     name={field.name}
                     value={field.value}
                     onChange={onInputChange}
-                    className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    disabled={isReadOnly}
+                    className={getInputClassName(
+                      'w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+                    )}
                   >
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
@@ -141,7 +157,10 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
                     name={field.name}
                     value={field.value}
                     onChange={onInputChange}
-                    className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    readOnly={isReadOnly}
+                    className={getInputClassName(
+                      'w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+                    )}
                     min="0"
                   />
                 )}
@@ -195,7 +214,10 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
                     name={field.name}
                     value={field.value}
                     onChange={onInputChange}
-                    className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    disabled={isReadOnly}
+                    className={getInputClassName(
+                      'w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+                    )}
                   >
                     <option value="No">No</option>
                     <option value="Yes">Yes</option>
@@ -206,7 +228,10 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
                     name={field.name}
                     value={field.value}
                     onChange={onInputChange}
-                    className="w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    readOnly={isReadOnly}
+                    className={getInputClassName(
+                      'w-full px-2 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+                    )}
                     min="0"
                   />
                 )}

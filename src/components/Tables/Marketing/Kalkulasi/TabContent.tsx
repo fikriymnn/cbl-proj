@@ -1,12 +1,12 @@
 import React from 'react';
-import { KalkulasiFormData } from './KalkulasiModal';
+import { KalkulasiFormData } from '../Kalkulasi/types/kalkulasi';
 import UkuranJadiTab from './tabs/UkuranJadiTab';
 import WarnaTab from './tabs/WarnaTab';
 import PrepressTab from './tabs/PrepressTab';
 import PressTab from './tabs/PressTab';
 import PostPressTab from './tabs/PostPressTab';
 import PostPress2Tab from './tabs/PostPress2Tab';
-import LainLainTab from './tabs/LainLainTab'; // Add this import
+import LainLainTab from './tabs/LainLainTab';
 
 interface TabContentProps {
   activeTab: string;
@@ -16,38 +16,90 @@ interface TabContentProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
 const TabContent: React.FC<TabContentProps> = ({
   activeTab,
   formData,
   onInputChange,
+  isReadOnly = false,
+  copyType,
 }) => {
+  console.log('TabContent props:', {
+    activeTab,
+    copyType,
+    isReadOnly,
+    hasFormData: !!formData,
+    jenisKertas: formData?.jenis_kertas,
+    idKertas: formData?.id_kertas,
+    idMesinPotong: formData?.id_mesin_potong,
+  });
   const renderTabContent = () => {
     switch (activeTab) {
       case 'ukuran-jadi':
         return (
-          <UkuranJadiTab formData={formData} onInputChange={onInputChange} />
+          <UkuranJadiTab
+            formData={formData}
+            onInputChange={onInputChange}
+            isReadOnly={isReadOnly}
+            copyType={copyType}
+          />
         );
       case 'warna':
-        return <WarnaTab formData={formData} onInputChange={onInputChange} />;
+        return (
+          <WarnaTab
+            formData={formData}
+            onInputChange={onInputChange}
+            isReadOnly={isReadOnly}
+            copyType={copyType}
+          />
+        );
       case 'prepress':
         return (
-          <PrepressTab formData={formData} onInputChange={onInputChange} />
+          <PrepressTab
+            formData={formData}
+            onInputChange={onInputChange}
+            isReadOnly={isReadOnly}
+            copyType={copyType}
+          />
         );
       case 'press':
-        return <PressTab formData={formData} onInputChange={onInputChange} />;
+        return (
+          <PressTab
+            formData={formData}
+            onInputChange={onInputChange}
+            isReadOnly={isReadOnly}
+            copyType={copyType}
+          />
+        );
       case 'post-press':
         return (
-          <PostPressTab formData={formData} onInputChange={onInputChange} />
+          <PostPressTab
+            formData={formData}
+            onInputChange={onInputChange}
+            isReadOnly={isReadOnly}
+            copyType={copyType}
+          />
         );
       case 'postpress':
         return (
-          <PostPress2Tab formData={formData} onInputChange={onInputChange} />
+          <PostPress2Tab
+            formData={formData}
+            onInputChange={onInputChange}
+            isReadOnly={isReadOnly}
+            copyType={copyType}
+          />
         );
-      case 'lain-lain': // Add this case
+      case 'lain-lain':
         return (
-          <LainLainTab formData={formData} onInputChange={onInputChange} />
+          <LainLainTab
+            formData={formData}
+            onInputChange={onInputChange}
+            isReadOnly={isReadOnly}
+            copyType={copyType}
+          />
         );
       default:
         return (
