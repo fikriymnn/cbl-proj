@@ -354,7 +354,8 @@ function Stockmaster() {
           id_mesin: addItem.id_mesin,
           part_number: addItem.part_number,
           lokasi: addItem.lokasi,
-          limit_stok: addItem.limit_stok,
+          limit_stok:
+            addItem.type_part === 'CONSUMABLE' ? addItem.limit_stok : 0, // Send 0 for non-consumable
           id_grade: addItem.id_grade,
           type_part: addItem.type_part,
           stok: addItem.stok,
@@ -392,7 +393,6 @@ function Stockmaster() {
       console.log(error.response);
     }
   }
-
   //change value Data
   const handleChangeData = (e: any) => {
     const { name, value } = e.target;
@@ -469,206 +469,229 @@ function Stockmaster() {
                         <h3 className="text-lg font-semibold text-gray-800 mb-6 border-b pb-3">
                           Add New Sparepart Item
                         </h3>
-                        <div className="grid md:grid-cols-3 gap-6">
+                        <div className="space-y-6">
+                          {/* Part Type - Now at the top as category selector */}
                           <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">
-                              Item Code *
-                            </label>
-                            <input
-                              name="kode"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter item code"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Part Number *
-                            </label>
-                            <input
-                              name="part_number"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter part number"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Item Name *
-                            </label>
-                            <input
-                              name="nama_sparepart"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter item name"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Machine *
-                            </label>
-                            <select
-                              name="id_mesin"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value="">Select Machine</option>
-                              {mesin?.map((data: any, index: number) => (
-                                <option key={index} value={data.id}>
-                                  {data.nama_mesin}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Location
-                            </label>
-                            <input
-                              name="lokasi"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter location"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Stock Quantity *
-                            </label>
-                            <input
-                              name="stok"
-                              type="number"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter stock quantity"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Original Life (Hours)
-                            </label>
-                            <input
-                              name="umur_sparepart"
-                              type="number"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter original life in hours"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Grade
-                            </label>
-                            <select
-                              name="id_grade"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                              <option value="">Select Grade</option>
-                              {masterGrade?.map((data: any, index: number) => (
-                                <option key={index} value={data.id}>
-                                  {data.grade} - {data.percent}%
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Part Type *
+                              Part Type * (Category)
                             </label>
                             <select
                               name="type_part"
                               onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-blue-50"
                             >
                               <option value="">Select Part Type</option>
                               <option value="CONSUMABLE">Consumable</option>
                               <option value="NON CONSUMABLE">
                                 Non Consumable
                               </option>
+                              <option value="SERVICE">Service</option>
                             </select>
                           </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Buffer Stock
-                            </label>
-                            <input
-                              name="limit_stok"
-                              type="number"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Enter buffer stock"
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Upload Image
-                            </label>
 
-                            {/* File Input */}
-                            <div className="mb-4">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileSelect}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              />
-                              {uploadError && (
-                                <p className="text-red-500 text-sm mt-1">
-                                  {uploadError}
-                                </p>
-                              )}
-                            </div>
+                          {/* Only show the rest of the form if part type is selected */}
+                          {addItem.type_part && (
+                            <div className="grid md:grid-cols-3 gap-6">
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Item Code *
+                                </label>
+                                <input
+                                  name="kode"
+                                  onChange={(e) => handleChangeData(e)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter item code"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Part Number *
+                                </label>
+                                <input
+                                  name="part_number"
+                                  onChange={(e) => handleChangeData(e)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter part number"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Item Name *
+                                </label>
+                                <input
+                                  name="nama_sparepart"
+                                  onChange={(e) => handleChangeData(e)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter item name"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Machine *
+                                </label>
+                                <select
+                                  name="id_mesin"
+                                  onChange={(e) => handleChangeData(e)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                  <option value="">Select Machine</option>
+                                  {mesin?.map((data: any, index: number) => (
+                                    <option key={index} value={data.id}>
+                                      {data.nama_mesin}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Location
+                                </label>
+                                <input
+                                  name="lokasi"
+                                  onChange={(e) => handleChangeData(e)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter location"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Stock Quantity *
+                                </label>
+                                <input
+                                  name="stok"
+                                  type="number"
+                                  onChange={(e) => handleChangeData(e)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Enter stock quantity"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Original Life (
+                                  {addItem.type_part === 'SERVICE'
+                                    ? 'Days'
+                                    : 'Hours'}
+                                  )
+                                </label>
+                                <input
+                                  name="umur_sparepart"
+                                  type="number"
+                                  onChange={(e) => handleChangeData(e)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder={`Enter original life in ${
+                                    addItem.type_part === 'SERVICE'
+                                      ? 'days'
+                                      : 'hours'
+                                  }`}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                  Grade
+                                </label>
+                                <select
+                                  name="id_grade"
+                                  onChange={(e) => handleChangeData(e)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                  <option value="">Select Grade</option>
+                                  {masterGrade?.map(
+                                    (data: any, index: number) => (
+                                      <option key={index} value={data.id}>
+                                        {data.grade} - {data.percent}%
+                                      </option>
+                                    ),
+                                  )}
+                                </select>
+                              </div>
 
-                            {/* File Preview Section */}
-                            <div className="space-y-4">
-                              {/* New File Preview */}
-                              {filePreview && (
-                                <div className="border border-gray-200 rounded-lg p-4">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium text-gray-700">
-                                      New Image Preview:
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={clearFileSelection}
-                                      className="text-red-500 hover:text-red-700 text-sm"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                  <img
-                                    src={filePreview}
-                                    alt="Preview"
-                                    className="max-w-full h-48 object-contain border border-gray-200 rounded"
+                              {/* Buffer Stock - Only show for CONSUMABLE parts */}
+                              {addItem.type_part === 'CONSUMABLE' && (
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    Buffer Stock *
+                                  </label>
+                                  <input
+                                    name="limit_stok"
+                                    type="number"
+                                    onChange={(e) => handleChangeData(e)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Enter buffer stock"
                                   />
-                                  {selectedFile && (
-                                    <p className="text-sm text-gray-500 mt-2">
-                                      {selectedFile.name} (
-                                      {(
-                                        selectedFile.size /
-                                        1024 /
-                                        1024
-                                      ).toFixed(2)}{' '}
-                                      MB)
+                                </div>
+                              )}
+
+                              <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Upload Image
+                                </label>
+
+                                {/* File Input */}
+                                <div className="mb-4">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileSelect}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                  {uploadError && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                      {uploadError}
                                     </p>
                                   )}
                                 </div>
-                              )}
-                            </div>
 
-                            {/* Upload Progress */}
-                            {uploading && (
-                              <div className="mt-2">
-                                <div className="flex items-center">
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                                  <span className="text-sm text-gray-600">
-                                    Uploading...
-                                  </span>
+                                {/* File Preview Section */}
+                                <div className="space-y-4">
+                                  {/* New File Preview */}
+                                  {filePreview && (
+                                    <div className="border border-gray-200 rounded-lg p-4">
+                                      <div className="flex justify-between items-center mb-2">
+                                        <span className="text-sm font-medium text-gray-700">
+                                          New Image Preview:
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={clearFileSelection}
+                                          className="text-red-500 hover:text-red-700 text-sm"
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
+                                      <img
+                                        src={filePreview}
+                                        alt="Preview"
+                                        className="max-w-full h-48 object-contain border border-gray-200 rounded"
+                                      />
+                                      {selectedFile && (
+                                        <p className="text-sm text-gray-500 mt-2">
+                                          {selectedFile.name} (
+                                          {(
+                                            selectedFile.size /
+                                            1024 /
+                                            1024
+                                          ).toFixed(2)}{' '}
+                                          MB)
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
+
+                                {/* Upload Progress */}
+                                {uploading && (
+                                  <div className="mt-2">
+                                    <div className="flex items-center">
+                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                                      <span className="text-sm text-gray-600">
+                                        Uploading...
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
                         <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
                           <button
@@ -681,9 +704,11 @@ function Stockmaster() {
                             onClick={() => {
                               addStok();
                             }}
-                            disabled={isAddLoading || uploading}
+                            disabled={
+                              isAddLoading || uploading || !addItem.type_part
+                            }
                             className={`px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${
-                              isAddLoading || uploading
+                              isAddLoading || uploading || !addItem.type_part
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg'
                             } text-white`}

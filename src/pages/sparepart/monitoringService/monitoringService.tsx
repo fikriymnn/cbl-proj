@@ -448,6 +448,7 @@ function AddStockLifetimeModal({
     try {
       const res = await axios.get(url, {
         params: {
+          type_part: 'SERVICE',
           id_mesin: id_mesin,
         },
         withCredentials: true,
@@ -590,7 +591,7 @@ function AddStockLifetimeModal({
               />
             </div>
 
-            {/* Umur */}
+            {/* Umur
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Umur (Hari) <span className="text-red-500">*</span>
@@ -603,7 +604,7 @@ function AddStockLifetimeModal({
                 className="w-full h-10 px-3 rounded border border-gray-300"
                 disabled={isSubmitting}
               />
-            </div>
+            </div> */}
 
             {/* Posisi */}
             <div>
