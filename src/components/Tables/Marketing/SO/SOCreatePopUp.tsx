@@ -25,7 +25,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   const [formData, setFormData] = useState<SOFormData>({
     tgl_input_po: new Date().toISOString().split('T')[0],
     no_so: '',
-    id_kalkulasi: null, // Changed from id_io to id_kalkulasi
+    id_kalkulasi: null,
     id_so_cancel: null,
     so_cancel: '',
     no_booking: '',
@@ -45,7 +45,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     tgl_pengiriman: '',
     alamat_pengiriman: '',
     ada_standar_warna: 'Tidak',
-    is_io_selesai: true,
+    is_io_selesai: false,
   });
 
   interface KalkulasiOption {
@@ -75,6 +75,13 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     { value: 'ACC', label: 'ACC' },
   ];
 
+  // Status JO options
+  const statusJOOptions = [
+    { value: 'baru', label: 'Baru' },
+    { value: 'repeat', label: 'Repeat' },
+    { value: 'repeat perubahan', label: 'Repeat Perubahan' },
+  ];
+
   // Fetch Kalkulasi data from API using axios
   const fetchKalkulasiData = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
@@ -88,9 +95,43 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       });
       console.log('Fetched Kalkulasi data:', response.data);
       if (response.data.succes && response.data.data) {
-        const options = response.data.data.map((item: KalkulasiData) => ({
-          value: item.id,
-          // Enhanced label with customer name and product name
+        // Group by id_io and filter based on status_kalkulasi
+        const groupedByIdIO = response.data.data.reduce(
+          (acc: Record<string, KalkulasiData[]>, item: KalkulasiData) => {
+            const idIO = item.id_io?.toString() || '';
+            if (!acc[idIO]) {
+              acc[idIO] = [];
+            }
+            acc[idIO].push(item);
+            return acc;
+          },
+          {} as Record<string, KalkulasiData[]>,
+        );
+
+        // Filter: if multiple items with same id_io, show only 'baru', otherwise show available
+        const filteredData: KalkulasiData[] = [];
+        Object.keys(groupedByIdIO).forEach((idIO) => {
+          const items = groupedByIdIO[idIO];
+          if (items.length > 1) {
+            // Multiple items with same id_io
+            const baruItem = items.find(
+              (item: KalkulasiData) =>
+                item.status_kalkulasi?.toLowerCase() === 'baru',
+            );
+            if (baruItem) {
+              filteredData.push(baruItem);
+            } else {
+              // No 'baru' exists, use the first available
+              filteredData.push(items[0]);
+            }
+          } else {
+            // Only one item with this id_io
+            filteredData.push(items[0]);
+          }
+        });
+
+        const options = filteredData.map((item: KalkulasiData) => ({
+          value: item.id.toString(),
           label: `${item.no_io} - ${item.nama_customer}, ${item.nama_produk}`,
           data: item,
         }));
@@ -165,8 +206,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               status_jo: kalkulasiData.status_kalkulasi,
               customer: kalkulasiData.nama_customer || '',
               produk: kalkulasiData.nama_produk || '',
-              profit: profitValue, // Auto fill profit
-              alamat_pengiriman: defaultAlamat, // Auto fill with first gudang
+              profit: profitValue,
+              alamat_pengiriman: defaultAlamat,
             }));
           }
         } else {
@@ -227,6 +268,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
+    resetForm();
   };
 
   const resetForm = () => {
@@ -253,7 +295,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       tgl_pengiriman: '',
       alamat_pengiriman: '',
       ada_standar_warna: 'Tidak',
-      is_io_selesai: true,
+      is_io_selesai: false,
     });
     setSelectedKalkulasiData(null);
     setGudangOptions([]);
@@ -268,7 +310,10 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold">Create Sales Order</h2>
           <button
-            onClick={onClose}
+            onClick={() => {
+              resetForm();
+              onClose();
+            }}
             className="text-gray-500 hover:text-gray-700 text-2xl"
             type="button"
           >
@@ -345,12 +390,11 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               <label className="block text-sm font-medium mb-1">
                 Status Job Order
               </label>
-              <input
-                type="text"
+              <SearchableSelect
+                placeholder="Pilih Status JO"
                 value={formData.status_jo}
-                className="w-full p-2 border border-gray-300 rounded bg-gray-100 focus:outline-none"
-                readOnly
-                placeholder="Auto filled from Kalkulasi"
+                onChange={(value) => handleInputChange('status_jo', value)}
+                options={statusJOOptions}
               />
             </div>
 
@@ -549,7 +593,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
             </div>
 
             {/* Row 8 */}
-            <div>
+            <div className="flex justify-between">
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Ada Standar Warna?
@@ -582,6 +626,19 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                     Tidak
                   </label>
                 </div>
+              </div>
+              <div>
+                <label className="flex items-center space-x-2 pt-7">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_io_selesai}
+                    onChange={(e) =>
+                      handleInputChange('is_io_selesai', e.target.checked)
+                    }
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium">IO Selesai</span>
+                </label>
               </div>
             </div>
           </div>

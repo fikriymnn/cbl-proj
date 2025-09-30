@@ -13,7 +13,7 @@ interface IOData {
   tgl_pembuatan_io: string;
   is_revisi: boolean;
   revisi_no_io: string;
-  active: boolean; // Add this new field
+  is_active: boolean; // Add this new field
 }
 
 interface OKPData {
@@ -45,6 +45,7 @@ const IOMarketing: React.FC = () => {
   const [sortKey, setSortKey] = useState<SortField>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [generatedIONumber, setGeneratedIONumber] = useState<string>('');
+  const [keterangan, setKeterangan] = useState<string>('');
 
   // Add sorting functions
   const handleSort = (field: SortField) => {
@@ -249,6 +250,7 @@ const IOMarketing: React.FC = () => {
           base_no_io: ioNumber,
           is_revisi: null,
           revisi_no_io: '',
+          keterangan: keterangan,
         },
         {
           withCredentials: true,
@@ -499,20 +501,11 @@ const IOMarketing: React.FC = () => {
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
-                    onClick={() => handleSort('is_revisi')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    REVISI
-                    {getSortIcon('is_revisi')}
-                  </button>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('active')}
+                    onClick={() => handleSort('is_active')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
                     ACTIVE
-                    {getSortIcon('active')}
+                    {getSortIcon('is_active')}
                   </button>
                 </th>
               </tr>
@@ -606,26 +599,16 @@ const IOMarketing: React.FC = () => {
                         {truncateText(item.status, 8)}
                       </span>
                     </td>
+
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
                         className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                          item.is_revisi
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {item.is_revisi ? 'YA' : 'TIDAK'}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                          item.active
+                          item.is_active
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        {item.active ? 'YA' : 'TIDAK'}
+                        {item.is_active ? 'YA' : 'TIDAK'}
                       </span>
                     </td>
                   </tr>
@@ -715,7 +698,16 @@ const IOMarketing: React.FC = () => {
                   />
                 </div>
               )}
-
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Keterangan <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  onChange={(e) => setKeterangan(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
+                ></input>
+              </div>
               {/* Submit Buttons */}
               <div className="flex justify-end gap-2 pt-4">
                 <button

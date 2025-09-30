@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import Layout2 from '../../layout/Layout2';
 import Gambar from '../../images/BACKGROUND.png';
-import Checkbox11 from '../../components/Checkboxes/Checkbox11';
 import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';
@@ -29,7 +28,7 @@ const Login: React.FC = () => {
           withCredentials: true,
         },
       );
-      console.log(response.data)
+      console.log(response.data);
       setIsLoading(false);
       // router.push("/");
       // push("/");
@@ -43,11 +42,9 @@ const Login: React.FC = () => {
         navigate('/ppic/jadwalProduksi');
       } else if (response.data.bagian == 'produksi') {
         navigate('/produksi/breakdown');
-      }
-      else {
+      } else {
         navigate('/dashboard');
       }
-
     } catch (error: any) {
       alert(error.response.data.msg);
       setIsLoading(false);

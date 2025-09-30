@@ -198,6 +198,7 @@ export interface IOData {
 }
 
 export interface SOData {
+  id_kalkulasi: any;
   id: number;
   no_so: string;
   no_io: string;
