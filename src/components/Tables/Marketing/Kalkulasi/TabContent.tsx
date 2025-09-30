@@ -27,15 +27,6 @@ const TabContent: React.FC<TabContentProps> = ({
   isReadOnly = false,
   copyType,
 }) => {
-  console.log('TabContent props:', {
-    activeTab,
-    copyType,
-    isReadOnly,
-    hasFormData: !!formData,
-    jenisKertas: formData?.jenis_kertas,
-    idKertas: formData?.id_kertas,
-    idMesinPotong: formData?.id_mesin_potong,
-  });
   const renderTabContent = () => {
     switch (activeTab) {
       case 'ukuran-jadi':

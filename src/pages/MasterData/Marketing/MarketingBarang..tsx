@@ -694,6 +694,15 @@ function MarketingBarang(): JSX.Element {
                       <option value="LEM">LEM</option>
                       <option value="CORRUGATED">CORRUGATED</option>
                       <option value="CASSING">CASSING</option>
+                      <option value="Art Paper">Art Paper</option>
+                      <option value="Chromo">Chromo</option>
+                      <option value="HVS">HVS</option>
+                      <option value="Sticker Chromo">Sticker Chromo</option>
+                      <option value="Sticker HVS">Sticker HVS</option>
+                      <option value="NCR_65">NCR_65</option>
+                      <option value="NCR_79">NCR_79</option>
+                      <option value="BC">BC</option>
+                      <option value="DOORSLAG">DOORSLAG</option>
                     </select>
                   </div>
                   {/*Sub Kategori */}

@@ -218,7 +218,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
 
         const fullData: BarangResponse[] = response.data.data;
         setNamaKertasData(fullData);
-
+        console.log('option', fullData);
         const options: Option[] = fullData.map((item: BarangResponse) => ({
           value: item.id,
           label: item.nama_barang,
@@ -289,132 +289,534 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
   // Calculate Total Harga Kertas automatically
   useEffect(() => {
     if (isReadOnly) return;
+    if (!selectedBarangData || !formData.total_kertas) {
+      return;
+    }
 
-    const calculatetotal_harga_kertas = () => {
-      if (!selectedBarangData || !formData.total_kertas) {
-        return;
-      }
+    const total_kertas = parseFormattedNumber(formData.total_kertas.toString());
+    if (total_kertas <= 0) {
+      return;
+    }
 
-      const total_kertas = parseFormattedNumber(
-        formData.total_kertas.toString(),
+    const { harga, persentase, pajak, kategori, gramatur, panjang, lebar } =
+      selectedBarangData;
+    const percentageApki = calculatePercentageApki(persentase, pajak);
+
+    // Calculate harga after tax deduction
+    const pajakPercentage = pajak / 100;
+    const hargaAfterTax = harga - harga * pajakPercentage;
+
+    // Normalize kategori untuk comparison (trim whitespace)
+    const normalizedKategori = kategori.trim();
+
+    let total_harga_kertas = 0;
+    let isDuplex = false;
+    let isDuplexKhusus = false;
+
+    // Check exact match untuk kategori dengan formula sederhana (harga × total_kertas)
+    const simpleFormulaCategories = [
+      'Sticker Chromo',
+      'Sticker HVS',
+      'NCR_65',
+      'NCR_79',
+      'BC',
+      'DOORSLAG',
+    ];
+
+    // Check exact match untuk kategori dengan formula baru (Art Paper, Ivory, Chromo, HVS)
+    const newFormulaCategories = ['Art Paper', 'Ivory ', 'Chromo', 'HVS'];
+
+    if (simpleFormulaCategories.includes(normalizedKategori)) {
+      // Formula sederhana: harga × total_kertas
+      total_harga_kertas = hargaAfterTax * total_kertas;
+
+      console.log('=== SIMPLE FORMULA CALCULATION ===');
+      console.log('Kategori:', normalizedKategori);
+      console.log('Formula: harga_after_tax × total_kertas');
+      console.log('---');
+      console.log('Input Values:');
+      console.log('  - Harga Original:', harga.toLocaleString('id-ID'));
+      console.log('  - Pajak:', `${pajak}%`);
+      console.log('  - Total Kertas:', total_kertas.toLocaleString('id-ID'));
+      console.log('---');
+      console.log('Calculation Steps:');
+      console.log(
+        `  Step 1: Calculate tax amount = ${harga.toLocaleString(
+          'id-ID',
+        )} × ${pajakPercentage}`,
       );
-      if (total_kertas <= 0) {
-        return;
-      }
-
-      const { harga, persentase, pajak, kategori } = selectedBarangData;
-      const percentageApki = calculatePercentageApki(persentase, pajak);
-      const isDuplex = kategori.toLowerCase().includes('duplex');
-
-      let total_harga_kertas = 0;
-
-      if (isDuplex) {
-        total_harga_kertas =
-          ((harga * (percentageApki + 100)) / 100 / 500) * total_kertas;
-      } else {
-        total_harga_kertas =
-          ((harga * percentageApki) / 100 / 500) * total_kertas;
-      }
-
-      const calculatedValue = Math.round(total_harga_kertas);
-      const formattedValue = formatNumber(calculatedValue);
-
-      const currentValue = parseFormattedNumber(
-        formData.total_harga_kertas?.toString() || '0',
+      console.log(
+        `          Tax Amount = ${(harga * pajakPercentage).toLocaleString(
+          'id-ID',
+        )}`,
       );
-      if (calculatedValue !== currentValue) {
-        const syntheticEvent = createSyntheticEvent(
-          'total_harga_kertas',
-          formattedValue,
-        );
-        onInputChange(syntheticEvent);
-      }
-
-      const percentageDisplay = isDuplex
-        ? percentageApki + 100
-        : percentageApki;
-      const currentPercentage = parseFloat(
-        formData.percentage?.toString() || '0',
+      console.log(
+        `  Step 2: Calculate harga after tax = ${harga.toLocaleString(
+          'id-ID',
+        )} - ${(harga * pajakPercentage).toLocaleString('id-ID')}`,
       );
-      if (Math.abs(percentageDisplay - currentPercentage) > 0.01) {
-        const percentageSyntheticEvent = createSyntheticEvent(
-          'percentage',
-          percentageDisplay.toString(),
-        );
-        onInputChange(percentageSyntheticEvent);
-      }
-    };
+      console.log(
+        `          Harga After Tax = ${hargaAfterTax.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 3: Calculate total = ${hargaAfterTax.toLocaleString(
+          'id-ID',
+        )} × ${total_kertas.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `          Total Harga Kertas = ${total_harga_kertas.toLocaleString(
+          'id-ID',
+        )}`,
+      );
+      console.log('---');
+      console.log(
+        'Final Result:',
+        Math.round(total_harga_kertas).toLocaleString('id-ID'),
+      );
+      console.log('===================================\n');
+    } else if (newFormulaCategories.includes(normalizedKategori)) {
+      // Formula baru: (harga × gramatur × (panjang_cm × lebar_cm)) / 20000 / 500 × total_kertas
+      const panjangCm = panjang / 10;
+      const lebarCm = lebar / 10;
+      const ukuranPlanoCm = panjangCm * lebarCm;
 
-    calculatetotal_harga_kertas();
+      total_harga_kertas =
+        ((hargaAfterTax * gramatur * ukuranPlanoCm) / 20000 / 500) *
+        total_kertas;
+
+      console.log(
+        '=== NEW FORMULA CALCULATION (Art Paper/Ivory/Chromo/HVS) ===',
+      );
+      console.log('Kategori:', normalizedKategori);
+      console.log(
+        'Formula: ((harga_after_tax × gramatur × ukuran_plano_cm²) / 20000 / 500) × total_kertas',
+      );
+      console.log('---');
+      console.log('Input Values:');
+      console.log('  - Harga Original:', harga.toLocaleString('id-ID'));
+      console.log('  - Pajak:', `${pajak}%`);
+      console.log('  - Gramatur:', gramatur, 'g');
+      console.log('  - Panjang:', panjang, 'mm =', panjangCm, 'cm');
+      console.log('  - Lebar:', lebar, 'mm =', lebarCm, 'cm');
+      console.log('  - Total Kertas:', total_kertas.toLocaleString('id-ID'));
+      console.log('---');
+      console.log('Calculation Steps:');
+      console.log(
+        `  Step 1: Calculate harga after tax = ${harga.toLocaleString(
+          'id-ID',
+        )} - (${harga.toLocaleString('id-ID')} × ${pajakPercentage})`,
+      );
+      console.log(
+        `          Harga After Tax = ${hargaAfterTax.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 2: Calculate ukuran plano = ${panjangCm} cm × ${lebarCm} cm`,
+      );
+      console.log(
+        `          Ukuran Plano = ${ukuranPlanoCm.toLocaleString('id-ID')} cm²`,
+      );
+      console.log(
+        `  Step 3: Multiply harga × gramatur = ${hargaAfterTax.toLocaleString(
+          'id-ID',
+        )} × ${gramatur}`,
+      );
+      console.log(
+        `          Result = ${(hargaAfterTax * gramatur).toLocaleString(
+          'id-ID',
+        )}`,
+      );
+      console.log(
+        `  Step 4: Multiply by ukuran plano = ${(
+          hargaAfterTax * gramatur
+        ).toLocaleString('id-ID')} × ${ukuranPlanoCm.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `          Result = ${(
+          hargaAfterTax *
+          gramatur *
+          ukuranPlanoCm
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 5: Divide by 20000 = ${(
+          hargaAfterTax *
+          gramatur *
+          ukuranPlanoCm
+        ).toLocaleString('id-ID')} / 20000`,
+      );
+      console.log(
+        `          Result = ${(
+          (hargaAfterTax * gramatur * ukuranPlanoCm) /
+          20000
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 6: Divide by 500 = ${(
+          (hargaAfterTax * gramatur * ukuranPlanoCm) /
+          20000
+        ).toLocaleString('id-ID')} / 500`,
+      );
+      console.log(
+        `          Result = ${(
+          (hargaAfterTax * gramatur * ukuranPlanoCm) /
+          20000 /
+          500
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 7: Multiply by total kertas = ${(
+          (hargaAfterTax * gramatur * ukuranPlanoCm) /
+          20000 /
+          500
+        ).toLocaleString('id-ID')} × ${total_kertas.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `          Total Harga Kertas = ${total_harga_kertas.toLocaleString(
+          'id-ID',
+        )}`,
+      );
+      console.log('---');
+      console.log(
+        'Final Result:',
+        Math.round(total_harga_kertas).toLocaleString('id-ID'),
+      );
+      console.log(
+        '=================================================================\n',
+      );
+    } else if (normalizedKategori === 'Duplex Khusus') {
+      // Formula Duplex Khusus: (((ukuran_jadi_area / plano_area) × harga × (percentageApki + 100)) / 100 / 500) × total_kertas
+      isDuplexKhusus = true;
+      const ukuranJadiPanjangCm =
+        (parseFloat(formData.ukuran_jadi_panjang) || 0) / 10;
+      const ukuranJadiLebarCm =
+        (parseFloat(formData.ukuran_jadi_lebar) || 0) / 10;
+      const ukuranJadiArea = ukuranJadiPanjangCm * ukuranJadiLebarCm;
+      const planoArea = 79 * 109; // 79cm x 109cm
+
+      total_harga_kertas =
+        (((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          100 /
+          500) *
+        total_kertas;
+
+      console.log('=== DUPLEX KHUSUS FORMULA CALCULATION ===');
+      console.log('Kategori:', normalizedKategori);
+      console.log(
+        'Formula: (((ukuran_jadi_area / plano_area) × harga × (percentageApki + 100)) / 100 / 500) × total_kertas',
+      );
+      console.log('---');
+      console.log('Input Values:');
+      console.log('  - Harga Original:', harga.toLocaleString('id-ID'));
+      console.log('  - Pajak:', `${pajak}%`);
+      console.log('  - Persentase Original:', persentase);
+      console.log('  - PercentageApki:', percentageApki);
+      console.log(
+        '  - Ukuran Jadi Panjang:',
+        formData.ukuran_jadi_panjang,
+        'mm =',
+        ukuranJadiPanjangCm,
+        'cm',
+      );
+      console.log(
+        '  - Ukuran Jadi Lebar:',
+        formData.ukuran_jadi_lebar,
+        'mm =',
+        ukuranJadiLebarCm,
+        'cm',
+      );
+      console.log('  - Plano Area: 79 cm × 109 cm =', planoArea, 'cm²');
+      console.log('  - Total Kertas:', total_kertas.toLocaleString('id-ID'));
+      console.log('---');
+      console.log('Calculation Steps:');
+      console.log(
+        `  Step 1: Calculate ukuran jadi area = ${ukuranJadiPanjangCm} cm × ${ukuranJadiLebarCm} cm`,
+      );
+      console.log(
+        `          Ukuran Jadi Area = ${ukuranJadiArea.toLocaleString(
+          'id-ID',
+        )} cm²`,
+      );
+      console.log(
+        `  Step 2: Divide by plano area = ${ukuranJadiArea.toLocaleString(
+          'id-ID',
+        )} / ${planoArea.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `          Result = ${(ukuranJadiArea / planoArea).toFixed(6)}`,
+      );
+      console.log(
+        `  Step 3: Multiply by harga = ${(ukuranJadiArea / planoArea).toFixed(
+          6,
+        )} × ${harga.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `          Result = ${(
+          (ukuranJadiArea / planoArea) *
+          harga
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 4: Multiply by (percentageApki + 100) = ${(
+          (ukuranJadiArea / planoArea) *
+          harga
+        ).toLocaleString('id-ID')} × ${percentageApki + 100}`,
+      );
+      console.log(
+        `          Result = ${(
+          (ukuranJadiArea / planoArea) *
+          harga *
+          (percentageApki + 100)
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 5: Divide by 100 = ${(
+          (ukuranJadiArea / planoArea) *
+          harga *
+          (percentageApki + 100)
+        ).toLocaleString('id-ID')} / 100`,
+      );
+      console.log(
+        `          Result = ${(
+          ((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          100
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 6: Divide by 500 = ${(
+          ((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          100
+        ).toLocaleString('id-ID')} / 500`,
+      );
+      console.log(
+        `          Result = ${(
+          ((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          100 /
+          500
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 7: Multiply by total kertas = ${(
+          ((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          100 /
+          500
+        ).toLocaleString('id-ID')} × ${total_kertas.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `          Total Harga Kertas = ${total_harga_kertas.toLocaleString(
+          'id-ID',
+        )}`,
+      );
+      console.log('---');
+      console.log(
+        'Final Result:',
+        Math.round(total_harga_kertas).toLocaleString('id-ID'),
+      );
+      console.log('==========================================\n');
+    } else if (normalizedKategori === 'Duplex') {
+      // Formula Duplex: ((harga_after_tax × (percentageApki + 100)) / 100 / 500) × total_kertas
+      isDuplex = true;
+      total_harga_kertas =
+        ((harga * (percentageApki + 100)) / 100 / 500) * total_kertas;
+
+      console.log('=== DUPLEX FORMULA CALCULATION ===');
+      console.log('Kategori:', normalizedKategori);
+      console.log(
+        'Formula: ((harga_after_tax × (percentageApki + 100)) / 100 / 500) × total_kertas',
+      );
+      console.log('---');
+      console.log('Input Values:');
+      console.log('  - Harga Original:', harga.toLocaleString('id-ID'));
+      console.log('  - Pajak:', `${pajak}%`);
+      console.log('  - Persentase Original:', persentase);
+      console.log('  - PercentageApki:', percentageApki);
+      console.log('  - Total Kertas:', total_kertas.toLocaleString('id-ID'));
+      console.log('---');
+      console.log('Calculation Steps:');
+      console.log(
+        `  Step 1: Calculate harga after tax = ${harga.toLocaleString(
+          'id-ID',
+        )} - (${harga.toLocaleString('id-ID')} × ${pajakPercentage})`,
+      );
+      console.log(
+        `          Harga After Tax = ${hargaAfterTax.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 2: Calculate percentageApki + 100 = ${percentageApki} + 100`,
+      );
+      console.log(`          Result = ${percentageApki + 100}`);
+      console.log(
+        `  Step 3: Multiply harga × percentage = ${hargaAfterTax.toLocaleString(
+          'id-ID',
+        )} × ${percentageApki + 100}`,
+      );
+      console.log(
+        `          Result = ${(
+          hargaAfterTax *
+          (percentageApki + 100)
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 4: Divide by 100 = ${(
+          hargaAfterTax *
+          (percentageApki + 100)
+        ).toLocaleString('id-ID')} / 100`,
+      );
+      console.log(
+        `          Result = ${(
+          (hargaAfterTax * (percentageApki + 100)) /
+          100
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 5: Divide by 500 = ${(
+          (hargaAfterTax * (percentageApki + 100)) /
+          100
+        ).toLocaleString('id-ID')} / 500`,
+      );
+      console.log(
+        `          Result = ${(
+          (hargaAfterTax * (percentageApki + 100)) /
+          100 /
+          500
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 6: Multiply by total kertas = ${(
+          (hargaAfterTax * (percentageApki + 100)) /
+          100 /
+          500
+        ).toLocaleString('id-ID')} × ${total_kertas.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `          Total Harga Kertas = ${total_harga_kertas.toLocaleString(
+          'id-ID',
+        )}`,
+      );
+      console.log('---');
+      console.log(
+        'Final Result:',
+        Math.round(total_harga_kertas).toLocaleString('id-ID'),
+      );
+      console.log('===================================\n');
+    } else {
+      // Default Formula: ((harga_after_tax × percentageApki) / 100 / 500) × total_kertas
+      total_harga_kertas =
+        ((harga * percentageApki) / 100 / 500) * total_kertas;
+
+      console.log('=== DEFAULT FORMULA CALCULATION ===');
+      console.log('Kategori:', normalizedKategori);
+      console.log(
+        'Formula: ((harga_after_tax × percentageApki) / 100 / 500) × total_kertas',
+      );
+      console.log('---');
+      console.log('Input Values:');
+      console.log('  - Harga Original:', harga.toLocaleString('id-ID'));
+      console.log('  - Pajak:', `${pajak}%`);
+      console.log('  - Persentase Original:', persentase);
+      console.log('  - PercentageApki:', percentageApki);
+      console.log('  - Total Kertas:', total_kertas.toLocaleString('id-ID'));
+      console.log('---');
+      console.log('Calculation Steps:');
+      console.log(
+        `  Step 1: Calculate harga after tax = ${harga.toLocaleString(
+          'id-ID',
+        )} - (${harga.toLocaleString('id-ID')} × ${pajakPercentage})`,
+      );
+      console.log(
+        `          Harga After Tax = ${hargaAfterTax.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 2: Multiply harga × percentageApki = ${hargaAfterTax.toLocaleString(
+          'id-ID',
+        )} × ${percentageApki}`,
+      );
+      console.log(
+        `          Result = ${(hargaAfterTax * percentageApki).toLocaleString(
+          'id-ID',
+        )}`,
+      );
+      console.log(
+        `  Step 3: Divide by 100 = ${(
+          hargaAfterTax * percentageApki
+        ).toLocaleString('id-ID')} / 100`,
+      );
+      console.log(
+        `          Result = ${(
+          (hargaAfterTax * percentageApki) /
+          100
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 4: Divide by 500 = ${(
+          (hargaAfterTax * percentageApki) /
+          100
+        ).toLocaleString('id-ID')} / 500`,
+      );
+      console.log(
+        `          Result = ${(
+          (hargaAfterTax * percentageApki) /
+          100 /
+          500
+        ).toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `  Step 5: Multiply by total kertas = ${(
+          (hargaAfterTax * percentageApki) /
+          100 /
+          500
+        ).toLocaleString('id-ID')} × ${total_kertas.toLocaleString('id-ID')}`,
+      );
+      console.log(
+        `          Total Harga Kertas = ${total_harga_kertas.toLocaleString(
+          'id-ID',
+        )}`,
+      );
+      console.log('---');
+      console.log(
+        'Final Result:',
+        Math.round(total_harga_kertas).toLocaleString('id-ID'),
+      );
+      console.log('====================================\n');
+    }
+
+    const calculatedValue = Math.round(total_harga_kertas);
+    const formattedValue = formatNumber(calculatedValue);
+
+    // IMPORTANT: Only update if value actually changed
+    const currentValue = parseFormattedNumber(
+      formData.total_harga_kertas?.toString() || '0',
+    );
+
+    // Add tolerance check to prevent floating point issues
+    if (Math.abs(calculatedValue - currentValue) >= 1) {
+      const syntheticEvent = createSyntheticEvent(
+        'total_harga_kertas',
+        formattedValue,
+      );
+      onInputChange(syntheticEvent);
+    }
+
+    // For Duplex and Duplex Khusus: add 100 to percentageApki
+    // For others: just use percentageApki
+    const percentageDisplay =
+      isDuplex || isDuplexKhusus ? percentageApki + 100 : percentageApki;
+    const currentPercentage = parseFloat(
+      formData.percentage?.toString() || '0',
+    );
+
+    // Only update if difference is significant
+    if (Math.abs(percentageDisplay - currentPercentage) > 0.01) {
+      const percentageSyntheticEvent = createSyntheticEvent(
+        'percentage',
+        percentageDisplay.toString(),
+      );
+      onInputChange(percentageSyntheticEvent);
+    }
   }, [
     selectedBarangData,
     formData.total_kertas,
-    onInputChange,
-    formData.total_harga_kertas,
-    formData.percentage,
-    isReadOnly,
-  ]);
-
-  // Calculate Total Kertas automatically
-  useEffect(() => {
-    if (isReadOnly) return;
-
-    const calculatetotal_kertas = () => {
-      const qtyKalkulasi = parseFloat(
-        formData.qty_kalkulasi?.toString() || '0',
-      );
-      const ukuranCetakBagian1 =
-        parseFloat(formData.ukuran_cetak_bagian_1) || 0;
-      const ukuranCetakIsi1 = parseFloat(formData.ukuran_cetak_isi_1) || 0;
-      const ukuranCetakBagian2 =
-        parseFloat(formData.ukuran_cetak_bagian_2) || 0;
-      const ukuranCetakIsi2 = parseFloat(formData.ukuran_cetak_isi_2) || 0;
-      const printInsheet = parseFloat(formData.print_insheet || '0') || 0;
-      const ponsInsheet = parseFloat(formData.pons_insheet || '0') || 0;
-      const finishingInsheet =
-        parseFloat(formData.finishing_insheet || '0') || 0;
-      const totalInsheet = printInsheet + ponsInsheet + finishingInsheet;
-
-      const totalUkuranCetakIsi = ukuranCetakIsi1 + ukuranCetakIsi2;
-      const totalUkuranCetakBagian = ukuranCetakBagian1 + ukuranCetakBagian2;
-
-      if (
-        qtyKalkulasi > 0 &&
-        totalUkuranCetakIsi > 0 &&
-        totalUkuranCetakBagian > 0
-      ) {
-        const total_kertas =
-          (qtyKalkulasi / totalUkuranCetakIsi + totalInsheet) /
-          totalUkuranCetakBagian;
-
-        const calculatedValue = Math.ceil(total_kertas);
-        const formattedValue = formatNumber(calculatedValue);
-
-        const currentValue = parseFormattedNumber(
-          formData.total_kertas?.toString() || '0',
-        );
-        if (calculatedValue !== currentValue) {
-          const syntheticEvent = createSyntheticEvent(
-            'total_kertas',
-            formattedValue,
-          );
-          onInputChange(syntheticEvent);
-        }
-      }
-    };
-
-    calculatetotal_kertas();
-  }, [
-    formData.qty_kalkulasi,
-    formData.ukuran_cetak_bagian_1,
-    formData.ukuran_cetak_isi_1,
-    formData.ukuran_cetak_bagian_2,
-    formData.ukuran_cetak_isi_2,
-    formData.print_insheet,
-    formData.pons_insheet,
-    formData.finishing_insheet,
-    onInputChange,
-    formData.total_kertas,
+    formData.ukuran_jadi_panjang,
+    formData.ukuran_jadi_lebar,
     isReadOnly,
   ]);
 
@@ -445,8 +847,16 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       selectedBarang.persentase,
       selectedBarang.pajak,
     );
-    const isDuplex = selectedBarang.kategori.toLowerCase().includes('duplex');
-    const finalPercentage = isDuplex ? percentageApki + 100 : percentageApki;
+
+    // Check if it's Duplex or Duplex Khusus
+    const normalizedKategori = selectedBarang.kategori.trim();
+    const isDuplexOrDuplexKhusus =
+      normalizedKategori === 'Duplex' || normalizedKategori === 'Duplex Khusus';
+
+    // For Duplex and Duplex Khusus: add 100, for others: just percentageApki
+    const finalPercentage = isDuplexOrDuplexKhusus
+      ? percentageApki + 100
+      : percentageApki;
 
     onInputChange(
       createSyntheticEvent('percentage', finalPercentage.toString()),
@@ -521,6 +931,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     } as React.ChangeEvent<HTMLSelectElement>;
     onInputChange(syntheticEvent);
   };
+
   // Add this useEffect for debugging
   useEffect(() => {
     console.log('Debug Mesin Potong:', {
@@ -533,6 +944,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       optionsLoaded: mesinPotongOptions.length > 0,
     });
   }, [formData.id_mesin_potong, selectedMesinPotong, mesinPotongOptions]);
+
   const handleInputChangeLocal = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isReadOnly) return;
     onInputChange(e);
@@ -690,9 +1102,12 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Percentage%Apki
             <span className="text-xs text-gray-500 block">
-              {selectedBarangData?.kategori?.toLowerCase().includes('duplex')
-                ? `(${formData.rawPercentage} / ${selectedBarangData.pajak}% + 100) [Rounded]`
-                : `(${formData.rawPercentage} / ${selectedBarangData?.pajak}%) [Rounded]`}
+              ({formData.rawPercentage} / {selectedBarangData?.pajak}%
+              {selectedBarangData?.kategori?.trim() === 'Duplex' ||
+              selectedBarangData?.kategori?.trim() === 'Duplex Khusus'
+                ? ' + 100'
+                : ''}
+              )
             </span>
           </label>
           <input
