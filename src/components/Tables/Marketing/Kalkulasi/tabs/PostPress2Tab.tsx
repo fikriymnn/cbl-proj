@@ -18,6 +18,7 @@ interface LemOption {
   id: number;
   nama_barang: string;
   harga: number;
+  batas_harga?: number;
 }
 
 interface TahapanResponse {
@@ -245,7 +246,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
           },
         },
       );
-
+      console.log(response.data);
       if (response.data && response.data.data) {
         const lemData = response.data.data || [];
         setLemOptions(lemData);
@@ -376,11 +377,26 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
       );
 
       if (selectedLem) {
-        const ukuranJadiTinggiCm =
-          parseFloat(formData.ukuran_jadi_tinggi || '0') / 10;
         const qtyKalkulasi = parseFloat(formData.qty_kalkulasi || '0');
-        const jumlahHargaLem =
-          ukuranJadiTinggiCm * selectedLem.harga * qtyKalkulasi;
+        const ukuranJadiTinggiMM = parseFloat(
+          formData.ukuran_jadi_tinggi || '0',
+        );
+        let jumlahHargaLem = 0;
+
+        // Different formula based on nama_barang
+        if (selectedLem.nama_barang === 'LEM SAMPING') {
+          // Formula: ukuran_jadi_tinggi × harga × qty_kalkulasi
+          jumlahHargaLem =
+            ukuranJadiTinggiMM * selectedLem.harga * qtyKalkulasi;
+        } else if (selectedLem.nama_barang === 'LEM SAMPING + LOCK BOTTOM') {
+          const batasHarga = selectedLem.batas_harga || 0;
+          jumlahHargaLem =
+            (selectedLem.harga * ukuranJadiTinggiMM + batasHarga) *
+            qtyKalkulasi;
+        } else {
+          // Default formula (original): harga × qty_kalkulasi
+          jumlahHargaLem = selectedLem.harga * qtyKalkulasi;
+        }
 
         createSyntheticEvent(
           'jumlah_harga_lem',
@@ -400,7 +416,6 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     lemOptions,
     isComponentReadOnly,
   ]);
-
   // Calculate No Packaging and update formData
   useEffect(() => {
     if (isComponentReadOnly) return;
@@ -472,9 +487,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
       name === 'harga_spot_foil_manual' ||
       name === 'harga_polimer_manual'
     ) {
-      const formattedValue = formatCurrency(value);
       const unformattedValue = parseCurrency(value);
-
       const syntheticEvent = {
         ...e,
         target: {
@@ -493,20 +506,20 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
 
   // Get current formula values for display
   const getFormulaDisplay = () => {
-    const ukuranJadiTinggiCm =
-      parseFloat(formData.ukuran_jadi_tinggi || '0') / 10;
+    const ukuranJadiTinggiMM = parseFloat(formData.ukuran_jadi_tinggi || '0');
     const selectedLem = lemOptions.find(
       (option) => String(option.id) === String(getCurrentValue('id_lem')),
     );
     const qtyKalkulasi = parseFloat(formData.qty_kalkulasi || '0');
 
     return {
-      ukuranJadiTinggiCm,
+      ukuranJadiTinggiMM, // Changed from ukuranJadiTinggiCm
       lemHarga: selectedLem?.harga || 0,
+      lemBatasHarga: selectedLem?.batas_harga || 0, // Added
+      lemNamaBarang: selectedLem?.nama_barang || '', // Added
       qtyKalkulasi,
     };
   };
-
   // Get packaging formula values for display
   const getPackagingFormulaDisplay = () => {
     const panjangPackaging = parseFloat(
@@ -680,16 +693,60 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               Lem Formula Calculation:
             </h4>
             <div className="space-y-3 text-sm">
-              <div className="font-mono bg-white p-3 rounded-lg border border-purple-100">
-                <strong className="text-purple-800">Jumlah Harga Lem =</strong>{' '}
-                (Ukuran Jadi Tinggi in CM × Lem Price × Qty Kalkulasi)
-              </div>
-              <div className="font-mono bg-white p-3 rounded-lg border border-purple-100">
-                <strong className="text-purple-800">Jumlah Harga Lem =</strong>{' '}
-                ({formulaValues.ukuranJadiTinggiCm} cm ×{' '}
-                {formulaValues.lemHarga.toLocaleString('id-ID')} ×{' '}
-                {formulaValues.qtyKalkulasi.toLocaleString('id-ID')})
-              </div>
+              {formulaValues.lemNamaBarang === 'LEM SAMPING' ? (
+                <>
+                  <div className="font-mono bg-white p-3 rounded-lg border border-purple-100">
+                    <strong className="text-purple-800">
+                      Jumlah Harga Lem =
+                    </strong>{' '}
+                    Ukuran Jadi Tinggi (MM) × Lem Price × Qty Kalkulasi
+                  </div>
+                  <div className="font-mono bg-white p-3 rounded-lg border border-purple-100">
+                    <strong className="text-purple-800">
+                      Jumlah Harga Lem =
+                    </strong>{' '}
+                    {formulaValues.ukuranJadiTinggiMM.toLocaleString('id-ID')} ×{' '}
+                    {formulaValues.lemHarga.toLocaleString('id-ID')} ×{' '}
+                    {formulaValues.qtyKalkulasi.toLocaleString('id-ID')}
+                  </div>
+                </>
+              ) : formulaValues.lemNamaBarang ===
+                'LEM SAMPING + LOCK BOTTOM' ? (
+                <>
+                  <div className="font-mono bg-white p-3 rounded-lg border border-purple-100">
+                    <strong className="text-purple-800">
+                      Jumlah Harga Lem =
+                    </strong>{' '}
+                    (Lem Price × Ukuran Jadi Tinggi + Batas Harga) × Qty
+                    Kalkulasi
+                  </div>
+                  <div className="font-mono bg-white p-3 rounded-lg border border-purple-100">
+                    <strong className="text-purple-800">
+                      Jumlah Harga Lem =
+                    </strong>{' '}
+                    ({formulaValues.lemHarga.toLocaleString('id-ID')} ×{' '}
+                    {formulaValues.ukuranJadiTinggiMM.toLocaleString('id-ID')} +{' '}
+                    {formulaValues.lemBatasHarga.toLocaleString('id-ID')}) ×{' '}
+                    {formulaValues.qtyKalkulasi.toLocaleString('id-ID')}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="font-mono bg-white p-3 rounded-lg border border-purple-100">
+                    <strong className="text-purple-800">
+                      Jumlah Harga Lem =
+                    </strong>{' '}
+                    Lem Price × Qty Kalkulasi
+                  </div>
+                  <div className="font-mono bg-white p-3 rounded-lg border border-purple-100">
+                    <strong className="text-purple-800">
+                      Jumlah Harga Lem =
+                    </strong>{' '}
+                    {formulaValues.lemHarga.toLocaleString('id-ID')} ×{' '}
+                    {formulaValues.qtyKalkulasi.toLocaleString('id-ID')}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

@@ -728,6 +728,19 @@ function MarketingBarang(): JSX.Element {
                       <option value="Coating">Coating</option>
                       <option value="Lipat">Lipat</option>
                       <option value="Potong Jadi">Potong Jadi</option>
+                      <option value="Lem Samping">Lem Samping</option>
+                      <option value="Lem Samping + Lock Bottom">
+                        Lem Samping + Lock Bottom
+                      </option>
+                      <option value="Four Corner">Four Corner</option>
+                      <option value="Six Corners">Six Corners</option>
+                      <option value="Shoping Bag Kecil">
+                        Shoping Bag Kecil
+                      </option>
+                      <option value="Shoping Bag Besar">
+                        Shoping Bag Besar
+                      </option>
+                      <option value="Lock Bottom">Lock Bottom</option>
                     </select>
                   </div>
                   {/* Gramatur */}

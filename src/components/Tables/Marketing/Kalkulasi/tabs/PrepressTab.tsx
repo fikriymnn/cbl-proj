@@ -271,6 +271,11 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     persentase: number,
     pajak: number,
   ): number => {
+    // If persentase is null or 0, default to 100
+    if (!persentase || persentase === 0) {
+      return 100;
+    }
+
     const pajakConverted = pajak === 11 ? 1.11 : pajak === 12 ? 1.12 : 1;
     const rawPercentage = persentase / pajakConverted;
     return roundPercentage(rawPercentage);
@@ -302,8 +307,8 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       selectedBarangData;
     const percentageApki = calculatePercentageApki(persentase, pajak);
 
-    // Calculate harga after tax deduction
     const pajakPercentage = pajak / 100;
+
     const hargaAfterTax = harga - harga * pajakPercentage;
 
     // Normalize kategori untuk comparison (trim whitespace)
@@ -324,8 +329,7 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     ];
 
     // Check exact match untuk kategori dengan formula baru (Art Paper, Ivory, Chromo, HVS)
-    const newFormulaCategories = ['Art Paper', 'Ivory ', 'Chromo', 'HVS'];
-
+    const newFormulaCategories = ['Art Paper', 'Ivory', 'Chromo', 'HVS'];
     if (simpleFormulaCategories.includes(normalizedKategori)) {
       // Formula sederhana: harga × total_kertas
       total_harga_kertas = hargaAfterTax * total_kertas;
@@ -486,15 +490,14 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     } else if (normalizedKategori === 'Duplex Khusus') {
       // Formula Duplex Khusus: (((ukuran_jadi_area / plano_area) × harga × (percentageApki + 100)) / 100 / 500) × total_kertas
       isDuplexKhusus = true;
-      const ukuranJadiPanjangCm =
-        (parseFloat(formData.ukuran_jadi_panjang) || 0) / 10;
-      const ukuranJadiLebarCm =
-        (parseFloat(formData.ukuran_jadi_lebar) || 0) / 10;
-      const ukuranJadiArea = ukuranJadiPanjangCm * ukuranJadiLebarCm;
+      const panjangCm = panjang / 10;
+      const lebarCm = lebar / 10;
+      const ukuranPlanoCm = panjangCm * lebarCm;
+
       const planoArea = 79 * 109; // 79cm x 109cm
 
       total_harga_kertas =
-        (((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+        (((ukuranPlanoCm / planoArea) * harga * (percentageApki + 100)) /
           100 /
           500) *
         total_kertas;
@@ -514,14 +517,14 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
         '  - Ukuran Jadi Panjang:',
         formData.ukuran_jadi_panjang,
         'mm =',
-        ukuranJadiPanjangCm,
+        panjangCm,
         'cm',
       );
       console.log(
         '  - Ukuran Jadi Lebar:',
         formData.ukuran_jadi_lebar,
         'mm =',
-        ukuranJadiLebarCm,
+        lebarCm,
         'cm',
       );
       console.log('  - Plano Area: 79 cm × 109 cm =', planoArea, 'cm²');
@@ -529,74 +532,74 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
       console.log('---');
       console.log('Calculation Steps:');
       console.log(
-        `  Step 1: Calculate ukuran jadi area = ${ukuranJadiPanjangCm} cm × ${ukuranJadiLebarCm} cm`,
+        `  Step 1: Calculate ukuran jadi area = ${panjangCm} cm × ${lebarCm} cm`,
       );
       console.log(
-        `          Ukuran Jadi Area = ${ukuranJadiArea.toLocaleString(
+        `          Ukuran Jadi Area = ${ukuranPlanoCm.toLocaleString(
           'id-ID',
         )} cm²`,
       );
       console.log(
-        `  Step 2: Divide by plano area = ${ukuranJadiArea.toLocaleString(
+        `  Step 2: Divide by plano area = ${ukuranPlanoCm.toLocaleString(
           'id-ID',
         )} / ${planoArea.toLocaleString('id-ID')}`,
       );
       console.log(
-        `          Result = ${(ukuranJadiArea / planoArea).toFixed(6)}`,
+        `          Result = ${(ukuranPlanoCm / planoArea).toFixed(6)}`,
       );
       console.log(
-        `  Step 3: Multiply by harga = ${(ukuranJadiArea / planoArea).toFixed(
+        `  Step 3: Multiply by harga = ${(ukuranPlanoCm / planoArea).toFixed(
           6,
         )} × ${harga.toLocaleString('id-ID')}`,
       );
       console.log(
         `          Result = ${(
-          (ukuranJadiArea / planoArea) *
+          (ukuranPlanoCm / planoArea) *
           harga
         ).toLocaleString('id-ID')}`,
       );
       console.log(
         `  Step 4: Multiply by (percentageApki + 100) = ${(
-          (ukuranJadiArea / planoArea) *
+          (ukuranPlanoCm / planoArea) *
           harga
         ).toLocaleString('id-ID')} × ${percentageApki + 100}`,
       );
       console.log(
         `          Result = ${(
-          (ukuranJadiArea / planoArea) *
+          (ukuranPlanoCm / planoArea) *
           harga *
           (percentageApki + 100)
         ).toLocaleString('id-ID')}`,
       );
       console.log(
         `  Step 5: Divide by 100 = ${(
-          (ukuranJadiArea / planoArea) *
+          (ukuranPlanoCm / planoArea) *
           harga *
           (percentageApki + 100)
         ).toLocaleString('id-ID')} / 100`,
       );
       console.log(
         `          Result = ${(
-          ((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          ((ukuranPlanoCm / planoArea) * harga * (percentageApki + 100)) /
           100
         ).toLocaleString('id-ID')}`,
       );
       console.log(
         `  Step 6: Divide by 500 = ${(
-          ((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          ((ukuranPlanoCm / planoArea) * harga * (percentageApki + 100)) /
           100
         ).toLocaleString('id-ID')} / 500`,
       );
       console.log(
         `          Result = ${(
-          ((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          ((ukuranPlanoCm / planoArea) * harga * (percentageApki + 100)) /
           100 /
           500
         ).toLocaleString('id-ID')}`,
       );
       console.log(
         `  Step 7: Multiply by total kertas = ${(
-          ((ukuranJadiArea / planoArea) * harga * (percentageApki + 100)) /
+          ((ukuranPlanoCm / planoArea) * harga * (percentageApki + 100)) /
           100 /
           500
         ).toLocaleString('id-ID')} × ${total_kertas.toLocaleString('id-ID')}`,
@@ -817,6 +820,72 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
     formData.total_kertas,
     formData.ukuran_jadi_panjang,
     formData.ukuran_jadi_lebar,
+    onInputChange,
+    formData.total_harga_kertas,
+    formData.percentage,
+    isReadOnly,
+  ]);
+
+  // Calculate Total Kertas automatically
+  useEffect(() => {
+    if (isReadOnly) return;
+
+    const calculatetotal_kertas = () => {
+      const qtyKalkulasi = parseFloat(
+        formData.qty_kalkulasi?.toString() || '0',
+      );
+      const ukuranCetakBagian1 =
+        parseFloat(formData.ukuran_cetak_bagian_1) || 0;
+      const ukuranCetakIsi1 = parseFloat(formData.ukuran_cetak_isi_1) || 0;
+      const ukuranCetakBagian2 =
+        parseFloat(formData.ukuran_cetak_bagian_2) || 0;
+      const ukuranCetakIsi2 = parseFloat(formData.ukuran_cetak_isi_2) || 0;
+      const printInsheet = parseFloat(formData.print_insheet || '0') || 0;
+      const ponsInsheet = parseFloat(formData.pons_insheet || '0') || 0;
+      const finishingInsheet =
+        parseFloat(formData.finishing_insheet || '0') || 0;
+      const totalInsheet = printInsheet + ponsInsheet + finishingInsheet;
+
+      const totalUkuranCetakIsi = ukuranCetakIsi1 + ukuranCetakIsi2;
+      const totalUkuranCetakBagian = ukuranCetakBagian1 + ukuranCetakBagian2;
+
+      if (
+        qtyKalkulasi > 0 &&
+        totalUkuranCetakIsi > 0 &&
+        totalUkuranCetakBagian > 0
+      ) {
+        const total_kertas =
+          (qtyKalkulasi / totalUkuranCetakIsi + totalInsheet) /
+          totalUkuranCetakBagian;
+
+        const calculatedValue = Math.ceil(total_kertas);
+        const formattedValue = formatNumber(calculatedValue);
+
+        const currentValue = parseFormattedNumber(
+          formData.total_kertas?.toString() || '0',
+        );
+        if (calculatedValue !== currentValue) {
+          const syntheticEvent = createSyntheticEvent(
+            'total_kertas',
+            formattedValue,
+          );
+          onInputChange(syntheticEvent);
+        }
+      }
+    };
+
+    calculatetotal_kertas();
+  }, [
+    formData.qty_kalkulasi,
+    formData.ukuran_cetak_bagian_1,
+    formData.ukuran_cetak_isi_1,
+    formData.ukuran_cetak_bagian_2,
+    formData.ukuran_cetak_isi_2,
+    formData.print_insheet,
+    formData.pons_insheet,
+    formData.finishing_insheet,
+    onInputChange,
+    formData.total_kertas,
     isReadOnly,
   ]);
 
