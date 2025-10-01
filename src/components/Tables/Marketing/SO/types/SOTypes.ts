@@ -213,13 +213,13 @@ export interface SOData {
   tgl_approve_so: string | null;
   harga_jual: number;
   po_qty: number;
-  ppn: number;
+  ppn: any;
   profit: number;
   total_harga: number;
   status: string;
   status_jo: string;
   status_produk: string;
-  status_proses: string;
+  status_proses?: string;
   ada_standar_warna: string;
   alamat_pengiriman: string;
   keterangan: string;
@@ -232,6 +232,8 @@ export interface SOData {
   note_reject: string | null;
   createdAt: string;
   updatedAt: string;
+  is_io_selesai: any;
+  no_booking: any;
 }
 
 export interface SOFormData {
@@ -258,6 +260,7 @@ export interface SOFormData {
   alamat_pengiriman: string;
   ada_standar_warna: string;
   is_io_selesai: boolean;
+  note_cancel?: string;
 }
 
 export interface APIResponse<T> {

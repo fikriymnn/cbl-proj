@@ -1,26 +1,21 @@
-// components/SOCreatePopup.tsx
+// components/EditSO.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
-import {
-  SOFormData,
-  KalkulasiData,
-  APIResponse,
-  Gudang,
-} from './types/SOTypes';
+import { SOFormData, KalkulasiData, SOData, Gudang } from './types/SOTypes';
 
-interface SOCreatePopupProps {
+interface EditSOProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: SOFormData) => void;
-  loading?: boolean;
+  soData: SOData | null;
+  onSuccess: () => void;
 }
 
-const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
+const EditSO: React.FC<EditSOProps> = ({
   isOpen,
   onClose,
-  onSubmit,
-  loading = false,
+  soData,
+  onSuccess,
 }) => {
   const [formData, setFormData] = useState<SOFormData>({
     tgl_input_po: new Date().toISOString().split('T')[0],
@@ -46,37 +41,38 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     alamat_pengiriman: '',
     ada_standar_warna: 'Tidak',
     is_io_selesai: false,
+    note_cancel: '', // Add this field
   });
 
-  interface KalkulasiOption {
-    value: string;
-    label: string;
-    data: KalkulasiData;
-  }
-
-  interface GudangOption {
-    value: string;
-    label: string;
-    data: Gudang;
-  }
-
-  const [kalkulasiOptions, setKalkulasiOptions] = useState<KalkulasiOption[]>(
-    [],
-  );
-  const [gudangOptions, setGudangOptions] = useState<GudangOption[]>([]);
+  const [kalkulasiOptions, setKalkulasiOptions] = useState<
+    Array<{
+      value: string;
+      label: string;
+      data: KalkulasiData;
+    }>
+  >([]);
+  const [gudangOptions, setGudangOptions] = useState<
+    Array<{
+      value: string;
+      label: string;
+      data: Gudang;
+    }>
+  >([]);
   const [kalkulasiLoading, setKalkulasiLoading] = useState(false);
   const [loadingSONumber, setLoadingSONumber] = useState(false);
-  const [selectedKalkulasiData, setSelectedKalkulasiData] =
-    useState<KalkulasiData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [selectedKalkulasiId, setSelectedKalkulasiId] = useState<string>('');
+  const [selectedStatusJO, setSelectedStatusJO] = useState<string>('');
+  const [selectedStatusProduk, setSelectedStatusProduk] = useState<string>('');
+  const [selectedAlamatPengiriman, setSelectedAlamatPengiriman] =
+    useState<string>('');
 
-  // Status Produk options
   const statusProdukOptions = [
     { value: 'OKP', label: 'OKP' },
     { value: 'PROFF', label: 'PROFF' },
     { value: 'ACC', label: 'ACC' },
   ];
 
-  // Status JO options
   const statusJOOptions = [
     { value: 'baru', label: 'Baru' },
     { value: 'repeat', label: 'Repeat' },
@@ -88,78 +84,53 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     try {
       setLoadingSONumber(true);
       const url = `${import.meta.env.VITE_API_LINK}/marketing/soJumlahData`;
-
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
-
+      const res = await axios.get(url, { withCredentials: true });
       const totalData = res.data.total_data || 0;
       const nextNumber = totalData + 1;
-
-      // Format: SO-XXXXX/CBL/MMYY
       const now = new Date();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const year = String(now.getFullYear()).slice(-2);
       const formattedNumber = String(nextNumber).padStart(5, '0');
-
       const soNumber = `SO-${formattedNumber}/CBL/${month}${year}`;
-
-      setFormData((prev) => ({
-        ...prev,
-        no_so: soNumber,
-      }));
+      setFormData((prev) => ({ ...prev, no_so: soNumber }));
     } catch (error) {
       console.error('Error generating SO number:', error);
-      // Optionally show error message to user
     } finally {
       setLoadingSONumber(false);
     }
   };
 
-  // Fetch Kalkulasi data from API using axios
+  // Fetch Kalkulasi data
   const fetchKalkulasiData = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
     setKalkulasiLoading(true);
     try {
       const response = await axios.get(url, {
-        params: {
-          is_io_active: true,
-        },
+        params: { is_io_active: true },
         withCredentials: true,
       });
-      console.log('Fetched Kalkulasi data:', response.data);
+      console.log('Fetched Kalkulasi data for EditSO:', response.data);
       if (response.data.succes && response.data.data) {
-        // Group by id_io and filter based on status_kalkulasi
         const groupedByIdIO = response.data.data.reduce(
           (acc: Record<string, KalkulasiData[]>, item: KalkulasiData) => {
             const idIO = item.id_io?.toString() || '';
-            if (!acc[idIO]) {
-              acc[idIO] = [];
-            }
+            if (!acc[idIO]) acc[idIO] = [];
             acc[idIO].push(item);
             return acc;
           },
           {} as Record<string, KalkulasiData[]>,
         );
 
-        // Filter: if multiple items with same id_io, show only 'baru', otherwise show available
         const filteredData: KalkulasiData[] = [];
         Object.keys(groupedByIdIO).forEach((idIO) => {
           const items = groupedByIdIO[idIO];
           if (items.length > 1) {
-            // Multiple items with same id_io
             const baruItem = items.find(
               (item: KalkulasiData) =>
                 item.status_kalkulasi?.toLowerCase() === 'baru',
             );
-            if (baruItem) {
-              filteredData.push(baruItem);
-            } else {
-              // No 'baru' exists, use the first available
-              filteredData.push(items[0]);
-            }
+            filteredData.push(baruItem || items[0]);
           } else {
-            // Only one item with this id_io
             filteredData.push(items[0]);
           }
         });
@@ -170,6 +141,30 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
           data: item,
         }));
         setKalkulasiOptions(options);
+
+        // Auto-select if soData has id_kalkulasi
+        if (soData?.id_kalkulasi) {
+          const matchingOption = options.find(
+            (opt) => opt.value === soData.id_kalkulasi.toString(),
+          );
+          if (matchingOption) {
+            console.log('Auto-selecting kalkulasi:', matchingOption);
+            setSelectedKalkulasiId(matchingOption.value);
+
+            // Set gudang options
+            if (matchingOption.data.customer?.gudang) {
+              const gudangOpts = matchingOption.data.customer.gudang.map(
+                (gudang: Gudang) => ({
+                  value: gudang.alamat_gudang,
+                  label: gudang.alamat_gudang,
+                  data: gudang,
+                }),
+              );
+              setGudangOptions(gudangOpts);
+              console.log('Loaded gudang options:', gudangOpts);
+            }
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching Kalkulasi data:', error);
@@ -178,116 +173,120 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     }
   };
 
-  // Load Kalkulasi data and generate SO number when component mounts
+  // Initialize form with soData
   useEffect(() => {
-    if (isOpen) {
-      fetchKalkulasiData();
+    if (isOpen && soData) {
+      console.log('Initializing EditSO with soData:', soData);
       generateSONumber();
-    }
-  }, [isOpen]);
+      fetchKalkulasiData();
 
-  const handleInputChange = (field: keyof SOFormData, value: any) => {
-    // Prevent manual changes to no_so
-    if (field === 'no_so') {
-      return;
-    }
+      setFormData({
+        tgl_input_po: new Date().toISOString().split('T')[0],
+        no_so: '',
+        id_kalkulasi: soData.id_kalkulasi || null,
+        id_so_cancel: soData.id,
+        so_cancel: soData.no_so || '',
+        no_booking: soData.no_booking || '',
+        status_jo: soData.status_jo || '',
+        customer: soData.customer || '',
+        produk: soData.produk || '',
+        status_produk: soData.status_produk || '',
+        tgl_acc_customer: soData.tgl_acc_customer || '',
+        tgl_po_customer: soData.tgl_po_customer || '',
+        po_qty: soData.po_qty || 0,
+        harga_jual: soData.harga_jual || 0,
+        total_harga: soData.total_harga || 0,
+        no_po_customer: soData.no_po_customer || '',
+        keterangan: soData.keterangan || '',
+        ppn: soData.ppn || '',
+        profit: soData.profit || 0,
+        tgl_pengiriman: soData.tgl_pengiriman || '',
+        alamat_pengiriman: soData.alamat_pengiriman || '',
+        ada_standar_warna: soData.ada_standar_warna || 'Tidak',
+        is_io_selesai: soData.is_io_selesai || false,
+        note_cancel: '',
+      });
 
+      setSelectedStatusJO(soData.status_jo || '');
+      setSelectedStatusProduk(soData.status_produk || '');
+      setSelectedAlamatPengiriman(soData.alamat_pengiriman || '');
+    }
+  }, [isOpen, soData]);
+
+  const handleKalkulasiChange = (value: number | string) => {
+    const stringValue = String(value);
+    setSelectedKalkulasiId(stringValue);
     setFormData((prev) => ({
       ...prev,
-      [field]: value,
+      id_kalkulasi: parseInt(stringValue) || null,
     }));
 
-    // Handle Kalkulasi selection
-    if (field === 'id_kalkulasi') {
-      const selectedOption = kalkulasiOptions.find(
-        (option) => option.value === value,
+    const selectedOption = kalkulasiOptions.find(
+      (option) => option.value === stringValue,
+    );
+    if (selectedOption?.data) {
+      const kalkulasiData = selectedOption.data;
+      const hargaSatuanCustomer = parseFloat(
+        kalkulasiData.total_harga_satuan_customer || '0',
       );
-      if (selectedOption) {
-        const kalkulasiData = selectedOption.data;
-        setSelectedKalkulasiData(kalkulasiData);
+      const qtyKalkulasi = kalkulasiData.qty_kalkulasi || 0;
 
-        // Check if kalkulasi data exists
-        if (
-          kalkulasiData &&
-          kalkulasiData.total_harga_satuan_customer &&
-          kalkulasiData.qty_kalkulasi !== undefined &&
-          kalkulasiData.status_kalkulasi
-        ) {
-          // Auto fill fields based on selected Kalkulasi
-          const hargaSatuanCustomer = parseFloat(
-            kalkulasiData.total_harga_satuan_customer,
-          );
-          const qtyKalkulasi = kalkulasiData.qty_kalkulasi;
-          const profitValue = kalkulasiData.profit || 0;
+      if (kalkulasiData.customer?.gudang) {
+        const gudangOpts = kalkulasiData.customer.gudang.map(
+          (gudang: Gudang) => ({
+            value: gudang.alamat_gudang,
+            label: gudang.alamat_gudang,
+            data: gudang,
+          }),
+        );
+        setGudangOptions(gudangOpts);
 
-          // Set up gudang options from customer data
-          if (kalkulasiData.customer && kalkulasiData.customer.gudang) {
-            const gudangOpts = kalkulasiData.customer.gudang.map(
-              (gudang: Gudang) => ({
-                value: gudang.id.toString(),
-                label: gudang.alamat_gudang,
-                data: gudang,
-              }),
-            );
-            setGudangOptions(gudangOpts);
-
-            // Auto fill alamat_pengiriman with first gudang (index 0)
-            const defaultGudang = kalkulasiData.customer.gudang[0];
-            const defaultAlamat = defaultGudang
-              ? defaultGudang.alamat_gudang
-              : '';
-
-            setFormData((prev) => ({
-              ...prev,
-              harga_jual: isNaN(hargaSatuanCustomer) ? 0 : hargaSatuanCustomer,
-              total_harga: isNaN(hargaSatuanCustomer)
-                ? 0
-                : hargaSatuanCustomer * (qtyKalkulasi || 0),
-              status_jo: kalkulasiData.status_kalkulasi,
-              customer: kalkulasiData.nama_customer || '',
-              produk: kalkulasiData.nama_produk || '',
-              profit: profitValue,
-              alamat_pengiriman: defaultAlamat,
-            }));
-          }
-        } else {
-          console.warn(
-            'Selected Kalkulasi does not have complete data:',
-            kalkulasiData,
-          );
+        // Auto-select first gudang if alamat_pengiriman is not set
+        if (gudangOpts.length > 0 && !formData.alamat_pengiriman) {
+          setSelectedAlamatPengiriman(gudangOpts[0].value);
           setFormData((prev) => ({
             ...prev,
-            harga_jual: 0,
-            po_qty: 0,
-            total_harga: 0,
-            status_jo: '',
-            customer: kalkulasiData?.nama_customer || '',
-            produk: kalkulasiData?.nama_produk || '',
-            profit: kalkulasiData?.profit || 0,
-            alamat_pengiriman: '',
+            alamat_pengiriman: gudangOpts[0].value,
           }));
-          setGudangOptions([]);
         }
-      } else {
-        setSelectedKalkulasiData(null);
-        setGudangOptions([]);
-        // Reset fields when no Kalkulasi is selected
-        setFormData((prev) => ({
-          ...prev,
-          harga_jual: 0,
-          po_qty: 0,
-          total_harga: 0,
-          status_jo: '',
-          customer: '',
-          produk: '',
-          profit: 0,
-          alamat_pengiriman: '',
-        }));
       }
-      return;
-    }
 
-    // Auto calculate total_harga when harga_jual or po_qty changes
+      setFormData((prev) => ({
+        ...prev,
+        harga_jual: hargaSatuanCustomer,
+        total_harga: hargaSatuanCustomer * (prev.po_qty || qtyKalkulasi),
+        status_jo: kalkulasiData.status_kalkulasi || '',
+        customer: kalkulasiData.nama_customer || '',
+        produk: kalkulasiData.nama_produk || '',
+        profit: kalkulasiData.profit || 0,
+      }));
+      setSelectedStatusJO(kalkulasiData.status_kalkulasi || '');
+    }
+  };
+
+  const handleStatusJOChange = (value: number | string) => {
+    const stringValue = String(value);
+    setSelectedStatusJO(stringValue);
+    setFormData((prev) => ({ ...prev, status_jo: stringValue }));
+  };
+
+  const handleStatusProdukChange = (value: number | string) => {
+    const stringValue = String(value);
+    setSelectedStatusProduk(stringValue);
+    setFormData((prev) => ({ ...prev, status_produk: stringValue }));
+  };
+
+  const handleAlamatPengirimanChange = (value: number | string) => {
+    const stringValue = String(value);
+    setSelectedAlamatPengiriman(stringValue);
+    setFormData((prev) => ({ ...prev, alamat_pengiriman: stringValue }));
+  };
+
+  const handleInputChange = (field: keyof SOFormData, value: any) => {
+    if (field === 'no_so') return;
+
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
     if (field === 'harga_jual') {
       const total = value * formData.po_qty;
       setFormData((prev) => ({
@@ -305,40 +304,37 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    resetForm();
-  };
+    setLoading(true);
+    try {
+      const createUrl = `${import.meta.env.VITE_API_LINK}/marketing/so`;
+      const submitData = {
+        ...formData,
+        id_so_cancel: soData?.id || null,
+        so_cancel: soData?.no_so || '',
+      };
 
-  const resetForm = () => {
-    setFormData({
-      tgl_input_po: new Date().toISOString().split('T')[0],
-      no_so: '',
-      id_kalkulasi: null,
-      id_so_cancel: null,
-      so_cancel: '',
-      no_booking: '',
-      status_jo: '',
-      customer: '',
-      produk: '',
-      status_produk: '',
-      tgl_acc_customer: '',
-      tgl_po_customer: '',
-      po_qty: 0,
-      harga_jual: 0,
-      total_harga: 0,
-      no_po_customer: '',
-      keterangan: '',
-      ppn: '',
-      profit: 0,
-      tgl_pengiriman: '',
-      alamat_pengiriman: '',
-      ada_standar_warna: 'Tidak',
-      is_io_selesai: false,
-    });
-    setSelectedKalkulasiData(null);
-    setGudangOptions([]);
+      console.log('Submitting EditSO data:', submitData);
+      const response = await axios.post(createUrl, submitData, {
+        withCredentials: true,
+      });
+
+      if (response.data.succes) {
+        alert('SO baru berhasil dibuat dari SO yang dibatalkan');
+        onSuccess();
+        onClose();
+      } else {
+        alert(
+          'Gagal membuat SO: ' + (response.data.message || 'Unknown error'),
+        );
+      }
+    } catch (error: any) {
+      console.error('Error creating SO:', error);
+      alert('Error: ' + (error.response?.data?.message || 'Terjadi kesalahan'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -346,14 +342,12 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold">Create Sales Order</h2>
+          <h2 className="text-xl font-semibold">
+            Buat Sales Order Baru (dari Cancel)
+          </h2>
           <button
-            onClick={() => {
-              resetForm();
-              onClose();
-            }}
+            onClick={onClose}
             className="text-gray-500 hover:text-gray-700 text-2xl"
             type="button"
           >
@@ -361,10 +355,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Row 1 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Tanggal Input PO
@@ -397,8 +389,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               <label className="block text-sm font-medium mb-1">NOMOR IO</label>
               <SearchableSelect
                 placeholder={kalkulasiLoading ? 'Loading...' : 'Pilih Data'}
-                value={formData.id_kalkulasi}
-                onChange={(value) => handleInputChange('id_kalkulasi', value)}
+                value={selectedKalkulasiId}
+                onChange={handleKalkulasiChange}
                 options={kalkulasiOptions}
               />
             </div>
@@ -407,24 +399,25 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               <label className="block text-sm font-medium mb-1">
                 SO Cancel
               </label>
-              <SearchableSelect
-                placeholder="Pilih Data"
+              <input
+                type="text"
                 value={formData.so_cancel}
-                onChange={(value) => handleInputChange('so_cancel', value)}
-                options={[]} // Add your options here
+                readOnly
+                className="w-full p-2 border border-gray-300 rounded bg-gray-100"
               />
             </div>
 
-            {/* Row 2 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 No Booking
               </label>
-              <SearchableSelect
-                placeholder="Pilih Data"
+              <input
+                type="text"
                 value={formData.no_booking}
-                onChange={(value) => handleInputChange('no_booking', value)}
-                options={[]} // Add your options here
+                onChange={(e) =>
+                  handleInputChange('no_booking', e.target.value)
+                }
+                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
@@ -434,8 +427,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               </label>
               <SearchableSelect
                 placeholder="Pilih Status JO"
-                value={formData.status_jo}
-                onChange={(value) => handleInputChange('status_jo', value)}
+                value={selectedStatusJO}
+                onChange={handleStatusJOChange}
                 options={statusJOOptions}
               />
             </div>
@@ -452,7 +445,6 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               />
             </div>
 
-            {/* Row 3 */}
             <div>
               <label className="block text-sm font-medium mb-1">Produk</label>
               <input
@@ -471,8 +463,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               </label>
               <SearchableSelect
                 placeholder="Pilih Status Produk"
-                value={formData.status_produk}
-                onChange={(value) => handleInputChange('status_produk', value)}
+                value={selectedStatusProduk}
+                onChange={handleStatusProdukChange}
                 options={statusProdukOptions}
               />
             </div>
@@ -491,7 +483,6 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               />
             </div>
 
-            {/* Row 4 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Tanggal PO Customer
@@ -534,7 +525,6 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               />
             </div>
 
-            {/* Row 5 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Harga Jual
@@ -576,7 +566,6 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               </select>
             </div>
 
-            {/* Row 6 */}
             <div>
               <label className="block text-sm font-medium mb-1">Profit</label>
               <input
@@ -619,22 +608,33 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               />
             </div>
 
-            {/* Row 7 */}
             <div className="col-span-2">
               <label className="block text-sm font-medium mb-1">
                 Alamat Pengiriman
               </label>
               <SearchableSelect
                 placeholder="Pilih Alamat Gudang"
-                value={formData.alamat_pengiriman}
-                onChange={(value) =>
-                  handleInputChange('alamat_pengiriman', value)
-                }
+                value={selectedAlamatPengiriman}
+                onChange={handleAlamatPengirimanChange}
                 options={gudangOptions}
               />
             </div>
 
-            {/* Row 8 */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Note Cancel
+              </label>
+              <input
+                type="text"
+                placeholder="Alasan Cancel"
+                value={formData.note_cancel}
+                onChange={(e) =>
+                  handleInputChange('note_cancel', e.target.value)
+                }
+                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
             <div className="flex justify-between">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -685,14 +685,10 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex justify-end space-x-3 mt-6 pt-4 border-t">
             <button
               type="button"
-              onClick={() => {
-                resetForm();
-                onClose();
-              }}
+              onClick={onClose}
               className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={loading}
             >
@@ -712,4 +708,4 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   );
 };
 
-export default SOCreatePopup;
+export default EditSO;

@@ -207,6 +207,7 @@ import OKPPage from './pages/Marketing/OKP/OKPPage';
 import IOMarketingPage from './pages/Marketing/IO/IOMarketingPage';
 import SOPage from './pages/Marketing/SO/SOPage';
 import KalkulasiHistoryPage from './pages/Marketing/Kalkulasi/KalkulasiHistoryPage';
+import HistorySOPage from './pages/Marketing/SO/HistorySOPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -333,7 +334,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
 
-              <SOPage />
+              <HistorySOPage />
             </>
           }
         />

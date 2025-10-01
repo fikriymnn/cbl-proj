@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 import { KalkulasiItem, OKPFormData } from '../types';
 import ProductInfoSection from './ProductInfoSection';
@@ -20,6 +21,37 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   disabled,
   isDesain = false,
 }) => {
+  const [loadingOKPNumber, setLoadingOKPNumber] = useState(false);
+
+  // Function to generate OKP number
+  const generateOKPNumber = async () => {
+    try {
+      setLoadingOKPNumber(true);
+      const url = `${import.meta.env.VITE_API_LINK}/marketing/okpJumlahData`;
+
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      const totalData = res.data.total_data || 0;
+      const nextNumber = totalData + 1;
+
+      // Format: OK-XXXXX/MM/YY
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = String(now.getFullYear()).slice(-2);
+      const formattedNumber = String(nextNumber).padStart(5, '0');
+
+      const okpNumber = `OK-${formattedNumber}/${month}/${year}`;
+
+      handleInputChange('no_okp', okpNumber);
+    } catch (error) {
+      console.error('Error generating OKP number:', error);
+    } finally {
+      setLoadingOKPNumber(false);
+    }
+  };
+
   // Auto-set today's date for tgl_pembuatan_okp when component mounts (only for new records)
   useEffect(() => {
     if (!formData.tgl_pembuatan_okp && !disabled) {
@@ -34,6 +66,13 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     }
   }, [formData.tgl_pembuatan_okp, disabled, handleInputChange]);
 
+  // Auto-generate OKP number for new records
+  useEffect(() => {
+    if (!formData.no_okp && !disabled) {
+      generateOKPNumber();
+    }
+  }, [formData.no_okp, disabled]);
+
   useEffect(() => {
     const statusKalkulasi = selectedKalkulasi?.status_kalkulasi || 'baru';
     if (formData.status_okp !== statusKalkulasi && !disabled) {
@@ -42,6 +81,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
     console.log('Status OKP set to:', statusKalkulasi);
   }, [formData.status_okp, disabled, handleInputChange]);
+
   // Format date for input (convert from various formats to YYYY-MM-DD)
   const formatDateForInput = (dateValue: string) => {
     if (!dateValue) return '';
@@ -121,14 +161,16 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           <input
             type="text"
             value={formData.no_okp || ''}
-            onChange={(e) => handleInputChange('no_okp', e.target.value)}
-            className={`w-full p-2 border border-gray-300 rounded-md ${
-              disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
-            }`}
+            className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 cursor-not-allowed"
             placeholder="OK-00001/09/25"
-            disabled={disabled}
-            readOnly={disabled}
+            readOnly
+            disabled
           />
+          {loadingOKPNumber && (
+            <p className="text-xs text-gray-500 mt-1">
+              Generating OKP number...
+            </p>
+          )}
         </div>
 
         <div>
@@ -137,7 +179,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           </label>
           <input
             type="text"
-            value={selectedKalkulasi?.status_kalkulasi}
+            value={selectedKalkulasi?.status_kalkulasi || ''}
             onChange={(e) => handleInputChange('status_okp', e.target.value)}
             className={`w-full p-2 border border-gray-300 rounded-md ${
               disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''

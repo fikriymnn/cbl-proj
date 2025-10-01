@@ -1,29 +1,19 @@
-// SOMarketing.tsx
+// SOApprovalKabag.tsx
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
-import {
-  APIResponse,
-  SOData,
-  SOFormData,
-  KalkulasiData,
-} from './types/SOTypes';
-import SOCreatePopup from './SOCreatePopUp';
+import { APIResponse, KalkulasiData, SOData } from '../SO/types/SOTypes';
+import SODetailPopup from '../SO/SODetailPopup';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
-import SODetailPopup from './SODetailPopup';
 
-const SOMarketing: React.FC = () => {
+const SOApprovalKabag: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [soData, setsoData] = useState<SOData[]>([]);
-  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
-  const [submitLoading, setSubmitLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sortConfig, setSortConfig] = useState<{
     key: keyof SOData | null;
     direction: 'asc' | 'desc';
   }>({ key: null, direction: 'asc' });
-  const [isDetailPopupOpen, setIsDetailPopupOpen] = useState<boolean>(false);
-  const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
-  const [requestLoading, setRequestLoading] = useState<number | null>(null);
+
   // Filter states
   const [kalkulasiOptions, setKalkulasiOptions] = useState<
     Array<{
@@ -35,6 +25,12 @@ const SOMarketing: React.FC = () => {
   const [selectedIOFilter, setSelectedIOFilter] = useState<string>('');
   const [kalkulasiLoading, setKalkulasiLoading] = useState(false);
 
+  // Action states
+  const [isDetailPopupOpen, setIsDetailPopupOpen] = useState<boolean>(false);
+  const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
+  const [approveLoading, setApproveLoading] = useState<number | null>(null);
+  const [rejectLoading, setRejectLoading] = useState<number | null>(null);
+
   useEffect(() => {
     fetchsoData();
     fetchKalkulasiData();
@@ -44,7 +40,7 @@ const SOMarketing: React.FC = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchsoData();
-    }, 500); // Debounce for 500ms
+    }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, selectedIOFilter]);
@@ -129,13 +125,14 @@ const SOMarketing: React.FC = () => {
       setKalkulasiLoading(false);
     }
   };
-  const RequestKabag = async (id: number) => {
-    if (window.confirm('Apakah Anda yakin ingin Request SO Ini?')) {
+
+  const handleApprove = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin Approve SO Ini?')) {
       try {
-        setRequestLoading(id);
+        setApproveLoading(id);
         const url = `${
           import.meta.env.VITE_API_LINK
-        }/marketing/so/request/${id}`;
+        }/marketing/so/approve/${id}`;
         const res = await axios.put(
           url,
           {},
@@ -145,42 +142,49 @@ const SOMarketing: React.FC = () => {
         );
 
         if (res.data.succes) {
-          alert('SO berhasil di-request!');
+          alert('SO berhasil di-approve!');
           fetchsoData();
         }
       } catch (error: any) {
         console.log(error);
-        alert('Gagal request SO. Silakan coba lagi.');
+        alert('Gagal approve SO. Silakan coba lagi.');
       } finally {
-        setRequestLoading(null);
+        setApproveLoading(null);
       }
     }
   };
-  const handleCreateSO = async (formData: SOFormData): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
-    try {
-      console.log('Submitting SO form data:', formData);
-      setSubmitLoading(true);
-      const res: AxiosResponse<APIResponse<SOData>> = await axios.post(
-        url,
-        formData,
-        {
-          withCredentials: true,
-        },
-      );
 
-      if (res.data.succes) {
-        console.log('SO created successfully:', res.data);
-        setIsPopupOpen(false);
-        fetchsoData();
-        alert('Sales Order created successfully!');
+  const handleReject = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin Reject SO Ini?')) {
+      try {
+        setRejectLoading(id);
+        const url = `${
+          import.meta.env.VITE_API_LINK
+        }/marketing/so/reject/${id}`;
+        const res = await axios.put(
+          url,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
+
+        if (res.data.succes) {
+          alert('SO berhasil di-reject!');
+          fetchsoData();
+        }
+      } catch (error: any) {
+        console.log(error);
+        alert('Gagal reject SO. Silakan coba lagi.');
+      } finally {
+        setRejectLoading(null);
       }
-    } catch (error) {
-      console.error('Error creating SO:', error);
-      alert('Error creating Sales Order. Please try again.');
-    } finally {
-      setSubmitLoading(false);
     }
+  };
+
+  const handleViewDetail = (item: SOData) => {
+    setSelectedSO(item);
+    setIsDetailPopupOpen(true);
   };
 
   const handleSort = (key: keyof SOData) => {
@@ -215,11 +219,10 @@ const SOMarketing: React.FC = () => {
     return new Date(dateString).toLocaleDateString('id-ID');
   };
 
-  // Apply sorting only (filtering is done by API)
+  // Apply sorting
   const getSortedData = () => {
     let sorted = [...soData];
 
-    // Apply sorting
     if (sortConfig.key) {
       sorted.sort((a, b) => {
         const aValue = a[sortConfig.key!];
@@ -253,25 +256,11 @@ const SOMarketing: React.FC = () => {
     setSearchTerm('');
     setSelectedIOFilter('');
   };
-  const handleViewDetail = (item: SOData) => {
-    setSelectedSO(item);
-    setIsDetailPopupOpen(true);
-  };
+
   return (
     <div className="">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={() => setIsPopupOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <span className="text-xl">+</span>
-          <span>SO</span>
-        </button>
-      </div>
-
       {/* Search and Filter Bar */}
-      <div className=" mb-4">
+      <div className="mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Search</label>
@@ -414,7 +403,6 @@ const SOMarketing: React.FC = () => {
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                         {index + 1}
                       </td>
-
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                         <div className="flex flex-col gap-1">
                           <button
@@ -424,16 +412,27 @@ const SOMarketing: React.FC = () => {
                           >
                             DETAIL
                           </button>
-                          {item.status === 'draft' && (
-                            <button
-                              onClick={() => RequestKabag(item.id)}
-                              className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                              disabled={requestLoading === item.id}
-                            >
-                              {requestLoading === item.id
-                                ? 'Loading...'
-                                : 'REQUEST'}
-                            </button>
+                          {item.status === 'requested' && (
+                            <>
+                              <button
+                                onClick={() => handleApprove(item.id)}
+                                className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+                                disabled={approveLoading === item.id}
+                              >
+                                {approveLoading === item.id
+                                  ? 'Loading...'
+                                  : 'APPROVE'}
+                              </button>
+                              <button
+                                onClick={() => handleReject(item.id)}
+                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+                                disabled={rejectLoading === item.id}
+                              >
+                                {rejectLoading === item.id
+                                  ? 'Loading...'
+                                  : 'REJECT'}
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
@@ -480,8 +479,12 @@ const SOMarketing: React.FC = () => {
                           className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${
                             item.status === 'draft'
                               ? 'bg-yellow-100 text-yellow-800'
+                              : item.status === 'pending'
+                              ? 'bg-orange-100 text-orange-800'
                               : item.status === 'approved'
                               ? 'bg-green-100 text-green-800'
+                              : item.status === 'rejected'
+                              ? 'bg-red-100 text-red-800'
                               : 'bg-gray-100 text-gray-800'
                           }`}
                           title={item.status}
@@ -509,13 +512,7 @@ const SOMarketing: React.FC = () => {
         </div>
       )}
 
-      {/* Create SO Popup */}
-      <SOCreatePopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        onSubmit={handleCreateSO}
-        loading={submitLoading}
-      />
+      {/* Detail Popup */}
       <SODetailPopup
         isOpen={isDetailPopupOpen}
         onClose={() => {
@@ -528,4 +525,4 @@ const SOMarketing: React.FC = () => {
   );
 };
 
-export default SOMarketing;
+export default SOApprovalKabag;

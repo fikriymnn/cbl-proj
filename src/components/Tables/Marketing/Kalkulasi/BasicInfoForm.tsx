@@ -10,8 +10,8 @@ interface BasicInfoFormProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
-  isReadOnly?: boolean; // Add this
-  copyType?: 'repeat' | 'repeat_perubahan'; // Add this
+  isReadOnly?: boolean;
+  copyType?: 'repeat' | 'repeat_perubahan';
 }
 
 interface Customer {
@@ -52,18 +52,22 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   const [produks, setProduks] = useState<Product[]>([]);
   const [pengirimans, setPengirimans] = useState<Pengiriman[]>([]);
   const [loading, setLoading] = useState(false);
+  const [nomorKalkulasi, setNomorKalkulasi] = useState<string>('');
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
+
   const isFieldDisabled = (fieldType: 'basic' | 'select') => {
-    if (copyType === 'repeat') return true; // All fields disabled for repeat
-    if (copyType === 'repeat_perubahan' && fieldType === 'basic') return false; // Basic fields editable for repeat_perubahan
-    if (copyType === 'repeat_perubahan' && fieldType === 'select') return false; // Select fields editable for repeat_perubahan
+    if (copyType === 'repeat') return true;
+    if (copyType === 'repeat_perubahan' && fieldType === 'basic') return false;
+    if (copyType === 'repeat_perubahan' && fieldType === 'select') return false;
     return isReadOnly;
   };
+
   useEffect(() => {
     getMarketingCustomer();
+    generateNomorKalkulasi();
   }, []);
 
   // NEW: Sync selectedCustomer when formData changes (for editing existing data)
@@ -88,6 +92,38 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     }
   }, [selectedCustomer]);
 
+  // NEW: Function to generate Nomor Kalkulasi
+  async function generateNomorKalkulasi() {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/marketing/kalkulasiJumlahData`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      const totalData = res.data.total_data || 0;
+      const nextNumber = totalData + 1;
+
+      // Format: KA-XXXXX/MM/YY
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = String(now.getFullYear()).slice(-2);
+      const formattedNumber = String(nextNumber).padStart(5, '0');
+
+      const nomor = `KA-${formattedNumber}/${month}/${year}`;
+      setNomorKalkulasi(nomor);
+
+      // Update formData if needed
+      onInputChange({
+        target: { name: 'nomor_kalkulasi', value: nomor },
+      } as React.ChangeEvent<HTMLInputElement>);
+    } catch (error: any) {
+      console.log('Error generating nomor kalkulasi:', error);
+      setNomorKalkulasi('KA-00001/01/25');
+    }
+  }
+
   // Helper function to ensure array format
   const ensureArray = (data: any): any[] => {
     if (!data) return [];
@@ -104,7 +140,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       });
       console.log('Fetched customers:', res.data);
 
-      // Handle different response structures
       let customerData = [];
       if (res.data?.data) {
         customerData = ensureArray(res.data.data);
@@ -133,7 +168,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       });
       console.log('Fetched marketing list:', res.data);
 
-      // Handle different response structures
       let marketingData = [];
       if (res.data?.data) {
         marketingData = ensureArray(res.data.data);
@@ -161,7 +195,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       });
       console.log('Fetched pengiriman data:', res.data);
 
-      // Handle different response structures
       let pengirimanData = [];
       if (res.data?.data) {
         pengirimanData = ensureArray(res.data.data);
@@ -191,7 +224,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       });
       console.log('Fetched produks:', res.data);
 
-      // Handle different response structures
       let produktData = [];
       if (res.data?.data) {
         produktData = ensureArray(res.data.data);
@@ -224,7 +256,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       target: { name: 'nama_customer', value: customer?.nama_customer || '' },
     } as unknown as React.ChangeEvent<HTMLSelectElement>);
 
-    // Clear dependent fields when customer changes
     const fieldsToReset = [
       'id_marketing',
       'nama_marketing',
@@ -295,7 +326,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     } as React.ChangeEvent<HTMLSelectElement>);
   };
 
-  // FIXED: Get selected values for controlled components
   const getSelectedCustomerId = () => {
     return formData.id_customer || 0;
   };
@@ -332,6 +362,21 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* NEW: Nomor Kalkulasi Field */}
+        <div className="space-y-2">
+          <label className="block text-xs font-medium text-gray-700">
+            Nomor Kalkulasi
+          </label>
+          <input
+            type="text"
+            name="nomor_kalkulasi"
+            value={nomorKalkulasi}
+            className="w-full px-2 py-1 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+            disabled
+            readOnly
+          />
+        </div>
+
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-700">
             Tanggal Kalkulasi
@@ -390,7 +435,9 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             disabled={isFieldDisabled('select')}
           />
         </div>
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-700">
             Marketing
@@ -414,9 +461,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             disabled={isFieldDisabled('select')}
           />
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-700">
             Produk
@@ -473,7 +518,9 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             disabled={isFieldDisabled('basic')}
           />
         </div>
+      </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-700">
             Presentase Insheet %

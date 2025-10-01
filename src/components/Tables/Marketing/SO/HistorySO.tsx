@@ -1,21 +1,14 @@
-// SOMarketing.tsx
+// HistorySO.tsx
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
-import {
-  APIResponse,
-  SOData,
-  SOFormData,
-  KalkulasiData,
-} from './types/SOTypes';
-import SOCreatePopup from './SOCreatePopUp';
+import { APIResponse, SOData, KalkulasiData } from './types/SOTypes';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 import SODetailPopup from './SODetailPopup';
+import CancelPopup from './CancelPopup';
 
-const SOMarketing: React.FC = () => {
+const HistorySO: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [soData, setsoData] = useState<SOData[]>([]);
-  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
-  const [submitLoading, setSubmitLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sortConfig, setSortConfig] = useState<{
     key: keyof SOData | null;
@@ -23,7 +16,6 @@ const SOMarketing: React.FC = () => {
   }>({ key: null, direction: 'asc' });
   const [isDetailPopupOpen, setIsDetailPopupOpen] = useState<boolean>(false);
   const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
-  const [requestLoading, setRequestLoading] = useState<number | null>(null);
   // Filter states
   const [kalkulasiOptions, setKalkulasiOptions] = useState<
     Array<{
@@ -34,7 +26,15 @@ const SOMarketing: React.FC = () => {
   >([]);
   const [selectedIOFilter, setSelectedIOFilter] = useState<string>('');
   const [kalkulasiLoading, setKalkulasiLoading] = useState(false);
+  const [isCancelPopupOpen, setIsCancelPopupOpen] = useState<boolean>(false);
+  const [selectedSOForCancel, setSelectedSOForCancel] = useState<SOData | null>(
+    null,
+  );
 
+  const handleCancelClick = (item: SOData) => {
+    setSelectedSOForCancel(item);
+    setIsCancelPopupOpen(true);
+  };
   useEffect(() => {
     fetchsoData();
     fetchKalkulasiData();
@@ -56,6 +56,7 @@ const SOMarketing: React.FC = () => {
 
       const res: AxiosResponse<APIResponse<SOData[]>> = await axios.get(url, {
         params: {
+          status: 'history',
           search: searchTerm,
           id_io: selectedIOFilter,
         },
@@ -127,59 +128,6 @@ const SOMarketing: React.FC = () => {
       console.error('Error fetching Kalkulasi data:', error);
     } finally {
       setKalkulasiLoading(false);
-    }
-  };
-  const RequestKabag = async (id: number) => {
-    if (window.confirm('Apakah Anda yakin ingin Request SO Ini?')) {
-      try {
-        setRequestLoading(id);
-        const url = `${
-          import.meta.env.VITE_API_LINK
-        }/marketing/so/request/${id}`;
-        const res = await axios.put(
-          url,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
-
-        if (res.data.succes) {
-          alert('SO berhasil di-request!');
-          fetchsoData();
-        }
-      } catch (error: any) {
-        console.log(error);
-        alert('Gagal request SO. Silakan coba lagi.');
-      } finally {
-        setRequestLoading(null);
-      }
-    }
-  };
-  const handleCreateSO = async (formData: SOFormData): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
-    try {
-      console.log('Submitting SO form data:', formData);
-      setSubmitLoading(true);
-      const res: AxiosResponse<APIResponse<SOData>> = await axios.post(
-        url,
-        formData,
-        {
-          withCredentials: true,
-        },
-      );
-
-      if (res.data.succes) {
-        console.log('SO created successfully:', res.data);
-        setIsPopupOpen(false);
-        fetchsoData();
-        alert('Sales Order created successfully!');
-      }
-    } catch (error) {
-      console.error('Error creating SO:', error);
-      alert('Error creating Sales Order. Please try again.');
-    } finally {
-      setSubmitLoading(false);
     }
   };
 
@@ -259,17 +207,6 @@ const SOMarketing: React.FC = () => {
   };
   return (
     <div className="">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={() => setIsPopupOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <span className="text-xl">+</span>
-          <span>SO</span>
-        </button>
-      </div>
-
       {/* Search and Filter Bar */}
       <div className=" mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -424,15 +361,13 @@ const SOMarketing: React.FC = () => {
                           >
                             DETAIL
                           </button>
-                          {item.status === 'draft' && (
+                          {item.status_proses === 'done' && (
                             <button
-                              onClick={() => RequestKabag(item.id)}
-                              className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                              disabled={requestLoading === item.id}
+                              onClick={() => handleCancelClick(item)}
+                              className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                              title="Cancel SO"
                             >
-                              {requestLoading === item.id
-                                ? 'Loading...'
-                                : 'REQUEST'}
+                              CANCEL
                             </button>
                           )}
                         </div>
@@ -509,13 +444,6 @@ const SOMarketing: React.FC = () => {
         </div>
       )}
 
-      {/* Create SO Popup */}
-      <SOCreatePopup
-        isOpen={isPopupOpen}
-        onClose={() => setIsPopupOpen(false)}
-        onSubmit={handleCreateSO}
-        loading={submitLoading}
-      />
       <SODetailPopup
         isOpen={isDetailPopupOpen}
         onClose={() => {
@@ -524,8 +452,17 @@ const SOMarketing: React.FC = () => {
         }}
         data={selectedSO}
       />
+      <CancelPopup
+        isOpen={isCancelPopupOpen}
+        onClose={() => {
+          setIsCancelPopupOpen(false);
+          setSelectedSOForCancel(null);
+        }}
+        soData={selectedSOForCancel}
+        onSuccess={fetchsoData}
+      />
     </div>
   );
 };
 
-export default SOMarketing;
+export default HistorySO;
