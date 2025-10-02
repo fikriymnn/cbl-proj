@@ -31,12 +31,13 @@ interface ApiError {
 
 type SortKey = keyof OKPItem | 'index';
 type SortDirection = 'asc' | 'desc';
+type ModalMode = 'create' | 'detail' | 'marketing' | 'customer';
 
 const OKPMarketing: React.FC = () => {
   const [data, setData] = useState<OKPItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [modalMode, setModalMode] = useState<'create' | 'detail'>('create');
+  const [modalMode, setModalMode] = useState<ModalMode>('create');
   const [selectedOKPId, setSelectedOKPId] = useState<number | undefined>();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sortKey, setSortKey] = useState<SortKey>('id');
@@ -191,13 +192,27 @@ const OKPMarketing: React.FC = () => {
     setShowModal(true);
   };
 
+  const handleMarketingAction = (okpId: number) => {
+    setModalMode('marketing');
+    setSelectedOKPId(okpId);
+    setShowModal(true);
+  };
+
+  const handleCustomerAction = (okpId: number) => {
+    setModalMode('customer');
+    setSelectedOKPId(okpId);
+    setShowModal(true);
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setModalMode('create');
     setSelectedOKPId(undefined);
-    if (modalMode === 'create') {
-      fetchOKPData();
-    }
+  };
+
+  const handleActionComplete = () => {
+    fetchOKPData();
+    handleCloseModal();
   };
 
   const formatDate = (dateString: string) => {
@@ -397,7 +412,7 @@ const OKPMarketing: React.FC = () => {
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                       {index + 1}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium flex flex-col gap-2">
                       <button
                         onClick={() =>
                           handleDetailOKP(item.id || item.id_kalkulasi)
@@ -407,6 +422,24 @@ const OKPMarketing: React.FC = () => {
                       >
                         Detail
                       </button>
+                      {item.posisi_proses === 'marketing' && (
+                        <button
+                          onClick={() => handleMarketingAction(item.id)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                          title="Marketing Actions"
+                        >
+                          Marketing
+                        </button>
+                      )}
+                      {item.posisi_proses === 'customer' && (
+                        <button
+                          onClick={() => handleCustomerAction(item.id)}
+                          className="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                          title="Customer Actions"
+                        >
+                          Customer
+                        </button>
+                      )}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
@@ -553,6 +586,7 @@ const OKPMarketing: React.FC = () => {
           onClose={handleCloseModal}
           mode={modalMode}
           okpId={selectedOKPId}
+          onActionComplete={handleActionComplete}
         />
       )}
     </div>

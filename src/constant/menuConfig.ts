@@ -202,6 +202,11 @@ export const menuCategories: MenuCategory[] = [
         icon: 'qms',
       },
       {
+        name: 'Kabag Approve',
+        path: '/qc/kabagapproval/os',
+        icon: 'qms',
+      },
+      {
         name: 'QC Outstanding',
         path: '/qc/outstanding',
         icon: 'outstanding',
@@ -739,6 +744,11 @@ export const menuCategories: MenuCategory[] = [
     name: 'Pre-Press',
     icon: ProductionIcon,
     items: [{ name: 'Pre Press', path: '/prepress', icon: 'machine' }],
+  },
+  {
+    name: 'Desain',
+    icon: ProductionIcon,
+    items: [{ name: 'Desain', path: '/desain', icon: 'machine' }],
   },
   // ... continue with all other categories
 ];

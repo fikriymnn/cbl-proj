@@ -116,7 +116,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
 
       // Update formData if needed
       onInputChange({
-        target: { name: 'nomor_kalkulasi', value: nomor },
+        target: { name: 'kode_kalkulasi', value: nomor },
       } as React.ChangeEvent<HTMLInputElement>);
     } catch (error: any) {
       console.log('Error generating nomor kalkulasi:', error);
@@ -369,7 +369,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           </label>
           <input
             type="text"
-            name="nomor_kalkulasi"
+            name="kode_kalkulasi"
             value={nomorKalkulasi}
             className="w-full px-2 py-1 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
             disabled

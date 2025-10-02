@@ -208,6 +208,8 @@ import IOMarketingPage from './pages/Marketing/IO/IOMarketingPage';
 import SOPage from './pages/Marketing/SO/SOPage';
 import KalkulasiHistoryPage from './pages/Marketing/Kalkulasi/KalkulasiHistoryPage';
 import HistorySOPage from './pages/Marketing/SO/HistorySOPage';
+import KabagApprovalQC from './pages/QualityControl/Kabag/OSKabagQC';
+import KabagApprovalDesain from './pages/Desain/Kabag/KabagApprovalDesain';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -233,6 +235,28 @@ function App() {
               <PageTitle title="PT CBL" />
 
               <Login />
+            </>
+          }
+        />
+        {/* OKP Module */}
+        <Route
+          path="/qc/kabagapproval/os"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <KabagApprovalQC />
+            </>
+          }
+        />
+
+        <Route
+          path="/desain"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <KabagApprovalDesain />
             </>
           }
         />
@@ -278,6 +302,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/marketing/okp/create"
           element={
