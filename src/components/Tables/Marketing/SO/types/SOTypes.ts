@@ -198,6 +198,15 @@ export interface IOData {
 }
 
 export interface SOData {
+  create_by: string;
+  note: string;
+  status_pemesanan: string;
+  ppic: any;
+  kirim_semua: any;
+  partial: any;
+  harga: any;
+  artwork: any;
+  acuan_warna: any;
   id_kalkulasi: any;
   id: number;
   no_so: string;
