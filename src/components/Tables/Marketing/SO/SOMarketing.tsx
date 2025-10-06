@@ -10,6 +10,7 @@ import {
 import SOCreatePopup from './SOCreatePopUp';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 import SODetailPopup from './SODetailPopup';
+import SODoneIOManualPopup from './SODoneIOPopup';
 
 const SOMarketing: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,6 +35,9 @@ const SOMarketing: React.FC = () => {
   >([]);
   const [selectedIOFilter, setSelectedIOFilter] = useState<string>('');
   const [kalkulasiLoading, setKalkulasiLoading] = useState(false);
+  const [isDoneIOManualPopupOpen, setIsDoneIOManualPopupOpen] =
+    useState<boolean>(false);
+  const [doneWorkLoading, setDoneWorkLoading] = useState<number | null>(null);
 
   useEffect(() => {
     fetchsoData();
@@ -48,7 +52,38 @@ const SOMarketing: React.FC = () => {
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, selectedIOFilter]);
+  const handleDoneWork = async (id: number) => {
+    if (
+      window.confirm('Apakah Anda yakin ingin menyelesaikan pekerjaan SO ini?')
+    ) {
+      try {
+        setDoneWorkLoading(id);
+        const url = `${
+          import.meta.env.VITE_API_LINK
+        }/marketing/so/doneWork/${id}`;
+        const res = await axios.put(
+          url,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
 
+        if (res.data.succes) {
+          alert('Pekerjaan SO berhasil diselesaikan!');
+          fetchsoData();
+        }
+      } catch (error: any) {
+        console.error('Error completing SO work:', error);
+        alert(
+          error.response?.data?.message ||
+            'Gagal menyelesaikan pekerjaan SO. Silakan coba lagi.',
+        );
+      } finally {
+        setDoneWorkLoading(null);
+      }
+    }
+  };
   const fetchsoData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
     try {
@@ -261,13 +296,21 @@ const SOMarketing: React.FC = () => {
     <div className="">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={() => setIsPopupOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <span className="text-xl">+</span>
-          <span>SO</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsPopupOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <span className="text-xl">+</span>
+            <span>SO</span>
+          </button>
+          <button
+            onClick={() => setIsDoneIOManualPopupOpen(true)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <span>Done IO Manual</span>
+          </button>
+        </div>
       </div>
 
       {/* Search and Filter Bar */}
@@ -435,6 +478,17 @@ const SOMarketing: React.FC = () => {
                                 : 'REQUEST'}
                             </button>
                           )}
+                          {item.status === 'history' && (
+                            <button
+                              onClick={() => handleDoneWork(item.id)}
+                              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+                              disabled={doneWorkLoading === item.id}
+                            >
+                              {doneWorkLoading === item.id
+                                ? 'Processing...'
+                                : 'DONE WORK'}
+                            </button>
+                          )}
                         </div>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
@@ -523,6 +577,15 @@ const SOMarketing: React.FC = () => {
           setSelectedSO(null);
         }}
         data={selectedSO}
+      />
+      {/* Done IO Manual Popup */}
+      <SODoneIOManualPopup
+        isOpen={isDoneIOManualPopupOpen}
+        onClose={() => setIsDoneIOManualPopupOpen(false)}
+        onSuccess={() => {
+          fetchsoData();
+          fetchKalkulasiData();
+        }}
       />
     </div>
   );
