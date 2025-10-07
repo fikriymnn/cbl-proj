@@ -576,6 +576,23 @@ export const menuCategories: MenuCategory[] = [
           },
         ],
       },
+      {
+        name: 'BOM',
+        path: '/ppic/bom',
+        icon: 'payroll',
+        children: [
+          {
+            name: 'Create BOM',
+            path: '/ppic/bom/create',
+            icon: 'ncr',
+          },
+          {
+            name: 'History BOM',
+            path: '/ppic/bom/history',
+            icon: 'capa',
+          },
+        ],
+      },
     ],
   },
   {
@@ -681,6 +698,7 @@ export const menuCategories: MenuCategory[] = [
           },
         ],
       },
+
       {
         name: 'Master Marketing',
         path: '/marketing/master',

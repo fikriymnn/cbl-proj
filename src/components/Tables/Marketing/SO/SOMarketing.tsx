@@ -434,6 +434,15 @@ const SOMarketing: React.FC = () => {
                       {getSortIcon('tgl_input_po')}
                     </button>
                   </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <button
+                      onClick={() => handleSort('tgl_input_po')}
+                      className="flex items-center hover:text-gray-700 focus:outline-none"
+                    >
+                      STATUS WORK
+                      {getSortIcon('status_work')}
+                    </button>
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -478,17 +487,18 @@ const SOMarketing: React.FC = () => {
                                 : 'REQUEST'}
                             </button>
                           )}
-                          {item.status === 'history' && (
-                            <button
-                              onClick={() => handleDoneWork(item.id)}
-                              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                              disabled={doneWorkLoading === item.id}
-                            >
-                              {doneWorkLoading === item.id
-                                ? 'Processing...'
-                                : 'DONE WORK'}
-                            </button>
-                          )}
+                          {item.status === 'history' ||
+                            (item.status_work !== 'done' && (
+                              <button
+                                onClick={() => handleDoneWork(item.id)}
+                                className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+                                disabled={doneWorkLoading === item.id}
+                              >
+                                {doneWorkLoading === item.id
+                                  ? 'Processing...'
+                                  : 'DONE WORK'}
+                              </button>
+                            ))}
                         </div>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
@@ -553,6 +563,20 @@ const SOMarketing: React.FC = () => {
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                         {formatDate(item.tgl_input_po)}
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${
+                            item.status_work === 'draft'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : item.status_work === 'done'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                          title={item.status_work}
+                        >
+                          {item.status_work || '-'}
+                        </span>
                       </td>
                     </tr>
                   ))

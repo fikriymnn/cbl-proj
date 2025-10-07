@@ -198,6 +198,7 @@ export interface IOData {
 }
 
 export interface SOData {
+  status_work: string;
   create_by: string;
   note: string;
   status_pemesanan: string;

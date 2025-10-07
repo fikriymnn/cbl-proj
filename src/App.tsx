@@ -210,6 +210,7 @@ import KalkulasiHistoryPage from './pages/Marketing/Kalkulasi/KalkulasiHistoryPa
 import HistorySOPage from './pages/Marketing/SO/HistorySOPage';
 import KabagApprovalQC from './pages/QualityControl/Kabag/OSKabagQC';
 import KabagApprovalDesain from './pages/Desain/Kabag/KabagApprovalDesain';
+import BOMMarketing from './pages/PPIC/BOM/BOMPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -271,7 +272,16 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/ppic/bom/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
 
+              <BOMMarketing />
+            </>
+          }
+        />
         <Route
           path="/marketing/kalkulasi/history"
           element={
