@@ -11,7 +11,8 @@ const BOMCreate: React.FC = () => {
   const [soData, setSOData] = useState<SOData[]>([]);
   const [sortKey, setSortKey] = useState<string>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
+  const [selectedSOId, setSelectedSOId] = useState<number | null>(null); // Changed to store ID only
+  const [selectedIOId, setSelectedIOId] = useState<number | null>(null); // Changed to store ID only
   const [showBOMModal, setShowBOMModal] = useState<boolean>(false);
 
   const handleSort = (field: string) => {
@@ -166,7 +167,8 @@ const BOMCreate: React.FC = () => {
   }, [soData, sortKey, sortDirection]);
 
   const handleManageBOM = (so: SOData) => {
-    setSelectedSO(so);
+    setSelectedIOId(so.id_io);
+    setSelectedSOId(so.id); // Store only the ID
     setShowBOMModal(true);
   };
 
@@ -367,18 +369,19 @@ const BOMCreate: React.FC = () => {
       </div>
 
       {/* BOM Management Modal */}
-      {showBOMModal && selectedSO && (
+      {showBOMModal && selectedSOId && selectedIOId && (
         <BOMManagementModal
-          soData={selectedSO}
+          soId={selectedSOId} // Pass only the ID
           onClose={() => {
             setShowBOMModal(false);
-            setSelectedSO(null);
+            setSelectedSOId(null);
           }}
           onSuccess={() => {
             fetchSOData();
             setShowBOMModal(false);
-            setSelectedSO(null);
+            setSelectedSOId(null);
           }}
+          ioID={selectedIOId}
         />
       )}
     </div>

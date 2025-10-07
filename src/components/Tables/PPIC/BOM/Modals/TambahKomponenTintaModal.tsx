@@ -7,7 +7,8 @@ import { BOMTinta } from '../Types/bom.types';
 interface TambahKomponenTintaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: BOMTinta) => void; // Changed to BOMTinta
+  onSave: (data: BOMTinta) => void;
+  editData?: BOMTinta; // ADD THIS for edit mode
 }
 
 interface KomponenTintaData {
@@ -49,6 +50,7 @@ const TambahKomponenTintaModal: React.FC<TambahKomponenTintaModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  editData,
 }) => {
   const [formData, setFormData] = useState<KomponenTintaData>({
     warna_tinta: '#000000',
@@ -77,7 +79,21 @@ const TambahKomponenTintaModal: React.FC<TambahKomponenTintaModalProps> = ({
   const [isDraggingHue, setIsDraggingHue] = useState(false);
   const colorBoxRef = useRef<HTMLDivElement>(null);
   const hueSliderRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (isOpen && editData) {
+      setFormData({
+        warna_tinta: editData.warna_tinta,
+        id_jenis_tinta: editData.id_jenis_tinta,
+        id_jenis_kertas: editData.id_jenis_kertas,
+        id_jenis_warna_tinta: editData.id_jenis_warna_tinta,
+        jenis_mesin_cetak: editData.jenis_mesin_cetak,
+        area_cetak: editData.area_cetak,
+      });
 
+      // Set HSL from hex color
+      // (add hex to HSL conversion here if needed)
+    }
+  }, [isOpen, editData]);
   // Fetch Jenis Warna Tinta
   useEffect(() => {
     const fetchJenisWarnaTinta = async () => {
@@ -325,7 +341,7 @@ const TambahKomponenTintaModal: React.FC<TambahKomponenTintaModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-800">
-            Tambah Data Tinta
+            {editData ? 'Edit Data Tinta' : 'Tambah Data Tinta'}
           </h2>
           <button
             onClick={handleClose}

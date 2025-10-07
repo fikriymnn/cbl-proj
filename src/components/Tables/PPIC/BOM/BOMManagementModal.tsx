@@ -11,9 +11,10 @@ import BOMCoatingTab from './Tabs/BOMCoatingTab';
 import BOMLemTab from './Tabs/BOMLemTab';
 
 interface BOMManagementModalProps {
-  soData: SOData;
+  soId: number;
   onClose: () => void;
   onSuccess: () => void;
+  ioID: number;
 }
 
 type TabType =
@@ -25,25 +26,30 @@ type TabType =
   | 'lem';
 
 const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
-  soData,
+  soId,
+  ioID,
   onClose,
   onSuccess,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('kertas');
   const [loading, setLoading] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [soData, setSOData] = useState<SOData | null>(null);
+  const [selectedMounting, setSelectedMounting] = useState<any>(null);
+  const [ioMountings, setIoMountings] = useState<any[]>([]);
+
   const [bomData, setBOMData] = useState<BOMData>({
-    id_io: soData.id_io || 0,
-    id_so: soData.id || 0,
+    id_io: 0,
+    id_so: 0,
     id_io_mounting: 1,
     nama_mounting: 'A',
     no_bom: '',
-    no_io: soData.no_io || '',
-    no_so: soData.no_so || '',
-    customer: soData.customer || '',
-    produk: soData.produk || '',
+    no_io: '',
+    no_so: '',
+    customer: '',
+    produk: '',
     bom_kertas: [],
-    bom_tinta: [], // Ensure this is an empty array, not undefined
+    bom_tinta: [],
     bom_corrugated: [],
     bom_poliban: [],
     bom_coating: [],
@@ -51,8 +57,15 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   });
 
   useEffect(() => {
-    fetchExistingBOM();
-  }, [soData.id]);
+    fetchSOData();
+    fetchExistingio();
+  }, [soId]);
+
+  useEffect(() => {
+    if (soData) {
+      fetchExistingBOM();
+    }
+  }, [soData]);
 
   // Prevent page refresh/close when there are unsaved changes
   useEffect(() => {
@@ -70,19 +83,109 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     };
   }, [hasUnsavedChanges]);
 
+  // Fetch SO data by ID
+  const fetchSOData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/marketing/so/${soId}`,
+        {
+          withCredentials: true,
+        },
+      );
+      console.log('So one', response.data.data);
+      if (response.data?.data) {
+        const fetchedSOData = response.data.data;
+        setSOData(fetchedSOData);
+
+        // Initialize BOM data with SO information
+        setBOMData((prev) => ({
+          ...prev,
+          id_io: fetchedSOData.id_io || 0,
+          id_so: fetchedSOData.id || 0,
+          no_io: fetchedSOData.no_io || '',
+          no_so: fetchedSOData.no_so || '',
+          customer: fetchedSOData.customer || '',
+          produk: fetchedSOData.produk || '',
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching SO data:', error);
+      alert('Failed to fetch SO data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchExistingBOM = async () => {
     try {
       setLoading(true);
       const response = await axios.get(
         `${import.meta.env.VITE_API_LINK}/ppic/bom`,
         {
-          params: { id_so: soData.id },
+          params: { id_so: soId },
           withCredentials: true,
         },
       );
 
       if (response.data?.data) {
-        setBOMData(response.data.data);
+        const existingBOM = response.data.data;
+
+        // Ensure all arrays exist
+        setBOMData({
+          ...existingBOM,
+          bom_kertas: Array.isArray(existingBOM.bom_kertas)
+            ? existingBOM.bom_kertas
+            : [],
+          bom_tinta: Array.isArray(existingBOM.bom_tinta)
+            ? existingBOM.bom_tinta
+            : [],
+          bom_corrugated: Array.isArray(existingBOM.bom_corrugated)
+            ? existingBOM.bom_corrugated
+            : [],
+          bom_poliban: Array.isArray(existingBOM.bom_poliban)
+            ? existingBOM.bom_poliban
+            : [],
+          bom_coating: Array.isArray(existingBOM.bom_coating)
+            ? existingBOM.bom_coating
+            : [],
+          bom_lem: Array.isArray(existingBOM.bom_lem)
+            ? existingBOM.bom_lem
+            : [],
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching BOM:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchExistingio = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/marketing/io/${ioID}`,
+        {
+          withCredentials: true,
+        },
+      );
+      console.log('io', response.data.data);
+      if (response.data?.data) {
+        const ioData = response.data.data;
+        setIoMountings(ioData.io_mounting || []);
+
+        // Set first mounting as default
+        if (ioData.io_mounting && ioData.io_mounting.length > 0) {
+          setSelectedMounting(ioData.io_mounting[0]);
+
+          // Update BOM data with mounting info
+          setBOMData((prev) => ({
+            ...prev,
+            id_io_mounting: ioData.io_mounting[0].id,
+            nama_mounting: ioData.io_mounting[0].nama_mounting,
+          }));
+        }
       }
     } catch (error) {
       console.error('Error fetching BOM:', error);
@@ -92,30 +195,94 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   };
 
   const handleBOMDataChange = (newData: Partial<BOMData>) => {
-    setBOMData({ ...bomData, ...newData });
+    console.log('Updating BOM data:', newData); // Debug log
+
+    setBOMData((prev) => {
+      const updated = { ...prev, ...newData };
+
+      // Ensure all arrays are valid
+      updated.bom_kertas = Array.isArray(updated.bom_kertas)
+        ? updated.bom_kertas
+        : [];
+      updated.bom_tinta = Array.isArray(updated.bom_tinta)
+        ? updated.bom_tinta
+        : [];
+      updated.bom_corrugated = Array.isArray(updated.bom_corrugated)
+        ? updated.bom_corrugated
+        : [];
+      updated.bom_poliban = Array.isArray(updated.bom_poliban)
+        ? updated.bom_poliban
+        : [];
+      updated.bom_coating = Array.isArray(updated.bom_coating)
+        ? updated.bom_coating
+        : [];
+      updated.bom_lem = Array.isArray(updated.bom_lem) ? updated.bom_lem : [];
+
+      console.log('Updated BOM data:', updated); // Debug log
+      return updated;
+    });
+
     setHasUnsavedChanges(true);
+  };
+
+  const handleMountingChange = (mountingId: string) => {
+    const selected = ioMountings.find((m) => m.id.toString() === mountingId);
+
+    if (selected) {
+      setSelectedMounting(selected);
+      setBOMData((prev) => ({
+        ...prev,
+        id_io_mounting: selected.id,
+        nama_mounting: selected.nama_mounting,
+      }));
+      setHasUnsavedChanges(true);
+    }
   };
 
   const handleSaveBOM = async () => {
     try {
       setLoading(true);
 
+      // Validate data before saving
+      const dataToSave = {
+        ...bomData,
+        bom_kertas: Array.isArray(bomData.bom_kertas) ? bomData.bom_kertas : [],
+        bom_tinta: Array.isArray(bomData.bom_tinta) ? bomData.bom_tinta : [],
+        bom_corrugated: Array.isArray(bomData.bom_corrugated)
+          ? bomData.bom_corrugated
+          : [],
+        bom_poliban: Array.isArray(bomData.bom_poliban)
+          ? bomData.bom_poliban
+          : [],
+        bom_coating: Array.isArray(bomData.bom_coating)
+          ? bomData.bom_coating
+          : [],
+        bom_lem: Array.isArray(bomData.bom_lem) ? bomData.bom_lem : [],
+      };
+
+      console.log('Saving BOM data:', dataToSave); // Debug log
+
       const url = `${import.meta.env.VITE_API_LINK}/ppic/bom`;
       const method = bomData.id ? 'put' : 'post';
 
-      await axios({
+      const response = await axios({
         method,
         url,
-        data: bomData,
+        data: dataToSave,
         withCredentials: true,
       });
+
+      console.log('Save response:', response.data); // Debug log
 
       alert('BOM saved successfully!');
       setHasUnsavedChanges(false);
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving BOM:', error);
-      alert('Failed to save BOM');
+      console.error('Error response:', error.response?.data); // Debug log
+      alert(
+        `Failed to save BOM: ${error.response?.data?.message || error.message}`,
+      );
     } finally {
       setLoading(false);
     }
@@ -143,32 +310,26 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     { id: 'lem', label: 'Komponen Lem', icon: '🧴' },
   ];
 
+  // Show loading while fetching SO data
+  if (!soData) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl p-8">
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <span className="ml-3 text-gray-700">Loading SO data...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold text-gray-800">Manage BOM</h2>
-            <div className="mt-2 grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-500">NO IO:</span>
-                <span className="ml-2 font-medium">{soData.no_io}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">NO SO:</span>
-                <span className="ml-2 font-medium">{soData.no_so}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Customer:</span>
-                <span className="ml-2 font-medium">{soData.customer}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Produk:</span>
-                <span className="ml-2 font-medium">{soData.produk}</span>
-              </div>
-            </div>
-          </div>
+          <h2 className="text-xl font-bold text-gray-800">Manage BOM</h2>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -187,6 +348,50 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
               />
             </svg>
           </button>
+        </div>
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <div className="flex-1">
+            <div className="mt-2 grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="text-gray-500">NO IO:</span>
+                <span className="ml-2 font-medium">{soData.no_io}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">NO SO:</span>
+                <span className="ml-2 font-medium">{soData.no_so}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Customer:</span>
+                <span className="ml-2 font-medium">{soData.customer}</span>
+              </div>
+              <div>
+                <span className="text-gray-500">Produk:</span>
+                <span className="ml-2 font-medium">{soData.produk}</span>
+              </div>
+            </div>
+
+            {/* Mounting Selector */}
+            {ioMountings.length > 0 && (
+              <div className="mt-3">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Pilih Mounting:
+                </label>
+                <select
+                  value={selectedMounting?.id || ''}
+                  onChange={(e) => handleMountingChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Pilih Mounting</option>
+                  {ioMountings.map((mounting) => (
+                    <option key={mounting.id} value={mounting.id}>
+                      {mounting.nama_mounting} - Tinggi:{' '}
+                      {mounting.ukuran_jadi_tinggi} mm
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
@@ -221,8 +426,8 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                 <BOMKertasTab
                   data={bomData.bom_kertas}
                   onChange={(data) => handleBOMDataChange({ bom_kertas: data })}
-                  id_kalkulasi={soData.id_kalkulasi} // Pass id_kalkulasi from your SO data
-                  po_qty={soData.po_qty} // Pass po_qty from your SO data
+                  id_kalkulasi={soData.id_kalkulasi}
+                  po_qty={soData.po_qty}
                 />
               )}
               {activeTab === 'tinta' && (
@@ -237,6 +442,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                   onChange={(data) =>
                     handleBOMDataChange({ bom_corrugated: data })
                   }
+                  po_qty={soData.po_qty}
                 />
               )}
               {activeTab === 'poliban' && (
@@ -245,6 +451,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                   onChange={(data) =>
                     handleBOMDataChange({ bom_poliban: data })
                   }
+                  po_qty={soData.po_qty}
                 />
               )}
               {activeTab === 'coating' && (
@@ -259,6 +466,8 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                 <BOMLemTab
                   data={bomData.bom_lem}
                   onChange={(data) => handleBOMDataChange({ bom_lem: data })}
+                  po_qty={soData.po_qty}
+                  tinggi_io={selectedMounting?.ukuran_jadi_tinggi || 0}
                 />
               )}
             </>
