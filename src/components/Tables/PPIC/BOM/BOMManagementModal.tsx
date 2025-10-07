@@ -31,6 +31,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('kertas');
   const [loading, setLoading] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [bomData, setBOMData] = useState<BOMData>({
     id_io: soData.id_io || 0,
     id_so: soData.id || 0,
@@ -42,7 +43,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     customer: soData.customer || '',
     produk: soData.produk || '',
     bom_kertas: [],
-    bom_tinta: [],
+    bom_tinta: [], // Ensure this is an empty array, not undefined
     bom_corrugated: [],
     bom_poliban: [],
     bom_coating: [],
@@ -52,6 +53,22 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   useEffect(() => {
     fetchExistingBOM();
   }, [soData.id]);
+
+  // Prevent page refresh/close when there are unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
 
   const fetchExistingBOM = async () => {
     try {
@@ -74,6 +91,11 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     }
   };
 
+  const handleBOMDataChange = (newData: Partial<BOMData>) => {
+    setBOMData({ ...bomData, ...newData });
+    setHasUnsavedChanges(true);
+  };
+
   const handleSaveBOM = async () => {
     try {
       setLoading(true);
@@ -89,12 +111,26 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
       });
 
       alert('BOM saved successfully!');
+      setHasUnsavedChanges(false);
       onSuccess();
     } catch (error) {
       console.error('Error saving BOM:', error);
       alert('Failed to save BOM');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      const confirm = window.confirm(
+        'You have unsaved changes. Are you sure you want to close?',
+      );
+      if (confirm) {
+        onClose();
+      }
+    } else {
+      onClose();
     }
   };
 
@@ -134,7 +170,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <svg
@@ -184,24 +220,22 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
               {activeTab === 'kertas' && (
                 <BOMKertasTab
                   data={bomData.bom_kertas}
-                  onChange={(data) =>
-                    setBOMData({ ...bomData, bom_kertas: data })
-                  }
+                  onChange={(data) => handleBOMDataChange({ bom_kertas: data })}
+                  id_kalkulasi={soData.id_kalkulasi} // Pass id_kalkulasi from your SO data
+                  po_qty={soData.po_qty} // Pass po_qty from your SO data
                 />
               )}
               {activeTab === 'tinta' && (
                 <BOMTintaTab
                   data={bomData.bom_tinta}
-                  onChange={(data) =>
-                    setBOMData({ ...bomData, bom_tinta: data })
-                  }
+                  onChange={(data) => handleBOMDataChange({ bom_tinta: data })}
                 />
               )}
               {activeTab === 'corrugated' && (
                 <BOMCorrugatedTab
                   data={bomData.bom_corrugated}
                   onChange={(data) =>
-                    setBOMData({ ...bomData, bom_corrugated: data })
+                    handleBOMDataChange({ bom_corrugated: data })
                   }
                 />
               )}
@@ -209,7 +243,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                 <BOMPolibanTab
                   data={bomData.bom_poliban}
                   onChange={(data) =>
-                    setBOMData({ ...bomData, bom_poliban: data })
+                    handleBOMDataChange({ bom_poliban: data })
                   }
                 />
               )}
@@ -217,14 +251,14 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                 <BOMCoatingTab
                   data={bomData.bom_coating}
                   onChange={(data) =>
-                    setBOMData({ ...bomData, bom_coating: data })
+                    handleBOMDataChange({ bom_coating: data })
                   }
                 />
               )}
               {activeTab === 'lem' && (
                 <BOMLemTab
                   data={bomData.bom_lem}
-                  onChange={(data) => setBOMData({ ...bomData, bom_lem: data })}
+                  onChange={(data) => handleBOMDataChange({ bom_lem: data })}
                 />
               )}
             </>
@@ -234,7 +268,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             disabled={loading}
           >

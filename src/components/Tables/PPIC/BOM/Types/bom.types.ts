@@ -2,6 +2,7 @@
 export interface SOData {
   id_io: number;
   id: number;
+  id_kalkulasi: number;
   no_so: string;
   no_io: string;
   customer: string;
@@ -15,6 +16,7 @@ export interface SOData {
 }
 
 export interface BOMKertas {
+  id?: number; // ID dari database jika sudah ada
   id_kertas: number;
   nama_kertas: string;
   qty_lembar_plano: number;
@@ -38,7 +40,6 @@ export interface BOMTinta {
   qty_tinta: number;
   tinta_detail: TintaDetail[];
 }
-
 export interface BOMCorrugated {
   id_corrugated: number;
   nama_corrugated: string;
