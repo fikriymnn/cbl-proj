@@ -1,4 +1,4 @@
-// BOMCreate.tsx (Main Entry Point)
+// BOMApproval.tsx
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import BOMManagementModal from './BOMManagementModal';
@@ -6,7 +6,7 @@ import { SOData } from './Types/bom.types';
 
 type SortDirection = 'asc' | 'desc';
 
-const BOMCreate: React.FC = () => {
+const BOMApproval: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [soData, setSOData] = useState<SOData[]>([]);
   const [sortKey, setSortKey] = useState<string>('id');
@@ -141,7 +141,7 @@ const BOMCreate: React.FC = () => {
     }
   };
 
-  // Helper function to check if BOM exists - Updated to use nested bom object
+  // Helper function to check if BOM exists
   const hasBOM = (item: SOData): boolean => {
     return item.bom !== null && item.bom !== undefined && item.bom.id !== null;
   };
@@ -169,17 +169,22 @@ const BOMCreate: React.FC = () => {
     );
   };
 
-  // Helper function to check if EDIT button should be shown
+  // Helper function to check if EDIT button should be shown (only if BOM exists and status is draft, rejected, or requested)
   const canEditBOM = (item: SOData): boolean => {
-    if (!hasBOM(item)) return true; // Show CREATE BOM button if no BOM exists
+    if (!hasBOM(item)) return false; // Don't show any button if no BOM exists
     const status = item.bom?.status_proses?.toLowerCase();
-    return status === 'draft' || status === 'reject kabag';
+    return (
+      status === 'draft' ||
+      status === 'rejected' ||
+      status === 'request to kabag'
+    );
   };
 
-  const NextProcessKabag = async (id: number) => {
-    if (window.confirm('Apakah Anda yakin ingin Next Process BOM Ini?')) {
+  // Approve BOM function
+  const approveBOM = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin menyetujui BOM ini?')) {
       try {
-        const url = `${import.meta.env.VITE_API_LINK}/ppic/bom/request/${id}`;
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/bom/approve/${id}`;
         const res = await axios.put(
           url,
           {},
@@ -187,12 +192,34 @@ const BOMCreate: React.FC = () => {
             withCredentials: true,
           },
         );
-        // Refresh data after successful request
+        // Refresh data after successful approval
         fetchSOData();
-        alert('BOM berhasil di-request!');
+        alert('BOM berhasil disetujui!');
       } catch (error: any) {
         console.log(error);
-        alert('Gagal request BOM. Silakan coba lagi.');
+        alert('Gagal menyetujui BOM. Silakan coba lagi.');
+      }
+    }
+  };
+
+  // Reject BOM function
+  const rejectBOM = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin menolak BOM ini?')) {
+      try {
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/bom/reject/${id}`;
+        const res = await axios.put(
+          url,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
+        // Refresh data after successful rejection
+        fetchSOData();
+        alert('BOM berhasil ditolak!');
+      } catch (error: any) {
+        console.log(error);
+        alert('Gagal menolak BOM. Silakan coba lagi.');
       }
     }
   };
@@ -254,7 +281,7 @@ const BOMCreate: React.FC = () => {
                     NO
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   ACTION
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -369,33 +396,44 @@ const BOMCreate: React.FC = () => {
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
-                        {/* Show EDIT/CREATE button only if status is draft or rejected (or no BOM exists) */}
+                        {/* Show EDIT button only if BOM exists and status is draft, rejected, or requested */}
                         {canEditBOM(item) && (
                           <button
                             onClick={() => handleManageBOM(item)}
-                            className={`${
-                              hasBOM(item)
-                                ? 'bg-blue-500 hover:bg-blue-600'
-                                : 'bg-green-500 hover:bg-green-600'
-                            } text-white px-3 py-1 rounded text-xs transition-colors`}
-                            title={hasBOM(item) ? 'Edit BOM' : 'Create BOM'}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                            title="Edit BOM"
                           >
-                            {hasBOM(item) ? 'EDIT BOM' : 'CREATE BOM'}
+                            EDIT BOM
                           </button>
                         )}
 
-                        {/* Show Next Process button only if BOM exists and status is draft */}
-                        {(hasBOM(item) &&
-                          item.bom?.status_proses === 'draft') ||
-                          (item.bom?.status_proses === 'reject kabag' && (
-                            <button
-                              onClick={() => NextProcessKabag(item.bom!.id)}
-                              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                              title="Next Process"
-                            >
-                              NEXT PROCESS
-                            </button>
-                          ))}
+                        {/* Show Approve and Reject buttons only if BOM exists and status is requested */}
+                        {hasBOM(item) &&
+                          item.bom?.status_proses === 'request to kabag' && (
+                            <>
+                              <button
+                                onClick={() => approveBOM(item.bom!.id)}
+                                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                title="Approve BOM"
+                              >
+                                APPROVE
+                              </button>
+                              <button
+                                onClick={() => rejectBOM(item.bom!.id)}
+                                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                title="Reject BOM"
+                              >
+                                REJECT
+                              </button>
+                            </>
+                          )}
+
+                        {/* Show message if no BOM exists */}
+                        {!hasBOM(item) && (
+                          <span className="text-xs text-gray-400 italic px-2 py-1">
+                            No BOM Available
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -495,4 +533,4 @@ const BOMCreate: React.FC = () => {
   );
 };
 
-export default BOMCreate;
+export default BOMApproval;

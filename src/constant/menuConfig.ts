@@ -587,6 +587,11 @@ export const menuCategories: MenuCategory[] = [
             icon: 'ncr',
           },
           {
+            name: 'Approval BOM',
+            path: '/ppic/bom/approval',
+            icon: 'capa',
+          },
+          {
             name: 'History BOM',
             path: '/ppic/bom/history',
             icon: 'capa',

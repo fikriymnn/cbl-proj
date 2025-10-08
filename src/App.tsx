@@ -211,6 +211,7 @@ import HistorySOPage from './pages/Marketing/SO/HistorySOPage';
 import KabagApprovalQC from './pages/QualityControl/Kabag/OSKabagQC';
 import KabagApprovalDesain from './pages/Desain/Kabag/KabagApprovalDesain';
 import BOMMarketing from './pages/PPIC/BOM/BOMPage';
+import BOMApprovalPage from './pages/PPIC/BOM/BOMApprovalPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -279,6 +280,16 @@ function App() {
               <PageTitle title="PT CBL" />
 
               <BOMMarketing />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/bom/approval"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <BOMApprovalPage />
             </>
           }
         />
