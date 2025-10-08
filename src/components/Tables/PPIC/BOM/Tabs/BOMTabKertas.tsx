@@ -44,7 +44,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
           withCredentials: true,
         },
       );
-
+      console.log('kalkulasi', response.data.data);
       if (response.data && response.data.data) {
         setKalkulasiData({
           ukuran_cetak_bagian_1: response.data.data.ukuran_cetak_bagian_1,

@@ -58,15 +58,15 @@ export interface BOMPoliban {
   is_selected: boolean;
 }
 
+// components/BOM/Types/bom.types.ts
 export interface BOMCoating {
   id_coating_depan: number;
   id_coating_belakang: number;
   nama_coating_depan: string;
   nama_coating_belakang: string;
-  qty_coating_depan: number;
-  qty_coating_belakang: number;
   uv_wb: number;
   varnish_doff: number;
+  rumus_coating: string;
   tipe: string;
   is_selected: boolean;
 }

@@ -395,7 +395,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         </div>
 
         {/* Tabs */}
-        <div className="px-6 pt-4 border-b border-gray-200 overflow-x-auto">
+        <div className="px-6 pt-4 border-b border-gray-200 overflow-x-auto mt-2 overflow-y-hidden">
           <div className="flex space-x-1">
             {tabs.map((tab) => (
               <button
@@ -460,6 +460,8 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                   onChange={(data) =>
                     handleBOMDataChange({ bom_coating: data })
                   }
+                  po_qty={soData.po_qty}
+                  id_kalkulasi={soData.id_kalkulasi}
                 />
               )}
               {activeTab === 'lem' && (
