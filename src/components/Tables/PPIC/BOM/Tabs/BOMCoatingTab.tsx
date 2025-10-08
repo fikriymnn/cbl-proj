@@ -33,6 +33,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
     tipe: string;
   }) => {
     const newItem: BOMCoating = {
+      id: null, // ✅ Add this - explicitly set to null for new items
       ...newData,
       is_selected: false,
     };

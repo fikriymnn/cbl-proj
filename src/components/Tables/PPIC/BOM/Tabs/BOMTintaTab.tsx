@@ -87,11 +87,12 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
 
   const handleSaveFromModal = (newData: BOMTinta) => {
     if (editingTintaIndex !== null) {
-      // Update existing
+      // Update existing - keep existing id
       const updated = safeData.map((item, i) =>
         i === editingTintaIndex
           ? {
               ...newData,
+              id: item.id, // ✅ Preserve existing id when editing
               tinta_detail: item.tinta_detail,
               qty_tinta: calculateQtyTinta(newData),
             }
@@ -99,15 +100,18 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
       );
       onChange(updated);
     } else {
-      // Add new
+      // Add new - set id to null
       onChange([
         ...safeData,
-        { ...newData, qty_tinta: calculateQtyTinta(newData) },
+        {
+          ...newData,
+          id: null, // ✅ Add this - explicitly set to null for new items
+          qty_tinta: calculateQtyTinta(newData),
+        },
       ]);
     }
     setEditingTintaIndex(null);
   };
-
   const handleAddDetail = (tintaIndex: number) => {
     setEditingTintaForDetail(tintaIndex);
     setIsDetailModalOpen(true);
@@ -133,7 +137,13 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
 
     const updated = safeData.map((item, i) =>
       i === editingTintaForDetail
-        ? { ...item, tinta_detail: [...currentDetails, newDetail] }
+        ? {
+            ...item,
+            tinta_detail: [
+              ...currentDetails,
+              { ...newDetail, id: null }, // ✅ Add id: null to new detail
+            ],
+          }
         : item,
     );
     onChange(updated);

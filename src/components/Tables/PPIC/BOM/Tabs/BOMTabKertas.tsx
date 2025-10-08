@@ -96,6 +96,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
     const calculatedQty = calculateQtyLembarPlano();
 
     const newItem: BOMKertas = {
+      id: null, // ✅ Add this - explicitly set to null for new items
       id_kertas: newData.id_kertas,
       nama_kertas: newData.nama_kertas,
       qty_lembar_plano: calculatedQty,

@@ -48,6 +48,7 @@ const BOMPolibanTab: React.FC<BOMPolibanTabProps> = ({
     tipe: string;
   }) => {
     const newItem: BOMPoliban = {
+      id: null, // ✅ Add this - explicitly set to null for new items
       item_poliban: newData.item_poliban,
       isi_satu_ikat: newData.isi_satu_ikat,
       lembar_poliban: newData.lembar_poliban,

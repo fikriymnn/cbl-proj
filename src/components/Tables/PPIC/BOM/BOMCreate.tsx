@@ -11,8 +11,8 @@ const BOMCreate: React.FC = () => {
   const [soData, setSOData] = useState<SOData[]>([]);
   const [sortKey, setSortKey] = useState<string>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedSOId, setSelectedSOId] = useState<number | null>(null); // Changed to store ID only
-  const [selectedIOId, setSelectedIOId] = useState<number | null>(null); // Changed to store ID only
+  const [selectedSOId, setSelectedSOId] = useState<number | null>(null);
+  const [selectedIOId, setSelectedIOId] = useState<number | null>(null);
   const [showBOMModal, setShowBOMModal] = useState<boolean>(false);
 
   const handleSort = (field: string) => {
@@ -141,14 +141,62 @@ const BOMCreate: React.FC = () => {
     }
   };
 
+  // Helper function to check if BOM exists - Updated to use nested bom object
+  const hasBOM = (item: SOData): boolean => {
+    return item.bom !== null && item.bom !== undefined && item.bom.id !== null;
+  };
+
+  // Helper function to get BOM status badge
+  const getBOMStatusBadge = (item: SOData) => {
+    if (hasBOM(item)) {
+      return (
+        <div className="flex flex-col gap-1">
+          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200 font-medium">
+            ✓ BOM Created
+          </span>
+          {item.bom?.no_bom && (
+            <span className="text-xs text-gray-600" title={item.bom.no_bom}>
+              {truncateText(item.bom.no_bom, 15)}
+            </span>
+          )}
+        </div>
+      );
+    }
+    return (
+      <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-medium">
+        ⚠ No BOM
+      </span>
+    );
+  };
+
+  // Handler for Next Process button
+  const handleNextProcess = (so: SOData) => {
+    // Add your next process logic here
+    console.log('Processing next step for SO:', so.id);
+    // You might want to call an API or open another modal
+  };
+
   useEffect(() => {
     fetchSOData();
   }, []);
 
   const sortedData = React.useMemo(() => {
     const sorted = [...soData].sort((a, b) => {
-      const aValue = a[sortKey as keyof SOData];
-      const bValue = b[sortKey as keyof SOData];
+      let aValue: any;
+      let bValue: any;
+
+      // Special handling for bom-related sorting
+      if (sortKey === 'bom') {
+        aValue = hasBOM(a) ? 1 : 0;
+        bValue = hasBOM(b) ? 1 : 0;
+      } else if (sortKey === 'status_proses') {
+        // Add sorting for status_proses
+        aValue = a.bom?.status_proses || '';
+        bValue = b.bom?.status_proses || '';
+      } else {
+        aValue = a[sortKey as keyof SOData];
+        bValue = b[sortKey as keyof SOData];
+      }
 
       if (aValue === null || aValue === undefined) return 1;
       if (bValue === null || bValue === undefined) return -1;
@@ -168,12 +216,12 @@ const BOMCreate: React.FC = () => {
 
   const handleManageBOM = (so: SOData) => {
     setSelectedIOId(so.id_io);
-    setSelectedSOId(so.id); // Store only the ID
+    setSelectedSOId(so.id);
     setShowBOMModal(true);
   };
 
   return (
-    <div className="p-4">
+    <div className="">
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -244,11 +292,20 @@ const BOMCreate: React.FC = () => {
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
-                    onClick={() => handleSort('status')}
+                    onClick={() => handleSort('status_proses')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
                     STATUS
-                    {getSortIcon('status')}
+                    {getSortIcon('status_proses')}
+                  </button>
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('bom')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    BOM INFO
+                    {getSortIcon('bom')}
                   </button>
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -265,7 +322,7 @@ const BOMCreate: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-6 text-center">
+                  <td colSpan={11} className="px-4 py-6 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
@@ -274,7 +331,7 @@ const BOMCreate: React.FC = () => {
               ) : sortedData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={11}
                     className="px-4 py-6 text-center text-gray-500 text-sm"
                   >
                     No SO data available
@@ -290,13 +347,31 @@ const BOMCreate: React.FC = () => {
                       {index + 1}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
-                      <button
-                        onClick={() => handleManageBOM(item)}
-                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                        title="Manage BOM"
-                      >
-                        MANAGE BOM
-                      </button>
+                      <div className="flex flex-col gap-1">
+                        <button
+                          onClick={() => handleManageBOM(item)}
+                          className={`${
+                            hasBOM(item)
+                              ? 'bg-blue-500 hover:bg-blue-600'
+                              : 'bg-green-500 hover:bg-green-600'
+                          } text-white px-3 py-1 rounded text-xs transition-colors`}
+                          title={hasBOM(item) ? 'Edit BOM' : 'Create BOM'}
+                        >
+                          {hasBOM(item) ? 'EDIT BOM' : 'CREATE BOM'}
+                        </button>
+
+                        {/* Show Next Process button only if BOM exists and status is draft */}
+                        {hasBOM(item) &&
+                          item.bom?.status_proses === 'draft' && (
+                            <button
+                              onClick={() => handleNextProcess(item)}
+                              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                              title="Next Process"
+                            >
+                              NEXT PROCESS
+                            </button>
+                          )}
+                      </div>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
@@ -340,14 +415,21 @@ const BOMCreate: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(
-                          item.status,
-                        )}`}
-                        title={item.status}
-                      >
-                        {truncateText(item.status, 8)}
-                      </span>
+                      {hasBOM(item) && item.bom?.status_proses ? (
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(
+                            item.bom.status_proses,
+                          )}`}
+                          title={item.bom.status_proses}
+                        >
+                          {truncateText(item.bom.status_proses, 8)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      {getBOMStatusBadge(item)}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
@@ -371,7 +453,7 @@ const BOMCreate: React.FC = () => {
       {/* BOM Management Modal */}
       {showBOMModal && selectedSOId && selectedIOId && (
         <BOMManagementModal
-          soId={selectedSOId} // Pass only the ID
+          soId={selectedSOId}
           onClose={() => {
             setShowBOMModal(false);
             setSelectedSOId(null);

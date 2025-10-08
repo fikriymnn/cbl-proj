@@ -7,7 +7,7 @@ interface TambahCoatingModalProps {
   onClose: () => void;
   onSave: (data: {
     id_coating_depan: number;
-    id_coating_belakang: number;
+    id_coating_belakang: any;
     nama_coating_depan: string;
     nama_coating_belakang: string;
     uv_wb: number;
@@ -179,7 +179,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     // Always save to coating_depan regardless of formula
     onSave({
       id_coating_depan: Number(formData.id_coating_depan),
-      id_coating_belakang: 0,
+      id_coating_belakang: null,
       nama_coating_depan: formData.nama_coating_depan,
       nama_coating_belakang: '',
       uv_wb: calculatedValues.uv_wb, // Always calculated

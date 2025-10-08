@@ -36,6 +36,7 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
     tipe: string;
   }) => {
     const newItem: BOMLem = {
+      id: null, // ✅ Add this - explicitly set to null for new items
       ...newData,
       is_selected: false,
     };

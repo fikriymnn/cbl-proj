@@ -47,6 +47,7 @@ const BOMCorrugatedTab: React.FC<BOMCorrugatedTabProps> = ({
     tipe: string;
   }) => {
     const newItem: BOMCorrugated = {
+      id: null, // ✅ Add this - explicitly set to null for new items
       id_corrugated: newData.id_corrugated,
       nama_corrugated: newData.nama_corrugated,
       isi_per_pack: newData.isi_per_pack,
