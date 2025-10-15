@@ -34,10 +34,15 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
     { value: 'tidak', label: 'Tidak' },
   ];
 
+  // Check if "tidak" is selected
+  const isTidakSelected = formData.item_poliban === 'tidak';
+
   // Calculate qty_poliban whenever dependencies change
   // Formula: (po_qty / isi_satu_ikat) / lembar_poliban
   useEffect(() => {
-    if (
+    if (isTidakSelected) {
+      setCalculatedQty(0);
+    } else if (
       formData.isi_satu_ikat > 0 &&
       formData.lembar_poliban > 0 &&
       po_qty > 0
@@ -47,13 +52,31 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
     } else {
       setCalculatedQty(0);
     }
-  }, [formData.isi_satu_ikat, formData.lembar_poliban, po_qty]);
+  }, [
+    formData.isi_satu_ikat,
+    formData.lembar_poliban,
+    po_qty,
+    isTidakSelected,
+  ]);
 
   const handlePolibanChange = (value: string | number) => {
-    setFormData({
-      ...formData,
-      item_poliban: String(value),
-    });
+    const selectedValue = String(value);
+
+    // If "tidak" is selected, reset other fields to default values
+    if (selectedValue === 'tidak') {
+      setFormData({
+        item_poliban: selectedValue,
+        isi_satu_ikat: 0,
+        lembar_poliban: 0,
+        tipe: 'DRAFT',
+      });
+    } else {
+      setFormData({
+        ...formData,
+        item_poliban: selectedValue,
+        lembar_poliban: 32, // Reset to default when switching to "ya"
+      });
+    }
   };
 
   const handleIsiSatuIkatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,11 +100,27 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.item_poliban ||
-      formData.isi_satu_ikat <= 0 ||
-      formData.lembar_poliban <= 0
-    ) {
+    // Validation: Only check item_poliban is selected
+    if (!formData.item_poliban) {
+      alert('Mohon pilih Item Poliban');
+      return;
+    }
+
+    // If "tidak" is selected, allow submission with 0 values
+    if (isTidakSelected) {
+      onSave({
+        item_poliban: formData.item_poliban,
+        isi_satu_ikat: 0,
+        lembar_poliban: 0,
+        qty_poliban: 0,
+        tipe: formData.tipe,
+      });
+      onClose();
+      return;
+    }
+
+    // If "ya" is selected, validate other fields
+    if (formData.isi_satu_ikat <= 0 || formData.lembar_poliban <= 0) {
       alert('Mohon lengkapi semua data');
       return;
     }
@@ -116,7 +155,7 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6">
           {/* PO Qty Info */}
-          {po_qty > 0 && (
+          {po_qty > 0 && !isTidakSelected && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
               <div className="text-gray-700">
                 <span className="font-semibold">Qty SO:</span> {po_qty}
@@ -136,7 +175,7 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
           {/* Item Poliban */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Item Poliban
+              Item Poliban <span className="text-red-500">*</span>
             </label>
             <SearchableSelect
               options={polibanOptions}
@@ -147,52 +186,66 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
             />
           </div>
 
-          {/* Isi 1 Ikat Poliban */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Isi 1 ikat poliban
-            </label>
-            <input
-              type="number"
-              value={formData.isi_satu_ikat || ''}
-              onChange={handleIsiSatuIkatChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Masukkan isi 1 ikat poliban (contoh: 50)"
-              min="1"
-              required
-            />
-          </div>
-
-          {/* 1 Lembar Poliban */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              1 Lembar Poliban
-            </label>
-            <input
-              type="number"
-              value={formData.lembar_poliban}
-              onChange={handleLembarPolibanChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Default: 32"
-              min="1"
-              required
-            />
-            <div className="mt-1 text-xs text-gray-500">Default value: 32</div>
-          </div>
-
-          {/* Calculated Qty Display */}
-          {calculatedQty > 0 && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div className="text-sm text-gray-700">
-                <span className="font-semibold">Qty Poliban (Auto):</span>
-              </div>
-              <div className="text-2xl font-bold text-green-600 mt-1">
-                {calculatedQty}
-              </div>
-              <div className="text-xs text-gray-600 mt-1">
-                Formula: (Qty SO ÷ Isi 1 Ikat) ÷ Lembar Poliban
-              </div>
+          {/* Show message when "tidak" is selected */}
+          {isTidakSelected && (
+            <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+              ℹ️ Tidak perlu mengisi data lainnya untuk pilihan "Tidak"
             </div>
+          )}
+
+          {/* Only show other fields when "tidak" is NOT selected */}
+          {!isTidakSelected && formData.item_poliban && (
+            <>
+              {/* Isi 1 Ikat Poliban */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Isi 1 ikat poliban <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.isi_satu_ikat || ''}
+                  onChange={handleIsiSatuIkatChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Masukkan isi 1 ikat poliban (contoh: 50)"
+                  min="1"
+                  required
+                />
+              </div>
+
+              {/* 1 Lembar Poliban */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  1 Lembar Poliban <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.lembar_poliban}
+                  onChange={handleLembarPolibanChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Default: 32"
+                  min="1"
+                  required
+                />
+                <div className="mt-1 text-xs text-gray-500">
+                  Default value: 32
+                </div>
+              </div>
+
+              {/* Calculated Qty Display */}
+              {calculatedQty > 0 && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-sm text-gray-700">
+                    <span className="font-semibold">Qty Poliban (Auto):</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-600 mt-1">
+                    {calculatedQty}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Formula: (Qty SO ÷ Isi 1 Ikat) ÷ Lembar Poliban
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Tipe */}
@@ -223,11 +276,7 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
             <button
               type="submit"
               className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-              disabled={
-                !formData.item_poliban ||
-                formData.isi_satu_ikat <= 0 ||
-                formData.lembar_poliban <= 0
-              }
+              disabled={!formData.item_poliban}
             >
               Simpan
             </button>

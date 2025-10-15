@@ -9,6 +9,9 @@ interface BOMKertasTabProps {
   onChange: (data: BOMKertas[]) => void;
   id_kalkulasi?: number;
   po_qty?: number;
+  id_kertas_default?: number;
+  ukuran_cetak_lebar_2?: number;
+  ukuran_cetak_panjang_2?: number;
 }
 
 const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
@@ -16,6 +19,9 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
   onChange,
   id_kalkulasi,
   po_qty,
+  id_kertas_default,
+  ukuran_cetak_lebar_2,
+  ukuran_cetak_panjang_2,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [kalkulasiData, setKalkulasiData] = useState<{
@@ -25,6 +31,17 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
   const [loading, setLoading] = useState(false);
 
   const safeData = Array.isArray(data) ? data : [];
+
+  // Determine max selections based on ukuran_cetak_lebar_2 and ukuran_cetak_panjang_2
+  const hasSecondaryDimensions =
+    (ukuran_cetak_lebar_2 !== null &&
+      ukuran_cetak_lebar_2 !== undefined &&
+      ukuran_cetak_lebar_2 !== 0) ||
+    (ukuran_cetak_panjang_2 !== null &&
+      ukuran_cetak_panjang_2 !== undefined &&
+      ukuran_cetak_panjang_2 !== 0);
+
+  const maxSelections = hasSecondaryDimensions ? 2 : 1;
 
   // Fetch kalkulasi data when id_kalkulasi changes
   useEffect(() => {
@@ -113,12 +130,23 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
     onChange(updated);
   };
 
-  // Handle checkbox selection - only one can be selected at a time
+  // Handle checkbox selection with dynamic max limit
   const handleCheckboxChange = (index: number, checked: boolean) => {
-    const updated = data.map((item, i) => ({
-      ...item,
-      is_selected: i === index ? checked : false, // Uncheck all others
-    }));
+    const currentSelectedCount = data.filter((item) => item.is_selected).length;
+
+    // If trying to check and already at max selections
+    if (checked && currentSelectedCount >= maxSelections) {
+      alert(
+        `Maksimal ${maxSelections} kertas yang dapat dipilih${
+          hasSecondaryDimensions ? ' (karena ada ukuran cetak sekunder)' : ''
+        }`,
+      );
+      return;
+    }
+
+    const updated = data.map((item, i) =>
+      i === index ? { ...item, is_selected: checked } : item,
+    );
     onChange(updated);
   };
 
@@ -127,7 +155,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
   };
 
   // Get the selected kertas
-  const selectedKertas = safeData.find((item) => item.is_selected);
+  const selectedKertas = safeData.filter((item) => item.is_selected);
 
   return (
     <div>
@@ -141,12 +169,14 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
           Tambah Data Pokok Kertas
         </button>
 
-        {selectedKertas && (
+        {selectedKertas.length > 0 && (
           <div className="px-4 py-2 bg-green-100 border border-green-300 rounded-lg text-sm">
             <span className="font-semibold text-green-800">
-              Kertas Terpilih:{' '}
+              Kertas Terpilih ({selectedKertas.length}/{maxSelections}):{' '}
             </span>
-            <span className="text-green-700">{selectedKertas.nama_kertas}</span>
+            <span className="text-green-700">
+              {selectedKertas.map((k) => k.nama_kertas).join(', ')}
+            </span>
           </div>
         )}
       </div>
@@ -162,6 +192,26 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
           ⚠️ ID Kalkulasi belum tersedia
         </div>
       )}
+
+      {/* Selection limit info banner */}
+      <div
+        className={`mb-4 p-3 rounded-lg text-sm ${
+          hasSecondaryDimensions
+            ? 'bg-blue-50 border border-blue-200 text-blue-800'
+            : 'bg-purple-50 border border-purple-200 text-purple-800'
+        }`}
+      >
+        <div className="font-semibold mb-1">
+          {hasSecondaryDimensions
+            ? '📋 Mode: Maksimal 2 Kertas'
+            : '📋 Mode: Maksimal 1 Kertas'}
+        </div>
+        <div className="text-xs">
+          {hasSecondaryDimensions
+            ? `Ukuran cetak B terdeteksi (Lebar: ${ukuran_cetak_lebar_2}, Panjang: ${ukuran_cetak_panjang_2})`
+            : 'Tidak ada ukuran cetak B'}
+        </div>
+      </div>
 
       {kalkulasiData && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
@@ -196,7 +246,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
                 <div className="flex flex-col items-center">
                   <span>Pilih</span>
                   <span className="text-xs text-gray-500 font-normal">
-                    (Hanya 1)
+                    (Max {maxSelections})
                   </span>
                 </div>
               </th>
@@ -298,6 +348,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
                 }
               : undefined
           }
+          defaultKertasId={id_kertas_default}
         />
       )}
     </div>

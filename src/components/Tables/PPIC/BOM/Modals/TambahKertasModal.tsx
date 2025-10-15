@@ -20,13 +20,13 @@ interface TambahKertasModalProps {
     qty_lembar_plano: number;
     tipe: string;
   }) => void;
-  calculatedQtyLembarPlano?: number; // Add this prop
+  calculatedQtyLembarPlano?: number;
   kalkulasiInfo?: {
-    // Add this prop for display
     po_qty?: number;
     ukuran_cetak_bagian_1?: number;
     ukuran_cetak_isi_1?: number;
   };
+  defaultKertasId?: number; // Add this prop
 }
 
 const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
@@ -34,6 +34,7 @@ const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
   onSave,
   calculatedQtyLembarPlano = 0,
   kalkulasiInfo,
+  defaultKertasId, // Add this
 }) => {
   const [kertasOptions, setKertasOptions] = useState<KertasOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -47,6 +48,24 @@ const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
   useEffect(() => {
     fetchKertasOptions();
   }, []);
+
+  // Set default kertas when options are loaded and defaultKertasId is provided
+  useEffect(() => {
+    if (defaultKertasId && kertasOptions.length > 0) {
+      const selectedKertas = kertasOptions.find(
+        (kertas) => kertas.id === defaultKertasId,
+      );
+
+      if (selectedKertas) {
+        setFormData({
+          id_kertas: selectedKertas.id.toString(),
+          nama_kertas: selectedKertas.nama_barang,
+          jenis_kertas: selectedKertas.kode_barang,
+          tipe: 'DRAFT',
+        });
+      }
+    }
+  }, [defaultKertasId, kertasOptions]);
 
   const fetchKertasOptions = async () => {
     setLoading(true);
@@ -95,7 +114,7 @@ const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
     onSave({
       id_kertas: Number(formData.id_kertas),
       nama_kertas: formData.nama_kertas,
-      qty_lembar_plano: calculatedQtyLembarPlano, // Use the calculated value
+      qty_lembar_plano: calculatedQtyLembarPlano,
       tipe: formData.tipe,
     });
     onClose();

@@ -38,7 +38,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   const [selectedMounting, setSelectedMounting] = useState<any>(null);
   const [ioMountings, setIoMountings] = useState<any[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [bomFetched, setBomFetched] = useState(false); // Add flag to track if BOM has been fetched
+  const [bomFetched, setBomFetched] = useState(false);
 
   const [bomData, setBOMData] = useState<BOMData>({
     id_io: 0,
@@ -260,8 +260,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         },
       );
 
-      console.log('IO Data Response:', response.data.data);
-
       if (response.data?.data) {
         const ioData = response.data.data;
         const mountings = ioData.io_mounting || [];
@@ -349,7 +347,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
 
       // Validate data before saving
       const dataToSave = {
-        ...(bomData.id && { id: bomData.id }), // Include ID only if it exists
+        ...(bomData.id && { id: bomData.id }),
         id_io: Number(bomData.id_io),
         id_so: Number(bomData.id_so),
         id_io_mounting: Number(bomData.id_io_mounting),
@@ -380,7 +378,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
 
       console.log('Saving BOM data:', dataToSave);
 
-      // ✅ Construct URL based on whether it's create or update
       const baseUrl = `${import.meta.env.VITE_API_LINK}/ppic/bom`;
       const url = bomData.id ? `${baseUrl}/${bomData.id}` : baseUrl;
       const method = bomData.id ? 'put' : 'post';
@@ -457,11 +454,11 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full  max-h-screen flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-gray-800">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">
               {isEditMode ? 'Edit BOM' : 'Create BOM'}
             </h2>
             {isEditMode && (
@@ -485,10 +482,10 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
           >
             <svg
-              className="w-6 h-6"
+              className="w-5 h-5 sm:w-6 sm:h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -503,9 +500,9 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           </button>
         </div>
 
-        {/* Info Section */}
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="grid grid-cols-2 gap-4 text-sm">
+        {/* Info Section - Scrollable on small screens */}
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0 overflow-y-auto max-h-48">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
             <div>
               <span className="text-gray-500">NO IO:</span>
               <span className="ml-2 font-medium">{soData.no_io}</span>
@@ -516,14 +513,18 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
             </div>
             <div>
               <span className="text-gray-500">Customer:</span>
-              <span className="ml-2 font-medium">{soData.customer}</span>
+              <span className="ml-2 font-medium break-words">
+                {soData.customer}
+              </span>
             </div>
             <div>
               <span className="text-gray-500">Produk:</span>
-              <span className="ml-2 font-medium">{soData.produk}</span>
+              <span className="ml-2 font-medium break-words">
+                {soData.produk}
+              </span>
             </div>
             {bomData.no_bom && (
-              <div className="col-span-2">
+              <div className="col-span-1 sm:col-span-2">
                 <span className="text-gray-500">NO BOM:</span>
                 <span className="ml-2 font-medium">{bomData.no_bom}</span>
               </div>
@@ -532,21 +533,20 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
 
           {/* Mounting Selector */}
           {ioMountings.length > 0 && (
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="mt-3 sm:mt-4">
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                 Pilih Mounting:
               </label>
               <select
                 value={selectedMounting?.id || ''}
                 onChange={(e) => handleMountingChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={loading}
               >
                 <option value="">Pilih Mounting</option>
                 {ioMountings.map((mounting) => (
                   <option key={mounting.id} value={mounting.id}>
-                    {mounting.nama_mounting} - Tinggi:{' '}
-                    {mounting.ukuran_jadi_tinggi} mm
+                    {mounting.nama_mounting}
                   </option>
                 ))}
               </select>
@@ -554,31 +554,39 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           )}
         </div>
 
-        {/* Tabs */}
-        <div className="px-6 pt-4 border-b border-gray-200 overflow-x-auto overflow-y-hidden">
-          <div className="flex space-x-1">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as TabType)}
-                className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
+        {/* Tabs - Horizontally scrollable */}
+        <div className="px-4 sm:px-6 pt-3 sm:pt-4 border-b border-gray-200 flex-shrink-0">
+          <div className="overflow-x-auto overflow-y-hidden -mb-px">
+            <div className="flex space-x-1 min-w-max pb-px">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as TabType)}
+                  className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="mr-1 sm:mr-2">{tab.icon}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="inline sm:hidden">
+                    {tab.label.replace('Komponen ', '')}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Tab Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Tab Content - Main scrollable area */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 min-h-0">
           {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+            <div className="flex justify-center items-center h-full">
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-500"></div>
+                <span className="mt-3 text-sm text-gray-600">Loading...</span>
+              </div>
             </div>
           ) : (
             <>
@@ -588,12 +596,18 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                   onChange={(data) => handleBOMDataChange({ bom_kertas: data })}
                   id_kalkulasi={soData.id_kalkulasi}
                   po_qty={soData.po_qty}
+                  id_kertas_default={selectedMounting?.id_kertas}
+                  ukuran_cetak_lebar_2={selectedMounting?.ukuran_cetak_lebar_2}
+                  ukuran_cetak_panjang_2={
+                    selectedMounting?.ukuran_cetak_panjang_2
+                  }
                 />
               )}
               {activeTab === 'tinta' && (
                 <BOMTintaTab
                   data={bomData.bom_tinta}
                   onChange={(data) => handleBOMDataChange({ bom_tinta: data })}
+                  selectedMounting={selectedMounting}
                 />
               )}
               {activeTab === 'corrugated' && (
@@ -637,17 +651,17 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 flex justify-end space-x-2 sm:space-x-3 flex-shrink-0">
           <button
             onClick={handleClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             disabled={loading}
           >
             Cancel
           </button>
           <button
             onClick={handleSaveBOM}
-            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? 'Saving...' : isEditMode ? 'Update BOM' : 'Save BOM'}

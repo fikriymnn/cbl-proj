@@ -1,5 +1,6 @@
 // types/bom.types.ts
 export interface SOData {
+  id_kertas: number | undefined;
   id: number;
   id_io: number;
   id_kalkulasi: number;
@@ -65,6 +66,7 @@ export interface TintaDetail {
   id_item_tinta: number;
   nama_item_tinta: string;
   persentase_tinta: number;
+  qty_tinta_detail?: number;
 }
 
 export interface BOMTinta {

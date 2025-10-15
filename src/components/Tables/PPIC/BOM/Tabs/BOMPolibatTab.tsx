@@ -73,13 +73,18 @@ const BOMPolibanTab: React.FC<BOMPolibanTabProps> = ({
         ) {
           const calculatedQty =
             po_qty / updatedItem.isi_satu_ikat / updatedItem.lembar_poliban;
-          updatedItem.qty_poliban = Number(calculatedQty.toFixed(2));
+
+          // Round up to 2 decimal places
+          const roundedUpQty = Math.ceil(calculatedQty * 100) / 100;
+
+          updatedItem.qty_poliban = roundedUpQty;
         }
 
         return updatedItem;
       }
       return item;
     });
+
     onChange(updated);
   };
 
