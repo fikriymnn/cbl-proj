@@ -1,19 +1,18 @@
-// BOMCreate.tsx (Main Entry Point)
+// BOMPPICCreate.tsx
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
-import BOMManagementModal from './BOMManagementModal';
-import { SOData } from './Types/bom.types';
+import BOMPPICManagementModal from './BOMPPICManagementModal';
+import { BOMPPICItem } from './Types/bompiic.types';
 
 type SortDirection = 'asc' | 'desc';
 
-const BOMCreate: React.FC = () => {
+const BOMPPICCreate: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
-  const [soData, setSOData] = useState<SOData[]>([]);
+  const [bomData, setBomData] = useState<BOMPPICItem[]>([]);
   const [sortKey, setSortKey] = useState<string>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedSOId, setSelectedSOId] = useState<number | null>(null);
-  const [selectedIOId, setSelectedIOId] = useState<number | null>(null);
   const [showBOMModal, setShowBOMModal] = useState<boolean>(false);
+  const [selectedBOM, setSelectedBOM] = useState<BOMPPICItem | null>(null);
 
   const handleSort = (field: string) => {
     if (sortKey === field) {
@@ -80,19 +79,25 @@ const BOMCreate: React.FC = () => {
       : text;
   };
 
-  const fetchSOData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
+  useEffect(() => {
+    fetchBOMData();
+  }, []);
+
+  const fetchBOMData = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/ppic/bom`;
     try {
       setLoading(true);
       const res: AxiosResponse = await axios.get(url, {
-        params: { status: 'history' },
+        params: { is_bom_ppic_done: false },
         withCredentials: true,
       });
-      console.log('Fetched SO data:', res.data);
-      setSOData(res.data.data || []);
+      console.log('Fetched BOM data:', res.data);
+
+      const dataArray = res.data.data || res.data || [];
+      setBomData(Array.isArray(dataArray) ? dataArray : []);
     } catch (error) {
-      console.error('Error fetching SO data:', error);
-      setSOData([]);
+      console.error('Error fetching BOM data:', error);
+      setBomData([]);
     } finally {
       setLoading(false);
     }
@@ -120,103 +125,54 @@ const BOMCreate: React.FC = () => {
     }
   };
 
-  const getStatusColor2 = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'draft':
-        return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
-      case 'requested':
-        return 'bg-orange-100 text-orange-800 border border-orange-200';
-      case 'approved':
-        return 'bg-green-100 text-green-800 border border-green-200';
-      case 'history':
-        return 'bg-purple-100 text-purple-800 border border-purple-200';
-      case 'rejected':
-        return 'bg-red-100 text-red-800 border border-red-200';
-      case 'pending':
-        return 'bg-blue-100 text-blue-800 border border-blue-200';
-      case 'completed':
-        return 'bg-emerald-100 text-emerald-800 border border-emerald-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border border-gray-200';
-    }
+  // Helper function to check if BOM PPIC exists - directly on item
+  const hasBOMPPIC = (item: BOMPPICItem): boolean => {
+    return (
+      item.bom_ppic !== undefined &&
+      item.bom_ppic !== null &&
+      Array.isArray(item.bom_ppic) &&
+      item.bom_ppic.length > 0
+    );
   };
 
-  // Helper function to check if BOM exists - Updated to use nested bom object
-  const hasBOM = (item: SOData): boolean => {
-    return item.bom !== null && item.bom !== undefined && item.bom.id !== null;
-  };
-
-  // Helper function to get BOM status badge
-  const getBOMStatusBadge = (item: SOData) => {
-    if (hasBOM(item)) {
+  // Helper function to get BOM PPIC status badge
+  const getBOMPPICStatusBadge = (item: BOMPPICItem) => {
+    if (hasBOMPPIC(item)) {
       return (
         <div className="flex flex-col gap-1">
           <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200 font-medium">
-            ✓ BOM Created
+            ✓ BOM PPIC Created
           </span>
-          {item.bom?.no_bom && (
-            <span className="text-xs text-gray-600" title={item.bom.no_bom}>
-              {truncateText(item.bom.no_bom, 15)}
-            </span>
-          )}
+          <span className="text-xs text-gray-600">
+            {item.bom_ppic.length} items
+          </span>
         </div>
       );
     }
     return (
       <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200 font-medium">
-        ⚠ No BOM
+        ⚠ No BOM PPIC
       </span>
     );
   };
 
-  // Helper function to check if EDIT button should be shown
-  const canEditBOM = (item: SOData): boolean => {
-    if (!hasBOM(item)) return true; // Show CREATE BOM button if no BOM exists
-    const status = item.bom?.status_proses?.toLowerCase();
-    return status === 'draft' || status === 'reject kabag';
+  const handleManageBOMPPIC = (item: BOMPPICItem) => {
+    console.log('Opening BOM PPIC Modal for:', item);
+    setSelectedBOM(item);
+    setShowBOMModal(true);
   };
-
-  const NextProcessKabag = async (id: number) => {
-    if (window.confirm('Apakah Anda yakin ingin Next Process BOM Ini?')) {
-      try {
-        const url = `${import.meta.env.VITE_API_LINK}/ppic/bom/request/${id}`;
-        const res = await axios.put(
-          url,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
-        // Refresh data after successful request
-        fetchSOData();
-        alert('BOM berhasil di-request!');
-      } catch (error: any) {
-        console.log(error);
-        alert('Gagal request BOM. Silakan coba lagi.');
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchSOData();
-  }, []);
 
   const sortedData = React.useMemo(() => {
-    const sorted = [...soData].sort((a, b) => {
+    const sorted = [...bomData].sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
-      // Special handling for bom-related sorting
-      if (sortKey === 'bom') {
-        aValue = hasBOM(a) ? 1 : 0;
-        bValue = hasBOM(b) ? 1 : 0;
-      } else if (sortKey === 'status_proses') {
-        // Add sorting for status_proses
-        aValue = a.bom?.status_proses || '';
-        bValue = b.bom?.status_proses || '';
+      if (sortKey === 'bom_ppic') {
+        aValue = hasBOMPPIC(a) ? 1 : 0;
+        bValue = hasBOMPPIC(b) ? 1 : 0;
       } else {
-        aValue = a[sortKey as keyof SOData];
-        bValue = b[sortKey as keyof SOData];
+        aValue = a[sortKey as keyof BOMPPICItem];
+        bValue = b[sortKey as keyof BOMPPICItem];
       }
 
       if (aValue === null || aValue === undefined) return 1;
@@ -233,13 +189,7 @@ const BOMCreate: React.FC = () => {
       return 0;
     });
     return sorted;
-  }, [soData, sortKey, sortDirection]);
-
-  const handleManageBOM = (so: SOData) => {
-    setSelectedIOId(so.id_io);
-    setSelectedSOId(so.id);
-    setShowBOMModal(true);
-  };
+  }, [bomData, sortKey, sortDirection]);
 
   return (
     <div className="">
@@ -250,11 +200,9 @@ const BOMCreate: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                  <button className="flex items-center hover:text-gray-700 focus:outline-none">
-                    NO
-                  </button>
+                  NO
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   ACTION
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -298,7 +246,7 @@ const BOMCreate: React.FC = () => {
                     onClick={() => handleSort('status_jo')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    STATUS JO
+                    STATUS
                     {getSortIcon('status_jo')}
                   </button>
                 </th>
@@ -313,20 +261,11 @@ const BOMCreate: React.FC = () => {
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
-                    onClick={() => handleSort('status_proses')}
+                    onClick={() => handleSort('bom_ppic')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    STATUS
-                    {getSortIcon('status_proses')}
-                  </button>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('bom')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    BOM INFO
-                    {getSortIcon('bom')}
+                    BOM PPIC STATUS
+                    {getSortIcon('bom_ppic')}
                   </button>
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -343,7 +282,7 @@ const BOMCreate: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-6 text-center">
+                  <td colSpan={10} className="px-4 py-6 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
@@ -352,10 +291,10 @@ const BOMCreate: React.FC = () => {
               ) : sortedData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={10}
                     className="px-4 py-6 text-center text-gray-500 text-sm"
                   >
-                    No SO data available
+                    No BOM data available
                   </td>
                 </tr>
               ) : (
@@ -369,33 +308,21 @@ const BOMCreate: React.FC = () => {
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
-                        {/* Show EDIT/CREATE button only if status is draft or rejected (or no BOM exists) */}
-                        {canEditBOM(item) && (
-                          <button
-                            onClick={() => handleManageBOM(item)}
-                            className={`${
-                              hasBOM(item)
-                                ? 'bg-blue-500 hover:bg-blue-600'
-                                : 'bg-green-500 hover:bg-green-600'
-                            } text-white px-3 py-1 rounded text-xs transition-colors`}
-                            title={hasBOM(item) ? 'Edit BOM' : 'Create BOM'}
-                          >
-                            {hasBOM(item) ? 'EDIT BOM' : 'CREATE BOM'}
-                          </button>
-                        )}
-
-                        {/* Show Next Process button only if BOM exists and status is draft */}
-                        {hasBOM(item) &&
-                          (item.bom?.status_proses === 'draft' ||
-                            item.bom?.status_proses === 'reject kabag') && (
-                            <button
-                              onClick={() => NextProcessKabag(item.bom!.id)}
-                              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                              title="Next Process"
-                            >
-                              NEXT PROCESS
-                            </button>
-                          )}
+                        <button
+                          onClick={() => handleManageBOMPPIC(item)}
+                          className={`${
+                            hasBOMPPIC(item)
+                              ? 'bg-blue-500 hover:bg-blue-600'
+                              : 'bg-green-500 hover:bg-green-600'
+                          } text-white px-3 py-1 rounded text-xs transition-colors`}
+                          title={
+                            hasBOMPPIC(item)
+                              ? 'Edit BOM PPIC'
+                              : 'Create BOM PPIC'
+                          }
+                        >
+                          {hasBOMPPIC(item) ? 'EDIT' : 'CREATE'}
+                        </button>
                       </div>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -425,36 +352,26 @@ const BOMCreate: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor(
-                          item.status_jo,
-                        )}`}
-                        title={item.status_jo}
-                      >
-                        {truncateText(item.status_jo, 8)}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      <span title={item.tgl_pembuatan_so}>
-                        {formatDate(item.tgl_pembuatan_so)}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      {hasBOM(item) && item.bom?.status_proses ? (
+                      {item.status_bom ? (
                         <span
-                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(
-                            item.bom.status_proses,
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor(
+                            item.status_bom,
                           )}`}
-                          title={item.bom.status_proses}
+                          title={item.status_bom}
                         >
-                          {truncateText(item.bom.status_proses, 8)}
+                          {truncateText(item.status_bom, 8)}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                      <span title={item.tgl_pembuatan_bom}>
+                        {formatDate(item.tgl_pembuatan_bom)}
+                      </span>
+                    </td>
                     <td className="px-2 py-2 whitespace-nowrap">
-                      {getBOMStatusBadge(item)}
+                      {getBOMPPICStatusBadge(item)}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
@@ -475,24 +392,23 @@ const BOMCreate: React.FC = () => {
         </div>
       </div>
 
-      {/* BOM Management Modal */}
-      {showBOMModal && selectedSOId && selectedIOId && (
-        <BOMManagementModal
-          soId={selectedSOId}
+      {/* BOM PPIC Management Modal - Simple condition */}
+      {showBOMModal && selectedBOM && (
+        <BOMPPICManagementModal
+          bomId={selectedBOM.id}
           onClose={() => {
             setShowBOMModal(false);
-            setSelectedSOId(null);
+            setSelectedBOM(null);
           }}
           onSuccess={() => {
-            fetchSOData();
+            fetchBOMData();
             setShowBOMModal(false);
-            setSelectedSOId(null);
+            setSelectedBOM(null);
           }}
-          ioID={selectedIOId}
         />
       )}
     </div>
   );
 };
 
-export default BOMCreate;
+export default BOMPPICCreate;

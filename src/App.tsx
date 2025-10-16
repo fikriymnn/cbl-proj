@@ -212,6 +212,7 @@ import KabagApprovalQC from './pages/QualityControl/Kabag/OSKabagQC';
 import KabagApprovalDesain from './pages/Desain/Kabag/KabagApprovalDesain';
 import BOMMarketing from './pages/PPIC/BOM/BOMPage';
 import BOMApprovalPage from './pages/PPIC/BOM/BOMApprovalPage';
+import BOMPPIC from './pages/PPIC/BOMPPIC/BOMPPICPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -285,6 +286,26 @@ function App() {
         />
         <Route
           path="/ppic/bom/approval"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <BOMApprovalPage />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/bomppic/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <BOMPPIC />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/bomppic/approval"
           element={
             <>
               <PageTitle title="PT CBL" />

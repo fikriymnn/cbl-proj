@@ -598,6 +598,18 @@ export const menuCategories: MenuCategory[] = [
           },
         ],
       },
+      {
+        name: 'BOM PPIC',
+        path: '/ppic/bomppic',
+        icon: 'payroll',
+        children: [
+          {
+            name: 'Create BOM PPIC',
+            path: '/ppic/bomppic/create',
+            icon: 'ncr',
+          },
+        ],
+      },
     ],
   },
   {
