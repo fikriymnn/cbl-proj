@@ -27,27 +27,21 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
     nama_lem: string;
     rumus_lem: string;
     qty_konstanta: number;
-    qty_lock_bottom: number;
-    qty_lem_samping: number;
-    qty_four_corner: number;
-    qty_samping_lock_bottom: number;
-    qty_six_corner: number;
-    qty_ujung_lock_bottom: number;
+    qty_lem: number;
     tipe: string;
   }) => {
     const newItem: BOMLem = {
-      id: null, // ✅ Add this - explicitly set to null for new items
+      id: null,
       ...newData,
       is_selected: false,
     };
     onChange([...data, newItem]);
   };
 
-  // Handle checkbox selection - only one can be selected at a time
   const handleCheckboxChange = (index: number, checked: boolean) => {
     const updated = data.map((item, i) => ({
       ...item,
-      is_selected: i === index ? checked : false, // Uncheck all others
+      is_selected: i === index ? checked : false,
     }));
     onChange(updated);
   };
@@ -56,7 +50,19 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
     onChange(data.filter((_, i) => i !== index));
   };
 
-  // Get the selected lem
+  // Helper function to get formula label
+  const getFormulaLabel = (rumus: string) => {
+    const labels: Record<string, string> = {
+      LOCK_BOTTOM: 'Lock Bottom',
+      LEM_SAMPING: 'Lem Samping',
+      FOUR_CORNER: 'Four Corner',
+      SAMPING_LOCK_BOTTOM: 'Samping + Lock Bottom',
+      SIX_CORNER: 'Six Corner',
+      UJUNG_LOCK_BOTTOM: 'Ujung + Lock Bottom',
+    };
+    return labels[rumus] || rumus;
+  };
+
   const selectedLem = data.find((item) => item.is_selected);
 
   return (
@@ -75,6 +81,9 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
           <div className="px-4 py-2 bg-green-100 border border-green-300 rounded-lg text-sm">
             <span className="font-semibold text-green-800">Lem Terpilih: </span>
             <span className="text-green-700">{selectedLem.nama_lem}</span>
+            <span className="text-green-600 ml-2">
+              ({getFormulaLabel(selectedLem.rumus_lem)})
+            </span>
           </div>
         )}
       </div>
@@ -90,33 +99,20 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
         <table className="min-w-full bg-white border border-gray-200 text-sm">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-4 py-2 border-b text-left font-medium text-gray-700">
+                Tipe
+              </th>
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
                 Lem
               </th>
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
                 Rumus
               </th>
-
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
                 Qty Konstanta
               </th>
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
-                Qty Lock Bottom
-              </th>
-              <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
-                Qty Lem Samping
-              </th>
-              <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
-                Qty Four Corner
-              </th>
-              <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
-                Qty Samping Lock Bottom
-              </th>
-              <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
-                Qty Six Corner
-              </th>
-              <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
-                Qty Ujung Lock Bottom
+                Qty Lem
               </th>
               <th className="px-3 py-2 border-b text-center font-medium text-gray-700">
                 <div className="flex flex-col items-center">
@@ -134,10 +130,7 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
           <tbody>
             {data?.length === 0 ? (
               <tr>
-                <td
-                  colSpan={11}
-                  className="px-4 py-8 text-center text-gray-500"
-                >
+                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                   Belum ada data lem
                 </td>
               </tr>
@@ -149,6 +142,14 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
                     item.is_selected ? 'bg-green-50' : ''
                   }`}
                 >
+                  <td className="px-4 py-2 border-b">
+                    <input
+                      type="text"
+                      value={item.tipe}
+                      className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="DRAFT"
+                    />
+                  </td>
                   <td className="px-3 py-2 border-b">
                     <div className="flex items-center gap-2">
                       {item.is_selected && (
@@ -165,12 +166,11 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
                   <td className="px-3 py-2 border-b">
                     <input
                       type="text"
-                      value={item.rumus_lem}
+                      value={getFormulaLabel(item.rumus_lem)}
                       className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
                       readOnly
                     />
                   </td>
-
                   <td className="px-3 py-2 border-b">
                     <input
                       type="number"
@@ -183,53 +183,8 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
                   <td className="px-3 py-2 border-b">
                     <input
                       type="number"
-                      step="0.01"
-                      value={item.qty_lock_bottom}
-                      className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
-                      readOnly
-                    />
-                  </td>
-                  <td className="px-3 py-2 border-b">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={item.qty_lem_samping}
-                      className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
-                      readOnly
-                    />
-                  </td>
-                  <td className="px-3 py-2 border-b">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={item.qty_four_corner}
-                      className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
-                      readOnly
-                    />
-                  </td>
-                  <td className="px-3 py-2 border-b">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={item.qty_samping_lock_bottom}
-                      className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
-                      readOnly
-                    />
-                  </td>
-                  <td className="px-3 py-2 border-b">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={item.qty_six_corner}
-                      className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
-                      readOnly
-                    />
-                  </td>
-                  <td className="px-3 py-2 border-b">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={item.qty_ujung_lock_bottom}
+                      step="0.0001"
+                      value={item.qty_lem}
                       className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
                       readOnly
                     />
@@ -238,8 +193,8 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
                     <input
                       type="checkbox"
                       checked={item.is_selected}
-                      onChange={
-                        (e) => handleCheckboxChange(index, e.target.checked) // ✅ NEW - uses handleCheckboxChange
+                      onChange={(e) =>
+                        handleCheckboxChange(index, e.target.checked)
                       }
                       className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500 cursor-pointer"
                     />

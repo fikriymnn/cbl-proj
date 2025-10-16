@@ -103,8 +103,8 @@ export interface BOMPoliban {
 
 export interface BOMCoating {
   id?: any; // Add ID for existing records
-  id_coating_depan: number;
-  id_coating_belakang: number;
+  id_coating_depan: number | null;
+  id_coating_belakang: number | null;
   nama_coating_depan: string;
   nama_coating_belakang: string;
   uv_wb: number;
@@ -115,21 +115,20 @@ export interface BOMCoating {
 }
 
 export interface BOMLem {
-  id?: any; // Add ID for existing records
+  id?: any; // ID from database if exists
   id_lem: number;
   nama_lem: string;
   rumus_lem: string;
   qty_konstanta: number;
-  qty_lock_bottom: number;
-  qty_lem_samping: number;
-  qty_four_corner: number;
-  qty_samping_lock_bottom: number;
-  qty_six_corner: number;
-  qty_ujung_lock_bottom: number;
+  qty_lem: number; // ✅ Single calculated value based on selected formula
   tipe: string;
   is_selected: boolean;
 }
-
+export interface BOMLainLain {
+  id?: any; // ID from database if exists
+  nama_item: string;
+  harga: number;
+}
 export interface BOMData {
   id?: any;
   id_io: number;
@@ -156,4 +155,5 @@ export interface BOMData {
   bom_poliban: BOMPoliban[];
   bom_coating: BOMCoating[];
   bom_lem: BOMLem[];
+  lain_lain: BOMLainLain[];
 }

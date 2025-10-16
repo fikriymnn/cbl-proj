@@ -6,8 +6,8 @@ import SearchableSelect from '../../../../../pages/MasterData/Marketing/Searchab
 interface TambahCoatingModalProps {
   onClose: () => void;
   onSave: (data: {
-    id_coating_depan: number;
-    id_coating_belakang: any;
+    id_coating_depan: number | null;
+    id_coating_belakang: number | null;
     nama_coating_depan: string;
     nama_coating_belakang: string;
     uv_wb: number;
@@ -28,6 +28,8 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
   const [formData, setFormData] = useState({
     id_coating_depan: '',
     nama_coating_depan: '',
+    id_coating_belakang: '',
+    nama_coating_belakang: '',
     rumus_coating: '',
   });
   const [coatingOptions, setCoatingOptions] = useState<
@@ -35,10 +37,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
   >([]);
   const [loading, setLoading] = useState(false);
   const [kalkulasiData, setKalkulasiData] = useState<any>(null);
-  const [calculatedValues, setCalculatedValues] = useState({
-    uv_wb: 0,
-    varnish_doff: 0,
-  });
+  const [calculatedValue, setCalculatedValue] = useState(0);
 
   useEffect(() => {
     fetchCoatingData();
@@ -50,12 +49,12 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     }
   }, [id_kalkulasi]);
 
-  // Calculate BOTH formulas whenever kalkulasi data or po_qty changes
+  // Calculate only the selected formula
   useEffect(() => {
-    if (kalkulasiData && po_qty > 0) {
-      calculateQuantities();
+    if (kalkulasiData && po_qty > 0 && formData.rumus_coating) {
+      calculateQuantity();
     }
-  }, [po_qty, kalkulasiData]);
+  }, [po_qty, kalkulasiData, formData.rumus_coating]);
 
   const fetchKalkulasiData = async () => {
     if (!id_kalkulasi) return;
@@ -101,8 +100,8 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     }
   };
 
-  const calculateQuantities = () => {
-    if (!kalkulasiData) return;
+  const calculateQuantity = () => {
+    if (!kalkulasiData || !formData.rumus_coating) return;
 
     const panjangCetak = kalkulasiData.ukuran_cetak_panjang_1 || 0;
     const lebarCetak = kalkulasiData.ukuran_cetak_lebar_1 || 0;
@@ -116,22 +115,22 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
       lebarCetak,
       qtyDruk,
       po_qty,
+      rumus: formData.rumus_coating,
     });
 
-    // Calculate BOTH formulas regardless of selection
-    // UV & WB: ((panjang_cetak × lebar_cetak) / 1.000.000) × qty_druk) / 1.000
-    const uvWb = (((panjangCetak * lebarCetak) / 1000000) * qtyDruk) / 1000;
+    let calculated = 0;
 
-    // Varnish doff: qty_druk / 3.500
-    const varnishDoff = qtyDruk / 3500;
+    // Calculate ONLY the selected formula
+    if (formData.rumus_coating === 'UV_WB') {
+      // UV & WB: ((panjang_cetak × lebar_cetak) / 1.000.000) × qty_druk) / 1.000
+      calculated = (((panjangCetak * lebarCetak) / 1000000) * qtyDruk) / 1000;
+    } else if (formData.rumus_coating === 'VARNISH_DOFF') {
+      // Varnish doff: qty_druk / 3.500
+      calculated = qtyDruk / 3500;
+    }
 
-    const calculated = {
-      uv_wb: uvWb,
-      varnish_doff: varnishDoff,
-    };
-
-    console.log('Calculated values (BOTH):', calculated);
-    setCalculatedValues(calculated);
+    console.log('Calculated value for selected formula:', calculated);
+    setCalculatedValue(calculated);
   };
 
   const handleCoatingDepanChange = (value: string | number) => {
@@ -154,6 +153,26 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     }
   };
 
+  const handleCoatingBelakangChange = (value: string | number) => {
+    const selectedCoating = coatingOptions.find(
+      (item) => item.id.toString() === value.toString(),
+    );
+
+    if (selectedCoating) {
+      setFormData({
+        ...formData,
+        id_coating_belakang: value.toString(),
+        nama_coating_belakang: selectedCoating.nama_barang,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        id_coating_belakang: '',
+        nama_coating_belakang: '',
+      });
+    }
+  };
+
   const handleRumusChange = (value: string | number) => {
     setFormData({
       ...formData,
@@ -169,21 +188,26 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
       return;
     }
 
-    if (!formData.id_coating_depan) {
-      alert('Mohon pilih coating depan');
+    if (!formData.id_coating_depan && !formData.id_coating_belakang) {
+      alert('Mohon pilih minimal satu coating (depan atau belakang)');
       return;
     }
 
-    console.log('Saving data with BOTH calculations:', calculatedValues);
+    console.log('Saving data with selected calculation:', calculatedValue);
 
-    // Always save to coating_depan regardless of formula
+    // Save with only the selected formula calculated
     onSave({
-      id_coating_depan: Number(formData.id_coating_depan),
-      id_coating_belakang: null,
+      id_coating_depan: formData.id_coating_depan
+        ? Number(formData.id_coating_depan)
+        : null,
+      id_coating_belakang: formData.id_coating_belakang
+        ? Number(formData.id_coating_belakang)
+        : null,
       nama_coating_depan: formData.nama_coating_depan,
-      nama_coating_belakang: '',
-      uv_wb: calculatedValues.uv_wb, // Always calculated
-      varnish_doff: calculatedValues.varnish_doff, // Always calculated
+      nama_coating_belakang: formData.nama_coating_belakang,
+      uv_wb: formData.rumus_coating === 'UV_WB' ? calculatedValue : 0,
+      varnish_doff:
+        formData.rumus_coating === 'VARNISH_DOFF' ? calculatedValue : 0,
       rumus_coating: formData.rumus_coating,
       tipe: 'DRAFT',
     });
@@ -195,6 +219,23 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     { value: 'UV_WB', label: 'UV & WB' },
     { value: 'VARNISH_DOFF', label: 'Varnish Doff' },
   ];
+
+  const getFormulaDisplay = () => {
+    if (!kalkulasiData || !formData.rumus_coating) return null;
+
+    const panjangCetak = kalkulasiData.ukuran_cetak_panjang_1;
+    const lebarCetak = kalkulasiData.ukuran_cetak_lebar_1;
+    const ukuranCetakIsi = kalkulasiData.ukuran_cetak_isi_1 || 1;
+    const qtyDruk = (po_qty / ukuranCetakIsi).toFixed(2);
+
+    if (formData.rumus_coating === 'UV_WB') {
+      return `(((${panjangCetak} × ${lebarCetak}) / 1.000.000) × ${qtyDruk}) / 1.000 = ${calculatedValue.toFixed(
+        4,
+      )} kg`;
+    } else if (formData.rumus_coating === 'VARNISH_DOFF') {
+      return `${qtyDruk} / 3.500 = ${calculatedValue.toFixed(4)} kg`;
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -242,7 +283,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
           {/* Rumus yang dipakai */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rumus yang dipakai
+              Rumus yang dipakai <span className="text-red-500">*</span>
             </label>
             <SearchableSelect
               options={[{ value: '', label: 'Pilih Rumus' }, ...rumusOptions]}
@@ -253,7 +294,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
             />
           </div>
 
-          {/* Item Coating Depan - Always show */}
+          {/* Item Coating Depan */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Item Coating Depan
@@ -263,7 +304,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
             ) : (
               <SearchableSelect
                 options={[
-                  { value: '', label: 'Pilih Data' },
+                  { value: '', label: 'Pilih Data (Opsional)' },
                   ...coatingOptions.map((coating) => ({
                     value: coating.id.toString(),
                     label: `${coating.kode_barang} - ${coating.nama_barang}`,
@@ -272,92 +313,66 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
                 value={formData.id_coating_depan}
                 onChange={handleCoatingDepanChange}
                 placeholder="Pilih Item Coating Depan"
-                required
               />
             )}
           </div>
 
-          {/* Display BOTH formulas */}
-          {kalkulasiData && (
-            <div className="mt-3 p-3 bg-white rounded border border-gray-200 mb-4">
-              <div className="text-xs text-gray-600 mb-2 font-semibold">
-                Formulas (Both Calculated):
+          {/* Item Coating Belakang */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Item Coating Belakang
+            </label>
+            {loading ? (
+              <div className="text-sm text-gray-500">Loading data...</div>
+            ) : (
+              <SearchableSelect
+                options={[
+                  { value: '', label: 'Pilih Data (Opsional)' },
+                  ...coatingOptions.map((coating) => ({
+                    value: coating.id.toString(),
+                    label: `${coating.kode_barang} - ${coating.nama_barang}`,
+                  })),
+                ]}
+                value={formData.id_coating_belakang}
+                onChange={handleCoatingBelakangChange}
+                placeholder="Pilih Item Coating Belakang"
+              />
+            )}
+          </div>
+
+          {/* Display selected formula only */}
+          {kalkulasiData && formData.rumus_coating && (
+            <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200 mb-4">
+              <div className="text-xs text-blue-600 mb-2 font-semibold">
+                Formula Terpilih:{' '}
+                {formData.rumus_coating === 'UV_WB'
+                  ? 'UV & WB'
+                  : 'Varnish Doff'}
               </div>
-              <div className="space-y-2">
-                <div
-                  className={`text-sm font-mono text-gray-800 p-2 rounded ${
-                    formData.rumus_coating === 'UV_WB'
-                      ? 'bg-blue-100 border-2 border-blue-400'
-                      : 'bg-blue-50'
-                  }`}
-                >
-                  <div className="text-xs text-blue-600 mb-1 font-semibold">
-                    UV & WB:{' '}
-                    {formData.rumus_coating === 'UV_WB' && '✓ Selected'}
-                  </div>
-                  {`(((${kalkulasiData.ukuran_cetak_panjang_1} × ${
-                    kalkulasiData.ukuran_cetak_lebar_1
-                  }) / 1.000.000) × ${(
-                    po_qty / (kalkulasiData.ukuran_cetak_isi_1 || 1)
-                  ).toFixed(2)}) / 1.000 = ${calculatedValues.uv_wb.toFixed(
-                    4,
-                  )} kg`}
-                </div>
-                <div
-                  className={`text-sm font-mono text-gray-800 p-2 rounded ${
-                    formData.rumus_coating === 'VARNISH_DOFF'
-                      ? 'bg-purple-100 border-2 border-purple-400'
-                      : 'bg-purple-50'
-                  }`}
-                >
-                  <div className="text-xs text-purple-600 mb-1 font-semibold">
-                    Varnish Doff:{' '}
-                    {formData.rumus_coating === 'VARNISH_DOFF' && '✓ Selected'}
-                  </div>
-                  {`${(
-                    po_qty / (kalkulasiData.ukuran_cetak_isi_1 || 1)
-                  ).toFixed(
-                    2,
-                  )} / 3.500 = ${calculatedValues.varnish_doff.toFixed(4)} kg`}
-                </div>
+              <div className="text-sm font-mono text-gray-800 p-2 rounded bg-white">
+                {getFormulaDisplay()}
               </div>
             </div>
           )}
 
-          {/* Calculated Results Preview - Show BOTH */}
-          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h4 className="font-semibold text-green-800 mb-2">
-              Hasil Kalkulasi (Auto - Kedua Rumus):
-            </h4>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div
-                className={`p-2 rounded border ${
-                  formData.rumus_coating === 'UV_WB'
-                    ? 'bg-green-100 border-green-400'
-                    : 'bg-white border-green-200'
-                }`}
-              >
-                <span className="text-gray-600 block mb-1">Qty UV/WB:</span>
-                <span className="font-semibold text-green-700 text-lg">
-                  {calculatedValues.uv_wb.toFixed(4)} kg
-                </span>
-              </div>
-              <div
-                className={`p-2 rounded border ${
-                  formData.rumus_coating === 'VARNISH_DOFF'
-                    ? 'bg-green-100 border-green-400'
-                    : 'bg-white border-green-200'
-                }`}
-              >
+          {/* Calculated Result Preview - Show only selected */}
+          {formData.rumus_coating && calculatedValue > 0 && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h4 className="font-semibold text-green-800 mb-2">
+                Hasil Kalkulasi:
+              </h4>
+              <div className="text-sm p-2 rounded bg-white border border-green-200">
                 <span className="text-gray-600 block mb-1">
-                  Qty Varnish Doff:
+                  {formData.rumus_coating === 'UV_WB'
+                    ? 'Qty UV/WB:'
+                    : 'Qty Varnish Doff:'}
                 </span>
                 <span className="font-semibold text-green-700 text-lg">
-                  {calculatedValues.varnish_doff.toFixed(4)} kg
+                  {calculatedValue.toFixed(4)} kg
                 </span>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Footer Buttons */}
           <div className="flex gap-3 justify-end">

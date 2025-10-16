@@ -9,7 +9,7 @@ import BOMCorrugatedTab from './Tabs/BOMCorrugatedTab';
 import BOMPolibanTab from './Tabs/BOMPolibatTab';
 import BOMCoatingTab from './Tabs/BOMCoatingTab';
 import BOMLemTab from './Tabs/BOMLemTab';
-
+import BOMLainLainTab from './Tabs/BOMLainLainTab';
 interface BOMManagementModalProps {
   soId: number;
   onClose: () => void;
@@ -23,8 +23,8 @@ type TabType =
   | 'corrugated'
   | 'poliban'
   | 'coating'
-  | 'lem';
-
+  | 'lem'
+  | 'lain-lain';
 const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   soId,
   ioID,
@@ -60,6 +60,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     bom_poliban: [],
     bom_coating: [],
     bom_lem: [],
+    lain_lain: [],
   });
 
   // Fetch both SO and IO data on mount
@@ -72,22 +73,13 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
 
   // Check for existing BOM after both soData and ioMountings are loaded
   useEffect(() => {
-    console.log('Checking for BOM...', {
-      soData,
-      hasBOM: soData?.bom?.id,
-      ioMountingsLoaded: ioMountings.length > 0,
-      bomFetched,
-    });
-
     if (soData && ioMountings.length > 0 && !bomFetched) {
       // Check if BOM exists from SO data
       if (soData?.bom?.id) {
-        console.log('BOM exists, fetching BOM ID:', soData.bom.id);
         setIsEditMode(true);
         setBomFetched(true);
         fetchExistingBOMById(soData.bom.id);
       } else {
-        console.log('No BOM found, create mode');
         // Set first mounting as default for new BOM
         if (ioMountings.length > 0) {
           setSelectedMounting(ioMountings[0]);
@@ -127,17 +119,10 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           withCredentials: true,
         },
       );
-      console.log('SO Data Response:', response.data.data);
 
       if (response.data?.data) {
         const fetchedSOData = response.data.data;
         setSOData(fetchedSOData);
-
-        console.log('SO BOM Info:', {
-          hasBOM: !!fetchedSOData.bom,
-          bomId: fetchedSOData.bom?.id,
-          bomDetails: fetchedSOData.bom,
-        });
 
         // Initialize BOM data with SO information
         setBOMData((prev) => ({
@@ -161,7 +146,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   // Fetch existing BOM by ID (when editing)
   const fetchExistingBOMById = async (bomId: number) => {
     try {
-      console.log('Fetching BOM with ID:', bomId);
       setLoading(true);
 
       const response = await axios.get(
@@ -175,7 +159,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
 
       if (response.data?.data) {
         const existingBOM = response.data.data;
-        console.log('Processing BOM data:', existingBOM);
 
         setBOMData({
           id: existingBOM.id,
@@ -216,24 +199,19 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           bom_lem: Array.isArray(existingBOM.bom_lem)
             ? existingBOM.bom_lem
             : [],
+          lain_lain: Array.isArray(existingBOM.lain_lain)
+            ? existingBOM.lain_lain
+            : [],
         });
-
-        console.log('BOM data set successfully');
 
         // Set the mounting if available
         if (existingBOM.id_io_mounting && ioMountings.length > 0) {
           const mounting = ioMountings.find(
             (m) => m.id === existingBOM.id_io_mounting,
           );
-          console.log(
-            'Looking for mounting:',
-            existingBOM.id_io_mounting,
-            'Found:',
-            mounting,
-          );
+
           if (mounting) {
             setSelectedMounting(mounting);
-            console.log('Mounting set:', mounting);
           }
         }
       }
@@ -250,7 +228,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
 
   const fetchExistingio = async () => {
     try {
-      console.log('Fetching IO data for ID:', ioID);
       setLoading(true);
 
       const response = await axios.get(
@@ -263,7 +240,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
       if (response.data?.data) {
         const ioData = response.data.data;
         const mountings = ioData.io_mounting || [];
-        console.log('IO Mountings:', mountings);
+
         setIoMountings(mountings);
       }
     } catch (error) {
@@ -274,8 +251,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   };
 
   const handleBOMDataChange = (newData: Partial<BOMData>) => {
-    console.log('Updating BOM data:', newData);
-
     setBOMData((prev) => {
       const updated = { ...prev, ...newData };
 
@@ -319,8 +294,10 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         ? updated.bom_coating
         : [];
       updated.bom_lem = Array.isArray(updated.bom_lem) ? updated.bom_lem : [];
+      updated.lain_lain = Array.isArray(updated.lain_lain)
+        ? updated.lain_lain
+        : [];
 
-      console.log('Updated BOM data:', updated);
       return updated;
     });
 
@@ -344,7 +321,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   const handleSaveBOM = async () => {
     try {
       setLoading(true);
-
+      console.log('Saving BOM Data:', bomData);
       // Validate data before saving
       const dataToSave = {
         ...(bomData.id && { id: bomData.id }),
@@ -374,9 +351,8 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           ? bomData.bom_coating
           : [],
         bom_lem: Array.isArray(bomData.bom_lem) ? bomData.bom_lem : [],
+        lain_lain: Array.isArray(bomData.lain_lain) ? bomData.lain_lain : [],
       };
-
-      console.log('Saving BOM data:', dataToSave);
 
       const baseUrl = `${import.meta.env.VITE_API_LINK}/ppic/bom`;
       const url = bomData.id ? `${baseUrl}/${bomData.id}` : baseUrl;
@@ -388,8 +364,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         data: dataToSave,
         withCredentials: true,
       });
-
-      console.log('Save response:', response.data);
 
       // Update bomData with the saved ID if it was a new record
       if (!bomData.id && response.data?.data?.id) {
@@ -436,6 +410,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     { id: 'poliban', label: 'Komponen Poliban', icon: '🔗' },
     { id: 'coating', label: 'Komponen Coating', icon: '✨' },
     { id: 'lem', label: 'Komponen Lem', icon: '🧴' },
+    { id: 'lain-lain', label: 'Komponen Lain-lain', icon: '📦' },
   ];
 
   // Show loading while fetching SO data
@@ -644,6 +619,12 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                   onChange={(data) => handleBOMDataChange({ bom_lem: data })}
                   po_qty={soData.po_qty}
                   tinggi_io={selectedMounting?.ukuran_jadi_tinggi || 0}
+                />
+              )}
+              {activeTab === 'lain-lain' && ( // ✅ Add this
+                <BOMLainLainTab
+                  data={bomData.lain_lain}
+                  onChange={(data) => handleBOMDataChange({ lain_lain: data })}
                 />
               )}
             </>

@@ -22,9 +22,10 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
     setShowModal(true);
   };
 
+  // ✅ Updated to accept null values
   const handleSaveFromModal = (newData: {
-    id_coating_depan: number;
-    id_coating_belakang: number;
+    id_coating_depan: number | null;
+    id_coating_belakang: number | null;
     nama_coating_depan: string;
     nama_coating_belakang: string;
     uv_wb: number;
@@ -33,7 +34,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
     tipe: string;
   }) => {
     const newItem: BOMCoating = {
-      id: null, // ✅ Add this - explicitly set to null for new items
+      id: null,
       ...newData,
       is_selected: false,
     };
@@ -160,7 +161,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
                       )}
                       <input
                         type="text"
-                        value={item.nama_coating_depan}
+                        value={item.nama_coating_depan || '-'}
                         className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
                         readOnly
                       />
@@ -173,7 +174,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
                       )}
                       <input
                         type="text"
-                        value={item.nama_coating_belakang}
+                        value={item.nama_coating_belakang || '-'}
                         className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
                         readOnly
                       />
@@ -184,7 +185,11 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
                       type="number"
                       step="0.0001"
                       value={item.uv_wb.toFixed(4)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
+                      className={`w-full px-2 py-1 border border-gray-300 rounded ${
+                        item.rumus_coating === 'UV_WB'
+                          ? 'bg-green-100 font-semibold'
+                          : 'bg-gray-100'
+                      }`}
                       readOnly
                     />
                   </td>
@@ -193,7 +198,11 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
                       type="number"
                       step="0.0001"
                       value={item.varnish_doff.toFixed(4)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
+                      className={`w-full px-2 py-1 border border-gray-300 rounded ${
+                        item.rumus_coating === 'VARNISH_DOFF'
+                          ? 'bg-green-100 font-semibold'
+                          : 'bg-gray-100'
+                      }`}
                       readOnly
                     />
                   </td>

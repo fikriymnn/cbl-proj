@@ -10,12 +10,7 @@ interface TambahLemModalProps {
     nama_lem: string;
     rumus_lem: string;
     qty_konstanta: number;
-    qty_lock_bottom: number;
-    qty_lem_samping: number;
-    qty_four_corner: number;
-    qty_samping_lock_bottom: number;
-    qty_six_corner: number;
-    qty_ujung_lock_bottom: number;
+    qty_lem: number;
     tipe: string;
   }) => void;
   po_qty?: number;
@@ -39,54 +34,56 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [calculatedValues, setCalculatedValues] = useState({
     qty_konstanta: 0,
-    qty_lock_bottom: 0,
-    qty_lem_samping: 0,
-    qty_four_corner: 0,
-    qty_samping_lock_bottom: 0,
-    qty_six_corner: 0,
-    qty_ujung_lock_bottom: 0,
+    qty_lem: 0, // ✅ Single value
   });
 
   useEffect(() => {
     fetchLemData();
   }, []);
 
-  // Calculate konstanta first when tinggi_io changes
-  useEffect(() => {
-    if (tinggi_io > 0) {
-      const konstanta = tinggi_io / 100;
-      setCalculatedValues((prev) => ({
-        ...prev,
-        qty_konstanta: konstanta,
-      }));
-    }
-  }, [tinggi_io]);
-
-  // Calculate all quantities based on the formula
+  // Calculate konstanta and qty_lem based on selected formula
   useEffect(() => {
     if (tinggi_io > 0 && po_qty > 0 && formData.rumus_lem) {
-      //  const tinggiCM = tinggi_io / 10;
+      const konstanta = tinggi_io / 100;
 
-      //       const konstanta = tinggiCM / 100;
+      let qty_lem = 0;
 
-      const konstanta = tinggi_io / 100; // Calculate konstanta from tinggi_io
+      // Calculate based on selected formula
+      switch (formData.rumus_lem) {
+        case 'LOCK_BOTTOM':
+          qty_lem = (konstanta + 2) * 0.0001 * po_qty;
+          break;
+        case 'LEM_SAMPING':
+          qty_lem = konstanta * 0.0001 * po_qty;
+          break;
+        case 'FOUR_CORNER':
+          qty_lem = konstanta * 4 * 0.0001 * po_qty;
+          break;
+        case 'SAMPING_LOCK_BOTTOM':
+          qty_lem = (konstanta + 2) * 0.0001 * po_qty;
+          break;
+        case 'SIX_CORNER':
+          qty_lem = konstanta * 6 * 0.0001 * po_qty;
+          break;
+        case 'UJUNG_LOCK_BOTTOM':
+          qty_lem = (konstanta + 2) * 0.0001 * po_qty;
+          break;
+        default:
+          qty_lem = 0;
+      }
 
-      console.log('Calculating with:', { tinggi_io, konstanta, po_qty }); // Debug log
+      console.log('Calculating with:', {
+        tinggi_io,
+        konstanta,
+        po_qty,
+        formula: formData.rumus_lem,
+        qty_lem,
+      });
 
-      // Calculate based on formula from image 2
-      const calculated = {
-        qty_konstanta: konstanta, // tinggi (IO)/100
-        qty_lock_bottom: (konstanta + 2) * 0.0001 * po_qty,
-        qty_lem_samping: konstanta * 0.0001 * po_qty,
-        qty_four_corner: konstanta * 4 * 0.0001 * po_qty,
-        qty_samping_lock_bottom: (konstanta + 2) * 0.0001 * po_qty,
-        qty_six_corner: konstanta * 6 * 0.0001 * po_qty,
-        qty_ujung_lock_bottom: (konstanta + 2) * 0.0001 * po_qty,
-      };
-
-      console.log('Calculated values:', calculated); // Debug log
-
-      setCalculatedValues(calculated);
+      setCalculatedValues({
+        qty_konstanta: konstanta,
+        qty_lem: qty_lem,
+      });
     }
   }, [formData.rumus_lem, po_qty, tinggi_io]);
 
@@ -147,26 +144,42 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
       return;
     }
 
-    console.log('Saving data:', calculatedValues); // Debug log
+    console.log('Saving data:', calculatedValues);
 
     onSave({
       id_lem: Number(formData.id_lem),
       nama_lem: formData.nama_lem,
       rumus_lem: formData.rumus_lem,
       qty_konstanta: calculatedValues.qty_konstanta,
-      qty_lock_bottom: calculatedValues.qty_lock_bottom,
-      qty_lem_samping: calculatedValues.qty_lem_samping,
-      qty_four_corner: calculatedValues.qty_four_corner,
-      qty_samping_lock_bottom: calculatedValues.qty_samping_lock_bottom,
-      qty_six_corner: calculatedValues.qty_six_corner,
-      qty_ujung_lock_bottom: calculatedValues.qty_ujung_lock_bottom,
+      qty_lem: calculatedValues.qty_lem,
       tipe: 'DRAFT',
     });
 
     onClose();
   };
 
-  // Rumus options based on the formula image
+  // Helper function to get formula display text
+  const getFormulaDisplay = () => {
+    const { qty_konstanta } = calculatedValues;
+
+    switch (formData.rumus_lem) {
+      case 'LOCK_BOTTOM':
+        return `((${qty_konstanta.toFixed(2)} + 2) × 0.0001) × ${po_qty}`;
+      case 'LEM_SAMPING':
+        return `(${qty_konstanta.toFixed(2)} × 0.0001) × ${po_qty}`;
+      case 'FOUR_CORNER':
+        return `((${qty_konstanta.toFixed(2)} × 4) × 0.0001) × ${po_qty}`;
+      case 'SAMPING_LOCK_BOTTOM':
+        return `((${qty_konstanta.toFixed(2)} + 2) × 0.0001) × ${po_qty}`;
+      case 'SIX_CORNER':
+        return `((${qty_konstanta.toFixed(2)} × 6) × 0.0001) × ${po_qty}`;
+      case 'UJUNG_LOCK_BOTTOM':
+        return `((${qty_konstanta.toFixed(2)} + 2) × 0.0001) × ${po_qty}`;
+      default:
+        return '';
+    }
+  };
+
   const rumusOptions = [
     { value: 'LOCK_BOTTOM', label: 'Lock Bottom' },
     { value: 'LEM_SAMPING', label: 'Lem Samping' },
@@ -241,7 +254,7 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
           </div>
 
           {/* Data Kalkulasi Section */}
-          <div className="mb-4  bg-gray-50 rounded-lg">
+          <div className="mb-4 bg-gray-50 rounded-lg ">
             <h3 className="font-semibold text-gray-700 mb-3">
               Data Kalkulasi:
             </h3>
@@ -265,42 +278,7 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
               <div className="mt-3 p-3 bg-white rounded border border-gray-200">
                 <div className="text-xs text-gray-600 mb-1">Formula:</div>
                 <div className="text-sm font-mono text-gray-800">
-                  {formData.rumus_lem === 'LOCK_BOTTOM' &&
-                    `((${calculatedValues.qty_konstanta.toFixed(
-                      2,
-                    )} + 2) × 0.0001) × ${po_qty} = ${calculatedValues.qty_lock_bottom.toFixed(
-                      4,
-                    )}`}
-                  {formData.rumus_lem === 'LEM_SAMPING' &&
-                    `(${calculatedValues.qty_konstanta.toFixed(
-                      2,
-                    )} × 0.0001) × ${po_qty} = ${calculatedValues.qty_lem_samping.toFixed(
-                      4,
-                    )}`}
-                  {formData.rumus_lem === 'FOUR_CORNER' &&
-                    `((${calculatedValues.qty_konstanta.toFixed(
-                      2,
-                    )} × 4) × 0.0001) × ${po_qty} = ${calculatedValues.qty_four_corner.toFixed(
-                      4,
-                    )}`}
-                  {formData.rumus_lem === 'SAMPING_LOCK_BOTTOM' &&
-                    `((${calculatedValues.qty_konstanta.toFixed(
-                      2,
-                    )} + 2) × 0.0001) × ${po_qty} = ${calculatedValues.qty_samping_lock_bottom.toFixed(
-                      4,
-                    )}`}
-                  {formData.rumus_lem === 'SIX_CORNER' &&
-                    `((${calculatedValues.qty_konstanta.toFixed(
-                      2,
-                    )} × 6) × 0.0001) × ${po_qty} = ${calculatedValues.qty_six_corner.toFixed(
-                      4,
-                    )}`}
-                  {formData.rumus_lem === 'UJUNG_LOCK_BOTTOM' &&
-                    `((${calculatedValues.qty_konstanta.toFixed(
-                      2,
-                    )} + 2) × 0.0001) × ${po_qty} = ${calculatedValues.qty_ujung_lock_bottom.toFixed(
-                      4,
-                    )}`}
+                  {getFormulaDisplay()} = {calculatedValues.qty_lem.toFixed(4)}
                 </div>
               </div>
             )}
@@ -310,67 +288,28 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
           {formData.rumus_lem && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <h4 className="font-semibold text-green-800 mb-2">
-                Hasil Kalkulasi (Auto):
+                Hasil Kalkulasi:
               </h4>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="col-span-2">
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
                   <span className="text-gray-600">Qty Konstanta:</span>
                   <span className="ml-2 font-semibold text-green-700">
                     {calculatedValues.qty_konstanta.toFixed(4)}
                   </span>
                 </div>
-                {formData.rumus_lem === 'LOCK_BOTTOM' && (
-                  <div>
-                    <span className="text-gray-600">Qty Lock Bottom:</span>
-                    <span className="ml-2 font-semibold text-green-700">
-                      {calculatedValues.qty_lock_bottom.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-                {formData.rumus_lem === 'LEM_SAMPING' && (
-                  <div>
-                    <span className="text-gray-600">Qty Lem Samping:</span>
-                    <span className="ml-2 font-semibold text-green-700">
-                      {calculatedValues.qty_lem_samping.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-                {formData.rumus_lem === 'FOUR_CORNER' && (
-                  <div>
-                    <span className="text-gray-600">Qty Four Corner:</span>
-                    <span className="ml-2 font-semibold text-green-700">
-                      {calculatedValues.qty_four_corner.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-                {formData.rumus_lem === 'SAMPING_LOCK_BOTTOM' && (
-                  <div>
-                    <span className="text-gray-600">
-                      Qty Samping Lock Bottom:
-                    </span>
-                    <span className="ml-2 font-semibold text-green-700">
-                      {calculatedValues.qty_samping_lock_bottom.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-                {formData.rumus_lem === 'SIX_CORNER' && (
-                  <div>
-                    <span className="text-gray-600">Qty Six Corner:</span>
-                    <span className="ml-2 font-semibold text-green-700">
-                      {calculatedValues.qty_six_corner.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-                {formData.rumus_lem === 'UJUNG_LOCK_BOTTOM' && (
-                  <div>
-                    <span className="text-gray-600">
-                      Qty Ujung Lock Bottom:
-                    </span>
-                    <span className="ml-2 font-semibold text-green-700">
-                      {calculatedValues.qty_ujung_lock_bottom.toFixed(4)}
-                    </span>
-                  </div>
-                )}
+                <div>
+                  <span className="text-gray-600">
+                    Qty Lem (
+                    {
+                      rumusOptions.find((r) => r.value === formData.rumus_lem)
+                        ?.label
+                    }
+                    ):
+                  </span>
+                  <span className="ml-2 font-semibold text-green-700">
+                    {calculatedValues.qty_lem.toFixed(4)}
+                  </span>
+                </div>
               </div>
             </div>
           )}
