@@ -81,7 +81,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         const ppicData = bomPPICResponse.data?.data || bomPPICResponse.data;
 
         if (ppicData && hasBOMPPICData(ppicData)) {
-          console.log('BOM PPIC exists, entering edit mode');
+          console.log('BOM PPIC exists, entering edit mode', ppicData);
           setIsEditMode(true);
           setBomDetails(ppicData);
           initializeEditMode(ppicData);
@@ -149,13 +149,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setPolibanItems(bomData.bom_ppic_poliban || []);
     setCoatingItems(bomData.bom_ppic_coating || []);
     setLemItems(bomData.bom_ppic_lem || []);
-    setLainLainItems(
-      (bomData.lain_lain || []).map((item) => ({
-        nama_item: item.nama_item || '',
-        harga: item.harga || 0,
-        is_active: item.is_active || true,
-      })),
-    );
+    setLainLainItems(bomData.lain_lain || []);
   };
 
   const formatNumber = (value: number | string): string => {
