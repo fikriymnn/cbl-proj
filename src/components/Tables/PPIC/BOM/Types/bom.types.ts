@@ -102,11 +102,11 @@ export interface BOMPoliban {
 }
 
 export interface BOMCoating {
-  id?: any; // Add ID for existing records
-  id_coating_depan: number | null;
-  id_coating_belakang: number | null;
-  nama_coating_depan: string;
-  nama_coating_belakang: string;
+  id: number | null;
+  id_coating: number | null;
+  nama_coating: string;
+  tipe_coating: 'Depan' | 'Belakang' | '';
+  qty_coating: number;
   uv_wb: number;
   varnish_doff: number;
   rumus_coating: string;
@@ -127,7 +127,7 @@ export interface BOMLem {
 export interface BOMLainLain {
   id?: any; // ID from database if exists
   nama_item: string;
-  harga: number;
+  qty: number;
 }
 export interface BOMData {
   id?: any;

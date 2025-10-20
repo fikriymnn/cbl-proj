@@ -11,7 +11,7 @@ const BOMLainLainTab: React.FC<BOMLainLainTabProps> = ({ data, onChange }) => {
     const newItem: BOMLainLain = {
       id: null, // ✅ Default id = null for new items
       nama_item: '',
-      harga: 0,
+      qty: 0,
     };
     onChange([...data, newItem]);
   };
@@ -35,7 +35,7 @@ const BOMLainLainTab: React.FC<BOMLainLainTabProps> = ({ data, onChange }) => {
   };
 
   // Calculate total harga
-  const totalHarga = data.reduce((sum, item) => sum + (item.harga || 0), 0);
+  const totalQty = data.reduce((sum, item) => sum + (item.qty || 0), 0);
 
   return (
     <div className="space-y-4">
@@ -104,13 +104,13 @@ const BOMLainLainTab: React.FC<BOMLainLainTabProps> = ({ data, onChange }) => {
               <div className="flex gap-2">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Harga
+                    QTY
                   </label>
                   <input
                     type="number"
-                    value={item.harga}
+                    value={item.qty}
                     onChange={(e) =>
-                      handleItemChange(index, 'harga', Number(e.target.value))
+                      handleItemChange(index, 'qty', Number(e.target.value))
                     }
                     placeholder="0"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
@@ -175,9 +175,7 @@ const BOMLainLainTab: React.FC<BOMLainLainTabProps> = ({ data, onChange }) => {
                 <span className="text-gray-700">
                   {item.nama_item || `Item ${index + 1}`}
                 </span>
-                <span className="font-medium text-blue-900">
-                  Rp {item.harga.toLocaleString('id-ID')}
-                </span>
+                <span className="font-medium text-blue-900">{item.qty}</span>
               </div>
             ))}
 
@@ -188,7 +186,7 @@ const BOMLainLainTab: React.FC<BOMLainLainTabProps> = ({ data, onChange }) => {
                   Total ({data.length} item)
                 </span>
                 <span className="font-bold text-lg text-blue-900">
-                  Rp {totalHarga.toLocaleString('id-ID')}
+                  {totalQty}
                 </span>
               </div>
             </div>

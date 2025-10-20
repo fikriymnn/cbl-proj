@@ -692,6 +692,11 @@ export const menuCategories: MenuCategory[] = [
             icon: 'ncr',
           },
           {
+            name: ' IO NPD',
+            path: '/marketing/io/npd',
+            icon: 'ncr',
+          },
+          {
             name: 'History IO',
             path: '/marketing/io/history',
             icon: 'capa',

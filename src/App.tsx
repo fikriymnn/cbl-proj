@@ -213,6 +213,8 @@ import KabagApprovalDesain from './pages/Desain/Kabag/KabagApprovalDesain';
 import BOMMarketing from './pages/PPIC/BOM/BOMPage';
 import BOMApprovalPage from './pages/PPIC/BOM/BOMApprovalPage';
 import BOMPPIC from './pages/PPIC/BOMPPIC/BOMPPICPage';
+import IONPDPage from './pages/Marketing/IO/IONPDPage';
+import JOPPIC from './pages/PPIC/JO/JOPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -281,6 +283,25 @@ function App() {
               <PageTitle title="PT CBL" />
 
               <BOMMarketing />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/jo/approval"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <BOMApprovalPage />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/jo/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <JOPPIC />
             </>
           }
         />
@@ -355,6 +376,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/marketing/okp/history"
           element={
@@ -362,6 +384,16 @@ function App() {
               <PageTitle title="PT CBL" />
 
               <OKPPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/io/npd"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+
+              <IONPDPage />
             </>
           }
         />
