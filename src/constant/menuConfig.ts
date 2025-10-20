@@ -610,6 +610,18 @@ export const menuCategories: MenuCategory[] = [
           },
         ],
       },
+      {
+        name: ' JO',
+        path: '/ppic/jo',
+        icon: 'payroll',
+        children: [
+          {
+            name: 'Create  JO',
+            path: '/ppic/jo/create',
+            icon: 'ncr',
+          },
+        ],
+      },
     ],
   },
   {
