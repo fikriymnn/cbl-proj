@@ -6,6 +6,8 @@ import JOPPICCreateModal from './utils/JOPPICCreateModal';
 type SortDirection = 'asc' | 'desc';
 
 interface JOData {
+  status_proses: string;
+  status: any;
   id: number;
   no_jo: string;
   no_so: string;
@@ -30,6 +32,8 @@ const JOPPICCreate: React.FC = () => {
     useState<boolean>(false);
   const [selectedTipeJO, setSelectedTipeJO] = useState<JOTipeOption>('JO REAL');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [editMode, setEditMode] = useState<boolean>(false);
+  const [editJOId, setEditJOId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchJOData();
@@ -146,6 +150,8 @@ const JOPPICCreate: React.FC = () => {
   };
 
   const handleTambahJO = () => {
+    setEditMode(false);
+    setEditJOId(null);
     setShowTipeJOSelection(true);
   };
 
@@ -157,10 +163,39 @@ const JOPPICCreate: React.FC = () => {
 
   const handleModalClose = () => {
     setShowModal(false);
+    setEditMode(false);
+    setEditJOId(null);
   };
 
   const handleModalSuccess = () => {
     fetchJOData();
+  };
+
+  const handleEditJO = (item: JOData) => {
+    setEditMode(true);
+    setEditJOId(item.id);
+    setSelectedTipeJO(item.tipe_jo as JOTipeOption);
+    setShowModal(true);
+  };
+
+  const NextProcessKabag = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin Next Process JO Ini?')) {
+      try {
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/request/${id}`;
+        const res = await axios.put(
+          url,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
+        fetchJOData();
+        alert('JO berhasil di-request!');
+      } catch (error: any) {
+        console.log(error);
+        alert('Gagal request JO. Silakan coba lagi.');
+      }
+    }
   };
 
   // Filter and sort data
@@ -244,11 +279,6 @@ const JOPPICCreate: React.FC = () => {
             </svg>
           </div>
         </div>
-
-        {/* Results count */}
-        <div className="text-sm text-gray-600">
-          Showing {sortedData.length} of {joData.length} entries
-        </div>
       </div>
 
       {/* Table */}
@@ -259,6 +289,9 @@ const JOPPICCreate: React.FC = () => {
               <tr>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                   NO
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ACTION
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
@@ -341,9 +374,6 @@ const JOPPICCreate: React.FC = () => {
                     {getSortIcon('status_jo')}
                   </button>
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ACTION
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -374,32 +404,68 @@ const JOPPICCreate: React.FC = () => {
                     key={item.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
                       {index + 1}
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.no_jo || '-'}
+                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                      <div className="flex flex-col gap-1">
+                        {item.status_proses == 'request to kabag' ||
+                        item.status_proses == 'done' ? (
+                          <>
+                            <div className="uppercase ">
+                              {item.status_proses}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex flex-col gap-2">
+                            <button
+                              onClick={() => handleEditJO(item)}
+                              className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
+                              title="EDIT JO"
+                            >
+                              EDIT JO
+                            </button>
+
+                            <button
+                              onClick={() => NextProcessKabag(item.id)}
+                              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                              title="Next Process"
+                            >
+                              NEXT PROCESS
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                      {item.no_so || '-'}
+                    <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">
+                      <div className="max-w-xs" title={item.no_jo}>
+                        {truncateText(item.no_jo, 30)}
+                      </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
-                      {item.no_io || '-'}
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                      <div className="max-w-xs" title={item.no_so}>
+                        {truncateText(item.no_so, 30)}
+                      </div>
                     </td>
-                    <td className="px-3 py-3 text-sm text-gray-900">
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                      <div className="max-w-xs" title={item.no_io}>
+                        {truncateText(item.no_io, 30)}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-xs text-gray-900">
                       <div className="max-w-xs" title={item.customer}>
                         {truncateText(item.customer, 30)}
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-sm text-gray-900">
+                    <td className="px-3 py-3 text-xs text-gray-900">
                       <div className="max-w-xs" title={item.produk}>
                         {truncateText(item.produk, 40)}
                       </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
                       {item.qty?.toLocaleString() || 0}
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
                       {formatDate(item.tgl_kirim)}
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">
@@ -419,52 +485,6 @@ const JOPPICCreate: React.FC = () => {
                       >
                         {item.status_jo || '-'}
                       </span>
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
-                        <button
-                          className="text-blue-600 hover:text-blue-900"
-                          title="View"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          className="text-yellow-600 hover:text-yellow-900"
-                          title="Edit"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
-                          </svg>
-                        </button>
-                      </div>
                     </td>
                   </tr>
                 ))
@@ -510,7 +530,7 @@ const JOPPICCreate: React.FC = () => {
                     <span className="text-lg font-semibold text-gray-900">
                       JO REAL
                     </span>
-                    <span className="text-sm text-gray-500 mt-1">
+                    <span className="text-xs text-gray-500 mt-1">
                       Job Order untuk produksi sesungguhnya
                     </span>
                   </button>
@@ -555,12 +575,14 @@ const JOPPICCreate: React.FC = () => {
         </div>
       )}
 
-      {/* JO Create Modal */}
+      {/* JO Create/Edit Modal */}
       <JOPPICCreateModal
         isOpen={showModal}
         onClose={handleModalClose}
         onSuccess={handleModalSuccess}
         tipeJO={selectedTipeJO}
+        editMode={editMode}
+        editJOId={editJOId}
       />
     </div>
   );

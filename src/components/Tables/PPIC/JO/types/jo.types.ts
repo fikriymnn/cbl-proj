@@ -139,6 +139,7 @@ export interface MountingData {
 }
 
 export interface JOMounting {
+  id?: number;
   id_io_mounting: number;
   id_kertas: number;
   nama_kertas: string;
@@ -170,6 +171,7 @@ export interface JOMounting {
 
 export interface JOFormData {
   id_io: number;
+  id_jo?: number;
   id_so: number;
   id_customer: number;
   id_produk: number;
