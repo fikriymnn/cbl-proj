@@ -620,6 +620,11 @@ export const menuCategories: MenuCategory[] = [
             path: '/ppic/jo/create',
             icon: 'ncr',
           },
+          {
+            name: 'Approve  JO',
+            path: '/ppic/jo/approval',
+            icon: 'ncr',
+          },
         ],
       },
     ],

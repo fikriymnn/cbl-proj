@@ -215,6 +215,7 @@ import BOMApprovalPage from './pages/PPIC/BOM/BOMApprovalPage';
 import BOMPPIC from './pages/PPIC/BOMPPIC/BOMPPICPage';
 import IONPDPage from './pages/Marketing/IO/IONPDPage';
 import JOPPIC from './pages/PPIC/JO/JOPage';
+import JOApprovalPage from './pages/PPIC/JO/JOApprovalPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -292,7 +293,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
 
-              <BOMApprovalPage />
+              <JOApprovalPage />
             </>
           }
         />
