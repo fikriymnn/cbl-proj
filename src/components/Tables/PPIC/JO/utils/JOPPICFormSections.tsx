@@ -2,7 +2,6 @@
 import React from 'react';
 import { MountingData } from '../types/jo.types';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
-// Adjust path as needed
 
 interface BasicInfoSectionProps {
   formData: any;
@@ -25,11 +24,11 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
         Informasi Dasar
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Nomor SO - Now editable in edit mode too */}
+      <div className="grid grid-cols-1 gap-4">
+        {/* Nomor SO */}
         <div>
           {editMode ? (
-            <div className="flex flex-col ">
+            <div className="flex flex-col">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Nomor SO <span className="text-red-500">*</span>
               </label>
@@ -41,7 +40,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               />
             </div>
           ) : (
-            <div className="flex flex-col ">
+            <div className="flex flex-col">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Nomor SO <span className="text-red-500">*</span>
               </label>
@@ -90,7 +89,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         {/* Customer */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -120,138 +119,138 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     </div>
   );
 };
+
 interface ProductionDetailsSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
+  onQtyChange: (newQty: number) => void;
 }
 
 export const ProductionDetailsSection: React.FC<
   ProductionDetailsSectionProps
-> = ({ formData, onChange }) => {
+> = ({ formData, onChange, onQtyChange }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
         Detail Produksi
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Stock FG - Editable */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Stock FG
-          </label>
-          <input
-            type="number"
-            value={formData.stok_fg || 0}
-            onChange={(e) => onChange('stok_fg', Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            min="0"
-          />
-        </div>
-
-        {/* Quantity - Editable */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Quantity
-          </label>
-          <input
-            type="number"
-            value={formData.qty || 0}
-            onChange={(e) => onChange('qty', Number(e.target.value))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            min="0"
-          />
-        </div>
-
-        {/* PO QTY - Read only (from SO) */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            PO QTY
-          </label>
-          <input
-            type="number"
-            value={formData.po_qty || 0}
-            disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
-          />
-        </div>
+      {/* PO QTY - Read only (from SO) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          PO QTY
+        </label>
+        <input
+          type="number"
+          value={formData.po_qty || 0}
+          disabled
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-lg font-semibold"
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Status Kalkulasi - Editable */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Status Kalkulasi
-          </label>
-          <SearchableSelect
-            options={[
-              { value: 'BARU', label: 'BARU' },
-              { value: 'REPEAT', label: 'REPEAT' },
-              { value: 'REPEAT PERUBAHAN', label: 'REPEAT PERUBAHAN' },
-            ]}
-            value={formData.status_kalkulasi || 'BARU'}
-            onChange={(value) => onChange('status_kalkulasi', value)}
-            placeholder="Pilih Status Kalkulasi"
-            required
-          />
-        </div>
-
-        {/* Toleransi - Read only (from Customer) */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Toleransi
-          </label>
-          <input
-            type="text"
-            value={formData.toleransi || ''}
-            readOnly
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
-          />
-        </div>
+      {/* Stock FG - Editable */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Stock FG
+        </label>
+        <input
+          type="number"
+          value={formData.stok_fg || 0}
+          onChange={(e) => onChange('stok_fg', Number(e.target.value))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          min="0"
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Tanggal Kirim - Editable */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tanggal Kirim
-          </label>
-          <input
-            type="date"
-            value={formData.tgl_kirim || new Date().toISOString().split('T')[0]}
-            onChange={(e) => onChange('tgl_kirim', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+      {/* Quantity - Editable (calculated but can be overridden) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Quantity <span className="text-xs text-gray-500">(Editable)</span>
+        </label>
+        <input
+          type="number"
+          value={formData.qty || 0}
+          onChange={(e) => onQtyChange(Number(e.target.value))}
+          className="w-full px-3 py-2 border-2 border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg font-bold text-blue-700"
+          min="0"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          Auto: PO QTY - Stock FG ={' '}
+          {(formData.po_qty || 0) - (formData.stok_fg || 0)}
+        </p>
+      </div>
 
-        {/* Standar Warna - Editable */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Standar Warna
-          </label>
-          <input
-            type="text"
-            value={formData.standar_warna || ''}
-            onChange={(e) => onChange('standar_warna', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan standar warna"
-          />
-        </div>
+      {/* Status Kalkulasi - Editable */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Status Kalkulasi
+        </label>
+        <SearchableSelect
+          options={[
+            { value: 'BARU', label: 'BARU' },
+            { value: 'REPEAT', label: 'REPEAT' },
+            { value: 'REPEAT PERUBAHAN', label: 'REPEAT PERUBAHAN' },
+          ]}
+          value={formData.status_kalkulasi || 'BARU'}
+          onChange={(value) => onChange('status_kalkulasi', value)}
+          placeholder="Pilih Status Kalkulasi"
+          required
+        />
+      </div>
+
+      {/* Toleransi - Read only (from Customer) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Toleransi
+        </label>
+        <input
+          type="text"
+          value={formData.toleransi || ''}
+          readOnly
+          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+        />
+      </div>
+
+      {/* Tanggal Kirim - Editable */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Tanggal Kirim
+        </label>
+        <input
+          type="date"
+          value={formData.tgl_kirim || new Date().toISOString().split('T')[0]}
+          onChange={(e) => onChange('tgl_kirim', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      {/* Standar Warna - Editable */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Standar Warna
+        </label>
+        <input
+          type="text"
+          value={formData.standar_warna || ''}
+          onChange={(e) => onChange('standar_warna', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Masukkan standar warna"
+        />
       </div>
 
       {/* Text fields - All Editable */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-4">
         {/* Spesifikasi - Now Editable */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Spesifikasi
           </label>
-          <input
-            type="text"
+          <textarea
             value={formData.spesifikasi || ''}
             onChange={(e) => onChange('spesifikasi', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Masukkan spesifikasi"
+            rows={2}
           />
           <p className="mt-1 text-xs text-gray-500">
             Auto-generated dari mounting, tapi bisa diedit manual
@@ -263,12 +262,12 @@ export const ProductionDetailsSection: React.FC<
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Keterangan Pengerjaan
           </label>
-          <input
-            type="text"
+          <textarea
             value={formData.keterangan_pengerjaan || ''}
             onChange={(e) => onChange('keterangan_pengerjaan', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Masukkan keterangan pengerjaan"
+            rows={2}
           />
         </div>
 
@@ -277,12 +276,12 @@ export const ProductionDetailsSection: React.FC<
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Alamat Pengiriman
           </label>
-          <input
-            type="text"
+          <textarea
             value={formData.alamat_pengiriman || ''}
             onChange={(e) => onChange('alamat_pengiriman', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Masukkan alamat pengiriman"
+            rows={2}
           />
         </div>
       </div>
@@ -292,19 +291,16 @@ export const ProductionDetailsSection: React.FC<
 
 interface MountingSectionProps {
   mountingData: MountingData[];
-  selectedMounting: number[];
+  selectedMounting: number | null; // Changed to single selection
   onMountingSelect: (mountingId: number) => void;
   loadingMounting: boolean;
   insheetValues: {
-    [mountingId: number]: {
-      jumlah_druk_cetak: number;
-      jumlah_insheet_cetak: number;
-      jumlah_druk_pond: number;
-      jumlah_insheet_pond: number;
-      jumlah_druk_finishing: number;
-      jumlah_insheet_finishing: number;
-      total_insheet: number;
-    };
+    jumlah_druk: number;
+    jumlah_insheet_cetak: number;
+    jumlah_insheet_pond: number;
+    jumlah_insheet_finishing: number;
+    total_insheet: number;
+    jumlah_lp: number;
   };
 }
 
@@ -347,35 +343,34 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
       <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
         Pilih Mounting <span className="text-red-500">*</span>
         <span className="text-sm font-normal text-gray-500 ml-2">
-          ({selectedMounting.length} dari {mountingData.length} dipilih)
+          (Pilih 1 mounting)
         </span>
       </h3>
 
       <div className="grid grid-cols-1 gap-3">
         {mountingData.map((mounting) => {
-          // Get insheet values for this mounting
-          const mountingInsheet = insheetValues[mounting.id] || {};
+          const isSelected = selectedMounting === mounting.id;
           const ukuranCetakBagian = mounting.ukuran_cetak_bagian_1 || 1;
           const ukuranCetakIsi = mounting.ukuran_cetak_isi_1 || 1;
-          const jumlahDruk = mountingInsheet.jumlah_druk_cetak || 0;
-          const jumlahLP = Math.ceil(jumlahDruk / ukuranCetakBagian);
-
+          const displayedJumlahDruk =
+            insheetValues.jumlah_druk + insheetValues.total_insheet;
           return (
             <div
               key={mounting.id}
               className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                selectedMounting.includes(mounting.id)
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-300 hover:border-gray-400'
+                isSelected
+                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-300'
+                  : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
               }`}
               onClick={() => onMountingSelect(mounting.id)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
+                    {/* Radio button instead of checkbox */}
                     <input
-                      type="checkbox"
-                      checked={selectedMounting.includes(mounting.id)}
+                      type="radio"
+                      checked={isSelected}
                       onChange={() => onMountingSelect(mounting.id)}
                       className="w-5 h-5 text-blue-600"
                       onClick={(e) => e.stopPropagation()}
@@ -383,6 +378,11 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                     <span className="font-semibold text-lg text-gray-800">
                       {mounting.nama_mounting}
                     </span>
+                    {isSelected && (
+                      <span className="ml-auto px-3 py-1 bg-blue-500 text-white text-xs rounded-full font-semibold">
+                        TERPILIH
+                      </span>
+                    )}
                   </div>
 
                   {/* Main Info Grid */}
@@ -413,9 +413,9 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                     </div>
                   </div>
 
-                  {/* Bagian dan Isi Info with Jumlah Druk and Jumlah LP */}
+                  {/* Bagian dan Isi Info */}
                   <div className="ml-8 mb-3 p-3 bg-white rounded border border-gray-200">
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-3 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div>
                         <span className="text-gray-600">Bagian:</span>
                         <p className="font-semibold text-blue-600 text-lg">
@@ -441,25 +441,37 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                           {mounting.format_data || '-'}
                         </p>
                       </div>
-                      {/* NEW: Jumlah Druk */}
-                      <div className="bg-green-50 px-2 py-1 rounded">
-                        <span className="text-gray-600">Jumlah Druk:</span>
-                        <p className="font-bold text-green-700 text-lg">
-                          {jumlahDruk.toLocaleString()}
-                        </p>
-                      </div>
-                      {/* NEW: Jumlah LP */}
-                      <div className="bg-purple-50 px-2 py-1 rounded">
-                        <span className="text-gray-600">Jumlah LP:</span>
-                        <p className="font-bold text-purple-700 text-lg">
-                          {jumlahLP.toLocaleString()}
-                        </p>
-                      </div>
                     </div>
                   </div>
 
+                  {/* Show calculation if selected - UPDATED JUMLAH DRUK */}
+                  {isSelected && (
+                    <div className="ml-8 mt-3 p-3 bg-green-50 rounded border border-green-200">
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                        <div>
+                          <span className="text-gray-600">Jumlah Druk:</span>
+                          <p className="font-bold text-green-700 text-lg">
+                            {displayedJumlahDruk.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Total Insheet:</span>
+                          <p className="font-bold text-orange-700 text-lg">
+                            {insheetValues.total_insheet.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Jumlah LP:</span>
+                          <p className="font-bold text-purple-700 text-lg">
+                            {insheetValues.jumlah_lp.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Additional Info */}
-                  <div className="ml-8 grid grid-cols-2 md:grid-cols-3 gap-3 text-xs text-gray-600">
+                  <div className="ml-8 mt-3 grid grid-cols-2 md:grid-cols-3 gap-3 text-xs text-gray-600">
                     <div>
                       <span>Coating Depan: </span>
                       <span className="font-medium">
@@ -503,257 +515,293 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
 };
 
 interface InsheetCalculationSectionProps {
-  mountingData: MountingData[];
-  poQty: number;
+  mounting: MountingData;
+  qty: number;
   ketentuanInsheetData: any[];
   prosesInsheetData: any[];
   insheetValues: {
-    [mountingId: number]: {
-      jumlah_druk_cetak: number;
-      jumlah_insheet_cetak: number;
-      jumlah_druk_pond: number;
-      jumlah_insheet_pond: number;
-      jumlah_druk_finishing: number;
-      jumlah_insheet_finishing: number;
-      total_insheet: number;
-    };
+    jumlah_druk: number;
+    jumlah_insheet_cetak: number;
+    jumlah_insheet_pond: number;
+    jumlah_insheet_finishing: number;
+    total_insheet: number;
+    jumlah_lp: number;
   };
-  onInsheetChange: (mountingId: number, field: string, value: number) => void;
+  onTotalInsheetChange: (totalValue: number) => void;
 }
 
 export const InsheetCalculationSection: React.FC<
   InsheetCalculationSectionProps
 > = ({
-  mountingData,
-  poQty,
+  mounting,
+  qty,
   ketentuanInsheetData,
   prosesInsheetData,
   insheetValues,
-  onInsheetChange,
+  onTotalInsheetChange,
 }) => {
-  if (mountingData.length === 0) {
-    return null;
-  }
+  const isi = mounting.ukuran_cetak_isi_1 || 1;
+  const bagian = mounting.ukuran_cetak_bagian_1 || 1;
 
-  const getKetentuanInsheet = (qty: number): number => {
+  // Calculate Jumlah Druk from Qty
+  const calculatedJumlahDruk = Math.ceil(qty / isi);
+
+  // Find matching ketentuan
+  const getKetentuanInsheet = (quantity: number): any => {
     const ketentuan = ketentuanInsheetData.find((k) => {
       const batasBawah = parseInt(k.batas_bawah);
       const batasAtas =
         k.batas_atas === '-' ? Infinity : parseInt(k.batas_atas);
-      return qty >= batasBawah && qty <= batasAtas;
+      return quantity >= batasBawah && quantity <= batasAtas;
     });
 
-    if (!ketentuan) return 0;
-
-    if (ketentuan.is_persentase) {
-      return (qty * ketentuan.nilai) / 100;
-    }
-    return ketentuan.nilai;
-  };
-
-  const ketentuanInsheet = getKetentuanInsheet(poQty);
-
-  const handleTotalInsheetChange = (mountingId: number, totalValue: number) => {
-    const mountingInsheet = insheetValues[mountingId] || {};
-    const jumlahDruk = mountingInsheet.jumlah_druk_cetak || 0;
-
-    const totalPercentage = prosesInsheetData.reduce(
-      (sum, proses) => sum + proses.persentase_insheet,
-      0,
+    return (
+      ketentuan || { nilai: 0, is_persentase: false, persentase_insheet: 0 }
     );
-
-    const newValues: any = {
-      total_insheet: totalValue,
-      jumlah_druk_cetak: jumlahDruk,
-      jumlah_druk_pond: jumlahDruk,
-      jumlah_druk_finishing: jumlahDruk,
-    };
-
-    prosesInsheetData.forEach((proses) => {
-      let normalizedProses = proses.proses.toUpperCase();
-      if (normalizedProses === 'PONDS' || normalizedProses === 'PONDING') {
-        normalizedProses = 'POND';
-      }
-
-      const fieldName = `jumlah_insheet_${normalizedProses.toLowerCase()}`;
-      const proportionalValue =
-        (totalValue * proses.persentase_insheet) / totalPercentage;
-
-      newValues[fieldName] = proportionalValue;
-    });
-
-    Object.entries(newValues).forEach(([field, value]) => {
-      onInsheetChange(mountingId, field, value as number);
-    });
   };
 
-  // Add handler for jumlah druk changes
-  const handleJumlahDrukChange = (mountingId: number, drukValue: number) => {
-    onInsheetChange(mountingId, 'jumlah_druk_cetak', drukValue);
-  };
+  const ketentuanInsheet = getKetentuanInsheet(qty);
+
+  // Calculate expected total insheet based on ketentuan
+  const expectedTotalInsheet = ketentuanInsheet.is_persentase
+    ? Math.ceil((calculatedJumlahDruk * ketentuanInsheet.nilai) / 100)
+    : ketentuanInsheet.nilai;
+
+  // Calculate DISPLAYED Jumlah Druk (Jumlah Druk + Total Insheet)
+  const displayedJumlahDruk =
+    insheetValues.jumlah_druk + insheetValues.total_insheet;
+
+  // Calculate Jumlah LP
+  const calculatedJumlahLP = Math.ceil(
+    (insheetValues.jumlah_druk + insheetValues.total_insheet) / bagian,
+  );
 
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
-        Perhitungan Insheet
+        Perhitungan Insheet - {mounting.nama_mounting}
       </h3>
 
-      {/* Display Ketentuan Insheet */}
+      {/* Formula Explanation */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="text-sm">
-          <span className="font-medium text-gray-700">Ketentuan Insheet: </span>
-          <span className="text-blue-700 font-semibold">
-            {ketentuanInsheet.toLocaleString()}
-          </span>
-          <span className="text-gray-600 ml-2">
-            (berdasarkan PO QTY: {poQty.toLocaleString()})
-          </span>
+        <div className="text-sm space-y-2">
+          <div className="font-semibold text-blue-900 mb-2">
+            Formula Perhitungan:
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div>
+              <span className="font-medium">1. Jumlah Druk:</span>
+              <div className="ml-3 text-gray-700">
+                = Qty / Isi
+                <br />= {qty.toLocaleString()} / {isi}
+                <br />={' '}
+                <span className="font-bold text-blue-700">
+                  {calculatedJumlahDruk.toLocaleString()}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span className="font-medium">2. Ketentuan Insheet:</span>
+              <div className="ml-3 text-gray-700">
+                {ketentuanInsheet.is_persentase ? (
+                  <>
+                    = Jumlah Druk × {ketentuanInsheet.nilai}%
+                    <br />= {calculatedJumlahDruk.toLocaleString()} ×{' '}
+                    {ketentuanInsheet.nilai}%
+                    <br />={' '}
+                    <span className="font-bold text-orange-700">
+                      {expectedTotalInsheet.toLocaleString()}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    = Fixed Value
+                    <br />={' '}
+                    <span className="font-bold text-orange-700">
+                      {ketentuanInsheet.nilai}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+            <div>
+              <span className="font-medium">3. Jumlah LP:</span>
+              <div className="ml-3 text-gray-700">
+                = (Jumlah Druk + Total Insheet) / Bagian
+                <br />= ({insheetValues.jumlah_druk.toLocaleString()} +{' '}
+                {insheetValues.total_insheet.toLocaleString()}) / {bagian}
+                <br />={' '}
+                <span className="font-bold text-purple-700">
+                  {calculatedJumlahLP.toLocaleString()}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span className="font-medium">4. Proses Insheet:</span>
+              <div className="ml-3 text-gray-700">
+                Distribusi berdasarkan persentase proses
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Editable Insheet Calculation Table */}
+      {/* Current Values Display - UPDATED JUMLAH DRUK */}
+      <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div>
+            <div className="text-xs text-gray-600 mb-1">Quantity</div>
+            <div className="text-2xl font-bold text-gray-800">
+              {qty.toLocaleString()}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-600 mb-1">Jumlah Druk</div>
+            <div className="text-2xl font-bold text-blue-700">
+              {displayedJumlahDruk.toLocaleString()}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-600 mb-1">Total Insheet</div>
+            <div className="text-2xl font-bold text-orange-700">
+              {insheetValues.total_insheet.toLocaleString()}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-600 mb-1">Jumlah LP</div>
+            <div className="text-2xl font-bold text-purple-700">
+              {insheetValues.jumlah_lp.toLocaleString()}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rest of the component remains the same... */}
+
+      {/* Editable Total Insheet */}
+      <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Edit Total Insheet{' '}
+          <span className="text-xs font-normal text-gray-600">
+            (akan mengubah Qty dan distribusi proses)
+          </span>
+        </label>
+        <input
+          type="number"
+          value={insheetValues.total_insheet || 0}
+          onChange={(e) => onTotalInsheetChange(Number(e.target.value))}
+          className="w-full px-4 py-3 border-2 border-yellow-400 rounded-md text-center font-bold text-2xl text-orange-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          min="0"
+        />
+        <p className="mt-2 text-xs text-gray-600">
+          Expected dari ketentuan:{' '}
+          <span className="font-bold">
+            {expectedTotalInsheet.toLocaleString()}
+          </span>
+        </p>
+      </div>
+
+      {/* Process Distribution Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
               <th className="px-4 py-2 border text-left font-medium text-gray-700">
-                Mounting
+                Proses
               </th>
-              <th className="px-4 py-2 border text-center font-medium text-gray-700 bg-green-50">
-                Jumlah Druk
-                <br />
-                <span className="text-xs text-gray-500">(Editable)</span>
+              <th className="px-4 py-2 border text-center font-medium text-gray-700">
+                Persentase
               </th>
-              {prosesInsheetData.map((proses) => (
-                <th
-                  key={proses.id}
-                  className="px-4 py-2 border text-center font-medium text-gray-700"
-                >
-                  {proses.proses}
-                  <br />
-                  <span className="text-xs text-gray-500">
-                    ({proses.persentase_insheet}%)
-                  </span>
-                </th>
-              ))}
-              <th className="px-4 py-2 border text-center font-medium text-gray-700 bg-yellow-100">
-                Total Insheet
-                <br />
-                <span className="text-xs text-gray-500">(Editable)</span>
+              <th className="px-4 py-2 border text-center font-medium text-gray-700">
+                Jumlah Insheet
               </th>
             </tr>
           </thead>
           <tbody className="bg-white">
-            {mountingData.map((mounting) => {
-              const mountingInsheet = insheetValues[mounting.id] || {};
-              const jumlahDruk = mountingInsheet.jumlah_druk_cetak || 0;
+            {prosesInsheetData.map((proses) => {
+              let normalizedProses = proses.proses.toUpperCase();
+              if (
+                normalizedProses === 'PONDS' ||
+                normalizedProses === 'PONDING'
+              ) {
+                normalizedProses = 'POND';
+              }
+
+              let value = 0;
+              if (normalizedProses === 'CETAK') {
+                value = insheetValues.jumlah_insheet_cetak;
+              } else if (normalizedProses === 'POND') {
+                value = insheetValues.jumlah_insheet_pond;
+              } else if (normalizedProses === 'FINISHING') {
+                value = insheetValues.jumlah_insheet_finishing;
+              }
 
               return (
-                <tr key={mounting.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border">
-                    <div className="font-medium">{mounting.nama_mounting}</div>
-                    <div className="text-xs text-gray-500">
-                      Isi: {mounting.ukuran_cetak_isi_1} | Bagian:{' '}
-                      {mounting.ukuran_cetak_bagian_1}
-                    </div>
+                <tr key={proses.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border font-medium">
+                    {proses.proses}
                   </td>
-                  {/* Editable Jumlah Druk */}
-                  <td className="px-4 py-2 border text-center bg-green-50">
-                    <input
-                      type="number"
-                      value={jumlahDruk}
-                      onChange={(e) =>
-                        handleJumlahDrukChange(
-                          mounting.id,
-                          Number(e.target.value),
-                        )
-                      }
-                      className="w-24 px-2 py-1 border-2 border-green-400 rounded text-center font-bold focus:outline-none focus:ring-2 focus:ring-green-500"
-                      min="0"
-                    />
+                  <td className="px-4 py-2 border text-center">
+                    {proses.persentase_insheet}%
                   </td>
-                  {prosesInsheetData.map((proses) => {
-                    const fieldName =
-                      `jumlah_insheet_${proses.proses.toLowerCase()}` as keyof typeof mountingInsheet;
-                    const value = mountingInsheet[fieldName] || 0;
-
-                    return (
-                      <td
-                        key={proses.id}
-                        className="px-4 py-2 border text-center bg-gray-50"
-                      >
-                        <div className="font-semibold text-gray-700">
-                          {Math.round(value).toLocaleString()}
-                        </div>
-                      </td>
-                    );
-                  })}
-                  {/* Editable Total Insheet */}
-                  <td className="px-4 py-2 border text-center bg-yellow-50">
-                    <input
-                      type="number"
-                      value={mountingInsheet.total_insheet || 0}
-                      onChange={(e) =>
-                        handleTotalInsheetChange(
-                          mounting.id,
-                          Number(e.target.value),
-                        )
-                      }
-                      className="w-24 px-2 py-1 border-2 border-yellow-400 rounded text-center font-bold focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                      min="0"
-                    />
+                  <td className="px-4 py-2 border text-center font-semibold text-gray-700">
+                    {Math.ceil(value).toLocaleString()}
                   </td>
                 </tr>
               );
             })}
+            <tr className="bg-gray-100 font-bold">
+              <td className="px-4 py-2 border" colSpan={2}>
+                Total
+              </td>
+              <td className="px-4 py-2 border text-center text-orange-700">
+                {insheetValues.total_insheet.toLocaleString()}
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Calculation Formula Info */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-xs text-gray-600">
-        <div className="font-semibold mb-2">Formula Perhitungan:</div>
-        <div className="space-y-1">
+      {/* Mounting Details Reference */}
+      <div className="bg-white border border-gray-300 rounded-lg p-4">
+        <h4 className="font-semibold text-gray-700 mb-3">Referensi Mounting</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
           <div>
-            • Jumlah Druk = (PO QTY / Ukuran Cetak Isi + Ketentuan Insheet) /
-            Ukuran Cetak Bagian
+            <span className="text-gray-600">Jenis Kertas:</span>
+            <p className="font-medium">{mounting.jenis_kertas || '-'}</p>
           </div>
-          <div>• Jumlah LP = Jumlah Druk / Bagian</div>
           <div>
-            • Insheet Per Proses = Jumlah Druk × Persentase Insheet Proses
-            (auto-calculated)
+            <span className="text-gray-600">Gramature:</span>
+            <p className="font-medium">{mounting.gramature_kertas || '-'}</p>
           </div>
-          <div>• Jumlah Druk dan Total Insheet dapat diubah manual</div>
-        </div>
-      </div>
-
-      {/* Info about editable fields */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-800">
-        <div className="flex items-start gap-2">
-          <svg
-            className="w-4 h-4 mt-0.5 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-              clipRule="evenodd"
-            />
-          </svg>
           <div>
-            <strong>Catatan:</strong>
-            <ul className="mt-1 ml-4 list-disc">
-              <li>
-                Edit <strong>Jumlah Druk</strong> untuk mengubah basis
-                perhitungan
-              </li>
-              <li>
-                Edit <strong>Total Insheet</strong> untuk override total -
-                sistem akan otomatis mendistribusikan ke setiap proses
-              </li>
-              <li>Persentase distribusi berdasarkan master proses insheet</li>
-            </ul>
+            <span className="text-gray-600">Ukuran Plano:</span>
+            <p className="font-medium">
+              {mounting.panjang_plano} x {mounting.lebar_plano}
+            </p>
+          </div>
+          <div>
+            <span className="text-gray-600">Ukuran Cetak:</span>
+            <p className="font-medium">
+              {mounting.ukuran_cetak_panjang_1} x{' '}
+              {mounting.ukuran_cetak_lebar_1}
+            </p>
+          </div>
+          <div>
+            <span className="text-gray-600">Isi:</span>
+            <p className="font-medium text-blue-700">{isi}</p>
+          </div>
+          <div>
+            <span className="text-gray-600">Bagian:</span>
+            <p className="font-medium text-blue-700">{bagian}</p>
+          </div>
+          <div>
+            <span className="text-gray-600">Format:</span>
+            <p className="font-medium">{mounting.format_data || '-'}</p>
+          </div>
+          <div>
+            <span className="text-gray-600">Jumlah Warna:</span>
+            <p className="font-medium">{mounting.jumlah_warna || '-'}</p>
           </div>
         </div>
       </div>

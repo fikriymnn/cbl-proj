@@ -36,9 +36,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const [loadingMounting, setLoadingMounting] = useState(false);
   const [soData, setSOData] = useState<SOData[]>([]);
   const [mountingData, setMountingData] = useState<MountingData[]>([]);
-  const [selectedMounting, setSelectedMounting] = useState<number[]>([]);
+  const [selectedMounting, setSelectedMounting] = useState<number | null>(null);
   const [jumlahJO, setJumlahJO] = useState<number>(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   const initialFormData: Partial<JOFormData> = {
     id_io: 0,
     id_so: 0,
@@ -63,27 +64,57 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     tipe_jo: tipeJO,
     jo_mounting: [],
   };
+
   const [formData, setFormData] =
     useState<Partial<JOFormData>>(initialFormData);
-
   const [ketentuanInsheetData, setKetentuanInsheetData] = useState<any[]>([]);
   const [prosesInsheetData, setProsesInsheetData] = useState<any[]>([]);
   const [insheetValues, setInsheetValues] = useState<{
-    [mountingId: number]: {
-      jumlah_druk_cetak: number;
-      jumlah_insheet_cetak: number;
-      jumlah_druk_pond: number;
-      jumlah_insheet_pond: number;
-      jumlah_druk_finishing: number;
-      jumlah_insheet_finishing: number;
-      total_insheet: number;
-    };
-  }>({});
+    jumlah_druk: number;
+    jumlah_insheet_cetak: number;
+    jumlah_insheet_pond: number;
+    jumlah_insheet_finishing: number;
+    total_insheet: number;
+    jumlah_lp: number;
+  }>({
+    jumlah_druk: 0,
+    jumlah_insheet_cetak: 0,
+    jumlah_insheet_pond: 0,
+    jumlah_insheet_finishing: 0,
+    total_insheet: 0,
+    jumlah_lp: 0,
+  });
+
+  // Auto-calculate qty when stok_fg or po_qty changes
   useEffect(() => {
-    if (formData.id_so || selectedMounting.length > 0) {
+    const calculatedQty = Math.max(
+      0,
+      (formData.po_qty || 0) - (formData.stok_fg || 0),
+    );
+    if (calculatedQty !== formData.qty) {
+      setFormData((prev) => ({
+        ...prev,
+        qty: calculatedQty,
+      }));
+    }
+  }, [formData.po_qty, formData.stok_fg]);
+
+  // Recalculate insheet when qty or selectedMounting changes
+  useEffect(() => {
+    if (selectedMounting && formData.qty) {
+      const mounting = mountingData.find((m) => m.id === selectedMounting);
+      if (mounting) {
+        calculateInsheetFromQty(formData.qty, mounting);
+      }
+    }
+  }, [formData.qty, selectedMounting]);
+
+  useEffect(() => {
+    if (formData.id_so || selectedMounting) {
       setHasUnsavedChanges(true);
     }
   }, [formData.id_so, selectedMounting]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -96,61 +127,120 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [isOpen, hasUnsavedChanges]);
-  // In JOPPICCreateModal.tsx - Update calculateInsheetValues
-  const calculateInsheetValues = (
-    mounting: MountingData,
-    poQty: number,
-    ketentuanInsheet: number,
-  ) => {
-    const ukuranCetakIsi1 = mounting.ukuran_cetak_isi_1 || 1;
-    const ukuranCetakBagian1 = mounting.ukuran_cetak_bagian_1 || 1;
-    const jumlahDruk = Math.ceil(
-      (poQty / ukuranCetakIsi1 + ketentuanInsheet) / ukuranCetakBagian1,
+
+  // Calculate insheet from Qty (forward calculation)
+  const calculateInsheetFromQty = (qty: number, mounting: MountingData) => {
+    const isi = mounting.ukuran_cetak_isi_1 || 1;
+    const bagian = mounting.ukuran_cetak_bagian_1 || 1;
+
+    // Step 1: Calculate Jumlah Druk (base, without insheet)
+    const jumlahDruk = Math.ceil(qty / isi);
+
+    // Step 2: Get Ketentuan Insheet
+    const ketentuanInsheet = getKetentuanInsheet(qty);
+    const ketentuanValue =
+      typeof ketentuanInsheet === 'object'
+        ? ketentuanInsheet.is_persentase
+          ? (jumlahDruk * ketentuanInsheet.nilai) / 100
+          : ketentuanInsheet.nilai
+        : ketentuanInsheet;
+
+    // Step 3: Calculate Total Insheet
+    const totalInsheet = Math.ceil(ketentuanValue);
+
+    // Step 4: Distribute to processes
+    const totalPercentage = prosesInsheetData.reduce(
+      (sum, p) => sum + p.persentase_insheet,
+      0,
     );
 
-    console.log('Calculating insheet for mounting:', mounting.nama_mounting);
-    console.log('Jumlah Druk:', jumlahDruk);
-    console.log('Proses Insheet Data:', prosesInsheetData);
+    let cetak = 0,
+      pond = 0,
+      finishing = 0;
 
-    const insheetByProcess: { [key: string]: number } = {};
     prosesInsheetData.forEach((proses) => {
-      const insheet = Math.ceil((jumlahDruk * proses.persentase_insheet) / 100);
-      // Try both uppercase variations
-      const prosesKey = proses.proses.toUpperCase();
-      insheetByProcess[prosesKey] = insheet;
-      console.log(`${prosesKey}: ${insheet}`);
+      const value = Math.ceil(
+        (totalInsheet * proses.persentase_insheet) / totalPercentage,
+      );
+      const prosesName = proses.proses.toUpperCase();
+
+      if (prosesName === 'CETAK') cetak = value;
+      else if (
+        prosesName === 'POND' ||
+        prosesName === 'PONDS' ||
+        prosesName === 'PONDING'
+      )
+        pond = value;
+      else if (prosesName === 'FINISHING') finishing = value;
     });
 
-    // Try different possible names for POND/PONDS
-    const jumlahInsheetCetak = insheetByProcess['CETAK'] || 0;
-    const jumlahInsheetPond =
-      insheetByProcess['POND'] ||
-      insheetByProcess['PONDS'] ||
-      insheetByProcess['PONDING'] ||
-      0;
-    const jumlahInsheetFinishing = insheetByProcess['FINISHING'] || 0;
+    // Step 5: Calculate Jumlah LP
+    const jumlahLP = Math.ceil((jumlahDruk + totalInsheet) / bagian);
 
-    console.log('Cetak:', jumlahInsheetCetak);
-    console.log('Pond:', jumlahInsheetPond);
-    console.log('Finishing:', jumlahInsheetFinishing);
-
-    const totalInsheet =
-      jumlahInsheetCetak + jumlahInsheetPond + jumlahInsheetFinishing;
-
-    return {
-      jumlah_druk_cetak: jumlahDruk,
-      jumlah_insheet_cetak: jumlahInsheetCetak,
-      jumlah_druk_pond: jumlahDruk,
-      jumlah_insheet_pond: jumlahInsheetPond,
-      jumlah_druk_finishing: jumlahDruk,
-      jumlah_insheet_finishing: jumlahInsheetFinishing,
+    setInsheetValues({
+      jumlah_druk: jumlahDruk,
+      jumlah_insheet_cetak: cetak,
+      jumlah_insheet_pond: pond,
+      jumlah_insheet_finishing: finishing,
       total_insheet: totalInsheet,
-    };
+      jumlah_lp: jumlahLP,
+    });
+  };
+
+  // Calculate qty from total insheet (reverse calculation)
+  const calculateQtyFromInsheet = (
+    totalInsheet: number,
+    mounting: MountingData,
+  ) => {
+    const isi = mounting.ukuran_cetak_isi_1 || 1;
+
+    // Find matching ketentuan
+    let ketentuanMatch = null;
+    for (const ketentuan of ketentuanInsheetData) {
+      if (ketentuan.is_persentase) {
+        const estimatedQty =
+          (totalInsheet * 100 * isi) / ketentuan.persentase_insheet;
+        const batasBawah = parseInt(ketentuan.batas_bawah);
+        const batasAtas =
+          ketentuan.batas_atas === '-'
+            ? Infinity
+            : parseInt(ketentuan.batas_atas);
+
+        if (estimatedQty >= batasBawah && estimatedQty <= batasAtas) {
+          ketentuanMatch = ketentuan;
+          break;
+        }
+      } else {
+        if (totalInsheet === ketentuan.nilai) {
+          ketentuanMatch = ketentuan;
+          break;
+        }
+      }
+    }
+
+    if (!ketentuanMatch) {
+      ketentuanMatch = ketentuanInsheetData[0];
+    }
+
+    let calculatedQty: number;
+
+    if (ketentuanMatch.is_persentase) {
+      const jumlahDruk = (totalInsheet * 100) / ketentuanMatch.nilai;
+      calculatedQty = Math.ceil(jumlahDruk * isi);
+    } else {
+      const batasBawah = parseInt(ketentuanMatch.batas_bawah);
+      const batasAtas =
+        ketentuanMatch.batas_atas === '-'
+          ? batasBawah * 2
+          : parseInt(ketentuanMatch.batas_atas);
+      calculatedQty = Math.floor((batasBawah + batasAtas) / 2);
+    }
+
+    return Math.max(0, calculatedQty);
   };
 
   useEffect(() => {
@@ -165,7 +255,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   useEffect(() => {
     if (jumlahJO > 0) {
       generateJONumber();
-    } else
+    } else {
       setFormData((prev) => ({
         ...prev,
         no_jo:
@@ -174,6 +264,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           '/' +
           new Date().getFullYear(),
       }));
+    }
   }, [jumlahJO]);
 
   const fetchSOData = async (): Promise<void> => {
@@ -184,7 +275,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         params: { is_jo_done: false },
         withCredentials: true,
       });
-      console.log('SO data fetched:', res.data);
       setSOData(res.data.data || []);
     } catch (error) {
       console.error('Error fetching SO data:', error);
@@ -201,7 +291,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         withCredentials: true,
       });
       setJumlahJO(res.data.total_data || 0);
-      console.log('Jumlah JO fetched:', res.data);
     } catch (error) {
       console.error('Error fetching jumlah JO:', error);
       setJumlahJO(0);
@@ -221,7 +310,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }));
   };
 
-  // In JOPPICCreateModal.tsx - Update fetchMountingData
   const fetchMountingData = async (idIO: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${idIO}`;
     try {
@@ -229,71 +317,55 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-      console.log('Mounting data response:', res.data);
       if (res.data.data && res.data.data.io_mounting) {
         const mountings = res.data.data.io_mounting || [];
         setMountingData(mountings);
-
-        // Auto-select all mountings
-        const allMountingIds = mountings.map((m: MountingData) => m.id);
-        setSelectedMounting(allMountingIds);
-
-        // Initialize insheet values for all mountings
-        const poQty = formData.po_qty || 0;
-        const ketentuanInsheet = getKetentuanInsheet(poQty);
-
-        const newInsheetValues: typeof insheetValues = {};
-        mountings.forEach((mounting: MountingData) => {
-          const insheetCalc = calculateInsheetValues(
-            mounting,
-            poQty,
-            ketentuanInsheet,
-          );
-          newInsheetValues[mounting.id] = insheetCalc;
+        setSelectedMounting(null);
+        setInsheetValues({
+          jumlah_druk: 0,
+          jumlah_insheet_cetak: 0,
+          jumlah_insheet_pond: 0,
+          jumlah_insheet_finishing: 0,
+          total_insheet: 0,
+          jumlah_lp: 0,
         });
-
-        setInsheetValues(newInsheetValues);
       }
     } catch (error) {
       console.error('Error fetching mounting data:', error);
       setMountingData([]);
-      setSelectedMounting([]);
+      setSelectedMounting(null);
     } finally {
       setLoadingMounting(false);
     }
   };
+
   const fetchCustomerData = async (idCus: number): Promise<void> => {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/master/marketing/customer/${idCus}`;
     try {
-      setLoadingMounting(true);
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-      console.log('Customer data response:', res.data);
       if (res.data.data) {
         const customer = res.data.data || {};
         setFormData((prev) => ({
           ...prev,
           id_customer: customer.id || 0,
-
           toleransi: customer.toleransi_pengiriman || '',
         }));
       }
     } catch (error) {
       console.error('Error fetching customer data:', error);
-    } finally {
-      setLoadingMounting(false);
     }
   };
+
   const fetchKetentuanInsheet = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/master/ketentuanInsheet`;
     try {
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-      console.log('Ketentuan Insheet data:', res.data);
       setKetentuanInsheetData(res.data.data || []);
     } catch (error) {
       console.error('Error fetching ketentuan insheet:', error);
@@ -307,13 +379,13 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-      console.log('Proses Insheet data:', res.data);
       setProsesInsheetData(res.data.data || []);
     } catch (error) {
       console.error('Error fetching proses insheet:', error);
       setProsesInsheetData([]);
     }
   };
+
   const fetchJODetail = async (joId: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${joId}`;
     try {
@@ -321,12 +393,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-      console.log('Fetched JO detail:', res.data);
 
       if (res.data.data) {
         const joDetail = res.data.data;
 
-        // Set form data
         setFormData({
           id_io: joDetail.id_io,
           id_jo: joDetail.id,
@@ -355,35 +425,35 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           jo_mounting: joDetail.jo_mounting || [],
         });
 
-        // Fetch mounting data first
         if (joDetail.id_io) {
           await fetchMountingData(joDetail.id_io);
 
-          // After mounting data is loaded, set selected mounting and insheet values
           if (joDetail.jo_mounting && joDetail.jo_mounting.length > 0) {
-            const mountingIds = joDetail.jo_mounting.map(
-              (jm: any) => jm.id_io_mounting,
+            // Find the selected mounting (where is_selected is true)
+            const selectedJoMounting = joDetail.jo_mounting.find(
+              (jm: any) => jm.is_selected,
             );
-            setSelectedMounting(mountingIds);
 
-            // Set insheet values from jo_mounting
-            const newInsheetValues: typeof insheetValues = {};
-            joDetail.jo_mounting.forEach((jm: any) => {
-              newInsheetValues[jm.id_io_mounting] = {
-                jumlah_druk_cetak: jm.jumlah_druk_cetak || 0,
-                jumlah_insheet_cetak: jm.jumlah_insheet_cetak || 0,
-                jumlah_druk_pond: jm.jumlah_druk_pond || 0,
-                jumlah_insheet_pond: jm.jumlah_insheet_pond || 0,
-                jumlah_druk_finishing: jm.jumlah_druk_finishing || 0,
-                jumlah_insheet_finishing: jm.jumlah_insheet_finishing || 0,
-                total_insheet: jm.total_insheet || 0,
-              };
-            });
-            setInsheetValues(newInsheetValues);
+            if (selectedJoMounting) {
+              setSelectedMounting(selectedJoMounting.id_io_mounting);
+
+              // The stored jumlah_druk values are the base values (without insheet already added)
+              // So we use them directly
+              setInsheetValues({
+                jumlah_druk: selectedJoMounting.jumlah_druk_cetak || 0,
+                jumlah_insheet_cetak:
+                  selectedJoMounting.jumlah_insheet_cetak || 0,
+                jumlah_insheet_pond:
+                  selectedJoMounting.jumlah_insheet_pond || 0,
+                jumlah_insheet_finishing:
+                  selectedJoMounting.jumlah_insheet_finishing || 0,
+                total_insheet: selectedJoMounting.total_insheet || 0,
+                jumlah_lp: selectedJoMounting.jumlah_kertas || 0,
+              });
+            }
           }
         }
 
-        // Fetch customer data
         if (joDetail.id_customer) {
           await fetchCustomerData(joDetail.id_customer);
         }
@@ -401,58 +471,54 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       ...initialFormData,
       tipe_jo: tipeJO,
     });
-    setSelectedMounting([]);
+    setSelectedMounting(null);
     setMountingData([]);
-    setInsheetValues({});
+    setInsheetValues({
+      jumlah_druk: 0,
+      jumlah_insheet_cetak: 0,
+      jumlah_insheet_pond: 0,
+      jumlah_insheet_finishing: 0,
+      total_insheet: 0,
+      jumlah_lp: 0,
+    });
     setHasUnsavedChanges(false);
   };
+
   useEffect(() => {
     if (isOpen && editMode && editJOId) {
       fetchJODetail(editJOId);
     } else if (isOpen && !editMode) {
-      // Reset form when opening in create mode
       resetForm();
     }
   }, [isOpen, editMode, editJOId]);
-  // Add function to get ketentuan based on po_qty
-  const getKetentuanInsheet = (poQty: number): number => {
+
+  const getKetentuanInsheet = (qty: number): any => {
     const ketentuan = ketentuanInsheetData.find((k) => {
       const batasBawah = parseInt(k.batas_bawah);
       const batasAtas =
         k.batas_atas === '-' ? Infinity : parseInt(k.batas_atas);
-      return poQty >= batasBawah && poQty <= batasAtas;
+      return qty >= batasBawah && qty <= batasAtas;
     });
 
-    if (!ketentuan) return 0;
-
-    if (ketentuan.is_persentase) {
-      return (poQty * ketentuan.nilai) / 100;
-    }
-    return ketentuan.nilai;
+    return ketentuan || { nilai: 0, is_persentase: false };
   };
 
-  // Add function to generate spesifikasi from mounting
-  const generateSpesifikasi = (mountings: MountingData[]): string => {
-    if (mountings.length === 0) return '';
+  const generateSpesifikasi = (mounting: MountingData): string => {
+    const warnaDepan = mounting.warna_depan || 0;
+    const warnaBelakang = mounting.warna_belakang || 0;
+    const coatingDepan = mounting.nama_coating_depan ? 1 : 0;
+    const coatingBelakang = mounting.nama_coating_belakang ? 1 : 0;
 
-    const specs = mountings.map((mounting) => {
-      const warnaDepan = mounting.warna_depan || 0;
-      const warnaBelakang = mounting.warna_belakang || 0;
-      const coatingDepan = mounting.nama_coating_depan ? 1 : 0;
-      const coatingBelakang = mounting.nama_coating_belakang ? 1 : 0;
+    const coatingNames = [
+      mounting.nama_coating_depan,
+      mounting.nama_coating_belakang,
+    ]
+      .filter(Boolean)
+      .join(' + ');
 
-      const coatingNames = [
-        mounting.nama_coating_depan,
-        mounting.nama_coating_belakang,
-      ]
-        .filter(Boolean)
-        .join(' + ');
-
-      return `${warnaDepan}/${warnaBelakang} + ${coatingDepan}/${coatingBelakang} ${coatingNames}`.trim();
-    });
-
-    return specs.join('; ');
+    return `${warnaDepan}/${warnaBelakang} + ${coatingDepan}/${coatingBelakang} ${coatingNames}`.trim();
   };
+
   const handleSOChange = (soId: number) => {
     const selectedSO = soData.find((so) => so.id === soId);
     if (selectedSO) {
@@ -471,11 +537,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         standar_warna: selectedSO.ada_standar_warna || '',
       }));
 
-      // Fetch mounting data automatically
       fetchMountingData(selectedSO.id_io);
       fetchCustomerData(selectedSO.id_customer);
     }
   };
+
   const handleFieldChange = (field: string, value: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -484,114 +550,120 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   };
 
   const handleMountingSelect = (mountingId: number) => {
-    setSelectedMounting((prev) => {
-      const newSelected = prev.includes(mountingId)
-        ? prev.filter((id) => id !== mountingId)
-        : [...prev, mountingId];
+    if (selectedMounting === mountingId) {
+      setSelectedMounting(null);
+      setFormData((prev) => ({ ...prev, spesifikasi: '' }));
+      setInsheetValues({
+        jumlah_druk: 0,
+        jumlah_insheet_cetak: 0,
+        jumlah_insheet_pond: 0,
+        jumlah_insheet_finishing: 0,
+        total_insheet: 0,
+        jumlah_lp: 0,
+      });
+    } else {
+      setSelectedMounting(mountingId);
+      const mounting = mountingData.find((m) => m.id === mountingId);
+      if (mounting) {
+        const spesifikasi = generateSpesifikasi(mounting);
+        setFormData((prev) => ({ ...prev, spesifikasi }));
 
-      // Regenerate spesifikasi
-      const selectedMountings = mountingData.filter((m) =>
-        newSelected.includes(m.id),
-      );
-      const spesifikasi = generateSpesifikasi(selectedMountings);
-
-      setFormData((prevData) => ({
-        ...prevData,
-        spesifikasi,
-      }));
-
-      // Initialize insheet values for newly selected mounting
-      if (!prev.includes(mountingId) && mountingId) {
-        const mounting = mountingData.find((m) => m.id === mountingId);
-        if (mounting) {
-          const poQty = formData.po_qty || 0;
-          const ketentuanInsheet = getKetentuanInsheet(poQty);
-          const insheetCalc = calculateInsheetValues(
-            mounting,
-            poQty,
-            ketentuanInsheet,
-          );
-
-          setInsheetValues((prevValues) => ({
-            ...prevValues,
-            [mountingId]: insheetCalc,
-          }));
+        if (formData.qty) {
+          calculateInsheetFromQty(formData.qty, mounting);
         }
-      } else if (prev.includes(mountingId)) {
-        // Remove insheet values for deselected mounting
-        setInsheetValues((prevValues) => {
-          const newValues = { ...prevValues };
-          delete newValues[mountingId];
-          return newValues;
-        });
       }
+    }
+  };
 
-      return newSelected;
+  const handleTotalInsheetChange = (totalValue: number) => {
+    if (!selectedMounting) return;
+
+    const mounting = mountingData.find((m) => m.id === selectedMounting);
+    if (!mounting) return;
+
+    const bagian = mounting.ukuran_cetak_bagian_1 || 1;
+
+    const totalPercentage = prosesInsheetData.reduce(
+      (sum, p) => sum + p.persentase_insheet,
+      0,
+    );
+
+    let cetak = 0,
+      pond = 0,
+      finishing = 0;
+
+    prosesInsheetData.forEach((proses) => {
+      const value = Math.ceil(
+        (totalValue * proses.persentase_insheet) / totalPercentage,
+      );
+      const prosesName = proses.proses.toUpperCase();
+
+      if (prosesName === 'CETAK') cetak = value;
+      else if (
+        prosesName === 'POND' ||
+        prosesName === 'PONDS' ||
+        prosesName === 'PONDING'
+      )
+        pond = value;
+      else if (prosesName === 'FINISHING') finishing = value;
+    });
+
+    const calculatedQty = calculateQtyFromInsheet(totalValue, mounting);
+    const isi = mounting.ukuran_cetak_isi_1 || 1;
+    const jumlahDruk = Math.ceil(calculatedQty / isi);
+    const jumlahLP = Math.ceil((jumlahDruk + totalValue) / bagian);
+
+    setFormData((prev) => ({
+      ...prev,
+      qty: calculatedQty,
+    }));
+
+    setInsheetValues({
+      jumlah_druk: jumlahDruk,
+      jumlah_insheet_cetak: cetak,
+      jumlah_insheet_pond: pond,
+      jumlah_insheet_finishing: finishing,
+      total_insheet: totalValue,
+      jumlah_lp: jumlahLP,
     });
   };
-  // Update the handleInsheetChange function to sync all druk values
-  const handleInsheetChange = (
-    mountingId: number,
-    field: string,
-    value: number,
-  ) => {
-    setInsheetValues((prev) => {
-      const currentValues = prev[mountingId] || {};
-      const updatedValues = {
-        ...currentValues,
-        [field]: value,
-      };
 
-      // If jumlah_druk_cetak changes, sync it to pond and finishing
-      if (field === 'jumlah_druk_cetak') {
-        updatedValues.jumlah_druk_pond = value;
-        updatedValues.jumlah_druk_finishing = value;
-      }
+  const handleQtyChange = (newQty: number) => {
+    if (!selectedMounting) {
+      setFormData((prev) => ({ ...prev, qty: newQty }));
+      return;
+    }
 
-      // Recalculate total_insheet if individual insheet values change
-      if (
-        field === 'jumlah_insheet_cetak' ||
-        field === 'jumlah_insheet_pond' ||
-        field === 'jumlah_insheet_finishing'
-      ) {
-        updatedValues.total_insheet =
-          (updatedValues.jumlah_insheet_cetak || 0) +
-          (updatedValues.jumlah_insheet_pond || 0) +
-          (updatedValues.jumlah_insheet_finishing || 0);
-      }
-
-      return {
-        ...prev,
-        [mountingId]: updatedValues,
-      };
-    });
+    const mounting = mountingData.find((m) => m.id === selectedMounting);
+    if (mounting) {
+      setFormData((prev) => ({ ...prev, qty: newQty }));
+      calculateInsheetFromQty(newQty, mounting);
+    }
   };
 
   const handleSubmit = async () => {
-    // Validation
     if (!formData.id_so) {
       alert('Pilih SO terlebih dahulu');
       return;
     }
 
-    if (selectedMounting.length === 0) {
-      alert('Pilih minimal satu mounting');
+    if (!selectedMounting) {
+      alert('Pilih mounting terlebih dahulu');
       return;
     }
 
-    // Prepare jo_mounting data with insheet values from state
-    const joMountingData = mountingData
-      .filter((m) => selectedMounting.includes(m.id))
-      .map((mounting) => {
-        const insheetData = insheetValues[mounting.id] || {};
-        const ukuranCetakBagian1 = mounting.ukuran_cetak_bagian_1 || 1;
+    // Calculate the displayed jumlah_druk (base + insheet)
+    const displayedJumlahDruk =
+      insheetValues.jumlah_druk + insheetValues.total_insheet;
 
-        // Use the common jumlah_druk value (they should all be the same)
-        const jumlahDruk = insheetData.jumlah_druk_cetak || 0;
-        const jumlahLP = Math.ceil(jumlahDruk / ukuranCetakBagian1);
+    // Create jo_mounting data for ALL mountings
+    const joMountingData = mountingData.map((mounting) => {
+      const isSelected = mounting.id === selectedMounting;
 
+      if (isSelected) {
+        // For selected mounting, use the calculated values
         return {
-          id: mounting.id, // Include id for updates
+          id: mounting.id,
           id_jo: formData.id_jo,
           id_io_mounting: mounting.id,
           id_kertas: mounting.id_kertas,
@@ -599,7 +671,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           gramature_kertas: mounting.gramature_kertas,
           panjang_kertas: mounting.panjang_plano,
           lebar_kertas: mounting.lebar_plano,
-          jumlah_kertas: jumlahLP, // Store jumlah LP in jumlah_kertas
+          jumlah_kertas: insheetValues.jumlah_lp,
           ukuran_cetak_panjang_1: mounting.ukuran_cetak_panjang_1,
           ukuran_cetak_lebar_1: mounting.ukuran_cetak_lebar_1,
           ukuran_cetak_bagian_1: mounting.ukuran_cetak_bagian_1,
@@ -612,16 +684,51 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           ukuran_cetak_isi_2: mounting.ukuran_cetak_isi_2 || 0,
           jumlah_cetak_2: 0,
           tambahan_insheet_2: 0,
-          jumlah_druk_cetak: jumlahDruk, // All druk values are the same
-          jumlah_insheet_cetak: insheetData.jumlah_insheet_cetak || 0,
-          jumlah_druk_pond: jumlahDruk, // Same as cetak
-          jumlah_insheet_pond: insheetData.jumlah_insheet_pond || 0,
-          jumlah_druk_finishing: jumlahDruk, // Same as cetak
-          jumlah_insheet_finishing: insheetData.jumlah_insheet_finishing || 0,
-          total_insheet: insheetData.total_insheet || 0,
+          // Store the DISPLAYED jumlah_druk (base + insheet) for all processes
+          jumlah_druk_cetak: displayedJumlahDruk,
+          jumlah_insheet_cetak: insheetValues.jumlah_insheet_cetak,
+          jumlah_druk_pond: displayedJumlahDruk,
+          jumlah_insheet_pond: insheetValues.jumlah_insheet_pond,
+          jumlah_druk_finishing: displayedJumlahDruk,
+          jumlah_insheet_finishing: insheetValues.jumlah_insheet_finishing,
+          total_insheet: insheetValues.total_insheet,
           is_selected: true,
         };
-      });
+      } else {
+        // For non-selected mountings, send minimal data
+        return {
+          id: mounting.id,
+          id_jo: formData.id_jo,
+          id_io_mounting: mounting.id,
+          id_kertas: mounting.id_kertas,
+          nama_kertas: mounting.jenis_kertas,
+          gramature_kertas: mounting.gramature_kertas,
+          panjang_kertas: mounting.panjang_plano,
+          lebar_kertas: mounting.lebar_plano,
+          jumlah_kertas: 0,
+          ukuran_cetak_panjang_1: mounting.ukuran_cetak_panjang_1,
+          ukuran_cetak_lebar_1: mounting.ukuran_cetak_lebar_1,
+          ukuran_cetak_bagian_1: mounting.ukuran_cetak_bagian_1,
+          ukuran_cetak_isi_1: mounting.ukuran_cetak_isi_1,
+          jumlah_cetak_1: 0,
+          tambahan_insheet_1: 0,
+          ukuran_cetak_panjang_2: mounting.ukuran_cetak_panjang_2 || 0,
+          ukuran_cetak_lebar_2: mounting.ukuran_cetak_lebar_2 || 0,
+          ukuran_cetak_bagian_2: mounting.ukuran_cetak_bagian_2 || 0,
+          ukuran_cetak_isi_2: mounting.ukuran_cetak_isi_2 || 0,
+          jumlah_cetak_2: 0,
+          tambahan_insheet_2: 0,
+          jumlah_druk_cetak: 0,
+          jumlah_insheet_cetak: 0,
+          jumlah_druk_pond: 0,
+          jumlah_insheet_pond: 0,
+          jumlah_druk_finishing: 0,
+          jumlah_insheet_finishing: 0,
+          total_insheet: 0,
+          is_selected: false,
+        };
+      }
+    });
 
     const submitData = {
       ...formData,
@@ -630,33 +737,30 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
     try {
       setLoading(true);
-      console.log('Submitting JO data:', submitData);
       if (editMode && editJOId) {
-        // UPDATE existing JO
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${editJOId}`;
         const res: AxiosResponse = await axios.put(url, submitData, {
           withCredentials: true,
         });
-        console.log('JO update response:', res.data);
         if (res.data.success || res.data.succes) {
           alert('JO berhasil diupdate');
           setHasUnsavedChanges(false);
           onSuccess();
           onClose();
         }
+        console.log('Edit JO submit data:', submitData);
       } else {
-        // CREATE new JO
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jo`;
         const res: AxiosResponse = await axios.post(url, submitData, {
           withCredentials: true,
         });
-        console.log('JO creation response:', res.data);
         if (res.data.success || res.data.succes) {
           alert('JO berhasil dibuat');
           setHasUnsavedChanges(false);
           onSuccess();
           onClose();
         }
+        console.log('Create JO submit data:', submitData);
       }
     } catch (error: any) {
       console.error('Error saving JO:', error);
@@ -669,30 +773,35 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   };
 
   if (!isOpen) return null;
+
   const handleClose = () => {
     if (hasUnsavedChanges) {
       const confirmClose = window.confirm(
         'Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin menutup form ini?',
       );
       if (confirmClose) {
-        resetForm(); // Clear form on close
+        resetForm();
         onClose();
       }
     } else {
-      resetForm(); // Clear form on close
+      resetForm();
       onClose();
     }
   };
-  // In JOPPICCreateModal.tsx - Update the modal container
+
+  const selectedMountingData = selectedMounting
+    ? mountingData.find((m) => m.id === selectedMounting)
+    : null;
+
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="flex items-center justify-center w-full h-full px-4 py-4">
-        {/* Background overlay */}
         <div
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
           onClick={handleClose}
         />
-        {/* Modal panel - FULL SCREEN */}
+
+        {/* TWO COLUMN LAYOUT */}
         <div className="relative w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-blue-600 to-blue-700 flex-shrink-0">
@@ -718,47 +827,55 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
               </svg>
             </button>
           </div>
-          {/* Body */}
-          <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
-            <div className="space-y-6">
-              {/* Basic Info Section */}
-              <BasicInfoSection
-                formData={formData}
-                soData={soData}
-                onSOChange={handleSOChange}
-                loadingMounting={loadingMounting}
-                editMode={editMode}
-              />
 
-              {/* Production Details Section */}
-              <ProductionDetailsSection
-                formData={formData}
-                onChange={handleFieldChange}
-              />
+          {/* Body - Two Column Layout */}
+          <div className="flex-1 overflow-hidden flex">
+            {/* LEFT COLUMN - Basic Info & Production Details */}
+            <div className="w-1/3 border-r overflow-y-auto p-6 bg-gray-50">
+              <div className="space-y-6">
+                <BasicInfoSection
+                  formData={formData}
+                  soData={soData}
+                  onSOChange={handleSOChange}
+                  loadingMounting={loadingMounting}
+                  editMode={editMode}
+                />
 
-              <MountingSection
-                mountingData={mountingData}
-                selectedMounting={selectedMounting}
-                onMountingSelect={handleMountingSelect}
-                loadingMounting={loadingMounting}
-                insheetValues={insheetValues}
-              />
+                <ProductionDetailsSection
+                  formData={formData}
+                  onChange={handleFieldChange}
+                  onQtyChange={handleQtyChange}
+                />
+              </div>
+            </div>
 
-              <InsheetCalculationSection
-                mountingData={mountingData.filter((m) =>
-                  selectedMounting.includes(m.id),
+            {/* RIGHT COLUMN - Mounting Selection & Insheet Calculation */}
+            <div className="w-2/3 overflow-y-auto p-6">
+              <div className="space-y-6">
+                <MountingSection
+                  mountingData={mountingData}
+                  selectedMounting={selectedMounting}
+                  onMountingSelect={handleMountingSelect}
+                  loadingMounting={loadingMounting}
+                  insheetValues={insheetValues}
+                />
+
+                {selectedMountingData && (
+                  <InsheetCalculationSection
+                    mounting={selectedMountingData}
+                    qty={formData.qty || 0}
+                    ketentuanInsheetData={ketentuanInsheetData}
+                    prosesInsheetData={prosesInsheetData}
+                    insheetValues={insheetValues}
+                    onTotalInsheetChange={handleTotalInsheetChange}
+                  />
                 )}
-                poQty={formData.po_qty || 0}
-                ketentuanInsheetData={ketentuanInsheetData}
-                prosesInsheetData={prosesInsheetData}
-                insheetValues={insheetValues}
-                onInsheetChange={handleInsheetChange}
-              />
+              </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50">
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 flex-shrink-0">
             <button
               onClick={handleClose}
               className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -768,7 +885,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={loading || selectedMounting.length === 0}
+              disabled={loading || !selectedMounting}
               className="px-5 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loading && (
