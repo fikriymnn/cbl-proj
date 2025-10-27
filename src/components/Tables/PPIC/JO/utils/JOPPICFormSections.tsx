@@ -19,29 +19,29 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   editMode = false,
 }) => {
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+    <div className="space-y-3">
+      <h3 className="text-base font-semibold text-gray-700 border-b pb-2">
         Informasi Dasar
       </h3>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Nomor SO */}
         <div>
           {editMode ? (
             <div className="flex flex-col">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Nomor SO <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.no_so}
                 disabled
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
               />
             </div>
           ) : (
             <div className="flex flex-col">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Nomor SO <span className="text-red-500">*</span>
               </label>
               <SearchableSelect
@@ -64,55 +64,53 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
         {/* Nomor JO (Auto) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             Nomor JO
           </label>
           <input
             type="text"
             value={formData.no_jo}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
           />
         </div>
 
         {/* Nomor IO (Auto from SO) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             Nomor IO
           </label>
           <input
             type="text"
             value={formData.no_io}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
           />
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 gap-4">
         {/* Customer */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             Customer
           </label>
           <input
             type="text"
             value={formData.customer}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
           />
         </div>
 
-        {/* Produk */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        {/* Produk - spans 2 columns for better readability */}
+        <div className="md:col-span-2">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             Produk
           </label>
           <input
             type="text"
             value={formData.produk}
             disabled
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
           />
         </div>
       </div>
@@ -130,156 +128,155 @@ export const ProductionDetailsSection: React.FC<
   ProductionDetailsSectionProps
 > = ({ formData, onChange, onQtyChange }) => {
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
+    <div className="space-y-3">
+      <h3 className="text-base font-semibold text-gray-700 border-b pb-2">
         Detail Produksi
       </h3>
 
-      {/* PO QTY - Read only (from SO) */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          PO QTY
-        </label>
-        <input
-          type="number"
-          value={formData.po_qty || 0}
-          disabled
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-lg font-semibold"
-        />
-      </div>
-
-      {/* Stock FG - Editable */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Stock FG
-        </label>
-        <input
-          type="number"
-          value={formData.stok_fg || 0}
-          onChange={(e) => onChange('stok_fg', Number(e.target.value))}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          min="0"
-        />
-      </div>
-
-      {/* Quantity - Editable (calculated but can be overridden) */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Quantity <span className="text-xs text-gray-500">(Editable)</span>
-        </label>
-        <input
-          type="number"
-          value={formData.qty || 0}
-          onChange={(e) => onQtyChange(Number(e.target.value))}
-          className="w-full px-3 py-2 border-2 border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg font-bold text-blue-700"
-          min="0"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Auto: PO QTY - Stock FG ={' '}
-          {(formData.po_qty || 0) - (formData.stok_fg || 0)}
-        </p>
-      </div>
-
-      {/* Status Kalkulasi - Editable */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Status Kalkulasi
-        </label>
-        <SearchableSelect
-          options={[
-            { value: 'BARU', label: 'BARU' },
-            { value: 'REPEAT', label: 'REPEAT' },
-            { value: 'REPEAT PERUBAHAN', label: 'REPEAT PERUBAHAN' },
-          ]}
-          value={formData.status_kalkulasi || 'BARU'}
-          onChange={(value) => onChange('status_kalkulasi', value)}
-          placeholder="Pilih Status Kalkulasi"
-          required
-        />
-      </div>
-
-      {/* Toleransi - Read only (from Customer) */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Toleransi
-        </label>
-        <input
-          type="text"
-          value={formData.toleransi || ''}
-          readOnly
-          className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
-        />
-      </div>
-
-      {/* Tanggal Kirim - Editable */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Tanggal Kirim
-        </label>
-        <input
-          type="date"
-          value={formData.tgl_kirim || new Date().toISOString().split('T')[0]}
-          onChange={(e) => onChange('tgl_kirim', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      {/* Standar Warna - Editable */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Standar Warna
-        </label>
-        <input
-          type="text"
-          value={formData.standar_warna || ''}
-          onChange={(e) => onChange('standar_warna', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Masukkan standar warna"
-        />
-      </div>
-
-      {/* Text fields - All Editable */}
-      <div className="space-y-4">
-        {/* Spesifikasi - Now Editable */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* PO QTY - Read only (from SO) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            PO QTY
+          </label>
+          <input
+            type="number"
+            value={formData.po_qty || 0}
+            disabled
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100 font-semibold"
+          />
+        </div>
+
+        {/* Stock FG - Editable */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Stock FG
+          </label>
+          <input
+            type="number"
+            value={formData.stok_fg || 0}
+            onChange={(e) => onChange('stok_fg', Number(e.target.value))}
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            min="0"
+          />
+        </div>
+
+        {/* Quantity - Editable (calculated but can be overridden) */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Quantity <span className="text-xs text-gray-500">(Editable)</span>
+          </label>
+          <input
+            type="number"
+            value={formData.qty || 0}
+            onChange={(e) => onQtyChange(Number(e.target.value))}
+            className="w-full px-2 py-1.5 text-sm border-2 border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-blue-700"
+            min="0"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Auto: PO QTY - Stock FG ={' '}
+            {(formData.po_qty || 0) - (formData.stok_fg || 0)}
+          </p>
+        </div>
+
+        {/* Status Kalkulasi - Editable */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Status Kalkulasi
+          </label>
+          <SearchableSelect
+            options={[
+              { value: 'BARU', label: 'BARU' },
+              { value: 'REPEAT', label: 'REPEAT' },
+              { value: 'REPEAT PERUBAHAN', label: 'REPEAT PERUBAHAN' },
+            ]}
+            value={formData.status_kalkulasi || 'BARU'}
+            onChange={(value) => onChange('status_kalkulasi', value)}
+            placeholder="Pilih Status Kalkulasi"
+            required
+          />
+        </div>
+
+        {/* Toleransi - Read only (from Customer) */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Toleransi
+          </label>
+          <input
+            type="text"
+            value={formData.toleransi || ''}
+            readOnly
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
+          />
+        </div>
+
+        {/* Tanggal Kirim - Editable */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Tanggal Kirim
+          </label>
+          <input
+            type="date"
+            value={formData.tgl_kirim || new Date().toISOString().split('T')[0]}
+            onChange={(e) => onChange('tgl_kirim', e.target.value)}
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Standar Warna - Editable - Left column */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Standar Warna
+          </label>
+          <input
+            type="text"
+            value={formData.standar_warna || ''}
+            onChange={(e) => onChange('standar_warna', e.target.value)}
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Masukkan standar warna"
+          />
+        </div>
+
+        {/* Spesifikasi - Right column */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             Spesifikasi
           </label>
           <textarea
             value={formData.spesifikasi || ''}
             onChange={(e) => onChange('spesifikasi', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Masukkan spesifikasi"
             rows={2}
           />
           <p className="mt-1 text-xs text-gray-500">
-            Auto-generated dari mounting, tapi bisa diedit manual
+            Auto-generated dari mounting
           </p>
         </div>
 
-        {/* Keterangan Pengerjaan - Editable */}
+        {/* Keterangan Pengerjaan - Left column */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             Keterangan Pengerjaan
           </label>
           <textarea
             value={formData.keterangan_pengerjaan || ''}
             onChange={(e) => onChange('keterangan_pengerjaan', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Masukkan keterangan pengerjaan"
             rows={2}
           />
         </div>
 
-        {/* Alamat Pengiriman - Editable */}
+        {/* Alamat Pengiriman - Right column */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             Alamat Pengiriman
           </label>
           <textarea
             value={formData.alamat_pengiriman || ''}
             onChange={(e) => onChange('alamat_pengiriman', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Masukkan alamat pengiriman"
             rows={2}
           />
