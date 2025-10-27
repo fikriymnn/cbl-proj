@@ -821,15 +821,7 @@ function ListJOProduksi() {
                                         <div className="justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
                                           {tahap?.jadwal_per_jam?.length ===
                                           0 ? (
-                                            <label
-                                              onClick={() =>
-                                                handleOpenModalFull(
-                                                  `${index}-${tahapIndex}`,
-                                                  tahap.tahapan,
-                                                )
-                                              }
-                                              className="text-blue-500 text-xs border-2 px-3 py-2 rounded-lg border-blue-400 text-center cursor-pointer hover:bg-blue-50 transition"
-                                            >
+                                            <label className="text-red-500 text-xs border-2 px-3 py-2 rounded-lg border-blue-400 text-center cursor-pointer  transition">
                                               {formatCustomDate(tahap.tgl_from)}
                                             </label>
                                           ) : (
