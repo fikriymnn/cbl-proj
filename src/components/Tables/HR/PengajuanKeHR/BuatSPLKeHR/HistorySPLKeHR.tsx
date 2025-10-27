@@ -73,10 +73,6 @@ function HistorySPLkeHR() {
     }
   }
 
-  useEffect(() => {
-    getMasterUser(idPengaju);
-  }, [page]);
-
   async function getMasterUser(idDept: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
@@ -88,7 +84,7 @@ function HistorySPLkeHR() {
       });
 
       setUserList(res.data.data);
-      console.log('user list', res.data.data);
+
       setOptions(
         res.data.data.map((item: any) => {
           const latestBagianMesin =

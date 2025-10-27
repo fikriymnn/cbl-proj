@@ -68,7 +68,7 @@ function DiprosesSakitHR() {
       });
 
       setUserList(res.data.data);
-      console.log('user list', res.data.data);
+
       setOptions(
         res.data.data.map((item: any) => {
           const latestBagianMesin =

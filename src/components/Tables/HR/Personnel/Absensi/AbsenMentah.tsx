@@ -182,7 +182,7 @@ function TableAbsenMentah() {
       });
 
       setUserList(res.data.data);
-      console.log('user list', res.data.data);
+      //console
       setOptions(
         res.data.data.map((item: any) => {
           const latestBagianMesin =

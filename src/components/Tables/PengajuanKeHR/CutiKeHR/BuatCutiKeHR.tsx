@@ -135,7 +135,7 @@ function BuatCutiKeHR() {
       });
 
       setUserList(res.data.data);
-      console.log('user list', res.data.data);
+      //console
 
       const employeeOptions = res.data.data.map((item: Employee) => {
         const latestBagianMesin =
