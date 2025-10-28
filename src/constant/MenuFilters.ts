@@ -34,17 +34,17 @@ export const filterQCItems = (items: MenuItem[], role: string) => {
       .filter(
         (item) =>
           item.name !== 'QMS' &&
-          item.name !== 'Lapor' &&
-          item.name !== 'QC Absensi',
+          item.name !== 'Report' &&
+          item.name !== 'Absensi',
       )
       .map((item) => {
-        if (item.name === 'Pengajuan Ke HR' && item.children) {
+        if (item.name === 'Submission to HR' && item.children) {
           return {
             ...item,
             children: item.children.filter(
               (child) =>
-                child.name !== 'History ' &&
-                child.name !== 'History Pengajuan Jabatan',
+                child.name !== 'Submission History' &&
+                child.name !== 'Position History',
             ),
           };
         }
@@ -60,7 +60,7 @@ export const filterDashboardItems = (
   role: string,
 ) => {
   return items.filter((item) => {
-    if (item.name === 'Dashboard') {
+    if (item.name === 'Main Dashboard') {
       return (
         bagian?.toLowerCase() === 'maintenance' ||
         role?.toLowerCase() === 'super admin' ||
@@ -78,8 +78,7 @@ export const filterDashboardItems = (
 export const filterHRMasterItems = (items: MenuItem[], role: string) => {
   if (isPayrollRole(role)) {
     return items.filter(
-      (item) =>
-        item.name === 'HR Payroll Master' || item.name === 'HR Grade Master',
+      (item) => item.name === 'Payroll' || item.name === 'Grade',
     );
   }
   return items;
@@ -94,17 +93,70 @@ export const filterHRItems = (items: MenuItem[], role: string) => {
   return items;
 };
 
-export const filterMasterDataItems = (items: MenuItem[], role: string) => {
+export const filterMasterDataItems = (
+  items: MenuItem[],
+  role: string,
+  bagian: string,
+) => {
+  // Filter based on role
+  let filteredItems = items;
+
   if (role !== 'super admin' && role !== 'developer') {
-    return items.filter(
-      (item) =>
-        item.name !== 'Role Master' &&
-        item.name !== 'All User Master' &&
-        item.name !== 'Access Master' &&
-        item.name !== 'payroll',
-    );
+    // Remove General submenu items for non-admin users
+    filteredItems = items
+      .map((item) => {
+        if (item.name === 'General' && item.children) {
+          return {
+            ...item,
+            children: item.children.filter((child) => {
+              // Only super admin and developer can see Access and User in General
+              return false;
+            }),
+          };
+        }
+        return item;
+      })
+      .filter((item) => {
+        // Remove General if it has no children
+        if (item.name === 'General') {
+          return item.children && item.children.length > 0;
+        }
+        return true;
+      });
   }
-  return items;
+
+  // Filter based on bagian for department-specific master data
+  if (!canAccessDepartmentMasterData(role)) {
+    return [];
+  }
+
+  // Filter master data submenus based on bagian
+  filteredItems = filteredItems.filter((item) => {
+    switch (bagian?.toLowerCase()) {
+      case 'maintenance':
+      case 'pemeliharaan':
+        return item.name === 'Maintenance' || item.name === 'General';
+
+      case 'qc':
+      case 'quality control':
+        return item.name === 'Quality Control' || item.name === 'General';
+
+      case 'hr':
+      case 'sdm':
+        return item.name === 'Human Resources' || item.name === 'General';
+
+      case 'ppic':
+        return item.name === 'PPIC' || item.name === 'General';
+
+      case 'marketing':
+        return item.name === 'Marketing' || item.name === 'General';
+
+      default:
+        return false;
+    }
+  });
+
+  return filteredItems;
 };
 
 export const getFilteredMenuCategories = (
@@ -142,13 +194,6 @@ export const filterTechnicianCategories = (
         category.name === 'Dashboard' || category.name === 'Maintenance',
     )
     .map((category) => {
-      if (category.name === 'Master Data') {
-        return {
-          ...category,
-          items: filterMasterDataItems(category.items, role),
-        };
-      }
-
       if (category.name === 'Dashboard') {
         // Only show maintenance dashboard for technicians
         return {
@@ -199,10 +244,26 @@ export const getFilteredCategoriesByRoleAndBagian = (
 
   // Payroll role - special case for HR
   if (isPayrollRole(role)) {
-    return menuCategories.filter(
-      (category) =>
-        category.name === 'Human Resources' || category.name === 'HR Master',
-    );
+    return menuCategories
+      .filter(
+        (category) =>
+          category.name === 'Human Resources' ||
+          category.name === 'Master Data',
+      )
+      .map((category) => {
+        if (category.name === 'Master Data') {
+          return {
+            ...category,
+            items: category.items.filter(
+              (item) => item.name === 'Human Resources',
+            ),
+          };
+        }
+        return {
+          ...category,
+          items: filterHRItems(category.items, role),
+        };
+      });
   }
 
   // Technician roles
@@ -218,40 +279,10 @@ export const getFilteredCategoriesByRoleAndBagian = (
         return true;
       }
 
-      // Master Data access control
-      if (
-        category.name === 'Master Data' ||
-        category.name === 'QC Master Data' ||
-        category.name === 'HR Master'
-      ) {
-        // Super admin can access all master data
-        if (role === 'super admin') {
-          return true;
-        }
-
+      // Master Data access control - consolidated single Master Data category
+      if (category.name === 'Master Data') {
         // Check if user has department-specific master data access
-        if (!canAccessDepartmentMasterData(role)) {
-          return false;
-        }
-
-        // Department-specific master data access
-        if (category.name === 'Master Data') {
-          return (
-            bagian?.toLowerCase() === 'maintenance' ||
-            bagian?.toLowerCase() === 'pemeliharaan'
-          );
-        }
-        if (category.name === 'QC Master Data') {
-          return (
-            bagian?.toLowerCase() === 'qc' ||
-            bagian?.toLowerCase() === 'quality control'
-          );
-        }
-        if (category.name === 'HR Master') {
-          return (
-            bagian?.toLowerCase() === 'hr' || bagian?.toLowerCase() === 'sdm'
-          );
-        }
+        return canAccessDepartmentMasterData(role);
       }
 
       // Marketing access - only for developer role
@@ -279,21 +310,35 @@ export const getFilteredCategoriesByRoleAndBagian = (
         case 'production':
         case 'produksi':
           return category.name === 'Production';
+
         case 'marketing':
           return category.name === 'Marketing';
+
+        case 'prepress':
+        case 'pre-press':
+          return category.name === 'Pre-Press';
+
+        case 'desain':
+        case 'design':
+          return category.name === 'Desain';
+
+        case 'mr':
+          return category.name === 'MR';
+
         default:
           return false;
       }
     })
     .map((category) => {
-      // Apply filtering for specific category items
+      // Apply filtering for Master Data category
       if (category.name === 'Master Data') {
         return {
           ...category,
-          items: filterMasterDataItems(category.items, role),
+          items: filterMasterDataItems(category.items, role, bagian),
         };
       }
 
+      // Apply filtering for Quality Control category
       if (category.name === 'Quality Control') {
         return {
           ...category,
@@ -301,6 +346,7 @@ export const getFilteredCategoriesByRoleAndBagian = (
         };
       }
 
+      // Apply filtering for Dashboard category
       if (category.name === 'Dashboard') {
         return {
           ...category,
@@ -308,13 +354,7 @@ export const getFilteredCategoriesByRoleAndBagian = (
         };
       }
 
-      if (category.name === 'HR Master') {
-        return {
-          ...category,
-          items: filterHRMasterItems(category.items, role),
-        };
-      }
-
+      // Apply filtering for Human Resources category
       if (category.name === 'Human Resources') {
         return {
           ...category,

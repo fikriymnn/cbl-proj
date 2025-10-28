@@ -64,18 +64,18 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
 
   // Process route mapping
   const processRoutes: { [key: string]: string } = {
-    incoming_bahan: '/qc/qualityinspection/history/',
-    potong_bahan: '/qc/qualityinspection/prosespotong/bahan/',
-    cetak: '/qc/qualityinspection/cetak/jeniscetak/',
-    coating: '/qc/qualityinspection/coating/jeniscoating/',
-    pond: '/qc/qualityinspection/pond/jenispond/',
-    sortir_rs: '/qc/qualityinspection/barangrs/',
-    sampling_rabut: '/qc/qualityinspection/sampling/jenis_sampling/checkAwal/',
-    lem: '/qc/qualityinspection/lem/jenisLem/',
-    ampar_lem: '/qc/qualityinspection/ampar/checkAwal/',
-    potong_jadi: '/qc/qualityinspection/prosespotong/jadi/',
-    lipat: '/qc/qualityinspection/lipat/',
-    final_inspection: '/qc/qualityinspection/final_inspection/checkAwal/',
+    incoming_bahan: '/qc/inspection/history/',
+    potong_bahan: '/qc/inspection/potong/bahan/',
+    cetak: '/qc/inspection/cetak/jenis/',
+    coating: '/qc/inspection/coating/jenis/',
+    pond: '/qc/inspection/pond/jenis/',
+    sortir_rs: '/qc/inspection/barang-rusak/',
+    sampling_rabut: '/qc/inspection/sampling/jenis/check-awal/',
+    lem: '/qc/inspection/lem/jenis/',
+    ampar_lem: '/qc/inspection/ampar/check-awal/',
+    potong_jadi: '/qc/inspection/potong/jadi/',
+    lipat: '/qc/inspection/lipat/',
+    final_inspection: '/qc/inspection/final/check-awal/',
   };
 
   // If there's no data or loading is true, show a loading indicator

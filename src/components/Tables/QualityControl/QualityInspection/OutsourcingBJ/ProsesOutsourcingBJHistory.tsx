@@ -1,21 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '@mui/material';
-import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
-import convertDateToTime from '../../../../../utils/converDateToTime';
+
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import convertTimeStampToDate from '../../../../../utils/converDateTime';
 function ProsesFinalInspectionhistory() {
   const [isMobile, setIsMobile] = useState(false);
-  const kosong: any = [];
+
   const today = new Date();
   const month = today.getMonth() + 1;
   const year = today.getFullYear();
   const date = today.getDate();
-  const currentDate = month + '/' + date + '/' + year;
-  const navigate = useNavigate();
+
   const [page, setPage] = useState(1);
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -61,34 +58,30 @@ function ProsesFinalInspectionhistory() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className="flex w-full justify-end h-full items-center border-b-8 border-[#D8EAFF]">
-            <div className='flex flex-col gap-1 w-[20%] px-4 py-2 '>
+            <div className="flex flex-col gap-1 w-[20%] px-4 py-2 ">
               <p className=" my-auto text-xs text-primary font-semibold ">
                 Cari
               </p>
               <input
-                className='rounded-md h-8 bg-[#D8EAFF] px-2 w-full'
-                placeholder='Nomor Jo'
+                className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
+                placeholder="Nomor Jo"
                 type="text"
                 onChange={(e) => setNoJo(e.target.value)}
               ></input>
             </div>
             <div className="flex flex-col  w-[15%] px-4 py-2   gap-4">
-              <p className=" my-auto text-xs text-primary font-semibold ">
-
-              </p>
+              <p className=" my-auto text-xs text-primary font-semibold "></p>
               <button
                 onClick={() => {
-                  getFinalInspection()
+                  getFinalInspection();
                 }}
                 className="bg-primary text-white  rounded-md px-1 py-1 "
               >
                 Cari
               </button>
-
             </div>
           </div>
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -154,7 +147,7 @@ function ProsesFinalInspectionhistory() {
                     <div className="justify-end flex pr-2 col-span-2">
                       <>
                         <Link
-                          to={`/qc/qualityinspection/outsourcing_barang_jadi/checkAwal/${data.id}`}
+                          to={`/qc/inspection/outsourcing-barang-jadi/check-awal/${data.id}`}
                         >
                           <button
                             className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
@@ -183,7 +176,6 @@ function ProsesFinalInspectionhistory() {
           </Stack>
         </div>
       </main>
-
     </>
   );
 }

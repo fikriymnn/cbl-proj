@@ -66,7 +66,6 @@ function ProsesPraplate() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -131,9 +130,7 @@ function ProsesPraplate() {
                       </label>
                       <div className="justify-end flex pr-2 col-span-2">
                         <>
-                          <Link
-                            to={`/qc/qualityinspection/praplate/${data.id}`}
-                          >
+                          <Link to={`/qc/inspection/praplate${data.id}`}>
                             <button
                               className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                             >
@@ -144,12 +141,11 @@ function ProsesPraplate() {
                       </div>
                     </div>
                   </>
-                )
+                );
               })}
           </div>
         </div>
       </main>
-
     </>
   );
 }

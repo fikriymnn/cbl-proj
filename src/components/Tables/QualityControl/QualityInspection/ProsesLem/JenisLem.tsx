@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '@mui/material';
-import JenisCetak from '../../../../../pages/QualityControl/ProsesCetak/JenisCetak';
-import convertTimeStampToDate from '../../../../../utils/convertDate';
+
 import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import ptcbl from '../../../../../images/ptcbl.png';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
@@ -12,13 +10,7 @@ import convertDateToTime from '../../../../../utils/converDateToTime';
 function JenisLemMesin() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
-  const kosong: any = [];
-  const today = new Date();
-  const month = today.getMonth() + 1;
-  const year = today.getFullYear();
-  const date = today.getDate();
-  const currentDate = month + '/' + date + '/' + year;
-  const navigate = useNavigate();
+
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -928,9 +920,7 @@ function JenisLemMesin() {
                 </div>
 
                 <div className="justify-end flex pr-2 w-full ">
-                  <Link
-                    to={`/qc/qualityinspection/lem/jenisLem/checkawal/${id}`}
-                  >
+                  <Link to={`/qc/inspection/lem/jenis/check-awal/${id}`}>
                     <button
                       className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                     >
@@ -959,9 +949,7 @@ function JenisLemMesin() {
                 </div>
 
                 <div className="justify-end flex pr-2 w-full ">
-                  <Link
-                    to={`/qc/qualityinspection/lem/jenisLem/checkperiode/${id}`}
-                  >
+                  <Link to={`/qc/inspection/lem/jenis/check-periode/${id}`}>
                     <button
                       className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                     >

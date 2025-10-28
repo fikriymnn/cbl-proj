@@ -56,7 +56,6 @@ function ProsesFinalInspection() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -64,9 +63,7 @@ function ProsesFinalInspection() {
               <div
                 className={`w-full h-full sticky left-0 z-20  gap-8 col-span-1 flex items-center`}
               >
-                <div
-                  className={`w-2 h-full sticky left-0 z-20   `}
-                ></div>
+                <div className={`w-2 h-full sticky left-0 z-20   `}></div>
                 <label className="text-neutral-500 text-sm font-semibold ">
                   NO
                 </label>
@@ -87,16 +84,13 @@ function ProsesFinalInspection() {
                 Tanggal
               </label>
               <div className="justify-end flex pr-2 col-span-2">
-                <>
-
-                </>
+                <></>
               </div>
             </div>
             <div className="w-2 h-full "></div>
             {FinalInspection?.data.map((data: any, i: number) => {
               const tglTicket = convertTimeStampToDate(data.createdAt);
               return (
-
                 <>
                   <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
@@ -126,9 +120,7 @@ function ProsesFinalInspection() {
                     </label>
                     <div className="justify-end flex pr-2 col-span-1">
                       <>
-                        <Link
-                          to={`/qc/qualityinspection/final_inspection/checkAwal/${data.id}`}
-                        >
+                        <Link to={`/qc/inspection/final/check-awal/${data.id}`}>
                           <button
                             className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                           >
@@ -144,7 +136,6 @@ function ProsesFinalInspection() {
           </div>
         </div>
       </main>
-
     </>
   );
 }

@@ -940,9 +940,7 @@ function JenisPondMesin() {
                 </div>
 
                 <div className="justify-end flex pr-2 w-full ">
-                  <Link
-                    to={`/qc/qualityinspection/pond/jenispond/checkawal/${id}`}
-                  >
+                  <Link to={`/qc/inspection/pond/jenis/check-awal/${id}`}>
                     <button
                       className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                     >
@@ -971,9 +969,7 @@ function JenisPondMesin() {
                 </div>
 
                 <div className="justify-end flex pr-2 w-full ">
-                  <Link
-                    to={`/qc/qualityinspection/pond/jenispond/checkperiode/${id}`}
-                  >
+                  <Link to={`/qc/inspection/pond/jenis/check-periode/${id}`}>
                     <button
                       className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                     >

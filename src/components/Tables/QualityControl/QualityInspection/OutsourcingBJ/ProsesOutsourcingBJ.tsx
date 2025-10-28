@@ -1,20 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '@mui/material';
-import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
-import convertDateToTime from '../../../../../utils/converDateToTime';
+
 import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
 function ProsesFinalInspection() {
   const [isMobile, setIsMobile] = useState(false);
-  const kosong: any = [];
+
   const today = new Date();
   const month = today.getMonth() + 1;
   const year = today.getFullYear();
   const date = today.getDate();
-  const currentDate = month + '/' + date + '/' + year;
-  const navigate = useNavigate();
+
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -56,7 +53,6 @@ function ProsesFinalInspection() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -122,7 +118,7 @@ function ProsesFinalInspection() {
                     <div className="justify-end flex pr-2 col-span-2">
                       <>
                         <Link
-                          to={`/qc/qualityinspection/outsourcing_barang_jadi/checkAwal/${data.id}`}
+                          to={`/qc/inspection/outsourcing-barang-jadi/check-awal/${data.id}`}
                         >
                           <button
                             className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
@@ -139,7 +135,6 @@ function ProsesFinalInspection() {
           </div>
         </div>
       </main>
-
     </>
   );
 }

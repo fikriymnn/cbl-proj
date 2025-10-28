@@ -62,34 +62,30 @@ function ProsesSamplingRabutHistory() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className="flex w-full justify-end h-full items-center border-b-8 border-[#D8EAFF]">
-            <div className='flex flex-col gap-1 w-[20%] px-4 py-2 '>
+            <div className="flex flex-col gap-1 w-[20%] px-4 py-2 ">
               <p className=" my-auto text-xs text-primary font-semibold ">
                 Cari
               </p>
               <input
-                className='rounded-md h-8 bg-[#D8EAFF] px-2 w-full'
-                placeholder='Nomor Jo'
+                className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
+                placeholder="Nomor Jo"
                 type="text"
                 onChange={(e) => setNoJo(e.target.value)}
               ></input>
             </div>
             <div className="flex flex-col  w-[15%] px-4 py-2   gap-4">
-              <p className=" my-auto text-xs text-primary font-semibold ">
-
-              </p>
+              <p className=" my-auto text-xs text-primary font-semibold "></p>
               <button
                 onClick={() => {
-                  getRabutMesin()
+                  getRabutMesin();
                 }}
                 className="bg-primary text-white  rounded-md px-1 py-1 "
               >
                 Cari
               </button>
-
             </div>
           </div>
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -135,9 +131,7 @@ function ProsesSamplingRabutHistory() {
                     </label>
                     <div className="justify-end flex pr-2 col-span-2">
                       <>
-                        <Link
-                          to={`/qc/qualityinspection/ampar/checkAwal/${data.id}`}
-                        >
+                        <Link to={`/qc/inspection/ampar/check-awal/${data.id}`}>
                           <button
                             className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                           >
@@ -148,10 +142,8 @@ function ProsesSamplingRabutHistory() {
                     </div>
                   </div>
                 </>
-              )
-            }
-
-            )}
+              );
+            })}
           </div>
         </div>
         <div className="w-full flex justify-center mt-5 ">
@@ -167,7 +159,6 @@ function ProsesSamplingRabutHistory() {
           </Stack>
         </div>
       </main>
-
     </>
   );
 }

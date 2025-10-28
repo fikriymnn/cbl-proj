@@ -239,305 +239,12 @@ function App() {
           element={
             <>
               <PageTitle title="PT CBL" />
-
               <Login />
             </>
           }
         />
-        {/* OKP Module */}
-        <Route
-          path="/qc/kabagapproval/os"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
 
-              <KabagApprovalQC />
-            </>
-          }
-        />
-
-        <Route
-          path="/desain"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <KabagApprovalDesain />
-            </>
-          }
-        />
-        {/* Marketing */}
-        <Route
-          path="/marketing/kalkulasi/create"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <KalkulasiPageMarketing />
-            </>
-          }
-        />
-        <Route
-          path="/ppic/bom/create"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <BOMMarketing />
-            </>
-          }
-        />
-        <Route
-          path="/ppic/jo/approval"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <JOApprovalPage />
-            </>
-          }
-        />
-        <Route
-          path="/ppic/jo/create"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <JOPPIC />
-            </>
-          }
-        />
-        <Route
-          path="/ppic/bom/approval"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <BOMApprovalPage />
-            </>
-          }
-        />
-        <Route
-          path="/ppic/bomppic/create"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <BOMPPIC />
-            </>
-          }
-        />
-        <Route
-          path="/ppic/bomppic/approval"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <BOMApprovalPage />
-            </>
-          }
-        />
-        <Route
-          path="/marketing/kalkulasi/history"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <KalkulasiHistoryPage />
-            </>
-          }
-        />
-        <Route
-          path="/marketing/kabagapproval/list"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <KabagApproval />
-            </>
-          }
-        />
-        <Route
-          path="/marketing/kabagapproval/history"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <KabagApproval />
-            </>
-          }
-        />
-
-        <Route
-          path="/marketing/okp/create"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <OKPPage />
-            </>
-          }
-        />
-
-        <Route
-          path="/marketing/okp/history"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <OKPPage />
-            </>
-          }
-        />
-        <Route
-          path="/marketing/io/npd"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <IONPDPage />
-            </>
-          }
-        />
-        <Route
-          path="/marketing/io/create"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <IOMarketingPage />
-            </>
-          }
-        />
-        <Route
-          path="/marketing/io/history"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <IOMarketingPage />
-            </>
-          }
-        />
-        <Route
-          path="/marketing/so/create"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <SOPage />
-            </>
-          }
-        />
-        <Route
-          path="/marketing/so/history"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <HistorySOPage />
-            </>
-          }
-        />
-        <Route
-          path="/master/customer"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MasterCustomer />
-            </>
-          }
-        />
-        <Route
-          path="/master/marketing"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MasterMarketing />
-            </>
-          }
-        />
-        <Route
-          path="/master/brand"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MarketingBrand />
-            </>
-          }
-        />
-        <Route
-          path="/master/pengiriman"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MasterMarketingPengiriman />
-            </>
-          }
-        />
-        <Route
-          path="/master/produk"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MasterProduk />
-            </>
-          }
-        />
-        <Route
-          path="/master/unit"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MarketingUnit />
-            </>
-          }
-        />
-        <Route
-          path="/master/barang"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MarketingBarang />
-            </>
-          }
-        />
-        <Route
-          path="/master/mesintahapan"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MasterMesinTahapan />
-            </>
-          }
-        />
-        <Route
-          path="/master/tahapan"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MasterTahapan />
-            </>
-          }
-        />
-        <Route
-          path="/master/tahapanmesin"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-
-              <MasterTahapanMesin />
-            </>
-          }
-        />
+        {/* Dashboard Routes */}
         <Route
           path="/dashboard"
           element={
@@ -548,7 +255,18 @@ function App() {
           }
         />
         <Route
-          path="/profil_setting"
+          path="/dashboard/maintenance"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Dashboard />
+            </>
+          }
+        />
+
+        {/* Profile */}
+        <Route
+          path="/profile/setting"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -557,71 +275,31 @@ function App() {
           }
         />
 
+        {/* ============== MAINTENANCE ROUTES ============== */}
         <Route
-          path="/maintenance/sparepart/stockmaster_sparepart"
+          path="/maintenance/corrective"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <Stockmaster />
+              <ProtectedRoute>
+                <Machine />
+              </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/maintenance/sparepart/opname/submitOpname"
+          path="/maintenance/preventive/pm1"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <SubmitOpname />
+              <ProtectedRoute>
+                <Pm1 />
+              </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/maintenance/sparepart/stockmaster_sparepart/addStock"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <AddStock />
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/sparepart/stockmaster_service/addStock"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <AddStockService />
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/sparepart/monitoringSparepart"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <MonitoringSparepart />
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/sparepart/monitoringService"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <MonitoringService />
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/sparepart/monitoringSparepart/addStockLifetime"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <AddStockLifetimes />
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/inspection/pm_1_form/:id"
+          path="/maintenance/preventive/pm1/form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -630,7 +308,18 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_2_form/:id"
+          path="/maintenance/preventive/pm2"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Pm2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/preventive/pm2/form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -639,11 +328,64 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/Stock_opname"
+          path="/maintenance/preventive/pm3"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <Sparepart />
+              <ProtectedRoute>
+                <Pm3page />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/preventive/pm3/form/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Pm3Form />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/preventive/os3"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Preventive />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/preventive/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoriPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsMTC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/absensi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AbsenMTC />
             </>
           }
         />
@@ -657,7 +399,16 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/sparepart/opname/histori"
+          path="/maintenance/sparepart/opname/submit"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <SubmitOpname />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/opname/history"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -666,36 +417,61 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_3_form/:id"
+          path="/maintenance/sparepart/stock-master"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <Pm3Form />
+              <Stockmaster />
             </>
           }
         />
         <Route
-          path="/maintenance/KPI/Form/Input"
+          path="/maintenance/sparepart/stock-master/add"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <KPIInput />
+              <AddStock />
             </>
           }
         />
         <Route
-          path="/maintenance/machine"
+          path="/maintenance/sparepart/stock-master-service/add"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <Machine />
-              </ProtectedRoute>
+              <AddStockService />
             </>
           }
         />
         <Route
-          path="/maintenance/projectMtc"
+          path="/maintenance/sparepart/monitoring"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MonitoringSparepart />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/monitoring-service"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MonitoringService />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/monitoring/add-lifetime"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStockLifetimes />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/project"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -717,62 +493,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_1"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <Pm1 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/inspection/pm_2"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <Pm2 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/inspection/pm_3"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <Pm3page />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/inspection/OS_3"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <Preventive />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/inspection/histori"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <HistoriPage />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/KPI"
+          path="/maintenance/kpi"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -783,29 +504,25 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/preparation"
+          path="/maintenance/kpi/form"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <Preparation />
-              </ProtectedRoute>
+              <KPIForm />
             </>
           }
         />
         <Route
-          path="/maintenance/sparepart"
+          path="/maintenance/kpi/input"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <Sparepart />
-              </ProtectedRoute>
+              <KPIInput />
             </>
           }
         />
         <Route
-          path="/maintenance/lapor/ncr"
+          path="/maintenance/report/ncr"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -816,7 +533,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/lapor/capa"
+          path="/maintenance/report/capa"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -827,18 +544,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/MAN"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MAN />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="maintenance/spb"
+          path="/maintenance/spb"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -848,9 +554,54 @@ function App() {
             </>
           }
         />
-
         <Route
-          path="/qc/validatenverify"
+          path="/maintenance/submission"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/submission/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDeptHistory />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/submission/position"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/submission/position/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDeptHistory />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* ============== QUALITY CONTROL ROUTES ============== */}
+        <Route
+          path="/qc/validate-verify"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -861,67 +612,642 @@ function App() {
           }
         />
         <Route
-          path="/qc/outstanding"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <OsQC />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/outstanding"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <OsQC />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/outstanding"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <OsMTC />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/hr/outstanding"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <OsHR />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/rekap"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <RekapQC />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection"
+          path="/qc/inspection"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Qualityinspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/list"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingList />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/list/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/chemical/list/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingChem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/history/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Potong Routes */}
+        <Route
+          path="/qc/inspection/potong"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPotongFIX />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong/bahan/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahanCheck />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong/jadi/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadiCheck />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-bahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahan1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-bahan/list-itoh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListBahan1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-bahan/list-polar"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListBahan2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-bahan/history-itoh/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryBahanItoh />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-bahan/history-polar/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryBahanPolar />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-bahan/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahanPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-jadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadi1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-jadi/list-itoh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListJadiItoh />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-jadi/list-polar"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListJadiPolar />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-jadi/history-polar/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryJadiPolarPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-jadi/history-itoh/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryJadiItohPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/potong-jadi/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadiPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Cetak Routes */}
+        <Route
+          path="/qc/inspection/cetak"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesCetak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/cetak/jenis/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisCetak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/cetak/jenis/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CetakAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/cetak/jenis/check-periode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CetakPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Pond Routes */}
+        <Route
+          path="/qc/inspection/pond"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPond />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/pond/jenis/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisPond />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/pond/jenis/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PondAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/pond/jenis/check-periode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PondPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Coating Routes */}
+        <Route
+          path="/qc/inspection/coating"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesCoating />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/coating/jenis/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisCoating />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/coating/jenis/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/coating/jenis/check-periode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Praplate Routes */}
+        <Route
+          path="/qc/inspection/praplate"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPraplate />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/praplate/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ChecksheetPralatePage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Lipat Routes */}
+        <Route
+          path="/qc/inspection/lipat"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesLipat />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/lipat/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ChecksheetLipatPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Lem Routes */}
+        <Route
+          path="/qc/inspection/lem"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/lem/jenis/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/lem/jenis/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/lem/jenis/check-periode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Incoming Outsourcing Routes */}
+        <Route
+          path="/qc/inspection/incoming-outsourcing"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingOutsourcing />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/incoming-outsourcing/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingOutsourcingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Sampling Hasil Rabut Routes */}
+        <Route
+          path="/qc/inspection/sampling-hasil-rabut"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SamplingHasilRabut />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/sampling/jenis/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RabutAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Ampar Hasil Lem Routes */}
+        <Route
+          path="/qc/inspection/ampar-hasil-lem"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <AmparHasilLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/ampar/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <AmparLemAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Final Inspection Routes */}
+        <Route
+          path="/qc/inspection/final"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <FinalInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/final/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <FinalAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Outsourcing Barang Jadi Routes */}
+        <Route
+          path="/qc/inspection/outsourcing-barang-jadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingBJ />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/outsourcing-barang-jadi/check-awal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingBJAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Barang Rusak Routes */}
+        <Route
+          path="/qc/inspection/barang-rusak"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRusak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/inspection/barang-rusak/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRSChecksheet />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/kalibrasi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <KalibrasiAlatUkur />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/kabag-approval"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KabagApprovalQC />
+            </>
+          }
+        />
+        <Route
+          path="/qc/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/recap"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RekapQC />
               </ProtectedRoute>
             </>
           }
@@ -949,7 +1275,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/lapor/ncr"
+          path="/qc/report/ncr"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -960,7 +1286,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/lapor/capa"
+          path="/qc/report/capa"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -970,6 +1296,61 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/qc/absensi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AbsenQC />
+            </>
+          }
+        />
+        <Route
+          path="/qc/submission"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/submission/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDeptHistory />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/submission/position"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/submission/position/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDeptHistory />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* ============== MR ROUTES ============== */}
         <Route
           path="/mr/qms/ncr"
           element={
@@ -993,7 +1374,7 @@ function App() {
           }
         />
         <Route
-          path="/mr/lapor/ncr"
+          path="/mr/report/ncr"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -1004,7 +1385,7 @@ function App() {
           }
         />
         <Route
-          path="/mr/lapor/capa"
+          path="/mr/report/capa"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -1014,1105 +1395,77 @@ function App() {
             </>
           }
         />
-        <Route
-          path="/qc/qualityinspection/list"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <IncomingList />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/kalibrasi"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <KalibrasiAlatUkur />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/kalibrasimaster"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <KalibrasiMaster />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/list/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <IncomingIns />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspectionChemical/list/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <IncomingChem />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/history/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <HistoryIns />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong/potongbahan/historyitoh/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <HistoryBahanItoh />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong/potongbahan/historypolar/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <HistoryBahanPolar />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong/potongjadi/historypolar/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <HistoryJadiPolarPage />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong/potongjadi/historyitoh/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <HistoryJadiItohPage />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/prosespotong"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ProsesPotongFIX />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/prosespotong/bahan/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PotongBahanCheck />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/prosespotong/jadi/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PotongJadiCheck />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ProsesPotong />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potongbahan"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PotongBahan1 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong/listjadiitoh"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ListJadiItoh />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong/listjadipolar"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ListJadiPolar />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potongbahan/listbahanitoh"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ListBahan1 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potongbahan/listbahanpolar"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ListBahan2 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potongjadi"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PotongJadi1 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/cetak"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ProsesCetak />
-              </ProtectedRoute>
-            </>
-          }
-        />
 
+        {/* ============== HR ROUTES ============== */}
         <Route
-          path="/qc/qualityinspection/pond"
+          path="/hr/personnel/company"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ProsesPond />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/coating"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ProsesCoating />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/praplate"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ProsesPraplate />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/praplate/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ChecksheetPralatePage />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/lipat"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ProsesLipat />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/lipat/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ChecksheetLipatPage />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/lem"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <ProsesLem />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/qc/qualityinspection/incoming_outsourcing"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <IncomingOutsourcing />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/qc/qualityinspection/incoming_outsourcing/checkAwal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <IncomingOutsourcingAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/qc/qualityinspection/sampling_hasil_rabut"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <SamplingHasilRabut />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/qc/qualityinspection/sampling/jenis_sampling/checkAwal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <RabutAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/qc/qualityinspection/ampar_hasil_lem"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <AmparHasilLem />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/qc/qualityinspection/ampar/checkAwal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <AmparLemAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/cetak/jeniscetak/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <JenisCetak />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/pond/jenispond/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <JenisPond />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/coating/jeniscoating/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <JenisCoating />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/coating/jeniscoating/checkawal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <CoatingAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/coating/jeniscoating/checkperiode/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <CoatingPeriode />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/lem/jenisLem/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <JenisLem />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/cetak/jeniscetak/checkawal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <CetakAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/cetak/jeniscetak/checkperiode/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <CetakPeriode />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/lem/jenisLem/checkperiode/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <LemPeriode />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/lem/jenisLem/checkperiode/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <LemPeriode />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/pond/jenispond/checkawal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PondAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/pond/jenispond/checkperiode/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PondPeriode />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/coating/jeniscoating/checkawal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <CoatingAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/coating/jeniscoating/checkperiode/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <CoatingAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/lem/jenislem/checkawal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <LemAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong/potongbahan/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PotongBahanPage />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/potong/potongjadi/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PotongJadiPage />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/final_inspection"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <FinalInspection />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="qc/qualityinspection/final_inspection/checkAwal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <FinalAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/outsourcing_barang_jadi"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <OutsourcingBJ />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="qc/qualityinspection/outsourcing_barang_jadi/checkAwal/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <OutsourcingBJAwal />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/qc/qualityinspection/barangrs"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <BarangRusak />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/qc/qualityinspection/barangrs/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <BarangRSChecksheet />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <HistoryMtc />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/defect"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterDefect />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/nodoc"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterDoc />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/finalinspection"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterFinalInspection />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/users"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterUserPageQC />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/outsourcing_bj"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterOutsourcingBJ />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/masterdata/machine"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterData />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/machine/add"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterData />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterUsers"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterUsers />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterRole"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterRole />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/mastersparepart"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterSparepart />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masteranalisis"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterAnalisis />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/mastermonitoring"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterMonitoring />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/pengajuanallkehr"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PengajuanAllDept />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/pengajuanJabatanallkehr"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PengajuanJabatanAllDept />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/pengajuanJabatanallkehrhistory"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PengajuanJabatanAllDeptHistory />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/pengajuanallkehrhistory"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <PengajuanAllDeptHistory />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterpm1"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM1 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterpm2"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM2 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterpm3"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM3 />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/masterdata/masterpm1/pm1checklist/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM1Check />
-              </ProtectedRoute>
-            </>
-          }
-        />
-
-        <Route
-          path="/masterdata/masterpm2/pm2checklist/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM2Check />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterpm3/pm3checklist/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM3Check />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterpm1/pm1checklist/addinspection/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM1TambahInspection />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterpm2/pm2checklist/addinspection/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM2TambahInspection />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterpm3/pm3checklist/addinspection/:id"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterPM3TambahInspection />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/auth/login"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <Login />
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterkpi"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterKPI />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/grade"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterGrade />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/masterdata/masterkpi/form"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <MasterKPIForm />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/KPIForm"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <KPIForm />
-            </>
-          }
-        />
-        <Route
-          path="/auth/signin"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <SignIn />
-            </>
-          }
-        />
-        <Route
-          path="/cobain"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <Cobain />
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/DashboardMaintenance"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <Dashboard />
-            </>
-          }
-        />
-        <Route
-          path="/auth/signup"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <SignUp />
-            </>
-          }
-        />
-        <Route
-          path="/prepress"
-          element={
-            <>
-              <ProtectedRoute>
-                <PrePress />
-              </ProtectedRoute>
-            </>
-          }
-        />
-        <Route path="/hr" element={<></>} />
-        <Route
-          path="/hr/pm/masterperusahaan"
-          element={
-            <>
               <MasterPerusahaan />
             </>
           }
         />
         <Route
-          path="/hr/pm/masterkaryawan"
+          path="/hr/personnel/employee"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <MasterKaryawan />
             </>
           }
         />
         <Route
-          path="/hr/pm/masterkaryawan/add"
+          path="/hr/personnel/employee/add"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <AddMasterKaryawan />
             </>
           }
         />
         <Route
-          path="/hr/pm/masterkaryawan/edit/:id"
+          path="/hr/personnel/employee/edit/:id"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <EditMasterKaryawan />
             </>
           }
         />
         <Route
-          path="/hr/pm/masterkaryawan/lengkapi/:id"
+          path="/hr/personnel/employee/complete/:id"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <LengkapiMasterKaryawan />
             </>
           }
         />
         <Route
-          path="/hr/pm/masterkaryawan/detail/:id"
+          path="/hr/personnel/employee/detail/:id"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <DetailMasterKaryawan />
             </>
           }
         />
         <Route
-          path="/hr/pm/kalenderKerja"
+          path="/hr/personnel/work-calendar"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <KalenderKerja />
             </>
           }
         />
         <Route
-          path="/hr/pm/absensi"
+          path="/hr/personnel/absensi"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <Absensi />
-            </>
-          }
-        />
-        <Route
-          path="/qc/absensi"
-          element={
-            <>
-              <AbsenQC />
-            </>
-          }
-        />
-        <Route
-          path="/maintenance/absensi"
-          element={
-            <>
-              <AbsenMTC />
             </>
           }
         />
@@ -2120,164 +1473,123 @@ function App() {
           path="/hr/payroll"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <PayrollPage />
             </>
           }
         />
         <Route
-          path="/hr/payrollbulan"
+          path="/hr/payroll/monthly"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <PayrollBulanPage />
             </>
           }
         />
         <Route
-          path="/hr/accpayroll"
+          path="/hr/payroll/approval"
           element={
             <>
+              <PageTitle title="PT CBL" />
               <AccPayroll />
             </>
           }
         />
         <Route
-          path="/hr/rp/respon"
+          path="/hr/submission"
           element={
             <>
-              <ResponPengajuanHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/rp/history"
-          element={
-            <>
-              <HistoryResponPengajuan />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan"
-          element={
-            <>
+              <PageTitle title="PT CBL" />
               <PengajuanKeHR />
             </>
           }
         />
         <Route
-          path="/hr/pengajuanJabatan"
+          path="/hr/submission/history"
           element={
             <>
-              <PengajuanJabatanKeHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuanJabatanHistory"
-          element={
-            <>
-              <HistoryPengajuanJabatanKeHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/rp/jabatan"
-          element={
-            <>
-              <ResponJabatan />
-            </>
-          }
-        />
-        <Route
-          path="/hr/rp/jabatanHistory"
-          element={
-            <>
-              <HistoryResponJabatan />
-            </>
-          }
-        />
-        <Route
-          path="/hr/rekap"
-          element={
-            <>
-              <RekapHRPage />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuanhistory"
-          element={
-            <>
+              <PageTitle title="PT CBL" />
               <HistoryPengajuanKeHR />
             </>
           }
         />
         <Route
-          path="/hr/master/shift"
+          path="/hr/submission/position"
           element={
             <>
-              <MasterSHiftHR />
+              <PageTitle title="PT CBL" />
+              <PengajuanJabatanKeHR />
             </>
           }
         />
         <Route
-          path="/hr/master/spteguran"
+          path="/hr/submission/position/history"
           element={
             <>
-              <MasterSPTeguran />
+              <PageTitle title="PT CBL" />
+              <HistoryPengajuanJabatanKeHR />
             </>
           }
         />
         <Route
-          path="/hr/master/setting"
+          path="/hr/response"
           element={
             <>
-              <MasterSettingHR />
+              <PageTitle title="PT CBL" />
+              <ResponPengajuanHR />
             </>
           }
         />
         <Route
-          path="/hr/master/users"
+          path="/hr/response/history"
           element={
             <>
-              <MasterUserHR />
+              <PageTitle title="PT CBL" />
+              <HistoryResponPengajuan />
             </>
           }
         />
         <Route
-          path="/hr/master/department"
+          path="/hr/response/position"
           element={
             <>
-              <MasterDepartment />
+              <PageTitle title="PT CBL" />
+              <ResponJabatan />
             </>
           }
         />
         <Route
-          path="/hr/master/cutikhusus"
+          path="/hr/response/position/history"
           element={
             <>
-              <MasterCutiKhusus />
+              <PageTitle title="PT CBL" />
+              <HistoryResponJabatan />
             </>
           }
         />
         <Route
-          path="/hr/master/grade"
+          path="/hr/recap"
           element={
             <>
-              <MasterGradeHR />
+              <PageTitle title="PT CBL" />
+              <RekapHRPage />
             </>
           }
         />
         <Route
-          path="/hr/master/payroll"
+          path="/hr/outstanding"
           element={
             <>
-              <MasterPayrollHR />
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsHR />
+              </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/hr/lapor/ncr"
+          path="/hr/report/ncr"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2288,7 +1600,7 @@ function App() {
           }
         />
         <Route
-          path="/hr/lapor/capa"
+          path="/hr/report/capa"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2299,9 +1611,9 @@ function App() {
           }
         />
 
-        {/* ===============PPIC=========== */}
+        {/* ============== PPIC ROUTES ============== */}
         <Route
-          path="/ppic/jadwalProduksi"
+          path="/ppic/production-schedule"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2312,7 +1624,7 @@ function App() {
           }
         />
         <Route
-          path="/ppic/joterjadwal"
+          path="/ppic/scheduled-jo"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2323,7 +1635,7 @@ function App() {
           }
         />
         <Route
-          path="/ppic/jadwalKirim"
+          path="/ppic/delivery-schedule"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2345,7 +1657,7 @@ function App() {
           }
         />
         <Route
-          path="/ppic/rekap"
+          path="/ppic/recap"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2356,51 +1668,98 @@ function App() {
           }
         />
         <Route
-          path="/ppic/master/jadwal"
+          path="/ppic/submission"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <MasterJadwal />
+                <PengajuanAllDept />
               </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/ppic/master/kapasitasArmada"
+          path="/ppic/submission/history"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <MasterKapasitasArmada />
+                <PengajuanAllDeptHistory />
               </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/masterHakAkses"
+          path="/ppic/submission/position"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <MasterHakAkses />
+                <PengajuanJabatanAllDept />
               </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/masteruserall"
+          path="/ppic/submission/position/history"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <MasterUserAll />
+                <PengajuanJabatanAllDeptHistory />
               </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/produksi/breakdown"
+          path="/ppic/bom/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <BOMMarketing />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/bom/approval"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <BOMApprovalPage />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/bom-ppic/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <BOMPPIC />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/jo/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <JOPPIC />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/jo/approval"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <JOApprovalPage />
+            </>
+          }
+        />
+
+        {/* ============== PRODUCTION ROUTES ============== */}
+        <Route
+          path="/production/breakdown-recap"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2411,7 +1770,7 @@ function App() {
           }
         />
         <Route
-          path="/produksi/waste"
+          path="/production/waste-report"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2422,7 +1781,7 @@ function App() {
           }
         />
         <Route
-          path="/produksi/os2"
+          path="/production/os2"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2432,9 +1791,667 @@ function App() {
             </>
           }
         />
+
+        {/* ============== MARKETING ROUTES ============== */}
+        <Route
+          path="/marketing/calculation/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KalkulasiPageMarketing />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/calculation/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KalkulasiHistoryPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/kabag-approval/list"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KabagApproval />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/kabag-approval/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KabagApproval />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/okp/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <OKPPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/okp/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <OKPPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/io/npd"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <IONPDPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/io/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <IOMarketingPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/io/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <IOMarketingPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/so/create"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <SOPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/so/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <HistorySOPage />
+            </>
+          }
+        />
+
+        {/* ============== PRE-PRESS ROUTES ============== */}
+        <Route
+          path="/prepress"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PrePress />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* ============== DESAIN ROUTES ============== */}
+        <Route
+          path="/desain"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KabagApprovalDesain />
+            </>
+          }
+        />
+
+        {/* ============== MASTER DATA ROUTES ============== */}
+        {/* Maintenance Master */}
+        <Route
+          path="/master/maintenance/machine"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterData />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/user"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUsers />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/role"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterRole />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/sparepart"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterSparepart />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/analysis"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterAnalisis />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/monitoring"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterMonitoring />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm1"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm1/checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm1/checklist/add-inspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm2"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm2/checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm2/checklist/add-inspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm3"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm3/checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/pm3/checklist/add-inspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/kpi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKPI />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/kpi/form"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKPIForm />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/maintenance/grade"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterGrade />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* QC Master */}
+        <Route
+          path="/master/qc/defect"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterDefect />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/qc/document"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterDoc />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/qc/final-inspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterFinalInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/qc/user"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUserPageQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/qc/outsourcing-bj"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterOutsourcingBJ />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/qc/kalibrasi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <KalibrasiMaster />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* HR Master */}
+        <Route
+          path="/master/hr/shift"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterSHiftHR />
+            </>
+          }
+        />
+        <Route
+          path="/master/hr/sp-teguran"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterSPTeguran />
+            </>
+          }
+        />
+        <Route
+          path="/master/hr/setting"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterSettingHR />
+            </>
+          }
+        />
+        <Route
+          path="/master/hr/user"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterUserHR />
+            </>
+          }
+        />
+        <Route
+          path="/master/hr/department"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterDepartment />
+            </>
+          }
+        />
+        <Route
+          path="/master/hr/cuti-khusus"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterCutiKhusus />
+            </>
+          }
+        />
+        <Route
+          path="/master/hr/grade"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterGradeHR />
+            </>
+          }
+        />
+        <Route
+          path="/master/hr/payroll"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterPayrollHR />
+            </>
+          }
+        />
+
+        {/* PPIC Master */}
+        <Route
+          path="/master/ppic/schedule"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterJadwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/ppic/fleet-capacity"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKapasitasArmada />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* Marketing Master */}
+        <Route
+          path="/master/marketing/marketing"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterMarketing />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/customer"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterCustomer />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/brand"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MarketingBrand />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/delivery"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterMarketingPengiriman />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/product"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterProduk />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/unit"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MarketingUnit />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/item"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MarketingBarang />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/machine-stage"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterMesinTahapan />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/stage"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterTahapan />
+            </>
+          }
+        />
+        <Route
+          path="/master/marketing/stage-machine"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterTahapanMesin />
+            </>
+          }
+        />
+
+        {/* General Master */}
+        <Route
+          path="/master/access"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterHakAkses />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/user"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUserAll />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* ============== AUTH ROUTES ============== */}
+        <Route
+          path="/auth/login"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Login />
+            </>
+          }
+        />
+        <Route
+          path="/auth/signin"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <SignIn />
+            </>
+          }
+        />
+        <Route
+          path="/auth/signup"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <SignUp />
+            </>
+          }
+        />
+
+        {/* ============== TEST/MISC ROUTES ============== */}
+        <Route
+          path="/cobain"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Cobain />
+            </>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryMtc />
+              </ProtectedRoute>
+            </>
+          }
+        />
       </Routes>
     </>
   );
 }
-
 export default App;

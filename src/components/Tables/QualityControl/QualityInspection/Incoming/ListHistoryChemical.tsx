@@ -177,9 +177,7 @@ function ListHistoryChemical() {
                         </p>
                       </div>
                       <div className="flex flex-col  justify-end  items-end">
-                        <Link
-                          to={`/qc/qualityinspectionChemical/list/${data.id}`}
-                        >
+                        <Link to={`/qc/inspection/chemical/list/${data.id}`}>
                           <button
                             className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                           >

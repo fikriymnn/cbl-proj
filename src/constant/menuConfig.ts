@@ -26,13 +26,13 @@ export const menuCategories: MenuCategory[] = [
     icon: Dashboard,
     items: [
       {
-        name: 'Dashboard',
+        name: 'Main Dashboard',
         path: '/dashboard',
         icon: 'dashboard',
       },
       {
         name: 'Maintenance Dashboard',
-        path: '/maintenance/DashboardMaintenance',
+        path: '/dashboard/maintenance',
         icon: 'dashboard',
       },
     ],
@@ -43,37 +43,37 @@ export const menuCategories: MenuCategory[] = [
     items: [
       {
         name: 'Corrective (CM)',
-        path: '/maintenance/machine',
+        path: '/maintenance/corrective',
         icon: 'machine',
       },
       {
         name: 'Preventive Maintenance (PM)',
-        path: '/maintenance/inspection',
+        path: '#',
         icon: 'preventive',
         children: [
           {
             name: 'PM1',
-            path: '/maintenance/inspection/pm_1',
+            path: '/maintenance/preventive/pm1',
             icon: 'preventive',
           },
           {
             name: 'PM2',
-            path: '/maintenance/inspection/pm_2',
+            path: '/maintenance/preventive/pm2',
             icon: 'preventive',
           },
           {
             name: 'PM3',
-            path: '/maintenance/inspection/pm_3',
+            path: '/maintenance/preventive/pm3',
             icon: 'preventive',
           },
           {
             name: 'OS3',
-            path: '/maintenance/inspection/OS_3',
+            path: '/maintenance/preventive/os3',
             icon: 'preventive',
           },
           {
-            name: 'Inspection History',
-            path: '/maintenance/inspection/histori',
+            name: 'History',
+            path: '/maintenance/preventive/history',
             icon: 'history',
           },
         ],
@@ -84,13 +84,13 @@ export const menuCategories: MenuCategory[] = [
         icon: 'outstanding',
       },
       {
-        name: 'Maintenance Absensi',
+        name: 'Absensi',
         path: '/maintenance/absensi',
         icon: 'attendance',
       },
       {
         name: 'Sparepart',
-        path: '/maintenance/sparepart',
+        path: '#',
         icon: 'sparepart',
         children: [
           {
@@ -100,82 +100,98 @@ export const menuCategories: MenuCategory[] = [
           },
           {
             name: 'Stock Master',
-            path: '/maintenance/sparepart/stockmaster_sparepart',
+            path: '/maintenance/sparepart/stock-master',
             icon: 'stock',
           },
           {
             name: 'Monitoring Sparepart',
-            path: '/maintenance/sparepart/monitoringSparepart',
+            path: '/maintenance/sparepart/monitoring',
             icon: 'monitoring',
           },
           {
-            name: ' Monitoring Service',
-            path: '/maintenance/sparepart/monitoringService',
+            name: 'Monitoring Service',
+            path: '/maintenance/sparepart/monitoring-service',
             icon: 'monitoring',
           },
         ],
       },
       {
-        name: 'Project MTC',
-        path: '/maintenance/projectMtc',
+        name: 'Project',
+        path: '/maintenance/project',
         icon: 'project',
       },
-      { name: 'Rekap', path: '/maintenance/recap', icon: 'recap' },
+      {
+        name: 'Recap',
+        path: '/maintenance/recap',
+        icon: 'recap',
+      },
       {
         name: 'KPI',
-        path: '/maintenance/KPI',
+        path: '#',
         icon: 'kpi',
         children: [
           {
-            name: 'KPI Dashboard',
-            path: '/maintenance/KPI',
+            name: 'Dashboard',
+            path: '/maintenance/kpi',
             icon: 'dashboard',
           },
-          { name: 'KPI Form', path: '/maintenance/KPIForm', icon: 'form' },
           {
-            name: 'KPI Input',
-            path: '/maintenance/KPI/Form/Input',
+            name: 'Form',
+            path: '/maintenance/kpi/form',
+            icon: 'form',
+          },
+          {
+            name: 'Input',
+            path: '/maintenance/kpi/input',
             icon: 'input',
           },
         ],
       },
       {
-        name: 'Lapor',
-        path: '/maintenance/lapor/ncr',
+        name: 'Report',
+        path: '#',
         icon: 'ncr',
         children: [
-          { name: 'NCR ', path: '/maintenance/lapor/ncr', icon: 'ncr' },
           {
-            name: 'CAPA ',
-            path: '/maintenance/lapor/capa',
+            name: 'NCR',
+            path: '/maintenance/report/ncr',
+            icon: 'ncr',
+          },
+          {
+            name: 'CAPA',
+            path: '/maintenance/report/capa',
             icon: 'capa',
           },
         ],
       },
-      { name: 'SPB', path: '/maintenance/spb', icon: 'service' },
       {
-        name: 'Pengajuan Ke HR',
-        path: '/pengajuanallkehr',
+        name: 'SPB',
+        path: '/maintenance/spb',
+        icon: 'service',
+      },
+      {
+        name: 'Submission to HR',
+        path: '#',
         icon: 'document',
         children: [
           {
-            name: 'Pengajuan ',
-            path: '/pengajuanallkehr',
-            icon: 'submition',
+            name: 'Submission',
+            path: '/maintenance/submission',
+            icon: 'submission',
           },
           {
-            name: 'History ',
-            path: '/pengajuanallkehrhistory',
+            name: 'Submission History',
+            path: '/maintenance/submission/history',
             icon: 'history',
           },
           {
-            name: 'Pengajuan Jabatan',
-            path: '/pengajuanJabatanallkehr',
-            icon: 'submition',
+            name: 'Position Submission',
+            path: '/maintenance/submission/position',
+            icon: 'submission',
           },
           {
-            name: 'History Pengajuan Jabatan',
-            path: '/pengajuanJabatanallkehrhistory',
+            name: 'Position History',
+            path: '/maintenance/submission/position/history',
             icon: 'history',
           },
         ],
@@ -188,72 +204,80 @@ export const menuCategories: MenuCategory[] = [
     items: [
       {
         name: 'Validate & Verify',
-        path: '/qc/validatenverify',
+        path: '/qc/validate-verify',
         icon: 'validation',
       },
       {
         name: 'Quality Inspection',
-        path: '/qc/qualityinspection',
+        path: '/qc/inspection',
         icon: 'inspection',
       },
       {
         name: 'Kalibrasi Alat Ukur',
         path: '/qc/kalibrasi',
-        icon: 'qms',
+        icon: 'calibration',
       },
       {
-        name: 'Kabag Approve',
-        path: '/qc/kabagapproval/os',
-        icon: 'qms',
+        name: 'Kabag Approval',
+        path: '/qc/kabag-approval',
+        icon: 'approval',
       },
       {
-        name: 'QC Outstanding',
+        name: 'Outstanding',
         path: '/qc/outstanding',
         icon: 'outstanding',
       },
-      { name: 'QC Recap', path: '/qc/rekap', icon: 'recap' },
+      {
+        name: 'Recap',
+        path: '/qc/recap',
+        icon: 'recap',
+      },
       {
         name: 'QMS',
-        path: '/qc/qms',
+        path: '#',
         icon: 'qms',
         children: [
-          { name: 'QMS NCR', path: '/qc/qms/ncr', icon: 'ncr' },
-          { name: 'QMS CAPA', path: '/qc/qms/capa', icon: 'capa' },
+          { name: 'NCR', path: '/qc/qms/ncr', icon: 'ncr' },
+          { name: 'CAPA', path: '/qc/qms/capa', icon: 'capa' },
         ],
       },
       {
-        name: 'Lapor',
-        path: '/qc/lapor',
-        icon: 'qms',
+        name: 'Report',
+        path: '#',
+        icon: 'report',
         children: [
-          { name: 'QC NCR Report', path: '/qc/lapor/ncr', icon: 'ncr' },
-          { name: 'QC CAPA Report', path: '/qc/lapor/capa', icon: 'capa' },
+          { name: 'NCR', path: '/qc/report/ncr', icon: 'ncr' },
+          { name: 'CAPA', path: '/qc/report/capa', icon: 'capa' },
         ],
       },
-      { name: 'QC Absensi', path: '/qc/absensi', icon: 'attendance' },
       {
-        name: 'Pengajuan Ke HR',
-        path: '/pengajuanallkehr',
+        name: 'Absensi',
+        path: '/qc/absensi',
+        icon: 'attendance',
+      },
+      {
+        name: 'Submission to HR',
+        path: '#',
         icon: 'document',
         children: [
           {
-            name: 'Pengajuan ',
-            path: '/pengajuanallkehr',
-            icon: 'submition',
+            name: 'Submission',
+            path: '/qc/submission',
+            icon: 'submission',
           },
           {
-            name: 'History ',
-            path: '/pengajuanallkehrhistory',
+            name: 'Submission History',
+            path: '/qc/submission/history',
             icon: 'history',
           },
           {
-            name: 'Pengajuan Jabatan',
-            path: '/pengajuanJabatanallkehr',
-            icon: 'submition',
+            name: 'Position Submission',
+            path: '/qc/submission/position',
+            icon: 'submission',
           },
           {
-            name: 'History Pengajuan Jabatan',
-            path: '/pengajuanJabatanallkehrhistory',
+            name: 'Position History',
+            path: '/qc/submission/position/history',
             icon: 'history',
           },
         ],
@@ -266,101 +290,22 @@ export const menuCategories: MenuCategory[] = [
     items: [
       {
         name: 'QMS',
-        path: '/mr/qms',
+        path: '#',
         icon: 'qms',
         children: [
-          { name: 'QMS NCR', path: '/mr/qms/ncr', icon: 'ncr' },
-          { name: 'QMS CAPA', path: '/mr/qms/capa', icon: 'capa' },
+          { name: 'NCR', path: '/mr/qms/ncr', icon: 'ncr' },
+          { name: 'CAPA', path: '/mr/qms/capa', icon: 'capa' },
         ],
       },
       {
-        name: 'Lapor',
-        path: '/mr/lapor',
-        icon: 'qms',
+        name: 'Report',
+        path: '#',
+        icon: 'report',
         children: [
-          { name: 'MR NCR Report', path: '/mr/lapor/ncr', icon: 'ncr' },
-          { name: 'MR CAPA Report', path: '/mr/lapor/capa', icon: 'capa' },
+          { name: 'NCR', path: '/mr/report/ncr', icon: 'ncr' },
+          { name: 'CAPA', path: '/mr/report/capa', icon: 'capa' },
         ],
       },
-    ],
-  },
-  {
-    name: 'QC Master Data',
-    icon: MasterDataIcon,
-    items: [
-      {
-        name: 'Document Master',
-        path: '/masterdata/nodoc',
-        icon: 'document',
-      },
-      {
-        name: 'Final Inspection Master',
-        path: '/masterdata/finalinspection',
-        icon: 'inspection',
-      },
-      { name: 'QC User Master', path: '/masterdata/users', icon: 'users' },
-      {
-        name: 'Outsourcing Barang Jadi Master',
-        path: '/masterdata/outsourcing_bj',
-        icon: 'outsourcing',
-      },
-      {
-        name: 'Kalibrasi Master',
-        path: '/masterdata/kalibrasimaster',
-        icon: 'document',
-      },
-    ],
-  },
-  {
-    name: 'Master Data',
-    icon: MasterDataIcon,
-    items: [
-      {
-        name: 'Machine Master',
-        path: '/masterdata/machine',
-        icon: 'machine',
-      },
-      { name: 'User Master', path: '/masterdata/masterUsers', icon: 'users' },
-      { name: 'Role Master', path: '/masterdata/masterRole', icon: 'role' },
-      {
-        name: 'Sparepart Master',
-        path: '/masterdata/mastersparepart',
-        icon: 'sparepart',
-      },
-      {
-        name: 'Analysis Master',
-        path: '/masterdata/masteranalisis',
-        icon: 'analysis',
-      },
-      {
-        name: 'Monitoring Master',
-        path: '/masterdata/mastermonitoring',
-        icon: 'monitoring',
-      },
-      {
-        name: 'PM1 Master',
-        path: '/masterdata/masterpm1',
-        icon: 'preventive',
-      },
-      {
-        name: 'PM2 Master',
-        path: '/masterdata/masterpm2',
-        icon: 'preventive',
-      },
-      {
-        name: 'PM3 Master',
-        path: '/masterdata/masterpm3',
-        icon: 'preventive',
-      },
-      { name: 'KPI Master', path: '/masterdata/masterkpi', icon: 'kpi' },
-      { name: 'Grade Master', path: '/masterdata/grade', icon: 'grade' },
-      {
-        name: 'KPI Form Master',
-        path: '/masterdata/masterkpi/form',
-        icon: 'form',
-      },
-      { name: 'Access Master', path: '/masterHakAkses', icon: 'access' },
-      { name: 'All User Master', path: '/masteruserall', icon: 'users' },
     ],
   },
   {
@@ -369,147 +314,121 @@ export const menuCategories: MenuCategory[] = [
     items: [
       {
         name: 'Personnel Management',
-        path: '/hr/pm',
+        path: '#',
         icon: 'personnel',
         children: [
           {
-            name: 'Master Perusahaan',
-            path: '/hr/pm/masterperusahaan',
+            name: 'Company',
+            path: '/hr/personnel/company',
             icon: 'company',
           },
           {
-            name: 'Master Karyawan',
-            path: '/hr/pm/masterkaryawan',
+            name: 'Employee',
+            path: '/hr/personnel/employee',
             icon: 'employee',
           },
           {
-            name: 'Kalender Kerja',
-            path: '/hr/pm/kalenderKerja',
+            name: 'Work Calendar',
+            path: '/hr/personnel/work-calendar',
             icon: 'calendar',
           },
-          { name: 'Absensi', path: '/hr/pm/absensi', icon: 'attendance' },
+          {
+            name: 'Absensi',
+            path: '/hr/personnel/absensi',
+            icon: 'attendance',
+          },
         ],
       },
       {
         name: 'Payroll',
-        path: '/hr/payroll',
+        path: '#',
         icon: 'payroll',
         children: [
           { name: 'Payroll', path: '/hr/payroll', icon: 'payroll' },
           {
             name: 'Monthly Payroll',
-            path: '/hr/payrollbulan',
+            path: '/hr/payroll/monthly',
             icon: 'payroll',
           },
           {
-            name: 'Payroll Approval',
-            path: '/hr/accpayroll',
+            name: 'Approval',
+            path: '/hr/payroll/approval',
             icon: 'approval',
           },
         ],
       },
       {
-        name: 'Pengajuan',
-        path: '/hr/pengajuan',
+        name: 'Submission',
+        path: '#',
         icon: 'submission',
         children: [
           {
-            name: 'Pengajuan',
-            path: '/hr/pengajuan',
+            name: 'Submission',
+            path: '/hr/submission',
             icon: 'submission',
           },
           {
-            name: 'Pengajuan Jabatan',
-            path: '/hr/pengajuanJabatan',
-            icon: 'position',
-          },
-          {
-            name: 'Pengajuan History',
-            path: '/hr/pengajuanhistory',
+            name: 'Submission History',
+            path: '/hr/submission/history',
             icon: 'history',
           },
           {
-            name: 'Pengajuan Jabatan History',
-            path: '/hr/pengajuanJabatanHistory',
+            name: 'Position Submission',
+            path: '/hr/submission/position',
+            icon: 'position',
+          },
+          {
+            name: 'Position History',
+            path: '/hr/submission/position/history',
             icon: 'history',
           },
         ],
       },
       {
-        name: 'Respon Pengajuan',
-        path: '/hr/rp',
+        name: 'Response',
+        path: '#',
         icon: 'response',
         children: [
           {
-            name: ' Pengajuan',
-            path: '/hr/rp/respon',
+            name: 'Response',
+            path: '/hr/response',
             icon: 'response',
           },
           {
-            name: ' Pengajuan History',
-            path: '/hr/rp/history',
+            name: 'Response History',
+            path: '/hr/response/history',
             icon: 'history',
           },
           {
-            name: ' Pengajuan Jabatan',
-            path: '/hr/rp/jabatan',
+            name: 'Position Response',
+            path: '/hr/response/position',
             icon: 'position',
           },
           {
-            name: ' Pengajuan Jabatan History',
-            path: '/hr/rp/jabatanHistory',
+            name: 'Position History',
+            path: '/hr/response/position/history',
             icon: 'history',
           },
         ],
       },
-      { name: 'Rekap HR', path: '/hr/rekap', icon: 'recap' },
       {
-        name: 'HR Outstanding',
+        name: 'Recap',
+        path: '/hr/recap',
+        icon: 'recap',
+      },
+      {
+        name: 'Outstanding',
         path: '/hr/outstanding',
         icon: 'outstanding',
       },
       {
-        name: 'Lapor',
-        path: '/hr/lapor',
-        icon: 'qms',
+        name: 'Report',
+        path: '#',
+        icon: 'report',
         children: [
-          { name: 'HR NCR Report', path: '/hr/lapor/ncr', icon: 'ncr' },
-          { name: 'HR CAPA Report', path: '/hr/lapor/capa', icon: 'capa' },
+          { name: 'NCR', path: '/hr/report/ncr', icon: 'ncr' },
+          { name: 'CAPA', path: '/hr/report/capa', icon: 'capa' },
         ],
-      },
-    ],
-  },
-  {
-    name: 'HR Master',
-    icon: HRIcon,
-    items: [
-      { name: 'Shift Master', path: '/hr/master/shift', icon: 'shift' },
-      {
-        name: 'SP & Teguran Master',
-        path: '/hr/master/spteguran',
-        icon: 'warning',
-      },
-      {
-        name: 'HR Settings Master',
-        path: '/hr/master/setting',
-        icon: 'settings',
-      },
-      { name: 'HR User Master', path: '/hr/master/users', icon: 'users' },
-      {
-        name: 'Department Master',
-        path: '/hr/master/department',
-        icon: 'department',
-      },
-      {
-        name: 'Cuti Khusus Master',
-        path: '/hr/master/cutikhusus',
-        icon: 'leave',
-      },
-      { name: 'HR Grade Master', path: '/hr/master/grade', icon: 'grade' },
-      {
-        name: 'HR Payroll Master',
-        path: '/hr/master/payroll',
-        icon: 'payroll',
       },
     ],
   },
@@ -518,112 +437,100 @@ export const menuCategories: MenuCategory[] = [
     icon: PPICIcon,
     items: [
       {
-        name: 'Jadwal Produksi',
-        path: '/ppic/jadwalProduksi',
+        name: 'Production Schedule',
+        path: '/ppic/production-schedule',
         icon: 'schedule',
       },
       {
-        name: 'Jo Terjadwal',
-        path: '/ppic/joterjadwal',
+        name: 'Scheduled JO',
+        path: '/ppic/scheduled-jo',
         icon: 'schedule',
       },
       {
-        name: 'Jadwal Kirim',
-        path: '/ppic/jadwalKirim',
+        name: 'Delivery Schedule',
+        path: '/ppic/delivery-schedule',
         icon: 'schedule',
       },
       {
-        name: 'Master Kalkulasi',
-        path: '/ppic/master/jadwal',
-        icon: 'schedule',
-      },
-      {
-        name: 'Master Kapasitas Armada',
-        path: '/ppic/master/kapasitasArmada',
-        icon: 'schedule',
-      },
-      {
-        name: 'PPIC Outstanding',
+        name: 'Outstanding',
         path: '/ppic/outstanding',
         icon: 'outstanding',
       },
-      { name: 'Rekap PPIC', path: '/ppic/rekap', icon: 'recap' },
-      { name: 'Laporan Waste', path: '/produksi/waste', icon: 'waste' },
       {
-        name: 'Pengajuan Ke HR',
-        path: '/pengajuanallkehr',
-        icon: 'document',
-        children: [
-          {
-            name: 'Pengajuan ',
-            path: '/pengajuanallkehr',
-            icon: 'submition',
-          },
-          {
-            name: 'History ',
-            path: '/pengajuanallkehrhistory',
-            icon: 'history',
-          },
-          {
-            name: 'Pengajuan Jabatan',
-            path: '/pengajuanJabatanallkehr',
-            icon: 'submition',
-          },
-          {
-            name: 'History Pengajuan Jabatan',
-            path: '/pengajuanJabatanallkehrhistory',
-            icon: 'history',
-          },
-        ],
+        name: 'Recap',
+        path: '/ppic/recap',
+        icon: 'recap',
       },
       {
         name: 'BOM',
-        path: '/ppic/bom',
-        icon: 'payroll',
+        path: '#',
+        icon: 'bom',
         children: [
           {
             name: 'Create BOM',
             path: '/ppic/bom/create',
-            icon: 'ncr',
+            icon: 'create',
           },
           {
-            name: 'Approval BOM',
+            name: 'Approval',
             path: '/ppic/bom/approval',
-            icon: 'capa',
-          },
-          {
-            name: 'History BOM',
-            path: '/ppic/bom/history',
-            icon: 'capa',
+            icon: 'approval',
           },
         ],
       },
       {
         name: 'BOM PPIC',
-        path: '/ppic/bomppic',
-        icon: 'payroll',
+        path: '#',
+        icon: 'bom',
         children: [
           {
             name: 'Create BOM PPIC',
-            path: '/ppic/bomppic/create',
-            icon: 'ncr',
+            path: '/ppic/bom-ppic/create',
+            icon: 'create',
           },
         ],
       },
       {
-        name: ' JO',
-        path: '/ppic/jo',
-        icon: 'payroll',
+        name: 'JO',
+        path: '#',
+        icon: 'jo',
         children: [
           {
-            name: 'Create  JO',
+            name: 'Create JO',
             path: '/ppic/jo/create',
-            icon: 'ncr',
+            icon: 'create',
           },
           {
-            name: 'Approve  JO',
+            name: 'Approval',
             path: '/ppic/jo/approval',
-            icon: 'ncr',
+            icon: 'approval',
+          },
+        ],
+      },
+      {
+        name: 'Submission to HR',
+        path: '#',
+        icon: 'document',
+        children: [
+          {
+            name: 'Submission',
+            path: '/ppic/submission',
+            icon: 'submission',
+          },
+          {
+            name: 'Submission History',
+            path: '/ppic/submission/history',
+            icon: 'history',
+          },
+          {
+            name: 'Position Submission',
+            path: '/ppic/submission/position',
+            icon: 'submission',
+          },
+          {
+            name: 'Position History',
+            path: '/ppic/submission/position/history',
+            icon: 'history',
           },
         ],
       },
@@ -634,12 +541,20 @@ export const menuCategories: MenuCategory[] = [
     icon: ProductionIcon,
     items: [
       {
-        name: 'Rekap Breakdown',
-        path: '/master/marketing',
+        name: 'Breakdown Recap',
+        path: '/production/breakdown-recap',
         icon: 'breakdown',
       },
-      { name: 'Laporan Waste', path: '/produksi/waste', icon: 'waste' },
-      { name: 'OS2', path: '/produksi/os2', icon: 'machine' },
+      {
+        name: 'Waste Report',
+        path: '/production/waste-report',
+        icon: 'waste',
+      },
+      {
+        name: 'OS2',
+        path: '/production/os2',
+        icon: 'machine',
+      },
     ],
   },
   {
@@ -647,151 +562,92 @@ export const menuCategories: MenuCategory[] = [
     icon: ProductionIcon,
     items: [
       {
-        name: 'Kalkulasi',
-        path: '/marketing/kalkulasi',
-        icon: 'payroll',
+        name: 'Calculation',
+        path: '#',
+        icon: 'calculation',
         children: [
           {
-            name: 'Create Kalkulasi',
-            path: '/marketing/kalkulasi/create',
-            icon: 'ncr',
+            name: 'Create',
+            path: '/marketing/calculation/create',
+            icon: 'create',
           },
           {
-            name: 'History Kalkulasi',
-            path: '/marketing/kalkulasi/history',
-            icon: 'capa',
+            name: 'History',
+            path: '/marketing/calculation/history',
+            icon: 'history',
           },
         ],
       },
       {
         name: 'Kabag Approval',
-        path: '/marketing/kabagapproval',
-        icon: 'payroll',
+        path: '#',
+        icon: 'approval',
         children: [
           {
             name: 'Approval',
-            path: '/marketing/kabagapproval/list',
-            icon: 'ncr',
+            path: '/marketing/kabag-approval/list',
+            icon: 'approval',
           },
           {
-            name: 'History Approval',
-            path: '/marketing/kabagapproval/history',
-            icon: 'capa',
+            name: 'History',
+            path: '/marketing/kabag-approval/history',
+            icon: 'history',
           },
         ],
       },
-
       {
         name: 'OKP',
-        path: '/marketing/okp',
-        icon: 'payroll',
+        path: '#',
+        icon: 'okp',
         children: [
           {
-            name: 'Create OKP',
+            name: 'Create',
             path: '/marketing/okp/create',
-            icon: 'ncr',
+            icon: 'create',
           },
           {
-            name: 'History OKP',
+            name: 'History',
             path: '/marketing/okp/history',
-            icon: 'capa',
+            icon: 'history',
           },
         ],
       },
       {
         name: 'IO',
-        path: '/marketing/io',
-        icon: 'payroll',
+        path: '#',
+        icon: 'io',
         children: [
           {
-            name: 'Create IO',
+            name: 'Create',
             path: '/marketing/io/create',
-            icon: 'ncr',
+            icon: 'create',
           },
           {
-            name: ' IO NPD',
+            name: 'NPD',
             path: '/marketing/io/npd',
-            icon: 'ncr',
+            icon: 'npd',
           },
           {
-            name: 'History IO',
+            name: 'History',
             path: '/marketing/io/history',
-            icon: 'capa',
+            icon: 'history',
           },
         ],
       },
       {
         name: 'SO',
-        path: '/marketing/so',
-        icon: 'payroll',
+        path: '#',
+        icon: 'so',
         children: [
           {
-            name: 'Create SO',
+            name: 'Create',
             path: '/marketing/so/create',
-            icon: 'ncr',
+            icon: 'create',
           },
           {
-            name: 'History SO',
+            name: 'History',
             path: '/marketing/so/history',
-            icon: 'capa',
-          },
-        ],
-      },
-
-      {
-        name: 'Master Marketing',
-        path: '/marketing/master',
-        icon: 'payroll',
-        children: [
-          {
-            name: 'Master Marketing',
-            path: '/master/marketing',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Customer',
-            path: '/master/customer',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Brand',
-            path: '/master/brand',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Pengiriman',
-            path: '/master/pengiriman',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Produk',
-            path: '/master/produk',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Unit',
-            path: '/master/unit',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Barang',
-            path: '/master/barang',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Mesin Tahapan',
-            path: '/master/mesintahapan',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Tahapan',
-            path: '/master/tahapan',
-            icon: 'payroll',
-          },
-          {
-            name: 'Master Tahapan Mesin',
-            path: '/master/tahapanmesin',
-            icon: 'payroll',
+            icon: 'history',
           },
         ],
       },
@@ -800,12 +656,266 @@ export const menuCategories: MenuCategory[] = [
   {
     name: 'Pre-Press',
     icon: ProductionIcon,
-    items: [{ name: 'Pre Press', path: '/prepress', icon: 'machine' }],
+    items: [
+      {
+        name: 'Pre Press',
+        path: '/prepress',
+        icon: 'prepress',
+      },
+    ],
   },
   {
     name: 'Desain',
     icon: ProductionIcon,
-    items: [{ name: 'Desain', path: '/desain', icon: 'machine' }],
+    items: [
+      {
+        name: 'Desain',
+        path: '/desain',
+        icon: 'design',
+      },
+    ],
   },
-  // ... continue with all other categories
+  {
+    name: 'Master Data',
+    icon: MasterDataIcon,
+    items: [
+      {
+        name: 'Maintenance',
+        path: '#',
+        icon: 'maintenance',
+        children: [
+          {
+            name: 'Machine',
+            path: '/master/maintenance/machine',
+            icon: 'machine',
+          },
+          {
+            name: 'User',
+            path: '/master/maintenance/user',
+            icon: 'user',
+          },
+          {
+            name: 'Role',
+            path: '/master/maintenance/role',
+            icon: 'role',
+          },
+          {
+            name: 'Sparepart',
+            path: '/master/maintenance/sparepart',
+            icon: 'sparepart',
+          },
+          {
+            name: 'Analysis',
+            path: '/master/maintenance/analysis',
+            icon: 'analysis',
+          },
+          {
+            name: 'Monitoring',
+            path: '/master/maintenance/monitoring',
+            icon: 'monitoring',
+          },
+          {
+            name: 'PM1',
+            path: '/master/maintenance/pm1',
+            icon: 'pm',
+          },
+          {
+            name: 'PM2',
+            path: '/master/maintenance/pm2',
+            icon: 'pm',
+          },
+          {
+            name: 'PM3',
+            path: '/master/maintenance/pm3',
+            icon: 'pm',
+          },
+          {
+            name: 'KPI',
+            path: '/master/maintenance/kpi',
+            icon: 'kpi',
+          },
+          {
+            name: 'Grade',
+            path: '/master/maintenance/grade',
+            icon: 'grade',
+          },
+        ],
+      },
+      {
+        name: 'Quality Control',
+        path: '#',
+        icon: 'qc',
+        children: [
+          {
+            name: 'Defect',
+            path: '/master/qc/defect',
+            icon: 'defect',
+          },
+          {
+            name: 'Document',
+            path: '/master/qc/document',
+            icon: 'document',
+          },
+          {
+            name: 'Final Inspection',
+            path: '/master/qc/final-inspection',
+            icon: 'inspection',
+          },
+          {
+            name: 'User',
+            path: '/master/qc/user',
+            icon: 'user',
+          },
+          {
+            name: 'Outsourcing BJ',
+            path: '/master/qc/outsourcing-bj',
+            icon: 'outsourcing',
+          },
+          {
+            name: 'Kalibrasi',
+            path: '/master/qc/kalibrasi',
+            icon: 'calibration',
+          },
+        ],
+      },
+      {
+        name: 'Human Resources',
+        path: '#',
+        icon: 'hr',
+        children: [
+          {
+            name: 'Shift',
+            path: '/master/hr/shift',
+            icon: 'shift',
+          },
+          {
+            name: 'SP & Teguran',
+            path: '/master/hr/sp-teguran',
+            icon: 'warning',
+          },
+          {
+            name: 'Setting',
+            path: '/master/hr/setting',
+            icon: 'setting',
+          },
+          {
+            name: 'User',
+            path: '/master/hr/user',
+            icon: 'user',
+          },
+          {
+            name: 'Department',
+            path: '/master/hr/department',
+            icon: 'department',
+          },
+          {
+            name: 'Cuti Khusus',
+            path: '/master/hr/cuti-khusus',
+            icon: 'leave',
+          },
+          {
+            name: 'Grade',
+            path: '/master/hr/grade',
+            icon: 'grade',
+          },
+          {
+            name: 'Payroll',
+            path: '/master/hr/payroll',
+            icon: 'payroll',
+          },
+        ],
+      },
+      {
+        name: 'PPIC',
+        path: '#',
+        icon: 'ppic',
+        children: [
+          {
+            name: 'Schedule',
+            path: '/master/ppic/schedule',
+            icon: 'schedule',
+          },
+          {
+            name: 'Fleet Capacity',
+            path: '/master/ppic/fleet-capacity',
+            icon: 'capacity',
+          },
+        ],
+      },
+      {
+        name: 'Marketing',
+        path: '#',
+        icon: 'marketing',
+        children: [
+          {
+            name: 'Marketing',
+            path: '/master/marketing/marketing',
+            icon: 'marketing',
+          },
+          {
+            name: 'Customer',
+            path: '/master/marketing/customer',
+            icon: 'customer',
+          },
+          {
+            name: 'Brand',
+            path: '/master/marketing/brand',
+            icon: 'brand',
+          },
+          {
+            name: 'Delivery',
+            path: '/master/marketing/delivery',
+            icon: 'delivery',
+          },
+          {
+            name: 'Product',
+            path: '/master/marketing/product',
+            icon: 'product',
+          },
+          {
+            name: 'Unit',
+            path: '/master/marketing/unit',
+            icon: 'unit',
+          },
+          {
+            name: 'Item',
+            path: '/master/marketing/item',
+            icon: 'item',
+          },
+          {
+            name: 'Machine Stage',
+            path: '/master/marketing/machine-stage',
+            icon: 'machine',
+          },
+          {
+            name: 'Stage',
+            path: '/master/marketing/stage',
+            icon: 'stage',
+          },
+          {
+            name: 'Stage Machine',
+            path: '/master/marketing/stage-machine',
+            icon: 'machine',
+          },
+        ],
+      },
+      {
+        name: 'General',
+        path: '#',
+        icon: 'general',
+        children: [
+          {
+            name: 'Access',
+            path: '/master/access',
+            icon: 'access',
+          },
+          {
+            name: 'User',
+            path: '/master/user',
+            icon: 'user',
+          },
+        ],
+      },
+    ],
+  },
 ];

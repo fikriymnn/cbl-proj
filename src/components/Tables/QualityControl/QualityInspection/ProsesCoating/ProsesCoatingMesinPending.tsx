@@ -146,9 +146,7 @@ function ProsesCoatingMesinPending() {
                       </label>
                       <div className="justify-end flex pr-2 ">
                         <>
-                          <Link
-                            to={`/qc/qualityinspection/coating/jeniscoating/${data.id}`}
-                          >
+                          <Link to={`/qc/inspection/coating/jenis/${data.id}`}>
                             <button
                               className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                             >

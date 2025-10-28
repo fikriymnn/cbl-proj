@@ -157,9 +157,7 @@ function ProsesFinalInspectionhistory() {
                     </label>
                     <div className="justify-end flex pr-2 col-span-1">
                       <>
-                        <Link
-                          to={`/qc/qualityinspection/final_inspection/checkAwal/${data.id}`}
-                        >
+                        <Link to={`/qc/inspection/final/check-awal/${data.id}`}>
                           <button
                             className={`uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                           >
