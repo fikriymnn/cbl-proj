@@ -555,6 +555,11 @@ export const menuCategories: MenuCategory[] = [
         path: '/production/os2',
         icon: 'machine',
       },
+      {
+        name: 'Absensi',
+        path: '/production/absensi',
+        icon: 'attendance',
+      },
     ],
   },
   {
@@ -839,6 +844,28 @@ export const menuCategories: MenuCategory[] = [
             name: 'Fleet Capacity',
             path: '/master/ppic/fleet-capacity',
             icon: 'capacity',
+          },
+        ],
+      },
+      {
+        name: 'Production',
+        path: '#',
+        icon: 'production',
+        children: [
+          {
+            name: 'Kategori Kendala',
+            path: '/master/produksi/kategori-kendala',
+            icon: 'schedule',
+          },
+          {
+            name: 'Kriteria Kendala',
+            path: '/master/produksi/kriteria-kendala',
+            icon: 'capacity',
+          },
+          {
+            name: 'Kode Produksi',
+            path: '/master/produksi/kode-produksi',
+            icon: 'schedule',
           },
         ],
       },

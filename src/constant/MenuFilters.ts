@@ -98,58 +98,86 @@ export const filterMasterDataItems = (
   role: string,
   bagian: string,
 ) => {
-  // Filter based on role
-  let filteredItems = items;
+  // Filter based on role - only admin, kabag, super admin, and developer can access
+  const allowedRoles = ['admin', 'kabag', 'super admin', 'developer'];
+  const normalizedRole = role?.toLowerCase();
 
-  if (role !== 'super admin' && role !== 'developer') {
-    // Remove General submenu items for non-admin users
-    filteredItems = items
-      .map((item) => {
-        if (item.name === 'General' && item.children) {
-          return {
-            ...item,
-            children: item.children.filter((child) => {
-              // Only super admin and developer can see Access and User in General
-              return false;
-            }),
-          };
-        }
-        return item;
-      })
-      .filter((item) => {
-        // Remove General if it has no children
-        if (item.name === 'General') {
-          return item.children && item.children.length > 0;
-        }
-        return true;
-      });
-  }
-
-  // Filter based on bagian for department-specific master data
-  if (!canAccessDepartmentMasterData(role)) {
+  if (!allowedRoles.includes(normalizedRole)) {
     return [];
   }
+
+  // Super admin and developer can access all master data
+  if (normalizedRole === 'super admin' || normalizedRole === 'developer') {
+    let filteredItems = items;
+
+    // Keep General submenu for super admin and developer
+    if (normalizedRole !== 'super admin' && normalizedRole !== 'developer') {
+      filteredItems = items
+        .map((item) => {
+          if (item.name === 'General' && item.children) {
+            return {
+              ...item,
+              children: item.children.filter(() => false),
+            };
+          }
+          return item;
+        })
+        .filter((item) => {
+          if (item.name === 'General') {
+            return item.children && item.children.length > 0;
+          }
+          return true;
+        });
+    }
+
+    return filteredItems;
+  }
+
+  // For admin and kabag, only show their department's master data
+  let filteredItems = items;
+
+  // Remove General submenu for non-super admin/developer users
+  filteredItems = items
+    .map((item) => {
+      if (item.name === 'General' && item.children) {
+        return {
+          ...item,
+          children: [],
+        };
+      }
+      return item;
+    })
+    .filter((item) => {
+      if (item.name === 'General') {
+        return false;
+      }
+      return true;
+    });
 
   // Filter master data submenus based on bagian
   filteredItems = filteredItems.filter((item) => {
     switch (bagian?.toLowerCase()) {
       case 'maintenance':
       case 'pemeliharaan':
-        return item.name === 'Maintenance' || item.name === 'General';
+        return item.name === 'Maintenance';
 
       case 'qc':
       case 'quality control':
-        return item.name === 'Quality Control' || item.name === 'General';
+        return item.name === 'Quality Control';
 
       case 'hr':
       case 'sdm':
-        return item.name === 'Human Resources' || item.name === 'General';
+        return item.name === 'Human Resources';
 
       case 'ppic':
-        return item.name === 'PPIC' || item.name === 'General';
+        return item.name === 'PPIC';
+
+      case 'production':
+      case 'produksi':
+        return item.name === 'Production';
 
       case 'marketing':
-        return item.name === 'Marketing' || item.name === 'General';
+        return item.name === 'Marketing';
 
       default:
         return false;

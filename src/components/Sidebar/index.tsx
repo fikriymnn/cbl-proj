@@ -37,14 +37,39 @@ const Sidebar = ({
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true',
   );
 
+  // Helper function to check if path is active (including children)
+  const isPathActive = (item: MenuItem): boolean => {
+    if (pathname === item.path) return true;
+
+    // For items with "#" path, check if any children match
+    if (item.path === '#' && item.children) {
+      return item.children.some((child) => isPathActive(child));
+    }
+
+    // Check if pathname starts with item path (for parent routes)
+    if (item.path !== '#' && pathname.startsWith(item.path)) {
+      return true;
+    }
+
+    // Check children recursively
+    if (item.children) {
+      return item.children.some((child) => isPathActive(child));
+    }
+
+    return false;
+  };
+
   // Render menu items recursively
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
     const hasChildren = item.children && item.children.length > 0;
-    const isActive = pathname === item.path || pathname.includes(item.path);
+    const isActive = isPathActive(item);
 
     if (hasChildren) {
       return (
-        <SidebarLinkGroup key={item.path} activeCondition={isActive}>
+        <SidebarLinkGroup
+          key={item.path + item.name}
+          activeCondition={isActive}
+        >
           {(handleClick, open) => (
             <React.Fragment>
               <NavLink
@@ -100,15 +125,13 @@ const Sidebar = ({
     }
 
     return (
-      <li key={item.path}>
+      <li key={item.path + item.name}>
         <NavLink
           to={item.path}
-          className={({ isActive }) =>
-            `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
-              isActive &&
-              '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]'
-            } ${level > 0 ? 'ml-4' : ''}`
-          }
+          className={`group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+            pathname === item.path &&
+            '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]'
+          } ${level > 0 ? 'ml-4' : ''}`}
           onClick={(e) => {
             e.preventDefault();
             navigate(item.path);
@@ -124,14 +147,14 @@ const Sidebar = ({
     );
   };
 
+  // Check if category is active
+  const isCategoryActive = (category: MenuCategory): boolean => {
+    return category.items.some((item) => isPathActive(item));
+  };
+
   // Render category section
   const renderCategory = (category: MenuCategory) => {
-    const categoryActive = category.items.some(
-      (item) =>
-        pathname.includes(item.path) ||
-        (item.children &&
-          item.children.some((child) => pathname.includes(child.path))),
-    );
+    const categoryActive = isCategoryActive(category);
 
     return (
       <SidebarLinkGroup key={category.name} activeCondition={categoryActive}>

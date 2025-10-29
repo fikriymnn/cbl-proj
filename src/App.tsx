@@ -10,8 +10,6 @@ import Login from './pages/Authentication/Login';
 import Cobain from './pages/Cobain';
 import ProtectedRoute from './components/Protectedroute';
 import Machine from './pages/Maintenance/Machine';
-import Preparation from './pages/Maintenance/Preparation';
-import MAN from './pages/Maintenance/MAN';
 
 import MaintenanceQC from './pages/QualityControl/validatenverify';
 import HistoryMtc from './pages/History/Maintenance';
@@ -41,7 +39,7 @@ import MasterPM2Check from './pages/MasterData/MTC/MasterPM2Check';
 import MasterPM2TambahInspection from './pages/MasterData/MTC/MasterPM2TambahInspection';
 import MasterKPI from './pages/MasterData/MTC/MasterKPI';
 import MasterKPIForm from './pages/MasterData/MTC/MasterKPIForm';
-import Sparepart from './pages/sparepart/submitOpname';
+
 import MasterUsers from './pages/MasterData/MasterUsers';
 import MasterRole from './pages/MasterData/MasterRole';
 import Adjustment from './pages/sparepart/adjustment';
@@ -60,7 +58,6 @@ import Pm3page from './pages/inspection/pm3/Pm3page';
 import Qualityinspection from './pages/QualityControl/QualityInspection';
 
 import IncomingIns from './pages/QualityControl/Incoming/Incomingins';
-import ProsesPotong from './pages/QualityControl/Prosespotong/Prosespotong';
 import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage';
 import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
 import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
@@ -216,6 +213,10 @@ import BOMPPIC from './pages/PPIC/BOMPPIC/BOMPPICPage';
 import IONPDPage from './pages/Marketing/IO/IONPDPage';
 import JOPPIC from './pages/PPIC/JO/JOPage';
 import JOApprovalPage from './pages/PPIC/JO/JOApprovalPage';
+import AbsenProduction from './pages/Produksi/AbsenProduction';
+import MasterKategoriKendala from './pages/Produksi/MasterData/MasterKategoriKendala';
+import MasterKriteriaKendala from './pages/Produksi/MasterData/MasterKriteriaKendala';
+import MasterKodeProduksi from './pages/Produksi/MasterData/MasterKodeProduksi';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1770,6 +1771,15 @@ function App() {
           }
         />
         <Route
+          path="/production/absensi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AbsenProduction />
+            </>
+          }
+        />
+        <Route
           path="/production/waste-report"
           element={
             <>
@@ -2283,7 +2293,40 @@ function App() {
             </>
           }
         />
-
+        {/* Produksi Master */}
+        <Route
+          path="/master/produksi/kategori-kendala"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKategoriKendala />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/produksi/kriteria-kendala"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKriteriaKendala />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/produksi/kode-produksi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKodeProduksi />
+              </ProtectedRoute>
+            </>
+          }
+        />
         {/* Marketing Master */}
         <Route
           path="/master/marketing/marketing"
