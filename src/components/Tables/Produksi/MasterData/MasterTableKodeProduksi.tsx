@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaSearch } from 'react-icons/fa';
 import Select from 'react-select';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import TambahWasteModal from './TambahWasteModal';
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
@@ -59,6 +60,7 @@ const MasterTableKodeProduksi: React.FC = () => {
   const [tahapanList, setTahapanList] = useState<Tahapan[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showWasteModal, setShowWasteModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [currentId, setCurrentId] = useState<number | null>(null);
 
@@ -281,19 +283,28 @@ const MasterTableKodeProduksi: React.FC = () => {
             <h3 className="font-medium text-black dark:text-white">
               Kode Produksi
             </h3>
-            <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-center font-medium text-white hover:bg-opacity-90"
-            >
-              <FaPlus />
-              Tambah Data
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowWasteModal(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-success px-5 py-2.5 text-center font-medium text-white hover:bg-opacity-90"
+              >
+                <FaPlus />
+                Set Waste Cetak
+              </button>
+              <button
+                onClick={() => setShowModal(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-2.5 text-center font-medium text-white hover:bg-opacity-90"
+              >
+                <FaPlus />
+                Tambah Data
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Filter Section */}
         <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <label className="mb-2 block text-sm font-medium text-black dark:text-white">
                 Cari
@@ -423,9 +434,8 @@ const MasterTableKodeProduksi: React.FC = () => {
                 </table>
               </div>
 
-              {/* Pagination - Always visible */}
-              <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                {/* Rows per page selector */}
+              {/* Pagination */}
+              <div className="mt-5 flex flex-col items-center justify-between gap-4 sm:flex-row">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-black dark:text-white">
                     Rows per page:
@@ -435,7 +445,7 @@ const MasterTableKodeProduksi: React.FC = () => {
                       <button
                         key={option}
                         onClick={() => handleLimitChange(option)}
-                        className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                        className={`rounded px-4 py-2 text-sm font-medium transition-colors ${
                           limit === option
                             ? 'bg-primary text-white'
                             : 'bg-gray-2 text-black hover:bg-gray-3 dark:bg-meta-4 dark:text-white dark:hover:bg-meta-4/80'
@@ -447,7 +457,6 @@ const MasterTableKodeProduksi: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Pagination controls */}
                 <Stack spacing={2}>
                   <Pagination
                     count={totalPage}
@@ -464,7 +473,7 @@ const MasterTableKodeProduksi: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal - unchanged */}
+      {/* Kode Produksi Modal */}
       {showModal && (
         <div className="fixed inset-0 z-999 flex items-center justify-center overflow-y-auto bg-black bg-opacity-50 p-4">
           <div className="my-8 w-full max-w-3xl rounded-lg bg-white p-6 dark:bg-boxdark">
@@ -570,7 +579,7 @@ const MasterTableKodeProduksi: React.FC = () => {
                     <label className="mb-2.5 block font-medium text-black dark:text-white">
                       Kriteria Qty
                     </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div>
                         <label className="mb-2 block text-sm text-black dark:text-white">
                           Produksi
@@ -655,7 +664,7 @@ const MasterTableKodeProduksi: React.FC = () => {
                     <label className="mb-2.5 block font-medium text-black dark:text-white">
                       Kriteria Waktu
                     </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div>
                         <label className="mb-2 block text-sm text-black dark:text-white">
                           Produksi
@@ -725,71 +734,17 @@ const MasterTableKodeProduksi: React.FC = () => {
                           className="w-full rounded border-[1.5px] border-stroke bg-transparent px-3 py-2 text-sm text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                         >
                           <option value="">Pilih Data</option>
-                          {getKriteriaByTypeAndBagian('Waktu', 'Produksi').map(
+                          {getKriteriaByTypeAndBagian('Frekuensi', 'QC').map(
                             (k) => (
                               <option key={k.id} value={k.id}>
                                 {k.kriteria} ({k.value})
                               </option>
                             ),
                           )}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm text-black dark:text-white">
-                          QC
-                        </label>
-                        <select
-                          value={formData.id_kriteria_waktu_qc || ''}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              id_kriteria_waktu_qc: e.target.value
-                                ? parseInt(e.target.value)
-                                : null,
-                            })
-                          }
-                          className="w-full rounded border-[1.5px] border-stroke bg-transparent px-3 py-2 text-sm text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                        >
-                          <option value="">Pilih Data</option>
-                          {getKriteriaByTypeAndBagian('Waktu', 'QC').map(
-                            (k) => (
-                              <option key={k.id} value={k.id}>
-                                {k.kriteria} ({k.value})
-                              </option>
-                            ),
-                          )}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm text-black dark:text-white">
-                          Maintenance
-                        </label>
-                        <select
-                          value={formData.id_kriteria_waktu_mtc || ''}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              id_kriteria_waktu_mtc: e.target.value
-                                ? parseInt(e.target.value)
-                                : null,
-                            })
-                          }
-                          className="w-full rounded border-[1.5px] border-stroke bg-transparent px-3 py-2 text-sm text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
-                        >
-                          <option value="">Pilih Data</option>
-                          {getKriteriaByTypeAndBagian(
-                            'Waktu',
-                            'Maintenance',
-                          ).map((k) => (
-                            <option key={k.id} value={k.id}>
-                              {k.kriteria} ({k.value})
-                            </option>
-                          ))}
                         </select>
                       </div>
                     </div>
                   </div>
-
                   {/* Kriteria Frekuensi */}
                   <div className="mb-4">
                     <label className="mb-2.5 block font-medium text-black dark:text-white">
@@ -878,7 +833,6 @@ const MasterTableKodeProduksi: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
                   {/* Target Department */}
                   <div className="mb-4">
                     <label className="mb-2.5 block text-black dark:text-white">
@@ -934,6 +888,14 @@ const MasterTableKodeProduksi: React.FC = () => {
           </div>
         </div>
       )}
+      <TambahWasteModal
+        show={showWasteModal}
+        onClose={() => setShowWasteModal(false)}
+        onSuccess={() => {
+          // Optional: refresh data if needed
+          fetchData();
+        }}
+      />
     </>
   );
 };
