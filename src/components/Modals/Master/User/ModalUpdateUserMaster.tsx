@@ -1,7 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Loading from '../../../Loading';
 import Select from 'react-select';
+
+interface ModalEditUserProps {
+  children?: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  id: number;
+  data: any;
+  onFinish: () => void;
+}
+
+interface Employee {
+  biodata_karyawan: Array<{
+    id_karyawan: number;
+    nik: string;
+  }>;
+  name: string;
+}
+
+interface SelectOption {
+  value: number;
+  label: string;
+}
+
+interface FormData {
+  email: string;
+  nama: string;
+  bagian: string;
+  no: string;
+  role: string;
+  password: string;
+  confPassword: string;
+  id_karyawan: number | null;
+}
 
 const ModalEditUser = ({
   children,
@@ -10,50 +43,132 @@ const ModalEditUser = ({
   id,
   data,
   onFinish,
-}: {
-  children: any;
-  isOpen: any;
-  onClose: any;
-  id: number;
-  data: any;
-  onFinish: any;
-}) => {
+}: ModalEditUserProps) => {
   if (!isOpen) return null;
 
+  // States
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [options, setOptions] = useState<SelectOption[]>([]);
+  const [selectedEmployee, setSelectedEmployee] = useState<SelectOption | null>(
+    null,
+  );
+  const [passwordError, setPasswordError] = useState('');
 
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768); // Adjust the breakMesin as needed
-  };
-  useEffect(() => {
-    handleResize();
-    getKaryawan();
-    // Event listener for window resize
-    window.addEventListener('resize', handleResize);
+  const [formData, setFormData] = useState<FormData>({
+    email: data.email || '',
+    nama: data.nama || '',
+    bagian: data.bagian || '',
+    no: data.no || '',
+    role: data.role || '',
+    password: '',
+    confPassword: '',
+    id_karyawan: data.karyawan?.biodata_karyawan[0]?.id_karyawan || null,
+  });
 
-    // Cleanup on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+  // Handle window resize
+  const handleResize = useCallback(() => {
+    setIsMobile(window.innerWidth < 768);
   }, []);
 
-  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize]);
 
-  const [email, setEmail] = useState(data.email);
-  const [bagian, setBagian] = useState(data.bagian);
-  const [nama, setNama] = useState(data.nama);
-  const [no, setNo] = useState(data.no);
-  const [role, setRole] = useState(data.role);
-  const [password1, setPassword1] = useState<any>('');
-  const [confpassword1, setConfPassword1] = useState<any>('');
-  const [options, setOptions] = useState([]);
-  const [id_karyawan1, setId_karyawan] = useState<any>();
-  const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-  const changeTextColor = () => {
-    setIsOptionSelected(true);
+  // Validate passwords
+  useEffect(() => {
+    if (formData.password && formData.confPassword) {
+      if (formData.password !== formData.confPassword) {
+        setPasswordError('Password tidak cocok');
+      } else if (formData.password.length < 5) {
+        setPasswordError('Password minimal 5 karakter');
+      } else {
+        setPasswordError('');
+      }
+    } else {
+      setPasswordError('');
+    }
+  }, [formData.password, formData.confPassword]);
+
+  // Fetch employees and set default selection
+  useEffect(() => {
+    getEmployees();
+  }, []);
+
+  // Fetch employees
+  const getEmployees = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+      setEmployees(res.data.data);
+
+      const mappedOptions = res.data.data.map((item: Employee) => ({
+        value: item.biodata_karyawan[0]?.id_karyawan,
+        label: `${item.biodata_karyawan[0]?.nik} - ${item.name}`,
+      }));
+
+      setOptions(mappedOptions);
+
+      // Auto-select employee if exists in data
+      if (data.karyawan?.biodata_karyawan[0]?.id_karyawan) {
+        const defaultSelected = mappedOptions.find(
+          (option: SelectOption) =>
+            option.value === data.karyawan.biodata_karyawan[0].id_karyawan,
+        );
+        if (defaultSelected) {
+          setSelectedEmployee(defaultSelected);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching employees:', error);
+    }
   };
 
-  async function submitEditUser(id: number) {
+  // Handle form input changes
+  const handleInputChange = (field: keyof FormData, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Handle employee selection
+  const handleEmployeeChange = (selected: SelectOption | null) => {
+    setSelectedEmployee(selected);
+    if (selected) {
+      const selectedEmployee = employees.find(
+        (emp) => emp.biodata_karyawan[0]?.id_karyawan === selected.value,
+      );
+
+      if (selectedEmployee) {
+        handleInputChange(
+          'id_karyawan',
+          selectedEmployee.biodata_karyawan[0]?.id_karyawan,
+        );
+      }
+    } else {
+      handleInputChange('id_karyawan', null);
+    }
+  };
+
+  // Submit form
+  const submitEditUser = async () => {
+    // Validation
+    if (
+      !formData.email ||
+      !formData.nama ||
+      !formData.bagian ||
+      !formData.role
+    ) {
+      alert('Mohon lengkapi semua field yang wajib diisi');
+      return;
+    }
+
+    if (formData.password && passwordError) {
+      alert(passwordError);
+      return;
+    }
+
     const url = `${import.meta.env.VITE_API_LINK}/users/${id}`;
 
     try {
@@ -61,68 +176,59 @@ const ModalEditUser = ({
       const res = await axios.put(
         url,
         {
-          email: email,
-          nama: nama,
-          bagian: bagian,
-          no: no,
-          role: role,
-          password: password1,
-          confPassword: confpassword1,
-          id_karyawan: id_karyawan1,
+          email: formData.email,
+          nama: formData.nama,
+          bagian: formData.bagian,
+          no: formData.no,
+          role: formData.role,
+          password: formData.password || undefined,
+          confPassword: formData.confPassword || undefined,
+          id_karyawan: formData.id_karyawan,
         },
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
-      console.log(res.data);
-      setIsLoading(false);
-      alert(res.data.msg);
+
+      alert(res.data.msg || 'User berhasil diupdate');
       onFinish();
+      onClose();
     } catch (error: any) {
-      console.log(error);
-      //alert(error.data.msg);
+      console.error('Error updating user:', error);
+      alert(error.response?.data?.msg || 'Gagal mengupdate user');
+    } finally {
       setIsLoading(false);
     }
-  }
-  const [defectMaster, setDefectMaster] = useState<any>();
-
-  async function getKaryawan() {
-    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
-    try {
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
-      setDefectMaster(res.data.data);
-      console.log(res.data.data);
-      setOptions(
-        res.data?.data?.map((item: any) => ({
-          value: item.biodata_karyawan[0]?.id_karyawan,
-          label: item.biodata_karyawan[0]?.nik + ' - ' + item.name,
-        })),
-      );
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-  const handleChangePointDepatment = (selected: any) => {
-    const { value } = selected;
-    const filteredData = defectMaster.find(
-      (item: any) => item.biodata_karyawan[0]?.id_karyawan == value,
-      // item.id.includes(parseInt(value));
-    );
-
-    console.log(filteredData?.biodata_karyawan[0]?.id_karyawan);
-
-    setId_karyawan(filteredData?.biodata_karyawan[0]?.id_karyawan);
   };
+
+  // Department options
+  const departmentOptions = [
+    { value: 'maintenance', label: 'Maintenance' },
+    { value: 'quality control', label: 'Quality Control' },
+    { value: 'hr', label: 'HR' },
+    { value: 'ppic', label: 'PPIC' },
+    { value: 'produksi', label: 'Produksi' },
+    { value: 'marketing', label: 'Marketing' },
+  ];
+
+  // Role options
+  const roleOptions = [
+    { value: 'section head', label: 'Section Head' },
+    { value: 'supervisor', label: 'Supervisor' },
+    { value: 'admin', label: 'Admin' },
+    { value: 'senior technician', label: 'Senior Technician' },
+    { value: 'shift technician', label: 'Shift Technician' },
+    { value: 'junior technician', label: 'Junior Technician' },
+    { value: 'pre_press', label: 'Pre-Press' },
+    { value: 'payroll', label: 'Payroll' },
+    { value: 'inspector', label: 'Inspector' },
+  ];
+
   return (
-    <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
-      <div className="w-full max-w-3xl bg-white rounded-xl shadow-md max-h-screen ">
-        <div className="flex w-full items-center pt-4 px-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 p-4 backdrop-blur-sm md:p-8">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-xl">
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-gray-200 bg-white px-6 py-4">
           <svg
-            className="flex w-12"
-            width="20"
-            height="19"
+            className="h-5 w-5 flex-shrink-0"
             viewBox="0 0 20 19"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -130,266 +236,308 @@ const ModalEditUser = ({
             <path
               d="M4.55799 4.51474L8.56073 8.46883M4.55799 4.51474H1.8895L1 1.87869L1.8895 1L4.55799 1.87869V4.51474ZM16.3518 1.65111L14.0146 3.95997C13.6623 4.30794 13.4861 4.48192 13.4202 4.68255C13.3621 4.85904 13.3621 5.04913 13.4202 5.22562C13.4861 5.42625 13.6623 5.60023 14.0146 5.94821L14.2256 6.15668C14.5778 6.50466 14.754 6.67864 14.9571 6.74383C15.1357 6.80117 15.3282 6.80117 15.5068 6.74383C15.7099 6.67864 15.8861 6.50466 16.2383 6.15668L18.4246 3.99695C18.6601 4.56297 18.7899 5.18289 18.7899 5.83277C18.7899 8.50187 16.5996 10.6655 13.8977 10.6655C13.572 10.6655 13.2536 10.6341 12.9458 10.5741C12.5133 10.4899 12.2971 10.4477 12.166 10.4606C12.0267 10.4743 11.958 10.495 11.8345 10.5603C11.7184 10.6217 11.6019 10.7367 11.3689 10.9669L5.00274 17.2557C4.26585 17.9836 3.07113 17.9836 2.33425 17.2557C1.59736 16.5278 1.59736 15.3475 2.33425 14.6196L8.70038 8.33088C8.93343 8.10066 9.04986 7.9856 9.11204 7.87088C9.17813 7.7489 9.19903 7.68106 9.21291 7.54341C9.22598 7.41392 9.18329 7.20034 9.09807 6.77318C9.03732 6.46899 9.00548 6.15456 9.00548 5.83277C9.00548 3.1637 11.1958 1 13.8977 1C14.7921 1 15.6305 1.23709 16.3518 1.65111ZM9.89506 12.4228L14.7872 17.2556C15.5241 17.9835 16.7188 17.9835 17.4557 17.2556C18.1926 16.5277 18.1926 15.3474 17.4557 14.6195L13.431 10.6438C13.1461 10.6172 12.8683 10.5664 12.5998 10.4936C12.2537 10.3997 11.874 10.4679 11.6203 10.7185L9.89506 12.4228Z"
               stroke="#0065DE"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
 
-          <label className="flex w-11/12 text-blue-700 text-sm font-bold ">
-            Form Edit Master User
-          </label>
+          <h2 className="flex-1 text-base font-bold text-blue-700">
+            Edit Data User
+          </h2>
+
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-400 focus:outline-none"
+            className="rounded-full p-1 text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-600 focus:outline-none"
+            disabled={isLoading}
           >
             <svg
-              width="22"
-              height="22"
-              viewBox="0 0 22 22"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <circle cx="11" cy="11" r="11" fill="#0065DE" />
-              <rect
-                x="6.03955"
-                y="4.23242"
-                width="17"
-                height="3"
-                rx="1.5"
-                transform="rotate(42.8321 6.03955 4.23242)"
-                fill="white"
-              />
-              <rect
-                x="4.18213"
-                y="16.0609"
-                width="17"
-                height="3"
-                rx="1.5"
-                transform="rotate(-45 4.18213 16.0609)"
-                fill="white"
+              <path
+                d="M18 6L6 18M6 6l12 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </svg>
           </button>
         </div>
-        <div className="flex w-full flex-col pt-7 px-4">
-          <>
-            <div className="flex flex-col pt-4  ">
-              <label className="text-black text-xs font-bold">USERNAME</label>
-              <input
-                defaultValue={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="text"
-                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-              />
-              <label className="text-black text-xs font-bold pt-4">NAMA</label>
-              <input
-                defaultValue={nama}
-                onChange={(e) => setNama(e.target.value)}
-                type="text"
-                className="w-full h-10  self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-              />
 
-              <label className="text-black text-sm font-bold pt-4">
-                Karyawan
-              </label>
+        {/* Form Content */}
+        <div className="space-y-4 px-6 py-6">
+          {/* Username/Email */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700">
+              USERNAME / EMAIL <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              placeholder="Masukkan email"
+              disabled={isLoading}
+            />
+          </div>
 
-              <Select
-                placeholder="Cari..."
-                options={options}
-                onChange={(selectedId) => {
-                  handleChangePointDepatment(selectedId);
-                }}
-                className={`relative z-30 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-              ></Select>
-              <label className="text-black text-xs font-bold pt-4">
-                NOMOR TELEPON
-              </label>
-              <input
-                defaultValue={no}
-                onChange={(e) => setNo(e.target.value)}
-                type="text"
-                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-              />
+          {/* Nama */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700">
+              NAMA LENGKAP <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.nama}
+              onChange={(e) => handleInputChange('nama', e.target.value)}
+              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              placeholder="Masukkan nama"
+              disabled={isLoading}
+            />
+          </div>
 
-              <label className="text-black text-xs font-bold pt-4">
-                BAGIAN
-              </label>
-              <select
-                onChange={(e) => {
-                  setBagian(e.target.value);
-                  changeTextColor();
-                }}
-                defaultValue={bagian}
-                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                  isOptionSelected ? 'text-black dark:text-white' : ''
-                }`}
+          {/* Karyawan */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700">
+              KARYAWAN
+            </label>
+            <Select
+              placeholder="Cari karyawan..."
+              options={options}
+              value={selectedEmployee}
+              onChange={handleEmployeeChange}
+              className="text-sm"
+              isDisabled={isLoading}
+              isClearable
+              noOptionsMessage={() => 'Tidak ada data'}
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  minHeight: '44px',
+                  borderColor: state.isFocused ? '#3B82F6' : '#D1D5DB',
+                  boxShadow: state.isFocused
+                    ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                    : 'none',
+                  '&:hover': {
+                    borderColor: '#3B82F6',
+                  },
+                }),
+              }}
+            />
+            <p className="text-xs text-gray-500">
+              Pilih karyawan jika user terhubung dengan data karyawan
+            </p>
+          </div>
+
+          {/* Nomor Telepon */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700">
+              NOMOR TELEPON
+            </label>
+            <input
+              type="tel"
+              value={formData.no}
+              onChange={(e) => handleInputChange('no', e.target.value)}
+              className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              placeholder="08xxxxxxxxxx"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Bagian */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700">
+              BAGIAN <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.bagian}
+              onChange={(e) => handleInputChange('bagian', e.target.value)}
+              className="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-black transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              disabled={isLoading}
+            >
+              <option value="" disabled>
+                Pilih Bagian
+              </option>
+              {departmentOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Role */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700">
+              ROLE <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.role}
+              onChange={(e) => handleInputChange('role', e.target.value)}
+              className="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-black transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              disabled={isLoading}
+            >
+              <option value="" disabled>
+                Pilih Role
+              </option>
+              {roleOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Password Section */}
+          <div className="rounded-lg border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <svg
+                className="h-5 w-5 text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <option
-                  value=""
-                  disabled
-                  className="text-body dark:text-bodydark"
-                >
-                  Pilih Bagian
-                </option>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+              <p className="text-sm font-semibold text-gray-700">
+                Ubah Password (Opsional)
+              </p>
+            </div>
 
-                <option
-                  value="maintenance"
-                  className="text-body dark:text-bodydark"
-                >
-                  Maintenance
-                </option>
-                <option
-                  value="quality control"
-                  className="text-body dark:text-bodydark"
-                >
-                  Quality Control
-                </option>
-                <option value="hr" className="text-body dark:text-bodydark">
-                  HR
-                </option>
-                <option value="ppic" className="text-body dark:text-bodydark">
-                  PPIC
-                </option>
-                <option
-                  value="produksi"
-                  className="text-body dark:text-bodydark"
-                >
-                  Produksi
-                </option>
-                <option
-                  value="marketing"
-                  className="text-body dark:text-bodydark"
-                >
-                  Marketing
-                </option>
-              </select>
-              <label className="text-black text-xs font-bold pt-4">ROLE</label>
-              <select
-                onChange={(e) => {
-                  setRole(e.target.value);
-                  changeTextColor();
-                }}
-                defaultValue={role}
-                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                  isOptionSelected ? 'text-black dark:text-white' : ''
-                }`}
-              >
-                <option
-                  value=""
-                  disabled
-                  selected
-                  className="text-body dark:text-bodydark"
-                >
-                  Pilih Role
-                </option>
-                <option
-                  value="section head"
-                  className="text-body dark:text-bodydark"
-                >
-                  Section Head
-                </option>
-
-                <option
-                  value="supervisor"
-                  className="text-body dark:text-bodydark"
-                >
-                  Supervisor
-                </option>
-                <option value="admin" className="text-body dark:text-bodydark">
-                  Admin
-                </option>
-                <option
-                  value="senior technician"
-                  className="text-body dark:text-bodydark"
-                >
-                  Senior Technician
-                </option>
-                <option
-                  value="shift technician"
-                  className="text-body dark:text-bodydark"
-                >
-                  Shift Technician
-                </option>
-                <option
-                  value="junior technician"
-                  className="text-body dark:text-bodydark"
-                >
-                  Junior Technician
-                </option>
-                <option
-                  value="pre_press"
-                  className="text-body dark:text-bodydark"
-                >
-                  Pre-Press
-                </option>
-                <option
-                  value="payroll"
-                  className="text-body dark:text-bodydark"
-                >
-                  Payroll
-                </option>
-                <option
-                  value="inspector"
-                  className="text-body dark:text-bodydark"
-                >
-                  Inspector
-                </option>
-              </select>
-              <label className="text-black text-xs font-bold pt-4">
-                PASSWORD
+            {/* Password */}
+            <div className="mb-4 space-y-2">
+              <label className="text-xs font-semibold text-gray-700">
+                PASSWORD BARU
               </label>
               <input
-                id="newpassword"
-                placeholder="Masukkan Password "
-                required
                 type="password"
-                onChange={(e) => setPassword1(e.target.value)}
-                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                placeholder="Minimal 5 karakter"
+                disabled={isLoading}
               />
-              <div className="flex flex-row justify-between w-full">
-                <label className="text-black text-xs font-bold pt-4">
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-gray-700">
                   KONFIRMASI PASSWORD
                 </label>
-                {/* {!passwordMatch && <label className=' text-red-600 text-xs font-bold pt-4 '> PASSWORD TIDAK COCOK </label>} */}
+                {passwordError && (
+                  <span className="text-xs font-semibold text-red-600">
+                    {passwordError}
+                  </span>
+                )}
               </div>
               <input
-                // className={`... ${!passwordMatch ? 'w-full h-10 self-stretch p-4 bg-white rounded-md  justify-start items-center gap-4 inline-flex border border-red-500' : 'w-full h-10 self-stretch p-4 bg-white rounded-md border border-stroke  justify-start items-center gap-4 inline-flex'} ...`}
-                id="confirmoldpassword"
-                placeholder="Masukkan Password Konfirmasi"
                 type="password"
-                onChange={(e) => setConfPassword1(e.target.value)}
-                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                value={formData.confPassword}
+                onChange={(e) =>
+                  handleInputChange('confPassword', e.target.value)
+                }
+                className={`h-11 w-full rounded-lg border px-4 py-2 text-sm transition-colors focus:outline-none focus:ring-2 ${
+                  passwordError
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                } bg-white`}
+                placeholder="Konfirmasi password baru"
+                disabled={isLoading}
               />
-
-              <div className="pt-4">
-                <button
-                  disabled={isLoading}
-                  onClick={() => submitEditUser(id)}
-                  className="rounded-md justify-center items-center w-full h-10 bg-blue-600 text-white font-semibold text-sm"
-                >
-                  {isLoading ? 'Loading...' : 'SIMPAN'}
-                </button>
-                {isLoading && <Loading />}
-              </div>
             </div>
-          </>
-        </div>
-        <div className="px-4 pb-4">
-          <div className=" flex w-full pt-4 gap-5">
+
+            <p className="mt-3 text-xs text-gray-600">
+              💡 Kosongkan jika tidak ingin mengubah password
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
             <button
-              title="button"
               type="button"
               onClick={onClose}
-              className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
-            ></button>
+              disabled={isLoading}
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-white text-sm font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              BATAL
+            </button>
+            <button
+              onClick={submitEditUser}
+              disabled={isLoading || !!passwordError}
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-xl disabled:cursor-not-allowed disabled:from-blue-400 disabled:to-blue-400 disabled:shadow-none"
+            >
+              {isLoading ? (
+                <>
+                  <svg
+                    className="h-5 w-5 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  MENYIMPAN...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  SIMPAN PERUBAHAN
+                </>
+              )}
+            </button>
           </div>
-          {children}
         </div>
 
-        {/* {JSON.stringify(point)} */}
+        {isLoading && <Loading />}
+        {children}
       </div>
     </div>
   );

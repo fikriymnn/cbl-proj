@@ -1,81 +1,240 @@
-// import React, { useState } from 'react';
+import axios from 'axios';
+import { useState } from 'react';
 
-import axios from "axios";
+interface ModalConfDeleteProps {
+  children?: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  idUser: number;
+  onFinish: () => void;
+}
 
-const ModalConfDelete = ({ children, isOpen, onClose, idUser, onFinish }:
-    { children: any, isOpen: any, onClose: any, idUser: any, onFinish: any }) => {
-    if (isOpen == false) return null;
+const ModalConfDelete = ({
+  children,
+  isOpen,
+  onClose,
+  idUser,
+  onFinish,
+}: ModalConfDeleteProps) => {
+  if (!isOpen) return null;
 
-    async function deleteUser(id: number) {
-        const url = `${import.meta.env.VITE_API_LINK}/users/${id}`;
+  const [isDeleting, setIsDeleting] = useState(false);
 
-        try {
-            const res = await axios.delete(
-                url,
+  const deleteUser = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/users/${idUser}`;
 
-                {
-                    withCredentials: true,
-                },
-            );
-            onFinish();
-            onClose(true)
-            alert(res.data.msg);
-        } catch (error: any) {
-            console.log(error);
-            //alert(error.data.msg);
-        }
+    try {
+      setIsDeleting(true);
+      const res = await axios.delete(url, {
+        withCredentials: true,
+      });
+
+      alert(res.data.msg || 'User berhasil dihapus');
+      onFinish();
+      onClose();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      alert(error.response?.data?.msg || 'Gagal menghapus user');
+    } finally {
+      setIsDeleting(false);
     }
+  };
 
-
-    return (
-        <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
-            <div className="w-full max-w-md bg-white rounded-xl shadow-md">
-                <div className="flex w-full items-center pt-4 px-3">
-                    <svg
-                        className='flex w-1/12'
-                        width="20"
-                        height="19"
-                        viewBox="0 0 20 19"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4.55799 4.51474L8.56073 8.46883M4.55799 4.51474H1.8895L1 1.87869L1.8895 1L4.55799 1.87869V4.51474ZM16.3518 1.65111L14.0146 3.95997C13.6623 4.30794 13.4861 4.48192 13.4202 4.68255C13.3621 4.85904 13.3621 5.04913 13.4202 5.22562C13.4861 5.42625 13.6623 5.60023 14.0146 5.94821L14.2256 6.15668C14.5778 6.50466 14.754 6.67864 14.9571 6.74383C15.1357 6.80117 15.3282 6.80117 15.5068 6.74383C15.7099 6.67864 15.8861 6.50466 16.2383 6.15668L18.4246 3.99695C18.6601 4.56297 18.7899 5.18289 18.7899 5.83277C18.7899 8.50187 16.5996 10.6655 13.8977 10.6655C13.572 10.6655 13.2536 10.6341 12.9458 10.5741C12.5133 10.4899 12.2971 10.4477 12.166 10.4606C12.0267 10.4743 11.958 10.495 11.8345 10.5603C11.7184 10.6217 11.6019 10.7367 11.3689 10.9669L5.00274 17.2557C4.26585 17.9836 3.07113 17.9836 2.33425 17.2557C1.59736 16.5278 1.59736 15.3475 2.33425 14.6196L8.70038 8.33088C8.93343 8.10066 9.04986 7.9856 9.11204 7.87088C9.17813 7.7489 9.19903 7.68106 9.21291 7.54341C9.22598 7.41392 9.18329 7.20034 9.09807 6.77318C9.03732 6.46899 9.00548 6.15456 9.00548 5.83277C9.00548 3.1637 11.1958 1 13.8977 1C14.7921 1 15.6305 1.23709 16.3518 1.65111ZM9.89506 12.4228L14.7872 17.2556C15.5241 17.9835 16.7188 17.9835 17.4557 17.2556C18.1926 16.5277 18.1926 15.3474 17.4557 14.6195L13.431 10.6438C13.1461 10.6172 12.8683 10.5664 12.5998 10.4936C12.2537 10.3997 11.874 10.4679 11.6203 10.7185L9.89506 12.4228Z" stroke="#0065DE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-
-                    <label className='flex w-10/12 text-blue-700 text-sm font-bold '>Konfirmasi Hapus </label>
-                    <button type="button" onClick={onClose} className="text-gray-400 focus:outline-none">
-                        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="11" cy="11" r="11" fill="#0065DE" />
-                            <rect x="6.03955" y="4.23242" width="17" height="3" rx="1.5" transform="rotate(42.8321 6.03955 4.23242)" fill="white" />
-                            <rect x="4.18213" y="16.0609" width="17" height="3" rx="1.5" transform="rotate(-45 4.18213 16.0609)" fill="white" />
-                        </svg>
-
-                    </button>
-                </div>
-                <div className="flex w-full gap-4 pt-10 px-4">
-
-                    <button
-                        onClick={() => deleteUser(idUser)}
-                        className="bg-[#DE0000] w-full h-8 text-center text-white text-xs font-bold  rounded-md"
-                    >
-                        HAPUS
-                    </button>
-
-
-                </div>
-                <div className="px-4 pb-4">
-                    {children}
-                </div>
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
-                >
-                </button>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-sm md:p-8">
+      <div className="w-full max-w-md animate-[scale-in_0.2s_ease-out] rounded-2xl bg-white shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+              <svg
+                className="h-5 w-5 text-red-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
             </div>
+            <h2 className="text-base font-bold text-gray-900">
+              Konfirmasi Hapus
+            </h2>
+          </div>
 
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-1 text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-600 focus:outline-none"
+            disabled={isDeleting}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M18 6L6 18M6 6l12 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
 
-    );
+        {/* Content */}
+        <div className="px-6 py-6">
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
+              <svg
+                className="h-10 w-10 text-red-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+            </div>
+            <h3 className="mb-2 text-xl font-bold text-gray-900">
+              Hapus User ini?
+            </h3>
+            <p className="text-sm leading-relaxed text-gray-600">
+              Data user akan dihapus secara permanen dan tidak dapat
+              dikembalikan. Pastikan Anda yakin sebelum melanjutkan.
+            </p>
+          </div>
+
+          {/* Warning Box */}
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+            <div className="flex gap-3">
+              <svg
+                className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-red-800">
+                  Tindakan ini tidak dapat dibatalkan!
+                </p>
+                <p className="mt-1 text-xs text-red-700">
+                  Semua data terkait user akan hilang
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isDeleting}
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg border-2 border-gray-300 bg-white text-sm font-semibold text-gray-700 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              BATAL
+            </button>
+            <button
+              type="button"
+              onClick={deleteUser}
+              disabled={isDeleting}
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-red-600 to-red-700 text-sm font-semibold text-white shadow-lg shadow-red-500/30 transition-all hover:from-red-700 hover:to-red-800 hover:shadow-xl disabled:cursor-not-allowed disabled:from-red-400 disabled:to-red-400 disabled:shadow-none"
+            >
+              {isDeleting ? (
+                <>
+                  <svg
+                    className="h-5 w-5 animate-spin"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  MENGHAPUS...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                  YA, HAPUS
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {children}
+      </div>
+
+      <style>{`
+        @keyframes scale-in {
+          from {
+            opacity: 0;
+            transform: scale(0.9);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
+    </div>
+  );
 };
 
 export default ModalConfDelete;

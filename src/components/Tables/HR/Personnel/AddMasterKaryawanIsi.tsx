@@ -302,7 +302,7 @@ function AddMasterKaryawanIsi() {
 
         if (karyawanId) {
           // Navigate to the edit page with the ID
-          navigate(`/hr/pm/masterkaryawan/edit/${karyawanId}`);
+          navigate(`/hr/personnel/employee/edit/${karyawanId}`);
         } else {
           console.error('No ID returned from API response');
           // Optionally show an error message to the user
