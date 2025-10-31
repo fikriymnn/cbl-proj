@@ -514,7 +514,7 @@ function TableAbsenProd() {
                     Lembur (Jam)
                   </th>
                   <th className="p-3 text-left text-neutral-500 text-sm font-semibold">
-                    Terlambat (Menit)
+                    Terlambat (JAM)
                   </th>
                   <th className="p-3 text-left text-neutral-500 text-sm font-semibold">
                     Status Absen
@@ -659,7 +659,7 @@ function TableAbsenProd() {
                             {data.menit_terlambat == null ||
                             data.menit_terlambat == 0
                               ? '~'
-                              : '~ ' + data.menit_terlambat + ' Menit'}
+                              : '~ ' + data.menit_terlambat + ' JAM'}
                           </span>
                         </div>
                       </td>
@@ -1267,7 +1267,7 @@ function TableAbsenProd() {
                       <div className="bg-red-50 rounded-lg p-3">
                         <p className="text-xs text-gray-500 mb-1">Terlambat</p>
                         <p className="text-sm font-semibold text-red-600">
-                          {data.menit_terlambat} Menit
+                          {data.menit_terlambat} Jam
                         </p>
                       </div>
                     )}
