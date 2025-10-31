@@ -396,7 +396,7 @@ function MasterKaryawanIsi() {
                   Kelola data karyawan perusahaan
                 </p>
               </div>
-              <Link to={'/hr/pm/masterkaryawan/add'}>
+              <Link to={'/hr/personnel/employee/add'}>
                 <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm transition-colors duration-200 flex items-center gap-2">
                   <svg
                     className="w-5 h-5"

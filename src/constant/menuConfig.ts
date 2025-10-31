@@ -560,6 +560,33 @@ export const menuCategories: MenuCategory[] = [
         path: '/production/absensi',
         icon: 'attendance',
       },
+      {
+        name: 'Submission to HR',
+        path: '#',
+        icon: 'document',
+        children: [
+          {
+            name: 'Submission',
+            path: '/production/submission',
+            icon: 'submission',
+          },
+          {
+            name: 'Submission History',
+            path: '/production/submission/history',
+            icon: 'history',
+          },
+          {
+            name: 'Position Submission',
+            path: '/production/submission/position',
+            icon: 'submission',
+          },
+          {
+            name: 'Position History',
+            path: '/production/submission/position/history',
+            icon: 'history',
+          },
+        ],
+      },
     ],
   },
   {

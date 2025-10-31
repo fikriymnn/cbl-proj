@@ -1,4 +1,4 @@
-import TabAbsen from '../../../components/Tables/QualityControl/AbsenQC/TabAbsen';
+import TabAbsenProd from '../../../components/Tables/Produksi/Absensi/TabAbsenProd';
 import DefaultLayout from '../../../layout/DefaultLayout';
 
 const AbsenMTC = () => {
@@ -8,7 +8,7 @@ const AbsenMTC = () => {
         Maintenance &gt; Absensi
       </p>
 
-      <TabAbsen />
+      <TabAbsenProd />
     </DefaultLayout>
   );
 };

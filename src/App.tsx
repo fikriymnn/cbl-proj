@@ -1780,6 +1780,50 @@ function App() {
           }
         />
         <Route
+          path="/production/submission"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/production/submission/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDeptHistory />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/production/submission/position"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/production/submission/position/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDeptHistory />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/production/waste-report"
           element={
             <>

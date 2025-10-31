@@ -35,13 +35,15 @@ const Login: React.FC = () => {
       if (response.data.role == 'pre_press') {
         navigate('/prepress');
       } else if (response.data.bagian == 'hr') {
-        navigate('/hr/pm/masterperusahaan');
+        navigate('/hr/personnel/company');
+      } else if (response.data.bagian == 'maintenance') {
+        navigate('/dashboard/maintenance');
       } else if (response.data.bagian == 'quality control') {
-        navigate('/qc/validatenverify');
+        navigate('/qc/validate-verify');
       } else if (response.data.bagian == 'ppic') {
-        navigate('/ppic/jadwalProduksi');
+        navigate('/ppic/production-schedule');
       } else if (response.data.bagian == 'produksi') {
-        navigate('/produksi/breakdown');
+        navigate('/production/breakdown-recap');
       } else {
         navigate('/dashboard');
       }
