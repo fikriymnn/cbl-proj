@@ -178,11 +178,6 @@ const ModalTambahUser = ({
     if (!formData.confPassword)
       errors.confPassword = 'Konfirmasi password wajib diisi';
 
-    // Validate divisi_bawahan for section head and supervisor
-    if (requiresDivisi && formData.divisi_bawahan.length === 0) {
-      errors.divisi_bawahan = 'Divisi bawahan wajib dipilih untuk role ini';
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };

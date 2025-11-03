@@ -68,7 +68,16 @@ const ModalEditUser = ({
     password: '',
     confPassword: '',
     id_karyawan: data.karyawan?.biodata_karyawan[0]?.id_karyawan || null,
-    divisi_bawahan: data.divisi_bawahan || [],
+    divisi_bawahan: (() => {
+      if (typeof data.divisi_bawahan === 'string') {
+        try {
+          return JSON.parse(data.divisi_bawahan);
+        } catch {
+          return [];
+        }
+      }
+      return data.divisi_bawahan || [];
+    })(),
   });
 
   // Check if role requires divisi_bawahan
@@ -138,6 +147,7 @@ const ModalEditUser = ({
   };
 
   // Fetch divisi
+  // Fetch divisi
   const getDivisi = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi`;
     try {
@@ -149,11 +159,26 @@ const ModalEditUser = ({
       setDivisiOptions(mappedDivisi || []);
 
       // Auto-select existing divisi_bawahan
-      if (data.divisi_bawahan && data.divisi_bawahan.length > 0) {
-        const defaultSelected = mappedDivisi.filter((option: SelectOption) =>
-          data.divisi_bawahan.includes(option.value),
-        );
-        setSelectedDivisi(defaultSelected);
+      if (data.divisi_bawahan) {
+        // Parse the string format "[16,14]" to actual array
+        let parsedDivisi = [];
+        if (typeof data.divisi_bawahan === 'string') {
+          try {
+            parsedDivisi = JSON.parse(data.divisi_bawahan);
+          } catch (e) {
+            console.error('Error parsing divisi_bawahan:', e);
+            parsedDivisi = [];
+          }
+        } else if (Array.isArray(data.divisi_bawahan)) {
+          parsedDivisi = data.divisi_bawahan;
+        }
+
+        if (parsedDivisi.length > 0) {
+          const defaultSelected = mappedDivisi.filter((option: SelectOption) =>
+            parsedDivisi.includes(option.value),
+          );
+          setSelectedDivisi(defaultSelected);
+        }
       }
     } catch (error) {
       console.error('Error fetching divisi:', error);
@@ -204,14 +229,6 @@ const ModalEditUser = ({
       return;
     }
 
-    // Validate divisi_bawahan for section head and supervisor
-    if (requiresDivisi && formData.divisi_bawahan.length === 0) {
-      alert(
-        'Divisi bawahan wajib dipilih untuk role Section Head atau Supervisor',
-      );
-      return;
-    }
-
     if (formData.password && passwordError) {
       alert(passwordError);
       return;
@@ -236,7 +253,10 @@ const ModalEditUser = ({
         },
         { withCredentials: true },
       );
-
+      console.log('Submitted data:', {
+        email: formData.email,
+        divisi_bawahan: requiresDivisi ? formData.divisi_bawahan : undefined,
+      });
       alert(res.data.msg || 'User berhasil diupdate');
       onFinish();
       onClose();
