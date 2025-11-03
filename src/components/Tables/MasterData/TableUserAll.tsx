@@ -70,7 +70,7 @@ const TableUserAll = () => {
         params: { status: 'aktif' },
         withCredentials: true,
       });
-
+      console.log('Fetched users:', res.data);
       setUsers(res.data);
       setFilteredUsers(res.data);
       setShowEdit(new Array(res.data.length).fill(false));

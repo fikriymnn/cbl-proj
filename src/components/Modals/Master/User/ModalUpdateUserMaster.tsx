@@ -34,6 +34,7 @@ interface FormData {
   password: string;
   confPassword: string;
   id_karyawan: number | null;
+  divisi_bawahan: number[];
 }
 
 const ModalEditUser = ({
@@ -51,9 +52,11 @@ const ModalEditUser = ({
   const [isLoading, setIsLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [options, setOptions] = useState<SelectOption[]>([]);
+  const [divisiOptions, setDivisiOptions] = useState<SelectOption[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<SelectOption | null>(
     null,
   );
+  const [selectedDivisi, setSelectedDivisi] = useState<SelectOption[]>([]);
   const [passwordError, setPasswordError] = useState('');
 
   const [formData, setFormData] = useState<FormData>({
@@ -65,7 +68,13 @@ const ModalEditUser = ({
     password: '',
     confPassword: '',
     id_karyawan: data.karyawan?.biodata_karyawan[0]?.id_karyawan || null,
+    divisi_bawahan: data.divisi_bawahan || [],
   });
+
+  // Check if role requires divisi_bawahan
+  const requiresDivisi = ['section head', 'supervisor'].includes(
+    formData.role.toLowerCase(),
+  );
 
   // Handle window resize
   const handleResize = useCallback(() => {
@@ -93,9 +102,10 @@ const ModalEditUser = ({
     }
   }, [formData.password, formData.confPassword]);
 
-  // Fetch employees and set default selection
+  // Fetch employees and divisi on mount
   useEffect(() => {
     getEmployees();
+    getDivisi();
   }, []);
 
   // Fetch employees
@@ -127,6 +137,29 @@ const ModalEditUser = ({
     }
   };
 
+  // Fetch divisi
+  const getDivisi = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+      const mappedDivisi = res.data.data?.map((data: any) => ({
+        value: data.id,
+        label: data.nama_divisi,
+      }));
+      setDivisiOptions(mappedDivisi || []);
+
+      // Auto-select existing divisi_bawahan
+      if (data.divisi_bawahan && data.divisi_bawahan.length > 0) {
+        const defaultSelected = mappedDivisi.filter((option: SelectOption) =>
+          data.divisi_bawahan.includes(option.value),
+        );
+        setSelectedDivisi(defaultSelected);
+      }
+    } catch (error) {
+      console.error('Error fetching divisi:', error);
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -151,6 +184,13 @@ const ModalEditUser = ({
     }
   };
 
+  // Handle divisi bawahan selection
+  const handleDivisiChange = (selected: readonly SelectOption[]) => {
+    setSelectedDivisi([...selected]);
+    const divisiIds = selected ? selected.map((opt) => opt.value) : [];
+    handleInputChange('divisi_bawahan', divisiIds);
+  };
+
   // Submit form
   const submitEditUser = async () => {
     // Validation
@@ -161,6 +201,14 @@ const ModalEditUser = ({
       !formData.role
     ) {
       alert('Mohon lengkapi semua field yang wajib diisi');
+      return;
+    }
+
+    // Validate divisi_bawahan for section head and supervisor
+    if (requiresDivisi && formData.divisi_bawahan.length === 0) {
+      alert(
+        'Divisi bawahan wajib dipilih untuk role Section Head atau Supervisor',
+      );
       return;
     }
 
@@ -184,6 +232,7 @@ const ModalEditUser = ({
           password: formData.password || undefined,
           confPassword: formData.confPassword || undefined,
           id_karyawan: formData.id_karyawan,
+          divisi_bawahan: requiresDivisi ? formData.divisi_bawahan : undefined,
         },
         { withCredentials: true },
       );
@@ -393,6 +442,41 @@ const ModalEditUser = ({
               ))}
             </select>
           </div>
+
+          {/* Divisi Bawahan - Only show for Section Head and Supervisor */}
+          {requiresDivisi && (
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-gray-700">
+                DIVISI BAWAHAN <span className="text-red-500">*</span>
+              </label>
+              <Select
+                isMulti
+                placeholder="Pilih divisi bawahan..."
+                options={divisiOptions}
+                value={selectedDivisi}
+                onChange={(selected) => handleDivisiChange(selected)}
+                className="text-sm"
+                isDisabled={isLoading}
+                noOptionsMessage={() => 'Tidak ada data'}
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    minHeight: '44px',
+                    borderColor: state.isFocused ? '#3B82F6' : '#D1D5DB',
+                    boxShadow: state.isFocused
+                      ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                      : 'none',
+                    '&:hover': {
+                      borderColor: '#3B82F6',
+                    },
+                  }),
+                }}
+              />
+              <p className="text-xs text-gray-500">
+                Pilih divisi yang berada di bawah tanggung jawab user ini
+              </p>
+            </div>
+          )}
 
           {/* Password Section */}
           <div className="rounded-lg border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-5">

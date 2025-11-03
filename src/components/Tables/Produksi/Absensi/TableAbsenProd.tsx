@@ -21,7 +21,7 @@ function TableAbsenProd() {
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
-
+  const [divisiBawahan, setDivisiBawahan] = useState<any>(null);
   const formattedDate = `${year}-${month}-${day}`;
 
   useEffect(() => {
@@ -39,10 +39,14 @@ function TableAbsenProd() {
       const userRole = res.data.role;
       const userIdDep = res.data.karyawan?.biodata_karyawan?.[0]?.id_department;
       const userIdPengaju = res.data.id_karyawan;
+      const userDivisiBawahan = res.data.divisi_bawahan; // Get divisi_bawahan
 
       setIdPengaju(userIdPengaju);
 
-      if (!userIdDep && userRole !== 'super admin') {
+      if (
+        (!userIdDep && userRole !== 'super admin') ||
+        (!userIdDep && userRole !== 'developer')
+      ) {
         setHasNoDepartment(true);
         setIsLoading(false);
         return;
@@ -55,7 +59,19 @@ function TableAbsenProd() {
         userRole === 'super admin' || userRole === 'developer'
           ? null
           : userIdDep;
-      getabsen(formattedDate, formattedDate, idDep);
+
+      // Check if role is supervisor or section head and divisi_bawahan exists
+      let divisiBawahanParam = null;
+      if (
+        (userRole === 'supervisor' || userRole === 'section head') &&
+        userDivisiBawahan &&
+        userDivisiBawahan !== ''
+      ) {
+        divisiBawahanParam = userDivisiBawahan;
+        setDivisiBawahan(userDivisiBawahan);
+      }
+
+      getabsen(formattedDate, formattedDate, idDep, divisiBawahanParam);
 
       console.log('me', res.data);
     } catch (error: any) {
@@ -67,7 +83,12 @@ function TableAbsenProd() {
   const [dateFrom, setDateFrom] = useState<any>();
   const [dateTo, setDateTo] = useState<any>();
 
-  async function getabsen(dateFrom1: any, dateTo1: any, idDep: any) {
+  async function getabsen(
+    dateFrom1: any,
+    dateTo1: any,
+    idDep: any,
+    divisiBawahan?: any,
+  ) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/absensi`;
     try {
       setIsLoading(true);
@@ -79,6 +100,15 @@ function TableAbsenProd() {
 
       if (idDep !== null) {
         params.idDepartment = idDep;
+      }
+
+      // Add divisi_bawahan parameter if it exists
+      if (
+        divisiBawahan !== null &&
+        divisiBawahan !== undefined &&
+        divisiBawahan !== ''
+      ) {
+        params.divisi_bawahan = divisiBawahan;
       }
 
       const res = await axios.get(url, {
@@ -437,7 +467,9 @@ function TableAbsenProd() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 mt-4 md:mt-6">
               <button
-                onClick={() => getabsen(dateFrom, dateTo, idDepart)}
+                onClick={() =>
+                  getabsen(dateFrom, dateTo, idDepart, divisiBawahan)
+                }
                 disabled={!dateFrom || !dateTo}
                 className={`flex-1 sm:flex-none rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-colors ${
                   !dateFrom || !dateTo
@@ -449,12 +481,18 @@ function TableAbsenProd() {
               </button>
 
               <button
-                onClick={() => getabsen(formattedDate, formattedDate, idDepart)}
+                onClick={() =>
+                  getabsen(
+                    formattedDate,
+                    formattedDate,
+                    idDepart,
+                    divisiBawahan,
+                  )
+                }
                 className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 transition-colors rounded-lg px-5 py-2.5 text-sm font-medium text-white"
               >
                 Data Hari Ini
               </button>
-
               <button
                 className="flex-1 sm:flex-none sm:ml-auto bg-red-500 hover:bg-red-600 transition-colors rounded-lg px-5 py-2.5 text-sm font-medium text-white"
                 onClick={() => {

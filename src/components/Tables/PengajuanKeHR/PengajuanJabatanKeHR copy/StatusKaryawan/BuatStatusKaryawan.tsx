@@ -195,7 +195,18 @@ function BuatStatusKaryawanAll() {
       setIsLoading(true);
       const res = await axios.get(url, { withCredentials: true });
       setIdPengaju(res.data.id_karyawan);
-      getMasterUser(res?.data.karyawan.biodata_karyawan[0]?.id_department);
+
+      // Get role and divisi_bawahan from response
+      const role =
+        res.data.karyawan?.biodata_karyawan[0]?.jabatan?.nama_jabatan;
+      const divisiBawahan = res.data.karyawan?.divisi_bawahan;
+
+      // Pass department, role, and divisi_bawahan to getMasterUser
+      getMasterUser(
+        res?.data.karyawan.biodata_karyawan[0]?.id_department,
+        role,
+        divisiBawahan,
+      );
     } catch (error: any) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -203,18 +214,40 @@ function BuatStatusKaryawanAll() {
     }
   }, []);
 
-  const getMasterUser = useCallback(async (id: any) => {
-    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
-    try {
-      const res = await axios.get(url, {
-        params: { is_active: true, id_department: id },
-        withCredentials: true,
-      });
-      setUserList(res.data.data);
-    } catch (error: any) {
-      console.error('Error fetching user list:', error);
-    }
-  }, []);
+  const getMasterUser = useCallback(
+    async (id: any, role?: string, divisiBawahan?: any) => {
+      const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
+
+      // Build params object
+      const params: any = {
+        is_active: true,
+        id_department: id,
+      };
+
+      // Check if role is supervisor or section head AND divisi_bawahan is not null/empty
+      const isSupervisorOrSectionHead =
+        role?.toLowerCase().includes('supervisor') ||
+        role?.toLowerCase().includes('section head');
+
+      if (isSupervisorOrSectionHead && divisiBawahan && divisiBawahan !== '') {
+        // Add divisi_bawahan to params if conditions are met
+        params.divisi_bawahan = Array.isArray(divisiBawahan)
+          ? JSON.stringify(divisiBawahan)
+          : divisiBawahan;
+      }
+
+      try {
+        const res = await axios.get(url, {
+          params: params,
+          withCredentials: true,
+        });
+        setUserList(res.data.data);
+      } catch (error: any) {
+        console.error('Error fetching user list:', error);
+      }
+    },
+    [],
+  );
 
   const getAbsen = useCallback(
     async (startDate: string) => {

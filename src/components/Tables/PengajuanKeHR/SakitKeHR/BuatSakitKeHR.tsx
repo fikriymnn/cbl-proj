@@ -24,23 +24,53 @@ function BuatSakitKeHR() {
 
       setMe(res.data);
       setIdPengaju(res.data.id_karyawan);
-      getMasterUser(res?.data.karyawan.biodata_karyawan[0]?.id_department);
+
+      // Get role and divisi_bawahan from response
+      const role =
+        res.data.karyawan?.biodata_karyawan[0]?.jabatan?.nama_jabatan;
+      const divisiBawahan = res.data.karyawan?.divisi_bawahan;
+
+      // Pass both department and divisi_bawahan to getMasterUser
+      getMasterUser(
+        res?.data.karyawan.biodata_karyawan[0]?.id_department,
+        role,
+        divisiBawahan,
+      );
+
       console.log('getme', res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
-  const getMasterUser = async (id: any) => {
+  async function getMasterUser(id: any, role: string, divisiBawahan: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
+
+    // Build params object
+    const params: any = {
+      is_active: true,
+      id_department: id,
+    };
+
+    // Check if role is supervisor or section head AND divisi_bawahan is not null/empty
+    const isSupervisorOrSectionHead =
+      role?.toLowerCase().includes('supervisor') ||
+      role?.toLowerCase().includes('section head');
+
+    if (isSupervisorOrSectionHead && divisiBawahan && divisiBawahan !== '') {
+      // Add divisi_bawahan to params if conditions are met
+      params.divisi_bawahan = Array.isArray(divisiBawahan)
+        ? JSON.stringify(divisiBawahan)
+        : divisiBawahan;
+    }
+
     try {
       const res = await axios.get(url, {
-        params: { is_active: true, id_department: id },
+        params: params,
         withCredentials: true,
       });
 
       setUserList(res.data.data);
-      //console
       setOptions(
         res.data.data.map((item: any) => {
           const latestBagianMesin =
@@ -56,7 +86,7 @@ function BuatSakitKeHR() {
     } catch (error: any) {
       console.log(error);
     }
-  };
+  }
 
   const handleChangePointDepatment = (selected: any) => {
     const { value } = selected;

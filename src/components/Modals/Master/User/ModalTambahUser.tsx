@@ -32,6 +32,7 @@ interface FormData {
   password: string;
   confPassword: string;
   id_karyawan: number | null;
+  divisi_bawahan: number[];
 }
 
 const ModalTambahUser = ({
@@ -46,6 +47,7 @@ const ModalTambahUser = ({
   const [isLoading, setIsLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [options, setOptions] = useState<SelectOption[]>([]);
+  const [divisiOptions, setDivisiOptions] = useState<SelectOption[]>([]);
   const [passwordError, setPasswordError] = useState('');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -58,11 +60,18 @@ const ModalTambahUser = ({
     password: '',
     confPassword: '',
     id_karyawan: null,
+    divisi_bawahan: [],
   });
 
-  // Fetch employees on mount
+  // Check if role requires divisi_bawahan
+  const requiresDivisi = ['section head', 'supervisor'].includes(
+    formData.role.toLowerCase(),
+  );
+
+  // Fetch employees and divisi on mount
   useEffect(() => {
     getEmployees();
+    getDivisi();
   }, []);
 
   // Validate passwords
@@ -100,6 +109,21 @@ const ModalTambahUser = ({
     }
   };
 
+  // Fetch divisi
+  const getDivisi = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+      const mappedDivisi = res.data.data?.map((data: any) => ({
+        value: data.id,
+        label: data.nama_divisi,
+      }));
+      setDivisiOptions(mappedDivisi || []);
+    } catch (error) {
+      console.error('Error fetching divisi:', error);
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -131,6 +155,12 @@ const ModalTambahUser = ({
     }
   };
 
+  // Handle divisi bawahan selection
+  const handleDivisiChange = (selected: readonly SelectOption[]) => {
+    const divisiIds = selected ? selected.map((opt) => opt.value) : [];
+    handleInputChange('divisi_bawahan', divisiIds);
+  };
+
   // Validate form
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -147,6 +177,11 @@ const ModalTambahUser = ({
     if (!formData.password) errors.password = 'Password wajib diisi';
     if (!formData.confPassword)
       errors.confPassword = 'Konfirmasi password wajib diisi';
+
+    // Validate divisi_bawahan for section head and supervisor
+    if (requiresDivisi && formData.divisi_bawahan.length === 0) {
+      errors.divisi_bawahan = 'Divisi bawahan wajib dipilih untuk role ini';
+    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -180,6 +215,7 @@ const ModalTambahUser = ({
           password: formData.password,
           confPassword: formData.confPassword,
           id_karyawan: formData.id_karyawan,
+          divisi_bawahan: requiresDivisi ? formData.divisi_bawahan : undefined,
         },
         { withCredentials: true },
       );
@@ -423,6 +459,49 @@ const ModalTambahUser = ({
               <p className="text-xs text-red-600">{formErrors.role}</p>
             )}
           </div>
+
+          {/* Divisi Bawahan - Only show for Section Head and Supervisor */}
+          {requiresDivisi && (
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-black">
+                DIVISI BAWAHAN <span className="text-red-500">*</span>
+              </label>
+              <Select
+                isMulti
+                placeholder="Pilih divisi bawahan..."
+                options={divisiOptions}
+                onChange={(selected) => handleDivisiChange(selected)}
+                className="text-sm"
+                isDisabled={isLoading}
+                noOptionsMessage={() => 'Tidak ada data'}
+                styles={{
+                  control: (base, state) => ({
+                    ...base,
+                    minHeight: '40px',
+                    borderColor: formErrors.divisi_bawahan
+                      ? '#ef4444'
+                      : state.isFocused
+                      ? '#3b82f6'
+                      : '#e5e7eb',
+                    borderWidth: '2px',
+                    '&:hover': {
+                      borderColor: formErrors.divisi_bawahan
+                        ? '#ef4444'
+                        : '#3b82f6',
+                    },
+                  }),
+                }}
+              />
+              {formErrors.divisi_bawahan && (
+                <p className="text-xs text-red-600">
+                  {formErrors.divisi_bawahan}
+                </p>
+              )}
+              <p className="text-xs text-gray-500">
+                Pilih divisi yang berada di bawah tanggung jawab user ini
+              </p>
+            </div>
+          )}
 
           {/* Password Section */}
           <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
