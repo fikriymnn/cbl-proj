@@ -83,9 +83,8 @@ function BuatSPLKeHR() {
       setIdPengaju(res.data.id_karyawan);
 
       // Get role and divisi_bawahan from response
-      const role =
-        res.data.karyawan?.biodata_karyawan[0]?.jabatan?.nama_jabatan;
-      const divisiBawahan = res.data.karyawan?.divisi_bawahan;
+      const role = res.data.role;
+      const divisiBawahan = res.data.divisi_bawahan;
 
       // Pass both department and divisi_bawahan to getMasterUser
       getMasterUser(
@@ -108,17 +107,16 @@ function BuatSPLKeHR() {
       is_active: true,
       id_department: id,
     };
-
-    // Check if role is supervisor or section head AND divisi_bawahan is not null/empty
     const isSupervisorOrSectionHead =
       role?.toLowerCase().includes('supervisor') ||
       role?.toLowerCase().includes('section head');
-
-    if (isSupervisorOrSectionHead && divisiBawahan && divisiBawahan !== '') {
-      // Add divisi_bawahan to params if conditions are met
-      params.divisi_bawahan = Array.isArray(divisiBawahan)
-        ? JSON.stringify(divisiBawahan)
-        : divisiBawahan;
+    if (
+      isSupervisorOrSectionHead &&
+      divisiBawahan !== null &&
+      divisiBawahan !== undefined &&
+      divisiBawahan !== ''
+    ) {
+      params.divisi_bawahan = divisiBawahan;
     }
 
     try {
@@ -136,7 +134,7 @@ function BuatSPLKeHR() {
 
           return {
             value: item.userid,
-            label: `${item.biodata_karyawan[0]?.nik} - ${item.name} - ${item.biodata_karyawan[0]?.jabatan?.nama_jabatan} - ${latestBagianMesin}`,
+            label: `${item.biodata_karyawan[0]?.nik} - ${item.name} - ${item.biodata_karyawan[0]?.jabatan?.nama_jabatan} - ${latestBagianMesin} - ${item.biodata_karyawan[0]?.divisi?.nama_divisi}`,
           };
         }),
       );
@@ -150,7 +148,6 @@ function BuatSPLKeHR() {
     try {
       const res = await axios.get(url, {});
 
-      console.log(res.data);
       setJoList(res.data.data);
       setOptions3(
         res.data.data.map((item: any) => ({

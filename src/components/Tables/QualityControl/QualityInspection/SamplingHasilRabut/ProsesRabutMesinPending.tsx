@@ -96,7 +96,7 @@ function ProsesRabutMesinPending() {
                     <div className="justify-end flex pr-2 col-span-2">
                       <>
                         <Link
-                          to={`/qc/qualityinspection/sampling/jenis_sampling/checkAwal/${data.id}`}
+                          to={`/qc/inspection/sampling/jenis/check-awal/${data.id}`}
                         >
                           <button
                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment

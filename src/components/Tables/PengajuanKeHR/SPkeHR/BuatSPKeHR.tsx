@@ -8,6 +8,7 @@ interface Employee {
   userid: string;
   name: string;
   biodata_karyawan: Array<{
+    divisi: any;
     nik: string;
     nama_jabatan: string;
     bagian_mesin_karyawan: Array<{
@@ -102,9 +103,8 @@ function BuatSPKeHR() {
       setCurrentUser(res.data);
 
       // Get role and divisi_bawahan from response
-      const role =
-        res.data.karyawan?.biodata_karyawan[0]?.jabatan?.nama_jabatan;
-      const divisiBawahan = res.data.karyawan?.divisi_bawahan;
+      const role = res.data.role;
+      const divisiBawahan = res.data.divisi_bawahan;
 
       // Pass department, role, and divisi_bawahan to getEmployeeList
       getEmployeeList(
@@ -136,14 +136,14 @@ function BuatSPKeHR() {
     const isSupervisorOrSectionHead =
       role?.toLowerCase().includes('supervisor') ||
       role?.toLowerCase().includes('section head');
-
-    if (isSupervisorOrSectionHead && divisiBawahan && divisiBawahan !== '') {
-      // Add divisi_bawahan to params if conditions are met
-      params.divisi_bawahan = Array.isArray(divisiBawahan)
-        ? JSON.stringify(divisiBawahan)
-        : divisiBawahan;
+    if (
+      isSupervisorOrSectionHead &&
+      divisiBawahan !== null &&
+      divisiBawahan !== undefined &&
+      divisiBawahan !== ''
+    ) {
+      params.divisi_bawahan = divisiBawahan;
     }
-
     try {
       const response = await axios.get(url, {
         params: params,
@@ -163,7 +163,7 @@ function BuatSPKeHR() {
           value: employee.userid,
           label: `${biodata?.nik || 'N/A'} - ${employee.name} - ${
             biodata?.nama_jabatan || 'N/A'
-          } - ${latestDepartment}`,
+          } - ${latestDepartment} - ${biodata?.divisi?.nama_divisi || 'N/A'}`,
         };
       });
 
