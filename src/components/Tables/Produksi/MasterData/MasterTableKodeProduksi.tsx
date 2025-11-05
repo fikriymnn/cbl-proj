@@ -135,7 +135,7 @@ const MasterTableKodeProduksi: React.FC = () => {
         `${API_BASE}/master/produksi/kodeProduksi`,
         { params },
       );
-
+      console.log('Fetched data:', response.data);
       setData(response.data.data || []);
       setTotalPage(response.data.total_page || 1);
     } catch (error) {

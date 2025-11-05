@@ -541,6 +541,11 @@ export const menuCategories: MenuCategory[] = [
     icon: ProductionIcon,
     items: [
       {
+        name: 'Input LKH',
+        path: '/production/input-lkh',
+        icon: 'input',
+      },
+      {
         name: 'Breakdown Recap',
         path: '/production/breakdown-recap',
         icon: 'breakdown',

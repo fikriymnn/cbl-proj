@@ -217,6 +217,7 @@ import AbsenProduction from './pages/Produksi/AbsenProduction';
 import MasterKategoriKendala from './pages/Produksi/MasterData/MasterKategoriKendala';
 import MasterKriteriaKendala from './pages/Produksi/MasterData/MasterKriteriaKendala';
 import MasterKodeProduksi from './pages/Produksi/MasterData/MasterKodeProduksi';
+import InputLKHPage from './pages/Produksi/InputLKH/InputLkhPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1767,6 +1768,15 @@ function App() {
               <ProtectedRoute>
                 <ProduksiBreakdownTtime />
               </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/production/input-lkh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <InputLKHPage />
             </>
           }
         />
