@@ -80,7 +80,7 @@ function Pm2() {
         withCredentials: true,
       });
       console.log(res.data);
-      navigate(`/maintenance/inspection/pm_2_form/${id}`);
+      navigate(`/maintenance/preventive/pm2/form/${id}`);
     } catch (error: any) {
       console.log(error);
     }
@@ -89,31 +89,19 @@ function Pm2() {
   async function createPM2() {
     const url = `${import.meta.env.VITE_API_LINK}/pm2/create`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.post(url, {
         withCredentials: true,
       });
-      setIsLoading(false)
+      setIsLoading(false);
       getPM2();
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error);
     }
   }
 
   const [showConfirm, setShowConfirm] = useState<any>([]);
-
-  const openConfirm = (i: any) => {
-    const onchangeVal: any = [...showConfirm];
-    onchangeVal[i] = true;
-    setShowConfirm(onchangeVal);
-  };
-
-  const closeConfirm = (i: any) => {
-    const onchangeVal: any = [...showConfirm];
-    onchangeVal[i] = false;
-    setShowConfirm(onchangeVal);
-  };
 
   function convertDatetimeToDate(datetime: any) {
     const dateObject = new Date(datetime);
@@ -172,16 +160,17 @@ function Pm2() {
                     className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                   >
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
+                      className={`w-2 h-full sticky left-0 z-20 ${
+                        data.mesin.bagian_mesin == 'printing'
                           ? 'bg-green-600'
                           : data.mesin.bagian_mesin == 'water base'
-                            ? 'bg-yellow-600'
-                            : data.mesin.bagian_mesin == 'pond'
-                              ? 'bg-violet-900'
-                              : data.mesin.bagian_mesin == 'finishing'
-                                ? 'bg-red-900'
-                                : ''
-                        }`}
+                          ? 'bg-yellow-600'
+                          : data.mesin.bagian_mesin == 'pond'
+                          ? 'bg-violet-900'
+                          : data.mesin.bagian_mesin == 'finishing'
+                          ? 'bg-red-900'
+                          : ''
+                      }`}
                     ></div>
 
                     <div className=" w-full h-full flex flex-col justify-center relative">
@@ -209,9 +198,9 @@ function Pm2() {
                           {data.id_inspector == me?.id ? (
                             <>
                               {data.status == 'done' ||
-                                data.status == 'on progres' ? (
+                              data.status == 'on progres' ? (
                                 <Link
-                                  to={`/maintenance/inspection/pm_2_form/${data.id}`}
+                                  to={`/maintenance/preventive/pm2/form/${data.id}`}
                                   className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                 >
                                   INSPECT
@@ -277,16 +266,17 @@ function Pm2() {
                     className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                   >
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
+                      className={`w-2 h-full sticky left-0 z-20 ${
+                        data.mesin.bagian_mesin == 'printing'
                           ? 'bg-green-600'
                           : data.mesin.bagian_mesin == 'water base'
-                            ? 'bg-yellow-600'
-                            : data.mesin.bagian_mesin == 'pond'
-                              ? 'bg-violet-900'
-                              : data.mesin.bagian_mesin == 'finishing'
-                                ? 'bg-red-900'
-                                : ''
-                        }`}
+                          ? 'bg-yellow-600'
+                          : data.mesin.bagian_mesin == 'pond'
+                          ? 'bg-violet-900'
+                          : data.mesin.bagian_mesin == 'finishing'
+                          ? 'bg-red-900'
+                          : ''
+                      }`}
                     ></div>
                     <div className=" w-full h-full flex flex-col justify-center relative">
                       <div className="ps-7 w-full grid grid-cols-3">
@@ -306,7 +296,7 @@ function Pm2() {
                                 <>
                                   {data.status == 'done' ? (
                                     <Link
-                                      to={`/maintenance/inspection/pm_2_form/${data.id}`}
+                                      to={`/maintenance/preventive/pm2/form/${data.id}`}
                                       className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                     >
                                       INSPECT
