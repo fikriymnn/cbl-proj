@@ -74,20 +74,50 @@ interface KodeProduksi {
   target_department: number[];
 }
 
-interface LKHData {
+interface LKHProses {
+  id: number;
+  id_produksi_lkh: number;
+  id_produksi_lkh_tahapan: number;
+  id_tahapan: number;
+  id_mesin: number;
+  id_operator: number;
+  id_kode_produksi: number;
+  kode: string;
+  deskripsi: string;
+  baik: number;
+  rusak_sebagian: number;
+  rusak_total: number;
+  pallet: number;
+  note: string | null;
+  status: string;
+  waktu_mulai: string;
+  waktu_selesai: string | null;
+  total_waktu: string | null;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface LKHResponse {
   id: number;
   id_jo: number;
   id_tahapan: number;
   id_mesin: number;
   id_operator: number;
-  id_kode_produksi: number;
-  baik: number;
-  rusak_sebagian: number;
-  rusak_total: number;
-  pallet: number;
-  note: string;
-  started_at: string;
-  stopped_at: string | null;
+  no_jo: string;
+  no_io: string;
+  no_so: string;
+  customer: string;
+  produk: string;
+  qty_jo: number;
+  qty_druk: number | null;
+  spesifikasi: string;
+  tgl_kirim: string;
+  status: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  produksi_lkh_proses: LKHProses[];
 }
 
 interface Option {
@@ -125,7 +155,7 @@ const FIXED_PROCESSES = [
   { name: 'Produksi', color: 'green' },
   { name: 'Kendala', color: 'yellow' },
   { name: 'Pending', color: 'orange' },
-  { name: 'OFF', color: 'red' },
+  { name: 'Off', color: 'red' },
   { name: 'Waste', color: 'gray' },
 ];
 
@@ -169,7 +199,7 @@ const InputLKH: React.FC = () => {
     [key: string]: KodeProduksi[];
   }>({});
   const [activeProcesses, setActiveProcesses] = useState<{
-    [key: string]: LKHData;
+    [key: string]: LKHProses;
   }>({});
   const [userId, setUserId] = useState<number | null>(null);
 
@@ -223,7 +253,7 @@ const InputLKH: React.FC = () => {
       pallet: '',
       note: '',
     },
-    OFF: {
+    Off: {
       detail: '',
       baik: '',
       rusak_sebagian: '',
@@ -369,21 +399,35 @@ const InputLKH: React.FC = () => {
         withCredentials: true,
       });
 
-      const activeLKH: { [key: string]: LKHData } = {};
-      response.data.data.forEach((lkh: LKHData) => {
-        if (!lkh.stopped_at) {
-          // Find the kode produksi across all processes
-          for (const processName of FIXED_PROCESSES.map((p) => p.name)) {
-            const kodeProd = kodeProduksiByProcess[processName]?.find(
-              (k) => k.id === lkh.id_kode_produksi,
-            );
-            if (kodeProd) {
-              activeLKH[processName] = lkh;
-              break;
-            }
+      console.log('Active LKH Response:', response.data.data);
+
+      const activeLKH: { [key: string]: LKHProses } = {};
+
+      // Loop through the response data
+      if (response.data.data && response.data.data.length > 0) {
+        response.data.data.forEach((lkh: LKHResponse) => {
+          // Loop through produksi_lkh_proses array
+          if (lkh.produksi_lkh_proses && lkh.produksi_lkh_proses.length > 0) {
+            lkh.produksi_lkh_proses.forEach((proses: LKHProses) => {
+              // Only add processes that are still in progress (waktu_selesai is null)
+              if (!proses.waktu_selesai && proses.status === 'progress') {
+                // Find which process type this belongs to by matching kode_produksi
+                for (const processName of FIXED_PROCESSES.map((p) => p.name)) {
+                  const kodeProd = kodeProduksiByProcess[processName]?.find(
+                    (k) => k.id === proses.id_kode_produksi,
+                  );
+                  if (kodeProd) {
+                    activeLKH[processName] = proses;
+                    break;
+                  }
+                }
+              }
+            });
           }
-        }
-      });
+        });
+      }
+
+      console.log('Parsed Active Processes:', activeLKH);
       setActiveProcesses(activeLKH);
     } catch (error) {
       console.error('Error fetching active LKH:', error);
@@ -432,11 +476,12 @@ const InputLKH: React.FC = () => {
     async (tahapanId: number) => {
       setSelectedTahapan(tahapanId);
       await fetchMesinByTahapan(tahapanId);
-      await fetchKodeProduksi(tahapanId); // Panggil fungsi yang sudah diubah
+      await fetchKodeProduksi(tahapanId);
       setSelectedMesin('');
     },
     [fetchMesinByTahapan, fetchKodeProduksi],
   );
+
   // Get kode produksi ID for a process from the detail dropdown
   const getKodeProduksiIdFromDetail = useCallback(
     (processName: string) => {
@@ -471,15 +516,62 @@ const InputLKH: React.FC = () => {
 
       try {
         setLoading(true);
-        await axios.put(`${API_BASE}/produksi/lkhProses/start`, {
-          id_jo: selectedJO.id,
+
+        const res = await axios.put(
+          `${API_BASE}/produksi/lkhProses/start`,
+          {
+            id_jo: selectedJO.id,
+            id_tahapan: selectedTahapan,
+            id_mesin: parseInt(selectedMesin),
+            id_operator: userId,
+            id_kode_produksi: kodeProduksiId,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+
+        console.log('Start Process Response:', res.data);
+
+        // Get the kode and deskripsi from kodeProduksiByProcess
+        const kodeProd = kodeProduksiByProcess[processName]?.find(
+          (k) => k.id === kodeProduksiId,
+        );
+
+        // Create a temporary LKH data object for the active process
+        const newActiveLKH: LKHProses = {
+          id: res.data.data?.id || Date.now(),
+          id_produksi_lkh: res.data.data?.id_produksi_lkh || 0,
+          id_produksi_lkh_tahapan: res.data.data?.id_produksi_lkh_tahapan || 0,
           id_tahapan: selectedTahapan,
           id_mesin: parseInt(selectedMesin),
           id_operator: userId,
           id_kode_produksi: kodeProduksiId,
-        });
+          kode: kodeProd?.kode || '',
+          deskripsi: kodeProd?.deskripsi || '',
+          baik: 0,
+          rusak_sebagian: 0,
+          rusak_total: 0,
+          pallet: 0,
+          note: null,
+          status: 'progress',
+          waktu_mulai: new Date().toISOString(),
+          waktu_selesai: null,
+          total_waktu: null,
+          is_active: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Update active processes immediately
+        setActiveProcesses((prev) => ({
+          ...prev,
+          [processName]: newActiveLKH,
+        }));
 
         toast.success(`Proses ${processName} dimulai`);
+
+        // Optionally fetch the latest data to sync with backend
         await fetchActiveLKH();
       } catch (error: any) {
         console.error('Error starting process:', error);
@@ -495,6 +587,7 @@ const InputLKH: React.FC = () => {
       selectedTahapan,
       selectedMesin,
       userId,
+      kodeProduksiByProcess,
       fetchActiveLKH,
     ],
   );
@@ -510,17 +603,43 @@ const InputLKH: React.FC = () => {
 
       const processData = processDataList[processName];
 
+      // Validate that at least one field has a value
+      const hasSomeData =
+        processData.baik ||
+        processData.rusak_sebagian ||
+        processData.rusak_total ||
+        processData.pallet ||
+        processData.note;
+
+      if (!hasSomeData) {
+        toast.error('Mohon isi minimal satu field sebelum menghentikan proses');
+        return;
+      }
+
       try {
         setLoading(true);
-        await axios.put(`${API_BASE}/produksi/lkhProses/stop/${activeLKH.id}`, {
-          baik: parseInt(processData.baik) || 0,
-          rusak_sebagian: parseInt(processData.rusak_sebagian) || 0,
-          rusak_total: parseInt(processData.rusak_total) || 0,
-          pallet: parseInt(processData.pallet) || 0,
-          note: processData.note || '',
-        });
+        const res = await axios.put(
+          `${API_BASE}/produksi/lkhProses/stop/${activeLKH.id}`,
+          {
+            baik: parseInt(processData.baik) || 0,
+            rusak_sebagian: parseInt(processData.rusak_sebagian) || 0,
+            rusak_total: parseInt(processData.rusak_total) || 0,
+            pallet: parseInt(processData.pallet) || 0,
+            note: processData.note || '',
+          },
+          {
+            withCredentials: true,
+          },
+        );
 
-        toast.success(`Proses ${processName} dihentikan`);
+        console.log('Stop Process Response:', res.data);
+
+        // Remove from active processes immediately
+        setActiveProcesses((prev) => {
+          const newActiveProcesses = { ...prev };
+          delete newActiveProcesses[processName];
+          return newActiveProcesses;
+        });
 
         // Reset process data
         setProcessDataList((prev) => ({
@@ -535,6 +654,9 @@ const InputLKH: React.FC = () => {
           },
         }));
 
+        toast.success(`Proses ${processName} dihentikan`);
+
+        // Optionally fetch the latest data to sync with backend
         await fetchActiveLKH();
       } catch (error: any) {
         console.error('Error stopping process:', error);
@@ -853,7 +975,7 @@ const InputLKH: React.FC = () => {
                       note: '',
                     };
 
-                    // FIX: Ambil kode produksi yang sesuai dengan proses ini saja
+                    // Get kode produksi options for this specific process
                     const kodeProduksiOptions = (
                       kodeProduksiByProcess[process.name] || []
                     ).map((kode) => ({
@@ -882,6 +1004,12 @@ const InputLKH: React.FC = () => {
                             <h3 className="font-semibold text-sm text-gray-800">
                               {process.name}
                             </h3>
+                            {isActive && activeProcesses[process.name] && (
+                              <span className="text-xs text-gray-600">
+                                ({activeProcesses[process.name].kode} -{' '}
+                                {activeProcesses[process.name].deskripsi})
+                              </span>
+                            )}
                           </div>
                           {isActive ? (
                             <button
@@ -949,7 +1077,7 @@ const InputLKH: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                               disabled={!isActive}
                               placeholder="0"
                             />
@@ -970,7 +1098,7 @@ const InputLKH: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                               disabled={!isActive}
                               placeholder="0"
                             />
@@ -991,7 +1119,7 @@ const InputLKH: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                               disabled={!isActive}
                               placeholder="0"
                             />
@@ -1012,7 +1140,7 @@ const InputLKH: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                               disabled={!isActive}
                               placeholder="0"
                             />
@@ -1033,7 +1161,7 @@ const InputLKH: React.FC = () => {
                                   e.target.value,
                                 )
                               }
-                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                               disabled={!isActive}
                               placeholder="Catatan"
                             />
