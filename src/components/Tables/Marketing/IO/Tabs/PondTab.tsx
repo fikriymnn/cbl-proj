@@ -239,8 +239,8 @@ const PondTab: React.FC<PondTabProps> = ({
             </label>
             <input
               type="number"
-              name="isi_salam_1_pack"
-              value={getCurrentValue('isi_salam_1_pack', 0)}
+              name="isi_dalam_1_pack"
+              value={getCurrentValue('isi_dalam_1_pack', 0)}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-200 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
               placeholder="Enter quantity per pack..."

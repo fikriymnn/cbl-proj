@@ -64,7 +64,7 @@ export interface MountingFormData {
   ukuran_cetak_lebar_2: number;
   ukuran_cetak_bagian_2: number;
   ukuran_cetak_isi_2: number;
-  isi_salam_1_pack: number;
+  isi_dalam_1_pack: number;
   jenis_pack: string;
   keterangan_pack: string;
   is_ukuran_partisi_sekat: boolean;
