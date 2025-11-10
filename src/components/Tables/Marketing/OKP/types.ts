@@ -154,6 +154,7 @@ export interface KalkulasiItem {
 }
 
 export interface OKPFormData {
+  kalkulasi: any;
   id: any;
   no_okp: string;
   status_okp: string;

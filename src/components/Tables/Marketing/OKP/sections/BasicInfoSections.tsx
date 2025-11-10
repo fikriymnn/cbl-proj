@@ -126,11 +126,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           </label>
           {disabled ? (
             <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600">
-              {selectedKalkulasi
-                ? `${selectedKalkulasi.kode_kalkulasi} - ${selectedKalkulasi.nama_customer} - ${selectedKalkulasi.nama_produk}`
-                : currentKalkulasiId > 0
-                ? `ID: ${currentKalkulasiId} (Data not found)`
-                : 'Not Selected'}
+              {formData.kalkulasi?.kode_kalkulasi || 'N/A'}
             </div>
           ) : (
             <SearchableSelect
@@ -179,7 +175,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           </label>
           <input
             type="text"
-            value={selectedKalkulasi?.status_kalkulasi || ''}
+            value={formData.kalkulasi?.status_kalkulasi || ''}
             onChange={(e) => handleInputChange('status_okp', e.target.value)}
             className={`w-full p-2 border border-gray-300 rounded-md ${
               disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''
@@ -312,7 +308,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
       )}
 
       {/* Product Info Section */}
-      <ProductInfoSection selectedKalkulasi={selectedKalkulasi} />
+      {disabled ? (
+        <ProductInfoSection selectedKalkulasi={formData.kalkulasi} />
+      ) : (
+        <ProductInfoSection selectedKalkulasi={selectedKalkulasi} />
+      )}
     </div>
   );
 };
