@@ -170,7 +170,24 @@ const MonitoringLKH: React.FC = () => {
       setActionLoading((prev) => ({ ...prev, [id]: false }));
     }
   };
+  const formatDuration = (totalSeconds: number | string): string => {
+    const seconds =
+      typeof totalSeconds === 'string' ? parseInt(totalSeconds) : totalSeconds;
 
+    if (isNaN(seconds) || seconds < 0) return '-';
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    const parts: string[] = [];
+
+    if (hours > 0) parts.push(`${hours} Jam`);
+    if (minutes > 0) parts.push(`${minutes} Menit`);
+    if (secs > 0 || parts.length === 0) parts.push(`${secs} Detik`);
+
+    return parts.join(' ');
+  };
   const truncateText = (text: string, maxLength: number) => {
     if (!text) return '-';
     return text.length > maxLength
@@ -178,15 +195,32 @@ const MonitoringLKH: React.FC = () => {
       : text;
   };
 
-  const formatDateTimeCompact = (dateString: string): string => {
+  const formatDateTime = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    return date.toLocaleString('id-ID', {
-      day: '2-digit',
-      month: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${day} ${month} ${year} ${hours}:${minutes}:${seconds}`;
   };
 
   const getStatusColor = (status: string): string => {
@@ -379,17 +413,17 @@ const MonitoringLKH: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Action
-                </th>
+                </th> */}
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   No JO
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  Kode
+                  Operator
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  Operator
+                  Nama Produk
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Deskripsi
@@ -411,7 +445,7 @@ const MonitoringLKH: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-3 py-4 text-center">
+                  <td colSpan={8} className="px-3 py-4 text-center">
                     <div className="flex justify-center items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
@@ -420,7 +454,7 @@ const MonitoringLKH: React.FC = () => {
               ) : lkhData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={8}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -429,7 +463,7 @@ const MonitoringLKH: React.FC = () => {
               ) : (
                 lkhData.map((lkh) => (
                   <tr key={lkh.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                    {/* <td className="px-3 py-2 whitespace-nowrap text-xs">
                       {lkh.status === 'request to spv' && (
                         <button
                           onClick={() => handleApprove(lkh.id)}
@@ -439,20 +473,26 @@ const MonitoringLKH: React.FC = () => {
                           {actionLoading[lkh.id] ? 'Loading...' : 'Approve'}
                         </button>
                       )}
-                    </td>
+                    </td> */}
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
                       {lkh.produksi_lkh?.no_jo || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
-                      {lkh.kode || '-'}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                       {lkh.operator?.nama || '-'}
                     </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                      {lkh.produksi_lkh?.produk || '-'}
+                    </td>
                     <td className="px-3 py-2 text-xs text-gray-900 max-w-xs">
                       <div className="truncate" title={lkh.deskripsi}>
+                        {lkh.kode && (
+                          <div className="text-gray-500 text-xs mt-0.5">
+                            {lkh.kode}
+                          </div>
+                        )}
                         {truncateText(lkh.deskripsi, 25)}
                       </div>
+
                       {lkh.note && (
                         <div
                           className="text-gray-500 text-xs truncate mt-0.5"
@@ -464,25 +504,25 @@ const MonitoringLKH: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 text-xs text-gray-900">
                       <div className="whitespace-nowrap">
-                        {formatDateTimeCompact(lkh.waktu_mulai)}
+                        {formatDateTime(lkh.waktu_mulai)}
                       </div>
                       <div className="whitespace-nowrap text-gray-500">
-                        {formatDateTimeCompact(lkh.waktu_selesai)}
+                        {formatDateTime(lkh.waktu_selesai)}
                       </div>
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {lkh.total_waktu} min
+                      {formatDuration(lkh.total_waktu)}
                     </td>
                     <td className="px-3 py-2 text-xs text-gray-900">
                       <div className="flex gap-1 flex-wrap">
                         <span className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
-                          ✓ {lkh.baik}
+                          ✓ OK : {lkh.baik}
                         </span>
                         <span className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded">
-                          ⚠ {lkh.rusak_sebagian}
+                          ⚠ RS : {lkh.rusak_sebagian}
                         </span>
                         <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
-                          ✕ {lkh.rusak_total}
+                          ✕ RT : {lkh.rusak_total}
                         </span>
                       </div>
                       <div className="text-gray-500 mt-1">
@@ -538,10 +578,10 @@ const MonitoringLKH: React.FC = () => {
               <div className="flex justify-between items-start mb-3">
                 <div>
                   <div className="font-semibold text-sm text-gray-900">
-                    {lkh.kode || '-'}
+                    {lkh.produksi_lkh?.no_jo || '-'}
                   </div>
                   <div className="text-xs text-gray-600 mt-0.5">
-                    {lkh.produksi_lkh?.no_jo || '-'}
+                    Kode: {lkh.kode || '-'}
                   </div>
                   <span
                     className={`mt-1 px-2 py-0.5 inline-flex text-xs font-semibold rounded-full ${getStatusColor(
@@ -551,7 +591,7 @@ const MonitoringLKH: React.FC = () => {
                     {lkh.status}
                   </span>
                 </div>
-                {lkh.status === 'request to spv' && (
+                {/* {lkh.status === 'request to spv' && (
                   <button
                     onClick={() => handleApprove(lkh.id)}
                     disabled={actionLoading[lkh.id]}
@@ -559,7 +599,7 @@ const MonitoringLKH: React.FC = () => {
                   >
                     {actionLoading[lkh.id] ? 'Loading...' : 'Approve'}
                   </button>
-                )}
+                )} */}
               </div>
 
               <div className="space-y-2 text-sm">
@@ -571,21 +611,28 @@ const MonitoringLKH: React.FC = () => {
                 </div>
 
                 <div>
+                  <span className="text-gray-500 text-xs">Nama Produk:</span>
+                  <div className="text-gray-900">
+                    {lkh.produksi_lkh?.produk || '-'}
+                  </div>
+                </div>
+
+                <div>
                   <span className="text-gray-500 text-xs">Deskripsi:</span>
                   <div className="text-gray-900">{lkh.deskripsi || '-'}</div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 gap-2 text-xs">
                   <div>
                     <span className="text-gray-500">Mulai:</span>
                     <div className="text-gray-900">
-                      {formatDateTimeCompact(lkh.waktu_mulai)}
+                      {formatDateTime(lkh.waktu_mulai)}
                     </div>
                   </div>
                   <div>
                     <span className="text-gray-500">Selesai:</span>
                     <div className="text-gray-900">
-                      {formatDateTimeCompact(lkh.waktu_selesai)}
+                      {formatDateTime(lkh.waktu_selesai)}
                     </div>
                   </div>
                 </div>
@@ -593,7 +640,7 @@ const MonitoringLKH: React.FC = () => {
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-gray-500">Durasi:</span>
                   <span className="text-gray-900 font-medium">
-                    {lkh.total_waktu} min
+                    {formatDuration(lkh.total_waktu)}
                   </span>
                 </div>
 
