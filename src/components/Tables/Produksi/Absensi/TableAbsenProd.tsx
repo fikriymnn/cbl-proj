@@ -39,7 +39,7 @@ function TableAbsenProd() {
       const userRole = res.data.role;
       const userIdDep = res.data.karyawan?.biodata_karyawan?.[0]?.id_department;
       const userIdPengaju = res.data.id_karyawan;
-      const userDivisiBawahan = res.data.divisi_bawahan; // Get divisi_bawahan
+      const userDivisiBawahan = res.data.divisi_bawahan;
 
       setIdPengaju(userIdPengaju);
 
@@ -60,7 +60,6 @@ function TableAbsenProd() {
           ? null
           : userIdDep;
 
-      // Check if role is supervisor or section head and divisi_bawahan exists
       let divisiBawahanParam = null;
       if (
         (userRole === 'supervisor' || userRole === 'section head') &&
@@ -102,7 +101,6 @@ function TableAbsenProd() {
         params.idDepartment = idDep;
       }
 
-      // Add divisi_bawahan parameter if it exists
       if (
         divisiBawahan !== null &&
         divisiBawahan !== undefined &&
@@ -269,6 +267,7 @@ function TableAbsenProd() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTipeKaryawan, setSelectedTipeKaryawan] = useState('');
   const [selectedTipePenggajian, setSelectedTipePenggajian] = useState('');
+  const [selectedDivisi, setSelectedDivisi] = useState('');
 
   const filteredAbsen = absen?.filter((data: any) => {
     return (
@@ -276,9 +275,15 @@ function TableAbsenProd() {
       (selectedTipeKaryawan === '' ||
         data.tipe_karyawan === selectedTipeKaryawan) &&
       (selectedTipePenggajian === '' ||
-        data.tipe_penggajian === selectedTipePenggajian)
+        data.tipe_penggajian === selectedTipePenggajian) &&
+      (selectedDivisi === '' || data.nama_divisi === selectedDivisi)
     );
   });
+
+  // Get unique divisi values for filter
+  const uniqueDivisi = Array.from(
+    new Set(absen?.map((data: any) => data.nama_divisi).filter(Boolean)),
+  );
 
   async function postPulangCepat(
     tglAbsen: any,
@@ -363,118 +368,139 @@ function TableAbsenProd() {
       <main className="">
         {isLoading && <Loading />}
 
-        {/* Filter Section */}
+        {/* Filter Section - Improved Layout */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden mb-4">
           <div className="p-4 md:p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              {/* Date Selection Section */}
-              <div className="space-y-3 md:space-y-4">
-                <h3 className="text-sm font-semibold text-blue-600">
-                  Pilih Tanggal
-                </h3>
-
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-                  <label className="w-full sm:w-16 text-sm text-gray-600 font-medium">
+            {/* Date Selection Section */}
+            <div className="mb-6">
+              <h3 className="text-base font-semibold text-blue-600 mb-4">
+                Pilih Tanggal
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-gray-600 font-medium">
                     Dari:
                   </label>
                   <input
-                    className="w-full sm:flex-1 rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    className="w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                     type="date"
                     onChange={(e) => setDateFrom(e.target.value)}
                   />
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
-                  <label className="w-full sm:w-16 text-sm text-gray-600 font-medium">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-gray-600 font-medium">
                     Sampai:
                   </label>
                   <input
-                    className="w-full sm:flex-1 rounded-lg bg-blue-50 border border-blue-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    className="w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                     type="date"
                     onChange={(e) => setDateTo(e.target.value)}
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Search & Filter Section */}
-              <div className="space-y-3 md:space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-blue-600 mb-2">
-                    Cari Karyawan
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Nama Karyawan"
-                      className="w-full rounded-lg bg-blue-50 border border-blue-100 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-                    />
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-                      <svg
-                        className="h-4 w-4 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                    </div>
+            {/* Search & Filter Section */}
+            <div className="mb-6">
+              <h3 className="text-base font-semibold text-blue-600 mb-4">
+                Cari & Filter Karyawan
+              </h3>
+
+              {/* Search Input */}
+              <div className="mb-4">
+                <label className="block text-sm text-gray-600 font-medium mb-2">
+                  Nama Karyawan
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cari nama karyawan..."
+                    className="w-full rounded-lg bg-blue-50 border border-blue-200 py-2.5 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                  />
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
                   </div>
                 </div>
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-blue-600 mb-2">
-                      Tipe Karyawan
-                    </label>
-                    <select
-                      className="w-full rounded-lg bg-blue-50 border border-blue-100 py-2 px-3 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      value={selectedTipeKaryawan}
-                      onChange={(e) => setSelectedTipeKaryawan(e.target.value)}
-                    >
-                      <option value="">Semua Tipe</option>
-                      <option value="staff">Staff</option>
-                      <option value="produksi">Produksi</option>
-                    </select>
-                  </div>
+              {/* Filter Dropdowns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm text-gray-600 font-medium mb-2">
+                    Tipe Karyawan
+                  </label>
+                  <select
+                    className="w-full rounded-lg bg-blue-50 border border-blue-200 py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all cursor-pointer"
+                    value={selectedTipeKaryawan}
+                    onChange={(e) => setSelectedTipeKaryawan(e.target.value)}
+                  >
+                    <option value="">Semua Tipe</option>
+                    <option value="staff">Staff</option>
+                    <option value="produksi">Produksi</option>
+                  </select>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-blue-600 mb-2">
-                      Tipe Penggajian
-                    </label>
-                    <select
-                      className="w-full rounded-lg bg-blue-50 border border-blue-100 py-2 px-3 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-300"
-                      value={selectedTipePenggajian}
-                      onChange={(e) =>
-                        setSelectedTipePenggajian(e.target.value)
-                      }
-                    >
-                      <option value="">Semua Tipe</option>
-                      <option value="mingguan">Mingguan</option>
-                      <option value="bulanan">Bulanan</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-sm text-gray-600 font-medium mb-2">
+                    Tipe Penggajian
+                  </label>
+                  <select
+                    className="w-full rounded-lg bg-blue-50 border border-blue-200 py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all cursor-pointer"
+                    value={selectedTipePenggajian}
+                    onChange={(e) => setSelectedTipePenggajian(e.target.value)}
+                  >
+                    <option value="">Semua Tipe</option>
+                    <option value="mingguan">Mingguan</option>
+                    <option value="bulanan">Bulanan</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-600 font-medium mb-2">
+                    Divisi
+                  </label>
+                  <select
+                    className="w-full rounded-lg bg-blue-50 border border-blue-200 py-2.5 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all cursor-pointer"
+                    value={selectedDivisi}
+                    onChange={(e) => setSelectedDivisi(e.target.value)}
+                  >
+                    <option value="">Semua Divisi</option>
+                    {uniqueDivisi.map((divisi: any, index: number) => (
+                      <option key={index} value={divisi}>
+                        {divisi}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row flex-wrap gap-3 mt-4 md:mt-6">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
               <button
                 onClick={() =>
                   getabsen(dateFrom, dateTo, idDepart, divisiBawahan)
                 }
                 disabled={!dateFrom || !dateTo}
-                className={`flex-1 sm:flex-none rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-colors ${
+                className={`flex-1 sm:flex-none rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-all ${
                   !dateFrom || !dateTo
                     ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
+                    : 'bg-blue-600 hover:bg-blue-700 hover:shadow-md'
                 }`}
               >
                 Tampilkan Data
@@ -489,16 +515,18 @@ function TableAbsenProd() {
                     divisiBawahan,
                   )
                 }
-                className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 transition-colors rounded-lg px-5 py-2.5 text-sm font-medium text-white"
+                className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 hover:shadow-md transition-all rounded-lg px-6 py-2.5 text-sm font-medium text-white"
               >
                 Data Hari Ini
               </button>
+
               <button
-                className="flex-1 sm:flex-none sm:ml-auto bg-red-500 hover:bg-red-600 transition-colors rounded-lg px-5 py-2.5 text-sm font-medium text-white"
+                className="flex-1 sm:flex-none sm:ml-auto bg-red-500 hover:bg-red-600 hover:shadow-md transition-all rounded-lg px-6 py-2.5 text-sm font-medium text-white"
                 onClick={() => {
                   setSearchQuery('');
                   setSelectedTipeKaryawan('');
                   setSelectedTipePenggajian('');
+                  setSelectedDivisi('');
                 }}
               >
                 Reset Filter
