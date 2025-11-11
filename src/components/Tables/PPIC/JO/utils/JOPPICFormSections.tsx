@@ -87,7 +87,32 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
           />
         </div>
-
+        {/* Nomor IO (Auto from SO) */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Nomor PO
+          </label>
+          <input
+            type="text"
+            value={formData.no_po_customer}
+            disabled
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
+          />
+        </div>
+        {/* Nomor IO (Auto from SO) */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Tanggal PO
+          </label>
+          <input
+            type="text"
+            value={
+              formData.tgl_po_customer || new Date().toISOString().split('T')[0]
+            }
+            disabled
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
+          />
+        </div>
         {/* Customer */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -222,21 +247,19 @@ export const ProductionDetailsSection: React.FC<
             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-
-        {/* Standar Warna - Editable - Left column */}
+        {/* Alamat Pengiriman - Right column */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
-            Standar Warna
+            Alamat Pengiriman
           </label>
-          <input
-            type="text"
-            value={formData.standar_warna || ''}
-            onChange={(e) => onChange('standar_warna', e.target.value)}
+          <textarea
+            value={formData.alamat_pengiriman || ''}
+            onChange={(e) => onChange('alamat_pengiriman', e.target.value)}
             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan standar warna"
+            placeholder="Masukkan alamat pengiriman"
+            rows={2}
           />
         </div>
-
         {/* Spesifikasi - Right column */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -255,8 +278,8 @@ export const ProductionDetailsSection: React.FC<
         </div>
 
         {/* Keterangan Pengerjaan - Left column */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
+        <div className="col-span-2">
+          <label className="block text-xs font-medium text-gray-700 mb-1 ">
             Keterangan Pengerjaan
           </label>
           <textarea
@@ -264,21 +287,7 @@ export const ProductionDetailsSection: React.FC<
             onChange={(e) => onChange('keterangan_pengerjaan', e.target.value)}
             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Masukkan keterangan pengerjaan"
-            rows={2}
-          />
-        </div>
-
-        {/* Alamat Pengiriman - Right column */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            Alamat Pengiriman
-          </label>
-          <textarea
-            value={formData.alamat_pengiriman || ''}
-            onChange={(e) => onChange('alamat_pengiriman', e.target.value)}
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Masukkan alamat pengiriman"
-            rows={2}
+            rows={5}
           />
         </div>
       </div>

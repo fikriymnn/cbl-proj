@@ -331,6 +331,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
+      console.log('Mounting data response:', res.data);
       if (res.data.data && res.data.data.io_mounting) {
         const mountings = res.data.data.io_mounting || [];
         setMountingData(mountings);
@@ -535,6 +536,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
   const handleSOChange = (soId: number) => {
     const selectedSO = soData.find((so) => so.id === soId);
+
     if (selectedSO) {
       setFormData((prev) => ({
         ...prev,
