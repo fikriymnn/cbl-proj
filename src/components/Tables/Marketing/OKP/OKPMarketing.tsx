@@ -7,6 +7,8 @@ interface OKPItem {
   id: number;
   id_kalkulasi: number;
   no_okp: string;
+  customer?: string;
+  produk?: string;
   status_okp: string;
   tgl_target_marketing: string;
   jenis_pekerjaan: string[];
@@ -208,6 +210,7 @@ const OKPMarketing: React.FC = () => {
     setShowModal(false);
     setModalMode('create');
     setSelectedOKPId(undefined);
+    fetchOKPData();
   };
 
   const handleActionComplete = () => {
@@ -272,7 +275,7 @@ const OKPMarketing: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto py-1 px-2">
+    <div className=" mx-auto py-1 px-2">
       {/* Header */}
       <div className="mb-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
@@ -310,7 +313,7 @@ const OKPMarketing: React.FC = () => {
                   </button>
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                  ACTION
+                  ACT
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
@@ -319,6 +322,24 @@ const OKPMarketing: React.FC = () => {
                   >
                     NO OKP
                     {getSortIcon('no_okp')}
+                  </button>
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('customer')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    CUSTOMER
+                    {getSortIcon('customer')}
+                  </button>
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('produk')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    PRODUK
+                    {getSortIcon('produk')}
                   </button>
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -353,24 +374,7 @@ const OKPMarketing: React.FC = () => {
                     ACTIVE
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('rencana_qty_po')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    QTY
-                    {getSortIcon('rencana_qty_po')}
-                  </button>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('rencana_tgl_kirim')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    TGL KIRIM
-                    {getSortIcon('rencana_tgl_kirim')}
-                  </button>
-                </th>
+
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort('posisi_proses')}
@@ -451,6 +455,22 @@ const OKPMarketing: React.FC = () => {
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
+                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                        title={item.customer}
+                      >
+                        {item.customer ? truncateText(item.customer, 20) : '-'}
+                      </span>
+                    </td>
+                    <td className=" whitespace-nowrap">
+                      <span
+                        className="px-2 py-2 whitespace-nowrap text-xs text-gray-900"
+                        title={item.produk}
+                      >
+                        {item.produk ? truncateText(item.produk, 20) : '-'}
+                      </span>
+                    </td>
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <span
                         className={`text-xs px-1.5 py-0.5 rounded font-medium ${
                           item.status_okp === 'Baru'
                             ? 'bg-blue-100 text-blue-800'
@@ -501,20 +521,7 @@ const OKPMarketing: React.FC = () => {
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                       <span>{item.is_active == true ? 'Ya' : 'Tidak'}</span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      <span
-                        title={item.rencana_qty_po?.toLocaleString('id-ID')}
-                      >
-                        {item.rencana_qty_po
-                          ? item.rencana_qty_po.toLocaleString('id-ID')
-                          : '0'}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      <span title={item.rencana_tgl_kirim}>
-                        {formatDate(item.rencana_tgl_kirim)}
-                      </span>
-                    </td>
+
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
                         className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${getPosisiProsesColor(

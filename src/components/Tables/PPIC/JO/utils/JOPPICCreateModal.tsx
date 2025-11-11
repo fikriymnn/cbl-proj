@@ -40,6 +40,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const [jumlahJO, setJumlahJO] = useState<number>(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // ADD THIS NEW STATE
+  const [isManualInsheetEdit, setIsManualInsheetEdit] = useState(false);
+
   const initialFormData: Partial<JOFormData> = {
     id_io: 0,
     id_so: 0,
@@ -99,16 +102,23 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   }, [formData.po_qty, formData.stok_fg]);
 
-  // Recalculate insheet when qty or selectedMounting changes
   useEffect(() => {
-    if (selectedMounting && formData.qty) {
+    // Only auto-calculate if NOT manually editing insheet
+    if (selectedMounting && formData.qty && !isManualInsheetEdit) {
       const mounting = mountingData.find((m) => m.id === selectedMounting);
       if (mounting) {
         calculateInsheetFromQty(formData.qty, mounting);
       }
     }
   }, [formData.qty, selectedMounting]);
-
+  useEffect(() => {
+    if (isManualInsheetEdit) {
+      const timer = setTimeout(() => {
+        setIsManualInsheetEdit(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isManualInsheetEdit]);
   useEffect(() => {
     if (formData.id_so || selectedMounting) {
       setHasUnsavedChanges(true);
@@ -137,15 +147,15 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const isi = mounting.ukuran_cetak_isi_1 || 1;
     const bagian = mounting.ukuran_cetak_bagian_1 || 1;
 
-    // Step 1: Calculate Jumlah Druk (base, without insheet)
-    const jumlahDruk = Math.ceil(qty / isi);
+    // Step 1: Calculate RAW Jumlah Druk (base, without insheet)
+    const rawJumlahDruk = Math.ceil(qty / isi);
 
-    // Step 2: Get Ketentuan Insheet
-    const ketentuanInsheet = getKetentuanInsheet(qty);
+    // Step 2: Get Ketentuan Insheet BASED ON RAW DRUK (not qty)
+    const ketentuanInsheet = getKetentuanInsheet(rawJumlahDruk);
     const ketentuanValue =
       typeof ketentuanInsheet === 'object'
         ? ketentuanInsheet.is_persentase
-          ? (jumlahDruk * ketentuanInsheet.nilai) / 100
+          ? (rawJumlahDruk * ketentuanInsheet.nilai) / 100
           : ketentuanInsheet.nilai
         : ketentuanInsheet;
 
@@ -179,10 +189,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     });
 
     // Step 5: Calculate Jumlah LP
-    const jumlahLP = Math.ceil((jumlahDruk + totalInsheet) / bagian);
+    const jumlahLP = Math.ceil((rawJumlahDruk + totalInsheet) / bagian);
 
     setInsheetValues({
-      jumlah_druk: jumlahDruk,
+      jumlah_druk: rawJumlahDruk, // Store RAW druk
       jumlah_insheet_cetak: cetak,
       jumlah_insheet_pond: pond,
       jumlah_insheet_finishing: finishing,
@@ -198,19 +208,19 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   ) => {
     const isi = mounting.ukuran_cetak_isi_1 || 1;
 
-    // Find matching ketentuan
+    // Find matching ketentuan based on raw druk
     let ketentuanMatch = null;
     for (const ketentuan of ketentuanInsheetData) {
       if (ketentuan.is_persentase) {
-        const estimatedQty =
-          (totalInsheet * 100 * isi) / ketentuan.persentase_insheet;
+        // Estimate raw druk from total insheet
+        const estimatedRawDruk = (totalInsheet * 100) / ketentuan.nilai;
         const batasBawah = parseInt(ketentuan.batas_bawah);
         const batasAtas =
           ketentuan.batas_atas === '-'
             ? Infinity
             : parseInt(ketentuan.batas_atas);
 
-        if (estimatedQty >= batasBawah && estimatedQty <= batasAtas) {
+        if (estimatedRawDruk >= batasBawah && estimatedRawDruk <= batasAtas) {
           ketentuanMatch = ketentuan;
           break;
         }
@@ -226,19 +236,23 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       ketentuanMatch = ketentuanInsheetData[0];
     }
 
-    let calculatedQty: number;
+    let rawDruk: number;
 
     if (ketentuanMatch.is_persentase) {
-      const jumlahDruk = (totalInsheet * 100) / ketentuanMatch.nilai;
-      calculatedQty = Math.ceil(jumlahDruk * isi);
+      // Calculate raw druk from total insheet
+      rawDruk = Math.ceil((totalInsheet * 100) / ketentuanMatch.nilai);
     } else {
+      // For fixed value, estimate raw druk from batas
       const batasBawah = parseInt(ketentuanMatch.batas_bawah);
       const batasAtas =
         ketentuanMatch.batas_atas === '-'
           ? batasBawah * 2
           : parseInt(ketentuanMatch.batas_atas);
-      calculatedQty = Math.floor((batasBawah + batasAtas) / 2);
+      rawDruk = Math.floor((batasBawah + batasAtas) / 2);
     }
+
+    // NEW FORMULA: qty = (raw_druk + total_insheet) * isi
+    const calculatedQty = (rawDruk + totalInsheet) * isi;
 
     return Math.max(0, calculatedQty);
   };
@@ -492,12 +506,12 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   }, [isOpen, editMode, editJOId]);
 
-  const getKetentuanInsheet = (qty: number): any => {
+  const getKetentuanInsheet = (rawDruk: number): any => {
     const ketentuan = ketentuanInsheetData.find((k) => {
       const batasBawah = parseInt(k.batas_bawah);
       const batasAtas =
         k.batas_atas === '-' ? Infinity : parseInt(k.batas_atas);
-      return qty >= batasBawah && qty <= batasAtas;
+      return rawDruk >= batasBawah && rawDruk <= batasAtas;
     });
 
     return ketentuan || { nilai: 0, is_persentase: false };
@@ -578,9 +592,13 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const handleTotalInsheetChange = (totalValue: number) => {
     if (!selectedMounting) return;
 
+    // SET FLAG to prevent auto-recalculation
+    setIsManualInsheetEdit(true);
+
     const mounting = mountingData.find((m) => m.id === selectedMounting);
     if (!mounting) return;
 
+    const isi = mounting.ukuran_cetak_isi_1 || 1;
     const bagian = mounting.ukuran_cetak_bagian_1 || 1;
 
     const totalPercentage = prosesInsheetData.reduce(
@@ -608,10 +626,16 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       else if (prosesName === 'FINISHING') finishing = value;
     });
 
-    const calculatedQty = calculateQtyFromInsheet(totalValue, mounting);
-    const isi = mounting.ukuran_cetak_isi_1 || 1;
-    const jumlahDruk = Math.ceil(calculatedQty / isi);
-    const jumlahLP = Math.ceil((jumlahDruk + totalValue) / bagian);
+    // SIMPLE REVERSE FORMULA:
+    // Keep current raw druk, add new total insheet to get displayed druk
+    const currentRawDruk = insheetValues.jumlah_druk;
+    const displayedDruk = currentRawDruk + totalValue;
+
+    // Qty = Displayed Druk × Isi
+    const calculatedQty = displayedDruk * isi;
+
+    // Calculate Jumlah LP
+    const jumlahLP = Math.ceil(displayedDruk / bagian);
 
     setFormData((prev) => ({
       ...prev,
@@ -619,7 +643,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }));
 
     setInsheetValues({
-      jumlah_druk: jumlahDruk,
+      jumlah_druk: currentRawDruk,
       jumlah_insheet_cetak: cetak,
       jumlah_insheet_pond: pond,
       jumlah_insheet_finishing: finishing,
@@ -629,6 +653,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   };
 
   const handleQtyChange = (newQty: number) => {
+    setIsManualInsheetEdit(false); // Allow recalculation when qty changes
+
     if (!selectedMounting) {
       setFormData((prev) => ({ ...prev, qty: newQty }));
       return;

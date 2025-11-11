@@ -164,7 +164,14 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
   ): Promise<void> => {
     e.preventDefault();
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
-
+    if (
+      !formData.total_harga_satuan_customer ||
+      formData.total_harga_satuan_customer === '' ||
+      Number(formData.total_harga_satuan_customer) === 0
+    ) {
+      alert('Harga Satuan Customer Harus Diisi dan Tidak Boleh 0.');
+      return;
+    }
     try {
       setIsSubmitting(true);
 
@@ -200,7 +207,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
         lain_lain: formData.lain_lain || [],
         total_harga_lain_lain: Number(formData.total_harga_lain_lain || 0),
       };
-
+      //console.log('Submitting kalkulasi data:', submitData);
       const res: AxiosResponse<ApiResponse> = await axios.post(url, submitData);
 
       if (

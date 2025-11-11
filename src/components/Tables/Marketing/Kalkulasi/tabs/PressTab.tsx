@@ -1196,11 +1196,10 @@ const PressTab: React.FC<PressTabProps> = ({
                               formData.ukuran_cetak_panjang_1 || 0
                             } + ${formData.ukuran_cetak_panjang_2 || 0}) × (${
                               formData.ukuran_cetak_lebar_1 || 0
-                            } + ${
-                              formData.ukuran_cetak_lebar_2 || 0
-                            })) × ${selectedCoatingDepan.harga.toLocaleString(
-                              'id-ID',
-                            )}`
+                            } + ${formData.ukuran_cetak_lebar_2 || 0})) × ${
+                              selectedCoatingDepan.harga
+                            }
+                             `
                           )}
                         </div>
                       </div>

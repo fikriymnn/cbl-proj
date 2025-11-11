@@ -564,59 +564,58 @@ const KalkulasiDetailModal: React.FC<KalkulasiDetailModalProps> = ({
           </div>
 
           {/* Bottom Section - Pricing Summary */}
+          {/* Bottom Section - Pricing Summary */}
           <div className="grid grid-cols-2 gap-8 border-t pt-6">
             {/* Harga Kalkulasi */}
             <div>
               <h3 className="font-medium mb-4 underline">Harga Kalkulasi:</h3>
               <div className="space-y-3">
-                <div className="flex justify-between border-b border-zinc-200">
+                <div className="grid grid-cols-3 border-b border-zinc-200">
                   <span className="text-gray-600">Harga Produksi</span>
-                  <span className="font-medium">
+                  <span></span>
+                  <span className="font-medium text-right">
                     {formatCurrency(data.harga_produksi)}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200 items-center">
+                <div className="grid grid-cols-3 border-b border-zinc-200 items-center">
                   <span className="text-gray-600">Profit</span>
-                  <div className="text-right">
-                    <span className="text-xs">{data.profit}%</span>
-                    <span className="font-medium ml-2">
-                      {formatCurrency(data.profit_harga)}
-                    </span>
-                  </div>
+                  <span className="text-md text-center">{data.profit}%</span>
+                  <span className="font-medium text-right">
+                    {formatCurrency(data.profit_harga)}
+                  </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200">
+                <div className="grid grid-cols-3 border-b border-zinc-200">
                   <span className="text-gray-600">Harga Jual</span>
-                  <span className="font-medium">
+                  <span></span>
+                  <span className="font-medium text-right">
                     {formatCurrency(data.jumlah_harga_jual)}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200 items-center">
+                <div className="grid grid-cols-3 border-b border-zinc-200 items-center">
                   <span className="text-gray-600">PPN</span>
-                  <div className="text-right">
-                    <span className="text-xs">{data.ppn}%</span>
-                    <span className="font-medium ml-2">
-                      {formatCurrency(data.harga_ppn)}
-                    </span>
-                  </div>
+                  <span className="text-md text-center">{data.ppn}%</span>
+                  <span className="font-medium text-right">
+                    {formatCurrency(data.harga_ppn)}
+                  </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200 items-center">
+                <div className="grid grid-cols-3 border-b border-zinc-200 items-center">
                   <span className="text-gray-600">Diskon</span>
-                  <div className="text-right">
-                    <span className="text-xs">{data.diskon}%</span>
-                    <span className="font-medium ml-2">
-                      {formatCurrency(data.harga_diskon)}
-                    </span>
-                  </div>
+                  <span className="text-md text-center">{data.diskon}%</span>
+                  <span className="font-medium text-right">
+                    {formatCurrency(data.harga_diskon)}
+                  </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200 border-t pt-2">
+                <div className="grid grid-cols-3 border-b border-zinc-200 border-t pt-2">
                   <span className="font-medium">Total Harga</span>
-                  <span className="font-bold">
+                  <span></span>
+                  <span className="font-bold text-right">
                     {formatCurrency(data.total_harga)}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200">
+                <div className="grid grid-cols-3 border-b border-zinc-200">
                   <span className="font-medium">Total Harga ke Customer</span>
-                  <span className="font-bold">
+                  <span></span>
+                  <span className="font-bold text-right">
                     {formatCurrency(
                       data.total_harga_satuan_customer * data.qty_kalkulasi,
                     )}
@@ -629,68 +628,66 @@ const KalkulasiDetailModal: React.FC<KalkulasiDetailModalProps> = ({
             <div>
               <h3 className="font-medium mb-4 underline">Harga Per Satuan:</h3>
               <div className="space-y-3">
-                <div className="flex justify-between border-b border-zinc-200">
+                <div className="grid grid-cols-3 border-b border-zinc-200">
                   <span className="text-gray-600">Harga Produksi Satuan</span>
-                  <span className="font-medium">
+                  <span></span>
+                  <span className="font-medium text-right">
                     {formatCurrency(
                       parseFloat(data.harga_produksi) / data.qty_kalkulasi,
                     )}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200 items-center">
+                <div className="grid grid-cols-3 border-b border-zinc-200 items-center">
                   <span className="text-gray-600">Profit</span>
-                  <div className="text-right">
-                    <span className="text-xs">{data.profit}%</span>
-                    <span className="font-medium ml-2">
-                      {formatCurrency(
-                        parseFloat(data.profit_harga) / data.qty_kalkulasi,
-                      )}
-                    </span>
-                  </div>
+                  <span className="text-md text-center">{data.profit}%</span>
+                  <span className="font-medium text-right">
+                    {formatCurrency(
+                      parseFloat(data.profit_harga) / data.qty_kalkulasi,
+                    )}
+                  </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200">
+                <div className="grid grid-cols-3 border-b border-zinc-200">
                   <span className="text-gray-600">Harga Jual</span>
-                  <span className="font-medium">
+                  <span></span>
+                  <span className="font-medium text-right">
                     {formatCurrency(
                       parseFloat(data.jumlah_harga_jual) / data.qty_kalkulasi,
                     )}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200 items-center">
+                <div className="grid grid-cols-3 border-b border-zinc-200 items-center">
                   <span className="text-gray-600">PPN</span>
-                  <div className="text-right">
-                    <span className="text-xs">{data.ppn}%</span>
-                    <span className="font-medium ml-2">
-                      {formatCurrency(
-                        parseFloat(data.harga_ppn) / data.qty_kalkulasi,
-                      )}
-                    </span>
-                  </div>
+                  <span className="text-md text-center">{data.ppn}%</span>
+                  <span className="font-medium text-right">
+                    {formatCurrency(
+                      parseFloat(data.harga_ppn) / data.qty_kalkulasi,
+                    )}
+                  </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200 items-center">
+                <div className="grid grid-cols-3 border-b border-zinc-200 items-center">
                   <span className="text-gray-600">Diskon</span>
-                  <div className="text-right">
-                    <span className="text-xs">{data.diskon}%</span>
-                    <span className="font-medium ml-2">
-                      {formatCurrency(
-                        parseFloat(data.harga_diskon) / data.qty_kalkulasi,
-                      )}
-                    </span>
-                  </div>
+                  <span className="text-md text-center">{data.diskon}%</span>
+                  <span className="font-medium text-right">
+                    {formatCurrency(
+                      parseFloat(data.harga_diskon) / data.qty_kalkulasi,
+                    )}
+                  </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200 border-t pt-2">
+                <div className="grid grid-cols-3 border-b border-zinc-200 border-t pt-2">
                   <span className="font-medium">Total Harga Satuan</span>
-                  <span className="font-bold">
+                  <span></span>
+                  <span className="font-bold text-right">
                     {formatCurrency(
                       parseFloat(data.total_harga) / data.qty_kalkulasi,
                     )}
                   </span>
                 </div>
-                <div className="flex justify-between border-b border-zinc-200">
+                <div className="grid grid-cols-3 border-b border-zinc-200">
                   <span className="font-medium">
                     Total Harga Satuan ke Customer
                   </span>
-                  <span className="font-bold">
+                  <span></span>
+                  <span className="font-bold text-right">
                     {formatCurrency(data.total_harga_satuan_customer)}
                   </span>
                 </div>

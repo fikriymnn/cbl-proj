@@ -175,7 +175,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           </label>
           <input
             type="text"
-            value={formData.kalkulasi?.status_kalkulasi || ''}
+            value={
+              disabled
+                ? formData.kalkulasi?.status_kalkulasi || ''
+                : selectedKalkulasi?.status_kalkulasi || ''
+            }
             onChange={(e) => handleInputChange('status_okp', e.target.value)}
             className={`w-full p-2 border border-gray-300 rounded-md ${
               disabled ? 'bg-gray-100 text-gray-600 cursor-not-allowed' : ''

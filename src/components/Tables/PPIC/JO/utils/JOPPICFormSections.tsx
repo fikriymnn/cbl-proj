@@ -540,16 +540,16 @@ export const InsheetCalculationSection: React.FC<
   const isi = mounting.ukuran_cetak_isi_1 || 1;
   const bagian = mounting.ukuran_cetak_bagian_1 || 1;
 
-  // Calculate Jumlah Druk from Qty
-  const calculatedJumlahDruk = Math.ceil(qty / isi);
+  // Calculate RAW Jumlah Druk from Qty
+  const calculatedRawJumlahDruk = Math.ceil(qty / isi);
 
-  // Find matching ketentuan
-  const getKetentuanInsheet = (quantity: number): any => {
+  // Find matching ketentuan BASED ON RAW DRUK
+  const getKetentuanInsheet = (rawDruk: number): any => {
     const ketentuan = ketentuanInsheetData.find((k) => {
       const batasBawah = parseInt(k.batas_bawah);
       const batasAtas =
         k.batas_atas === '-' ? Infinity : parseInt(k.batas_atas);
-      return quantity >= batasBawah && quantity <= batasAtas;
+      return rawDruk >= batasBawah && rawDruk <= batasAtas;
     });
 
     return (
@@ -557,14 +557,14 @@ export const InsheetCalculationSection: React.FC<
     );
   };
 
-  const ketentuanInsheet = getKetentuanInsheet(qty);
+  const ketentuanInsheet = getKetentuanInsheet(calculatedRawJumlahDruk);
 
   // Calculate expected total insheet based on ketentuan
   const expectedTotalInsheet = ketentuanInsheet.is_persentase
-    ? Math.ceil((calculatedJumlahDruk * ketentuanInsheet.nilai) / 100)
+    ? Math.ceil((calculatedRawJumlahDruk * ketentuanInsheet.nilai) / 100)
     : ketentuanInsheet.nilai;
 
-  // Calculate DISPLAYED Jumlah Druk (Jumlah Druk + Total Insheet)
+  // Calculate DISPLAYED Jumlah Druk (RAW Jumlah Druk + Total Insheet)
   const displayedJumlahDruk =
     insheetValues.jumlah_druk + insheetValues.total_insheet;
 
@@ -579,7 +579,7 @@ export const InsheetCalculationSection: React.FC<
         Perhitungan Insheet - {mounting.nama_mounting}
       </h3>
 
-      {/* Formula Explanation */}
+      {/* Formula Explanation - UPDATED */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="text-sm space-y-2">
           <div className="font-semibold text-blue-900 mb-2">
@@ -587,23 +587,25 @@ export const InsheetCalculationSection: React.FC<
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
             <div>
-              <span className="font-medium">1. Jumlah Druk:</span>
+              <span className="font-medium">1. RAW Jumlah Druk:</span>
               <div className="ml-3 text-gray-700">
                 = Qty / Isi
                 <br />= {qty.toLocaleString()} / {isi}
                 <br />={' '}
                 <span className="font-bold text-blue-700">
-                  {calculatedJumlahDruk.toLocaleString()}
+                  {calculatedRawJumlahDruk.toLocaleString()}
                 </span>
               </div>
             </div>
             <div>
               <span className="font-medium">2. Ketentuan Insheet:</span>
               <div className="ml-3 text-gray-700">
+                <span className="text-red-600">(Based on RAW Druk)</span>
+                <br />
                 {ketentuanInsheet.is_persentase ? (
                   <>
-                    = Jumlah Druk × {ketentuanInsheet.nilai}%
-                    <br />= {calculatedJumlahDruk.toLocaleString()} ×{' '}
+                    = RAW Druk × {ketentuanInsheet.nilai}%
+                    <br />= {calculatedRawJumlahDruk.toLocaleString()} ×{' '}
                     {ketentuanInsheet.nilai}%
                     <br />={' '}
                     <span className="font-bold text-orange-700">
@@ -622,9 +624,21 @@ export const InsheetCalculationSection: React.FC<
               </div>
             </div>
             <div>
-              <span className="font-medium">3. Jumlah LP:</span>
+              <span className="font-medium">3. Displayed Jumlah Druk:</span>
               <div className="ml-3 text-gray-700">
-                = (Jumlah Druk + Total Insheet) / Bagian
+                = RAW Druk + Total Insheet
+                <br />= {insheetValues.jumlah_druk.toLocaleString()} +{' '}
+                {insheetValues.total_insheet.toLocaleString()}
+                <br />={' '}
+                <span className="font-bold text-green-700">
+                  {displayedJumlahDruk.toLocaleString()}
+                </span>
+              </div>
+            </div>
+            <div>
+              <span className="font-medium">4. Jumlah LP:</span>
+              <div className="ml-3 text-gray-700">
+                = (RAW Druk + Total Insheet) / Bagian
                 <br />= ({insheetValues.jumlah_druk.toLocaleString()} +{' '}
                 {insheetValues.total_insheet.toLocaleString()}) / {bagian}
                 <br />={' '}
@@ -633,12 +647,13 @@ export const InsheetCalculationSection: React.FC<
                 </span>
               </div>
             </div>
-            <div>
-              <span className="font-medium">4. Proses Insheet:</span>
-              <div className="ml-3 text-gray-700">
-                Distribusi berdasarkan persentase proses
-              </div>
-            </div>
+          </div>
+          <div className="mt-3 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
+            <span className="font-semibold text-yellow-900">
+              Reverse Formula (saat edit Total Insheet):
+            </span>
+            <br />
+            Qty = (RAW Druk + Total Insheet) × Isi
           </div>
         </div>
       </div>

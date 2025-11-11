@@ -115,7 +115,7 @@ const KalkulasiNormal: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto py-1">
+    <div className=" mx-auto py-1">
       {/* Header - remains the same */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
@@ -163,7 +163,7 @@ const KalkulasiNormal: React.FC = () => {
                   Qty
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Harga Per PCS
+                  Harga Customer
                 </th>
                 <th className="px-4 py-3  text-xs font-medium text-gray-500 uppercase text-center">
                   Status
@@ -200,8 +200,12 @@ const KalkulasiNormal: React.FC = () => {
                       {item.qty_kalkulasi?.toLocaleString()}
                     </td>
                     <td className="px-4 py-3 text-xs">
-                      Rp {item.harga_satuan?.toLocaleString()}
+                      Rp{' '}
+                      {
+                        Number(item.total_harga_satuan_customer || 0).toFixed(0) // or set decimal precision, e.g., (2)
+                      }
                     </td>
+
                     <td className="px-4 py-3 text-xs text-center">
                       <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs uppercase ">
                         {item.status}

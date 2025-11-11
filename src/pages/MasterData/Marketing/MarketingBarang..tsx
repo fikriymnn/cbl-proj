@@ -520,7 +520,7 @@ function MarketingBarang(): JSX.Element {
                     {barang.kategori}
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                    Rp {barang.harga.toLocaleString('id-ID')}
+                    Rp {barang.harga}
                   </td>
                   <td
                     className="px-2 py-2 text-xs text-gray-900 max-w-[100px] truncate"
