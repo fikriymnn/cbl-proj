@@ -1,7 +1,8 @@
 // JOPPICFormSections.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { MountingData } from '../types/jo.types';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
+import TahapanPopup from './TahapanPopup';
 
 interface BasicInfoSectionProps {
   formData: any;
@@ -308,6 +309,16 @@ interface MountingSectionProps {
     total_insheet: number;
     jumlah_lp: number;
   };
+  tahapan?: Array<{
+    id: number;
+    nama_proses: string;
+    nama_mesin: string;
+    nama_drying_time: string;
+    value_drying_time: number;
+    nama_setting_kapasitas: string;
+    value_setting_kapasitas: number;
+    index: number;
+  }>;
 }
 
 export const MountingSection: React.FC<MountingSectionProps> = ({
@@ -317,6 +328,20 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
   loadingMounting,
   insheetValues,
 }) => {
+  const [showTahapanPopup, setShowTahapanPopup] = useState(false);
+  const [selectedTahapanData, setSelectedTahapanData] = useState<{
+    tahapan: any[];
+    mountingName: string;
+  }>({ tahapan: [], mountingName: '' });
+
+  const handleShowTahapan = (mounting: MountingData, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent mounting selection toggle
+    setSelectedTahapanData({
+      tahapan: mounting.tahapan || [],
+      mountingName: mounting.nama_mounting,
+    });
+    setShowTahapanPopup(true);
+  };
   if (loadingMounting) {
     return (
       <div className="space-y-4">
@@ -389,6 +414,26 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                         TERPILIH
                       </span>
                     )}
+                    <button
+                      onClick={(e) => handleShowTahapan(mounting, e)}
+                      className="ml-2 px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-full font-semibold transition-colors flex items-center gap-1"
+                      title="Lihat Tahapan Proses"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      Lihat Tahapan
+                    </button>
                   </div>
 
                   {/* Main Info Grid */}
@@ -516,6 +561,13 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
           );
         })}
       </div>
+
+      <TahapanPopup
+        isOpen={showTahapanPopup}
+        onClose={() => setShowTahapanPopup(false)}
+        tahapanData={selectedTahapanData.tahapan}
+        mountingName={selectedTahapanData.mountingName}
+      />
     </div>
   );
 };
