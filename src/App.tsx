@@ -219,6 +219,7 @@ import MasterKriteriaKendala from './pages/Produksi/MasterData/MasterKriteriaKen
 import MasterKodeProduksi from './pages/Produksi/MasterData/MasterKodeProduksi';
 import InputLKHPage from './pages/Produksi/InputLKH/InputLkhPage';
 import MonitoringLKHPage from './pages/Produksi/MonitoringLKH/MonitoringLkhPage';
+import ApproveSPVPage from './pages/Produksi/MonitoringLKH/ApproveSPVpage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1787,6 +1788,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <MonitoringLKHPage />
+            </>
+          }
+        />
+        <Route
+          path="/production/approve-lkh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ApproveSPVPage />
             </>
           }
         />

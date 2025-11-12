@@ -46,6 +46,11 @@ interface Tahapan {
   nama_tahapan: string;
 }
 
+interface KategoriKendala {
+  id: number;
+  kategori: string;
+}
+
 interface ApiResponse {
   data: KodeProduksi[];
   total_page: number;
@@ -58,6 +63,9 @@ const MasterTableKodeProduksi: React.FC = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [kriteriaList, setKriteriaList] = useState<Kriteria[]>([]);
   const [tahapanList, setTahapanList] = useState<Tahapan[]>([]);
+  const [kategoriKendalaList, setKategoriKendalaList] = useState<
+    KategoriKendala[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showWasteModal, setShowWasteModal] = useState(false);
@@ -109,6 +117,7 @@ const MasterTableKodeProduksi: React.FC = () => {
     fetchDepartments();
     fetchKriteria();
     fetchTahapan();
+    fetchKategoriKendala();
   }, []);
 
   useEffect(() => {
@@ -171,6 +180,17 @@ const MasterTableKodeProduksi: React.FC = () => {
       setTahapanList(response.data.data || []);
     } catch (error) {
       console.error('Error fetching tahapan:', error);
+    }
+  };
+
+  const fetchKategoriKendala = async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE}/master/produksi/kategoriKendala`,
+      );
+      setKategoriKendalaList(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching kategori kendala:', error);
     }
   };
 
@@ -574,6 +594,31 @@ const MasterTableKodeProduksi: React.FC = () => {
 
               {isKendalaSelected && (
                 <>
+                  {/* Kategori Kendala */}
+                  <div className="mb-4">
+                    <label className="mb-2.5 block text-black dark:text-white">
+                      Kategori Kendala
+                    </label>
+                    <select
+                      value={formData.id_kategori_kendala}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          id_kategori_kendala: parseInt(e.target.value),
+                        })
+                      }
+                      className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      required
+                    >
+                      <option value="">Pilih Kategori Kendala</option>
+                      {kategoriKendalaList.map((kategori) => (
+                        <option key={kategori.id} value={kategori.id}>
+                          {kategori.kategori}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   {/* Kriteria Qty */}
                   <div className="mb-4">
                     <label className="mb-2.5 block font-medium text-black dark:text-white">
@@ -734,23 +779,25 @@ const MasterTableKodeProduksi: React.FC = () => {
                           className="w-full rounded border-[1.5px] border-stroke bg-transparent px-3 py-2 text-sm text-black outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                         >
                           <option value="">Pilih Data</option>
-                          {getKriteriaByTypeAndBagian('Frekuensi', 'QC').map(
-                            (k) => (
-                              <option key={k.id} value={k.id}>
-                                {k.kriteria} ({k.value})
-                              </option>
-                            ),
-                          )}
+                          {getKriteriaByTypeAndBagian(
+                            'Waktu',
+                            'Maintenance',
+                          ).map((k) => (
+                            <option key={k.id} value={k.id}>
+                              {k.kriteria} ({k.value})
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>
                   </div>
+
                   {/* Kriteria Frekuensi */}
                   <div className="mb-4">
                     <label className="mb-2.5 block font-medium text-black dark:text-white">
                       Kriteria Frekuensi
                     </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       <div>
                         <label className="mb-2 block text-sm text-black dark:text-white">
                           Produksi
@@ -833,6 +880,7 @@ const MasterTableKodeProduksi: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
                   {/* Target Department */}
                   <div className="mb-4">
                     <label className="mb-2.5 block text-black dark:text-white">

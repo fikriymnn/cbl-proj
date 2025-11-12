@@ -551,6 +551,11 @@ export const menuCategories: MenuCategory[] = [
         icon: 'input',
       },
       {
+        name: 'Approve LKH',
+        path: '/production/approve-lkh',
+        icon: 'input',
+      },
+      {
         name: 'Breakdown Recap',
         path: '/production/breakdown-recap',
         icon: 'breakdown',
