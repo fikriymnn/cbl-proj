@@ -5,6 +5,7 @@ import { MountingFormData } from '../Mounting';
 interface WarnaTabProps {
   formData: MountingFormData;
   onInputChange: (field: keyof MountingFormData, value: any) => void;
+  isEditMode: boolean;
 }
 
 const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {

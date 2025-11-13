@@ -10,9 +10,9 @@ import TahapanTab from './Tabs/TahapanTab';
 import LampiranTab from './Tabs/LampiratTab';
 import PartisiTab from './Tabs/PartisiTab';
 import TambahanTab from './Tabs/TambahanTab';
+
 interface MountingFormPopupProps {
   ioId: number;
-
   mountingData?: MountingData | null;
   existingMountings?: MountingData[];
   tahapan?: TahapanData[];
@@ -29,6 +29,9 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('general');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState<boolean>(false);
+
   const [formData, setFormData] = useState<MountingFormData>({
     // Initialize with default values...
     id_layout: '',
@@ -86,15 +89,41 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
   });
 
   const tabs = [
-    { id: 'general', label: 'General', component: GeneralTab },
-    { id: 'warna', label: 'Warna', component: WarnaTab },
-    { id: 'coating', label: 'Coating & Kertas', component: CoatingTab },
-    { id: 'pond', label: 'Pond, Finishing & Packing', component: PondTab },
-    { id: 'tahapan', label: 'Tahapan', component: TahapanTab },
-    { id: 'lampiran', label: 'Lampiran', component: LampiranTab },
-    { id: 'partisi', label: 'Partisi', component: PartisiTab },
-    { id: 'tambahan', label: 'Tambahan Insheet', component: TambahanTab },
+    { id: 'general', label: 'General' },
+    { id: 'warna', label: 'Warna' },
+    { id: 'coating', label: 'Coating & Kertas' },
+    { id: 'pond', label: 'Pond, Finishing & Packing' },
+    { id: 'tahapan', label: 'Tahapan' },
+    { id: 'lampiran', label: 'Lampiran' },
+    { id: 'partisi', label: 'Partisi' },
+    { id: 'tambahan', label: 'Tambahan Insheet' },
   ];
+
+  const handleFileUpload = async (file: File): Promise<string> => {
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formDataUpload,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      const fileName =
+        response.data.fileName || response.data.filename || response.data.file;
+      return fileName;
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+  };
+
   // Generate next mounting name
   const generateNextMountingName = (): string => {
     if (existingMountings.length === 0) return 'A';
@@ -234,7 +263,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         panjang_partisi_2: templateMounting?.panjang_partisi_2 || 0,
         tambahan_insheet_druk: templateMounting?.tambahan_insheet_druk || 0,
         lampiran: templateMounting?.lampiran || '',
-        tahapan: templateMounting?.tahapan || [], // Add this line
+        tahapan: templateMounting?.tahapan || [],
       });
     }
   }, [mountingData, existingMountings]);
@@ -279,34 +308,85 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
   };
 
   const renderTabContent = () => {
-    const currentTab = tabs.find((tab) => tab.id === activeTab);
-    if (!currentTab || !currentTab.component) return null;
-
-    const TabComponent = currentTab.component;
-    if (
-      activeTab === 'general' ||
-      activeTab === 'warna' ||
-      activeTab === 'coating' ||
-      activeTab === 'pond' ||
-      activeTab === 'tahapan' ||
-      activeTab === 'lampiran' ||
-      activeTab === 'partisi' ||
-      activeTab === 'tambahan'
-    ) {
-      return (
-        <TabComponent
-          formData={formData}
-          onInputChange={handleInputChange}
-          isEditMode={true}
-        />
-      );
+    switch (activeTab) {
+      case 'general':
+        return (
+          <GeneralTab
+            formData={formData}
+            onInputChange={handleInputChange}
+            isEditMode={true}
+            selectedFile={selectedFile}
+            setSelectedFile={setSelectedFile}
+            uploading={uploading}
+            setUploading={setUploading}
+            handleFileUpload={handleFileUpload}
+          />
+        );
+      case 'warna':
+        return (
+          <WarnaTab
+            formData={formData}
+            onInputChange={handleInputChange}
+            isEditMode={true}
+          />
+        );
+      case 'coating':
+        return (
+          <CoatingTab
+            formData={formData}
+            onInputChange={handleInputChange}
+            isEditMode={true}
+          />
+        );
+      case 'pond':
+        return (
+          <PondTab
+            formData={formData}
+            onInputChange={handleInputChange}
+            isEditMode={true}
+          />
+        );
+      case 'tahapan':
+        return (
+          <TahapanTab
+            formData={formData}
+            onInputChange={handleInputChange}
+            isEditMode={true}
+          />
+        );
+      case 'lampiran':
+        return (
+          <LampiranTab
+            formData={formData}
+            onInputChange={handleInputChange}
+            isEditMode={true}
+          />
+        );
+      case 'partisi':
+        return (
+          <PartisiTab
+            formData={formData}
+            onInputChange={handleInputChange}
+            isEditMode={true}
+          />
+        );
+      case 'tambahan':
+        return (
+          <TambahanTab
+            formData={formData}
+            onInputChange={handleInputChange}
+            isEditMode={true}
+          />
+        );
+      default:
+        return null;
     }
-    return null;
   };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-full max-w-6xl mx-4 max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">

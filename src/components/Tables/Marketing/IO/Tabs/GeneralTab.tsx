@@ -1,18 +1,131 @@
 // components/mounting-tabs/GeneralTab.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { MountingFormData } from '../Mounting';
+import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min?url';
+import PDFPreviewModal from './PDFPreviewModal';
+
+(pdfjsLib as any).GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface GeneralTabProps {
   formData: MountingFormData;
   onInputChange: (field: keyof MountingFormData, value: any) => void;
   isEditMode: boolean;
+  selectedFile: File | null;
+  setSelectedFile: (file: File | null) => void;
+  uploading: boolean;
+  setUploading: (uploading: boolean) => void;
+  handleFileUpload: (file: File) => Promise<string>;
 }
 
 const GeneralTab: React.FC<GeneralTabProps> = ({
   formData,
   onInputChange,
   isEditMode,
+  selectedFile,
+  setSelectedFile,
+  uploading,
+  setUploading,
+  handleFileUpload,
 }) => {
+  const [filePreview, setFilePreview] = useState<string>('');
+  const [uploadError, setUploadError] = useState('');
+  const [pdfPages, setPdfPages] = useState<string[]>([]);
+  const [selectedPage, setSelectedPage] = useState<string>('');
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+
+  const processPdfFile = async (file: File) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+      const pages: string[] = [];
+
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d')!;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        // Include the canvas element as required by pdfjs RenderParameters
+        await page.render({ canvasContext: context, viewport, canvas }).promise;
+        pages.push(canvas.toDataURL());
+      }
+
+      setPdfPages(pages);
+      if (pages.length > 0) {
+        setSelectedPage(pages[0]);
+      }
+    } catch (error) {
+      console.error('Error processing PDF:', error);
+      setUploadError('Error processing PDF file');
+    }
+  };
+
+  const handlePdfSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      await processPdfFile(file);
+      setShowPdfPreview(true);
+      setUploadError('');
+    } else {
+      setUploadError('Please select a PDF file');
+    }
+  };
+
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Please select an image file');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('File size must be less than 5MB');
+        return;
+      }
+
+      try {
+        setUploading(true);
+        setUploadError('');
+
+        // Upload file
+        const fileName = await handleFileUpload(file);
+
+        // Set preview
+        const previewUrl = URL.createObjectURL(file);
+        setFilePreview(previewUrl);
+        setSelectedFile(file);
+
+        // Update form data
+        onInputChange('lampiran', fileName);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        setUploadError('Failed to upload file. Please try again.');
+      } finally {
+        setUploading(false);
+      }
+    }
+  };
+
+  const clearFileSelection = (): void => {
+    setSelectedFile(null);
+    setFilePreview('');
+    setUploadError('');
+    onInputChange('lampiran', '');
+
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -41,6 +154,94 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
           />
         </div>
       </div>
+
+      {/* File Upload Section */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Foto Mounting
+        </label>
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+          {!filePreview ? (
+            <div className="text-center">
+              <div className="mb-4">
+                <label
+                  className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded cursor-pointer mr-4 ${
+                    !isEditMode || uploading
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
+                  Upload PDF
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handlePdfSelect}
+                    className="hidden"
+                    disabled={!isEditMode || uploading}
+                  />
+                </label>
+                <label
+                  className={`bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded cursor-pointer ${
+                    !isEditMode || uploading
+                      ? 'opacity-50 cursor-not-allowed'
+                      : ''
+                  }`}
+                >
+                  {uploading ? 'Uploading...' : 'Upload Image'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    disabled={!isEditMode || uploading}
+                  />
+                </label>
+              </div>
+              <p className="text-gray-500">
+                Upload PDF to crop or select image directly
+              </p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <img
+                src={filePreview}
+                alt="Preview"
+                className="max-w-xs max-h-48 mx-auto mb-4"
+              />
+              <button
+                type="button"
+                onClick={clearFileSelection}
+                disabled={!isEditMode || uploading}
+                className={`bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded ${
+                  !isEditMode || uploading
+                    ? 'opacity-50 cursor-not-allowed'
+                    : ''
+                }`}
+              >
+                Remove File
+              </button>
+            </div>
+          )}
+          {uploadError && (
+            <p className="text-red-500 text-sm mt-2">{uploadError}</p>
+          )}
+        </div>
+      </div>
+
+      {/* PDF Preview Modal */}
+      <PDFPreviewModal
+        showPdfPreview={showPdfPreview}
+        setShowPdfPreview={setShowPdfPreview}
+        pdfPages={pdfPages}
+        selectedPage={selectedPage}
+        setSelectedPage={setSelectedPage}
+        uploading={uploading}
+        setUploading={setUploading}
+        handleFileUpload={handleFileUpload}
+        handleInputChange={onInputChange}
+        setFilePreview={setFilePreview}
+        setSelectedFile={setSelectedFile}
+      />
 
       <div>
         <h4 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
