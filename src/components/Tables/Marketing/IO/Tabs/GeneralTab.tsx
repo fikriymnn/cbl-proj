@@ -1,5 +1,5 @@
 // components/mounting-tabs/GeneralTab.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MountingFormData } from '../Mounting';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min?url';
@@ -34,6 +34,17 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
   const [selectedPage, setSelectedPage] = useState<string>('');
   const [showPdfPreview, setShowPdfPreview] = useState(false);
 
+  // Load existing image on mount/edit mode
+  useEffect(() => {
+    if (formData.file && !selectedFile) {
+      // Show existing uploaded image from 'file' field
+      const imageUrl = `${import.meta.env.VITE_API_LINK}/images/${
+        formData.file
+      }`;
+      setFilePreview(imageUrl);
+    }
+  }, [formData.file]);
+
   const processPdfFile = async (file: File) => {
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -49,7 +60,6 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
-        // Include the canvas element as required by pdfjs RenderParameters
         await page.render({ canvasContext: context, viewport, canvas }).promise;
         pages.push(canvas.toDataURL());
       }
@@ -92,26 +102,11 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
         return;
       }
 
-      try {
-        setUploading(true);
-        setUploadError('');
-
-        // Upload file
-        const fileName = await handleFileUpload(file);
-
-        // Set preview
-        const previewUrl = URL.createObjectURL(file);
-        setFilePreview(previewUrl);
-        setSelectedFile(file);
-
-        // Update form data
-        onInputChange('lampiran', fileName);
-      } catch (error) {
-        console.error('Error uploading file:', error);
-        setUploadError('Failed to upload file. Please try again.');
-      } finally {
-        setUploading(false);
-      }
+      // Just set preview, don't upload yet
+      setUploadError('');
+      const previewUrl = URL.createObjectURL(file);
+      setFilePreview(previewUrl);
+      setSelectedFile(file);
     }
   };
 
@@ -119,9 +114,9 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
     setSelectedFile(null);
     setFilePreview('');
     setUploadError('');
-    onInputChange('lampiran', '');
+    onInputChange('file', '');
 
-    if (filePreview) {
+    if (filePreview && filePreview.startsWith('blob:')) {
       URL.revokeObjectURL(filePreview);
     }
   };

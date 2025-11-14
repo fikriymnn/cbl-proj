@@ -84,6 +84,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     lebar_partisi_2: 0,
     panjang_partisi_2: 0,
     tambahan_insheet_druk: 0,
+    file: '',
     lampiran: '',
     tahapan: [],
   });
@@ -200,6 +201,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         lebar_partisi_2: mountingData.lebar_partisi_2 || 0,
         panjang_partisi_2: mountingData.panjang_partisi_2 || 0,
         tambahan_insheet_druk: mountingData.tambahan_insheet_druk || 0,
+        file: mountingData.file || '',
         lampiran: mountingData.lampiran || '',
         tahapan: mountingData.tahapan || [],
       });
@@ -262,6 +264,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         lebar_partisi_2: templateMounting?.lebar_partisi_2 || 0,
         panjang_partisi_2: templateMounting?.panjang_partisi_2 || 0,
         tambahan_insheet_druk: templateMounting?.tambahan_insheet_druk || 0,
+        file: templateMounting?.file || '',
         lampiran: templateMounting?.lampiran || '',
         tahapan: templateMounting?.tahapan || [],
       });
@@ -271,31 +274,42 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const isEdit = mountingData && mountingData.id;
-    const url = isEdit
-      ? `${import.meta.env.VITE_API_LINK}/marketing/io/mounting/${
-          mountingData.id
-        }`
-      : `${import.meta.env.VITE_API_LINK}/marketing/io/mounting/${ioId}`;
-    console.log(formData);
     try {
       setLoading(true);
+
+      // Upload file first if there's a new file selected
+      let uploadedFileName = formData.file;
+      if (selectedFile) {
+        uploadedFileName = await handleFileUpload(selectedFile);
+      }
+
+      const dataToSubmit = {
+        ...formData,
+        file: uploadedFileName, // Changed from lampiran to file
+      };
+
+      const isEdit = mountingData && mountingData.id;
+      const url = isEdit
+        ? `${import.meta.env.VITE_API_LINK}/marketing/io/mounting/${
+            mountingData.id
+          }`
+        : `${import.meta.env.VITE_API_LINK}/marketing/io/mounting/${ioId}`;
+
       const res: AxiosResponse = isEdit
         ? await axios.put(
             url,
-            { data_mounting: formData },
+            { data_mounting: dataToSubmit },
             { withCredentials: true },
           )
         : await axios.post(
             url,
-            { data_mounting: formData },
+            { data_mounting: dataToSubmit },
             { withCredentials: true },
           );
 
       if (res.data.succes) {
         onClose();
       }
-      console.log(formData);
     } catch (error) {
       console.error('Error saving mounting:', error);
     } finally {

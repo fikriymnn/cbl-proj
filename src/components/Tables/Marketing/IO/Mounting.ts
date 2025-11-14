@@ -27,6 +27,7 @@ export interface MountingFormData {
   nama_mounting: string;
   barcode: string;
   file?: string;
+  lampiran: string;
   format_data: string;
   ukuran_jadi_panjang: number;
   ukuran_jadi_lebar: number;
@@ -74,7 +75,6 @@ export interface MountingFormData {
   lebar_partisi_2: number;
   panjang_partisi_2: number;
   tambahan_insheet_druk: number;
-  lampiran: string;
   untuk: string;
   tahapan?: TahapanData[]; // Add this line
 }
