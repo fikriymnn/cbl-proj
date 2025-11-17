@@ -1,4 +1,9 @@
 // types/kalkulasi.ts
+export interface QtyListItem {
+  id?: number;
+  qty: number;
+  is_selected: boolean;
+}
 
 // Base interfaces from HistoryKalkulasi
 export interface KalkulasiItem {
@@ -41,6 +46,9 @@ export interface KalkulasiItem {
   keterangan_kerja?: string;
   createdAt?: string;
   updatedAt?: string;
+  tipe_kalkulasi?: string;
+  label?: string;
+  qty_list?: QtyListItem[];
 }
 
 export interface LainLainItem {
@@ -153,6 +161,7 @@ export interface KalkulasiDetailItem extends KalkulasiItem {
 
 // Form data interface for KalkulasiModal
 export interface KalkulasiFormData {
+  kode_kalkulasi: string;
   id_kalkulasi_previous?: number;
   tgl_kalkulasi: string;
   status_kalkulasi: string;
@@ -208,11 +217,9 @@ export interface KalkulasiFormData {
   id_mesin_coating_belakang?: any;
   id_mesin_potong?: string;
   harga_plate?: string;
-  // Add coating price fields
   jumlah_harga_coating_depan?: number;
   jumlah_harga_coating_belakang?: number;
   total_harga_coating?: number;
-  // PostPress fields
   id_jenis_pons?: string;
   id_mesin_pons?: string;
   harga_pisau?: string;
@@ -220,16 +227,13 @@ export interface KalkulasiFormData {
   ongkos_pons_qty?: string;
   harga_satuan_ongkos_pons?: string;
   total_harga_ongkos_pons?: string;
-  // Lipat fields
   lipat?: string;
   id_mesin_lipat?: string;
   qty_lipat?: string;
   harga_lipat?: string;
-  // Potong Jadi fields
   potong_jadi?: string;
   qty_potong?: string;
   harga_potong_jadi?: string;
-  // PostPress2 fields
   id_lem?: string;
   jumlah_harga_lem?: string;
   id_mesin_finishing?: string;
@@ -238,7 +242,6 @@ export interface KalkulasiFormData {
   harga_foil_manual?: string;
   harga_spot_foil_manual?: string;
   harga_polimer_manual?: string;
-  //package
   panjang_packaging?: string;
   lebar_packaging?: string;
   no_packaging?: string;
@@ -249,7 +252,6 @@ export interface KalkulasiFormData {
   id_packing?: string;
   qty_packing?: string;
   harga_packing?: string;
-  //profit bar
   harga_produksi: string;
   profit: string;
   profit_harga: string;
@@ -262,12 +264,14 @@ export interface KalkulasiFormData {
   total_harga_satuan_customer: string;
   keterangan_harga: string;
   keterangan_kerja: string;
-  //lain lain
   lain_lain?: Array<{
     nama_item: string;
     harga: number;
   }>;
   total_harga_lain_lain?: string;
+  tipe_kalkulasi?: 'normal' | 'multi' | 'manual';
+  label?: string;
+  qty_list?: QtyListItem[];
 }
 
 // Common API interfaces
@@ -282,10 +286,14 @@ export interface ApiError {
   status?: number;
 }
 
-// Modal prop interfaces
+// Modal prop interfaces - UPDATED
 export interface KalkulasiModalProps {
   onClose: () => void;
   onSuccess: () => void;
+  kalkulasiType: 'normal' | 'multi' | 'manual';
+  copyType?: 'repeat' | 'repeat_perubahan';
+  editData?: KalkulasiDetailItem; // NEW
+  isEditMode?: boolean; // NEW
 }
 
 export interface KalkulasiDetailModalProps {
@@ -301,6 +309,9 @@ export interface BasicInfoFormProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  onQtyListChange?: (newList: QtyListItem[]) => void; // Add this
+  isReadOnly?: boolean;
+  isEditMode?: boolean; // Add this
 }
 
 export interface TabNavigationProps {

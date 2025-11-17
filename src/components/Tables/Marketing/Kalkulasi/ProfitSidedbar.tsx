@@ -329,7 +329,7 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
               <input
                 type="number"
                 name="total_harga_satuan_customer"
-                // value={formData.total_harga_satuan_customer || ''}
+                value={formData.total_harga_satuan_customer || ''}
                 onChange={onInputChange}
                 readOnly={isReadOnly}
                 className={getInputClassName(

@@ -14,10 +14,13 @@ import {
   KalkulasiFormData,
   KalkulasiModalProps,
   ApiResponse,
+  QtyListItem,
+  KalkulasiDetailItem,
 } from '../Kalkulasi/types/kalkulasi';
 
 const initialFormData: KalkulasiFormData = {
   tgl_kalkulasi: new Date().toISOString().split('T')[0],
+  kode_kalkulasi: '',
   status_kalkulasi: 'baru',
   id_customer: 0,
   id_marketing: 0,
@@ -61,18 +64,169 @@ const initialFormData: KalkulasiFormData = {
   nama_area_pengiriman: '',
   nama_produk: '',
   profit: '',
-  lain_lain: [], // Add initial empty array
-  total_harga_lain_lain: '0', // Add initial total
+  lain_lain: [],
+  total_harga_lain_lain: '0',
+  tipe_kalkulasi: 'normal',
+  label: '',
+  qty_list: [{ qty: 0, is_selected: true }],
+};
+
+// Helper function to convert KalkulasiDetailItem to KalkulasiFormData
+const convertDetailToFormData = (
+  detail: KalkulasiDetailItem,
+): KalkulasiFormData => {
+  return {
+    kode_kalkulasi: detail.kode_kalkulasi || '',
+    tgl_kalkulasi: detail.tgl_kalkulasi.split('T')[0],
+    status_kalkulasi: detail.status_kalkulasi,
+    id_customer: detail.id_customer,
+    id_marketing: detail.id_marketing,
+    id_produk: detail.id_produk,
+    id_area_pengiriman: detail.id_area_pengiriman,
+    qty_kalkulasi: detail.qty_kalkulasi.toString(),
+    presentase_insheet: detail.presentase_insheet.toString(),
+    spesifikasi: detail.spesifikasi,
+    ukuran_jadi_panjang: detail.ukuran_jadi_panjang.toString(),
+    ukuran_jadi_lebar: detail.ukuran_jadi_lebar.toString(),
+    ukuran_jadi_tinggi: detail.ukuran_jadi_tinggi.toString(),
+    ukuran_jadi_terb_panjang: detail.ukuran_jadi_terb_panjang.toString(),
+    ukuran_jadi_terb_lebar: detail.ukuran_jadi_terb_lebar.toString(),
+    ukuran_cetak_panjang_1: detail.ukuran_cetak_panjang_1.toString(),
+    ukuran_cetak_lebar_1: detail.ukuran_cetak_lebar_1.toString(),
+    ukuran_cetak_bagian_1: detail.ukuran_cetak_bagian_1.toString(),
+    ukuran_cetak_isi_1: detail.ukuran_cetak_isi_1.toString(),
+    ukuran_cetak_bbs_1: detail.ukuran_cetak_bbs_1,
+    ukuran_cetak_panjang_2: detail.ukuran_cetak_panjang_2?.toString() || '0',
+    ukuran_cetak_lebar_2: detail.ukuran_cetak_lebar_2?.toString() || '0',
+    ukuran_cetak_bagian_2: detail.ukuran_cetak_bagian_2?.toString() || '0',
+    ukuran_cetak_isi_2: detail.ukuran_cetak_isi_2?.toString() || '0',
+    ukuran_cetak_bbs_2: detail.ukuran_cetak_bbs_2 || 'no',
+    warna_depan: detail.warna_depan.toString(),
+    warna_belakang: detail.warna_belakang.toString(),
+    jumlah_warna: detail.jumlah_warna.toString(),
+    nama_customer: detail.nama_customer,
+    nama_marketing: detail.nama_marketing,
+    nama_area_pengiriman: detail.nama_area_pengiriman,
+    nama_produk: detail.nama_produk,
+    print_insheet: detail.print_insheet?.toString(),
+    pons_insheet: detail.pons_insheet?.toString(),
+    finishing_insheet: detail.finishing_insheet?.toString(),
+    // Kertas
+    id_kertas: detail.id_kertas,
+    jenis_kertas: detail.jenis_kertas,
+    gramature: detail.gramature_kertas,
+    panjangMm: detail.panjang_kertas,
+    lebarMm: detail.lebar_kertas,
+    percentage: detail.persentase_kertas,
+    apki: detail.persentase_apki_kertas,
+    total_kertas: detail.total_kertas,
+    total_harga_kertas: detail.total_harga_kertas,
+    // Cetak
+    id_jenis_mesin_cetak: detail.id_jenis_mesin_cetak,
+    jumlah_harga_cetak: detail.jumlah_harga_cetak,
+    harga_plate: detail.harga_plate.toString(),
+    // Coating
+    id_coating_depan: detail.id_coating_depan,
+    id_coating_belakang: detail.id_coating_belakang,
+    id_mesin_coating_depan: detail.id_mesin_coating_depan,
+    id_mesin_coating_belakang: detail.id_mesin_coating_belakang,
+    jumlah_harga_coating_depan: detail.jumlah_harga_coating_depan,
+    jumlah_harga_coating_belakang: detail.jumlah_harga_coating_belakang,
+    total_harga_coating: detail.total_harga_coating,
+    // PostPress
+    id_jenis_pons: detail.id_jenis_pons?.toString(),
+    id_mesin_pons: detail.id_mesin_pons?.toString(),
+    harga_pisau: detail.harga_pisau?.toString(),
+    ongkos_pons: detail.ongkos_pons,
+    ongkos_pons_qty: detail.ongkos_pons_qty?.toString(),
+    harga_satuan_ongkos_pons: detail.harga_satuan_ongkos_pons?.toString(),
+    total_harga_ongkos_pons: detail.total_harga_ongkos_pons?.toString(),
+    // Lipat
+    lipat: detail.lipat,
+    id_mesin_lipat: detail.id_mesin_lipat?.toString(),
+    qty_lipat: detail.qty_lipat?.toString(),
+    harga_lipat: detail.harga_lipat?.toString(),
+    // Potong
+    potong_jadi: detail.potong_jadi,
+    id_mesin_potong: detail.id_mesin_potong?.toString(),
+    qty_potong: detail.qty_potong?.toString(),
+    harga_potong_jadi: detail.harga_potong_jadi?.toString(),
+    // PostPress2
+    id_lem: detail.id_lem?.toString(),
+    jumlah_harga_lem: detail.jumlah_harga_lem?.toString(),
+    id_mesin_finishing: detail.id_mesin_finishing?.toString(),
+    foil: detail.foil,
+    spot_foil: detail.spot_foil || '',
+    harga_foil_manual: detail.harga_foil_manual?.toString(),
+    harga_spot_foil_manual: detail.harga_spot_foil_manual?.toString(),
+    harga_polimer_manual: detail.harga_polimer_manual?.toString(),
+    // Packaging
+    panjang_packaging: detail.panjang_packaging?.toString(),
+    lebar_packaging: detail.lebar_packaging?.toString(),
+    no_packaging: detail.no_packaging,
+    jumlah_kirim: detail.jumlah_kirim?.toString(),
+    harga_packaging: detail.harga_packaging?.toString(),
+    harga_pengiriman: detail.harga_pengiriman?.toString(),
+    id_packing: detail.id_packing?.toString(),
+    qty_packing: detail.qty_packing?.toString(),
+    harga_packing: detail.harga_packing?.toString(),
+    // Profit
+    harga_produksi: detail.harga_produksi.toString(),
+    profit: detail.profit.toString(),
+    profit_harga: detail.profit_harga.toString(),
+    jumlah_harga_jual: detail.jumlah_harga_jual.toString(),
+    ppn: detail.ppn.toString(),
+    harga_ppn: detail.harga_ppn.toString(),
+    diskon: detail.diskon.toString(),
+    harga_diskon: detail.harga_diskon.toString(),
+    total_harga: detail.total_harga.toString(),
+    harga_satuan: detail.harga_satuan.toString(),
+    total_harga_satuan_customer: detail.total_harga_satuan_customer.toString(),
+    keterangan_harga: detail.keterangan_harga || '',
+    keterangan_kerja: detail.keterangan_kerja || '',
+    // Lain-lain
+    lain_lain:
+      detail.lain_lain?.map((item) => ({
+        nama_item: item.nama_item,
+        harga: item.harga,
+      })) || [],
+    total_harga_lain_lain:
+      detail.lain_lain?.reduce((sum, item) => sum + item.harga, 0).toString() ||
+      '0',
+    // Type
+    tipe_kalkulasi:
+      (detail.tipe_kalkulasi as 'normal' | 'multi' | 'manual') || 'normal',
+    label: detail.label || '',
+    qty_list: detail.qty_list || [
+      { qty: detail.qty_kalkulasi, is_selected: true },
+    ],
+  };
 };
 
 const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
   onClose,
   onSuccess,
+  kalkulasiType = 'normal',
+  editData, // NEW
+  isEditMode = false, // NEW
 }) => {
   const [activeTab, setActiveTab] = useState<string>('ukuran-jadi');
   const [formData, setFormData] = useState<KalkulasiFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
+
+  // NEW: Initialize form with edit data if in edit mode
+  useEffect(() => {
+    if (isEditMode && editData) {
+      const convertedData = convertDetailToFormData(editData);
+      setFormData(convertedData);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        tipe_kalkulasi: kalkulasiType,
+      }));
+    }
+  }, [kalkulasiType, isEditMode, editData]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent): string | void => {
@@ -105,6 +259,20 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     };
   }, [hasUnsavedChanges]);
 
+  const handleQtyListChange = (newList: QtyListItem[]) => {
+    setFormData((prev) => {
+      const updated = { ...prev, qty_list: newList };
+
+      const selectedQty = newList.find((item) => item.is_selected);
+      if (selectedQty) {
+        updated.qty_kalkulasi = selectedQty.qty.toString();
+      }
+
+      return updated;
+    });
+    setHasUnsavedChanges(true);
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -115,42 +283,34 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     setFormData((prev) => {
       let updated = { ...prev };
 
-      // Special handling for lain_lain array
       if (name === 'lain_lain') {
         try {
-          // Parse the JSON string back to array
           updated.lain_lain = JSON.parse(value);
         } catch (error) {
           console.error('Error parsing lain_lain:', error);
           updated.lain_lain = [];
         }
       } else {
-        // Regular field handling
         (updated as any)[name] = value;
       }
 
-      // Check if the changed field affects production cost
       if (PRODUCTION_COST_FIELDS.includes(name)) {
         const newHargaProduksi = calculateHargaProduksi(updated);
         updated.harga_produksi = newHargaProduksi.toString();
       }
 
-      // Check if any financial field changed, then recalculate all financial data
       if (
         PRODUCTION_COST_FIELDS.includes(name) ||
         FINANCIAL_FIELDS.includes(name)
       ) {
         const financialData = calculateFinancialData(updated);
 
-        // Update all calculated fields
         updated.harga_produksi = financialData.harga_produksi.toString();
         updated.jumlah_harga_jual = financialData.jumlah_harga_jual.toString();
         updated.harga_ppn = financialData.harga_ppn.toString();
         updated.harga_diskon = financialData.harga_diskon.toString();
         updated.total_harga = financialData.total_harga.toString();
         updated.harga_satuan = financialData.harga_satuan.toString();
-        updated.total_harga_satuan_customer =
-          financialData.total_harga_satuan_customer.toString();
       }
 
       return updated;
@@ -163,7 +323,13 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
     e.preventDefault();
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
+
+    // NEW: Different URL for edit vs create
+    const url =
+      isEditMode && editData
+        ? `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi/${editData.id}`
+        : `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
+
     if (
       !formData.total_harga_satuan_customer ||
       formData.total_harga_satuan_customer === '' ||
@@ -172,6 +338,30 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
       alert('Harga Satuan Customer Harus Diisi dan Tidak Boleh 0.');
       return;
     }
+
+    if (formData.tipe_kalkulasi === 'multi') {
+      if (!formData.label || formData.label === '') {
+        alert('Label harus dipilih untuk kalkulasi multi.');
+        return;
+      }
+
+      const hasSelectedQty = formData.qty_list?.some(
+        (item) => item.is_selected,
+      );
+      if (!hasSelectedQty) {
+        alert('Pilih salah satu quantity untuk kalkulasi multi.');
+        return;
+      }
+
+      const hasEmptyQty = formData.qty_list?.some(
+        (item) => !item.qty || item.qty <= 0,
+      );
+      if (hasEmptyQty) {
+        alert('Semua quantity harus diisi dan lebih dari 0.');
+        return;
+      }
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -179,8 +369,8 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
         ...formData,
         qty_kalkulasi: Number(formData.qty_kalkulasi),
         harga_produksi: Number(formData.harga_produksi),
-        profit: Number(formData.profit), // NEW: Profit percentage
-        profit_harga: Number(formData.profit_harga), // CHANGED: Now calculated profit amount
+        profit: Number(formData.profit),
+        profit_harga: Number(formData.profit_harga),
         total_harga: Number(formData.total_harga),
         harga_satuan: Number(formData.harga_satuan),
         total_harga_satuan_customer: Number(
@@ -203,19 +393,29 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
         ukuran_cetak_lebar_2: Number(formData.ukuran_cetak_lebar_2),
         ukuran_cetak_bagian_2: Number(formData.ukuran_cetak_bagian_2),
         ukuran_cetak_isi_2: Number(formData.ukuran_cetak_isi_2),
-        // Include lain_lain in submission
         lain_lain: formData.lain_lain || [],
         total_harga_lain_lain: Number(formData.total_harga_lain_lain || 0),
+        tipe_kalkulasi: formData.tipe_kalkulasi,
+        label: formData.label || '',
+        qty_list: formData.qty_list || [],
       };
-      //console.log('Submitting kalkulasi data:', submitData);
-      const res: AxiosResponse<ApiResponse> = await axios.post(url, submitData);
+
+      console.log(
+        `${isEditMode ? 'Updating' : 'Submitting'} kalkulasi data:`,
+        submitData,
+      );
+
+      // NEW: Use PUT for edit, POST for create
+      const res: AxiosResponse<ApiResponse> = isEditMode
+        ? await axios.put(url, submitData, { withCredentials: true })
+        : await axios.post(url, submitData, { withCredentials: true });
 
       if (
         res.data &&
         (res.data.succes || res.status === 200 || res.status === 201)
       ) {
         setHasUnsavedChanges(false);
-        alert('Kalkulasi berhasil disimpan!');
+        alert(`Kalkulasi berhasil ${isEditMode ? 'diupdate' : 'disimpan'}!`);
         onSuccess();
       } else {
         throw new Error('Failed to save data');
@@ -267,14 +467,13 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     formData.harga_foil_manual,
     formData.harga_spot_foil_manual,
     formData.harga_polimer_manual,
-    formData.total_harga_lain_lain, // Add this dependency
-    formData.lain_lain, // Add this dependency
+    formData.total_harga_lain_lain,
+    formData.lain_lain,
   ]);
 
   useEffect(() => {
     const financialData = calculateFinancialData(formData);
 
-    // Only update if values have actually changed to avoid infinite loops
     const needsUpdate =
       parseFloat(formData.profit_harga || '0') !== financialData.profit_harga ||
       parseFloat(formData.jumlah_harga_jual || '0') !==
@@ -287,19 +486,17 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     if (needsUpdate) {
       setFormData((prev) => ({
         ...prev,
-        profit_harga: financialData.profit_harga.toString(), // CHANGED: Now calculated amount
+        profit_harga: financialData.profit_harga.toString(),
         jumlah_harga_jual: financialData.jumlah_harga_jual.toString(),
         harga_ppn: financialData.harga_ppn.toString(),
         harga_diskon: financialData.harga_diskon.toString(),
         total_harga: financialData.total_harga.toString(),
         harga_satuan: financialData.harga_satuan.toString(),
-        total_harga_satuan_customer:
-          financialData.total_harga_satuan_customer.toString(),
       }));
     }
   }, [
     formData.harga_produksi,
-    formData.profit, // CHANGED: Now 'profit' instead of 'profit_harga'
+    formData.profit,
     formData.ppn,
     formData.diskon,
     formData.qty_kalkulasi,
@@ -311,7 +508,23 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 shadow-lg">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Tambah Kalkulasi Baru</h1>
+            <div>
+              <h1 className="text-2xl font-bold items-center">
+                {/* NEW: Different title for edit mode */}
+                {isEditMode ? 'Edit Kalkulasi' : 'Tambah Kalkulasi Baru'}{' '}
+                <span
+                  className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-semibold ${
+                    kalkulasiType === 'multi'
+                      ? 'bg-green-500'
+                      : kalkulasiType === 'manual'
+                      ? 'bg-purple-500'
+                      : 'bg-blue-400'
+                  }`}
+                >
+                  Tipe: {kalkulasiType.toUpperCase()}
+                </span>
+              </h1>
+            </div>
             <button
               type="button"
               onClick={handleCancelClick}
@@ -348,6 +561,8 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
                 <BasicInfoForm
                   formData={formData}
                   onInputChange={handleInputChange}
+                  onQtyListChange={handleQtyListChange}
+                  isEditMode={isEditMode} // ADD THIS LINE
                 />
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -399,7 +614,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
-            onCancel={handleCancelClick} // Fix this function reference
+            onCancel={handleCancelClick}
           />
         </div>
       </div>

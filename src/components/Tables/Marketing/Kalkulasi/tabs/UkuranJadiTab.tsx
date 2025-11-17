@@ -107,7 +107,7 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
                 name: 'ukuran_cetak_panjang_1',
                 label: 'Panjang mm',
                 value: formData.ukuran_cetak_panjang_1,
-                type: 'number',
+                type: 'float',
               },
               {
                 name: 'ukuran_cetak_lebar_1',

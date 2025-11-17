@@ -1,7 +1,7 @@
 // utils/calculations.ts
-import { KalkulasiFormData } from '../KalkulasiModal';
+import { KalkulasiFormData } from '../types/kalkulasi';
 
-// utils/calculations.ts
+// Helper function to parse currency strings to numbers
 const parseCurrencyString = (value: string | number | undefined): number => {
   if (typeof value === 'number') return value;
   if (!value || value === '') return 0;
@@ -57,6 +57,7 @@ const parseCurrencyString = (value: string | number | undefined): number => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
+// Calculate total production cost (Harga Produksi)
 export const calculateHargaProduksi = (formData: KalkulasiFormData): number => {
   const fields = [
     parseCurrencyString(formData.total_harga_kertas),
@@ -74,12 +75,14 @@ export const calculateHargaProduksi = (formData: KalkulasiFormData): number => {
     parseCurrencyString(formData.harga_packaging),
     parseCurrencyString(formData.harga_packing),
     parseCurrencyString(formData.harga_pengiriman),
-    parseCurrencyString(formData.total_harga_lain_lain), // Add this line
+    parseCurrencyString(formData.total_harga_lain_lain),
   ];
 
-  const total = fields.reduce((total, value) => total + value, 0);
+  const total = fields.reduce((sum, value) => sum + value, 0);
   return total;
 };
+
+// Calculate total from lain-lain items
 export const calculateLainLainTotal = (
   lainLain?: Array<{ nama_item: string; harga: number }>,
 ): number => {
@@ -89,24 +92,25 @@ export const calculateLainLainTotal = (
     return total + (parseCurrencyString(item.harga) || 0);
   }, 0);
 };
-// utils/calculations.ts
+
+// Calculate all financial data (profit, PPN, discount, total)
 export const calculateFinancialData = (formData: KalkulasiFormData) => {
   const hargaProduksi = parseCurrencyString(formData.harga_produksi);
-  const profitPercentage = parseCurrencyString(formData.profit); // CHANGED: Now using 'profit' for percentage
+  const profitPercentage = parseCurrencyString(formData.profit);
   const ppnPercentage = parseCurrencyString(formData.ppn);
   const diskonPercentage = parseCurrencyString(formData.diskon);
   const qty = parseCurrencyString(formData.qty_kalkulasi);
 
-  // Step 1: Calculate Profit Amount = Harga Produksi * Profit%
+  // Step 1: Calculate Profit Amount = Harga Produksi * (Profit% / 100)
   const profitAmount = hargaProduksi * (profitPercentage / 100);
 
   // Step 2: Calculate Harga Jual = Harga Produksi + Profit Amount
   const hargaJual = hargaProduksi + profitAmount;
 
-  // Step 3: Calculate PPN = Harga Jual * PPN%
+  // Step 3: Calculate PPN = Harga Jual * (PPN% / 100)
   const hargaPpn = hargaJual * (ppnPercentage / 100);
 
-  // Step 4: Calculate Discount = (Harga Jual + PPN) * Discount%
+  // Step 4: Calculate Discount = (Harga Jual + PPN) * (Discount% / 100)
   const subtotalBeforeDiscount = hargaJual + hargaPpn;
   const hargaDiskon = subtotalBeforeDiscount * (diskonPercentage / 100);
 
@@ -118,16 +122,16 @@ export const calculateFinancialData = (formData: KalkulasiFormData) => {
 
   return {
     harga_produksi: hargaProduksi,
-    profit_harga: profitAmount, // CHANGED: Now calculated profit amount
+    profit_harga: profitAmount,
     jumlah_harga_jual: hargaJual,
     harga_ppn: hargaPpn,
     harga_diskon: hargaDiskon,
     total_harga: totalHarga,
     harga_satuan: hargaSatuan,
-    total_harga_satuan_customer: hargaSatuan,
   };
 };
 
+// Fields that affect production cost calculation
 export const PRODUCTION_COST_FIELDS = [
   'total_harga_kertas',
   'jumlah_harga_cetak',
@@ -146,14 +150,14 @@ export const PRODUCTION_COST_FIELDS = [
   'harga_polimer_manual',
   'harga_plate',
   'harga_packing',
-  'lain_lain', // This will trigger recalculation when lain_lain changes
-  'total_harga_lain_lain', // This will be included in the production cost
+  'lain_lain',
+  'total_harga_lain_lain',
 ];
 
-// Fields that affect financial calculations
+// Fields that affect financial calculations (profit, PPN, discount, total)
 export const FINANCIAL_FIELDS = [
   'harga_produksi',
-  'profit', // CHANGED: Now 'profit' instead of 'profit_harga'
+  'profit',
   'ppn',
   'diskon',
   'qty_kalkulasi',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { KalkulasiFormData } from '../Kalkulasi/types/kalkulasi';
+import { KalkulasiFormData, QtyListItem } from '../Kalkulasi/types/kalkulasi';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface BasicInfoFormProps {
@@ -10,8 +10,9 @@ interface BasicInfoFormProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  onQtyListChange?: (newList: QtyListItem[]) => void;
   isReadOnly?: boolean;
-  copyType?: 'repeat' | 'repeat_perubahan';
+  isEditMode?: boolean; // NEW PROP
 }
 
 interface Customer {
@@ -44,8 +45,9 @@ interface Pengiriman {
 const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   formData,
   onInputChange,
-  copyType,
+  onQtyListChange,
   isReadOnly = false,
+  isEditMode = false, // NEW PROP
 }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [marketingList, setMarketingList] = useState<Marketing[]>([]);
@@ -58,19 +60,35 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     null,
   );
 
-  const isFieldDisabled = (fieldType: 'basic' | 'select') => {
-    if (copyType === 'repeat') return true;
-    if (copyType === 'repeat_perubahan' && fieldType === 'basic') return false;
-    if (copyType === 'repeat_perubahan' && fieldType === 'select') return false;
+  const isFieldDisabled = () => {
     return isReadOnly;
   };
 
   useEffect(() => {
     getMarketingCustomer();
-    generateNomorKalkulasi();
-  }, []);
+    // Only generate new number if not in edit mode
+    if (!isEditMode) {
+      generateNomorKalkulasi();
+    } else {
+      // In edit mode, use existing kode_kalkulasi
+      setNomorKalkulasi(formData.kode_kalkulasi || '');
+    }
+  }, [isEditMode]);
 
-  // NEW: Sync selectedCustomer when formData changes (for editing existing data)
+  // NEW: Load related data when formData is available in edit mode
+  useEffect(() => {
+    if (isEditMode && formData.id_customer && customers.length > 0) {
+      const customer = customers.find((c) => c.id === formData.id_customer);
+      if (customer) {
+        setSelectedCustomer(customer);
+        // Load marketing, products, and pengiriman for this customer
+        getMarketingList(customer.id_marketing);
+        getMarketingPengiriman(customer.id_harga_pengiriman);
+        getProduks(customer.id);
+      }
+    }
+  }, [isEditMode, formData.id_customer, customers]);
+
   useEffect(() => {
     if (formData.id_customer && customers.length > 0) {
       const customer = customers.find((c) => c.id === formData.id_customer);
@@ -81,18 +99,17 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   }, [formData.id_customer, customers]);
 
   useEffect(() => {
-    if (selectedCustomer) {
+    if (selectedCustomer && !isEditMode) {
       getMarketingList(selectedCustomer.id_marketing);
       getMarketingPengiriman(selectedCustomer.id_harga_pengiriman);
       getProduks(selectedCustomer.id);
-    } else {
+    } else if (!selectedCustomer && !isEditMode) {
       setMarketingList([]);
       setProduks([]);
       setPengirimans([]);
     }
-  }, [selectedCustomer]);
+  }, [selectedCustomer, isEditMode]);
 
-  // NEW: Function to generate Nomor Kalkulasi
   async function generateNomorKalkulasi() {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -105,7 +122,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       const totalData = res.data.total_data || 0;
       const nextNumber = totalData + 1;
 
-      // Format: KA-XXXXX/MM/YY
       const now = new Date();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const year = String(now.getFullYear()).slice(-2);
@@ -114,7 +130,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       const nomor = `KA-${formattedNumber}/${month}/${year}`;
       setNomorKalkulasi(nomor);
 
-      // Update formData if needed
       onInputChange({
         target: { name: 'kode_kalkulasi', value: nomor },
       } as React.ChangeEvent<HTMLInputElement>);
@@ -124,7 +139,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     }
   }
 
-  // Helper function to ensure array format
   const ensureArray = (data: any): any[] => {
     if (!data) return [];
     if (Array.isArray(data)) return data;
@@ -243,7 +257,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   }
 
   const handleCustomerChange = (value: any) => {
-    if (isFieldDisabled('select')) return;
+    if (isFieldDisabled()) return;
 
     const customer = customers.find((c) => c.id === value);
     setSelectedCustomer(customer || null);
@@ -256,24 +270,27 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       target: { name: 'nama_customer', value: customer?.nama_customer || '' },
     } as unknown as React.ChangeEvent<HTMLSelectElement>);
 
-    const fieldsToReset = [
-      'id_marketing',
-      'nama_marketing',
-      'id_produk',
-      'nama_produk',
-      'id_area_pengiriman',
-      'nama_area_pengiriman',
-    ];
+    // Only reset fields if not in edit mode
+    if (!isEditMode) {
+      const fieldsToReset = [
+        'id_marketing',
+        'nama_marketing',
+        'id_produk',
+        'nama_produk',
+        'id_area_pengiriman',
+        'nama_area_pengiriman',
+      ];
 
-    fieldsToReset.forEach((field) => {
-      onInputChange({
-        target: { name: field, value: field.startsWith('id_') ? 0 : '' },
-      } as React.ChangeEvent<HTMLSelectElement>);
-    });
+      fieldsToReset.forEach((field) => {
+        onInputChange({
+          target: { name: field, value: field.startsWith('id_') ? 0 : '' },
+        } as React.ChangeEvent<HTMLSelectElement>);
+      });
+    }
   };
 
   const handleMarketingChange = (value: any) => {
-    if (isFieldDisabled('select')) return;
+    if (isFieldDisabled()) return;
 
     const marketing = marketingList.find((m) => m.id === value);
     const marketingName =
@@ -289,7 +306,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   };
 
   const handleProductChange = (value: any) => {
-    if (isFieldDisabled('select')) return;
+    if (isFieldDisabled()) return;
 
     const product = produks.find((p) => p.id === value);
 
@@ -303,7 +320,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   };
 
   const handlePengirimanChange = (value: any) => {
-    if (isFieldDisabled('select')) return;
+    if (isFieldDisabled()) return;
 
     const pengiriman = pengirimans.find((p) => p.id === value);
 
@@ -324,6 +341,42 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         value: pengiriman?.harga || '',
       },
     } as React.ChangeEvent<HTMLSelectElement>);
+  };
+
+  const handleAddQty = () => {
+    if (onQtyListChange && !isReadOnly) {
+      const newList = [
+        ...(formData.qty_list || []),
+        { qty: 0, is_selected: false },
+      ];
+      onQtyListChange(newList);
+    }
+  };
+
+  const handleRemoveQty = (index: number) => {
+    if (onQtyListChange && !isReadOnly) {
+      const newList = (formData.qty_list || []).filter((_, i) => i !== index);
+      onQtyListChange(newList);
+    }
+  };
+
+  const handleQtyChange = (index: number, value: number) => {
+    if (onQtyListChange && !isReadOnly) {
+      const newList = (formData.qty_list || []).map((item, i) =>
+        i === index ? { ...item, qty: value } : item,
+      );
+      onQtyListChange(newList);
+    }
+  };
+
+  const handleSelectQty = (index: number) => {
+    if (onQtyListChange && !isReadOnly) {
+      const newList = (formData.qty_list || []).map((item, i) => ({
+        ...item,
+        is_selected: i === index,
+      }));
+      onQtyListChange(newList);
+    }
   };
 
   const getSelectedCustomerId = () => {
@@ -362,7 +415,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* NEW: Nomor Kalkulasi Field */}
+        {/* Nomor Kalkulasi Field */}
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-700">
             Nomor Kalkulasi
@@ -370,8 +423,8 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           <input
             type="text"
             name="kode_kalkulasi"
-            value={nomorKalkulasi}
-            className="w-full px-2 py-1 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+            value={nomorKalkulasi || formData.kode_kalkulasi || ''}
+            className="w-full px-2 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed text-xs"
             disabled
             readOnly
           />
@@ -386,12 +439,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             name="tgl_kalkulasi"
             value={formData.tgl_kalkulasi}
             onChange={onInputChange}
-            className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
-              isFieldDisabled('basic')
+            className={`w-full px-2 py-2 text-xs border border-gray-300 rounded-lg transition-all ${
+              isReadOnly
                 ? 'bg-gray-100 cursor-not-allowed'
                 : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
             }`}
-            disabled={isFieldDisabled('basic')}
+            disabled={isReadOnly}
           />
         </div>
 
@@ -403,12 +456,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             name="status_kalkulasi"
             value={formData.status_kalkulasi}
             onChange={onInputChange}
-            className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
-              isFieldDisabled('basic')
+            className={`w-full px-2 py-2 text-xs border border-gray-300 rounded-lg transition-all ${
+              isReadOnly
                 ? 'bg-gray-100 cursor-not-allowed'
                 : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
             }`}
-            disabled={isFieldDisabled('basic')}
+            disabled={isReadOnly}
           >
             <option value="baru">Baru</option>
             <option value="repeat">Repeat</option>
@@ -432,7 +485,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             onChange={handleCustomerChange}
             placeholder="Pilih Customer"
             required
-            disabled={isFieldDisabled('select')}
+            disabled={isFieldDisabled()}
           />
         </div>
       </div>
@@ -458,7 +511,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             onChange={handleMarketingChange}
             placeholder="Pilih Marketing"
             required
-            disabled={isFieldDisabled('select')}
+            disabled={isFieldDisabled()}
           />
         </div>
 
@@ -478,7 +531,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             onChange={handleProductChange}
             placeholder="Pilih Produk"
             required
-            disabled={isFieldDisabled('select')}
+            disabled={isFieldDisabled()}
           />
         </div>
 
@@ -497,51 +550,201 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             value={getSelectedPengirimanId()}
             onChange={handlePengirimanChange}
             placeholder="Pilih Area Pengiriman"
-            disabled={isFieldDisabled('select')}
+            disabled={isFieldDisabled()}
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-xs font-medium text-gray-700">Qty</label>
-          <input
-            type="number"
-            name="qty_kalkulasi"
-            value={formData.qty_kalkulasi}
-            onChange={onInputChange}
-            className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
-              isFieldDisabled('basic')
-                ? 'bg-gray-100 cursor-not-allowed'
-                : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-            }`}
-            required
-            min="0"
-            disabled={isFieldDisabled('basic')}
-          />
-        </div>
+        {/* Qty - Normal or Multi */}
+        {formData.tipe_kalkulasi !== 'multi' ? (
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-700">
+              Qty
+            </label>
+            <input
+              type="number"
+              name="qty_kalkulasi"
+              value={formData.qty_kalkulasi}
+              onChange={onInputChange}
+              className={`w-full px-2 py-2 text-xs border border-gray-300 rounded-lg transition-all ${
+                isReadOnly
+                  ? 'bg-gray-100 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+              }`}
+              required
+              min="0"
+              disabled={isReadOnly}
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-700">
+              Qty (Auto)
+            </label>
+            <input
+              type="number"
+              name="qty_kalkulasi"
+              value={formData.qty_kalkulasi}
+              className="w-full px-2 py-2 text-xs border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+              disabled
+              readOnly
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              * Otomatis dari pilihan qty
+            </p>
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-        <div className="space-y-2">
-          <label className="block text-xs font-medium text-gray-700">
-            Presentase Insheet %
-          </label>
-          <input
-            type="number"
-            name="presentase_insheet"
-            value={formData.presentase_insheet}
-            onChange={onInputChange}
-            className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
-              isFieldDisabled('basic')
-                ? 'bg-gray-100 cursor-not-allowed'
-                : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-            }`}
-            min="0"
-            max="100"
-            step="0.01"
-            disabled={isFieldDisabled('basic')}
-          />
+      {/* Label for Multi Type - Same row as other fields */}
+      {formData.tipe_kalkulasi === 'multi' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-700">
+              Label <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="label"
+              value={formData.label || ''}
+              onChange={onInputChange}
+              className={`w-full px-2 py-2 text-xs border border-gray-300 rounded-lg transition-all ${
+                isReadOnly
+                  ? 'bg-gray-100 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-green-500 focus:border-transparent'
+              }`}
+              required
+              disabled={isReadOnly}
+            >
+              <option value="">Pilih Label</option>
+              <option value="CARTONING">CARTONING</option>
+              <option value="NON CARTONING">NON CARTONING</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-700">
+              Presentase Insheet %
+            </label>
+            <input
+              type="number"
+              name="presentase_insheet"
+              value={formData.presentase_insheet}
+              onChange={onInputChange}
+              className={`w-full px-2 py-2 text-xs border border-gray-300 rounded-lg transition-all ${
+                isReadOnly
+                  ? 'bg-gray-100 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+              }`}
+              min="0"
+              max="100"
+              step="0.01"
+              disabled={isReadOnly}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Qty List for Multi Type - Compact Design */}
+      {formData.tipe_kalkulasi === 'multi' && (
+        <div className="mt-6 border-t pt-6">
+          <div className="flex justify-between items-center mb-4">
+            <label className="block text-xs font-semibold text-gray-800">
+              Daftar Quantity <span className="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleAddQty}
+              disabled={isReadOnly}
+              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 transition-colors"
+            >
+              + Tambah
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {(formData.qty_list || []).map((item, index) => (
+              <div
+                key={index}
+                className={`flex items-center gap-2 p-3 border-2 rounded-lg transition-all ${
+                  item.is_selected
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-gray-300 bg-white'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="selected_qty"
+                  checked={item.is_selected}
+                  onChange={() => handleSelectQty(index)}
+                  disabled={isReadOnly}
+                  className="w-4 h-4 text-green-600 cursor-pointer"
+                />
+                <input
+                  type="number"
+                  value={item.qty}
+                  onChange={(e) =>
+                    handleQtyChange(index, Number(e.target.value))
+                  }
+                  disabled={isReadOnly}
+                  className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
+                  placeholder="Qty"
+                  min="0"
+                  required
+                />
+                {(formData.qty_list || []).length > 1 && !isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveQty(index)}
+                    className="text-red-500 hover:text-red-700 transition-colors"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            * Pilih salah satu quantity untuk kalkulasi
+          </p>
+        </div>
+      )}
+
+      {/* Presentase Insheet for Non-Multi */}
+      {formData.tipe_kalkulasi !== 'multi' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-700">
+              Presentase Insheet %
+            </label>
+            <input
+              type="number"
+              name="presentase_insheet"
+              value={formData.presentase_insheet}
+              onChange={onInputChange}
+              className={`w-full px-2 py-2 text-xs border border-gray-300 rounded-lg transition-all ${
+                isReadOnly
+                  ? 'bg-gray-100 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+              }`}
+              min="0"
+              max="100"
+              step="0.01"
+              disabled={isReadOnly}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="mt-6">
         <label className="block text-xs font-medium text-gray-700 mb-2">
@@ -552,13 +755,13 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           value={formData.spesifikasi}
           onChange={onInputChange}
           rows={3}
-          className={`w-full px-2 py-1 border border-gray-300 rounded-lg transition-all ${
-            isFieldDisabled('basic')
+          className={`w-full px-2 py-1 text-xs border border-gray-300 rounded-lg transition-all ${
+            isReadOnly
               ? 'bg-gray-100 cursor-not-allowed'
               : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
           }`}
           placeholder="Masukkan spesifikasi produk..."
-          disabled={isFieldDisabled('basic')}
+          disabled={isReadOnly}
         />
       </div>
     </div>
