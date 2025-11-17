@@ -84,7 +84,10 @@ const KalkulasiNormal: React.FC = () => {
     setIsEditMode(false);
     setEditData(null);
   };
-
+  const handleCloseDetailModal = (): void => {
+    setShowDetailModal(false);
+    setSelectedDetailData(null);
+  };
   // FIXED: Now properly returns KalkulasiDetailItem or undefined
   const fetchKalkulasiDetail = async (
     id: number,
@@ -371,7 +374,7 @@ const KalkulasiNormal: React.FC = () => {
       {showDetailModal && selectedDetailData && (
         <KalkulasiDetailModal
           data={selectedDetailData}
-          onClose={handleCloseModal}
+          onClose={handleCloseDetailModal}
         />
       )}
     </div>
