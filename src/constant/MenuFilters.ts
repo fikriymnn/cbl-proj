@@ -108,51 +108,12 @@ export const filterMasterDataItems = (
 
   // Super admin and developer can access all master data
   if (normalizedRole === 'super admin' || normalizedRole === 'developer') {
-    let filteredItems = items;
-
-    // Keep General submenu for super admin and developer
-    if (normalizedRole !== 'super admin' && normalizedRole !== 'developer') {
-      filteredItems = items
-        .map((item) => {
-          if (item.name === 'General' && item.children) {
-            return {
-              ...item,
-              children: item.children.filter(() => false),
-            };
-          }
-          return item;
-        })
-        .filter((item) => {
-          if (item.name === 'General') {
-            return item.children && item.children.length > 0;
-          }
-          return true;
-        });
-    }
-
-    return filteredItems;
+    // Return all items including General submenu
+    return items;
   }
 
-  // For admin and kabag, only show their department's master data
-  let filteredItems = items;
-
-  // Remove General submenu for non-super admin/developer users
-  filteredItems = items
-    .map((item) => {
-      if (item.name === 'General' && item.children) {
-        return {
-          ...item,
-          children: [],
-        };
-      }
-      return item;
-    })
-    .filter((item) => {
-      if (item.name === 'General') {
-        return false;
-      }
-      return true;
-    });
+  // For admin and kabag, remove General submenu first
+  let filteredItems = items.filter((item) => item.name !== 'General');
 
   // Filter master data submenus based on bagian
   filteredItems = filteredItems.filter((item) => {
@@ -262,12 +223,25 @@ export const getFilteredCategoriesByRoleAndBagian = (
     return getFilteredMenuCategories(menuCategories, role);
   }
 
-  // Admin role in marketing bagian - only access Marketing category
+  // Admin role in marketing bagian - access Marketing category AND Master Data
   if (
     role?.toLowerCase() === 'admin' &&
     bagian?.toLowerCase() === 'marketing'
   ) {
-    return menuCategories.filter((category) => category.name === 'Marketing');
+    return menuCategories
+      .filter(
+        (category) =>
+          category.name === 'Marketing' || category.name === 'Master Data',
+      )
+      .map((category) => {
+        if (category.name === 'Master Data') {
+          return {
+            ...category,
+            items: filterMasterDataItems(category.items, role, bagian),
+          };
+        }
+        return category;
+      });
   }
 
   // Payroll role - special case for HR
