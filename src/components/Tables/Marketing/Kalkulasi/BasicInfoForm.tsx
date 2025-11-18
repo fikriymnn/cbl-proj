@@ -725,6 +725,27 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-700">
+              Label <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="label"
+              value={formData.label || ''}
+              onChange={onInputChange}
+              className={`w-full px-2 py-2 text-xs border border-gray-300 rounded-lg transition-all ${
+                isReadOnly
+                  ? 'bg-gray-100 cursor-not-allowed'
+                  : 'focus:ring-2 focus:ring-green-500 focus:border-transparent'
+              }`}
+              required
+              disabled={isReadOnly}
+            >
+              <option value="">Pilih Label</option>
+              <option value="CARTONING">CARTONING</option>
+              <option value="NON CARTONING">NON CARTONING</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-xs font-medium text-gray-700">
               Presentase Insheet %
             </label>
             <input

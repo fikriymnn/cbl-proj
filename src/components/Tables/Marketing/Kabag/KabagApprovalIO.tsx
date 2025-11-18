@@ -140,7 +140,7 @@ const KabagApprovalIO: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto py-1">
+    <div className="">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full table-auto text-xs">
