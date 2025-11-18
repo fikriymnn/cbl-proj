@@ -3,6 +3,7 @@ import axios, { AxiosResponse } from 'axios';
 import KalkulasiModal from './KalkulasiModal';
 import KalkulasiDetailModal from './KalkulasiDetailModal';
 import KalkulasiTypeModal from './KalkulasiTypeModal';
+import KalkulasiPrintModal from './KalkulasiPrintPreview';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import {
@@ -21,6 +22,7 @@ const KalkulasiNormal: React.FC = () => {
   const [showTypeModal, setShowTypeModal] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
 
   const [selectedKalkulasiType, setSelectedKalkulasiType] = useState<
     'normal' | 'multi' | 'manual' | null
@@ -28,6 +30,7 @@ const KalkulasiNormal: React.FC = () => {
   const [selectedDetailData, setSelectedDetailData] =
     useState<KalkulasiDetailItem | null>(null);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
+  const [printKalkulasiId, setPrintKalkulasiId] = useState<number | null>(null);
 
   // State for edit mode
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
@@ -140,6 +143,11 @@ const KalkulasiNormal: React.FC = () => {
     setSelectedDetailData(null);
   };
 
+  const handleClosePrintModal = (): void => {
+    setShowPrintModal(false);
+    setPrintKalkulasiId(null);
+  };
+
   const fetchKalkulasiDetail = async (
     id: number,
   ): Promise<KalkulasiDetailItem | undefined> => {
@@ -188,6 +196,11 @@ const KalkulasiNormal: React.FC = () => {
     } finally {
       setDetailLoading(false);
     }
+  };
+
+  const handlePrint = (id: number): void => {
+    setPrintKalkulasiId(id);
+    setShowPrintModal(true);
   };
 
   async function RequestKabag(id: any) {
@@ -341,7 +354,7 @@ const KalkulasiNormal: React.FC = () => {
           {searchTerm && (
             <button
               onClick={handleClearSearch}
-              className="bg-gray-500 hover:bg-gray-600 text-red-500 px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
             >
               Clear
             </button>
@@ -369,7 +382,7 @@ const KalkulasiNormal: React.FC = () => {
                     No
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase w-32">
                   Actions
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -464,7 +477,8 @@ const KalkulasiNormal: React.FC = () => {
                       {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-4 py-2 text-xs">
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col flex-2 gap-1">
+                        {/* View Detail Button */}
                         <button
                           onClick={() => handleViewDetail(item.id)}
                           disabled={detailLoading}
@@ -475,13 +489,17 @@ const KalkulasiNormal: React.FC = () => {
 
                         {item.status === 'draft' && (
                           <>
+                            {/* Edit Button */}
                             <button
                               onClick={() => handleEdit(item.id)}
                               disabled={detailLoading}
-                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 transition-colors"
+                              title="Edit"
                             >
-                              {detailLoading ? 'Loading...' : 'Edit'}
+                              Edit
                             </button>
+
+                            {/* Submit Button */}
                             <button
                               onClick={() => RequestKabag(item.id)}
                               className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
@@ -490,6 +508,16 @@ const KalkulasiNormal: React.FC = () => {
                             </button>
                           </>
                         )}
+
+                        {/* Print Button */}
+                        <button
+                          onClick={() => handlePrint(item.id)}
+                          disabled={detailLoading}
+                          className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 transition-colors"
+                          title="Print"
+                        >
+                          Print
+                        </button>
                       </div>
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap text-left flex flex-col gap-2">
@@ -500,6 +528,9 @@ const KalkulasiNormal: React.FC = () => {
                         {item.kode_kalkulasi
                           ? truncateText(item.kode_kalkulasi, 20)
                           : '-'}
+                      </span>
+                      <span className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium">
+                        {item.status_kalkulasi}
                       </span>
                       <span className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium">
                         {item.status_kalkulasi}
@@ -655,6 +686,12 @@ const KalkulasiNormal: React.FC = () => {
         <KalkulasiDetailModal
           data={selectedDetailData}
           onClose={handleCloseDetailModal}
+        />
+      )}
+      {showPrintModal && printKalkulasiId && (
+        <KalkulasiPrintModal
+          kalkulasiId={printKalkulasiId}
+          onClose={handleClosePrintModal}
         />
       )}
     </div>
