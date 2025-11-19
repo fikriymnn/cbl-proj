@@ -532,9 +532,7 @@ const KalkulasiNormal: React.FC = () => {
                       <span className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium">
                         {item.status_kalkulasi}
                       </span>
-                      <span className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium">
-                        {item.status_kalkulasi}
-                      </span>
+
                       <span className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium">
                         {item.label || 'No Label'}
                       </span>

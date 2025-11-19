@@ -48,14 +48,14 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
               <title>Print - ${data?.kode_kalkulasi || 'Kalkulasi'}</title>
               <style>
                 @page {
-                  size: A4 landscape;
-                  margin: 8mm;
+                  size: A4 portrait;
+                  margin: 5mm;
                 }
                 body {
                   margin: 0;
                   padding: 0;
                   font-family: Arial, sans-serif;
-                  font-size: 9px;
+                  font-size: 7px;
                 }
                 @media print {
                   body {
@@ -68,6 +68,14 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 }
                 * {
                   box-sizing: border-box;
+                }
+                table {
+                  border-collapse: collapse;
+                  width: 100%;
+                }
+                td {
+                  padding: 1px 2px;
+                  line-height: 1.2;
                 }
               </style>
               <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -93,6 +101,20 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
   const formatCurrency = (value: number | string) => {
     const num = typeof value === 'string' ? parseFloat(value) : value;
     return `Rp. ${num.toLocaleString('id-ID', { minimumFractionDigits: 0 })}`;
+  };
+
+  const getValue = (value: any, defaultValue: string = '-') => {
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    return value;
+  };
+
+  const getNumericValue = (value: any, defaultValue: number = 0) => {
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    return value;
   };
 
   if (loading) {
@@ -147,824 +169,1011 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
 
         {/* Scrollable content area */}
         <div className="flex-1 overflow-auto bg-gray-600 p-4">
-          <div className="max-w-[1400px] mx-auto bg-white shadow-2xl">
+          <div className="max-w-[800px] mx-auto bg-white shadow-2xl">
             <div
               ref={printRef}
               className="print-container"
-              style={{ fontSize: '9px' }}
+              style={{ fontSize: '7px' }}
             >
-              {/* Header */}
+              {/* Main Container with border */}
               <div className="border-2 border-black">
-                <div className="bg-pink-400 text-center py-1 border-b-2 border-black">
-                  <h1 className="text-sm font-bold">
-                    PT. Cahaya Berlian Lestari Offset
-                  </h1>
-                  <h2 className="text-xs font-semibold">
-                    Calculation Form: {data.kode_kalkulasi}
-                  </h2>
-                </div>
-
-                {/* Label Field */}
-                <div className="grid grid-cols-2 border-b-2 border-black text-xs">
-                  <div className="p-1 border-r border-black">
-                    <span className="font-semibold">Label:</span>{' '}
-                    {data.label || '-'}
-                  </div>
-                  <div className="p-1">
-                    <span className="font-semibold">Tipe Kalkulasi:</span>{' '}
-                    <span className="uppercase">
-                      {data.tipe_kalkulasi || 'NORMAL'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Basic Info */}
-                <div className="grid grid-cols-4 border-b border-black text-xs">
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">Pemesan</div>
-                    <div>{data.nama_customer}</div>
-                  </div>
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">
-                      PT TRIFA RAYA LABORATORIES
-                    </div>
-                  </div>
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">Marketing</div>
-                    <div>{data.nama_marketing}</div>
-                  </div>
-                  <div className="p-1">
-                    <div className="font-semibold">TS</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-4 border-b border-black text-xs">
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">Nama Produk</div>
-                    <div>{data.nama_produk}</div>
-                  </div>
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">Tanggal Kalkulasi</div>
-                    <div>
-                      {new Date(data.tgl_kalkulasi).toLocaleDateString('id-ID')}
-                    </div>
-                  </div>
-                  <div className="p-1 border-r border-black col-span-2"></div>
-                </div>
-
-                <div className="grid grid-cols-4 border-b border-black text-xs">
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">Spesifikasi</div>
-                    <div>{data.spesifikasi}</div>
-                  </div>
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">Area</div>
-                    <div>{data.nama_area_pengiriman}</div>
-                  </div>
-                  <div className="p-1 col-span-2"></div>
-                </div>
-
-                <div className="grid grid-cols-4 border-b-2 border-black text-xs">
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">Status</div>
-                    <div className="uppercase">{data.status_kalkulasi}</div>
-                  </div>
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">No OKP</div>
-                  </div>
-                  <div className="p-1 border-r border-black">
-                    <div className="font-semibold">Quantity</div>
-                    <div>{data.qty_kalkulasi?.toLocaleString()}</div>
-                  </div>
-                  <div className="p-1">
-                    <div className="font-semibold">No SO</div>
-                    <div></div>
-                    <div className="font-semibold">No IQ</div>
-                  </div>
-                </div>
-
-                {/* Ukuran Produk */}
-                <div className="bg-blue-200 p-1 border-b border-black text-center font-semibold text-xs">
-                  Ukuran Produk
-                </div>
-                <div
-                  className="grid grid-cols-12 border-b border-black"
-                  style={{ fontSize: '8px' }}
-                >
-                  <div className="col-span-2 p-0.5 border-r border-black">
-                    <div className="font-semibold">Ukuran Jadi</div>
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    P(mm)
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_jadi_panjang}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    L(mm)
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_jadi_lebar}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    T(mm)
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_jadi_tinggi}
-                  </div>
-                  <div className="col-span-2 p-0.5 border-r border-black">
-                    Terbentang
-                  </div>
-                  <div className="col-span-2 p-0.5">
-                    {data.ukuran_jadi_terb_panjang} x{' '}
-                    {data.ukuran_jadi_terb_lebar}
-                  </div>
-                </div>
-
-                {/* Ukuran Cetak */}
-                <div
-                  className="grid grid-cols-12 border-b border-black"
-                  style={{ fontSize: '8px' }}
-                >
-                  <div className="col-span-2 p-0.5 border-r border-black">
-                    <div className="font-semibold">Ukuran Cetak</div>
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    P(mm)
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_cetak_panjang_1}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    L(mm)
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_cetak_lebar_1}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_cetak_bagian_1}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    Bagian
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    Isi
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_cetak_isi_1}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    BBS
-                  </div>
-                  <div className="col-span-1 p-0.5">
-                    {data.ukuran_cetak_bbs_1}
-                  </div>
-                </div>
-
-                <div
-                  className="grid grid-cols-12 border-b-2 border-black"
-                  style={{ fontSize: '8px' }}
-                >
-                  <div className="col-span-2 p-0.5 border-r border-black">
-                    <div className="font-semibold">Ukuran Cetak</div>
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    P(mm)
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_cetak_panjang_2 || 0}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    L(mm)
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_cetak_lebar_2 || 0}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_cetak_bagian_2 || 0}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    Bagian
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    Isi
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.ukuran_cetak_isi_2 || 0}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    BBS
-                  </div>
-                  <div className="col-span-1 p-0.5">
-                    {data.ukuran_cetak_bbs_2 || 'No'}
-                  </div>
-                </div>
-
-                {/* Warna Cetakan */}
-                <div className="bg-blue-200 p-1 border-b border-black text-center font-semibold text-xs">
-                  Warna Cetakan
-                </div>
-                <div
-                  className="grid grid-cols-6 border-b-2 border-black"
-                  style={{ fontSize: '8px' }}
-                >
-                  <div className="col-span-2 p-0.5 border-r border-black">
-                    Depan
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.warna_depan}
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    Belakang
-                  </div>
-                  <div className="col-span-1 p-0.5 border-r border-black">
-                    {data.warna_belakang}
-                  </div>
-                  <div className="col-span-1 p-0.5">
-                    Total Warna: {data.jumlah_warna}
-                  </div>
-                </div>
-
-                {/* Pre-Press & Press */}
-                <div className="grid grid-cols-2">
-                  <div className="border-r-2 border-black">
-                    <div className="bg-gray-200 p-1 border-b border-black font-semibold text-xs">
-                      Pre-Press & Press
-                    </div>
-
-                    {/* Bahan */}
-                    <div className="border-b border-black">
-                      <div className="bg-yellow-200 p-0.5 font-semibold text-xs">
-                        Bahan
-                      </div>
-                      <div
-                        className="grid grid-cols-2"
-                        style={{ fontSize: '8px' }}
-                      >
-                        <div className="p-0.5 border-r border-black">
-                          <div>Kertas</div>
-                          <div className="font-semibold">
-                            {data.nama_kertas}
-                          </div>
-                        </div>
-                        <div className="p-0.5">
-                          <div>Mesin: {data.jenis_mesin_cetak}</div>
-                        </div>
-                      </div>
-                      <div
-                        className="grid grid-cols-2"
-                        style={{ fontSize: '8px' }}
-                      >
-                        <div className="p-0.5 border-r border-black">
-                          Gramature: {data.gramature_kertas}
-                        </div>
-                        <div className="p-0.5">
-                          Plate: {data.harga_plate || 0}
-                        </div>
-                      </div>
-                      <div
-                        className="grid grid-cols-4"
-                        style={{ fontSize: '8px' }}
-                      >
-                        <div className="col-span-2 p-0.5 border-r border-black">
-                          <div>Ukuran Kertas</div>
-                          <div>
-                            P(mm) {data.panjang_kertas} x L(mm){' '}
-                            {data.lebar_kertas}
-                          </div>
-                        </div>
-                        <div className="p-0.5 border-r border-black">
-                          <div>Cetak</div>
-                          <div>
-                            {formatCurrency(data.jumlah_harga_cetak || 0)}
-                          </div>
-                        </div>
-                        <div className="p-0.5">
-                          <div>{formatCurrency(data.harga_plate || 0)}</div>
-                        </div>
-                      </div>
-                      <div
-                        className="grid grid-cols-2"
-                        style={{ fontSize: '8px' }}
-                      >
-                        <div className="p-0.5 border-r border-black">
-                          Percentage: {data.persentase_kertas}%
-                        </div>
-                        <div className="p-0.5">
-                          <div>Mesin Coating Depan</div>
-                          <div className="font-semibold">
-                            {data.nama_mesin_coating_depan || '-'}
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        className="grid grid-cols-2"
-                        style={{ fontSize: '8px' }}
-                      >
-                        <div className="p-0.5 border-r border-black">
-                          Total Kertas: {data.total_kertas?.toFixed(3)}
-                        </div>
-                        <div className="p-0.5">
-                          <div>Coating Depan</div>
-                          <div className="font-semibold">
-                            {data.nama_coating_depan || '-'}
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        className="grid grid-cols-2"
-                        style={{ fontSize: '8px' }}
-                      >
-                        <div className="p-0.5 border-r border-black">
-                          Total Harga Kertas:{' '}
-                          {formatCurrency(data.total_harga_kertas || 0)}
-                        </div>
-                        <div className="p-0.5">
-                          <div>Mesin Coating Belakang</div>
-                          <div className="font-semibold">
-                            {data.nama_mesin_coating_belakang || '-'}
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        className="grid grid-cols-2"
-                        style={{ fontSize: '8px' }}
-                      >
-                        <div className="p-0.5 border-r border-black">
-                          Mesin Potong: {data.nama_mesin_potong || '-'}
-                        </div>
-                        <div className="p-0.5">
-                          <div>Coating Belakang</div>
-                          <div className="font-semibold">
-                            {data.nama_coating_belakang || '-'}
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        className="grid grid-cols-1 border-t border-black bg-yellow-100"
-                        style={{ fontSize: '8px' }}
-                      >
-                        <div className="p-0.5 text-right">
-                          Total Coating:{' '}
-                          {formatCurrency(data.total_harga_coating || 0)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* PRINTING INSHEET */}
-                  <div>
-                    <div className="bg-red-400 p-1 border-b border-black font-semibold text-center text-xs">
-                      PRINTING INSHEET
-                    </div>
-                    <div className="text-center text-2xl font-bold p-2">
-                      {data.print_insheet || 500}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Post-Press */}
-                <div className="grid grid-cols-2 border-t-2 border-black">
-                  <div className="border-r-2 border-black">
-                    <div className="bg-gray-200 p-1 border-b border-black font-semibold text-xs">
-                      Post-Press
-                    </div>
-
-                    {/* Pons */}
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5 bg-yellow-200 font-semibold">
-                        Pons:
-                      </div>
-                      <div className="p-0.5 border-l border-black font-semibold">
-                        Ponds Insheet
-                      </div>
-                      <div className="p-0.5 border-l border-black">
-                        {data.pons_insheet || 0}
-                      </div>
-                    </div>
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5">Ongkos pons</div>
-                      <div className="p-0.5 border-l border-black font-semibold">
-                        POND + RILL / BAODER
-                      </div>
-                      <div className="p-0.5 border-l border-black"></div>
-                    </div>
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5">Harga Pisau</div>
-                      <div className="p-0.5 border-l border-black"></div>
-                      <div className="p-0.5 border-l border-black">
-                        {formatCurrency(data.harga_pisau || 0)}
-                      </div>
-                    </div>
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5">Total Pons</div>
-                      <div className="p-0.5 border-l border-black"></div>
-                      <div className="p-0.5 border-l border-black">
-                        {formatCurrency(data.total_harga_ongkos_pons || 0)}
-                      </div>
-                    </div>
-
-                    {/* Lipat */}
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5">Lipat</div>
-                      <div className="p-0.5 border-l border-black">
-                        {data.lipat || 'NO'}
-                      </div>
-                      <div className="p-0.5 border-l border-black">
-                        {data.qty_lipat || 0}
-                      </div>
-                    </div>
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5">Mesin Lipat</div>
-                      <div className="p-0.5 border-l border-black col-span-2">
-                        {formatCurrency(data.harga_lipat || 0)}
-                      </div>
-                    </div>
-
-                    {/* Potong jadi */}
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5">Potong jadi</div>
-                      <div className="p-0.5 border-l border-black">
-                        {data.potong_jadi || 'NO'}
-                      </div>
-                      <div className="p-0.5 border-l border-black">
-                        {data.qty_potong || 0}
-                      </div>
-                    </div>
-
-                    {/* Uk. Packaging */}
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5">Uk. Packaging</div>
-                      <div className="p-0.5 border-l border-black">P(mm)</div>
-                      <div className="p-0.5 border-l border-black">
-                        {data.panjang_packaging || 0}
-                      </div>
-                    </div>
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5"></div>
-                      <div className="p-0.5 border-l border-black">L(mm)</div>
-                      <div className="p-0.5 border-l border-black">
-                        {data.lebar_packaging || 0}
-                      </div>
-                    </div>
-
-                    {/* No. Packaging */}
-                    <div
-                      className="grid grid-cols-3 border-b border-black"
-                      style={{ fontSize: '8px' }}
-                    >
-                      <div className="p-0.5">No. Packaging</div>
-                      <div className="p-0.5 border-l border-black col-span-2">
-                        {data.no_packaging || 0}
-                      </div>
-                    </div>
-
-                    {/* Lain-Lain */}
-                    <div className="p-0.5 bg-yellow-200 font-semibold text-xs">
-                      Lain-Lain
-                    </div>
-                    {data.lain_lain && data.lain_lain.length > 0 && (
-                      <div style={{ fontSize: '8px' }}>
-                        {data.lain_lain.map((item, idx) => (
-                          <div
-                            key={idx}
-                            className="grid grid-cols-2 border-b border-black"
-                          >
-                            <div className="p-0.5 border-r border-black">
-                              {item.nama_item}
-                            </div>
-                            <div className="p-0.5">
-                              {formatCurrency(item.harga)}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Finishing Insheet */}
-                  <div>
-                    <div className="bg-blue-200 p-1 border-b border-black font-semibold text-xs">
-                      Finishing Insheet
-                    </div>
-                    <div className="text-center text-xl font-bold p-1">
-                      {data.finishing_insheet || 0}
-                    </div>
-
-                    <div style={{ fontSize: '8px' }}>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">Lem</div>
-                        <div className="p-0.5 font-semibold">
-                          {data.nama_lem || 'LEM AMPING'}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Mesin Finishing
-                        </div>
-                        <div className="p-0.5 font-semibold">
-                          {data.nama_mesin_finishing || 'JK 650'}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Total harga lem
-                        </div>
-                        <div className="p-0.5">
-                          {formatCurrency(data.jumlah_harga_lem || 0)}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">Foil</div>
-                        <div className="p-0.5">{data.foil || '-'}</div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black"></div>
-                        <div className="p-0.5">
-                          {formatCurrency(data.harga_foil_manual || 0)}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Spot Foil
-                        </div>
-                        <div className="p-0.5">{data.spot_foil || '-'}</div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black"></div>
-                        <div className="p-0.5">
-                          {formatCurrency(data.harga_spot_foil_manual || 0)}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Harga Polimer Manual
-                        </div>
-                        <div className="p-0.5">
-                          {formatCurrency(data.harga_polimer_manual || 0)}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          No. Delivery
-                        </div>
-                        <div className="p-0.5">{data.jumlah_kirim || 5}</div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Packaging
-                        </div>
-                        <div className="p-0.5">
-                          {formatCurrency(data.harga_packaging || 0)}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          {data.jenis_packing || 'CGS-004 UK 435X315X340 SW-KK'}
-                        </div>
-                        <div className="p-0.5">
-                          {formatCurrency(data.harga_packing || 0)}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Harga Section */}
-                <div className="grid grid-cols-2 border-t-2 border-black">
-                  <div className="border-r-2 border-black">
-                    <div className="bg-blue-200 p-1 border-b border-black font-semibold text-center text-xs">
-                      Harga
-                    </div>
-                    <div style={{ fontSize: '8px' }}>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 bg-green-200 border-r border-black">
-                          Biaya Produksi
-                        </div>
-                        <div className="p-0.5">
-                          {formatCurrency(data.harga_produksi || 0)}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Profit Margin (%)
-                        </div>
-                        <div className="p-0.5 bg-yellow-200">{data.profit}</div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Total Harga Jual
-                        </div>
-                        <div className="p-0.5">
-                          {formatCurrency(data.jumlah_harga_jual || 0)}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">PPN</div>
-                        <div className="p-0.5 bg-yellow-200">
-                          {data.ppn || 0}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Discount (%)
-                        </div>
-                        <div className="p-0.5 bg-yellow-200">
-                          {data.diskon || 0}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b-2 border-black bg-orange-300">
-                        <div className="p-0.5 border-r border-black font-bold">
-                          TOTAL
-                        </div>
-                        <div className="p-0.5 font-bold">
-                          {formatCurrency(data.total_harga || 0)}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 bg-orange-400">
-                        <div className="p-0.5 text-center font-bold">
-                          Rp{' '}
-                          {(Number(data.qty_kalkulasi) * 1000).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '8px' }}>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 bg-green-200 border-r border-black">
-                          Biaya Produksi per pc
-                        </div>
-                        <div className="p-0.5">
-                          {formatCurrency(
-                            Number(data.harga_produksi) /
-                              Number(data.qty_kalkulasi),
-                          )}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Profit Margin (%)
-                        </div>
-                        <div className="p-0.5 bg-yellow-200">{data.profit}</div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Harga Jual per pc
-                        </div>
-                        <div className="p-0.5">
-                          {formatCurrency(
-                            Number(data.jumlah_harga_jual) /
-                              Number(data.qty_kalkulasi),
-                          )}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">PPN</div>
-                        <div className="p-0.5 bg-yellow-200">
-                          {data.ppn || 0}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b border-black">
-                        <div className="p-0.5 border-r border-black">
-                          Discount (%)
-                        </div>
-                        <div className="p-0.5 bg-red-500">
-                          {data.harga_diskon || 0}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 border-b-2 border-black bg-orange-300">
-                        <div className="p-0.5 border-r border-black font-bold">
-                          TOTAL
-                        </div>
-                        <div className="p-0.5 font-bold">
-                          {formatCurrency(
-                            Number(data.total_harga) /
-                              Number(data.qty_kalkulasi),
-                          )}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 bg-orange-400">
-                        <div className="p-0.5 text-center font-bold">
-                          Rp.{' '}
-                          {Number(
-                            data.total_harga_satuan_customer,
-                          ).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Keterangan Section */}
-                <div className="grid grid-cols-2 border-t-2 border-black">
-                  <div className="border-r-2 border-black p-1">
-                    <div className="font-semibold mb-1 text-xs">
-                      Keterangan KERJA
-                    </div>
-                    <div
-                      style={{ fontSize: '8px' }}
-                      className="whitespace-pre-wrap"
-                    >
-                      {data.keterangan_kerja || '-'}
-                    </div>
-                  </div>
-                  <div className="p-1">
-                    <div className="font-semibold mb-1 text-xs">
-                      Keterangan HARGA
-                    </div>
-                    <div
-                      style={{ fontSize: '8px' }}
-                      className="whitespace-pre-wrap"
-                    >
-                      {data.keterangan_harga || '-'}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer Section */}
-                <div className="border-t-2 border-black p-2">
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <div className="font-semibold mb-1 text-xs">
-                        Layout Potongan Kertas dan Montage
-                      </div>
-                      <div className="border-2 border-black h-24"></div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold mb-1 text-xs">
-                        Estimator
-                      </div>
-                      <div className="h-12"></div>
-                      <div className="border-t border-black pt-1 text-xs">
-                        {data.nama_marketing}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold mb-1 text-xs">
-                        Bandung,......
-                      </div>
-                      <div className="mb-1 text-xs">Mengetahui/Menyetujui</div>
-                      <div className="h-12"></div>
-                      <div className="border-t border-black pt-1 text-xs"></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Submission Info */}
-                <div
-                  className="border-t-2 border-black p-1"
+                {/* Header Section - Image 1 */}
+                <table
+                  className="w-full border-collapse"
                   style={{ fontSize: '7px' }}
                 >
-                  <div className="grid grid-cols-3 gap-1">
-                    <div>
-                      <span className="font-semibold">Submitted:</span>{' '}
-                      {data.createdAt
-                        ? new Date(data.createdAt).toLocaleString('id-ID')
-                        : '-'}
-                    </div>
-                    <div>
-                      <span className="font-semibold">Created:</span>{' '}
-                      {data.createdAt
-                        ? new Date(data.createdAt).toLocaleString('id-ID')
-                        : '-'}
-                    </div>
-                    <div>
-                      <span className="font-semibold">Updated:</span>{' '}
-                      {data.updatedAt
-                        ? new Date(data.updatedAt).toLocaleString('id-ID')
-                        : '-'}
-                    </div>
-                  </div>
-                </div>
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="border border-black bg-red-400  text-center font-bold"
+                    >
+                      <h1 className="text-sm font-bold">
+                        PT. Cahaya Berlian Lestari Offset
+                      </h1>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="border border-black bg-red-300  text-center font-bold"
+                    >
+                      <h2 className="text-xs font-semibold ">
+                        Calculation Form: {data.kode_kalkulasi}
+                      </h2>
+                    </td>
+                  </tr>
+                  {/* Label Field */}
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="border border-black  bg-blue-300 text-center font-bold"
+                    >
+                      <h1 className="text-xs font-bold">{data.label}</h1>
+                    </td>
+                  </tr>
+                  <tbody>
+                    <tr>
+                      <td
+                        className="border border-black  font-bold"
+                        style={{ width: '15%' }}
+                      >
+                        Pemesan
+                      </td>
+                      <td
+                        className="border border-black  bg-yellow-200 text-center font-bold"
+                        style={{ width: '35%' }}
+                      >
+                        PT TRIFA RAYA LABORATORIES
+                      </td>
+                      <td
+                        className="border border-black  font-bold"
+                        style={{ width: '15%' }}
+                      >
+                        Marketing
+                      </td>
+                      <td
+                        className="border border-black  bg-yellow-200 font-bold"
+                        style={{ width: '35%' }}
+                      >
+                        TS
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black  font-bold">
+                        Nama Produk
+                      </td>
+                      <td className="border border-black  bg-yellow-200 text-center">
+                        {getValue(data.nama_produk)}
+                        <br />({getNumericValue(data.ukuran_jadi_panjang)}x
+                        {getNumericValue(data.ukuran_jadi_lebar)}x
+                        {getNumericValue(data.ukuran_jadi_tinggi)})
+                      </td>
+                      <td className="border border-black  font-bold">
+                        Tanggal Kalkulasi
+                      </td>
+                      <td className="border border-black  bg-yellow-200">
+                        {new Date(data.tgl_kalkulasi).toLocaleDateString(
+                          'id-ID',
+                          { day: 'numeric', month: 'long', year: 'numeric' },
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black  font-bold">
+                        Spesifikasi
+                      </td>
+                      <td className="border border-black  bg-yellow-200 text-center font-bold">
+                        {getValue(data.spesifikasi)}
+                      </td>
+                      <td className="border border-black  font-bold">Area</td>
+                      <td className="border border-black  bg-yellow-200 font-bold">
+                        {getValue(data.nama_area_pengiriman)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black  font-bold">Status</td>
+                      <td className="border border-black  bg-yellow-200 text-center font-bold">
+                        {getValue(data.status_kalkulasi)}
+                      </td>
+                      <td className="border border-black  font-bold">No OKP</td>
+                      <td className="border border-black  bg-pink-300"></td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black  font-bold">
+                        Quantity
+                      </td>
+                      <td className="border border-black  bg-yellow-200 text-center font-bold text-red-600">
+                        {getNumericValue(data.qty_kalkulasi).toLocaleString()}
+                      </td>
+                      <td className="border border-black  font-bold">No SO</td>
+                      <td className="border border-black  bg-pink-300"></td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black "></td>
+                      <td className="border border-black  bg-yellow-200"></td>
+                      <td className="border border-black  font-bold">No IO</td>
+                      <td className="border border-black  bg-pink-300"></td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Ukuran Produk Section - Image 2 */}
+                <table
+                  className="w-full border-collapse"
+                  style={{ fontSize: '7px' }}
+                >
+                  <tbody>
+                    <tr>
+                      <td
+                        colSpan={12}
+                        className="border border-black  bg-blue-300 text-center font-bold"
+                      >
+                        Ukuran Produk
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        className="border border-black "
+                        style={{ width: '10%' }}
+                      >
+                        Ukuran Jadi
+                      </td>
+                      <td
+                        className="border border-black "
+                        style={{ width: '5%' }}
+                      >
+                        P(mm)
+                      </td>
+                      <td
+                        className="border border-black  bg-yellow-200"
+                        style={{ width: '7%' }}
+                      >
+                        {getNumericValue(data.ukuran_jadi_panjang)}
+                      </td>
+                      <td
+                        className="border border-black "
+                        style={{ width: '5%' }}
+                      >
+                        L(mm)
+                      </td>
+                      <td
+                        className="border border-black  bg-yellow-200"
+                        style={{ width: '7%' }}
+                      >
+                        {getNumericValue(data.ukuran_jadi_lebar)}
+                      </td>
+                      <td
+                        className="border border-black "
+                        style={{ width: '5%' }}
+                      >
+                        T(mm)
+                      </td>
+                      <td
+                        className="border border-black  bg-yellow-200"
+                        style={{ width: '7%' }}
+                      >
+                        {getNumericValue(data.ukuran_jadi_tinggi)}
+                      </td>
+                      <td
+                        className="border border-black "
+                        style={{ width: '10%' }}
+                      >
+                        Terbentang
+                      </td>
+                      <td
+                        className="border border-black  bg-yellow-200"
+                        style={{ width: '10%' }}
+                      >
+                        {getNumericValue(data.ukuran_jadi_terb_panjang)}
+                      </td>
+                      <td
+                        className="border border-black "
+                        style={{ width: '5%' }}
+                      >
+                        x
+                      </td>
+                      <td
+                        className="border border-black  bg-yellow-200"
+                        colSpan={2}
+                        style={{ width: '10%' }}
+                      >
+                        {getNumericValue(data.ukuran_jadi_terb_lebar)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black ">Ukuran Cetak</td>
+                      <td className="border border-black ">P(mm)</td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.ukuran_cetak_panjang_1)}
+                      </td>
+                      <td className="border border-black ">L(mm)</td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.ukuran_cetak_lebar_1)}
+                      </td>
+                      <td className="border border-black "></td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.ukuran_cetak_bagian_1)}
+                      </td>
+                      <td className="border border-black ">Bagian</td>
+                      <td className="border border-black ">Isi</td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.ukuran_cetak_isi_1)}
+                      </td>
+                      <td className="border border-black ">BBS</td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getValue(data.ukuran_cetak_bbs_1, 'No')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black ">Ukuran Cetak</td>
+                      <td className="border border-black ">P(mm)</td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.ukuran_cetak_panjang_2)}
+                      </td>
+                      <td className="border border-black ">L(mm)</td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.ukuran_cetak_lebar_2)}
+                      </td>
+                      <td className="border border-black "></td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.ukuran_cetak_bagian_2)}
+                      </td>
+                      <td className="border border-black ">Bagian</td>
+                      <td className="border border-black ">Isi</td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.ukuran_cetak_isi_2)}
+                      </td>
+                      <td className="border border-black ">BBS</td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getValue(data.ukuran_cetak_bbs_2, 'No')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={13}
+                        className="border border-black  bg-blue-300 text-center font-bold"
+                      >
+                        Warna Cetakan
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black "></td>
+                      <td className="border border-black " colSpan={2}>
+                        Depan
+                      </td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.warna_depan)}
+                      </td>
+                      <td className="border border-black " colSpan={2}>
+                        Belakang
+                      </td>
+                      <td className="border border-black  bg-yellow-200">
+                        {getNumericValue(data.warna_belakang)}
+                      </td>
+                      <td className="border border-black " colSpan={2}>
+                        Total Warna
+                      </td>
+                      <td className="border border-black bg-gray-300">
+                        {getNumericValue(data.jumlah_warna)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <table
+                  className="w-full border-collapse"
+                  style={{ fontSize: '7px' }}
+                >
+                  <tbody>
+                    {/* HEADER */}
+                    <tr>
+                      {/* Pre-Press & Press (3 cols = 50%) */}
+                      <td
+                        className="border border-black bg-blue-300 font-bold text-center"
+                        colSpan={3}
+                        style={{ width: '50%' }}
+                      >
+                        Pre-Press & Press
+                      </td>
+
+                      {/* PRINTING INSHEET (2 cols = 25%) */}
+                      <td
+                        className="border border-black bg-red-300 font-bold text-center"
+                        colSpan={2}
+                        style={{ width: '25%' }}
+                      >
+                        PRINTING INSHEET
+                      </td>
+
+                      {/* 500 (1 col = 25%) */}
+                      <td
+                        className="border border-black bg-yellow-200 text-center font-bold text-red-600"
+                        style={{ width: '25%' }}
+                      >
+                        {getNumericValue(data.print_insheet, 500)}
+                      </td>
+                    </tr>
+
+                    {/* BAHAN / MESIN */}
+                    <tr>
+                      <td
+                        className="border border-black bg-green-300 font-bold"
+                        colSpan={3}
+                      >
+                        Bahan
+                      </td>
+
+                      <td
+                        className="border border-black bg-green-300 font-bold"
+                        colSpan={2}
+                      >
+                        Mesin
+                      </td>
+                      <td className="border border-black bg-yellow-200 font-bold text-center">
+                        {getValue(data.jenis_mesin_cetak)}
+                      </td>
+                    </tr>
+
+                    {/* KERTAS / PLATE */}
+                    <tr>
+                      <td className="border border-black font-bold">Kertas</td>
+                      <td
+                        className="border border-black bg-yellow-200"
+                        colSpan={2}
+                      >
+                        {getValue(data.nama_kertas)}
+                      </td>
+
+                      <td
+                        className="border border-black bg-green-300 font-bold"
+                        colSpan={2}
+                      >
+                        Plate
+                      </td>
+                      <td className="border border-black bg-yellow-200 text-right">
+                        {getNumericValue(data.jumlah_warna)}
+                      </td>
+                    </tr>
+
+                    {/* GRAMATURE */}
+                    <tr>
+                      <td className="border border-black font-bold">
+                        Gramature
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200"
+                        colSpan={2}
+                      >
+                        {getNumericValue(data.gramature_kertas)}
+                      </td>
+
+                      <td
+                        className="border border-black bg-green-300"
+                        colSpan={2}
+                      ></td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(getNumericValue(data.harga_plate))}
+                      </td>
+                    </tr>
+
+                    {/* UKURAN KERTAS / CETAK */}
+                    <tr>
+                      <td className="border border-black font-bold">
+                        Ukuran Kertas
+                      </td>
+                      {/* P(mm) */}
+                      <td className="border border-black">
+                        <div className="grid grid-cols-2 justify-between">
+                          <span className="font-bold  ">P(mm)</span>{' '}
+                          <span className="bg-yellow-200 text-right">
+                            {getNumericValue(data.panjang_kertas)}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* L(mm) */}
+                      <td className="border border-black">
+                        <div className="grid grid-cols-2 justify-between items-center">
+                          <span className="font-bold">L(mm)</span>{' '}
+                          <span className="bg-yellow-200 text-right">
+                            {getNumericValue(data.lebar_kertas)}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="border border-black bg-green-300 font-bold">
+                        Cetak
+                      </td>
+                      <td
+                        className="border border-black bg-gray-300 text-right"
+                        colSpan={2}
+                      >
+                        {formatCurrency(
+                          getNumericValue(data.jumlah_harga_cetak),
+                        )}
+                      </td>
+                    </tr>
+
+                    {/* PERCENTAGE / MESIN COATING DEPAN */}
+                    <tr>
+                      <td className="border border-black font-bold">
+                        Percentage
+                      </td>
+                      <td className="grid grid-cols-2 justify-between items-center">
+                        <span className="font-bold ">%</span>
+                        <span className="bg-yellow-200 text-right">
+                          {getNumericValue(data.persentase_apki_kertas)}
+                        </span>
+                      </td>
+                      <td className="border border-black  font-bold"></td>
+                      <td className="border border-black bg-green-300 font-bold">
+                        Mesin Coating Depan
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center"
+                        colSpan={2}
+                      >
+                        {getValue(data.nama_mesin_coating_depan)}
+                      </td>
+                    </tr>
+
+                    {/* TOTAL KERTAS / COATING DEPAN */}
+                    <tr>
+                      <td className="border border-black font-bold">
+                        Total Kertas
+                      </td>
+                      <td
+                        className="border border-black bg-gray-300"
+                        colSpan={2}
+                      >
+                        {getNumericValue(data.total_kertas).toFixed(0)}
+                      </td>
+
+                      <td className="border border-black bg-green-300 font-bold">
+                        Coating Depan
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center"
+                        colSpan={2}
+                      >
+                        {getValue(data.nama_coating_depan)}
+                      </td>
+                    </tr>
+
+                    {/* TOTAL HARGA KERTAS / MESIN COATING BELAKANG */}
+                    <tr>
+                      <td className="border border-black font-bold">
+                        Total Harga Kertas
+                      </td>
+                      <td
+                        className="border border-black bg-gray-300 bg-gray-300"
+                        colSpan={2}
+                      >
+                        {formatCurrency(
+                          getNumericValue(data.total_harga_kertas),
+                        )}
+                      </td>
+
+                      <td className="border border-black bg-green-300 font-bold">
+                        Mesin Coating Belakang
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center"
+                        colSpan={2}
+                      >
+                        {getValue(data.nama_mesin_coating_belakang)}
+                      </td>
+                    </tr>
+
+                    {/* MESIN POTONG / COATING BELAKANG */}
+                    <tr>
+                      <td className="border border-black font-bold">
+                        Mesin Potong
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center"
+                        colSpan={2}
+                      >
+                        {getValue(data.nama_mesin_potong)}
+                      </td>
+
+                      <td className="border border-black bg-green-300 font-bold">
+                        Coating Belakang
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center"
+                        colSpan={2}
+                      >
+                        {getValue(data.nama_coating_belakang)}
+                      </td>
+                    </tr>
+
+                    {/* TOTAL COATING (BOTTOM ROW) */}
+                    <tr>
+                      <td className="border border-black" colSpan={3}></td>
+                      <td className="border border-black bg-green-300"></td>
+                      <td
+                        className="border border-black bg-gray-300 text-right"
+                        colSpan={2}
+                      >
+                        {formatCurrency(
+                          getNumericValue(data.total_harga_coating),
+                        )}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Post-Press and Finishing Insheet - Image 4 */}
+                <table
+                  className="w-full border-collapse"
+                  style={{ fontSize: '7px' }}
+                >
+                  <tbody>
+                    <tr>
+                      <td
+                        className="border border-black bg-blue-300 font-bold text-center"
+                        style={{ width: '15%' }}
+                      >
+                        Post-Press
+                      </td>
+                      <td
+                        className="border border-black bg-red-300 font-bold text-center"
+                        style={{ width: '15%' }}
+                      >
+                        Ponds Insheet
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center font-bold text-red-600"
+                        style={{ width: '20%' }}
+                      >
+                        {getNumericValue(data.pons_insheet)}
+                      </td>
+                      <td
+                        className="border border-black bg-red-300 font-bold text-center"
+                        style={{ width: '20%' }}
+                      >
+                        Finishing Insheet
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center font-bold text-red-600"
+                        style={{ width: '30%' }}
+                      >
+                        {getNumericValue(data.finishing_insheet)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black bg-green-300 font-bold">
+                        Pons:
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center"
+                        colSpan={2}
+                      >
+                        {getValue(data.nama_jenis_pons)}{' '}
+                        {getValue(data.nama_mesin_pons)}
+                      </td>
+                      <td className="border border-black bg-green-300 font-bold">
+                        Lem
+                      </td>
+                      <td className="border border-black bg-yellow-200 text-center">
+                        {getValue(data.nama_lem, 'LEM SAMPING')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black">Ongkos pons</td>
+                      <td className="border border-black bg-yellow-200">
+                        {getValue(data.ongkos_pons, 'YES')}
+                      </td>
+                      <td className="border border-black bg-gray-300">
+                        {formatCurrency(
+                          getNumericValue(data.total_harga_ongkos_pons),
+                        )}
+                      </td>
+                      <td className="border border-black bg-green-300 font-bold">
+                        Mesin Finishing
+                      </td>
+                      <td className="border border-black bg-yellow-200 text-center">
+                        {getValue(data.nama_mesin_finishing, 'JK 650')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black">Harga Pisau</td>
+                      <td className="border border-black"></td>
+                      <td className="border border-black bg-gray-300">
+                        {formatCurrency(getNumericValue(data.harga_pisau))}
+                      </td>
+                      <td className="border border-black">Total harga lem</td>
+                      <td className="border border-black text-right bg-gray-300">
+                        {formatCurrency(getNumericValue(data.jumlah_harga_lem))}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black">Total Pons</td>
+                      <td className="border border-black"></td>
+                      <td className="border border-black bg-gray-300">
+                        {formatCurrency(
+                          getNumericValue(data.total_harga_ongkos_pons),
+                        )}
+                      </td>
+                      <td className="border border-black">Foil</td>
+                      <td className="border border-black bg-yellow-200 text-right">
+                        {getValue(data.foil, '-')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black">Lipat</td>
+                      <td className="border border-black bg-yellow-200">
+                        {getValue(data.lipat, 'NO')}
+                      </td>
+                      <td className="border border-black bg-yellow-200">
+                        {getNumericValue(data.qty_lipat)}
+                      </td>
+                      <td className="border border-black">Harga Foil Manual</td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(
+                          getNumericValue(data.harga_foil_manual),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black">Mesin Lipat</td>
+                      <td className="border border-black bg-yellow-200">
+                        {getValue(data.nama_mesin_lipat, '-')}
+                      </td>
+                      <td className="border border-black bg-gray-300">
+                        {formatCurrency(getNumericValue(data.harga_lipat))}
+                      </td>
+                      <td className="border border-black">Spot Foil</td>
+                      <td className="border border-black bg-yellow-200 text-right">
+                        {getValue(data.spot_foil, '-')}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black">Potong jadi</td>
+                      <td className="border border-black bg-yellow-200">
+                        {getValue(data.potong_jadi, 'NO')}
+                      </td>
+                      <td className="border border-black bg-yellow-200">
+                        {getNumericValue(data.qty_potong)}
+                      </td>
+                      <td className="border border-black">
+                        Harga Spot Foil Manual
+                      </td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(
+                          getNumericValue(data.harga_spot_foil_manual),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black">Uk. Packaging</td>
+                      <td className="border border-black">P(mm)</td>
+                      <td className="border border-black bg-yellow-200 text-right">
+                        {getNumericValue(data.panjang_packaging)}
+                      </td>
+                      <td className="border border-black">
+                        Harga Polimer Manual
+                      </td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(
+                          getNumericValue(data.harga_polimer_manual),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black"></td>
+                      <td className="border border-black">L(mm)</td>
+                      <td className="border border-black bg-yellow-200 text-right">
+                        {getNumericValue(data.lebar_packaging)}
+                      </td>
+                      <td className="border border-black">No. Delivery</td>
+                      <td className="border border-black bg-yellow-200 text-right">
+                        {getNumericValue(data.jumlah_kirim, 5)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black">No. Packaging</td>
+                      <td
+                        className="border border-black bg-gray-300"
+                        colSpan={2}
+                      >
+                        {getNumericValue(data.no_packaging)}
+                      </td>
+                      <td className="border border-black">Packaging</td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(getNumericValue(data.harga_packaging))}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black"></td>
+                      <td className="border border-black" colSpan={2}></td>
+                      <td className="border border-black bg-yellow-200">
+                        {getValue(
+                          data.jenis_packing,
+                          'CGS-004 UK 435X315X340 SW-KK',
+                        )}
+                      </td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(getNumericValue(data.harga_packing))}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        className="border border-black bg-yellow-200 font-bold"
+                        colSpan={5}
+                      >
+                        Lain-Lain
+                      </td>
+                    </tr>
+                    {data.lain_lain && data.lain_lain.length > 0
+                      ? data.lain_lain.map((item, idx) => (
+                          <tr key={idx}>
+                            <td className="border border-black" colSpan={3}>
+                              {item.nama_item}
+                            </td>
+                            <td className="border border-black" colSpan={2}>
+                              {formatCurrency(item.harga)}
+                            </td>
+                          </tr>
+                        ))
+                      : null}
+                  </tbody>
+                </table>
+
+                {/* Harga Section - Image 5 */}
+                <table
+                  className="w-full border-collapse"
+                  style={{ fontSize: '7px' }}
+                >
+                  <tbody>
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="border border-black bg-blue-300 text-center font-bold"
+                      >
+                        Harga
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        className="border border-black bg-green-300"
+                        style={{ width: '20%' }}
+                      >
+                        Biaya Produksi
+                      </td>
+                      <td
+                        className="border border-black bg-gray-300 text-right"
+                        style={{ width: '30%' }}
+                      >
+                        {formatCurrency(getNumericValue(data.harga_produksi))}
+                      </td>
+                      <td
+                        className="border border-black bg-green-300"
+                        style={{ width: '20%' }}
+                      >
+                        Biaya Produksi per pc
+                      </td>
+                      <td
+                        className="border border-black bg-gray-300 text-right"
+                        colSpan={2}
+                        style={{ width: '30%' }}
+                      >
+                        {formatCurrency(
+                          Number(data.harga_produksi || 0) /
+                            Number(data.qty_kalkulasi || 1),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black bg-green-300">
+                        Profit Margin (%)
+                      </td>
+                      <td className="border border-black bg-yellow-200">
+                        {getNumericValue(data.profit)}
+                      </td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(getNumericValue(data.profit_harga))}
+                      </td>
+                      <td className="border border-black bg-green-300">
+                        Profit Margin (%)
+                      </td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(
+                          Number(data.profit_harga || 0) /
+                            Number(data.qty_kalkulasi || 1),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black bg-green-300">
+                        Total Harga Jual
+                      </td>
+                      <td
+                        className="border border-black bg-gray-300 text-right"
+                        colSpan={2}
+                      >
+                        {formatCurrency(
+                          getNumericValue(data.jumlah_harga_jual),
+                        )}
+                      </td>
+                      <td className="border border-black bg-green-300">
+                        Harga Jual per pc
+                      </td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(
+                          Number(data.jumlah_harga_jual || 0) /
+                            Number(data.qty_kalkulasi || 1),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black bg-green-300">PPN</td>
+                      <td className="border border-black bg-yellow-200">
+                        {getNumericValue(data.ppn)}
+                      </td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(getNumericValue(data.harga_ppn))}
+                      </td>
+                      <td className="border border-black bg-green-300">PPN</td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(
+                          Number(data.harga_ppn || 0) /
+                            Number(data.qty_kalkulasi || 1),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black bg-green-300">
+                        Discount (%)
+                      </td>
+                      <td className="border border-black bg-yellow-200">
+                        {getNumericValue(data.diskon)}
+                      </td>
+                      <td className="border border-black bg-gray-300 text-right">
+                        {formatCurrency(getNumericValue(data.harga_diskon))}
+                      </td>
+                      <td className="border border-black bg-green-300">
+                        Discount (%)
+                      </td>
+                      <td className="border border-black bg-red-400 text-right">
+                        {formatCurrency(
+                          Number(data.harga_diskon || 0) /
+                            Number(data.qty_kalkulasi || 1),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black bg-green-300 font-bold">
+                        TOTAL
+                      </td>
+                      <td className="border border-black"></td>
+                      <td className="border border-black bg-red-400 font-bold text-right">
+                        {formatCurrency(getNumericValue(data.total_harga))}
+                      </td>
+                      <td className="border border-black bg-green-300 font-bold">
+                        TOTAL
+                      </td>
+                      <td className="border border-black bg-red-400  font-bold text-right">
+                        {formatCurrency(
+                          Number(data.total_harga || 0) /
+                            Number(data.qty_kalkulasi || 1),
+                        )}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        className="border border-black bg-red-400  text-center font-bold"
+                        colSpan={3}
+                      >
+                        Rp {Number(data.total_harga || 0).toLocaleString()}
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200 text-center font-bold"
+                        colSpan={2}
+                      >
+                        Rp.{' '}
+                        {(
+                          Number(data.total_harga || 0) /
+                          Number(data.qty_kalkulasi || 1)
+                        ).toLocaleString()}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        className="border border-black bg-yellow-100 font-bold"
+                        style={{ width: '20%' }}
+                      >
+                        Keterangan KERJA
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200"
+                        colSpan={4}
+                      >
+                        {getValue(data.keterangan_kerja)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-black bg-yellow-100 font-bold">
+                        Keterangan HARGA
+                      </td>
+                      <td
+                        className="border border-black bg-yellow-200"
+                        colSpan={4}
+                      >
+                        {getValue(data.keterangan_harga)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Footer Section - Image 6 */}
+                <table
+                  className="w-full border-collapse"
+                  style={{ fontSize: '7px' }}
+                >
+                  <tbody>
+                    <tr>
+                      <td
+                        className="border border-black "
+                        style={{
+                          width: '40%',
+                          height: '60px',
+                          verticalAlign: 'top',
+                        }}
+                      >
+                        <div className="font-bold">
+                          Layout Potongan Kertas dan Montage
+                        </div>
+                      </td>
+                      <td
+                        className="border border-black  text-center "
+                        style={{
+                          width: '30%',
+                          height: '60px',
+                          verticalAlign: 'top',
+                        }}
+                      >
+                        <div className="font-bold">Estimator</div>
+                        <div>-</div>
+                        <div style={{ height: '30px' }}></div>
+                        <div className="border-t border-black mt-2 pt-1 justify-end"></div>
+                      </td>
+                      <td
+                        className="border border-black  text-center"
+                        style={{ width: '30%', verticalAlign: 'top' }}
+                      >
+                        <div className="font-bold flex flex-col">
+                          Bandung,......
+                          <span>Mengetahui/Menyetujui</span>
+                        </div>
+
+                        <div style={{ height: '30px' }}></div>
+                        <div className="border-t border-black mt-2 pt-1"></div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="border border-black "
+                        style={{ fontSize: '6px' }}
+                      >
+                        <span className="font-bold">Submitted:</span>{' '}
+                        {data.createdAt
+                          ? new Date(data.createdAt).toLocaleString('id-ID')
+                          : '-'}{' '}
+                        |<span className="font-bold"> Created:</span>{' '}
+                        {data.createdAt
+                          ? new Date(data.createdAt).toLocaleString('id-ID')
+                          : '-'}{' '}
+                        |<span className="font-bold"> Updated:</span>{' '}
+                        {data.updatedAt
+                          ? new Date(data.updatedAt).toLocaleString('id-ID')
+                          : '-'}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
