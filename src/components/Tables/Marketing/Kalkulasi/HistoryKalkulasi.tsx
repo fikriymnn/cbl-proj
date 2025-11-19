@@ -11,6 +11,7 @@ import {
   ApiResponse,
   ApiError,
 } from '../Kalkulasi/types/kalkulasi';
+import KalkulasiPrintModal from './KalkulasiPrintPreview';
 
 type SortKey = keyof KalkulasiItem | 'index';
 type SortDirection = 'asc' | 'desc';
@@ -23,7 +24,8 @@ const HistoryKalkulasi: React.FC = () => {
   const [selectedDetailData, setSelectedDetailData] =
     useState<KalkulasiDetailItem | null>(null);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
-
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [printKalkulasiId, setPrintKalkulasiId] = useState<number | null>(null);
   // Copy functionality states
   const [showCopyOptionsModal, setShowCopyOptionsModal] =
     useState<boolean>(false);
@@ -187,6 +189,14 @@ const HistoryKalkulasi: React.FC = () => {
     setShowCopyModal(false);
     setSelectedCopyData(null);
     fetchKalkulasiData();
+  };
+  const handleClosePrintModal = (): void => {
+    setShowPrintModal(false);
+    setPrintKalkulasiId(null);
+  };
+  const handlePrint = (id: number): void => {
+    setPrintKalkulasiId(id);
+    setShowPrintModal(true);
   };
 
   async function RequestKabag(id: any) {
@@ -481,6 +491,14 @@ const HistoryKalkulasi: React.FC = () => {
                             {detailLoading ? 'Loading...' : 'Copy'}
                           </button>
                         )}
+                        <button
+                          onClick={() => handlePrint(item.id)}
+                          disabled={detailLoading}
+                          className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 transition-colors"
+                          title="Print"
+                        >
+                          Print
+                        </button>
                       </div>
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap text-left flex flex-col gap-2">
@@ -645,6 +663,12 @@ const HistoryKalkulasi: React.FC = () => {
           copyType={copyType}
           onClose={handleCloseCopyModal}
           onSuccess={handleCopySuccess}
+        />
+      )}
+      {showPrintModal && printKalkulasiId && (
+        <KalkulasiPrintModal
+          kalkulasiId={printKalkulasiId}
+          onClose={handleClosePrintModal}
         />
       )}
     </div>

@@ -3,9 +3,10 @@ import React, { useEffect, useState } from 'react';
 import OKPModal from './OKPModal';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
+import OKPPrintModal from './OKPPrintModal';
 
 interface OKPItem {
-  okp_proses: any;
+  posisi_proses: string;
   id: number;
   id_kalkulasi: number;
   no_okp: string;
@@ -21,7 +22,7 @@ interface OKPItem {
   status_po: string;
   keterangan_cetak: string;
   tahapan: string[];
-  posisi_proses: string;
+  is_active: boolean;
   label?: string;
 }
 
@@ -37,13 +38,16 @@ interface ApiError {
 
 type SortKey = keyof OKPItem | 'index';
 type SortDirection = 'asc' | 'desc';
+type ModalMode = 'create' | 'detail' | 'marketing' | 'customer';
 
-const OKPQA: React.FC = () => {
+const HistoryOKP: React.FC = () => {
   const [data, setData] = useState<OKPItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [modalMode, setModalMode] = useState<ModalMode>('create');
   const [selectedOKPId, setSelectedOKPId] = useState<number | undefined>();
-
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [printOKPId, setPrintOKPId] = useState<number | undefined>();
   // Pagination states
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -67,14 +71,14 @@ const OKPQA: React.FC = () => {
       setLoading(true);
       const res: AxiosResponse<ApiResponse<OKPItem[]>> = await axios.get(url, {
         params: {
-          posisi_proses: 'qa',
+          status: 'history',
           page: page,
           limit: limit,
           search: searchTerm,
         },
         withCredentials: true,
       });
-      console.log('Fetched OKP QA data:', res.data);
+      console.log('Fetched OKP data:', res.data);
       if (res.data && res.data.data) {
         const parsedData = res.data.data.map((item) => ({
           ...item,
@@ -136,7 +140,15 @@ const OKPQA: React.FC = () => {
       setSortDirection('asc');
     }
   };
+  const handlePrintOKP = (okpId: number) => {
+    setPrintOKPId(okpId);
+    setShowPrintModal(true);
+  };
 
+  const handleClosePrintModal = () => {
+    setShowPrintModal(false);
+    setPrintOKPId(undefined);
+  };
   const getSortIcon = (key: SortKey) => {
     if (sortKey !== key) {
       return (
@@ -227,14 +239,23 @@ const OKPQA: React.FC = () => {
     });
   };
 
+  const handleAddOKP = () => {
+    setModalMode('create');
+    setSelectedOKPId(undefined);
+    setShowModal(true);
+  };
+
   const handleDetailOKP = (okpId: number) => {
+    setModalMode('detail');
     setSelectedOKPId(okpId);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
+    setModalMode('create');
     setSelectedOKPId(undefined);
+    fetchOKPData();
   };
 
   const handleActionComplete = () => {
@@ -420,7 +441,7 @@ const OKPQA: React.FC = () => {
                   >
                     {searchTerm
                       ? 'No OKP found matching your search'
-                      : 'No OKP data available for QA'}
+                      : 'No OKP data available'}
                   </td>
                 </tr>
               ) : (
@@ -432,15 +453,24 @@ const OKPQA: React.FC = () => {
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                       {(page - 1) * limit + index + 1}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium flex flex-col gap-2">
                       <button
                         onClick={() =>
                           handleDetailOKP(item.id || item.id_kalkulasi)
                         }
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                        title="View Details & Actions"
+                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                        title="View Details"
                       >
-                        ACTION
+                        Detail
+                      </button>
+                      <button
+                        onClick={() =>
+                          handlePrintOKP(item.id || item.id_kalkulasi)
+                        }
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                        title="Print OKP"
+                      >
+                        Print
                       </button>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -459,7 +489,7 @@ const OKPQA: React.FC = () => {
                         {item.customer ? truncateText(item.customer, 20) : '-'}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap">
+                    <td className=" whitespace-nowrap">
                       <span
                         className="px-2 py-2 whitespace-nowrap text-xs text-gray-900"
                         title={item.produk}
@@ -527,6 +557,7 @@ const OKPQA: React.FC = () => {
                         '-'
                       )}
                     </td>
+
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
                         className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${getPosisiProsesColor(
@@ -617,22 +648,32 @@ const OKPQA: React.FC = () => {
             No OKP Records
           </h3>
           <p className="text-sm text-gray-600 mb-3">
-            No OKP data available for QA process.
+            Get started by creating your first OKP record.
           </p>
+          <button
+            onClick={handleAddOKP}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-md text-sm"
+          >
+            Create First OKP
+          </button>
         </div>
       )}
 
-      {/* Modal for both detail and actions */}
+      {/* Modal */}
       {showModal && (
         <OKPModal
           onClose={handleCloseModal}
-          mode="qa"
+          mode={modalMode}
           okpId={selectedOKPId}
           onActionComplete={handleActionComplete}
         />
+      )}
+      {/* Print Modal */}
+      {showPrintModal && printOKPId && (
+        <OKPPrintModal okpId={printOKPId} onClose={handleClosePrintModal} />
       )}
     </div>
   );
 };
 
-export default OKPQA;
+export default HistoryOKP;

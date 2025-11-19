@@ -119,6 +119,11 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
   return (
     <div>
+      <div>
+        <label className="block text-xl font-medium text-blue-700 mb-2">
+          LABEL : {formData.label || '-'}
+        </label>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

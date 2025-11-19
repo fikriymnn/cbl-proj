@@ -106,6 +106,7 @@ const OKPDetail: React.FC<OKPDetailProps> = ({
             okp_proses: okpData.okp_proses || [], // Add this
             keterangan: okpData.keterangan || '', // Add this
             kalkulasi: okpData.kalkulasi || null, // Add this
+            label: okpData.label || '', // Add this
           });
 
           // Set OKP processes for desain, QA, and marketing actions

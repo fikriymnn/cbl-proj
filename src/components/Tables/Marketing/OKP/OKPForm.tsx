@@ -47,6 +47,7 @@ const OKPForm: React.FC<OKPFormProps> = ({
     user_approve: { id: 0, nama: '', bagian: '' },
     keterangan: '',
     kalkulasi: null,
+    label: '',
   });
 
   // File handling states

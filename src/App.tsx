@@ -220,6 +220,7 @@ import MasterKodeProduksi from './pages/Produksi/MasterData/MasterKodeProduksi';
 import InputLKHPage from './pages/Produksi/InputLKH/InputLkhPage';
 import MonitoringLKHPage from './pages/Produksi/MonitoringLKH/MonitoringLkhPage';
 import ApproveSPVPage from './pages/Produksi/MonitoringLKH/ApproveSPVpage';
+import HistoryOKPPage from './pages/Marketing/OKP/HistoryOKPPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1927,7 +1928,7 @@ function App() {
           element={
             <>
               <PageTitle title="PT CBL" />
-              <OKPPage />
+              <HistoryOKPPage />
             </>
           }
         />

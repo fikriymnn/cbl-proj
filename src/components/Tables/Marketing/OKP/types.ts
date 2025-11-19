@@ -181,4 +181,5 @@ export interface OKPFormData {
     bagian: string;
   };
   okp_proses?: any[];
+  label?: string;
 }

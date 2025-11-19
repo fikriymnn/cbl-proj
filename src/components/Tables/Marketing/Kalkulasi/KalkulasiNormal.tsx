@@ -354,7 +354,7 @@ const KalkulasiNormal: React.FC = () => {
           {searchTerm && (
             <button
               onClick={handleClearSearch}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+              className="bg-gray-500 hover:bg-gray-600 text-red-500 px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
             >
               Clear
             </button>
