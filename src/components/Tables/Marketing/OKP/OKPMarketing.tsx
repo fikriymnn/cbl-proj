@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import OKPModal from './OKPModal';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
+import OKPPrintModal from './OKPPrintModal';
 
 interface OKPItem {
   posisi_proses: string;
@@ -46,6 +47,8 @@ const OKPMarketing: React.FC = () => {
   const [modalMode, setModalMode] = useState<ModalMode>('create');
   const [selectedOKPId, setSelectedOKPId] = useState<number | undefined>();
 
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [printOKPId, setPrintOKPId] = useState<number | undefined>();
   // Pagination states
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -138,7 +141,15 @@ const OKPMarketing: React.FC = () => {
       setSortDirection('asc');
     }
   };
+  const handlePrintOKP = (okpId: number) => {
+    setPrintOKPId(okpId);
+    setShowPrintModal(true);
+  };
 
+  const handleClosePrintModal = () => {
+    setShowPrintModal(false);
+    setPrintOKPId(undefined);
+  };
   const getSortIcon = (key: SortKey) => {
     if (sortKey !== key) {
       return (
@@ -490,6 +501,15 @@ const OKPMarketing: React.FC = () => {
                           Customer
                         </button>
                       )}
+                      <button
+                        onClick={() =>
+                          handlePrintOKP(item.id || item.id_kalkulasi)
+                        }
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                        title="Print OKP"
+                      >
+                        Print
+                      </button>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
@@ -685,6 +705,9 @@ const OKPMarketing: React.FC = () => {
           okpId={selectedOKPId}
           onActionComplete={handleActionComplete}
         />
+      )}
+      {showPrintModal && printOKPId && (
+        <OKPPrintModal okpId={printOKPId} onClose={handleClosePrintModal} />
       )}
     </div>
   );

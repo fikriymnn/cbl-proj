@@ -34,116 +34,122 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
   };
 
   const handlePrint = () => {
-    if (printRef.current) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <title>Print OKP - ${data?.no_okp || 'OKP'}</title>
-              <style>
-                @page {
-                  size: A4 portrait;
-                  margin: 10mm;
-                }
-                body {
-                  margin: 0;
-                  padding: 0;
-                  font-family: Arial, sans-serif;
-                  font-size: 10px;
-                  line-height: 1.3;
-                }
-                @media print {
-                  body {
-                    -webkit-print-color-adjust: exact;
-                    print-color-adjust: exact;
-                  }
-                  .no-print {
-                    display: none;
-                  }
-                }
-                * {
-                  box-sizing: border-box;
-                }
-                table {
-                  border-collapse: collapse;
-                  width: 100%;
-                  border: 1px solid black;
-                }
-                td, th {
-                  border: 1px solid black;
-                  padding: 3px 5px;
-                  vertical-align: top;
-                }
-                .checkbox {
-                  display: inline-block;
-                  width: 14px;
-                  height: 14px;
-                  border: 1px solid black;
-                  margin-right: 4px;
-                  vertical-align: middle;
-                  position: relative;
-                }
-                .checkbox.checked::after {
-                  content: '✓';
-                  display: block;
-                  text-align: center;
-                  line-height: 14px;
-                  font-weight: bold;
-                  font-size: 12px;
-                }
-                .bold {
-                  font-weight: bold;
-                }
-                .text-center {
-                  text-align: center;
-                }
-                .text-right {
-                  text-align: right;
-                }
-                .small-text {
-                  font-size: 8px;
-                }
-                .image-box {
-                  width: 100%;
-                  height: 120px;
-                  border: 2px solid #666;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  background-color: #f5f5f5;
-                  position: relative;
-                  overflow: hidden;
-                }
-                .image-box img {
-                  max-width: 100%;
-                  max-height: 100%;
-                  object-fit: contain;
-                }
-                .image-box .placeholder {
-                  font-size: 60px;
-                  color: #999;
-                  line-height: 1;
-                }
-              </style>
-            </head>
-            <body>
-              ${printRef.current.innerHTML}
-              <script>
-                window.onload = function() {
-                  window.print();
-                  window.onafterprint = function() {
-                    window.close();
-                  };
-                };
-              </script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-      }
-    }
+    if (!printRef.current) return;
+
+    // Generate filename with OKP number and current date
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-'); // Format: HH-MM-SS
+    const filename = `${data?.no_okp || 'OKP'}_${dateStr}_${timeStr}`;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>${filename}</title>
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 0 !important; /* remove printer margins */
+          }
+
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.3;
+          }
+
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+
+          * {
+            box-sizing: border-box;
+          }
+
+          /* Remove extra whitespace around content */
+          .print-wrapper {
+            width: 100%;
+            height: auto;
+            padding: 0;
+            margin: 0;
+          }
+
+          table {
+            border-collapse: collapse;
+            width: 100%;
+            border: 1px solid black;
+          }
+
+          td, th {
+            border: 1px solid black;
+            padding: 3px 5px;
+            vertical-align: top;
+          }
+
+          .checkbox {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 1px solid black;
+            margin-right: 4px;
+            vertical-align: middle;
+            position: relative;
+          }
+          .checkbox.checked::after {
+            content: "✓";
+            display: block;
+            text-align: center;
+            line-height: 14px;
+            font-weight: bold;
+            font-size: 12px;
+          }
+
+          .image-box {
+            width: 100%;
+            height: 120px;
+            border: 2px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            overflow: hidden;
+          }
+          .image-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="print-wrapper">
+          ${printRef.current.innerHTML}
+        </div>
+
+        <script>
+          // Set the document title for PDF filename
+          document.title = '${filename}';
+          
+          window.onload = () => {
+            window.print();
+            window.onafterprint = () => window.close();
+          };
+        </script>
+      </body>
+    </html>
+  `);
+
+    printWindow.document.close();
   };
 
   const formatDate = (dateString: string) => {
@@ -199,34 +205,19 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
     return Array.isArray(array) && array.includes(value);
   };
 
-  // Get pekerjaan list from data
+  // Get pekerjaan list - ONLY 4 items from jenis_pekerjaan
   const getPekerjaanList = () => {
     const pekerjaanArray: string[] = [];
 
-    // Check tahapan for DESAIN/SETTING
-    if (isChecked(data?.tahapan, 'DESAIN/SETTING')) pekerjaanArray.push('DA');
-
-    // Check tahapan
-    if (isChecked(data?.tahapan, 'Cetak')) pekerjaanArray.push('PA');
-    if (isChecked(data?.tahapan, 'Water Base')) pekerjaanArray.push('WB');
-    if (isChecked(data?.tahapan, 'Spot OPV')) pekerjaanArray.push('SOPV');
-    if (isChecked(data?.tahapan, 'OPV')) pekerjaanArray.push('OPV');
-    if (isChecked(data?.tahapan, 'Varnish Doff')) pekerjaanArray.push('VD');
-    if (isChecked(data?.tahapan, 'Spot UV')) pekerjaanArray.push('SUV');
-    if (isChecked(data?.tahapan, 'UV')) pekerjaanArray.push('UV');
-    if (isChecked(data?.tahapan, 'Lami. Kilap')) pekerjaanArray.push('LK');
-    if (isChecked(data?.tahapan, 'Lami. doff')) pekerjaanArray.push('LD');
-    if (isChecked(data?.tahapan, 'Pons')) pekerjaanArray.push('P');
-    if (isChecked(data?.tahapan, 'Ril')) pekerjaanArray.push('R');
-    if (isChecked(data?.tahapan, '1/2 Putus')) pekerjaanArray.push('1/2P');
-    if (isChecked(data?.tahapan, 'Potong Jadi')) pekerjaanArray.push('PJ');
-    if (isChecked(data?.tahapan, 'Perforasi')) pekerjaanArray.push('PF');
-    if (isChecked(data?.tahapan, 'Emboss')) pekerjaanArray.push('E');
-    if (isChecked(data?.tahapan, 'Foil Emas')) pekerjaanArray.push('FE');
-
-    // Check jenis_pekerjaan
-    if (isChecked(data?.jenis_pekerjaan, 'Blok Lem')) pekerjaanArray.push('BL');
-    if (isChecked(data?.jenis_pekerjaan, 'Lipat')) pekerjaanArray.push('L');
+    // Only check jenis_pekerjaan for the 4 main types
+    if (isChecked(data?.jenis_pekerjaan, 'Print Artwork'))
+      pekerjaanArray.push('PA');
+    if (isChecked(data?.jenis_pekerjaan, 'Dummy Polos'))
+      pekerjaanArray.push('DP');
+    if (isChecked(data?.jenis_pekerjaan, 'Dummy Artwork'))
+      pekerjaanArray.push('DA');
+    if (isChecked(data?.jenis_pekerjaan, 'Proof Digital'))
+      pekerjaanArray.push('PD');
 
     return pekerjaanArray.join(', ');
   };
@@ -282,8 +273,8 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
         {/* Scrollable content area */}
         <div className="flex-1 overflow-auto bg-gray-600 p-4">
           <div className="max-w-[210mm] mx-auto bg-white shadow-2xl">
-            {/* Print Content */}
-            <div ref={printRef} className="p-8">
+            {/* Print Content - REMOVED p-8 padding */}
+            <div ref={printRef}>
               <table style={{ fontSize: '10px' }}>
                 <tbody>
                   {/* Header Row */}
@@ -521,7 +512,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                     </td>
                   </tr>
 
-                  {/* Row 8: Permintaan checkboxes - WITHOUT DESAIN/SETTING */}
+                  {/* Row 8: Permintaan - NO CHECKBOXES, just labels */}
                   <tr>
                     <td
                       className="text-center bold"
@@ -547,13 +538,6 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 width: '25%',
                               }}
                             >
-                              <span
-                                className={`checkbox ${
-                                  isChecked(data.jenis_pekerjaan, 'Dummy Polos')
-                                    ? 'checked'
-                                    : ''
-                                }`}
-                              ></span>
                               <span className="bold">DUMMY POLOS</span>
                             </td>
                             <td
@@ -574,16 +558,6 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 width: '25%',
                               }}
                             >
-                              <span
-                                className={`checkbox ${
-                                  isChecked(
-                                    data.jenis_pekerjaan,
-                                    'Dummy Artwork',
-                                  )
-                                    ? 'checked'
-                                    : ''
-                                }`}
-                              ></span>
                               <span className="bold">DUMMY ARTWORK</span>
                             </td>
                             <td
@@ -610,16 +584,6 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 width: '16.66%',
                               }}
                             >
-                              <span
-                                className={`checkbox ${
-                                  isChecked(
-                                    data.jenis_pekerjaan,
-                                    'Print Artwork',
-                                  )
-                                    ? 'checked'
-                                    : ''
-                                }`}
-                              ></span>
                               <span className="bold">
                                 PRINT
                                 <br />
@@ -644,16 +608,6 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 width: '16.66%',
                               }}
                             >
-                              <span
-                                className={`checkbox ${
-                                  isChecked(
-                                    data.jenis_pekerjaan,
-                                    'Proof Digital',
-                                  )
-                                    ? 'checked'
-                                    : ''
-                                }`}
-                              ></span>
                               <span className="bold">PROOF DIGITAL</span>
                             </td>
                             <td
@@ -674,13 +628,6 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 width: '16.66%',
                               }}
                             >
-                              <span
-                                className={`checkbox ${
-                                  isChecked(data.jenis_pekerjaan, 'Proof Cetak')
-                                    ? 'checked'
-                                    : ''
-                                }`}
-                              ></span>
                               <span className="bold">PROOF CETAK</span>
                             </td>
                             <td
@@ -699,7 +646,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                     </td>
                   </tr>
 
-                  {/* Row 9: Jenis Pekerjaan Checkboxes */}
+                  {/* Row 9: Jenis Pekerjaan Checkboxes - ALL from tahapan */}
                   <tr>
                     <td className="text-center bold">9</td>
                     <td colSpan={2}>
@@ -967,7 +914,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Foil Perak
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Foil Perak')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Foil Perak
                             </td>
                             <td
                               style={{
@@ -975,7 +929,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> V-Kaca
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'V-Kaca')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              V-Kaca
                             </td>
                           </tr>
                           <tr>
@@ -987,7 +948,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                             >
                               <span
                                 className={`checkbox ${
-                                  isChecked(data.jenis_pekerjaan, 'Blok Lem')
+                                  isChecked(data.tahapan, 'Blok Lem')
                                     ? 'checked'
                                     : ''
                                 }`}
@@ -1000,23 +961,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Lem Atas
-                            </td>
-                            <td
-                              style={{
-                                border: '1px solid black',
-                                padding: '3px',
-                              }}
-                            >
-                              <span className="checkbox"></span> Lem Samping
-                            </td>
-                            <td
-                              style={{
-                                border: '1px solid black',
-                                padding: '3px',
-                              }}
-                            >
-                              <span className="checkbox"></span> Lock Bottom
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Lem Atas')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Lem Atas
                             </td>
                             <td
                               style={{
@@ -1026,7 +978,37 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                             >
                               <span
                                 className={`checkbox ${
-                                  isChecked(data.jenis_pekerjaan, 'Lipat')
+                                  isChecked(data.tahapan, 'Lem Samping')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Lem Samping
+                            </td>
+                            <td
+                              style={{
+                                border: '1px solid black',
+                                padding: '3px',
+                              }}
+                            >
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Lock Bottom')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Lock Bottom
+                            </td>
+                            <td
+                              style={{
+                                border: '1px solid black',
+                                padding: '3px',
+                              }}
+                            >
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Lipat')
                                     ? 'checked'
                                     : ''
                                 }`}
@@ -1039,7 +1021,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Numerator
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Numerator')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Numerator
                             </td>
                             <td
                               style={{
@@ -1047,7 +1036,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Komplit
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Komplit')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Komplit
                             </td>
                             <td
                               style={{
@@ -1055,7 +1051,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Pasang Cover
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Pasang Cover')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Pasang Cover
                             </td>
                             <td
                               style={{
@@ -1063,7 +1066,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Mika
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Mika')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Mika
                             </td>
                           </tr>
                           <tr>
@@ -1073,7 +1083,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Spiral
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Spiral')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Spiral
                             </td>
                             <td
                               style={{
@@ -1081,7 +1098,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Jepit Kalung
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Jepit Kalung')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Jepit Kalung
                             </td>
                             <td
                               style={{
@@ -1089,7 +1113,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Mata Itik
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Mata Itik')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Mata Itik
                             </td>
                             <td
                               style={{
@@ -1097,7 +1128,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Pasang Tali
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Pasang Tali')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Pasang Tali
                             </td>
                             <td
                               style={{
@@ -1105,7 +1143,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Bor...mm
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Bor...mm')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Bor...mm
                             </td>
                             <td
                               style={{
@@ -1113,7 +1158,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Jahit Kawat
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Jahit Kawat')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Jahit Kawat
                             </td>
                             <td
                               style={{
@@ -1121,7 +1173,14 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 padding: '3px',
                               }}
                             >
-                              <span className="checkbox"></span> Jahit Benang
+                              <span
+                                className={`checkbox ${
+                                  isChecked(data.tahapan, 'Jahit Benang')
+                                    ? 'checked'
+                                    : ''
+                                }`}
+                              ></span>{' '}
+                              Jahit Benang
                             </td>
                             <td
                               colSpan={2}
@@ -1138,14 +1197,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
 
                   {/* Target & Tanggal Section */}
                   <tr>
-                    <td
-                      rowSpan={4}
-                      className="text-center bold"
-                      style={{ verticalAlign: 'top', paddingTop: '10px' }}
-                    >
-                      1
-                    </td>
-                    <td colSpan={2}>
+                    <td colSpan={3}>
                       <table style={{ width: '100%', border: 'none' }}>
                         <tbody>
                           <tr>
@@ -1197,7 +1249,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 border: '1px solid black',
                                 padding: '5px',
                                 textAlign: 'center',
-                                verticalAlign: 'middle',
+                                verticalAlign: 'start',
                                 width: '20%',
                               }}
                               className="bold"
@@ -1303,7 +1355,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                     </td>
                   </tr>
 
-                  {/* Instruksi Produk Section - Updated Format */}
+                  {/* Instruksi Produk Section - UPDATED with many blank lines */}
                   <tr>
                     <td colSpan={3}>
                       <table style={{ width: '100%', border: 'none' }}>
@@ -1336,9 +1388,86 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                     </td>
                   </tr>
 
-                  {/* Empty rows for spacing */}
+                  {/* Blank lines for Instruksi Produk - 8 rows */}
                   <tr>
-                    <td colSpan={3} style={{ padding: '25px' }}></td>
+                    <td
+                      colSpan={3}
+                      style={{
+                        border: '1px solid black',
+                        padding: '12px',
+                        height: '25px',
+                      }}
+                    ></td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      style={{
+                        border: '1px solid black',
+                        padding: '12px',
+                        height: '25px',
+                      }}
+                    ></td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      style={{
+                        border: '1px solid black',
+                        padding: '12px',
+                        height: '25px',
+                      }}
+                    ></td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      style={{
+                        border: '1px solid black',
+                        padding: '12px',
+                        height: '25px',
+                      }}
+                    ></td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      style={{
+                        border: '1px solid black',
+                        padding: '12px',
+                        height: '25px',
+                      }}
+                    ></td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      style={{
+                        border: '1px solid black',
+                        padding: '12px',
+                        height: '25px',
+                      }}
+                    ></td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      style={{
+                        border: '1px solid black',
+                        padding: '12px',
+                        height: '25px',
+                      }}
+                    ></td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      style={{
+                        border: '1px solid black',
+                        padding: '12px',
+                        height: '25px',
+                      }}
+                    ></td>
                   </tr>
 
                   {/* Signature Section */}
