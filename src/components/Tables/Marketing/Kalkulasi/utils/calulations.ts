@@ -1,58 +1,73 @@
 // utils/calculations.ts
 import { KalkulasiFormData } from '../types/kalkulasi';
 
-// Helper function to parse currency strings to numbers
+// Improved helper function to parse currency strings to numbers
 const parseCurrencyString = (value: string | number | undefined): number => {
   if (typeof value === 'number') return value;
   if (!value || value === '') return 0;
 
   let cleanValue = value.toString().trim();
 
-  // Remove 'Rp' and spaces first
+  // Remove 'Rp' and spaces
   cleanValue = cleanValue.replace(/Rp\s*/g, '');
 
-  // Handle specific formats from your console:
-  // "8.395.625" -> 8395625
-  // "175.000,00" -> 175000
-  // "80.000,00" -> 80000
-  // "731250" -> 731250
+  // Count dots and commas to determine format
+  const dotCount = (cleanValue.match(/\./g) || []).length;
+  const commaCount = (cleanValue.match(/,/g) || []).length;
 
-  if (cleanValue.includes(',') && cleanValue.includes('.')) {
-    // European format like "175.000,00"
-    const lastCommaIndex = cleanValue.lastIndexOf(',');
-    const lastDotIndex = cleanValue.lastIndexOf('.');
-
-    if (lastCommaIndex > lastDotIndex) {
-      // Dots are thousand separators, comma is decimal
-      // "175.000,00" -> "175000.00"
-      cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
-    } else {
-      // Commas are thousand separators, dot is decimal
-      // "8,395.625" -> "8395.625"
-      cleanValue = cleanValue.replace(/,/g, '');
-    }
-  } else if (cleanValue.includes('.')) {
-    // Only dots - determine if thousand separator or decimal
-    const parts = cleanValue.split('.');
-
-    // If more than 2 parts OR last part has exactly 3 digits, treat as thousand separator
-    if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
-      // "8.395.625" or "175.000" -> remove all dots
-      cleanValue = cleanValue.replace(/\./g, '');
-    }
-    // Otherwise keep as decimal: "123.45" stays "123.45"
-  } else if (cleanValue.includes(',')) {
-    // Only commas
-    const parts = cleanValue.split(',');
-    if (parts.length === 2 && parts[1].length <= 2) {
-      // Decimal separator: "175,00" -> "175.00"
-      cleanValue = cleanValue.replace(',', '.');
-    } else {
-      // Thousand separator: remove commas
-      cleanValue = cleanValue.replace(/,/g, '');
-    }
+  // Multiple dots = thousand separator (Indonesian format: 1.000.000)
+  if (dotCount > 1) {
+    cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
+    return parseFloat(cleanValue) || 0;
   }
 
+  // Multiple commas = thousand separator (US format: 1,000,000)
+  if (commaCount > 1) {
+    cleanValue = cleanValue.replace(/,/g, '');
+    return parseFloat(cleanValue) || 0;
+  }
+
+  // Has both comma and dot
+  if (dotCount === 1 && commaCount === 1) {
+    const dotPos = cleanValue.indexOf('.');
+    const commaPos = cleanValue.indexOf(',');
+
+    if (commaPos > dotPos) {
+      // Format: 1.000,50 (European/Indonesian)
+      cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
+    } else {
+      // Format: 1,000.50 (US)
+      cleanValue = cleanValue.replace(/,/g, '');
+    }
+    return parseFloat(cleanValue) || 0;
+  }
+
+  // Single dot - check position to determine if thousand separator or decimal
+  if (dotCount === 1) {
+    const parts = cleanValue.split('.');
+    // If last part is exactly 3 digits and first part is <= 3 digits, likely thousand separator
+    // e.g., "2.000" but not "12.345" (which could be decimal)
+    if (parts[1].length === 3 && parts[0].length <= 3) {
+      cleanValue = cleanValue.replace(/\./g, '');
+    }
+    // Otherwise treat as decimal
+    return parseFloat(cleanValue) || 0;
+  }
+
+  // Single comma - check if it's decimal separator
+  if (commaCount === 1) {
+    const parts = cleanValue.split(',');
+    if (parts[1].length <= 2) {
+      // Decimal separator: "1000,50"
+      cleanValue = cleanValue.replace(',', '.');
+    } else {
+      // Thousand separator: "1,000"
+      cleanValue = cleanValue.replace(/,/g, '');
+    }
+    return parseFloat(cleanValue) || 0;
+  }
+
+  // No separators - just parse
   const parsed = parseFloat(cleanValue);
   return isNaN(parsed) ? 0 : parsed;
 };
@@ -79,6 +94,41 @@ export const calculateHargaProduksi = (formData: KalkulasiFormData): number => {
   ];
 
   const total = fields.reduce((sum, value) => sum + value, 0);
+
+  // Optional: Add debug logging for suspicious values
+  if (total > 10000000000) {
+    // 10 billion
+    console.warn('Suspicious large production cost:', {
+      total,
+      breakdown: {
+        total_harga_kertas: parseCurrencyString(formData.total_harga_kertas),
+        jumlah_harga_cetak: parseCurrencyString(formData.jumlah_harga_cetak),
+        total_harga_coating: parseCurrencyString(formData.total_harga_coating),
+        total_harga_ongkos_pons: parseCurrencyString(
+          formData.total_harga_ongkos_pons,
+        ),
+        harga_pisau: parseCurrencyString(formData.harga_pisau),
+        harga_lipat: parseCurrencyString(formData.harga_lipat),
+        harga_potong_jadi: parseCurrencyString(formData.harga_potong_jadi),
+        jumlah_harga_lem: parseCurrencyString(formData.jumlah_harga_lem),
+        harga_foil_manual: parseCurrencyString(formData.harga_foil_manual),
+        harga_spot_foil_manual: parseCurrencyString(
+          formData.harga_spot_foil_manual,
+        ),
+        harga_polimer_manual: parseCurrencyString(
+          formData.harga_polimer_manual,
+        ),
+        harga_plate: parseCurrencyString(formData.harga_plate),
+        harga_packaging: parseCurrencyString(formData.harga_packaging),
+        harga_packing: parseCurrencyString(formData.harga_packing),
+        harga_pengiriman: parseCurrencyString(formData.harga_pengiriman),
+        total_harga_lain_lain: parseCurrencyString(
+          formData.total_harga_lain_lain,
+        ),
+      },
+    });
+  }
+
   return total;
 };
 
