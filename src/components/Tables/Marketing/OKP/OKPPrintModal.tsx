@@ -400,7 +400,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
 
                   {/* Row 4: Ukuran Cetak */}
                   <tr>
-                    <td className="text-center bold">4</td>
+                    {/* <td className="text-center bold">4</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span className="bold">Ukuran Cetak</span>
@@ -425,12 +425,12 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                           </span>
                         </div>
                       </div>
-                    </td>
+                    </td> */}
                   </tr>
 
                   {/* Row 5: Warna */}
                   <tr>
-                    <td className="text-center bold">5</td>
+                    <td className="text-center bold">4</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span className="bold">Warna</span>
@@ -460,7 +460,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
 
                   {/* Row 6: Bahan */}
                   <tr>
-                    <td className="text-center bold">6</td>
+                    <td className="text-center bold">5</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span className="bold">Bahan</span>
@@ -488,7 +488,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
 
                   {/* Row 7: Qty */}
                   <tr>
-                    <td className="text-center bold">7</td>
+                    <td className="text-center bold">6</td>
                     <td>
                       <span className="bold">Qty</span>
                       <span style={{ marginLeft: '75px' }}>
@@ -506,6 +506,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                         backgroundColor: '#e0e0e0',
                         padding: '5px',
                         fontSize: '11px',
+                        textAlign: 'center',
                       }}
                     >
                       Permintaan
@@ -518,7 +519,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                       className="text-center bold"
                       style={{ verticalAlign: 'middle' }}
                     >
-                      8
+                      7
                     </td>
                     <td colSpan={2}>
                       <table
@@ -648,7 +649,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
 
                   {/* Row 9: Jenis Pekerjaan Checkboxes - ALL from tahapan */}
                   <tr>
-                    <td className="text-center bold">9</td>
+                    <td className="text-center bold">8</td>
                     <td colSpan={2}>
                       <table
                         style={{
