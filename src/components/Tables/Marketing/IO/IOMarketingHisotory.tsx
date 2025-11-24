@@ -35,7 +35,7 @@ interface OKPData {
 type SortField = keyof IOData;
 type SortDirection = 'asc' | 'desc';
 
-const IOMarketing: React.FC = () => {
+const IOMarketingHistory: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [ioData, setIOData] = useState<IOData[]>([]);
   const [okpData, setOKPData] = useState<OKPData[]>([]);
@@ -59,8 +59,6 @@ const IOMarketing: React.FC = () => {
   // Add sorting state
   const [sortKey, setSortKey] = useState<SortField>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [generatedIONumber, setGeneratedIONumber] = useState<string>('');
-  const [keterangan, setKeterangan] = useState<string>('');
 
   // Print states
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
@@ -196,157 +194,6 @@ const IOMarketing: React.FC = () => {
     setPage(1);
   };
 
-  // Add this new function to fetch IO count
-  const fetchIOCount = async (): Promise<number> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/ioJumlahData`;
-    try {
-      const res: AxiosResponse = await axios.get(url, {
-        withCredentials: true,
-      });
-      if (res.data.succes) {
-        return res.data.total_data;
-      }
-      return 0;
-    } catch (error) {
-      console.error('Error fetching IO count:', error);
-      return 0;
-    }
-  };
-
-  // Add this new function to fetch previous OKP data
-  const fetchPreviousOKPData = async (
-    okpId: number,
-  ): Promise<string | null> => {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/marketing/ioPreviousByOkp/${okpId}`;
-    try {
-      const res: AxiosResponse = await axios.get(url, {
-        withCredentials: true,
-      });
-      if (res.data.succes && res.data.data && res.data.data.no_io) {
-        return res.data.data.no_io;
-      }
-      return null;
-    } catch (error) {
-      console.error('Error fetching previous OKP data:', error);
-      return null;
-    }
-  };
-
-  // Updated Generate auto number for IO
-  const generateIONumber = async (): Promise<string> => {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
-
-    const selectedOKP = okpData.find(
-      (okp) => okp.id.toString() === formData.id_okp,
-    );
-
-    if (!selectedOKP) {
-      return `IO-00001/${month}/${year}`;
-    }
-
-    // If status is 'baru', generate new IO number
-    if (selectedOKP.status_okp === 'baru') {
-      const totalData = await fetchIOCount();
-      const nextNumber = totalData + 1;
-      const paddedNumber = String(nextNumber).padStart(5, '0');
-      return `IO-${paddedNumber}/${month}/${year}`;
-    }
-
-    // If status is 'repeat' or 'repeat perubahan', get previous IO and increment revision
-    const previousIONumber = await fetchPreviousOKPData(selectedOKP.id);
-
-    if (!previousIONumber) {
-      // Fallback if no previous IO found
-      const totalData = await fetchIOCount();
-      const nextNumber = totalData + 1;
-      const paddedNumber = String(nextNumber).padStart(5, '0');
-      return `IO-${paddedNumber}/${month}/${year}`;
-    }
-
-    // Parse the previous IO number to extract revision number
-    const ioMatch = previousIONumber.match(
-      /^IO-(\d+)(?:-(\d+))?\/(\d{2})\/(\d{4})$/,
-    );
-
-    if (ioMatch) {
-      const baseNumber = ioMatch[1];
-      const currentRevision = ioMatch[2] ? parseInt(ioMatch[2]) : 0;
-      const prevMonth = ioMatch[3];
-      const prevYear = ioMatch[4];
-
-      const nextRevision = currentRevision + 1;
-      return `IO-${baseNumber}-${nextRevision}/${prevMonth}/${prevYear}`;
-    }
-
-    // Fallback if parsing fails
-    const totalData = await fetchIOCount();
-    const nextNumber = totalData + 1;
-    const paddedNumber = String(nextNumber).padStart(5, '0');
-    return `IO-${paddedNumber}/${month}/${year}`;
-  };
-
-  const PutIO = async (): Promise<void> => {
-    const selectedOKP = okpData.find(
-      (okp) => okp.id.toString() === formData.id_okp,
-    );
-    if (!selectedOKP) return;
-
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
-    try {
-      setLoading(true);
-      const ioNumber = await generateIONumber();
-
-      const res: AxiosResponse = await axios.post(
-        url,
-        {
-          id_okp: formData.id_okp,
-          no_io: ioNumber,
-          status_io: selectedOKP.status_okp,
-          base_no_io: ioNumber,
-          is_revisi: null,
-          revisi_no_io: '',
-          keterangan: keterangan,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
-      if (res.data.succes) {
-        setShowCreateForm(false);
-        setFormData({ id_okp: '', is_revisi: false });
-        fetchIOData();
-      }
-    } catch (error) {
-      console.error('Error creating IO:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchOKPData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/okp`;
-    try {
-      setLoading(true);
-      const res: AxiosResponse = await axios.get(url, {
-        params: { status: 'history', is_io_done: false },
-        withCredentials: true,
-      });
-      console.log('Fetched OKP data:', res.data);
-      if (res.data.succes) {
-        setOKPData(res.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching OKP data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchIOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
     try {
@@ -356,7 +203,7 @@ const IOMarketing: React.FC = () => {
           page: page,
           limit: limit,
           search: searchTerm,
-          status: 'draft',
+          status: 'history',
         },
         withCredentials: true,
       });
@@ -466,31 +313,13 @@ const IOMarketing: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchOKPData();
-  }, []);
-
-  useEffect(() => {
     fetchIOData();
   }, [page, limit, searchTerm]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    PutIO();
-  };
 
   const handleShowDetail = (ioId: number) => {
     setSelectedIOId(ioId);
     setShowDetailPopup(true);
   };
-
-  // Add effect to update IO number when OKP is selected
-  useEffect(() => {
-    if (formData.id_okp) {
-      generateIONumber().then(setGeneratedIONumber);
-    } else {
-      setGeneratedIONumber('');
-    }
-  }, [formData.id_okp, okpData]);
 
   return (
     <div className="p-4">
@@ -520,13 +349,6 @@ const IOMarketing: React.FC = () => {
             </button>
           )}
         </div>
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-        >
-          <span>+</span>
-          Create IO
-        </button>
       </div>
 
       {/* Table */}
@@ -781,107 +603,7 @@ const IOMarketing: React.FC = () => {
           onMountingIndexChange={setSelectedMountingIndex}
         />
       )}
-
-      {/* Create IO Modal */}
-      {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Create New IO</h2>
-              <button
-                onClick={() => setShowCreateForm(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-2xl">&times;</span>
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Nomor OKP */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nomor OKP <span className="text-red-500">*</span>
-                </label>
-                <SearchableSelect
-                  options={[
-                    { value: '', label: 'Pilih OKP' },
-                    ...okpData.map((okp) => ({
-                      value: okp.id.toString(),
-                      label: `${okp.no_okp} - ${okp.customer} - ${okp.produk}`,
-                    })),
-                  ]}
-                  value={formData.id_okp}
-                  onChange={(value) =>
-                    setFormData({ ...formData, id_okp: String(value) })
-                  }
-                  placeholder="Pilih OKP"
-                  required
-                />
-              </div>
-
-              {/* Nomor IO (Auto Generated) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nomor IO
-                </label>
-                <input
-                  type="text"
-                  value={generatedIONumber}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                />
-              </div>
-
-              {/* Status (Auto from OKP) */}
-              {formData.id_okp && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <input
-                    type="text"
-                    value={
-                      okpData.find(
-                        (okp) => okp.id.toString() === formData.id_okp,
-                      )?.status_okp || ''
-                    }
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                  />
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Keterangan <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  onChange={(e) => setKeterangan(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                ></input>
-              </div>
-              {/* Submit Buttons */}
-              <div className="flex justify-end gap-2 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!formData.id_okp || loading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Creating...' : 'Create IO'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
-export default IOMarketing;
+export default IOMarketingHistory;

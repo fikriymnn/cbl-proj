@@ -1,8 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 import IODetailPopup from './IODetailPopup';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
+import IOMarketingPrintModal from './IOMarketingPrintModal';
+import Pagination from '@mui/material/Pagination/Pagination';
+import Stack from '@mui/material/Stack';
+import { MountingData } from './Mounting';
 
 interface IOData {
   id: number;
@@ -14,7 +18,8 @@ interface IOData {
   tgl_pembuatan_io: string;
   is_revisi: boolean;
   revisi_no_io: string;
-  is_active: boolean; // Add this new field
+  is_active: boolean;
+  io_mounting?: MountingData[];
 }
 
 interface OKPData {
@@ -41,6 +46,20 @@ const IONPD: React.FC = () => {
   });
   const [showDetailPopup, setShowDetailPopup] = useState<boolean>(false);
   const [selectedIOId, setSelectedIOId] = useState<number | null>(null);
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [printIOId, setPrintIOId] = useState<number | null>(null);
+  const [printData, setPrintData] = useState<IOData | null>(null);
+  const [selectedMountingIndex, setSelectedMountingIndex] = useState<number>(0);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  // Pagination states
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+
+  // Search states
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
 
   // Add sorting state
   const [sortKey, setSortKey] = useState<SortField>('id');
@@ -62,6 +81,30 @@ const IONPD: React.FC = () => {
     setSelectedItemId(null);
     setalasanPending('');
   };
+
+  // Search functions
+  const handleSearch = (): void => {
+    setSearchTerm(searchInput);
+    setPage(1);
+  };
+
+  const handleClearSearch = (): void => {
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleLimitChange = (newLimit: number): void => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
   // Add sorting functions
   const handleSort = (field: SortField) => {
     if (sortKey === field) {
@@ -127,16 +170,30 @@ const IONPD: React.FC = () => {
       let aValue = a[sortKey];
       let bValue = b[sortKey];
 
-      // Handle different data types
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
+      // Normalize undefined/null to empty string so comparisons are safe
+      if (aValue === undefined || aValue === null) aValue = '';
+      if (bValue === undefined || bValue === null) bValue = '';
+
+      // If both are numbers, compare numerically
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
       }
 
-      if (aValue < bValue) {
+      // If both are booleans, compare as 0/1
+      if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+        const av = aValue ? 1 : 0;
+        const bv = bValue ? 1 : 0;
+        return sortDirection === 'asc' ? av - bv : bv - av;
+      }
+
+      // Fallback to string comparison (case-insensitive)
+      const aStr = String(aValue).toLowerCase();
+      const bStr = String(bValue).toLowerCase();
+
+      if (aStr < bStr) {
         return sortDirection === 'asc' ? -1 : 1;
       }
-      if (aValue > bValue) {
+      if (aStr > bStr) {
         return sortDirection === 'asc' ? 1 : -1;
       }
       return 0;
@@ -303,46 +360,25 @@ const IONPD: React.FC = () => {
     }
   };
 
-  const fetchIOLength = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/ioJumlahData`;
-    try {
-      setLoading(true);
-      const res: AxiosResponse = await axios.get(url, {
-        withCredentials: true,
-      });
-      console.log('Fetched IO Length data:', res.data);
-    } catch (error) {
-      console.error('Error fetching OKP data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPreviousOKP = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/ioPreviousByOkp/3`;
-    try {
-      setLoading(true);
-      const res: AxiosResponse = await axios.get(url, {
-        withCredentials: true,
-      });
-      console.log('Fetched Previous OKP data:', res.data);
-    } catch (error) {
-      console.error('Error fetching OKP data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchIOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
     try {
       setLoading(true);
       const res: AxiosResponse = await axios.get(url, {
+        params: {
+          page: page,
+          limit: limit,
+          search: searchTerm,
+          status: 'requested',
+        },
         withCredentials: true,
       });
       console.log('Fetched IO data:', res.data);
       if (res.data.succes) {
         setIOData(res.data.data);
+        if (res.data.total_page) {
+          setTotalPages(res.data.total_page);
+        }
       }
     } catch (error) {
       console.error('Error fetching IO data:', error);
@@ -351,17 +387,22 @@ const IONPD: React.FC = () => {
     }
   };
 
-  const putNextProcess = async (id: any): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/request/${id}`;
+  // Fetch IO detail for printing
+  const fetchIODetailForPrint = async (ioId: number): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${ioId}`;
     try {
       setLoading(true);
-      const res: AxiosResponse = await axios.put(url, {
+      const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-      fetchIOData();
-      console.log('NextProcess:', res.data);
+      console.log('Fetched IO detail for print:', res.data);
+      if (res.data.succes && res.data.data) {
+        setPrintData(res.data.data);
+        setSelectedMountingIndex(0); // Default to first mounting
+      }
     } catch (error) {
-      console.error('Error fetching IO data:', error);
+      console.error('Error fetching IO detail:', error);
+      alert('Failed to fetch IO detail for printing');
     } finally {
       setLoading(false);
     }
@@ -407,12 +448,27 @@ const IONPD: React.FC = () => {
     }
   };
 
+  // Print functions
+  const handlePrintIO = (ioId: number) => {
+    setPrintIOId(ioId);
+    fetchIODetailForPrint(ioId);
+    setShowPrintModal(true);
+  };
+
+  const handleClosePrintModal = () => {
+    setShowPrintModal(false);
+    setPrintIOId(null);
+    setPrintData(null);
+    setSelectedMountingIndex(0);
+  };
+
   useEffect(() => {
     fetchOKPData();
-    fetchIOData();
-    fetchIOLength();
-    fetchPreviousOKP();
   }, []);
+
+  useEffect(() => {
+    fetchIOData();
+  }, [page, limit, searchTerm]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -432,6 +488,7 @@ const IONPD: React.FC = () => {
       setGeneratedIONumber('');
     }
   }, [formData.id_okp, okpData]);
+
   // Updated approve function
   async function RequestKabag(id: number) {
     if (window.confirm('Apakah Anda yakin ingin Approve IO Ini?')) {
@@ -483,8 +540,37 @@ const IONPD: React.FC = () => {
       }
     }
   }
+
   return (
     <div className="p-4">
+      {/* Header with Search */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            placeholder="Search IO..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 w-64 text-sm"
+          />
+          <button
+            onClick={handleSearch}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Search
+          </button>
+          {searchTerm && (
+            <button
+              onClick={handleClearSearch}
+              className="bg-gray-500 hover:bg-gray-600 text-red-500 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -579,7 +665,9 @@ const IONPD: React.FC = () => {
                     colSpan={10}
                     className="px-4 py-6 text-center text-gray-500 text-sm"
                   >
-                    No IO data available
+                    {searchTerm
+                      ? 'No IO found matching your search'
+                      : 'No IO data available'}
                   </td>
                 </tr>
               ) : (
@@ -589,7 +677,7 @@ const IONPD: React.FC = () => {
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {index + 1}
+                      {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
@@ -617,6 +705,13 @@ const IONPD: React.FC = () => {
                             </button>
                           </>
                         )}
+                        <button
+                          onClick={() => handlePrintIO(item.id)}
+                          className="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                          title="Print IO"
+                        >
+                          PRINT
+                        </button>
                       </div>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -679,6 +774,40 @@ const IONPD: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Pagination with Rows per page selector */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Rows per page:</span>
+          <div className="flex gap-2">
+            {[10, 25, 50, 100].map((pageSize) => (
+              <button
+                key={pageSize}
+                onClick={() => handleLimitChange(pageSize)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  limit === pageSize
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {pageSize}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              color="primary"
+              onChange={(e, i) => {
+                setPage(i);
+              }}
+            />
+          </Stack>
         </div>
       </div>
 
@@ -792,6 +921,7 @@ const IONPD: React.FC = () => {
           </div>
         </div>
       )}
+
       {/* Reject Modal */}
       {showPending && (
         <ModalKosonganSmall
@@ -818,8 +948,18 @@ const IONPD: React.FC = () => {
           </div>
         </ModalKosonganSmall>
       )}
+
+      {/* Print Modal */}
+      {showPrintModal && printData && (
+        <IOMarketingPrintModal
+          isOpen={showPrintModal}
+          printData={printData}
+          selectedMountingIndex={selectedMountingIndex}
+          onClose={handleClosePrintModal}
+          onMountingIndexChange={setSelectedMountingIndex}
+        />
+      )}
     </div>
   );
 };
-
 export default IONPD;
