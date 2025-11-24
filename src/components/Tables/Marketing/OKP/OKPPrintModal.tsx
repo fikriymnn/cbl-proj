@@ -293,17 +293,18 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                       No. OKP
                     </th>
                   </tr>
-
-                  {/* Row 1: Nama Pelanggan */}
+                  {/* Row 0: Label - FIXED alignment */}
                   <tr>
                     <td style={{ width: '3%' }} className="text-center bold">
-                      1
+                      0
                     </td>
                     <td style={{ width: '67%' }}>
-                      <span className="bold">Nama Pelanggan</span>
-                      <span style={{ marginLeft: '20px' }}>
-                        : {getValue(data.kalkulasi?.nama_customer)}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span className="bold" style={{ minWidth: '180px' }}>
+                          Label
+                        </span>
+                        <span>: {data.label || '-'}</span>
+                      </div>
                     </td>
                     <td
                       rowSpan={7}
@@ -317,6 +318,21 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                           {getValue(data.no_okp)}
                         </div>
                         <div style={{ marginTop: '10px', fontSize: '9px' }}>
+                          {/* New Coating field */}
+                          <div style={{ marginBottom: '5px' }}>
+                            <span className="bold">Coating:</span>
+                            <div>
+                              {data.kalkulasi?.nama_coating_depan &&
+                              data.kalkulasi?.nama_coating_depan !== '-'
+                                ? '1'
+                                : '0'}{' '}
+                              /{' '}
+                              {data.kalkulasi?.nama_coating_belakang &&
+                              data.kalkulasi?.nama_coating_belakang !== '-'
+                                ? '1'
+                                : '0'}
+                            </div>
+                          </div>
                           <div style={{ marginBottom: '5px' }}>
                             <span className="bold">Coating Depan:</span>
                             <div>
@@ -352,14 +368,29 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                     </td>
                   </tr>
 
+                  {/* Row 1: Nama Pelanggan */}
+                  <tr>
+                    <td className="text-center bold">1</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span className="bold" style={{ minWidth: '180px' }}>
+                          Nama Pelanggan
+                        </span>
+                        <span>: {getValue(data.kalkulasi?.nama_customer)}</span>
+                      </div>
+                    </td>
+                  </tr>
+
                   {/* Row 2: Nama Produk */}
                   <tr>
                     <td className="text-center bold">2</td>
                     <td>
-                      <span className="bold">Nama Produk (No Kode)</span>
-                      <span style={{ marginLeft: '5px' }}>
-                        : {getValue(data.kalkulasi?.nama_produk)}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span className="bold" style={{ minWidth: '180px' }}>
+                          Nama Produk (No Kode)
+                        </span>
+                        <span>: {getValue(data.kalkulasi?.nama_produk)}</span>
+                      </div>
                     </td>
                   </tr>
 
@@ -368,135 +399,71 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                     <td className="text-center bold">3</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span className="bold">Ukuran (pxlxt)</span>
-                        <div
-                          style={{
-                            marginLeft: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                          }}
-                        >
-                          <span className="bold">
-                            {data.label === 'CARTONING' ? 'a' : 'b'}
-                          </span>
-                          <span>:</span>
-                          <span>
-                            {getValue(data.kalkulasi?.ukuran_jadi_panjang)}
-                          </span>
-                          <span className="bold">x</span>
-                          <span>
-                            {getValue(data.kalkulasi?.ukuran_jadi_lebar)}
-                          </span>
-                          <span className="bold">x</span>
-                          <span>
-                            {getValue(data.kalkulasi?.ukuran_jadi_tinggi, '0')}
-                          </span>
-                          <span>mm</span>
-                        </div>
+                        <span className="bold" style={{ minWidth: '180px' }}>
+                          Ukuran (pxlxt)
+                        </span>
+                        <span>
+                          : {getValue(data.kalkulasi?.ukuran_jadi_panjang)} x{' '}
+                          {getValue(data.kalkulasi?.ukuran_jadi_lebar)} x{' '}
+                          {getValue(data.kalkulasi?.ukuran_jadi_tinggi, '0')} mm
+                        </span>
                       </div>
                     </td>
                   </tr>
 
-                  {/* Row 4: Ukuran Cetak */}
-                  <tr>
-                    {/* <td className="text-center bold">4</td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span className="bold">Ukuran Cetak</span>
-                        <div
-                          style={{
-                            marginLeft: '20px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                          }}
-                        >
-                          <span>:</span>
-                          <span>
-                            {getValue(data.kalkulasi?.ukuran_cetak_depan, '0')}
-                          </span>
-                          <span>/</span>
-                          <span>
-                            {getValue(
-                              data.kalkulasi?.ukuran_cetak_belakang,
-                              '0',
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    </td> */}
-                  </tr>
-
-                  {/* Row 5: Warna */}
+                  {/* Row 4: Warna */}
                   <tr>
                     <td className="text-center bold">4</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span className="bold">Warna</span>
-                        <div
-                          style={{
-                            marginLeft: '62px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                          }}
-                        >
-                          <span className="bold">
-                            {data.label === 'CARTONING' ? 'a' : 'b'}
-                          </span>
-                          <span>:</span>
-                          <span>
-                            {getValue(data.kalkulasi?.warna_depan, '0')}
-                          </span>
-                          <span className="bold">+</span>
-                          <span>
-                            {getValue(data.kalkulasi?.warna_belakang, '0')}
-                          </span>
-                        </div>
+                        <span className="bold" style={{ minWidth: '180px' }}>
+                          Warna
+                        </span>
+                        <span>
+                          : {getValue(data.kalkulasi?.warna_depan, '0')} +{' '}
+                          {getValue(data.kalkulasi?.warna_belakang, '0')}
+                        </span>
                       </div>
                     </td>
                   </tr>
 
-                  {/* Row 6: Bahan */}
+                  {/* Row 5: Bahan */}
                   <tr>
                     <td className="text-center bold">5</td>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span className="bold">Bahan</span>
-                        <div
-                          style={{
-                            marginLeft: '60px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                          }}
-                        >
-                          <span className="bold">
-                            {data.label === 'CARTONING' ? 'a' : 'b'}
-                          </span>
-                          <span>:</span>
-                          <span>
-                            {getValue(data.kalkulasi?.jenis_kertas)}{' '}
-                            {getValue(data.kalkulasi?.brand_kertas)}{' '}
-                            {getValue(data.kalkulasi?.gramature_kertas)} gsm
-                          </span>
-                        </div>
+                        <span className="bold" style={{ minWidth: '180px' }}>
+                          Bahan
+                        </span>
+                        <span>
+                          : {getValue(data.kalkulasi?.jenis_kertas)}{' '}
+                          {getValue(data.kalkulasi?.brand_kertas)}{' '}
+                          {getValue(data.kalkulasi?.gramature_kertas)} gsm
+                        </span>
                       </div>
                     </td>
                   </tr>
 
-                  {/* Row 7: Qty */}
+                  {/* Row 6: Qty */}
                   <tr>
                     <td className="text-center bold">6</td>
                     <td>
-                      <span className="bold">Qty</span>
-                      <span style={{ marginLeft: '75px' }}>
-                        : {getValue(data.kalkulasi?.qty_kalkulasi)} pcs
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span className="bold" style={{ minWidth: '180px' }}>
+                          Qty
+                        </span>
+                        <span>
+                          :{' '}
+                          {data.kalkulasi?.qty_kalkulasi
+                            ? Number(
+                                data.kalkulasi.qty_kalkulasi,
+                              ).toLocaleString('id-ID')
+                            : '-'}{' '}
+                          pcs
+                        </span>
+                      </div>
                     </td>
                   </tr>
-
                   {/* Permintaan Section Header */}
                   <tr>
                     <td
@@ -513,7 +480,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                     </td>
                   </tr>
 
-                  {/* Row 8: Permintaan - NO CHECKBOXES, just labels */}
+                  {/* Row 7: Permintaan */}
                   <tr>
                     <td
                       className="text-center bold"
@@ -526,17 +493,46 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                         style={{
                           width: '100%',
                           border: 'none',
-                          marginBottom: '5px',
                         }}
                       >
                         <tbody>
                           <tr>
                             <td
+                              rowSpan={2}
+                              style={{
+                                border: '1px solid black',
+                                padding: '5px',
+                                width: '5%',
+                                textAlign: 'center',
+                                verticalAlign: 'middle',
+                              }}
+                            ></td>
+                            <td
                               style={{
                                 border: '1px solid black',
                                 textAlign: 'center',
                                 padding: '5px',
-                                width: '25%',
+                                width: '15%',
+                              }}
+                            >
+                              <span
+                                className="checkbox"
+                                style={{
+                                  display: 'inline-block',
+                                  width: '16px',
+                                  height: '16px',
+                                  border: '2px solid black',
+                                  margin: '0',
+                                }}
+                              ></span>
+                              <span className="bold">DESAIN/SETTING</span>
+                            </td>
+                            <td
+                              style={{
+                                border: '1px solid black',
+                                textAlign: 'center',
+                                padding: '5px',
+                                width: '15%',
                               }}
                             >
                               <span className="bold">DUMMY POLOS</span>
@@ -546,7 +542,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 border: '1px solid black',
                                 textAlign: 'center',
                                 padding: '5px',
-                                width: '15%',
+                                width: '10%',
                               }}
                             >
                               :.........lbr
@@ -556,7 +552,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 border: '1px solid black',
                                 textAlign: 'center',
                                 padding: '5px',
-                                width: '25%',
+                                width: '15%',
                               }}
                             >
                               <span className="bold">DUMMY ARTWORK</span>
@@ -566,23 +562,33 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 border: '1px solid black',
                                 textAlign: 'center',
                                 padding: '5px',
-                                width: '15%',
+                                width: '10%',
                               }}
                             >
                               :.........lbr
                             </td>
+                            <td
+                              rowSpan={2}
+                              style={{
+                                border: '1px solid black',
+                                padding: '5px',
+                                textAlign: 'center',
+                                verticalAlign: 'start',
+                                width: '20%',
+                              }}
+                              className="bold"
+                            >
+                              Tanda Tangan
+                              <br />
+                              Sales
+                            </td>
                           </tr>
-                        </tbody>
-                      </table>
-                      <table style={{ width: '100%', border: 'none' }}>
-                        <tbody>
                           <tr>
                             <td
                               style={{
                                 border: '1px solid black',
                                 textAlign: 'center',
                                 padding: '5px',
-                                width: '16.66%',
                               }}
                             >
                               <span className="bold">
@@ -596,7 +602,6 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 border: '1px solid black',
                                 textAlign: 'center',
                                 padding: '5px',
-                                width: '16.66%',
                               }}
                             >
                               :.........lbr
@@ -606,7 +611,6 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 border: '1px solid black',
                                 textAlign: 'center',
                                 padding: '5px',
-                                width: '16.66%',
                               }}
                             >
                               <span className="bold">PROOF DIGITAL</span>
@@ -616,30 +620,31 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                                 border: '1px solid black',
                                 textAlign: 'center',
                                 padding: '5px',
-                                width: '16.66%',
                               }}
                             >
                               :.........lbr
                             </td>
                             <td
+                              rowSpan={1}
                               style={{
                                 border: '1px solid black',
-                                textAlign: 'center',
                                 padding: '5px',
-                                width: '16.66%',
+                                textAlign: 'center',
+                                verticalAlign: 'middle',
                               }}
                             >
+                              <span
+                                className="checkbox"
+                                style={{
+                                  display: 'inline-block',
+                                  width: '16px',
+                                  height: '16px',
+                                  border: '2px solid black',
+                                  marginRight: '5px',
+                                  verticalAlign: 'middle',
+                                }}
+                              ></span>
                               <span className="bold">PROOF CETAK</span>
-                            </td>
-                            <td
-                              style={{
-                                border: '1px solid black',
-                                textAlign: 'center',
-                                padding: '5px',
-                                width: '16.66%',
-                              }}
-                            >
-                              :.........lbr
                             </td>
                           </tr>
                         </tbody>
@@ -1480,42 +1485,35 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
                             <td
                               style={{
                                 border: '1px solid black',
-                                width: '25%',
+                                width: '33%',
                                 textAlign: 'center',
-                                padding: '50px 10px',
+                                verticalAlign: 'start',
+                                paddingBottom: '100px',
                               }}
                               className="bold"
                             >
-                              MKT
+                              KABAG MKT
                             </td>
                             <td
                               style={{
                                 border: '1px solid black',
-                                width: '25%',
+                                width: '33%',
                                 textAlign: 'center',
-                                padding: '50px 10px',
+                                verticalAlign: 'start',
+                                paddingBottom: '100px',
                               }}
                               className="bold"
                             >
-                              DESIGN
+                              PREPRESS
                             </td>
+
                             <td
                               style={{
                                 border: '1px solid black',
-                                width: '25%',
+                                width: '33%',
                                 textAlign: 'center',
-                                padding: '50px 10px',
-                              }}
-                              className="bold"
-                            >
-                              NPD
-                            </td>
-                            <td
-                              style={{
-                                border: '1px solid black',
-                                width: '25%',
-                                textAlign: 'center',
-                                padding: '50px 10px',
+                                verticalAlign: 'start',
+                                paddingBottom: '100px',
                               }}
                               className="bold"
                             >
