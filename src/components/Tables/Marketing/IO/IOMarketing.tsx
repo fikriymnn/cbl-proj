@@ -15,10 +15,12 @@ interface IOData {
   produk: string;
   status_io: string;
   status: string;
+  status_proses: string;
   tgl_pembuatan_io: string;
   is_revisi: boolean;
   revisi_no_io: string;
   is_active: boolean;
+  note_reject: string;
   io_mounting?: MountingData[];
 }
 
@@ -440,7 +442,7 @@ const IOMarketing: React.FC = () => {
         return 'bg-orange-100 text-orange-800 border border-orange-200';
       case 'approved':
         return 'bg-green-100 text-green-800 border border-green-200';
-      case 'rejected':
+      case 'reject npd':
         return 'bg-red-100 text-red-800 border border-red-200';
       case 'pending':
         return 'bg-blue-100 text-blue-800 border border-blue-200';
@@ -599,11 +601,11 @@ const IOMarketing: React.FC = () => {
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
-                    onClick={() => handleSort('is_active')}
+                    onClick={() => handleSort('status_proses')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    ACTIVE
-                    {getSortIcon('is_active')}
+                    STATUS PROSES
+                    {getSortIcon('status_proses')}
                   </button>
                 </th>
               </tr>
@@ -707,16 +709,27 @@ const IOMarketing: React.FC = () => {
                       </span>
                     </td>
 
-                    <td className="px-2 py-2 whitespace-nowrap">
+                    <td className="px-2 py-2 flex flex-col gap-1 items-center">
                       <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                          item.is_active
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(
+                          item.status_proses,
+                        )}`}
+                        title={item.status_proses}
                       >
-                        {item.is_active ? 'YA' : 'TIDAK'}
+                        {truncateText(item.status_proses, 20)}
                       </span>
+                      {item.status_proses.toLowerCase() === 'reject npd' && (
+                        <>
+                          <span
+                            className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(
+                              item.status_proses,
+                            )}`}
+                            title={item.note_reject}
+                          >
+                            {truncateText(item.note_reject, 20)}
+                          </span>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))

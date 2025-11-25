@@ -274,6 +274,7 @@ export interface SOFormData {
 }
 
 export interface APIResponse<T> {
+  total_page: any;
   succes: boolean;
   status_code: number;
   data: T;

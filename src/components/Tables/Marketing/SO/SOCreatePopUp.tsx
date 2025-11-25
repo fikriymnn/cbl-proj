@@ -224,7 +224,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
           if (kalkulasiData.customer && kalkulasiData.customer.gudang) {
             const gudangOpts = kalkulasiData.customer.gudang.map(
               (gudang: Gudang) => ({
-                value: gudang.id.toString(),
+                value: gudang.alamat_gudang,
                 label: gudang.alamat_gudang,
                 data: gudang,
               }),

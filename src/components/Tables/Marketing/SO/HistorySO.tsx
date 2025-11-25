@@ -5,17 +5,26 @@ import { APIResponse, SOData, KalkulasiData } from './types/SOTypes';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 import SODetailPopup from './SODetailPopup';
 import CancelPopup from './CancelPopup';
+import Pagination from '@mui/material/Pagination/Pagination';
+import Stack from '@mui/material/Stack';
 
 const HistorySO: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [soData, setsoData] = useState<SOData[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [sortConfig, setSortConfig] = useState<{
     key: keyof SOData | null;
     direction: 'asc' | 'desc';
   }>({ key: null, direction: 'asc' });
   const [isDetailPopupOpen, setIsDetailPopupOpen] = useState<boolean>(false);
   const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
+
+  // Pagination states
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+
   // Filter states
   const [kalkulasiOptions, setKalkulasiOptions] = useState<
     Array<{
@@ -35,19 +44,38 @@ const HistorySO: React.FC = () => {
     setSelectedSOForCancel(item);
     setIsCancelPopupOpen(true);
   };
+
+  const handleSearch = (): void => {
+    setSearchTerm(searchInput);
+    setPage(1); // Reset to first page on new search
+  };
+
+  const handleClearSearch = (): void => {
+    setSearchInput('');
+    setSearchTerm('');
+    setSelectedIOFilter('');
+    setPage(1);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleLimitChange = (newLimit: number): void => {
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
+  };
+
   useEffect(() => {
-    fetchsoData();
     fetchKalkulasiData();
   }, []);
 
-  // Fetch SO data when filters change
+  // Fetch SO data when filters or pagination change
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchsoData();
-    }, 500); // Debounce for 500ms
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, selectedIOFilter]);
+    fetchsoData();
+  }, [page, limit, searchTerm, selectedIOFilter]);
 
   const fetchsoData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
@@ -56,6 +84,8 @@ const HistorySO: React.FC = () => {
 
       const res: AxiosResponse<APIResponse<SOData[]>> = await axios.get(url, {
         params: {
+          page: page,
+          limit: limit,
           status: 'history',
           search: searchTerm,
           id_io: selectedIOFilter,
@@ -66,6 +96,9 @@ const HistorySO: React.FC = () => {
       console.log('Fetched so data:', res.data);
       if (res.data.succes) {
         setsoData(res.data.data);
+        if (res.data.total_page) {
+          setTotalPages(res.data.total_page);
+        }
       }
     } catch (error) {
       console.error('Error fetching so data:', error);
@@ -80,9 +113,9 @@ const HistorySO: React.FC = () => {
     setKalkulasiLoading(true);
     try {
       const response = await axios.get(url, {
-        params: {
-          is_io_active: true,
-        },
+        // params: {
+        //   is_io_active: true,
+        // },
         withCredentials: true,
       });
       if (response.data.succes && response.data.data) {
@@ -163,7 +196,7 @@ const HistorySO: React.FC = () => {
     return new Date(dateString).toLocaleDateString('id-ID');
   };
 
-  // Apply sorting only (filtering is done by API)
+  // Apply sorting to data
   const getSortedData = () => {
     let sorted = [...soData];
 
@@ -197,26 +230,24 @@ const HistorySO: React.FC = () => {
 
   const sortedData = getSortedData();
 
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setSelectedIOFilter('');
-  };
   const handleViewDetail = (item: SOData) => {
     setSelectedSO(item);
     setIsDetailPopupOpen(true);
   };
+
   return (
     <div className="">
       {/* Search and Filter Bar */}
-      <div className=" mb-4">
+      <div className="mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Search</label>
             <input
               type="text"
-              placeholder="Search by No SO, Customer, Produk, or Status..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by No SO, Customer, Produk..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleKeyPress}
               className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -227,21 +258,30 @@ const HistorySO: React.FC = () => {
             <SearchableSelect
               placeholder={kalkulasiLoading ? 'Loading...' : 'All IO'}
               value={selectedIOFilter}
-              onChange={(value) => setSelectedIOFilter(String(value))}
+              onChange={(value) => {
+                setSelectedIOFilter(String(value));
+                setPage(1); // Reset to first page when filter changes
+              }}
               options={kalkulasiOptions}
             />
           </div>
-        </div>
-        {(searchTerm || selectedIOFilter) && (
-          <div className="mt-3 flex items-center gap-2">
+          <div className="flex items-end gap-2">
             <button
-              onClick={handleClearFilters}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              onClick={handleSearch}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors h-[42px]"
             >
-              Clear filters
+              Search
             </button>
+            {(searchTerm || selectedIOFilter) && (
+              <button
+                onClick={handleClearSearch}
+                className="bg-gray-500 hover:bg-gray-600 text-red-500 px-4 py-2 rounded-md text-sm font-medium transition-colors h-[42px]"
+              >
+                Clear
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Loading State */}
@@ -349,7 +389,7 @@ const HistorySO: React.FC = () => {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {index + 1}
+                        {(page - 1) * limit + index + 1}
                       </td>
 
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
@@ -443,6 +483,41 @@ const HistorySO: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Pagination with Rows per page selector */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Rows per page:</span>
+          <div className="flex gap-2">
+            {[10, 25, 50, 100].map((pageSize) => (
+              <button
+                key={pageSize}
+                onClick={() => handleLimitChange(pageSize)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  limit === pageSize
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {pageSize}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              color="primary"
+              onChange={(e, i) => {
+                setPage(i);
+              }}
+            />
+          </Stack>
+        </div>
+      </div>
 
       <SODetailPopup
         isOpen={isDetailPopupOpen}

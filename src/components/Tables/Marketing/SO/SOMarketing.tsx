@@ -11,6 +11,8 @@ import SOCreatePopup from './SOCreatePopUp';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 import SODetailPopup from './SODetailPopup';
 import SODoneIOManualPopup from './SODoneIOPopup';
+import Pagination from '@mui/material/Pagination/Pagination';
+import Stack from '@mui/material/Stack';
 
 const SOMarketing: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -18,6 +20,7 @@ const SOMarketing: React.FC = () => {
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
   const [submitLoading, setSubmitLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [sortConfig, setSortConfig] = useState<{
     key: keyof SOData | null;
     direction: 'asc' | 'desc';
@@ -25,6 +28,12 @@ const SOMarketing: React.FC = () => {
   const [isDetailPopupOpen, setIsDetailPopupOpen] = useState<boolean>(false);
   const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
   const [requestLoading, setRequestLoading] = useState<number | null>(null);
+
+  // Pagination states
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+
   // Filter states
   const [kalkulasiOptions, setKalkulasiOptions] = useState<
     Array<{
@@ -40,18 +49,37 @@ const SOMarketing: React.FC = () => {
   const [doneWorkLoading, setDoneWorkLoading] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchsoData();
     fetchKalkulasiData();
   }, []);
 
   // Fetch SO data when filters change
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchsoData();
-    }, 500); // Debounce for 500ms
+    fetchsoData();
+  }, [page, limit, searchTerm, selectedIOFilter]);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, selectedIOFilter]);
+  const handleSearch = (): void => {
+    setSearchTerm(searchInput);
+    setPage(1); // Reset to first page on new search
+  };
+
+  const handleClearSearch = (): void => {
+    setSearchInput('');
+    setSearchTerm('');
+    setSelectedIOFilter('');
+    setPage(1);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleLimitChange = (newLimit: number): void => {
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
+  };
+
   const handleDoneWork = async (id: number) => {
     if (
       window.confirm('Apakah Anda yakin ingin menyelesaikan pekerjaan SO ini?')
@@ -84,15 +112,18 @@ const SOMarketing: React.FC = () => {
       }
     }
   };
+
   const fetchsoData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
     try {
       setLoading(true);
-
       const res: AxiosResponse<APIResponse<SOData[]>> = await axios.get(url, {
         params: {
+          page: page,
+          limit: limit,
           search: searchTerm,
           id_io: selectedIOFilter,
+          status: 'draft',
         },
         withCredentials: true,
       });
@@ -100,6 +131,9 @@ const SOMarketing: React.FC = () => {
       console.log('Fetched so data:', res.data);
       if (res.data.succes) {
         setsoData(res.data.data);
+        if (res.data.total_page) {
+          setTotalPages(res.data.total_page);
+        }
       }
     } catch (error) {
       console.error('Error fetching so data:', error);
@@ -115,7 +149,7 @@ const SOMarketing: React.FC = () => {
     try {
       const response = await axios.get(url, {
         params: {
-          is_io_active: true,
+          // is_io_active: true,
         },
         withCredentials: true,
       });
@@ -164,6 +198,7 @@ const SOMarketing: React.FC = () => {
       setKalkulasiLoading(false);
     }
   };
+
   const RequestKabag = async (id: number) => {
     if (window.confirm('Apakah Anda yakin ingin Request SO Ini?')) {
       try {
@@ -191,10 +226,12 @@ const SOMarketing: React.FC = () => {
       }
     }
   };
+
   const handleCreateSO = async (formData: SOFormData): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
     try {
       console.log('Submitting SO form data:', formData);
+
       setSubmitLoading(true);
       const res: AxiosResponse<APIResponse<SOData>> = await axios.post(
         url,
@@ -250,7 +287,7 @@ const SOMarketing: React.FC = () => {
     return new Date(dateString).toLocaleDateString('id-ID');
   };
 
-  // Apply sorting only (filtering is done by API)
+  // Apply sorting to data
   const getSortedData = () => {
     let sorted = [...soData];
 
@@ -284,14 +321,11 @@ const SOMarketing: React.FC = () => {
 
   const sortedData = getSortedData();
 
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setSelectedIOFilter('');
-  };
   const handleViewDetail = (item: SOData) => {
     setSelectedSO(item);
     setIsDetailPopupOpen(true);
   };
+
   return (
     <div className="">
       {/* Header */}
@@ -314,15 +348,16 @@ const SOMarketing: React.FC = () => {
       </div>
 
       {/* Search and Filter Bar */}
-      <div className=" mb-4">
+      <div className="mb-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Search</label>
             <input
               type="text"
-              placeholder="Search by No SO, Customer, Produk, or Status..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by No SO, Customer, Produk..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleKeyPress}
               className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -333,21 +368,30 @@ const SOMarketing: React.FC = () => {
             <SearchableSelect
               placeholder={kalkulasiLoading ? 'Loading...' : 'All IO'}
               value={selectedIOFilter}
-              onChange={(value) => setSelectedIOFilter(String(value))}
+              onChange={(value) => {
+                setSelectedIOFilter(String(value));
+                setPage(1); // Reset to first page when filter changes
+              }}
               options={kalkulasiOptions}
             />
           </div>
-        </div>
-        {(searchTerm || selectedIOFilter) && (
-          <div className="mt-3 flex items-center gap-2">
+          <div className="flex items-end gap-2">
             <button
-              onClick={handleClearFilters}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              onClick={handleSearch}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors h-[42px]"
             >
-              Clear filters
+              Search
             </button>
+            {(searchTerm || selectedIOFilter) && (
+              <button
+                onClick={handleClearSearch}
+                className="bg-gray-500 hover:bg-gray-600 text-red-500 px-4 py-2 rounded-md text-sm font-medium transition-colors h-[42px]"
+              >
+                Clear
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Loading State */}
@@ -436,7 +480,7 @@ const SOMarketing: React.FC = () => {
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
-                      onClick={() => handleSort('tgl_input_po')}
+                      onClick={() => handleSort('status_work')}
                       className="flex items-center hover:text-gray-700 focus:outline-none"
                     >
                       STATUS WORK
@@ -449,7 +493,7 @@ const SOMarketing: React.FC = () => {
                 {sortedData.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11}
                       className="px-4 py-6 text-center text-gray-500 text-sm"
                     >
                       {searchTerm || selectedIOFilter
@@ -464,7 +508,7 @@ const SOMarketing: React.FC = () => {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {index + 1}
+                        {(page - 1) * limit + index + 1}
                       </td>
 
                       <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
@@ -586,6 +630,41 @@ const SOMarketing: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Pagination with Rows per page selector */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Rows per page:</span>
+          <div className="flex gap-2">
+            {[10, 25, 50, 100].map((pageSize) => (
+              <button
+                key={pageSize}
+                onClick={() => handleLimitChange(pageSize)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  limit === pageSize
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {pageSize}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              color="primary"
+              onChange={(e, i) => {
+                setPage(i);
+              }}
+            />
+          </Stack>
+        </div>
+      </div>
 
       {/* Create SO Popup */}
       <SOCreatePopup
