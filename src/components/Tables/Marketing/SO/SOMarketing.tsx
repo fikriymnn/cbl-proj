@@ -13,6 +13,7 @@ import SODetailPopup from './SODetailPopup';
 import SODoneIOManualPopup from './SODoneIOPopup';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
+import SOMarketingPrintModal from './SOMarketingPrintModal';
 
 const SOMarketing: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -28,7 +29,8 @@ const SOMarketing: React.FC = () => {
   const [isDetailPopupOpen, setIsDetailPopupOpen] = useState<boolean>(false);
   const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
   const [requestLoading, setRequestLoading] = useState<number | null>(null);
-
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
+  const [printData, setPrintData] = useState<SOData | null>(null);
   // Pagination states
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -61,7 +63,10 @@ const SOMarketing: React.FC = () => {
     setSearchTerm(searchInput);
     setPage(1); // Reset to first page on new search
   };
-
+  const handlePrint = (item: SOData) => {
+    setPrintData(item);
+    setIsPrintModalOpen(true);
+  };
   const handleClearSearch = (): void => {
     setSearchInput('');
     setSearchTerm('');
@@ -543,6 +548,13 @@ const SOMarketing: React.FC = () => {
                                   : 'DONE WORK'}
                               </button>
                             ))}
+                          <button
+                            onClick={() => handlePrint(item)}
+                            className="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            title="Print"
+                          >
+                            PRINT
+                          </button>
                         </div>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
@@ -688,6 +700,14 @@ const SOMarketing: React.FC = () => {
         onSuccess={() => {
           fetchsoData();
           fetchKalkulasiData();
+        }}
+      />
+      <SOMarketingPrintModal
+        isOpen={isPrintModalOpen}
+        printData={printData}
+        onClose={() => {
+          setIsPrintModalOpen(false);
+          setPrintData(null);
         }}
       />
     </div>
