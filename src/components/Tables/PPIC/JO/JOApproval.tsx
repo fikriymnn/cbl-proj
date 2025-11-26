@@ -2,6 +2,8 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { JOTipeOption } from './types/jo.types';
 import JOPPICCreateModal from './utils/JOPPICCreateModal';
+import Pagination from '@mui/material/Pagination/Pagination';
+import Stack from '@mui/material/Stack';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -22,6 +24,13 @@ interface JOData {
   createdAt: string;
 }
 
+interface APIResponse<T> {
+  succes: boolean;
+  data: T;
+  total_page?: number;
+  message?: string;
+}
+
 const JOApproval: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [joData, setJOData] = useState<JOData[]>([]);
@@ -30,31 +39,70 @@ const JOApproval: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedTipeJO, setSelectedTipeJO] = useState<JOTipeOption>('JO REAL');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editJOId, setEditJOId] = useState<number | null>(null);
   const [actionLoading, setActionLoading] = useState<{
     [key: number]: boolean;
   }>({});
 
+  // Pagination states
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+
   useEffect(() => {
     fetchJOData();
-  }, []);
+  }, [page, limit, searchTerm]);
 
   const fetchJOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jo`;
     try {
       setLoading(true);
-      const res: AxiosResponse = await axios.get(url, {
+      const res: AxiosResponse<APIResponse<JOData[]>> = await axios.get(url, {
+        params: {
+          page: page,
+          limit: limit,
+          search: searchTerm,
+          status: 'requested',
+        },
         withCredentials: true,
       });
       console.log('Fetched JO data:', res.data);
-      setJOData(res.data.data || []);
+      if (res.data.succes) {
+        setJOData(res.data.data || []);
+        if (res.data.total_page) {
+          setTotalPages(res.data.total_page);
+        }
+      }
     } catch (error) {
       console.error('Error fetching JO data:', error);
       setJOData([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (): void => {
+    setSearchTerm(searchInput);
+    setPage(1); // Reset to first page on new search
+  };
+
+  const handleClearSearch = (): void => {
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleLimitChange = (newLimit: number): void => {
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
   };
 
   const handleSort = (field: string) => {
@@ -236,19 +284,8 @@ const JOApproval: React.FC = () => {
     }
   };
 
-  // Filter and sort data
-  const filteredData = joData.filter((item) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      item.no_jo?.toLowerCase().includes(searchLower) ||
-      item.no_so?.toLowerCase().includes(searchLower) ||
-      item.no_io?.toLowerCase().includes(searchLower) ||
-      item.customer?.toLowerCase().includes(searchLower) ||
-      item.produk?.toLowerCase().includes(searchLower)
-    );
-  });
-
-  const sortedData = [...filteredData].sort((a, b) => {
+  // Apply sorting to data (client-side sorting)
+  const sortedData = [...joData].sort((a, b) => {
     const aValue = a[sortKey as keyof JOData];
     const bValue = b[sortKey as keyof JOData];
 
@@ -271,28 +308,47 @@ const JOApproval: React.FC = () => {
       {/* Header Section */}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          {/* Search */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search NO JO, SO, IO, Customer, Produk..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-80"
-            />
-            <svg
-              className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          {/* Search Section */}
+          <div className="flex flex-col sm:flex-row gap-2 flex-1">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Search NO JO, SO, IO, Customer, Produk..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               />
-            </svg>
+              <svg
+                className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSearch}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
+                Search
+              </button>
+              {searchTerm && (
+                <button
+                  onClick={handleClearSearch}
+                  className="bg-gray-500 hover:bg-gray-600 text-red-500 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -430,7 +486,7 @@ const JOApproval: React.FC = () => {
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      {index + 1}
+                      {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
@@ -547,6 +603,41 @@ const JOApproval: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Pagination with Rows per page selector */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Rows per page:</span>
+          <div className="flex gap-2">
+            {[10, 25, 50, 100].map((pageSize) => (
+              <button
+                key={pageSize}
+                onClick={() => handleLimitChange(pageSize)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  limit === pageSize
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {pageSize}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              color="primary"
+              onChange={(e, i) => {
+                setPage(i);
+              }}
+            />
+          </Stack>
         </div>
       </div>
 

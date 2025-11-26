@@ -222,6 +222,7 @@ import MonitoringLKHPage from './pages/Produksi/MonitoringLKH/MonitoringLkhPage'
 import ApproveSPVPage from './pages/Produksi/MonitoringLKH/ApproveSPVpage';
 import HistoryOKPPage from './pages/Marketing/OKP/HistoryOKPPage';
 import IOMarketingHistoryPage from './pages/Marketing/IO/IOMarketingHistoryPage';
+import JOHistoryPage from './pages/PPIC/JO/JOHistoryPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1750,6 +1751,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <JOPPIC />
+            </>
+          }
+        />
+        <Route
+          path="/ppic/jo/history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <JOHistoryPage />
             </>
           }
         />

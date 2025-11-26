@@ -31,14 +31,12 @@ interface APIResponse<T> {
   message?: string;
 }
 
-const JOPPICCreate: React.FC = () => {
+const JOHistory: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [joData, setJOData] = useState<JOData[]>([]);
   const [sortKey, setSortKey] = useState<string>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [showTipeJOSelection, setShowTipeJOSelection] =
-    useState<boolean>(false);
   const [selectedTipeJO, setSelectedTipeJO] = useState<JOTipeOption>('JO REAL');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
@@ -63,7 +61,7 @@ const JOPPICCreate: React.FC = () => {
           page: page,
           limit: limit,
           search: searchTerm,
-          status: 'draft',
+          status: 'history',
         },
         withCredentials: true,
       });
@@ -214,18 +212,6 @@ const JOPPICCreate: React.FC = () => {
       : 'bg-orange-100 text-orange-800';
   };
 
-  const handleTambahJO = () => {
-    setEditMode(false);
-    setEditJOId(null);
-    setShowTipeJOSelection(true);
-  };
-
-  const handleSelectTipeJO = (tipe: JOTipeOption) => {
-    setSelectedTipeJO(tipe);
-    setShowTipeJOSelection(false);
-    setShowModal(true);
-  };
-
   const handleModalClose = () => {
     setShowModal(false);
     setEditMode(false);
@@ -236,31 +222,11 @@ const JOPPICCreate: React.FC = () => {
     fetchJOData();
   };
 
-  const handleEditJO = (item: JOData) => {
+  const handleViewJO = (item: JOData) => {
     setEditMode(true);
     setEditJOId(item.id);
     setSelectedTipeJO(item.tipe_jo as JOTipeOption);
     setShowModal(true);
-  };
-
-  const NextProcessKabag = async (id: number) => {
-    if (window.confirm('Apakah Anda yakin ingin Next Process JO Ini?')) {
-      try {
-        const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/request/${id}`;
-        const res = await axios.put(
-          url,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
-        fetchJOData();
-        alert('JO berhasil di-request!');
-      } catch (error: any) {
-        console.log(error);
-        alert('Gagal request JO. Silakan coba lagi.');
-      }
-    }
   };
 
   // Apply sorting to data (client-side sorting)
@@ -286,30 +252,6 @@ const JOPPICCreate: React.FC = () => {
     <div className="">
       {/* Header Section */}
       <div className="mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleTambahJO}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Tambah JO
-            </button>
-          </div>
-        </div>
-
         {/* Search Section */}
         <div className="mb-4">
           <div className="flex flex-col sm:flex-row gap-2">
@@ -493,30 +435,13 @@ const JOPPICCreate: React.FC = () => {
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
-                        {item.status_proses == 'request to kabag' ||
-                        item.status_proses == 'done' ? (
-                          <div className="text-gray-500 text-center py-1">
-                            -
-                          </div>
-                        ) : (
-                          <div className="flex flex-col gap-2">
-                            <button
-                              onClick={() => handleEditJO(item)}
-                              className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
-                              title="EDIT JO"
-                            >
-                              EDIT JO
-                            </button>
-
-                            <button
-                              onClick={() => NextProcessKabag(item.id)}
-                              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                              title="Next Process"
-                            >
-                              NEXT PROCESS
-                            </button>
-                          </div>
-                        )}
+                        <button
+                          onClick={() => handleViewJO(item)}
+                          className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
+                          title="View JO Details"
+                        >
+                          DETAIL
+                        </button>
                       </div>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">
@@ -620,88 +545,7 @@ const JOPPICCreate: React.FC = () => {
         </div>
       </div>
 
-      {/* Tipe JO Selection Modal */}
-      {showTipeJOSelection && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div
-              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-              onClick={() => setShowTipeJOSelection(false)}
-            />
-            <div className="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full">
-              <div className="bg-white px-6 pt-6 pb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Pilih Tipe Job Order
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() => handleSelectTipeJO('JO REAL')}
-                    className="flex flex-col items-center justify-center p-6 border-2 border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all group"
-                  >
-                    <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-200">
-                      <svg
-                        className="w-8 h-8 text-purple-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-lg font-semibold text-gray-900">
-                      JO REAL
-                    </span>
-                    <span className="text-xs text-gray-500 mt-1">
-                      Job Order untuk produksi sesungguhnya
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => handleSelectTipeJO('JO PROOF')}
-                    className="flex flex-col items-center justify-center p-6 border-2 border-orange-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all group"
-                  >
-                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-orange-200">
-                      <svg
-                        className="w-8 h-8 text-orange-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-lg font-semibold text-gray-900">
-                      JO PROOF
-                    </span>
-                    <span className="text-sm text-gray-500 mt-1">
-                      Job Order untuk sample/contoh
-                    </span>
-                  </button>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-6 py-4">
-                <button
-                  onClick={() => setShowTipeJOSelection(false)}
-                  className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Batal
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* JO Create/Edit Modal */}
+      {/* JO View Modal */}
       <JOPPICCreateModal
         isOpen={showModal}
         onClose={handleModalClose}
@@ -714,4 +558,4 @@ const JOPPICCreate: React.FC = () => {
   );
 };
 
-export default JOPPICCreate;
+export default JOHistory;

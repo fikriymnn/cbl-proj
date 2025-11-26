@@ -505,6 +505,12 @@ export const menuCategories: MenuCategory[] = [
             path: '/ppic/jo/approval',
             icon: 'approval',
           },
+
+          {
+            name: 'History',
+            path: '/ppic/jo/history',
+            icon: 'history',
+          },
         ],
       },
       {
