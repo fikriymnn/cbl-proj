@@ -1,3 +1,4 @@
+// Sidebar.tsx - Updated version
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
@@ -7,8 +8,8 @@ import {
   menuCategories,
   MenuItem,
   MenuCategory,
-} from '../../constant//menuConfig';
-import { getFilteredCategoriesByRoleAndBagian } from '../../constant/MenuFilters';
+} from '../../constant/menuConfig';
+import { filterCategoriesByPermissions } from '../../constant/menuPermissionFilter';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -206,9 +207,9 @@ const Sidebar = ({
     );
   };
 
-  // Get filtered menu categories based on role and bagian
+  // Get filtered menu categories based on permissions only (from rbacConfig)
   const getFilteredMenus = () => {
-    return getFilteredCategoriesByRoleAndBagian(menuCategories, role, bagian);
+    return filterCategoriesByPermissions(menuCategories, role, bagian);
   };
 
   useEffect(() => {
