@@ -57,6 +57,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     status_jo: 'BARU',
     stok_fg: 0,
     qty: 0,
+    qty_druk: 0, // NEW FIELD
+    qty_lp: 0, // NEW FIELD
     po_qty: 0,
     spesifikasi: '',
     keterangan_pengerjaan: '',
@@ -142,7 +144,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     };
   }, [isOpen, hasUnsavedChanges]);
 
-  // Calculate insheet from Qty (forward calculation)
   const calculateInsheetFromQty = (qty: number, mounting: MountingData) => {
     const isi = mounting.ukuran_cetak_isi_1 || 1;
     const bagian = mounting.ukuran_cetak_bagian_1 || 1;
@@ -188,11 +189,19 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       else if (prosesName === 'FINISHING') finishing = value;
     });
 
-    // Step 5: Calculate Jumlah LP
-    const jumlahLP = Math.ceil((rawJumlahDruk + totalInsheet) / bagian);
+    // Step 5: Calculate displayed druk and LP
+    const displayedDruk = rawJumlahDruk + totalInsheet;
+    const jumlahLP = Math.ceil(displayedDruk / bagian);
+
+    // UPDATE FORM DATA WITH NEW FIELDS
+    setFormData((prev) => ({
+      ...prev,
+      qty_druk: displayedDruk,
+      qty_lp: jumlahLP,
+    }));
 
     setInsheetValues({
-      jumlah_druk: rawJumlahDruk, // Store RAW druk
+      jumlah_druk: rawJumlahDruk,
       jumlah_insheet_cetak: cetak,
       jumlah_insheet_pond: pond,
       jumlah_insheet_finishing: finishing,
@@ -267,18 +276,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   }, [isOpen]);
 
   useEffect(() => {
-    if (jumlahJO > 0) {
-      generateJONumber();
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        no_jo:
-          'JO-00001/' +
-          new Date().toISOString().slice(5, 7) +
-          '/' +
-          new Date().getFullYear(),
-      }));
-    }
+    generateJONumber();
   }, [jumlahJO]);
 
   const fetchSOData = async (): Promise<void> => {
@@ -298,19 +296,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
-  const fetchJumlahJO = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/ppic/joJumlahData`;
-    try {
-      const res: AxiosResponse = await axios.get(url, {
-        withCredentials: true,
-      });
-      setJumlahJO(res.data.total_data || 0);
-    } catch (error) {
-      console.error('Error fetching jumlah JO:', error);
-      setJumlahJO(0);
-    }
-  };
-
   const generateJONumber = () => {
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -323,7 +308,43 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       no_jo: joNumber,
     }));
   };
+  const fetchJumlahJO = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/ppic/joJumlahData`;
+    try {
+      const res: AxiosResponse = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('Jumlah JO response:', res.data);
+      const totalData = res.data.total_data ?? 0;
+      setJumlahJO(totalData);
 
+      // Generate JO number immediately after setting jumlahJO
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const nextNumber = String(totalData + 1).padStart(5, '0');
+      const joNumber = `JO-${nextNumber}/${month}/${year}`;
+
+      setFormData((prev) => ({
+        ...prev,
+        no_jo: joNumber,
+      }));
+    } catch (error) {
+      console.error('Error fetching jumlah JO:', error);
+      setJumlahJO(0);
+
+      // Even on error, generate JO-00001
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const joNumber = `JO-00001/${month}/${year}`;
+
+      setFormData((prev) => ({
+        ...prev,
+        no_jo: joNumber,
+      }));
+    }
+  };
   const fetchMountingData = async (idIO: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${idIO}`;
     try {
@@ -427,6 +448,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           status_jo: joDetail.status_jo,
           stok_fg: joDetail.stok_fg || 0,
           qty: joDetail.qty || 0,
+          qty_druk: joDetail.qty_druk || 0, // NEW FIELD
+          qty_lp: joDetail.qty_lp || 0, // NEW FIELD
           po_qty: joDetail.po_qty || 0,
           spesifikasi: joDetail.spesifikasi || '',
           keterangan_pengerjaan: joDetail.keterangan_pengerjaan || '',
@@ -444,7 +467,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           await fetchMountingData(joDetail.id_io);
 
           if (joDetail.jo_mounting && joDetail.jo_mounting.length > 0) {
-            // Find the selected mounting (where is_selected is true)
             const selectedJoMounting = joDetail.jo_mounting.find(
               (jm: any) => jm.is_selected,
             );
@@ -452,8 +474,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             if (selectedJoMounting) {
               setSelectedMounting(selectedJoMounting.id_io_mounting);
 
-              // The stored jumlah_druk values are the base values (without insheet already added)
-              // So we use them directly
               setInsheetValues({
                 jumlah_druk: selectedJoMounting.jumlah_druk_cetak || 0,
                 jumlah_insheet_cetak:
@@ -568,7 +588,12 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const handleMountingSelect = (mountingId: number) => {
     if (selectedMounting === mountingId) {
       setSelectedMounting(null);
-      setFormData((prev) => ({ ...prev, spesifikasi: '' }));
+      setFormData((prev) => ({
+        ...prev,
+        spesifikasi: '',
+        qty_druk: 0,
+        qty_lp: 0,
+      }));
       setInsheetValues({
         jumlah_druk: 0,
         jumlah_insheet_cetak: 0,
@@ -628,20 +653,17 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       else if (prosesName === 'FINISHING') finishing = value;
     });
 
-    // SIMPLE REVERSE FORMULA:
-    // Keep current raw druk, add new total insheet to get displayed druk
     const currentRawDruk = insheetValues.jumlah_druk;
     const displayedDruk = currentRawDruk + totalValue;
-
-    // Qty = Displayed Druk × Isi
     const calculatedQty = displayedDruk * isi;
-
-    // Calculate Jumlah LP
     const jumlahLP = Math.ceil(displayedDruk / bagian);
 
+    // UPDATE FORM DATA WITH NEW FIELDS
     setFormData((prev) => ({
       ...prev,
       qty: calculatedQty,
+      qty_druk: displayedDruk,
+      qty_lp: jumlahLP,
     }));
 
     setInsheetValues({
@@ -790,6 +812,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         }
         console.log('Create JO submit data:', submitData);
       }
+      //console.log('Create JO submit data:', submitData);
     } catch (error: any) {
       console.error('Error saving JO:', error);
       const errorMessage =

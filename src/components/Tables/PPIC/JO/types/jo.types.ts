@@ -184,6 +184,8 @@ export interface JOFormData {
   status_jo: string;
   stok_fg: number;
   qty: number;
+  qty_druk: number; // NEW FIELD
+  qty_lp: number; // NEW FIELD
   po_qty: number;
   spesifikasi: string;
   keterangan_pengerjaan: string;

@@ -4,7 +4,7 @@ import { JOTipeOption } from './types/jo.types';
 import JOPPICCreateModal from './utils/JOPPICCreateModal';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
-
+import JOPrintModal from './utils/JOPrintModal';
 type SortDirection = 'asc' | 'desc';
 
 interface JOData {
@@ -44,7 +44,8 @@ const JOPPICCreate: React.FC = () => {
   const [searchInput, setSearchInput] = useState<string>('');
   const [editMode, setEditMode] = useState<boolean>(false);
   const [editJOId, setEditJOId] = useState<number | null>(null);
-
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [printJOId, setPrintJOId] = useState<number | null>(null);
   // Pagination states
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -92,7 +93,10 @@ const JOPPICCreate: React.FC = () => {
     setSearchTerm('');
     setPage(1);
   };
-
+  const handlePrintJO = (item: JOData) => {
+    setPrintJOId(item.id);
+    setShowPrintModal(true);
+  };
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -515,6 +519,13 @@ const JOPPICCreate: React.FC = () => {
                             >
                               NEXT PROCESS
                             </button>
+                            <button
+                              onClick={() => handlePrintJO(item)}
+                              className="text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-xs transition-colors"
+                              title="Print JO"
+                            >
+                              PRINT
+                            </button>
                           </div>
                         )}
                       </div>
@@ -709,6 +720,14 @@ const JOPPICCreate: React.FC = () => {
         tipeJO={selectedTipeJO}
         editMode={editMode}
         editJOId={editJOId}
+      />
+      <JOPrintModal
+        isOpen={showPrintModal}
+        joId={printJOId}
+        onClose={() => {
+          setShowPrintModal(false);
+          setPrintJOId(null);
+        }}
       />
     </div>
   );
