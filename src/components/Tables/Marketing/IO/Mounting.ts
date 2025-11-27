@@ -1,25 +1,40 @@
 // types/mounting.ts
 
 // Add the TahapanData interface
+// Update TahapanData interface in types/mounting.ts
 export interface TahapanData {
-  setting_type: number | undefined;
   id?: number;
-  id_tahapan_mesin: number;
-  id_setting_kapasitas?: number;
-  id_drying_time?: number;
-  index: number;
-  nama_mesin?: any;
-  nama_proses?: string;
-  nama_setting_kapasitas?: string;
-  nama_drying_time?: string;
-  value_setting_kapasitas?: number;
-  value_drying_time?: number;
   id_io?: number;
   id_io_mounting?: number;
+  id_tahapan_mesin: number;
+  id_setting_kapasitas?: number | null;
+  id_drying_time?: number | null;
+  index: number;
+
+  // Machine and process info
+  nama_mesin?: string;
+  nama_proses?: string;
+
+  // Setting kapasitas fields (updated to match API)
+  nama_setting_kapasitas?: string;
+  nama_kapasitas?: string;
+  nama_setting?: string;
+  value_setting_kapasitas?: number;
+  value_kapasitas?: number;
+  value_setting?: number;
+  setting_type?: string; // Changed from number | undefined to string
+
+  // Drying time fields
+  nama_drying_time?: string;
+  value_drying_time?: number;
+
+  // Meta fields
   is_active?: boolean;
   createdAt?: string;
   updatedAt?: string;
-  clientId?: any;
+
+  // Client-side only field
+  _clientId?: string;
 }
 
 // types/mounting.ts

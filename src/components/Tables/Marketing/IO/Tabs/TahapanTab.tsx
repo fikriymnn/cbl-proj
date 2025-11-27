@@ -51,7 +51,6 @@ type LocalTahapan = TahapanData & {
   _clientId?: string;
   id_mesin?: number;
 };
-
 interface DragState {
   isDragging: boolean;
   draggedIndex: number | null;
@@ -107,7 +106,10 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
           return { ...(item as LocalTahapan) };
         }
         if (item.id) {
-          return { ...(item as LocalTahapan), _clientId: `item-${item.id}` };
+          return {
+            ...(item as LocalTahapan),
+            _clientId: `item-${item.id}`,
+          };
         }
         const newId = `new-${newTempIdRef.current++}`;
         return { ...(item as LocalTahapan), _clientId: newId };
@@ -368,6 +370,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
         `${import.meta.env.VITE_API_LINK}/master/ppic/settingKapasitas`,
         { withCredentials: true },
       );
+      console.log('Fetched setting kapasitas:', response.data.data);
       setSettingKapasitasList(response.data.data);
     } catch (error) {
       console.error('Error fetching setting kapasitas:', error);
@@ -380,6 +383,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
         `${import.meta.env.VITE_API_LINK}/master/ppic/dryingTime`,
         { withCredentials: true },
       );
+      console.log('Fetched drying time:', response.data.data);
       setDryingTimeList(response.data.data);
     } catch (error) {
       console.error('Error fetching drying time:', error);
@@ -394,6 +398,9 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
       id_tahapan_mesin: 0,
       index: tahapanList.length + 1,
       setting_type: undefined,
+      id_setting_kapasitas: null,
+      id_drying_time: null,
+      is_active: true,
       _clientId: clientId,
     } as LocalTahapan;
 
@@ -537,19 +544,23 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
     if (selectedSetting) {
       const updatedList = tahapanList.map((item, i) => {
         if (i === index) {
+          const kapasitasValue = selectedSetting[
+            `kapasitas_${type}` as keyof SettingKapasitas
+          ] as number;
+          const settingValue = selectedSetting[
+            `setting_${type}` as keyof SettingKapasitas
+          ] as number;
+
           return {
             ...item,
             id_setting_kapasitas: selectedSetting.id,
-            nama_setting_kapasitas: `${
-              selectedSetting.nama_kategori
-            } - ${type.toUpperCase()}`,
-            value_setting_kapasitas: selectedSetting[
-              `setting_${type}` as keyof SettingKapasitas
-            ] as number,
-            kapasitas_value: selectedSetting[
-              `kapasitas_${type}` as keyof SettingKapasitas
-            ] as number,
-            setting_type: type,
+            nama_setting_kapasitas: selectedSetting.nama_kategori, // Only category name
+            nama_kapasitas: `Kapasitas ${type.toUpperCase()}`, // e.g., "Kapasitas A"
+            nama_setting: `Setting ${type.toUpperCase()}`, // e.g., "Setting A"
+            value_setting_kapasitas: settingValue,
+            value_kapasitas: kapasitasValue,
+            value_setting: settingValue,
+            setting_type: type, // 'a', 'b', or 'c'
           } as LocalTahapan;
         }
         return item;
@@ -736,6 +747,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
               {/* Content - Show differently based on mode */}
               {mode === 'drag' ? (
                 // Read-only view for drag mode
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Tahapan:</span>{' '}
@@ -743,7 +755,11 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
                   </div>
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Kapasitas:</span>{' '}
-                    {tahapan.nama_setting_kapasitas || 'Belum dipilih'}
+                    {tahapan.nama_setting_kapasitas
+                      ? `${tahapan.nama_setting_kapasitas} - ${
+                          tahapan.nama_kapasitas || ''
+                        }`
+                      : 'Belum dipilih'}
                   </div>
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Drying:</span>{' '}
@@ -804,6 +820,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
                 </div>
               ) : (
                 // View mode - show read-only data with edit button
+                // Update the view mode display section
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="text-xs">
                     <span className="text-gray-500">Tahapan Mesin:</span>
@@ -816,12 +833,24 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
                   <div className="text-xs">
                     <span className="text-gray-500">Setting Kapasitas:</span>
                     <div className="font-medium text-gray-800 mt-1">
-                      {tahapan.nama_setting_kapasitas || 'Belum dipilih'}
-                      {tahapan.value_setting_kapasitas && (
-                        <span className="text-gray-600">
-                          {' '}
-                          - {tahapan.value_setting_kapasitas}
-                        </span>
+                      {tahapan.nama_setting_kapasitas ? (
+                        <>
+                          {tahapan.nama_setting_kapasitas}
+                          {tahapan.nama_kapasitas && (
+                            <span className="text-blue-600">
+                              {' '}
+                              - {tahapan.nama_kapasitas}
+                            </span>
+                          )}
+                          {tahapan.value_setting_kapasitas && (
+                            <span className="text-gray-600">
+                              {' '}
+                              ({tahapan.value_setting_kapasitas})
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        'Belum dipilih'
                       )}
                     </div>
                   </div>

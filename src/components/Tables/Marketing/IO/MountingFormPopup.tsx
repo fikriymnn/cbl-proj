@@ -287,7 +287,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         ...formData,
         file: uploadedFileName, // Changed from lampiran to file
       };
-
+      console.log('Submitting mounting data:', dataToSubmit);
       const isEdit = mountingData && mountingData.id;
       const url = isEdit
         ? `${import.meta.env.VITE_API_LINK}/marketing/io/mounting/${
