@@ -792,6 +792,11 @@ export const menuCategories: MenuCategory[] = [
             path: '/master/maintenance/grade',
             icon: 'grade',
           },
+          {
+            name: 'Skor MTC',
+            path: '/master/maintenance/skor-mtc',
+            icon: 'grade',
+          },
         ],
       },
       {

@@ -131,6 +131,7 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/master/maintenance/pm3'),
       fullAccess('/master/maintenance/kpi'),
       fullAccess('/master/maintenance/grade'),
+      fullAccess('/master/maintenance/skor-mtc'),
     ],
   },
 
@@ -271,6 +272,7 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/master/maintenance/pm3'),
       createPermission('/master/maintenance/kpi', true, false, true, false),
       noAccess('/master/maintenance/grade'),
+      fullAccess('/master/maintenance/skor-mtc'),
     ],
   },
 

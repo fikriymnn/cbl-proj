@@ -223,6 +223,7 @@ import ApproveSPVPage from './pages/Produksi/MonitoringLKH/ApproveSPVpage';
 import HistoryOKPPage from './pages/Marketing/OKP/HistoryOKPPage';
 import IOMarketingHistoryPage from './pages/Marketing/IO/IOMarketingHistoryPage';
 import JOHistoryPage from './pages/PPIC/JO/JOHistoryPage';
+import MasterSkorMTC from './pages/MasterData/MTC/MasterSkor';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2022,6 +2023,18 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterData />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/master/maintenance/skor-mtc"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterSkorMTC />
               </ProtectedRoute>
             </>
           }
