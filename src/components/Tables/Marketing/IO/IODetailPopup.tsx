@@ -1,9 +1,9 @@
 // components/IODetailPopup.tsx
-// components/IODetailPopup.tsx
 import React, { useEffect, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import MountingFormPopup from './MountingFormPopup';
 import { MountingData } from './Mounting';
+
 interface IODetailData {
   id: number;
   no_io: string;
@@ -34,6 +34,9 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
   const [editingMounting, setEditingMounting] = useState<MountingData | null>(
     null,
   );
+  const [deletingMountingId, setDeletingMountingId] = useState<number | null>(
+    null,
+  );
 
   const fetchIODetail = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${ioId}`;
@@ -53,14 +56,67 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
     }
   };
 
-  const handleCreateMounting = () => {
-    setEditingMounting(null);
-    setShowMountingForm(true);
+  const handleCreateMounting = async () => {
+    try {
+      setLoading(true);
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/marketing/io/mounting/${ioId}`;
+      const res: AxiosResponse = await axios.post(
+        url,
+        {},
+        { withCredentials: true },
+      );
+
+      if (res.data.succes) {
+        // Refresh the table after creating mounting
+        await fetchIODetail();
+      }
+    } catch (error) {
+      console.error('Error creating mounting:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditMounting = (mounting: MountingData) => {
     setEditingMounting(mounting);
     setShowMountingForm(true);
+  };
+
+  const handleDeleteMounting = async (
+    mountingId: number,
+    namaMounting: string,
+  ) => {
+    // Prevent deletion of Mounting A
+    if (namaMounting === 'A') {
+      alert('Mounting A cannot be deleted!');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete Mounting ${namaMounting}?`)) {
+      return;
+    }
+
+    try {
+      setDeletingMountingId(mountingId);
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/marketing/io/mounting/${mountingId}`;
+      const res: AxiosResponse = await axios.delete(url, {
+        withCredentials: true,
+      });
+
+      if (res.data.succes) {
+        // Refresh the table after deleting mounting
+        await fetchIODetail();
+      }
+    } catch (error) {
+      console.error('Error deleting mounting:', error);
+      alert('Failed to delete mounting');
+    } finally {
+      setDeletingMountingId(null);
+    }
   };
 
   const handleMountingFormClose = () => {
@@ -152,7 +208,8 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
                   <h3 className="text-xl font-bold text-gray-800">Mounting</h3>
                   <button
                     onClick={handleCreateMounting}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                    disabled={loading}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span>+</span>
                     Tambah Mounting
@@ -172,6 +229,15 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
                             Nama Mounting
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Nama Kertas
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Bagian
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Isi
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Keterangan
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -189,23 +255,52 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
                               <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {mounting.nama_mounting}
                               </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {mounting.nama_kertas}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {mounting.ukuran_cetak_bagian_1}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {mounting.ukuran_cetak_isi_1}
+                              </td>
                               <td className="px-4 py-3 text-sm text-gray-500">
-                                -
+                                {mounting.keterangan_revisi || '-'}
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                <button
-                                  onClick={() => handleEditMounting(mounting)}
-                                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
-                                >
-                                  Edit
-                                </button>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleEditMounting(mounting)}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+                                  >
+                                    Edit
+                                  </button>
+                                  {mounting.nama_mounting !== 'A' && (
+                                    <button
+                                      onClick={() =>
+                                        handleDeleteMounting(
+                                          mounting.id,
+                                          mounting.nama_mounting,
+                                        )
+                                      }
+                                      disabled={
+                                        deletingMountingId === mounting.id
+                                      }
+                                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                      {deletingMountingId === mounting.id
+                                        ? 'Deleting...'
+                                        : 'Delete'}
+                                    </button>
+                                  )}
+                                </div>
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
                             <td
-                              colSpan={4}
+                              colSpan={7}
                               className="px-4 py-8 text-center text-gray-500"
                             >
                               No mounting data available
@@ -225,13 +320,12 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
           )}
         </div>
       </div>
-
-      {/* In IODetailPopup.tsx, update the MountingFormPopup component */}
+      {/* Mounting Form Popup */}
       {showMountingForm && (
         <MountingFormPopup
           ioId={ioId}
           mountingData={editingMounting}
-          existingMountings={ioData?.io_mounting || []} // Add this line
+          existingMountings={ioData?.io_mounting || []}
           isOpen={showMountingForm}
           onClose={handleMountingFormClose}
         />
@@ -239,5 +333,4 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
     </div>
   );
 };
-
 export default IODetailPopup;

@@ -617,7 +617,7 @@ const CoatingTab: React.FC<CoatingTabProps> = ({
 
       {/* ID Layout Section */}
       <div>
-        <h3 className="text-lg font-medium text-gray-800 mb-4">ID Layout</h3>
+        <h3 className="text-lg font-medium text-gray-800 mb-4">ID PISAU</h3>
         <div className="grid grid-cols-1 gap-4">
           <div>
             <textarea

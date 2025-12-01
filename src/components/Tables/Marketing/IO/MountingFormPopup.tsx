@@ -285,8 +285,9 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
 
       const dataToSubmit = {
         ...formData,
-        file: uploadedFileName, // Changed from lampiran to file
+        file: uploadedFileName,
       };
+
       console.log('Submitting mounting data:', dataToSubmit);
       const isEdit = mountingData && mountingData.id;
       const url = isEdit
@@ -301,11 +302,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
             { data_mounting: dataToSubmit },
             { withCredentials: true },
           )
-        : await axios.post(
-            url,
-            { data_mounting: dataToSubmit },
-            { withCredentials: true },
-          );
+        : await axios.post(url, {}, { withCredentials: true }); // POST without body
 
       if (res.data.succes) {
         onClose();

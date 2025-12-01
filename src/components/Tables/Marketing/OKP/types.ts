@@ -30,7 +30,7 @@ export interface KalkulasiItem {
   profit_harga: string;
   ppn: number;
   diskon: number;
-
+  label?: string;
   // kertas
   id_kertas: number;
   jenis_kertas: string;
