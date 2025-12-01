@@ -16,6 +16,7 @@ import {
   MesinTahapanResponse,
 } from './types';
 import { FIXED_PROCESSES } from './constants';
+import { create } from 'lodash';
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
@@ -605,6 +606,10 @@ const InputLKH: React.FC = () => {
           rusak_total: item.rusak_total || 0,
           pallet: item.pallet || 0,
           note: item.note || '',
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          waktu_mulai: item.waktu_mulai || '',
+          waktu_selesai: item.waktu_selesai || '',
         })),
       };
 
