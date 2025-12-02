@@ -557,7 +557,7 @@ const SOMarketing: React.FC = () => {
                           </button>
                         </div>
                       </td>
-                      <td className="px-2 py-2 whitespace-nowrap">
+                      <td className="px-2 py-2 whitespace-nowrap flex flex-col gap-1 justify-center">
                         <span
                           className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
                           title={item.no_so}
@@ -565,6 +565,15 @@ const SOMarketing: React.FC = () => {
                           {item.no_so
                             ? item.no_so.substring(0, 12) +
                               (item.no_so.length > 12 ? '...' : '')
+                            : '-'}
+                        </span>
+                        <span
+                          className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                          title={item.label}
+                        >
+                          {item.label
+                            ? item.label.substring(0, 12) +
+                              (item.label.length > 12 ? '...' : '')
                             : '-'}
                         </span>
                       </td>

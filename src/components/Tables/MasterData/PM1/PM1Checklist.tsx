@@ -193,7 +193,7 @@ const PM1Checklist = () => {
                 EXPORT EXCEL
               </button>
               <a
-                href={`/masterdata/masterpm1/pm1checklist/addinspection/${
+                href={`/master/maintenance/pm1/checklist/add-inspection/${
                   mesin != null && mesin.id
                 }`}
               >
@@ -349,7 +349,7 @@ const PM1Checklist = () => {
                 EXCEL
               </button>
               <a
-                href={`/masterdata/masterpm1/pm1checklist/addinspection/${
+                href={`/master/maintenance/pm1/checklist/add-inspection/${
                   mesin != null && mesin.id
                 }`}
               >

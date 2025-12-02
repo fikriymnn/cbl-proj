@@ -111,7 +111,7 @@ const PM3Checklist = () => {
             </div>
             <div className="flex w-3/12 justify-end">
               <a
-                href={`/masterdata/masterpm3/pm3checklist/addinspection/${
+                href={`/master/maintenance/pm3/checklist/add-inspection/${
                   mesin != null && mesin.id
                 }`}
               >

@@ -269,8 +269,16 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                 <div className="header-flex">
                   <img src={Logo} alt="Logo" className="header-logo" />
                   <div className="header-title">PT. CAHAYA BERLIAN LESTARI</div>
+                  <div
+                    style={{
+                      marginLeft: 'auto',
+                      textAlign: 'right',
+                      fontSize: '12px',
+                    }}
+                  >
+                    {printData.label}
+                  </div>
                 </div>
-
                 {/* Title */}
                 <div className="title-center">SALES ORDER</div>
 
@@ -422,6 +430,15 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                 <div className="header-flex">
                   <img src={Logo} alt="Logo" className="header-logo" />
                   <div className="header-title">PT. CAHAYA BERLIAN LESTARI</div>
+                  <div
+                    style={{
+                      marginLeft: 'auto',
+                      textAlign: 'right',
+                      fontSize: '12px',
+                    }}
+                  >
+                    {printData.label}
+                  </div>
                 </div>
 
                 {/* Title */}
@@ -557,7 +574,7 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                         <td>:</td>
                         <td>
                           {getValue(printData.partial)}
-                          <span style={{ marginLeft: '100px' }}>Bulan :</span>
+                          <span style={{ marginLeft: '100px' }}></span>
                           <span style={{ marginLeft: '150px' }}>
                             Kirim Semua : YA
                           </span>

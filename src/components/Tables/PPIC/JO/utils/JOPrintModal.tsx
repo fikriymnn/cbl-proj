@@ -76,6 +76,7 @@ interface JOPrintData {
     is_active: boolean;
     createdAt: string;
     updatedAt: string;
+    nama_mounting?: string;
   }>;
 }
 
@@ -118,11 +119,27 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
       if (response.data.succes) {
         setPrintData(response.data.data);
       }
+      console.log('Fetched JO Data:', response.data.data);
     } catch (error) {
       console.error('Error fetching JO data:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to get the selected mounting
+  const getSelectedMounting = () => {
+    if (!printData?.jo_mounting || printData.jo_mounting.length === 0) {
+      return null;
+    }
+
+    // Find the mounting with is_selected: true
+    const selectedMounting = printData.jo_mounting.find(
+      (m) => m.is_selected === true,
+    );
+
+    // If no selected mounting found, fall back to the first one
+    return selectedMounting || printData.jo_mounting[0];
   };
 
   const getValue = (value: any, defaultValue: string = '-') => {
@@ -143,11 +160,12 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
 
   // Calculate layout based on plano size and cetak size
   const calculateLayout = (): LayoutCalculation => {
-    if (!printData?.jo_mounting || printData.jo_mounting.length === 0) {
+    const mounting = getSelectedMounting();
+
+    if (!mounting) {
       return { across: 0, down: 0, total: 0, isi: 0 };
     }
 
-    const mounting = printData.jo_mounting[0];
     const {
       panjang_kertas,
       lebar_kertas,
@@ -185,10 +203,6 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
       { name: 'SAMPLING', mesin: 'MANUAL' },
       { name: 'FINAL INSPECTION', mesin: 'MANUAL' },
     ];
-
-    // Since your data structure doesn't have tahapan data,
-    // just return the default processes
-    // If you add tahapan data to jo_mounting in the future, you can update this
 
     return processes;
   };
@@ -378,6 +392,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
   if (!isOpen) return null;
 
   const layout = calculateLayout();
+  const selectedMounting = getSelectedMounting();
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black bg-opacity-75">
@@ -534,7 +549,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 </table>
 
                 {/* UK & WARNA Section */}
-                {printData.jo_mounting && printData.jo_mounting.length > 0 && (
+                {selectedMounting && (
                   <>
                     <table className="warna-table">
                       <thead>
@@ -550,8 +565,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                         <tr>
                           <td className="info-label">Ukuran Jadi</td>
                           <td colSpan={3}>
-                            {printData.jo_mounting[0].ukuran_cetak_panjang_1} X{' '}
-                            {printData.jo_mounting[0].ukuran_cetak_lebar_1} mm
+                            {selectedMounting.ukuran_cetak_panjang_1} X{' '}
+                            {selectedMounting.ukuran_cetak_lebar_1} mm
                           </td>
                           <td colSpan={4}></td>
                         </tr>
@@ -574,50 +589,43 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                         <tr>
                           <td className="info-label">Jenis Kertas</td>
                           <td colSpan={3}>
-                            {getValue(printData.jo_mounting[0].nama_kertas)}
+                            {getValue(selectedMounting.nama_kertas)}
                           </td>
                           <td className="info-label">Gramatur</td>
                           <td colSpan={3}>
-                            {printData.jo_mounting[0].gramature_kertas} gsm
+                            {selectedMounting.gramature_kertas} gsm
                           </td>
                         </tr>
                         <tr>
                           <td className="info-label">Ukuran</td>
                           <td colSpan={3}>
-                            {printData.jo_mounting[0].lebar_kertas} x{' '}
-                            {printData.jo_mounting[0].panjang_kertas} mm
+                            {selectedMounting.lebar_kertas} x{' '}
+                            {selectedMounting.panjang_kertas} mm
                           </td>
                           <td className="info-label">JML</td>
                           <td colSpan={3}>
-                            {printData.jo_mounting[0].jumlah_kertas.toLocaleString()}{' '}
-                            LP
+                            {selectedMounting.jumlah_kertas.toLocaleString()} LP
                           </td>
                         </tr>
                         <tr>
                           <td className="info-label">UK Cetak (P×L)</td>
                           <td colSpan={3}>
-                            {printData.jo_mounting[0].ukuran_cetak_panjang_1} x{' '}
-                            {printData.jo_mounting[0].ukuran_cetak_lebar_1} mm
+                            {selectedMounting.ukuran_cetak_panjang_1} x{' '}
+                            {selectedMounting.ukuran_cetak_lebar_1} mm
                           </td>
                           <td className="info-label">
-                            {printData.jo_mounting[0].ukuran_cetak_bagian_1 ||
-                              2}{' '}
-                            Bagian
+                            {selectedMounting.ukuran_cetak_bagian_1 || 2} Bagian
                           </td>
                           <td>Isi</td>
                           <td colSpan={2}>
-                            {printData.jo_mounting[0].ukuran_cetak_isi_1 ||
-                              layout.isi}
+                            {selectedMounting.ukuran_cetak_isi_1 || layout.isi}
                           </td>
                         </tr>
                         <tr>
                           <td className="info-label">UK Cetak (P×L)</td>
                           <td colSpan={3}>
-                            {printData.jo_mounting[0].ukuran_cetak_panjang_2 ||
-                              0}{' '}
-                            x{' '}
-                            {printData.jo_mounting[0].ukuran_cetak_lebar_2 || 0}{' '}
-                            mm
+                            {selectedMounting.ukuran_cetak_panjang_2 || 0} x{' '}
+                            {selectedMounting.ukuran_cetak_lebar_2 || 0} mm
                           </td>
                           <td className="info-label">0 Bagian</td>
                           <td>Isi</td>
@@ -651,20 +659,37 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                           <td
                             style={{
                               width: '350px',
-                              padding: '20px',
+                              padding: '30px 20px',
                               verticalAlign: 'middle',
                               textAlign: 'center',
                               border: '1px solid black',
                               position: 'relative',
                             }}
                           >
+                            {/* Nama Mounting at top left */}
+                            {selectedMounting.nama_mounting && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: '8px',
+                                  left: '8px',
+                                  fontSize: '12px',
+                                  fontWeight: 'bold',
+                                  textAlign: 'left',
+                                  zIndex: 5,
+                                }}
+                              >
+                                {selectedMounting.nama_mounting}
+                              </div>
+                            )}
+
                             {/* Layout diagram */}
                             <div
                               style={{
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                minHeight: '180px',
+                                minHeight: '220px',
                                 position: 'relative',
                               }}
                             >
@@ -675,131 +700,343 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                                   margin: '30px',
                                 }}
                               >
-                                {/* Top dimension */}
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    top: '-25px',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    fontSize: '8px',
-                                    fontWeight: 'bold',
-                                  }}
-                                >
-                                  {printData.jo_mounting[0].panjang_kertas}
-                                </div>
+                                {(() => {
+                                  // Calculate for ukuran_cetak_1
+                                  const acrossX1 = Math.floor(
+                                    selectedMounting.lebar_kertas /
+                                      selectedMounting.ukuran_cetak_panjang_1,
+                                  );
+                                  const downY1 = Math.floor(
+                                    selectedMounting.panjang_kertas /
+                                      selectedMounting.ukuran_cetak_lebar_1,
+                                  );
+                                  const area1 =
+                                    acrossX1 *
+                                    downY1 *
+                                    (selectedMounting.ukuran_cetak_bagian_1 ||
+                                      1);
 
-                                {/* Top arrows */}
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    top: '-15px',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    fontSize: '8px',
-                                    whiteSpace: 'nowrap',
-                                  }}
-                                >
-                                  ← {layout.across}x →
-                                </div>
+                                  // Calculate for ukuran_cetak_2 if exists
+                                  let acrossX2 = 0;
+                                  let downY2 = 0;
+                                  let area2 = 0;
 
-                                {/* Left dimension */}
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    left: '-45px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    fontSize: '8px',
-                                    fontWeight: 'bold',
-                                    writingMode: 'vertical-rl',
-                                    textOrientation: 'mixed',
-                                  }}
-                                >
-                                  {printData.jo_mounting[0].lebar_kertas}
-                                </div>
+                                  if (
+                                    selectedMounting.ukuran_cetak_panjang_2 &&
+                                    selectedMounting.ukuran_cetak_lebar_2
+                                  ) {
+                                    acrossX2 = Math.floor(
+                                      selectedMounting.lebar_kertas /
+                                        selectedMounting.ukuran_cetak_panjang_2,
+                                    );
+                                    downY2 = Math.floor(
+                                      selectedMounting.panjang_kertas /
+                                        selectedMounting.ukuran_cetak_lebar_2,
+                                    );
+                                    area2 =
+                                      acrossX2 *
+                                      downY2 *
+                                      (selectedMounting.ukuran_cetak_bagian_2 ||
+                                        1);
+                                  }
 
-                                {/* Left arrows */}
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    left: '-20px',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    fontSize: '8px',
-                                    writingMode: 'vertical-rl',
-                                    textOrientation: 'mixed',
-                                  }}
-                                >
-                                  ↑ {layout.down}x ↓
-                                </div>
+                                  const totalArea = area1 + area2;
+                                  const percentage1 =
+                                    totalArea > 0
+                                      ? (area1 / totalArea) * 100
+                                      : 100;
+                                  const percentage2 =
+                                    totalArea > 0
+                                      ? (area2 / totalArea) * 100
+                                      : 0;
 
-                                {/* Grid box */}
-                                <div
-                                  style={{
-                                    border: '2px solid black',
-                                    backgroundColor: 'white',
-                                    display: 'inline-block',
-                                    position: 'relative',
-                                  }}
-                                >
-                                  <table style={{ borderCollapse: 'collapse' }}>
-                                    <tbody>
-                                      {Array.from({ length: layout.down }).map(
-                                        (_, row) => (
-                                          <tr key={row}>
-                                            {Array.from({
-                                              length: layout.across,
-                                            }).map((_, col) => (
-                                              <td
-                                                key={col}
-                                                style={{
-                                                  border: '0.5px solid #666',
-                                                  width: '30px',
-                                                  height: '30px',
-                                                }}
-                                              />
-                                            ))}
-                                          </tr>
-                                        ),
-                                      )}
-                                    </tbody>
-                                  </table>
+                                  // Calculate used area in pixels for visual representation
+                                  const boxWidth = 240;
+                                  const boxHeight = 160;
 
-                                  {/* Center text */}
-                                  {printData.jo_mounting[0]
-                                    .ukuran_cetak_bagian_1 > 1 && (
-                                    <div
-                                      style={{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        fontSize: '11px',
-                                        fontWeight: 'bold',
-                                      }}
-                                    >
-                                      1/
-                                      {
-                                        printData.jo_mounting[0]
-                                          .ukuran_cetak_bagian_1
-                                      }{' '}
-                                      Bagian
-                                    </div>
-                                  )}
-                                </div>
+                                  // Calculate how much space the cut items take (as percentage of plano)
+                                  const usedWidthPercent =
+                                    ((acrossX1 *
+                                      selectedMounting.ukuran_cetak_panjang_1) /
+                                      selectedMounting.lebar_kertas) *
+                                    100;
+                                  const usedHeightPercent =
+                                    ((downY1 *
+                                      selectedMounting.ukuran_cetak_lebar_1) /
+                                      selectedMounting.panjang_kertas) *
+                                    100;
 
-                                {/* Bottom Isi */}
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    bottom: '-20px',
-                                    right: '0',
-                                    fontSize: '8px',
-                                  }}
-                                >
-                                  Isi: {layout.isi}
-                                </div>
+                                  // Calculate waste/efficiency
+                                  const usedAreaMm2_1 =
+                                    acrossX1 *
+                                    selectedMounting.ukuran_cetak_panjang_1 *
+                                    (downY1 *
+                                      selectedMounting.ukuran_cetak_lebar_1);
+                                  const usedAreaMm2_2 =
+                                    selectedMounting.ukuran_cetak_panjang_2 &&
+                                    selectedMounting.ukuran_cetak_lebar_2
+                                      ? acrossX2 *
+                                        selectedMounting.ukuran_cetak_panjang_2 *
+                                        (downY2 *
+                                          selectedMounting.ukuran_cetak_lebar_2)
+                                      : 0;
+
+                                  const totalPlanoArea =
+                                    selectedMounting.lebar_kertas *
+                                    selectedMounting.panjang_kertas;
+                                  const totalUsedArea =
+                                    usedAreaMm2_1 + usedAreaMm2_2;
+                                  const wasteArea =
+                                    totalPlanoArea - totalUsedArea;
+                                  const efficiency = (
+                                    (totalUsedArea / totalPlanoArea) *
+                                    100
+                                  ).toFixed(1);
+
+                                  // Calculate sisa dimensions
+                                  const sisaLebar =
+                                    selectedMounting.lebar_kertas -
+                                    acrossX1 *
+                                      selectedMounting.ukuran_cetak_panjang_1;
+                                  const sisaPanjang =
+                                    selectedMounting.panjang_kertas -
+                                    downY1 *
+                                      selectedMounting.ukuran_cetak_lebar_1;
+
+                                  return (
+                                    <>
+                                      {/* Outer dimensions - PLANO SIZE */}
+                                      {/* Top - Plano Lebar with horizontal line */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          top: '-25px',
+                                          left: '0',
+                                          right: '0',
+                                          textAlign: 'center',
+                                        }}
+                                      >
+                                        <div
+                                          style={{
+                                            fontSize: '8px',
+                                            fontWeight: 'bold',
+                                            marginBottom: '2px',
+                                          }}
+                                        >
+                                          {selectedMounting.lebar_kertas}
+                                        </div>
+                                        <div
+                                          style={{
+                                            width: '100%',
+                                            height: '0px',
+                                            backgroundColor: 'black',
+                                          }}
+                                        />
+                                      </div>
+
+                                      {/* Left - Plano Panjang with vertical line */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          left: '-25px',
+                                          top: '0',
+                                          bottom: '0',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                        }}
+                                      >
+                                        <div
+                                          style={{
+                                            width: '0px',
+                                            height: '100%',
+                                            backgroundColor: 'black',
+                                            marginRight: '2px',
+                                          }}
+                                        />
+                                        <div
+                                          style={{
+                                            fontSize: '8px',
+                                            fontWeight: 'bold',
+                                            writingMode: 'vertical-rl',
+                                            textOrientation: 'mixed',
+                                          }}
+                                        >
+                                          {selectedMounting.panjang_kertas}
+                                        </div>
+                                      </div>
+
+                                      {/* Main rectangle (PLANO) */}
+                                      <div
+                                        style={{
+                                          border: '2px solid black',
+                                          backgroundColor: 'white',
+                                          display: 'inline-block',
+                                          position: 'relative',
+                                          width: `${boxWidth}px`,
+                                          height: `${boxHeight}px`,
+                                        }}
+                                      >
+                                        {/* Top dimension with arrow - UKURAN CETAK */}
+                                        <div
+                                          style={{
+                                            position: 'absolute',
+                                            top: '5px',
+                                            left: '50%',
+                                            transform: 'translateX(-50%)',
+                                            fontSize: '8px',
+                                            fontWeight: 'bold',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            zIndex: 10,
+                                          }}
+                                        >
+                                          <span>
+                                            {
+                                              selectedMounting.ukuran_cetak_panjang_1
+                                            }
+                                          </span>
+                                          <span>→</span>
+                                          <span>{acrossX1}x</span>
+                                        </div>
+
+                                        {/* Left dimension with arrow - UKURAN CETAK */}
+                                        <div
+                                          style={{
+                                            position: 'absolute',
+                                            left: '5px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            fontSize: '8px',
+                                            fontWeight: 'bold',
+                                            writingMode: 'vertical-rl',
+                                            textOrientation: 'mixed',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            zIndex: 10,
+                                          }}
+                                        >
+                                          <span>
+                                            {
+                                              selectedMounting.ukuran_cetak_lebar_1
+                                            }
+                                          </span>
+                                          <span>→</span>
+                                          <span>{downY1}x</span>
+                                        </div>
+
+                                        {/* Used area (white) */}
+                                        <div
+                                          style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: `${usedWidthPercent}%`,
+                                            height: `${usedHeightPercent}%`,
+                                            backgroundColor: 'white',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                          }}
+                                        >
+                                          {selectedMounting.ukuran_cetak_bagian_1 >
+                                            1 && (
+                                            <div
+                                              style={{
+                                                fontSize: '10px',
+                                                fontWeight: 'bold',
+                                              }}
+                                            >
+                                              1/
+                                              {
+                                                selectedMounting.ukuran_cetak_bagian_1
+                                              }{' '}
+                                              Bagian
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Waste area - Right side (shaded) */}
+                                        {sisaLebar > 0 && (
+                                          <div
+                                            style={{
+                                              position: 'absolute',
+                                              top: 0,
+                                              right: 0,
+                                              width: `${
+                                                100 - usedWidthPercent
+                                              }%`,
+                                              height: `${usedHeightPercent}%`,
+                                              backgroundColor:
+                                                'rgba(128, 128, 128, 0.3)',
+                                              border: '1px dashed #999',
+                                            }}
+                                          />
+                                        )}
+
+                                        {/* Waste area - Bottom side (shaded) */}
+                                        {sisaPanjang > 0 && (
+                                          <div
+                                            style={{
+                                              position: 'absolute',
+                                              bottom: 0,
+                                              left: 0,
+                                              width: '100%',
+                                              height: `${
+                                                100 - usedHeightPercent
+                                              }%`,
+                                              backgroundColor:
+                                                'rgba(128, 128, 128, 0.3)',
+                                              border: '1px dashed #999',
+                                            }}
+                                          />
+                                        )}
+
+                                        {/* Isi at bottom right */}
+                                        <div
+                                          style={{
+                                            position: 'absolute',
+                                            bottom: '5px',
+                                            right: '5px',
+                                            fontSize: '8px',
+                                            zIndex: 10,
+                                          }}
+                                        >
+                                          Isi:{' '}
+                                          {selectedMounting.ukuran_cetak_isi_1 ||
+                                            acrossX1 *
+                                              downY1 *
+                                              (selectedMounting.ukuran_cetak_bagian_1 ||
+                                                1)}
+                                        </div>
+                                      </div>
+
+                                      {/* Bottom info - Sisa & Efficiency */}
+                                      <div
+                                        style={{
+                                          position: 'absolute',
+                                          bottom: '-25px',
+                                          left: '0',
+                                          right: '0',
+                                          fontSize: '7px',
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                        }}
+                                      >
+                                        <div>
+                                          <strong>Sisa Potong:</strong>{' '}
+                                          {sisaLebar.toFixed(0)} ×{' '}
+                                          {sisaPanjang.toFixed(0)} mm
+                                        </div>
+                                        <div>
+                                          <strong>Efisiensi:</strong>{' '}
+                                          {efficiency}%
+                                        </div>
+                                      </div>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </div>
                           </td>
@@ -874,7 +1111,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                                       textAlign: 'center',
                                     }}
                                   >
-                                    {printData.jo_mounting[0].jumlah_druk_cetak?.toLocaleString()}
+                                    {selectedMounting.jumlah_druk_cetak?.toLocaleString()}
                                   </td>
                                   <td
                                     style={{
@@ -883,7 +1120,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                                       textAlign: 'center',
                                     }}
                                   >
-                                    {printData.jo_mounting[0].jumlah_insheet_cetak?.toLocaleString()}
+                                    {selectedMounting.jumlah_insheet_cetak?.toLocaleString()}
                                   </td>
                                   <td
                                     style={{
@@ -910,7 +1147,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                                       textAlign: 'center',
                                     }}
                                   >
-                                    {printData.jo_mounting[0].jumlah_druk_pond?.toLocaleString()}
+                                    {selectedMounting.jumlah_druk_pond?.toLocaleString()}
                                   </td>
                                   <td
                                     style={{
@@ -919,7 +1156,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                                       textAlign: 'center',
                                     }}
                                   >
-                                    {printData.jo_mounting[0].jumlah_insheet_pond?.toLocaleString()}
+                                    {selectedMounting.jumlah_insheet_pond?.toLocaleString()}
                                   </td>
                                   <td
                                     style={{
@@ -946,7 +1183,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                                       textAlign: 'center',
                                     }}
                                   >
-                                    {printData.jo_mounting[0].jumlah_druk_finishing?.toLocaleString()}
+                                    {selectedMounting.jumlah_druk_finishing?.toLocaleString()}
                                   </td>
                                   <td
                                     style={{
@@ -955,7 +1192,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                                       textAlign: 'center',
                                     }}
                                   >
-                                    {printData.jo_mounting[0].jumlah_insheet_finishing?.toLocaleString()}
+                                    {selectedMounting.jumlah_insheet_finishing?.toLocaleString()}
                                   </td>
                                   <td
                                     style={{

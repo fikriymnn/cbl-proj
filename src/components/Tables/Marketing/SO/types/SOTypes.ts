@@ -166,6 +166,7 @@ export interface KalkulasiData {
   warna_belakang: number;
   warna_depan: number;
   customer: Customer; // Add the nested customer object
+  label?: string;
 }
 
 export interface OkpData {
@@ -244,6 +245,7 @@ export interface SOData {
   updatedAt: string;
   is_io_selesai: any;
   no_booking: any;
+  label?: string;
 }
 
 export interface SOFormData {
@@ -254,6 +256,7 @@ export interface SOFormData {
   so_cancel: string;
   no_booking: string;
   status_jo: string;
+  label?: string;
   customer: string;
   produk: string;
   status_produk: string;

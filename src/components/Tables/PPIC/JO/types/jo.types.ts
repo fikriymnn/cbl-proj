@@ -140,7 +140,9 @@ export interface MountingData {
 
 export interface JOMounting {
   id?: number;
+  id_jo?: number;
   id_io_mounting: number;
+  nama_mounting: string; // ADD THIS
   id_kertas: number;
   nama_kertas: string;
   gramature_kertas: number;
@@ -168,7 +170,6 @@ export interface JOMounting {
   total_insheet: number;
   is_selected: boolean;
 }
-
 export interface JOFormData {
   id_io: number;
   id_jo?: number;

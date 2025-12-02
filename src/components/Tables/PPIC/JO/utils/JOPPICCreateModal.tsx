@@ -448,8 +448,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           status_jo: joDetail.status_jo,
           stok_fg: joDetail.stok_fg || 0,
           qty: joDetail.qty || 0,
-          qty_druk: joDetail.qty_druk || 0, // NEW FIELD
-          qty_lp: joDetail.qty_lp || 0, // NEW FIELD
+          qty_druk: joDetail.qty_druk || 0,
+          qty_lp: joDetail.qty_lp || 0,
           po_qty: joDetail.po_qty || 0,
           spesifikasi: joDetail.spesifikasi || '',
           keterangan_pengerjaan: joDetail.keterangan_pengerjaan || '',
@@ -463,32 +463,59 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           jo_mounting: joDetail.jo_mounting || [],
         });
 
-        if (joDetail.id_io) {
-          await fetchMountingData(joDetail.id_io);
+        // MODIFIED: In edit mode, use jo_mounting data directly instead of fetching io_mounting
+        if (joDetail.jo_mounting && joDetail.jo_mounting.length > 0) {
+          // Convert jo_mounting to mountingData format
+          const mountingsFromJO = joDetail.jo_mounting.map((jm: any) => ({
+            id: jm.id_io_mounting,
+            id_io: joDetail.id_io,
+            nama_mounting: jm.nama_mounting || '',
+            id_kertas: jm.id_kertas,
+            jenis_kertas: jm.nama_kertas,
+            gramature_kertas: jm.gramature_kertas,
+            panjang_plano: jm.panjang_kertas,
+            lebar_plano: jm.lebar_kertas,
+            ukuran_cetak_panjang_1: jm.ukuran_cetak_panjang_1,
+            ukuran_cetak_lebar_1: jm.ukuran_cetak_lebar_1,
+            ukuran_cetak_bagian_1: jm.ukuran_cetak_bagian_1,
+            ukuran_cetak_isi_1: jm.ukuran_cetak_isi_1,
+            ukuran_cetak_panjang_2: jm.ukuran_cetak_panjang_2 || 0,
+            ukuran_cetak_lebar_2: jm.ukuran_cetak_lebar_2 || 0,
+            ukuran_cetak_bagian_2: jm.ukuran_cetak_bagian_2 || 0,
+            ukuran_cetak_isi_2: jm.ukuran_cetak_isi_2 || 0,
+            // Add other necessary fields from your MountingData type
+            warna_depan: 0, // You may need to store these in jo_mounting if needed
+            warna_belakang: 0,
+            nama_coating_depan: '',
+            nama_coating_belakang: '',
+          }));
 
-          if (joDetail.jo_mounting && joDetail.jo_mounting.length > 0) {
-            const selectedJoMounting = joDetail.jo_mounting.find(
-              (jm: any) => jm.is_selected,
-            );
+          setMountingData(mountingsFromJO);
 
-            if (selectedJoMounting) {
-              setSelectedMounting(selectedJoMounting.id_io_mounting);
+          // Find and set the selected mounting
+          const selectedJoMounting = joDetail.jo_mounting.find(
+            (jm: any) => jm.is_selected,
+          );
 
-              setInsheetValues({
-                jumlah_druk: selectedJoMounting.jumlah_druk_cetak || 0,
-                jumlah_insheet_cetak:
-                  selectedJoMounting.jumlah_insheet_cetak || 0,
-                jumlah_insheet_pond:
-                  selectedJoMounting.jumlah_insheet_pond || 0,
-                jumlah_insheet_finishing:
-                  selectedJoMounting.jumlah_insheet_finishing || 0,
-                total_insheet: selectedJoMounting.total_insheet || 0,
-                jumlah_lp: selectedJoMounting.jumlah_kertas || 0,
-              });
-            }
+          if (selectedJoMounting) {
+            setSelectedMounting(selectedJoMounting.id_io_mounting);
+
+            setInsheetValues({
+              jumlah_druk:
+                selectedJoMounting.jumlah_druk_cetak -
+                  selectedJoMounting.total_insheet || 0,
+              jumlah_insheet_cetak:
+                selectedJoMounting.jumlah_insheet_cetak || 0,
+              jumlah_insheet_pond: selectedJoMounting.jumlah_insheet_pond || 0,
+              jumlah_insheet_finishing:
+                selectedJoMounting.jumlah_insheet_finishing || 0,
+              total_insheet: selectedJoMounting.total_insheet || 0,
+              jumlah_lp: selectedJoMounting.jumlah_kertas || 0,
+            });
           }
         }
 
+        // Still fetch customer data for toleransi
         if (joDetail.id_customer) {
           await fetchCustomerData(joDetail.id_customer);
         }
@@ -573,7 +600,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         standar_warna: selectedSO.ada_standar_warna || '',
       }));
 
-      fetchMountingData(selectedSO.id_io);
+      // Only fetch mounting data if not in edit mode
+      if (!editMode) {
+        fetchMountingData(selectedSO.id_io);
+      }
+
       fetchCustomerData(selectedSO.id_customer);
     }
   };
@@ -702,7 +733,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       return;
     }
 
-    // Calculate the displayed jumlah_druk (base + insheet)
     const displayedJumlahDruk =
       insheetValues.jumlah_druk + insheetValues.total_insheet;
 
@@ -710,14 +740,22 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const joMountingData = mountingData.map((mounting) => {
       const isSelected = mounting.id === selectedMounting;
 
+      // Find the original jo_mounting record if in edit mode
+      const originalJOMount =
+        editMode && formData.jo_mounting
+          ? formData.jo_mounting.find(
+              (jm: any) => jm.id_io_mounting === mounting.id,
+            )
+          : null;
+
       if (isSelected) {
-        // For selected mounting, use the calculated values
         return {
-          id: mounting.id,
+          id: originalJOMount?.id, // ✅ Use original jo_mounting.id if exists
           id_jo: formData.id_jo,
-          id_io_mounting: mounting.id,
+          id_io_mounting: mounting.id, // ✅ This is the correct id_io_mounting
           id_kertas: mounting.id_kertas,
           nama_kertas: mounting.jenis_kertas,
+          nama_mounting: mounting.nama_mounting,
           gramature_kertas: mounting.gramature_kertas,
           panjang_kertas: mounting.panjang_plano,
           lebar_kertas: mounting.lebar_plano,
@@ -734,7 +772,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           ukuran_cetak_isi_2: mounting.ukuran_cetak_isi_2 || 0,
           jumlah_cetak_2: 0,
           tambahan_insheet_2: 0,
-          // Store the DISPLAYED jumlah_druk (base + insheet) for all processes
           jumlah_druk_cetak: displayedJumlahDruk,
           jumlah_insheet_cetak: insheetValues.jumlah_insheet_cetak,
           jumlah_druk_pond: displayedJumlahDruk,
@@ -745,11 +782,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           is_selected: true,
         };
       } else {
-        // For non-selected mountings, send minimal data
         return {
-          id: mounting.id,
+          id: originalJOMount?.id, // ✅ Use original jo_mounting.id if exists
           id_jo: formData.id_jo,
-          id_io_mounting: mounting.id,
+          id_io_mounting: mounting.id, // ✅ This is the correct id_io_mounting
+          nama_mounting: mounting.nama_mounting,
           id_kertas: mounting.id_kertas,
           nama_kertas: mounting.jenis_kertas,
           gramature_kertas: mounting.gramature_kertas,
@@ -784,9 +821,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       ...formData,
       jo_mounting: joMountingData,
     };
-
     try {
       setLoading(true);
+      console.log('Submitting JO data:', submitData);
       if (editMode && editJOId) {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${editJOId}`;
         const res: AxiosResponse = await axios.put(url, submitData, {

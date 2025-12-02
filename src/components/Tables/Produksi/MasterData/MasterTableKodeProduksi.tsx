@@ -97,7 +97,7 @@ const MasterTableKodeProduksi: React.FC = () => {
     id_kriteria_frekuensi_produksi: null as number | null,
     id_kriteria_frekuensi_qc: null as number | null,
     id_kriteria_frekuensi_mtc: null as number | null,
-    id_kategori_kendala: 1,
+    id_kategori_kendala: null as number | null,
     target_department: [] as number[],
   });
 
@@ -288,7 +288,7 @@ const MasterTableKodeProduksi: React.FC = () => {
       id_kriteria_frekuensi_produksi: null,
       id_kriteria_frekuensi_qc: null,
       id_kriteria_frekuensi_mtc: null,
-      id_kategori_kendala: 1,
+      id_kategori_kendala: null,
       target_department: [],
     });
   };
@@ -600,11 +600,13 @@ const MasterTableKodeProduksi: React.FC = () => {
                       Kategori Kendala
                     </label>
                     <select
-                      value={formData.id_kategori_kendala}
+                      value={formData.id_kategori_kendala || ''}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          id_kategori_kendala: parseInt(e.target.value),
+                          id_kategori_kendala: e.target.value
+                            ? parseInt(e.target.value)
+                            : null,
                         })
                       }
                       className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"

@@ -349,6 +349,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold">Create Sales Order</h2>
+
           <button
             onClick={() => {
               resetForm();
@@ -360,7 +361,14 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
             ×
           </button>
         </div>
-
+        <div className="px-6 pt-2">
+          <input
+            type="text"
+            value={selectedKalkulasiData?.label || ''}
+            readOnly
+            className="w-full p-2 text-blue-400 font-bold cursor-not-allowed"
+          />
+        </div>
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
