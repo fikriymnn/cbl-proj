@@ -756,7 +756,6 @@ const InputLKH: React.FC = () => {
         show={showFinishModal}
         loading={loading}
         finishData={finishData}
-        sendRequestToSpv={sendRequestToSpv}
         onClose={() => {
           setShowFinishModal(false);
           setFinishData([]);
@@ -764,7 +763,6 @@ const InputLKH: React.FC = () => {
         }}
         onSubmit={handleFinishSubmit}
         onDataChange={handleFinishDataChange}
-        onToggleSendRequest={setSendRequestToSpv}
       />
 
       {/* Loading Overlay */}

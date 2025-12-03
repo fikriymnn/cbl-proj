@@ -5,7 +5,7 @@ interface FinishLKHModalProps {
   show: boolean;
   loading: boolean;
   finishData: LKHProses[];
-  sendRequestToSpv: boolean;
+
   onClose: () => void;
   onSubmit: () => void;
   onDataChange: (
@@ -13,18 +13,16 @@ interface FinishLKHModalProps {
     field: keyof LKHProses,
     value: string | number,
   ) => void;
-  onToggleSendRequest: (value: boolean) => void;
 }
 
 const FinishLKHModal: React.FC<FinishLKHModalProps> = ({
   show,
   loading,
   finishData,
-  sendRequestToSpv,
+
   onClose,
   onSubmit,
   onDataChange,
-  onToggleSendRequest,
 }) => {
   if (!show) return null;
 
@@ -90,26 +88,6 @@ const FinishLKHModal: React.FC<FinishLKHModalProps> = ({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {/* Checkbox for Send Request to SPV */}
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={sendRequestToSpv}
-                onChange={(e) => onToggleSendRequest(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
-              />
-              <span className="ml-2 text-sm font-medium text-gray-900">
-                Kirim Request ke Supervisor
-              </span>
-            </label>
-            <p className="ml-6 text-xs text-gray-600 mt-1">
-              {sendRequestToSpv
-                ? 'Data akan dikirim ke supervisor untuk review'
-                : 'Data akan disimpan tanpa notifikasi ke supervisor'}
-            </p>
-          </div>
-
           {finishData.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Tidak ada data proses selesai</p>

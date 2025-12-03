@@ -224,6 +224,7 @@ import HistoryOKPPage from './pages/Marketing/OKP/HistoryOKPPage';
 import IOMarketingHistoryPage from './pages/Marketing/IO/IOMarketingHistoryPage';
 import JOHistoryPage from './pages/PPIC/JO/JOHistoryPage';
 import MasterSkorMTC from './pages/MasterData/MTC/MasterSkor';
+import LKHAllDataPage from './pages/Produksi/MonitoringLKH/AllDataLKHPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1810,6 +1811,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ApproveSPVPage />
+            </>
+          }
+        />
+        <Route
+          path="/production/alldata-lkh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <LKHAllDataPage />
             </>
           }
         />
