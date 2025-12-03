@@ -714,6 +714,7 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/production/input-lkh'),
       fullAccess('/production/monitoring-lkh'),
       fullAccess('/production/approve-lkh'),
+      fullAccess('/production/list-jo-selesai'),
       fullAccess('/production/breakdown-recap'),
       fullAccess('/production/waste-report'),
       fullAccess('/production/os2'),

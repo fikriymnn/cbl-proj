@@ -567,6 +567,11 @@ export const menuCategories: MenuCategory[] = [
         icon: 'input',
       },
       {
+        name: 'List JO Selesai',
+        path: '/production/list-jo-selesai',
+        icon: 'input',
+      },
+      {
         name: 'Breakdown Recap',
         path: '/production/breakdown-recap',
         icon: 'breakdown',
@@ -731,6 +736,14 @@ export const menuCategories: MenuCategory[] = [
         path: '/desain',
         icon: 'design',
       },
+    ],
+  },
+  {
+    name: 'Delivery Order',
+    icon: QC,
+    items: [
+      { name: 'List DO', path: '/do/list-do', icon: 'capa' },
+      { name: 'Konfirmasi DO', path: '/do/konfirmasi-do', icon: 'design' },
     ],
   },
   {

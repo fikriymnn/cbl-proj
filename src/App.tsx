@@ -225,6 +225,9 @@ import IOMarketingHistoryPage from './pages/Marketing/IO/IOMarketingHistoryPage'
 import JOHistoryPage from './pages/PPIC/JO/JOHistoryPage';
 import MasterSkorMTC from './pages/MasterData/MTC/MasterSkor';
 import LKHAllDataPage from './pages/Produksi/MonitoringLKH/AllDataLKHPage';
+import ListJOSelesaiPage from './pages/Produksi/MonitoringLKH/ListJOSelesai';
+import ListDOPage from './pages/DO/listDOPage';
+import KonfirmasiDOPage from './pages/DO/KonfirmasiDOPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1824,6 +1827,15 @@ function App() {
           }
         />
         <Route
+          path="/production/list-jo-selesai"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ListJOSelesaiPage />
+            </>
+          }
+        />
+        <Route
           path="/production/absensi"
           element={
             <>
@@ -2023,7 +2035,25 @@ function App() {
             </>
           }
         />
-
+        {/* ============== DO ROUTES ============== */}
+        <Route
+          path="/do/list-do"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ListDOPage />
+            </>
+          }
+        />
+        <Route
+          path="/do/konfirmasi-do"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KonfirmasiDOPage />
+            </>
+          }
+        />
         {/* ============== MASTER DATA ROUTES ============== */}
         {/* Maintenance Master */}
         <Route
