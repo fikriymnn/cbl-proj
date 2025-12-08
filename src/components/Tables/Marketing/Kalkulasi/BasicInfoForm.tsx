@@ -335,10 +335,11 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       },
     } as React.ChangeEvent<HTMLSelectElement>);
 
+    // Store the base harga pengiriman for calculation
     onInputChange({
       target: {
         name: 'harga_pengiriman_awal',
-        value: pengiriman?.harga || '',
+        value: pengiriman?.harga?.toString() || '0',
       },
     } as React.ChangeEvent<HTMLSelectElement>);
   };

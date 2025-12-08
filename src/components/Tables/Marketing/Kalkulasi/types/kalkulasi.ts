@@ -66,7 +66,8 @@ export interface KalkulasiDetailItem extends KalkulasiItem {
   kalkulasi_action_user: any[];
   brand_kertas: string;
   finishing_insheet: number;
-  foil: string;
+  harga_pengiriman_awal?: number;
+  foil: any;
   gramature_kertas: number;
   harga_area_pengiriman: number;
   harga_foil_manual: number;
@@ -146,7 +147,7 @@ export interface KalkulasiDetailItem extends KalkulasiItem {
   qty_lipat: number | null;
   qty_packing: number;
   qty_potong: number;
-  spot_foil: string | null;
+  spot_foil: any;
   status_proses: string;
   total_harga_coating: number;
   total_harga_kertas: number;

@@ -606,6 +606,7 @@ export const mockRBACData: RolePermissions[] = [
 
       // Master Data - HR
       fullAccess('/master/hr/shift'),
+      fullAccess('/master/hr/kendaraan'),
       fullAccess('/master/hr/sp-teguran'),
       createPermission('/master/hr/setting', true, false, true, false),
       createPermission('/master/hr/user', true, true, true, false),

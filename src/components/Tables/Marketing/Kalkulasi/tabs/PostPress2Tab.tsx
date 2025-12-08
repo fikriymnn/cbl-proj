@@ -96,34 +96,6 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     return 'text-blue-600';
   };
 
-  // Sync selected values when formData changes
-  useEffect(() => {
-    if (formData.id_lem && formData.id_lem !== selectedLem) {
-      setSelectedLem(formData.id_lem.toString());
-    }
-    if (
-      formData.id_mesin_finishing &&
-      formData.id_mesin_finishing !== selectedMesinFinishing
-    ) {
-      setSelectedMesinFinishing(formData.id_mesin_finishing.toString());
-    }
-    if (
-      formData.jenis_packing &&
-      formData.jenis_packing !== selectedJenisPacking
-    ) {
-      setSelectedJenisPacking(formData.jenis_packing);
-    }
-    if (formData.id_packing && formData.id_packing !== selectedNamaPacking) {
-      setSelectedNamaPacking(formData.id_packing.toString());
-    }
-    if (formData.foil && formData.foil !== selectedFoil) {
-      setSelectedFoil(formData.foil);
-    }
-    if (formData.spot_foil && formData.spot_foil !== selectedSpotFoil) {
-      setSelectedSpotFoil(formData.spot_foil);
-    }
-  }, [formData]);
-
   // Function to create synthetic events for updating parent formData
   const createSyntheticEvent = (name: string, value: string): void => {
     const syntheticEvent = {
@@ -140,7 +112,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     fieldName: string,
     defaultValue: string = '',
   ): string => {
-    return (formData as any)[fieldName] || defaultValue;
+    return (formData as any)[fieldName]?.toString() || defaultValue;
   };
 
   // Helper functions to handle SearchableSelect changes
@@ -324,15 +296,45 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     }
   };
 
+  // Fetch initial data
   useEffect(() => {
     fetchLemOptions();
     fetchMesinFinishing();
   }, []);
 
+  // Initialize selected values from formData when component mounts or data loads
+  useEffect(() => {
+    if (formData.id_lem) {
+      setSelectedLem(String(formData.id_lem));
+    }
+    if (formData.id_mesin_finishing) {
+      setSelectedMesinFinishing(String(formData.id_mesin_finishing));
+    }
+    if (formData.jenis_packing) {
+      setSelectedJenisPacking(formData.jenis_packing);
+    }
+    if (formData.id_packing) {
+      setSelectedNamaPacking(String(formData.id_packing));
+    }
+    if (formData.foil) {
+      setSelectedFoil(formData.foil);
+    }
+    if (formData.spot_foil) {
+      setSelectedSpotFoil(formData.spot_foil);
+    }
+  }, [
+    formData.id_lem,
+    formData.id_mesin_finishing,
+    formData.jenis_packing,
+    formData.id_packing,
+    formData.foil,
+    formData.spot_foil,
+  ]);
+
   // Handle jenis_packing changes
   useEffect(() => {
     const jenisPacking = getCurrentValue('jenis_packing');
-    if (jenisPacking) {
+    if (jenisPacking && jenisPacking !== '-') {
       fetchPackingOptions(jenisPacking);
     } else {
       setPackingOptions([]);
@@ -341,15 +343,16 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
         createSyntheticEvent('harga_packing', '0');
       }
     }
-  }, [getCurrentValue('jenis_packing')]);
+  }, [formData.jenis_packing]);
 
   // Calculate harga_packing
   useEffect(() => {
     if (isComponentReadOnly) return;
 
-    if (getCurrentValue('id_packing') && packingOptions.length > 0) {
+    const idPacking = getCurrentValue('id_packing');
+    if (idPacking && packingOptions.length > 0) {
       const selectedPacking = packingOptions.find(
-        (option) => String(option.id) === String(getCurrentValue('id_packing')),
+        (option) => String(option.id) === String(idPacking),
       );
 
       if (selectedPacking) {
@@ -357,12 +360,12 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
         const hargaPacking = selectedPacking.harga * qtyPacking;
         createSyntheticEvent('harga_packing', hargaPacking.toString());
       }
-    } else {
+    } else if (!idPacking) {
       createSyntheticEvent('harga_packing', '0');
     }
   }, [
-    getCurrentValue('id_packing'),
-    getCurrentValue('qty_packing'),
+    formData.id_packing,
+    formData.qty_packing,
     packingOptions,
     isComponentReadOnly,
   ]);
@@ -371,9 +374,10 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   useEffect(() => {
     if (isComponentReadOnly) return;
 
-    if (getCurrentValue('id_lem') && lemOptions.length > 0) {
+    const idLem = getCurrentValue('id_lem');
+    if (idLem && lemOptions.length > 0) {
       const selectedLem = lemOptions.find(
-        (option) => String(option.id) === String(getCurrentValue('id_lem')),
+        (option) => String(option.id) === String(idLem),
       );
 
       if (selectedLem) {
@@ -410,12 +414,13 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
       createSyntheticEvent('jumlah_harga_lem', '0.00');
     }
   }, [
-    getCurrentValue('id_lem'),
+    formData.id_lem,
     formData.ukuran_jadi_tinggi,
     formData.qty_kalkulasi,
     lemOptions,
     isComponentReadOnly,
   ]);
+
   // Calculate No Packaging and update formData
   useEffect(() => {
     if (isComponentReadOnly) return;
@@ -436,8 +441,8 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
       createSyntheticEvent('no_packaging', '0.00');
     }
   }, [
-    getCurrentValue('panjang_packaging'),
-    getCurrentValue('lebar_packaging'),
+    formData.panjang_packaging,
+    formData.lebar_packaging,
     formData.qty_kalkulasi,
     isComponentReadOnly,
   ]);
@@ -449,7 +454,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     const noPackaging = parseFloat(getCurrentValue('no_packaging') || '0');
     const hargaPackaging = noPackaging * 1000;
     createSyntheticEvent('harga_packaging', hargaPackaging.toString());
-  }, [getCurrentValue('no_packaging'), isComponentReadOnly]);
+  }, [formData.no_packaging, isComponentReadOnly]);
 
   // Calculate Harga Pengiriman automatically and update formData
   useEffect(() => {
@@ -468,7 +473,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     }
   }, [
     formData.harga_pengiriman_awal,
-    getCurrentValue('jumlah_kirim'),
+    formData.jumlah_kirim,
     isComponentReadOnly,
   ]);
 
@@ -513,13 +518,14 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     const qtyKalkulasi = parseFloat(formData.qty_kalkulasi || '0');
 
     return {
-      ukuranJadiTinggiMM, // Changed from ukuranJadiTinggiCm
+      ukuranJadiTinggiMM,
       lemHarga: selectedLem?.harga || 0,
-      lemBatasHarga: selectedLem?.batas_harga || 0, // Added
-      lemNamaBarang: selectedLem?.nama_barang || '', // Added
+      lemBatasHarga: selectedLem?.batas_harga || 0,
+      lemNamaBarang: selectedLem?.nama_barang || '',
       qtyKalkulasi,
     };
   };
+
   // Get packaging formula values for display
   const getPackagingFormulaDisplay = () => {
     const panjangPackaging = parseFloat(
@@ -561,7 +567,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   // Format currency values for display in manual price inputs
   const getFormattedCurrencyValue = (fieldName: string): string => {
     const value = getCurrentValue(fieldName);
-    if (!value) return '';
+    if (!value || value === '0') return '';
     return formatCurrency(value);
   };
 
@@ -765,7 +771,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
             </label>
             <SearchableSelect
               options={getFoilOptions()}
-              value={selectedFoil}
+              value={selectedFoil || '-'}
               onChange={handleFoilChange}
               placeholder="Select Foil"
               className="w-full"
@@ -780,7 +786,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
             </label>
             <SearchableSelect
               options={getFoilOptions()}
-              value={selectedSpotFoil}
+              value={selectedSpotFoil || '-'}
               onChange={handleSpotFoilChange}
               placeholder="Select Spot Foil"
               className="w-full"
@@ -807,7 +813,6 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               readOnly={isComponentReadOnly}
             />
           </div>
-
           {/* Harga Spot Foil Manual */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
@@ -862,7 +867,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
             </label>
             <SearchableSelect
               options={getJenisPackingOptions()}
-              value={selectedJenisPacking}
+              value={selectedJenisPacking || '-'}
               onChange={handleJenisPackingChange}
               placeholder="Select Jenis Packing"
               className="w-full"
@@ -882,12 +887,17 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
               placeholder={
                 loadingPacking
                   ? 'Loading...'
-                  : getCurrentValue('jenis_packing')
+                  : getCurrentValue('jenis_packing') &&
+                    getCurrentValue('jenis_packing') !== '-'
                   ? 'Select Nama Packing'
                   : 'Select Jenis Packing first'
               }
               className="w-full"
-              disabled={isComponentReadOnly}
+              disabled={
+                isComponentReadOnly ||
+                !getCurrentValue('jenis_packing') ||
+                getCurrentValue('jenis_packing') === '-'
+              }
             />
           </div>
 
@@ -1116,5 +1126,4 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
     </div>
   );
 };
-
 export default PostPress2Tab;

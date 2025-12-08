@@ -228,6 +228,7 @@ import LKHAllDataPage from './pages/Produksi/MonitoringLKH/AllDataLKHPage';
 import ListJOSelesaiPage from './pages/Produksi/MonitoringLKH/ListJOSelesai';
 import ListDOPage from './pages/DO/listDOPage';
 import KonfirmasiDOPage from './pages/DO/KonfirmasiDOPage';
+import MasterKendaraanHR from './pages/HR/MasterDataHR/MasterKendaraanHR';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2396,6 +2397,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <MasterGradeHR />
+            </>
+          }
+        />
+        <Route
+          path="/master/hr/kendaraan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MasterKendaraanHR />
             </>
           }
         />

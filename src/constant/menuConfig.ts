@@ -880,6 +880,11 @@ export const menuCategories: MenuCategory[] = [
             icon: 'user',
           },
           {
+            name: 'Kendaraan',
+            path: '/master/hr/kendaraan',
+            icon: 'vehicle',
+          },
+          {
             name: 'Department',
             path: '/master/hr/department',
             icon: 'department',

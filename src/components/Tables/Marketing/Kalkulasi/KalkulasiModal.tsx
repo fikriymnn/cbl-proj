@@ -23,6 +23,7 @@ const initialFormData: KalkulasiFormData = {
   status_kalkulasi: 'baru',
   id_customer: 0,
   id_marketing: 0,
+
   id_produk: 0,
   id_area_pengiriman: 0,
   qty_kalkulasi: '0',
@@ -53,6 +54,7 @@ const initialFormData: KalkulasiFormData = {
   total_harga: '0',
   harga_satuan: '0',
   total_harga_satuan_customer: '0',
+  harga_pengiriman_awal: '0',
   keterangan_harga: '',
   keterangan_kerja: '',
   warna_depan: '0',
@@ -70,7 +72,6 @@ const initialFormData: KalkulasiFormData = {
   qty_list: [{ qty: 0, is_selected: true }],
 };
 
-// Helper function to convert KalkulasiDetailItem to KalkulasiFormData
 const convertDetailToFormData = (
   detail: KalkulasiDetailItem,
 ): KalkulasiFormData => {
@@ -109,7 +110,8 @@ const convertDetailToFormData = (
     nama_produk: detail.nama_produk,
     print_insheet: detail.print_insheet?.toString(),
     pons_insheet: detail.pons_insheet?.toString(),
-    finishing_insheet: detail.finishing_insheet?.toString(),
+    finishing_insheet: detail.finishing_insheet?.toString() || '0',
+
     // Kertas
     id_kertas: detail.id_kertas,
     jenis_kertas: detail.jenis_kertas,
@@ -120,10 +122,12 @@ const convertDetailToFormData = (
     apki: detail.persentase_apki_kertas,
     total_kertas: detail.total_kertas,
     total_harga_kertas: detail.total_harga_kertas,
+
     // Cetak
     id_jenis_mesin_cetak: detail.id_jenis_mesin_cetak,
     jumlah_harga_cetak: detail.jumlah_harga_cetak,
     harga_plate: detail.harga_plate.toString(),
+
     // Coating
     id_coating_depan: detail.id_coating_depan,
     id_coating_belakang: detail.id_coating_belakang,
@@ -132,6 +136,7 @@ const convertDetailToFormData = (
     jumlah_harga_coating_depan: detail.jumlah_harga_coating_depan,
     jumlah_harga_coating_belakang: detail.jumlah_harga_coating_belakang,
     total_harga_coating: detail.total_harga_coating,
+
     // PostPress
     id_jenis_pons: detail.id_jenis_pons?.toString(),
     id_mesin_pons: detail.id_mesin_pons?.toString(),
@@ -140,35 +145,46 @@ const convertDetailToFormData = (
     ongkos_pons_qty: detail.ongkos_pons_qty?.toString(),
     harga_satuan_ongkos_pons: detail.harga_satuan_ongkos_pons?.toString(),
     total_harga_ongkos_pons: detail.total_harga_ongkos_pons?.toString(),
+
     // Lipat
     lipat: detail.lipat,
     id_mesin_lipat: detail.id_mesin_lipat?.toString(),
     qty_lipat: detail.qty_lipat?.toString(),
-    harga_lipat: detail.harga_lipat?.toString(),
+    harga_lipat: detail.harga_lipat?.toString() || '0',
+
     // Potong
     potong_jadi: detail.potong_jadi,
     id_mesin_potong: detail.id_mesin_potong?.toString(),
     qty_potong: detail.qty_potong?.toString(),
-    harga_potong_jadi: detail.harga_potong_jadi?.toString(),
-    // PostPress2
-    id_lem: detail.id_lem?.toString(),
-    jumlah_harga_lem: detail.jumlah_harga_lem?.toString(),
-    id_mesin_finishing: detail.id_mesin_finishing?.toString(),
-    foil: detail.foil,
-    spot_foil: detail.spot_foil || '',
-    harga_foil_manual: detail.harga_foil_manual?.toString(),
-    harga_spot_foil_manual: detail.harga_spot_foil_manual?.toString(),
-    harga_polimer_manual: detail.harga_polimer_manual?.toString(),
-    // Packaging
-    panjang_packaging: detail.panjang_packaging?.toString(),
-    lebar_packaging: detail.lebar_packaging?.toString(),
-    no_packaging: detail.no_packaging,
-    jumlah_kirim: detail.jumlah_kirim?.toString(),
-    harga_packaging: detail.harga_packaging?.toString(),
-    harga_pengiriman: detail.harga_pengiriman?.toString(),
-    id_packing: detail.id_packing?.toString(),
-    qty_packing: detail.qty_packing?.toString(),
-    harga_packing: detail.harga_packing?.toString(),
+    harga_potong_jadi: detail.harga_potong_jadi?.toString() || '0',
+
+    // PostPress2 - Finishing & Lem
+    id_lem: detail.id_lem?.toString() || '',
+    jumlah_harga_lem: detail.jumlah_harga_lem?.toString() || '0',
+    id_mesin_finishing: detail.id_mesin_finishing?.toString() || '',
+
+    // PostPress2 - Foil
+    foil: detail.foil || null,
+    spot_foil: detail.spot_foil || null,
+    harga_foil_manual: detail.harga_foil_manual?.toString() || '0',
+    harga_spot_foil_manual: detail.harga_spot_foil_manual?.toString() || '0',
+    harga_polimer_manual: detail.harga_polimer_manual?.toString() || '0',
+
+    // PostPress2 - Packing
+    jenis_packing: detail.jenis_packing || '',
+    id_packing: detail.id_packing?.toString() || '',
+    qty_packing: detail.qty_packing?.toString() || '0',
+    harga_packing: detail.harga_packing?.toString() || '0',
+    harga_pengiriman_awal: detail.harga_area_pengiriman?.toString() || '0',
+
+    // PostPress2 - Packaging
+    panjang_packaging: detail.panjang_packaging?.toString() || '',
+    lebar_packaging: detail.lebar_packaging?.toString() || '',
+    no_packaging: detail.no_packaging || '0.00',
+    jumlah_kirim: detail.jumlah_kirim?.toString() || '0',
+    harga_packaging: detail.harga_packaging?.toString() || '0',
+    harga_pengiriman: detail.harga_pengiriman?.toString() || '0',
+
     // Profit
     harga_produksi: detail.harga_produksi.toString(),
     profit: detail.profit.toString(),
@@ -183,6 +199,7 @@ const convertDetailToFormData = (
     total_harga_satuan_customer: detail.total_harga_satuan_customer.toString(),
     keterangan_harga: detail.keterangan_harga || '',
     keterangan_kerja: detail.keterangan_kerja || '',
+
     // Lain-lain
     lain_lain:
       detail.lain_lain?.map((item) => ({
@@ -192,6 +209,7 @@ const convertDetailToFormData = (
     total_harga_lain_lain:
       detail.lain_lain?.reduce((sum, item) => sum + item.harga, 0).toString() ||
       '0',
+
     // Type
     tipe_kalkulasi:
       (detail.tipe_kalkulasi as 'normal' | 'multi' | 'manual') || 'normal',
@@ -413,6 +431,9 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
         tipe_kalkulasi: formData.tipe_kalkulasi,
         label: formData.label || '',
         qty_list: formData.qty_list || [],
+        harga_pengiriman_awal: Number(formData.harga_pengiriman_awal || 0),
+        harga_pengiriman: Number(formData.harga_pengiriman || 0),
+        jumlah_kirim: Number(formData.jumlah_kirim || 0),
       };
 
       console.log(
