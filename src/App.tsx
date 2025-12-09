@@ -229,6 +229,7 @@ import ListJOSelesaiPage from './pages/Produksi/MonitoringLKH/ListJOSelesai';
 import ListDOPage from './pages/DO/listDOPage';
 import KonfirmasiDOPage from './pages/DO/KonfirmasiDOPage';
 import MasterKendaraanHR from './pages/HR/MasterDataHR/MasterKendaraanHR';
+import DepositPage from './pages/Accounting/DepositPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2055,6 +2056,27 @@ function App() {
             </>
           }
         />
+        {/* ============== Accounting ROUTES ============== */}
+        <Route
+          path="/accounting/list-outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <DepositPage />
+            </>
+          }
+        />
+
+        <Route
+          path="/accounting/deposit"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <DepositPage />
+            </>
+          }
+        />
+
         {/* ============== MASTER DATA ROUTES ============== */}
         {/* Maintenance Master */}
         <Route

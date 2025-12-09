@@ -747,6 +747,12 @@ export const menuCategories: MenuCategory[] = [
     ],
   },
   {
+    name: 'Accounting',
+    icon: QC,
+    items: [{ name: 'Deposit', path: '/accounting/deposit', icon: 'deposit' }],
+  },
+
+  {
     name: 'Master Data',
     icon: MasterDataIcon,
     items: [
@@ -1002,6 +1008,7 @@ export const menuCategories: MenuCategory[] = [
           },
         ],
       },
+
       {
         name: 'General',
         path: '#',
