@@ -230,6 +230,8 @@ import ListDOPage from './pages/DO/listDOPage';
 import KonfirmasiDOPage from './pages/DO/KonfirmasiDOPage';
 import MasterKendaraanHR from './pages/HR/MasterDataHR/MasterKendaraanHR';
 import DepositPage from './pages/Accounting/DepositPage';
+import DepositApprovalPage from './pages/Accounting/DepositApprovalePage';
+import DepositApprovalHistoryPage from './pages/Accounting/DepositApprovalHistory';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2076,7 +2078,33 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/accounting/approval/deposit"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <DepositApprovalPage />
+            </>
+          }
+        />
+        <Route
+          path="/accounting/approval/deposit"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <DepositApprovalPage />
+            </>
+          }
+        />
+        <Route
+          path="/accounting/approval/deposit-history"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <DepositApprovalHistoryPage />
+            </>
+          }
+        />
         {/* ============== MASTER DATA ROUTES ============== */}
         {/* Maintenance Master */}
         <Route

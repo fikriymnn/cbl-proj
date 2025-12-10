@@ -749,7 +749,26 @@ export const menuCategories: MenuCategory[] = [
   {
     name: 'Accounting',
     icon: QC,
-    items: [{ name: 'Deposit', path: '/accounting/deposit', icon: 'deposit' }],
+    items: [
+      { name: 'Deposit', path: '/accounting/deposit', icon: 'deposit' },
+      {
+        name: ' Approval',
+        path: '#',
+        icon: 'approval',
+        children: [
+          {
+            name: 'Approval Deposit',
+            path: '/accounting/approval/deposit',
+            icon: 'approval',
+          },
+          {
+            name: 'History Approval Deposit',
+            path: '/accounting/approval/deposit-history',
+            icon: 'history',
+          },
+        ],
+      },
+    ],
   },
 
   {

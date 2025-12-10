@@ -1,7 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
-import DepositForm from './DepositForm';
+
+interface User {
+  id: number;
+  nama: string;
+  email: string;
+}
 
 interface Customer {
   id: number;
@@ -44,7 +49,9 @@ interface DepositItem {
   createdAt: string;
   updatedAt: string;
   customer?: Customer;
-  note_reject?: string;
+  user_create?: User;
+  user_approve?: User;
+  user_reject?: User;
 }
 
 interface DepositResponse {
@@ -54,96 +61,72 @@ interface DepositResponse {
   total_page?: number;
 }
 
-const Deposit: React.FC = () => {
+interface DepositDetailResponse {
+  data: DepositItem;
+  status: number;
+  success: boolean;
+}
+
+const DepositApprovalHistory: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [depositData, setDepositData] = useState<DepositItem[]>([]);
-  const [showFormPopup, setShowFormPopup] = useState<boolean>(false);
   const [selectedDeposit, setSelectedDeposit] = useState<DepositItem | null>(
     null,
   );
-  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [limit, setLimit] = useState<number>(10);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchDepositData();
-  }, [page, searchTerm, limit]);
+  }, [page, searchTerm, limit, statusFilter]);
 
   const fetchDepositData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/deposit`;
     try {
       setLoading(true);
 
+      const params: any = {
+        page: page,
+        limit: limit,
+        search: searchTerm,
+        status_proses: 'done',
+      };
+
       const res: AxiosResponse<DepositResponse> = await axios.get(url, {
-        params: {
-          page: page,
-          limit: limit,
-          search: searchTerm,
-          status: 'draft',
-        },
+        params: params,
         withCredentials: true,
       });
 
-      console.log('Fetched Deposit data:', res.data);
+      console.log('Fetched Deposit history data:', res.data);
 
       setDepositData(res.data.data);
       setTotalPages(res.data.total_page || 1);
     } catch (error) {
-      console.error('Error fetching Deposit data:', error);
+      console.error('Error fetching Deposit history data:', error);
       setDepositData([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateNew = () => {
-    setSelectedDeposit(null);
-    setIsEditMode(false);
-    setShowFormPopup(true);
-  };
+  const fetchDepositDetail = async (depositId: number): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/deposit/${depositId}`;
+    try {
+      const res: AxiosResponse<DepositDetailResponse> = await axios.get(url, {
+        withCredentials: true,
+      });
 
-  const handleEdit = (deposit: DepositItem) => {
-    setSelectedDeposit(deposit);
-    setIsEditMode(true);
-    setShowFormPopup(true);
-  };
-
-  const handleSendRequest = async (depositId: number) => {
-    if (!depositId) return;
-
-    const url = `${import.meta.env.VITE_API_LINK}/deposit/request/${depositId}`;
-    if (window.confirm('Apakah Anda yakin ingin Request Deposit Ini?')) {
-      try {
-        const res = await axios.put(
-          url,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
-
-        if (res.data.success) {
-          alert('Request Deposit berhasil dikirim');
-          fetchDepositData();
-        }
-      } catch (error: any) {
-        console.error('Error sending request:', error);
-        alert(error.response?.data?.message || 'Failed to send request');
-      }
+      console.log('Fetched Deposit detail:', res.data);
+      setSelectedDeposit(res.data.data);
+      setShowDetailModal(true);
+    } catch (error) {
+      console.error('Error fetching Deposit detail:', error);
+      alert('Failed to fetch deposit details');
     }
-  };
-
-  const handleClosePopup = () => {
-    setShowFormPopup(false);
-    setSelectedDeposit(null);
-    setIsEditMode(false);
-  };
-
-  const handleFormSuccess = () => {
-    fetchDepositData();
-    handleClosePopup();
   };
 
   const handleLimitChange = (newLimit: number): void => {
@@ -158,6 +141,17 @@ const Deposit: React.FC = () => {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${day}-${month}-${year}`;
+  };
+
+  const formatDateTime = (dateString: string): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}-${month}-${year} ${hours}:${minutes}`;
   };
 
   const formatCurrency = (amount: number): string => {
@@ -220,26 +214,19 @@ const Deposit: React.FC = () => {
             </svg>
           </div>
 
-          {/* Create Button */}
-          <button
-            onClick={handleCreateNew}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap flex items-center gap-2"
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+            className="px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Create Deposit
-          </button>
+            <option value="all">All Status</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
         </div>
       </div>
 
@@ -298,10 +285,10 @@ const Deposit: React.FC = () => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      <p>No deposit data available</p>
+                      <p>No approval history available</p>
                     </div>
                   </td>
                 </tr>
@@ -325,29 +312,17 @@ const Deposit: React.FC = () => {
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900 font-semibold">
                       {formatCurrency(item.nominal)}
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-xs flex flex-col justify-center">
+                    <td className="px-3 py-3 whitespace-nowrap text-xs">
                       {getStatusBadge(item.status)}
-                      <span className="text-red-600">
-                        {item.note_reject || ''}
-                      </span>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="px-3 py-1.5 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors text-xs font-medium"
-                          title="Edit"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleSendRequest(item.id)}
-                          className="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs font-medium"
-                          title="Send Request"
-                        >
-                          Send Request
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => fetchDepositDetail(item.id)}
+                        className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs font-medium"
+                        title="Detail"
+                      >
+                        Detail
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -411,10 +386,10 @@ const Deposit: React.FC = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p>No deposit data available</p>
+            <p>No approval history available</p>
           </div>
         ) : (
           depositData.map((item) => (
@@ -458,49 +433,12 @@ const Deposit: React.FC = () => {
                   </div>
                 </div>
 
-                {item.keterangan && (
-                  <div>
-                    <span className="text-gray-500 text-xs font-medium">
-                      Keterangan:
-                    </span>
-                    <div className="text-gray-900 text-xs">
-                      {item.keterangan}
-                    </div>
-                  </div>
-                )}
-
-                {item.billing_address && (
-                  <div>
-                    <span className="text-gray-500 text-xs font-medium">
-                      Billing Address:
-                    </span>
-                    <div className="text-gray-900 text-xs">
-                      {item.billing_address}
-                    </div>
-                  </div>
-                )}
-
-                {item.note && (
-                  <div>
-                    <span className="text-gray-500 text-xs font-medium">
-                      Note:
-                    </span>
-                    <div className="text-gray-900 text-xs">{item.note}</div>
-                  </div>
-                )}
-
-                <div className="pt-2 flex gap-2">
+                <div className="pt-2">
                   <button
-                    onClick={() => handleEdit(item)}
-                    className="flex-1 px-3 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors text-sm font-medium"
+                    onClick={() => fetchDepositDetail(item.id)}
+                    className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleSendRequest(item.id)}
-                    className="flex-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-medium"
-                  >
-                    Send Request
+                    Detail
                   </button>
                 </div>
               </div>
@@ -545,17 +483,246 @@ const Deposit: React.FC = () => {
         )}
       </div>
 
-      {/* Form Popup */}
-      {showFormPopup && (
-        <DepositForm
-          depositId={selectedDeposit?.id}
-          isEditMode={isEditMode}
-          onClose={handleClosePopup}
-          onSuccess={handleFormSuccess}
-        />
+      {/* Detail Modal */}
+      {showDetailModal && selectedDeposit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">
+                Detail Deposit
+              </h2>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Basic Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    No Deposit
+                  </label>
+                  <p className="text-base text-gray-900 font-semibold">
+                    {selectedDeposit.no_deposit}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Status
+                  </label>
+                  <div className="mt-1">
+                    {getStatusBadge(selectedDeposit.status)}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Customer
+                </label>
+                <p className="text-base text-gray-900">
+                  {selectedDeposit.customer?.nama_customer || '-'}
+                </p>
+                {selectedDeposit.customer?.email && (
+                  <p className="text-sm text-gray-500">
+                    {selectedDeposit.customer.email}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Tanggal Faktur
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {formatDate(selectedDeposit.tgl_faktur)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Cara Bayar
+                  </label>
+                  <p className="text-base text-gray-900">
+                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                      {selectedDeposit.cara_bayar}
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Nominal
+                </label>
+                <p className="text-xl text-gray-900 font-bold">
+                  {formatCurrency(selectedDeposit.nominal)}
+                </p>
+              </div>
+
+              {selectedDeposit.billing_address && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Billing Address
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.billing_address}
+                  </p>
+                </div>
+              )}
+
+              {selectedDeposit.keterangan && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Keterangan
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.keterangan}
+                  </p>
+                </div>
+              )}
+
+              {selectedDeposit.note && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Note
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.note}
+                  </p>
+                </div>
+              )}
+
+              {/* User Information Section */}
+              <div className="border-t pt-4 space-y-3">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Activity History
+                </h3>
+
+                {/* Created By */}
+                {selectedDeposit.user_create && (
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <label className="text-sm font-medium text-gray-700">
+                      Dibuat Oleh
+                    </label>
+                    <p className="text-base text-gray-900 font-medium">
+                      {selectedDeposit.user_create.nama}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {selectedDeposit.user_create.email}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formatDateTime(selectedDeposit.createdAt)}
+                    </p>
+                  </div>
+                )}
+
+                {/* Approved By */}
+                {selectedDeposit.user_approve &&
+                  selectedDeposit.status === 'approved' && (
+                    <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                      <label className="text-sm font-medium text-green-700 flex items-center gap-2">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        Di-approve Oleh
+                      </label>
+                      <p className="text-base text-green-900 font-medium">
+                        {selectedDeposit.user_approve.nama}
+                      </p>
+                      <p className="text-sm text-green-700">
+                        {selectedDeposit.user_approve.email}
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        {formatDateTime(selectedDeposit.updatedAt)}
+                      </p>
+                    </div>
+                  )}
+
+                {/* Rejected By */}
+                {selectedDeposit.user_reject &&
+                  selectedDeposit.status === 'rejected' && (
+                    <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                      <label className="text-sm font-medium text-red-700 flex items-center gap-2">
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        Di-reject Oleh
+                      </label>
+                      <p className="text-base text-red-900 font-medium">
+                        {selectedDeposit.user_reject.nama}
+                      </p>
+                      <p className="text-sm text-red-700">
+                        {selectedDeposit.user_reject.email}
+                      </p>
+                      <p className="text-xs text-red-600 mt-1">
+                        {formatDateTime(selectedDeposit.updatedAt)}
+                      </p>
+                      {selectedDeposit.note && (
+                        <div className="mt-2 pt-2 border-t border-red-200">
+                          <p className="text-xs text-red-700 font-medium">
+                            Alasan Reject:
+                          </p>
+                          <p className="text-sm text-red-900">
+                            {selectedDeposit.note}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+              </div>
+
+              {/* Close Button */}
+              <div className="border-t pt-4">
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 };
 
-export default Deposit;
+export default DepositApprovalHistory;
