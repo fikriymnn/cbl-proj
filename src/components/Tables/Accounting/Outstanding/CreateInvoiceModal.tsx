@@ -311,6 +311,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         diskon: totals.diskon,
         ppn: totals.totalPajak,
         total: totals.balanceDue,
+        balance_due: totals.balanceDue,
         dp: dp,
         note: catatan,
         is_show_dpp: isShowDPP,

@@ -714,6 +714,28 @@ export const menuCategories: MenuCategory[] = [
           },
         ],
       },
+      {
+        name: 'Perubahan Invoice',
+        path: '#',
+        icon: 'so',
+        children: [
+          {
+            name: 'Create',
+            path: '/marketing/perubahan/create-perubahan',
+            icon: 'create',
+          },
+          {
+            name: 'List',
+            path: '/marketing/perubahan/list-perubahan',
+            icon: 'list',
+          },
+          {
+            name: 'History',
+            path: '/marketing/perubahan/history-perubahan',
+            icon: 'history',
+          },
+        ],
+      },
     ],
   },
   {
@@ -753,6 +775,26 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'List Outstanding',
         path: '/accounting/list-outstanding',
+        icon: 'deposit',
+      },
+      {
+        name: 'List Request Invoice',
+        path: '/accounting/list-request-invoice',
+        icon: 'deposit',
+      },
+      {
+        name: 'List Approve Invoice',
+        path: '/accounting/list-approval-invoice',
+        icon: 'deposit',
+      },
+      {
+        name: 'List Approve Perubahan',
+        path: '/accounting/list-approval-perubahan',
+        icon: 'deposit',
+      },
+      {
+        name: 'List All Invoice',
+        path: '/accounting/list-invoice',
         icon: 'deposit',
       },
       { name: 'List Retur', path: '/accounting/list-retur', icon: 'deposit' },

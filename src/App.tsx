@@ -233,6 +233,14 @@ import DepositPage from './pages/Accounting/DepositPage';
 import DepositApprovalPage from './pages/Accounting/DepositApprovalePage';
 import DepositApprovalHistoryPage from './pages/Accounting/DepositApprovalHistory';
 import ListOutstandingPage from './pages/Accounting/ListOutstandingPage';
+import ListInvoicePage from './pages/Accounting/ListInvoicePage';
+import ListApprovalInvoicePage from './pages/Accounting/ListInvoicePage';
+import ListInvoiceApprovePage from './pages/Accounting/ListInvoiceApprovePage';
+import ListAllInvoicePage from './pages/Accounting/ListAllInvoicePage';
+import ListReturPage from './pages/Accounting/ListReturPage';
+import CreatePerubahanPage from './pages/Marketing/CreatePerubahanPage';
+import ListPerubahanPage from './pages/Marketing/ListPerubahanPage';
+import ListApprovalPerubahanPage from './pages/Accounting/ListApprovalPerubahanPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2017,11 +2025,29 @@ function App() {
           }
         />
         <Route
-          path="/marketing/create-perubahan"
+          path="/marketing/perubahan/create-perubahan"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <DepositPage />
+              <CreatePerubahanPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/perubahan/list-perubahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ListPerubahanPage />
+            </>
+          }
+        />
+        <Route
+          path="/marketing/perubahan/history-perubahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <CreatePerubahanPage />
             </>
           }
         />
@@ -2078,11 +2104,47 @@ function App() {
           }
         />
         <Route
+          path="/accounting/list-request-invoice"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ListApprovalInvoicePage />
+            </>
+          }
+        />
+        <Route
+          path="/accounting/list-approval-invoice"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ListInvoiceApprovePage />
+            </>
+          }
+        />
+        <Route
+          path="/accounting/list-approval-perubahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ListApprovalPerubahanPage />
+            </>
+          }
+        />
+        <Route
+          path="/accounting/list-invoice"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ListAllInvoicePage />
+            </>
+          }
+        />
+        <Route
           path="/accounting/list-retur"
           element={
             <>
               <PageTitle title="PT CBL" />
-              <DepositPage />
+              <ListReturPage />
             </>
           }
         />
