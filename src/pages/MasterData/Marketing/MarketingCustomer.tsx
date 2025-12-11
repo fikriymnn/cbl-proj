@@ -5,7 +5,7 @@ import { Stack, Pagination } from '@mui/material';
 import SearchableSelect from './SearchableSelect'; // Adjust path as needed
 
 interface Gudang {
-  id?: number; // Updated to include optional id
+  id?: number | null; // Updated to include optional id
   alamat_gudang: string;
   telepon_gudang: string;
 }
@@ -174,6 +174,7 @@ function MasterCustomer() {
           };
         } else {
           return {
+            id: g.id,
             alamat_gudang: g.alamat_gudang,
             telepon_gudang: g.telepon_gudang,
           };
@@ -204,11 +205,11 @@ function MasterCustomer() {
         gudang:
           item.gudang && item.gudang.length > 0
             ? item.gudang.map((g) => ({
-                id: g.id, // Include the ID when editing
+                id: g.id || null,
                 alamat_gudang: g.alamat_gudang || '',
                 telepon_gudang: g.telepon_gudang || '',
               }))
-            : [{ alamat_gudang: '', telepon_gudang: '' }],
+            : [{ id: null, alamat_gudang: '', telepon_gudang: '' }],
       });
     } else {
       setEditingId(null);
@@ -520,7 +521,6 @@ function MasterCustomer() {
                         }))
                       }
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                      required
                     />
                   </div>
 
@@ -631,7 +631,6 @@ function MasterCustomer() {
                         }))
                       }
                       placeholder="Select Marketing"
-                      required
                     />
                   </div>
 
@@ -657,7 +656,6 @@ function MasterCustomer() {
                         }))
                       }
                       placeholder="Select Harga Pengiriman"
-                      required
                     />
                   </div>
 

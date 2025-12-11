@@ -750,6 +750,12 @@ export const menuCategories: MenuCategory[] = [
     name: 'Accounting',
     icon: QC,
     items: [
+      {
+        name: 'List Outstanding',
+        path: '/accounting/list-outstanding',
+        icon: 'deposit',
+      },
+      { name: 'List Retur', path: '/accounting/list-retur', icon: 'deposit' },
       { name: 'Deposit', path: '/accounting/deposit', icon: 'deposit' },
       {
         name: ' Approval',

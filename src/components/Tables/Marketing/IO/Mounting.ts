@@ -57,11 +57,11 @@ export interface MountingFormData {
   warna_depan: number;
   warna_belakang: number;
   keterangan_revisi: string;
-  id_coating_depan: number;
-  id_coating_belakang: number;
-  id_kertas: number;
-  id_jenis_pons: number;
-  id_lem: number;
+  id_coating_depan: number | null;
+  id_coating_belakang: number | null;
+  id_kertas: number | null;
+  id_jenis_pons: number | null;
+  id_lem: number | null;
   id_layout: string;
   merk_coating_depan: string;
   merk_coating_belakang: string;

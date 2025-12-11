@@ -380,7 +380,7 @@ const ListJoSelesai: React.FC = () => {
                       {(item.status_proses == 'progress' ||
                         item.status_proses == 'reject qc' ||
                         item.status_proses == 'done') &&
-                      item.is_jo_done == false ? (
+                      (item.is_jo_done == false || item.is_jo_done == null) ? (
                         <>
                           {' '}
                           <button
@@ -490,12 +490,22 @@ const ListJoSelesai: React.FC = () => {
                     {item.customer || '-'}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleKirimClick(item)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs whitespace-nowrap ml-2"
-                >
-                  Kirim
-                </button>
+                {(item.status_proses == 'progress' ||
+                  item.status_proses == 'reject qc' ||
+                  item.status_proses == 'done') &&
+                (item.is_jo_done == false || item.is_jo_done == null) ? (
+                  <>
+                    {' '}
+                    <button
+                      onClick={() => handleKirimClick(item)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+                    >
+                      Kirim
+                    </button>
+                  </>
+                ) : (
+                  <>-</>
+                )}
               </div>
 
               <div className="space-y-2 text-sm">

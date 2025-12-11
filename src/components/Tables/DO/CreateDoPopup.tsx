@@ -31,6 +31,27 @@ interface DOItem {
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
+  detail_customer?: {
+    id: number;
+    nama_customer: string;
+    alamat_kantor: string;
+    telepon: string;
+    email: string;
+    npwp: string;
+    fax: string;
+    kontak_person: string;
+    top_faktur: string;
+    toleransi_pengiriman: string;
+    kode_marketing: string;
+    id_marketing: number;
+    id_harga_pengiriman: number | null;
+    is_active: boolean;
+    is_customer_kanban: boolean;
+    no_legalitas: string | null;
+    saldo: number | null;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 interface CreateDOPopupProps {
@@ -90,6 +111,11 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
   const [supirOptions, setSupirOptions] = useState<SelectOption[]>([]);
   const [kenekOptions, setKenekOptions] = useState<SelectOption[]>([]);
 
+  // Get alamat_kantor from the first selected item
+  const getAlamatKantor = () => {
+    return selectedItems[0]?.detail_customer?.alamat_kantor || '';
+  };
+
   const [formData, setFormData] = useState({
     no_do: '',
     tgl_do: new Date().toISOString().split('T')[0],
@@ -99,7 +125,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
     no_jo: selectedItems[0]?.no_jo || '',
     no_po_customer: selectedItems[0]?.no_po_customer || '',
     pelanggan: selectedItems[0]?.customer || '',
-    alamat: '',
+    alamat: getAlamatKantor(), // Auto-fill from alamat_kantor
     kota: '',
     is_tax: false,
     note: '',
@@ -117,6 +143,17 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
       isi_3: item.isi_3 || 0,
     })),
   );
+
+  // Update alamat when selectedItems change
+  useEffect(() => {
+    const alamatKantor = getAlamatKantor();
+    if (alamatKantor && !isConfirmationMode) {
+      setFormData((prev) => ({
+        ...prev,
+        alamat: alamatKantor,
+      }));
+    }
+  }, [selectedItems]);
 
   // Fetch master data on mount
   useEffect(() => {
@@ -401,7 +438,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
       onClose();
     } catch (err: any) {
       console.error('Error creating/confirming DO:', err);
-      setError(err);
+      setError(err.response?.data?.message || 'Failed to save DO');
     } finally {
       setIsSubmitting(false);
     }
@@ -417,7 +454,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
       no_jo: selectedItems[0]?.no_jo || '',
       no_po_customer: selectedItems[0]?.no_po_customer || '',
       pelanggan: selectedItems[0]?.customer || '',
-      alamat: '',
+      alamat: getAlamatKantor(), // Reset to alamat_kantor
       kota: '',
       is_tax: false,
       note: '',
@@ -718,12 +755,13 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         onChange={(e) =>
                           handleInputChange('alamat', e.target.value)
                         }
-                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="Customer address"
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-blue-50"
+                        placeholder="Auto-filled from customer address"
                         required
                         disabled={
                           isSubmitting || isLoadingData || isConfirmationMode
                         }
+                        title="Auto-filled from customer's office address"
                       />
                     </div>
 

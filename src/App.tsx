@@ -232,6 +232,7 @@ import MasterKendaraanHR from './pages/HR/MasterDataHR/MasterKendaraanHR';
 import DepositPage from './pages/Accounting/DepositPage';
 import DepositApprovalPage from './pages/Accounting/DepositApprovalePage';
 import DepositApprovalHistoryPage from './pages/Accounting/DepositApprovalHistory';
+import ListOutstandingPage from './pages/Accounting/ListOutstandingPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2015,7 +2016,15 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/marketing/create-perubahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <DepositPage />
+            </>
+          }
+        />
         {/* ============== PRE-PRESS ROUTES ============== */}
         <Route
           path="/prepress"
@@ -2064,11 +2073,19 @@ function App() {
           element={
             <>
               <PageTitle title="PT CBL" />
+              <ListOutstandingPage />
+            </>
+          }
+        />
+        <Route
+          path="/accounting/list-retur"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
               <DepositPage />
             </>
           }
         />
-
         <Route
           path="/accounting/deposit"
           element={
