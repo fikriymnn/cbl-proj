@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
+import PrintDoModal from './PrintDoModal';
 
 interface DOItem {
   id: number;
@@ -51,6 +52,14 @@ interface DOItem {
     saldo: number | null;
     createdAt: string;
     updatedAt: string;
+    harga_pengiriman?: {
+      id: number;
+      nama_area: string;
+      harga: number;
+      is_active: boolean;
+      createdAt: string;
+      updatedAt: string;
+    };
   };
 }
 
@@ -86,6 +95,15 @@ interface SelectOption {
   label: string;
 }
 
+interface DONomorResponse {
+  no_do_non_tax: string;
+  no_do_non_tax_new: string;
+  no_do_tax: string;
+  no_do_tax_new: string;
+  status: number;
+  success: boolean;
+}
+
 const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
   selectedItems,
   doGroupId,
@@ -111,10 +129,21 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
   const [supirOptions, setSupirOptions] = useState<SelectOption[]>([]);
   const [kenekOptions, setKenekOptions] = useState<SelectOption[]>([]);
 
+  // DO Nomor data
+  const [doNomorData, setDoNomorData] = useState<DONomorResponse | null>(null);
+
   // Get alamat_kantor from the first selected item
   const getAlamatKantor = () => {
     return selectedItems[0]?.detail_customer?.alamat_kantor || '';
   };
+
+  // Get nama_area from the first selected item
+  const getNamaArea = () => {
+    return selectedItems[0]?.detail_customer?.harga_pengiriman?.nama_area || '';
+  };
+
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [printDoGroupId, setPrintDoGroupId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     no_do: '',
@@ -122,11 +151,12 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
     id_kendaraan: null as number | null,
     id_supir: null as number | null,
     id_kenek: null as number | null,
+    id_kenek_2: null as number | null,
     no_jo: selectedItems[0]?.no_jo || '',
     no_po_customer: selectedItems[0]?.no_po_customer || '',
     pelanggan: selectedItems[0]?.customer || '',
     alamat: getAlamatKantor(), // Auto-fill from alamat_kantor
-    kota: '',
+    kota: getNamaArea(), // Auto-fill from nama_area
     is_tax: false,
     note: '',
   });
@@ -144,13 +174,16 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
     })),
   );
 
-  // Update alamat when selectedItems change
+  // Update alamat and kota when selectedItems change
   useEffect(() => {
     const alamatKantor = getAlamatKantor();
-    if (alamatKantor && !isConfirmationMode) {
+    const namaArea = getNamaArea();
+
+    if (!isConfirmationMode) {
       setFormData((prev) => ({
         ...prev,
         alamat: alamatKantor,
+        kota: namaArea,
       }));
     }
   }, [selectedItems]);
@@ -159,6 +192,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
   useEffect(() => {
     fetchKendaraan();
     fetchSupirKenek();
+    fetchNoDO();
   }, []);
 
   // Fetch DO Group details for confirmation mode
@@ -167,6 +201,43 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
       fetchDOGroupDetails();
     }
   }, [isConfirmationMode, doGroupId]);
+
+  // Auto-update No DO when tax status changes
+  useEffect(() => {
+    if (doNomorData && !isConfirmationMode) {
+      const newNoDo = formData.is_tax
+        ? doNomorData.no_do_tax_new
+        : doNomorData.no_do_non_tax_new;
+
+      setFormData((prev) => ({
+        ...prev,
+        no_do: newNoDo,
+      }));
+    }
+  }, [formData.is_tax, doNomorData, isConfirmationMode]);
+
+  const fetchNoDO = async () => {
+    try {
+      const url = `${import.meta.env.VITE_API_LINK}/deliveryOrderGroupNomor`;
+      const res = await axios.get<DONomorResponse>(url, {
+        withCredentials: true,
+      });
+
+      console.log('Fetched No DO:', res.data);
+      setDoNomorData(res.data);
+
+      // Set initial No DO based on default is_tax value (false = non-tax)
+      if (!isConfirmationMode) {
+        setFormData((prev) => ({
+          ...prev,
+          no_do: res.data.no_do_non_tax_new,
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching No DO:', error);
+      setError('Failed to fetch DO number');
+    }
+  };
 
   const fetchKendaraan = async () => {
     try {
@@ -262,6 +333,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
         id_kendaraan: data.id_kendaraan || null,
         id_supir: data.id_supir || null,
         id_kenek: data.id_kenek || null,
+        id_kenek_2: data.id_kenek_2 || null,
         no_jo: data.no_jo || '',
         no_po_customer: data.no_po_customer || '',
         pelanggan: data.customer || data.pelanggan || '',
@@ -356,10 +428,6 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
     });
   };
 
-  const calculateTotal = () => {
-    return doItems.reduce((sum, item) => sum + (item.jumlah_qty || 0), 0);
-  };
-
   const calculateTotalPack = () => {
     return doItems.reduce(
       (sum, item) =>
@@ -411,6 +479,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
         id_kendaraan: formData.id_kendaraan,
         id_supir: formData.id_supir,
         id_kenek: formData.id_kenek,
+        id_kenek_2: formData.id_kenek_2,
         no_jo: formData.no_jo,
         no_po_customer: formData.no_po_customer,
         pelanggan: formData.pelanggan,
@@ -445,17 +514,21 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
   };
 
   const handleClear = () => {
+    // Re-fetch DO number to get fresh numbers
+    fetchNoDO();
+
     setFormData({
-      no_do: '',
+      no_do: doNomorData?.no_do_non_tax_new || '',
       tgl_do: new Date().toISOString().split('T')[0],
       id_kendaraan: null,
       id_supir: null,
       id_kenek: null,
+      id_kenek_2: null,
       no_jo: selectedItems[0]?.no_jo || '',
       no_po_customer: selectedItems[0]?.no_po_customer || '',
       pelanggan: selectedItems[0]?.customer || '',
       alamat: getAlamatKantor(), // Reset to alamat_kantor
-      kota: '',
+      kota: getNamaArea(), // Reset to nama_area
       is_tax: false,
       note: '',
     });
@@ -476,8 +549,12 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
   };
 
   const handlePrint = () => {
-    // TODO: Implement print functionality
-    alert('Print functionality coming soon!');
+    if (doGroupId) {
+      setPrintDoGroupId(doGroupId);
+      setShowPrintModal(true);
+    } else {
+      alert('Please save the DO first before printing');
+    }
   };
 
   // Custom styles for react-select
@@ -560,33 +637,16 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         onChange={(e) =>
                           handleInputChange('no_do', e.target.value)
                         }
-                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="SD017056CBL/1225"
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
+                        placeholder="Auto-generated based on tax selection"
                         required
                         disabled={
                           isSubmitting || isLoadingData || isConfirmationMode
                         }
+                        readOnly={!isConfirmationMode}
+                        title="Auto-generated based on tax selection"
                       />
                     </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">
-                        Tgl DO
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.tgl_do}
-                        onChange={(e) =>
-                          handleInputChange('tgl_do', e.target.value)
-                        }
-                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        disabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
-                        }
-                      />
-                    </div>
-
-                    {/* Tax Checkbox - Moved here */}
                     <div className="flex items-center gap-4 pt-1">
                       <div className="flex items-center">
                         <input
@@ -628,6 +688,22 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                           Non Pajak
                         </label>
                       </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Tgl DO
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.tgl_do}
+                        onChange={(e) =>
+                          handleInputChange('tgl_do', e.target.value)
+                        }
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        disabled={
+                          isSubmitting || isLoadingData || isConfirmationMode
+                        }
+                      />
                     </div>
                   </div>
                 </div>
@@ -718,9 +794,35 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         }
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Pilih Kenek 2
+                      </label>
+                      <Select
+                        options={kenekOptions}
+                        value={
+                          kenekOptions.find(
+                            (opt) => opt.value === formData.id_kenek_2,
+                          ) || null
+                        }
+                        onChange={(selected) =>
+                          handleInputChange(
+                            'id_kenek_2',
+                            selected ? selected.value : null,
+                          )
+                        }
+                        placeholder="Pilih Kenek 2"
+                        isClearable
+                        isSearchable
+                        styles={selectStyles}
+                        isDisabled={
+                          isSubmitting || isLoadingData || isConfirmationMode
+                        }
+                      />
+                    </div>
                   </div>
                 </div>
-
                 {/* Customer Information */}
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b">
@@ -775,15 +877,15 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         onChange={(e) =>
                           handleInputChange('kota', e.target.value)
                         }
-                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        placeholder="Kota"
+                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-blue-50"
+                        placeholder="Auto-filled from customer area"
                         required
                         disabled={
                           isSubmitting || isLoadingData || isConfirmationMode
                         }
+                        title="Auto-filled from customer's area name"
                       />
                     </div>
-
                     {/* Note */}
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -1050,7 +1152,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              disabled={isSubmitting || isLoadingData}
+              disabled={isSubmitting || isLoadingData || !doGroupId}
               className="px-3 py-1.5 text-sm border border-gray-300 rounded text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Print
@@ -1075,6 +1177,17 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
           </div>
         </div>
       </div>
+
+      {showPrintModal && (
+        <PrintDoModal
+          isOpen={showPrintModal}
+          doGroupId={printDoGroupId}
+          onClose={() => {
+            setShowPrintModal(false);
+            setPrintDoGroupId(null);
+          }}
+        />
+      )}
     </div>
   );
 };
