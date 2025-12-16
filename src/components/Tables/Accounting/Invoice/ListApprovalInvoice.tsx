@@ -2,6 +2,25 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
 import DetailInvoiceModal from './DetailInvoiceModal';
+import PrintInvoiceModal from './PrintInvoiceModal';
+
+interface InvoiceProduk {
+  id: number;
+  nama_produk: string;
+  kode_produk: string;
+  unit: string;
+  qty: number;
+  harga: number;
+  diskon_produk: number;
+  total: number;
+  dpp: number;
+  pajak: number;
+  id_invoice: number;
+  id_produk: number;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface InvoiceItem {
   id: number;
@@ -34,13 +53,23 @@ interface InvoiceItem {
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
+  invoice_produk: InvoiceProduk[]; // Changed from any[] | undefined to InvoiceProduk[]
+  user_create?: any;
+  user_approve?: any;
+  user_reject?: any;
+  retur?: any[];
 }
-
 interface InvoiceResponse {
   data: InvoiceItem[];
   status: number;
   success: boolean;
   total_page?: number;
+}
+
+interface InvoiceDetailResponse {
+  data: InvoiceItem;
+  status: number;
+  success: boolean;
 }
 
 const ListApprovalInvoice: React.FC = () => {
@@ -55,6 +84,10 @@ const ListApprovalInvoice: React.FC = () => {
     null,
   );
   const [requestingId, setRequestingId] = useState<number | null>(null);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
+  const [selectedPrintInvoice, setSelectedPrintInvoice] =
+    useState<InvoiceItem | null>(null);
+  const [loadingPrintData, setLoadingPrintData] = useState<boolean>(false);
 
   useEffect(() => {
     fetchInvoiceData();
@@ -84,6 +117,32 @@ const ListApprovalInvoice: React.FC = () => {
       setInvoiceData([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchInvoiceDetailForPrint = async (
+    id: number,
+  ): Promise<InvoiceItem | null> => {
+    const url = `${import.meta.env.VITE_API_LINK}/invoice/${id}`;
+    try {
+      setLoadingPrintData(true);
+
+      const res: AxiosResponse<InvoiceDetailResponse> = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      console.log('Fetched Invoice Detail data for print:', res.data);
+
+      if (res.data.success && res.data.data) {
+        return res.data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching Invoice detail data:', error);
+      alert('Failed to fetch invoice details for printing.');
+      return null;
+    } finally {
+      setLoadingPrintData(false);
     }
   };
 
@@ -131,6 +190,20 @@ const ListApprovalInvoice: React.FC = () => {
   const handleCloseDetailModal = (): void => {
     setIsDetailModalOpen(false);
     setSelectedInvoiceId(null);
+  };
+
+  const handlePrint = async (item: InvoiceItem): Promise<void> => {
+    // Fetch full invoice details including invoice_produk array
+    const detailData = await fetchInvoiceDetailForPrint(item.id);
+    if (detailData) {
+      setSelectedPrintInvoice(detailData);
+      setIsPrintModalOpen(true);
+    }
+  };
+
+  const handleClosePrintModal = (): void => {
+    setIsPrintModalOpen(false);
+    setSelectedPrintInvoice(null);
   };
 
   const truncateText = (text: string | null, maxLength: number) => {
@@ -344,6 +417,13 @@ const ListApprovalInvoice: React.FC = () => {
                             </button>
                           )}
                           <button
+                            onClick={() => handlePrint(item)}
+                            disabled={loadingPrintData}
+                            className="px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {loadingPrintData ? 'Loading...' : 'Print'}
+                          </button>
+                          <button
                             onClick={() => handleViewDetail(item.id)}
                             className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors"
                           >
@@ -478,6 +558,14 @@ const ListApprovalInvoice: React.FC = () => {
                     )}
 
                     <button
+                      onClick={() => handlePrint(item)}
+                      disabled={loadingPrintData}
+                      className="flex-1 px-3 py-2 bg-purple-600 text-white text-xs font-medium rounded hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loadingPrintData ? 'Loading...' : 'Print'}
+                    </button>
+
+                    <button
                       onClick={() => handleViewDetail(item.id)}
                       className="flex-1 px-3 py-2 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors"
                     >
@@ -531,6 +619,15 @@ const ListApprovalInvoice: React.FC = () => {
           invoiceId={selectedInvoiceId}
           isOpen={isDetailModalOpen}
           onClose={handleCloseDetailModal}
+        />
+      )}
+
+      {/* Print Modal */}
+      {isPrintModalOpen && selectedPrintInvoice && (
+        <PrintInvoiceModal
+          invoiceData={selectedPrintInvoice}
+          isOpen={isPrintModalOpen}
+          onClose={handleClosePrintModal}
         />
       )}
     </div>
