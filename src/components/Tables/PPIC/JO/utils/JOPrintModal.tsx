@@ -101,12 +101,31 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
   const printRef = useRef<HTMLDivElement>(null);
   const [printData, setPrintData] = useState<JOPrintData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [logoBase64, setLogoBase64] = useState<string>('');
 
   useEffect(() => {
     if (isOpen && joId) {
       fetchJOData();
     }
   }, [isOpen, joId]);
+
+  useEffect(() => {
+    // Convert logo to base64 for better print quality
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/png');
+        setLogoBase64(dataURL);
+      }
+    };
+    img.src = Logo;
+  }, []);
 
   const fetchJOData = async () => {
     try {
@@ -196,6 +215,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
   const getPrintContent = () => {
     const layout = calculateLayout();
     const selectedMounting = getSelectedMounting();
+    const logoSrc = logoBase64 || Logo;
 
     return `
       <!DOCTYPE html>
@@ -241,6 +261,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             .logo {
               width: 50px;
               height: auto;
+              image-rendering: -webkit-optimize-contrast;
+              image-rendering: crisp-edges;
             }
             .company-name {
               font-size: 10px;
@@ -342,7 +364,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             <tbody>
               <tr>
                 <td rowspan="2" class="logo-cell">
-                  <img src="${Logo}" alt="Logo" class="logo" />
+                  <img src="${logoSrc}" alt="Logo" class="logo" />
                 </td>
                 <td class="info-label">No JO</td>
                 <td>${getValue(printData?.no_jo)}</td>
@@ -354,8 +376,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 </td>
               </tr>
               <tr>
-                <td class="info-label">No IO</td>
-                <td>${getValue(printData?.no_io)}</td>
+                
               </tr>
               <tr>
                 <td class="company-name" rowspan="2">
@@ -363,12 +384,14 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                   <br />
                   <span style="font-size: 9px">JOB ORDER</span>
                 </td>
-                <td class="info-label">No JO</td>
-                <td>${getValue(printData?.no_jo)}</td>
-              </tr>
-              <tr>
                 <td class="info-label">No IO</td>
                 <td>${getValue(printData?.no_io)}</td>
+              </tr>
+              <tr>
+                <td class="info-label" colspan="2">${getValue(
+                  printData?.label,
+                  '',
+                )}</td>
               </tr>
             </tbody>
           </table>
@@ -685,117 +708,114 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                       </tr>
                       <tr>
                         <td style="border: 1px solid black; padding: 3px;">Finishing</td>
-                        <td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_druk_finishing?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 3px;">druk</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                        <td style="border:1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_druk_finishing?.toLocaleString()}</td>
+<td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
+<td style="border: 1px solid black; padding: 3px;">druk</td>
+</tr>
+</tbody>
+</table><!-- Keterangan -->
+              <div style="border: 1px solid black; padding: 5px; font-size: 7px; margin-bottom: 5px;">
+                <div style="font-weight: bold; margin-bottom: 3px;">Keterangan Pengerjaan :</div>
+                <div style="min-height: 40px;">${getValue(
+                  printData?.keterangan_pengerjaan,
+                )}</div>
+              </div>
 
-                  <!-- Keterangan -->
-                  <div style="border: 1px solid black; padding: 5px; font-size: 7px; margin-bottom: 5px;">
-                    <div style="font-weight: bold; margin-bottom: 3px;">Keterangan Pengerjaan :</div>
-                    <div style="min-height: 40px;">${getValue(
-                      printData?.keterangan_pengerjaan,
-                    )}</div>
-                  </div>
-
-                  <!-- Pakai Ukuran Standar -->
-                  <div style="border: 1px solid black; padding: 5px; font-size: 7px; min-height: 30px;">
-                    Pakai Ukuran Standar
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          `
+              <!-- Pakai Ukuran Standar -->
+              <div style="border: 1px solid black; padding: 5px; font-size: 7px; min-height: 30px;">
+                Pakai Ukuran Standar
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      `
               : ''
           }
 
-          <!-- Process Table -->
-          <table class="process-table">
-            <thead>
-              <tr>
-                <th>Proses</th>
-                <th>Mesin</th>
-                <th>Baik</th>
-                <th>Rs</th>
-                <th>Rt</th>
-                <th>Keterangan</th>
-                <th>Paraf</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${getProcessTableRows()
-                .map(
-                  (process) => `
-                <tr>
-                  <td>${process.name}</td>
-                  <td>${process.mesin}</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-              `,
-                )
-                .join('')}
-            </tbody>
-          </table>
+      <!-- Process Table -->
+      <table class="process-table">
+        <thead>
+          <tr>
+            <th>Proses</th>
+            <th>Mesin</th>
+            <th>Baik</th>
+            <th>Rs</th>
+            <th>Rt</th>
+            <th>Keterangan</th>
+            <th>Paraf</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${getProcessTableRows()
+            .map(
+              (process) => `
+            <tr>
+              <td>${process.name}</td>
+              <td>${process.mesin}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          `,
+            )
+            .join('')}
+        </tbody>
+      </table>
 
-          <!-- Delivery Info -->
-          <table class="info-table" style="margin-top: 10px;">
-            <tbody>
-              <tr>
-                <td class="info-label">Pengiriman Ke</td>
-                <td class="info-colon">:</td>
-                <td colspan="3">${getValue(printData?.customer)}</td>
-              </tr>
-              <tr>
-                <td class="info-label">Alamat</td>
-                <td class="info-colon">:</td>
-                <td colspan="3">${getValue(printData?.alamat_pengiriman)}</td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- Delivery Info -->
+      <table class="info-table" style="margin-top: 10px;">
+        <tbody>
+          <tr>
+            <td class="info-label">Pengiriman Ke</td>
+            <td class="info-colon">:</td>
+            <td colspan="3">${getValue(printData?.customer)}</td>
+          </tr>
+          <tr>
+            <td class="info-label">Alamat</td>
+            <td class="info-colon">:</td>
+            <td colspan="3">${getValue(printData?.alamat_pengiriman)}</td>
+          </tr>
+        </tbody>
+      </table>
 
-          <!-- Date and Signatures -->
-          <div class="date-location">
-            Bandung, ${formatDate(new Date().toISOString())}
-          </div>
+      <!-- Date and Signatures -->
+      <div class="date-location">
+        Bandung, ${formatDate(new Date().toISOString())}
+      </div>
 
-          <div class="signature-section">
-            <div class="signature-box">
-              <div class="signature-title">(PPIC)</div>
-              <div>Tgl:</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-title">(SPV PPIC)</div>
-              <div>Tgl:</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-title">(Prepress)</div>
-              <div>Tgl:</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-title">(Ponda)</div>
-              <div>Tgl:</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-title">(Printing)</div>
-              <div>Tgl:</div>
-            </div>
-            <div class="signature-box">
-              <div class="signature-title">(Finishing)</div>
-              <div>Tgl:</div>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+      <div class="signature-section">
+        <div class="signature-box">
+          <div class="signature-title">(PPIC)</div>
+          <div>Tgl:</div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-title">(SPV PPIC)</div>
+          <div>Tgl:</div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-title">(Prepress)</div>
+          <div>Tgl:</div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-title">(Ponda)</div>
+          <div>Tgl:</div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-title">(Printing)</div>
+          <div>Tgl:</div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-title">(Finishing)</div>
+          <div>Tgl:</div>
+        </div>
+      </div>
+    </body>
+  </html>
+`;
   };
-
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -809,12 +829,9 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
       };
     }
   };
-
   if (!isOpen) return null;
-
   const layout = calculateLayout();
   const selectedMounting = getSelectedMounting();
-
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black bg-opacity-75">
       <div className="flex flex-col h-full">
@@ -839,7 +856,6 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             </button>
           </div>
         </div>
-
         {/* Scrollable preview area */}
         <div className="flex-1 overflow-auto bg-gray-600 p-8">
           {loading ? (
@@ -881,5 +897,4 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     </div>
   );
 };
-
 export default JOPrintModal;
