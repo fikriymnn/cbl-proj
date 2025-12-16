@@ -864,6 +864,202 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/prepress'),
     ],
   },
+  // Add these new role configurations to the mockRBACData array
+
+  // ============================================
+  // DELIVERY ORDER DEPARTMENT
+  // ============================================
+
+  // Delivery Order - Section Head
+  {
+    role: 'section head',
+    bagian: 'delivery order',
+    permissions: [
+      // Dashboard
+      fullAccess('/dashboard'),
+
+      // Delivery Order Menu
+      fullAccess('/do/list-do'),
+      fullAccess('/do/konfirmasi-do'),
+
+      // Submission to HR
+      fullAccess('/do/submission'),
+      fullAccess('/do/submission/history'),
+      fullAccess('/do/submission/position'),
+      fullAccess('/do/submission/position/history'),
+
+      // Report
+      fullAccess('/do/report/ncr'),
+      fullAccess('/do/report/capa'),
+    ],
+  },
+
+  // Delivery Order - Admin
+  {
+    role: 'admin',
+    bagian: 'delivery order',
+    permissions: [
+      // Dashboard
+      readOnly('/dashboard'),
+
+      // Delivery Order Menu
+      fullAccess('/do/list-do'),
+      fullAccess('/do/konfirmasi-do'),
+
+      // Submission to HR
+      fullAccess('/do/submission'),
+      readOnly('/do/submission/history'),
+      fullAccess('/do/submission/position'),
+      readOnly('/do/submission/position/history'),
+
+      // Report
+      readOnly('/do/report/ncr'),
+      readOnly('/do/report/capa'),
+    ],
+  },
+
+  // Delivery Order - Supervisor
+  {
+    role: 'supervisor',
+    bagian: 'delivery order',
+    permissions: [
+      // Dashboard
+      readOnly('/dashboard'),
+
+      // Delivery Order Menu
+      fullAccess('/do/list-do'),
+      fullAccess('/do/konfirmasi-do'),
+
+      // Submission to HR
+      fullAccess('/do/submission'),
+      readOnly('/do/submission/history'),
+      fullAccess('/do/submission/position'),
+      readOnly('/do/submission/position/history'),
+    ],
+  },
+
+  // ============================================
+  // ACCOUNTING DEPARTMENT
+  // ============================================
+
+  // Accounting - Section Head
+  {
+    role: 'section head',
+    bagian: 'accounting',
+    permissions: [
+      // Dashboard
+      fullAccess('/dashboard'),
+
+      // Accounting Menu
+      fullAccess('/accounting/list-outstanding'),
+      fullAccess('/accounting/list-request-invoice'),
+      fullAccess('/accounting/list-approval-invoice'),
+      fullAccess('/accounting/list-approval-perubahan'),
+      fullAccess('/accounting/list-invoice'),
+      fullAccess('/accounting/list-retur'),
+      fullAccess('/accounting/deposit'),
+
+      // Approval
+      fullAccess('/accounting/approval/deposit'),
+      fullAccess('/accounting/approval/deposit-history'),
+
+      // Submission to HR
+      fullAccess('/accounting/submission'),
+      fullAccess('/accounting/submission/history'),
+      fullAccess('/accounting/submission/position'),
+      fullAccess('/accounting/submission/position/history'),
+
+      // Report
+      fullAccess('/accounting/report/ncr'),
+      fullAccess('/accounting/report/capa'),
+
+      // Master Data - Accounting (if any)
+      fullAccess('/master/accounting/chart-of-accounts'),
+      fullAccess('/master/accounting/user'),
+    ],
+  },
+
+  // Accounting - Admin
+  {
+    role: 'admin',
+    bagian: 'accounting',
+    permissions: [
+      // Dashboard
+      readOnly('/dashboard'),
+
+      // Accounting Menu
+      fullAccess('/accounting/list-outstanding'),
+      fullAccess('/accounting/list-request-invoice'),
+      fullAccess('/accounting/list-approval-invoice'),
+      fullAccess('/accounting/list-approval-perubahan'),
+      fullAccess('/accounting/list-invoice'),
+      fullAccess('/accounting/list-retur'),
+      fullAccess('/accounting/deposit'),
+
+      // Approval - Limited
+      createPermission(
+        '/accounting/approval/deposit',
+        true,
+        true,
+        false,
+        false,
+      ),
+      readOnly('/accounting/approval/deposit-history'),
+
+      // Submission to HR
+      fullAccess('/accounting/submission'),
+      readOnly('/accounting/submission/history'),
+      fullAccess('/accounting/submission/position'),
+      readOnly('/accounting/submission/position/history'),
+
+      // Report
+      readOnly('/accounting/report/ncr'),
+      readOnly('/accounting/report/capa'),
+
+      // Master Data - Accounting (if any)
+      createPermission(
+        '/master/accounting/chart-of-accounts',
+        true,
+        true,
+        true,
+        false,
+      ),
+      createPermission('/master/accounting/user', true, true, true, false),
+    ],
+  },
+
+  // Accounting - Supervisor
+  {
+    role: 'supervisor',
+    bagian: 'accounting',
+    permissions: [
+      // Dashboard
+      readOnly('/dashboard'),
+
+      // Accounting Menu
+      fullAccess('/accounting/list-outstanding'),
+      fullAccess('/accounting/list-request-invoice'),
+      fullAccess('/accounting/list-approval-invoice'),
+      fullAccess('/accounting/list-approval-perubahan'),
+      readOnly('/accounting/list-invoice'),
+      fullAccess('/accounting/list-retur'),
+      fullAccess('/accounting/deposit'),
+
+      // Approval
+      fullAccess('/accounting/approval/deposit'),
+      readOnly('/accounting/approval/deposit-history'),
+
+      // Submission to HR
+      fullAccess('/accounting/submission'),
+      readOnly('/accounting/submission/history'),
+      fullAccess('/accounting/submission/position'),
+      readOnly('/accounting/submission/position/history'),
+
+      // Report
+      readOnly('/accounting/report/ncr'),
+      readOnly('/accounting/report/capa'),
+    ],
+  },
 ];
 
 export const getPermissionsForRole = (

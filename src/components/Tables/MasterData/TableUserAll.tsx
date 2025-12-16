@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { useEffect, useState, useCallback } from 'react';
-import ModalTambahUser from '../../Modals/Master/User/ModalTambahUser';
-import ModalEditUser from '../../Modals/Master/User/ModalUpdateUserMaster';
+import ModalUser from '../../Modals/Master/User/ModalUser';
 import ModalConfDelete from '../../Modals/Master/User/ModalConfDelete';
 
 interface User {
@@ -384,7 +383,7 @@ const TableUserAll = () => {
 
                     {/* Modals */}
                     {showEdit[index] && (
-                      <ModalEditUser
+                      <ModalUser
                         children={undefined}
                         isOpen={showEdit[index]}
                         onClose={() => closeEdit(index)}
@@ -542,9 +541,8 @@ const TableUserAll = () => {
                       </button>
                     </div>
 
-                    {/* Mobile Modals */}
                     {showEdit[index] && (
-                      <ModalEditUser
+                      <ModalUser
                         children={undefined}
                         isOpen={showEdit[index]}
                         onClose={() => closeEdit(index)}
@@ -574,9 +572,8 @@ const TableUserAll = () => {
         </>
       )}
 
-      {/* Add User Modal */}
       {showModalTambah && (
-        <ModalTambahUser
+        <ModalUser
           children={undefined}
           isOpen={showModalTambah}
           onClose={() => setShowModalTambah(false)}
