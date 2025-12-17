@@ -38,146 +38,184 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
   const isReadOnly = copyType === 'repeat';
 
+  // Helper function to safely convert to string
+  const safeToString = (value: any, defaultValue: string = '0'): string => {
+    if (value === null || value === undefined || value === '')
+      return defaultValue;
+    return String(value);
+  };
+
+  // Helper function to safely get number value
+  const safeNumber = (value: any, defaultValue: number = 0): number => {
+    if (value === null || value === undefined || value === '')
+      return defaultValue;
+    const num = typeof value === 'number' ? value : parseFloat(value);
+    return isNaN(num) ? defaultValue : num;
+  };
+
   useEffect(() => {
     // Initialize form data from original data
-    // In CopyKalkulasiModal.tsx, update the initializeFormData function:
-
     const initializeFormData = () => {
       const initialData: KalkulasiFormData = {
         kode_kalkulasi: originalData.kode_kalkulasi || '',
-        tgl_kalkulasi: originalData.tgl_kalkulasi.split('T')[0],
-        status_kalkulasi: originalData.status_kalkulasi,
-        id_customer: originalData.id_customer,
-        id_marketing: originalData.id_marketing,
-        id_produk: originalData.id_produk,
-        id_area_pengiriman: originalData.id_area_pengiriman,
-        qty_kalkulasi: originalData.qty_kalkulasi.toString(),
-        presentase_insheet: originalData.presentase_insheet.toString(),
-        spesifikasi: originalData.spesifikasi,
-        ukuran_jadi_panjang: originalData.ukuran_jadi_panjang.toString(),
-        ukuran_jadi_lebar: originalData.ukuran_jadi_lebar.toString(),
-        ukuran_jadi_tinggi: originalData.ukuran_jadi_tinggi.toString(),
-        ukuran_jadi_terb_panjang:
-          originalData.ukuran_jadi_terb_panjang.toString(),
-        ukuran_jadi_terb_lebar: originalData.ukuran_jadi_terb_lebar.toString(),
-        ukuran_cetak_panjang_1: originalData.ukuran_cetak_panjang_1.toString(),
-        ukuran_cetak_lebar_1: originalData.ukuran_cetak_lebar_1.toString(),
-        ukuran_cetak_bagian_1: originalData.ukuran_cetak_bagian_1.toString(),
-        ukuran_cetak_isi_1: originalData.ukuran_cetak_isi_1.toString(),
-        ukuran_cetak_bbs_1: originalData.ukuran_cetak_bbs_1,
-        ukuran_cetak_panjang_2:
-          originalData.ukuran_cetak_panjang_2?.toString() || '0',
-        ukuran_cetak_lebar_2:
-          originalData.ukuran_cetak_lebar_2?.toString() || '0',
-        ukuran_cetak_bagian_2:
-          originalData.ukuran_cetak_bagian_2?.toString() || '0',
-        ukuran_cetak_isi_2: originalData.ukuran_cetak_isi_2?.toString() || '0',
+        tgl_kalkulasi: (originalData.tgl_kalkulasi || '').split('T')[0],
+        status_kalkulasi: originalData.status_kalkulasi || 'draft',
+        id_customer: originalData.id_customer || 0,
+        id_marketing: originalData.id_marketing || 0,
+        id_produk: originalData.id_produk || 0,
+        id_area_pengiriman: originalData.id_area_pengiriman || 0,
+        qty_kalkulasi: safeToString(originalData.qty_kalkulasi, '1'),
+        presentase_insheet: safeToString(originalData.presentase_insheet),
+        spesifikasi: originalData.spesifikasi || '',
+        ukuran_jadi_panjang: safeToString(originalData.ukuran_jadi_panjang),
+        ukuran_jadi_lebar: safeToString(originalData.ukuran_jadi_lebar),
+        ukuran_jadi_tinggi: safeToString(originalData.ukuran_jadi_tinggi),
+        ukuran_jadi_terb_panjang: safeToString(
+          originalData.ukuran_jadi_terb_panjang,
+        ),
+        ukuran_jadi_terb_lebar: safeToString(
+          originalData.ukuran_jadi_terb_lebar,
+        ),
+        ukuran_cetak_panjang_1: safeToString(
+          originalData.ukuran_cetak_panjang_1,
+        ),
+        ukuran_cetak_lebar_1: safeToString(originalData.ukuran_cetak_lebar_1),
+        ukuran_cetak_bagian_1: safeToString(originalData.ukuran_cetak_bagian_1),
+        ukuran_cetak_isi_1: safeToString(originalData.ukuran_cetak_isi_1),
+        ukuran_cetak_bbs_1: originalData.ukuran_cetak_bbs_1 || 'no',
+        ukuran_cetak_panjang_2: safeToString(
+          originalData.ukuran_cetak_panjang_2,
+        ),
+        ukuran_cetak_lebar_2: safeToString(originalData.ukuran_cetak_lebar_2),
+        ukuran_cetak_bagian_2: safeToString(originalData.ukuran_cetak_bagian_2),
+        ukuran_cetak_isi_2: safeToString(originalData.ukuran_cetak_isi_2),
         ukuran_cetak_bbs_2: originalData.ukuran_cetak_bbs_2 || 'no',
-        warna_depan: originalData.warna_depan.toString(),
-        warna_belakang: originalData.warna_belakang.toString(),
-        jumlah_warna: originalData.jumlah_warna.toString(),
-        nama_customer: originalData.nama_customer,
-        nama_marketing: originalData.nama_marketing,
-        nama_area_pengiriman: originalData.nama_area_pengiriman,
-        nama_produk: originalData.nama_produk,
-        print_insheet: originalData.print_insheet?.toString(),
-        pons_insheet: originalData.pons_insheet?.toString(),
-        finishing_insheet: originalData.finishing_insheet?.toString(),
+        warna_depan: safeToString(originalData.warna_depan),
+        warna_belakang: safeToString(originalData.warna_belakang),
+        jumlah_warna: safeToString(originalData.jumlah_warna),
+        nama_customer: originalData.nama_customer || '',
+        nama_marketing: originalData.nama_marketing || '',
+        nama_area_pengiriman: originalData.nama_area_pengiriman || '',
+        nama_produk: originalData.nama_produk || '',
+        print_insheet: safeToString(originalData.print_insheet, ''),
+        pons_insheet: safeToString(originalData.pons_insheet, ''),
+        finishing_insheet: safeToString(originalData.finishing_insheet, ''),
         // Kertas
-        id_kertas: originalData.id_kertas,
-        jenis_kertas: originalData.jenis_kertas,
-        gramature: originalData.gramature_kertas,
-        panjangMm: originalData.panjang_kertas,
-        lebarMm: originalData.lebar_kertas,
-        percentage: originalData.persentase_kertas,
-        apki: originalData.persentase_apki_kertas,
-        total_kertas: originalData.total_kertas,
-        total_harga_kertas: originalData.total_harga_kertas,
+        id_kertas: originalData.id_kertas || 0,
+        jenis_kertas: originalData.jenis_kertas || '',
+        gramature: safeNumber(originalData.gramature_kertas),
+        panjangMm: safeNumber(originalData.panjang_kertas),
+        lebarMm: safeNumber(originalData.lebar_kertas),
+        percentage: safeNumber(originalData.persentase_kertas),
+        apki: safeNumber(originalData.persentase_apki_kertas),
+        total_kertas: safeNumber(originalData.total_kertas),
+        total_harga_kertas: safeNumber(originalData.total_harga_kertas),
         // Cetak
-        id_jenis_mesin_cetak: originalData.id_jenis_mesin_cetak,
-        jumlah_harga_cetak: originalData.jumlah_harga_cetak,
-        harga_plate: originalData.harga_plate.toString(),
+        id_jenis_mesin_cetak: originalData.id_jenis_mesin_cetak || 0,
+        jumlah_harga_cetak: safeNumber(originalData.jumlah_harga_cetak),
+        harga_plate: safeToString(originalData.harga_plate),
         // Coating
-        id_coating_depan: originalData.id_coating_depan,
-        id_coating_belakang: originalData.id_coating_belakang,
-        id_mesin_coating_depan: originalData.id_mesin_coating_depan,
-        id_mesin_coating_belakang: originalData.id_mesin_coating_belakang,
-        jumlah_harga_coating_depan: originalData.jumlah_harga_coating_depan,
-        jumlah_harga_coating_belakang:
+        id_coating_depan: originalData.id_coating_depan || 0,
+        id_coating_belakang: originalData.id_coating_belakang || 0,
+        id_mesin_coating_depan: originalData.id_mesin_coating_depan || 0,
+        id_mesin_coating_belakang: originalData.id_mesin_coating_belakang || 0,
+        jumlah_harga_coating_depan: safeNumber(
+          originalData.jumlah_harga_coating_depan,
+        ),
+        jumlah_harga_coating_belakang: safeNumber(
           originalData.jumlah_harga_coating_belakang,
-        total_harga_coating: originalData.total_harga_coating,
+        ),
+        total_harga_coating: safeNumber(originalData.total_harga_coating),
         // PostPress
-        id_jenis_pons: originalData.id_jenis_pons?.toString(),
-        id_mesin_pons: originalData.id_mesin_pons?.toString(),
-        harga_pisau: originalData.harga_pisau?.toString(),
-        ongkos_pons: originalData.ongkos_pons,
-        ongkos_pons_qty: originalData.ongkos_pons_qty?.toString(),
-        harga_satuan_ongkos_pons:
-          originalData.harga_satuan_ongkos_pons?.toString(),
-        total_harga_ongkos_pons:
-          originalData.total_harga_ongkos_pons?.toString(),
+        id_jenis_pons: safeToString(originalData.id_jenis_pons, ''),
+        id_mesin_pons: safeToString(originalData.id_mesin_pons, ''),
+        harga_pisau: safeToString(originalData.harga_pisau),
+        ongkos_pons: originalData.ongkos_pons || 'No',
+        ongkos_pons_qty: safeToString(originalData.ongkos_pons_qty, '1'),
+        harga_satuan_ongkos_pons: safeToString(
+          originalData.harga_satuan_ongkos_pons,
+        ),
+        total_harga_ongkos_pons: safeToString(
+          originalData.total_harga_ongkos_pons,
+        ),
         // Lipat
-        lipat: originalData.lipat,
-        id_mesin_lipat: originalData.id_mesin_lipat?.toString(),
-        qty_lipat: originalData.qty_lipat?.toString(),
-        harga_lipat: originalData.harga_lipat?.toString(),
+        lipat: originalData.lipat || 'No',
+        id_mesin_lipat: safeToString(originalData.id_mesin_lipat, ''),
+        qty_lipat: safeToString(originalData.qty_lipat, '1'),
+        harga_lipat: safeToString(originalData.harga_lipat),
         // Potong
-        potong_jadi: originalData.potong_jadi,
-        id_mesin_potong: originalData.id_mesin_potong?.toString(),
-        qty_potong: originalData.qty_potong?.toString(),
-        harga_potong_jadi: originalData.harga_potong_jadi?.toString(),
+        potong_jadi: originalData.potong_jadi || 'No',
+        id_mesin_potong: safeToString(originalData.id_mesin_potong, ''),
+        qty_potong: safeToString(originalData.qty_potong, '1'),
+        harga_potong_jadi: safeToString(originalData.harga_potong_jadi),
         // PostPress2
-        id_lem: originalData.id_lem?.toString(),
-        jumlah_harga_lem: originalData.jumlah_harga_lem?.toString(),
-        id_mesin_finishing: originalData.id_mesin_finishing?.toString(),
-        foil: originalData.foil,
-        spot_foil: originalData.spot_foil || '',
-        harga_foil_manual: originalData.harga_foil_manual?.toString(),
-        harga_spot_foil_manual: originalData.harga_spot_foil_manual?.toString(),
-        harga_polimer_manual: originalData.harga_polimer_manual?.toString(),
+        id_lem: safeToString(originalData.id_lem, ''),
+        jumlah_harga_lem: safeToString(originalData.jumlah_harga_lem),
+        id_mesin_finishing: safeToString(originalData.id_mesin_finishing, ''),
+        foil: originalData.foil || '-',
+        spot_foil: originalData.spot_foil || '-',
+        harga_foil_manual: safeToString(originalData.harga_foil_manual),
+        harga_spot_foil_manual: safeToString(
+          originalData.harga_spot_foil_manual,
+        ),
+        harga_polimer_manual: safeToString(originalData.harga_polimer_manual),
         // Packaging
-        panjang_packaging: originalData.panjang_packaging?.toString(),
-        lebar_packaging: originalData.lebar_packaging?.toString(),
-        no_packaging: originalData.no_packaging,
-        jumlah_kirim: originalData.jumlah_kirim?.toString(),
-        harga_packaging: originalData.harga_packaging?.toString(),
-        harga_pengiriman: originalData.harga_pengiriman?.toString(),
-        id_packing: originalData.id_packing?.toString(),
-        qty_packing: originalData.qty_packing?.toString(),
-        harga_packing: originalData.harga_packing?.toString(),
+        panjang_packaging: safeToString(originalData.panjang_packaging),
+        lebar_packaging: safeToString(originalData.lebar_packaging),
+        no_packaging: safeToString(originalData.no_packaging),
+        jumlah_kirim: safeToString(originalData.jumlah_kirim, '1'),
+        harga_packaging: safeToString(originalData.harga_packaging),
+        harga_pengiriman: safeToString(originalData.harga_pengiriman),
+        jenis_packing: originalData.jenis_packing || '-',
+        id_packing: safeToString(originalData.id_packing, ''),
+        qty_packing: safeToString(originalData.qty_packing, '1'),
+        harga_packing: safeToString(originalData.harga_packing),
         // Profit
-        harga_produksi: originalData.harga_produksi.toString(),
-        profit: originalData.profit.toString(),
-        profit_harga: originalData.profit_harga.toString(),
-        jumlah_harga_jual: originalData.jumlah_harga_jual.toString(),
-        ppn: originalData.ppn.toString(),
-        harga_ppn: originalData.harga_ppn.toString(),
-        diskon: originalData.diskon.toString(),
-        harga_diskon: originalData.harga_diskon.toString(),
-        total_harga: originalData.total_harga.toString(),
-        harga_satuan: originalData.harga_satuan.toString(),
-        total_harga_satuan_customer:
-          originalData.total_harga_satuan_customer.toString(),
+        harga_produksi: safeToString(originalData.harga_produksi),
+        profit: safeToString(originalData.profit),
+        profit_harga: safeToString(originalData.profit_harga),
+        jumlah_harga_jual: safeToString(originalData.jumlah_harga_jual),
+        ppn: safeToString(originalData.ppn),
+        harga_ppn: safeToString(originalData.harga_ppn),
+        diskon: safeToString(originalData.diskon),
+        harga_diskon: safeToString(originalData.harga_diskon),
+        total_harga: safeToString(originalData.total_harga),
+        harga_satuan: safeToString(originalData.harga_satuan),
+        total_harga_satuan_customer: safeToString(
+          originalData.total_harga_satuan_customer,
+        ),
         keterangan_harga: originalData.keterangan_harga || '',
         keterangan_kerja: originalData.keterangan_kerja || '',
         // Lain-lain
-        lain_lain:
-          originalData.lain_lain?.map((item) => ({
-            nama_item: item.nama_item,
-            harga: item.harga,
-          })) || [],
-        total_harga_lain_lain:
-          originalData.lain_lain
-            ?.reduce((sum, item) => sum + item.harga, 0)
-            .toString() || '0',
+        lain_lain: Array.isArray(originalData.lain_lain)
+          ? originalData.lain_lain.map((item) => ({
+              nama_item: item.nama_item || '',
+              harga: safeNumber(item.harga),
+            }))
+          : [],
+        total_harga_lain_lain: safeToString(
+          Array.isArray(originalData.lain_lain)
+            ? originalData.lain_lain.reduce(
+                (sum, item) => sum + safeNumber(item.harga),
+                0,
+              )
+            : 0,
+        ),
         // Type
         tipe_kalkulasi:
           (originalData.tipe_kalkulasi as 'normal' | 'multi' | 'manual') ||
           'normal',
         label: originalData.label || '',
-        qty_list: originalData.qty_list || [
-          { qty: originalData.qty_kalkulasi, is_selected: true },
-        ],
+        qty_list:
+          Array.isArray(originalData.qty_list) &&
+          originalData.qty_list.length > 0
+            ? originalData.qty_list
+            : [
+                {
+                  qty: safeNumber(originalData.qty_kalkulasi, 1),
+                  is_selected: true,
+                },
+              ],
       };
 
       setFormData(initialData);
@@ -262,93 +300,90 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
 
       const submitData = {
         ...formData,
-        qty_kalkulasi: Number(formData.qty_kalkulasi),
-        harga_produksi: Number(formData.harga_produksi),
-        profit: Number(formData.profit),
-        profit_harga: Number(formData.profit_harga),
-        total_harga: Number(formData.total_harga),
-        harga_satuan: Number(formData.harga_satuan),
-        total_harga_satuan_customer: Number(
+        qty_kalkulasi: safeNumber(formData.qty_kalkulasi, 1),
+        harga_produksi: safeNumber(formData.harga_produksi),
+        profit: safeNumber(formData.profit),
+        profit_harga: safeNumber(formData.profit_harga),
+        total_harga: safeNumber(formData.total_harga),
+        harga_satuan: safeNumber(formData.harga_satuan),
+        total_harga_satuan_customer: safeNumber(
           formData.total_harga_satuan_customer,
         ),
-        harga_ppn: Number(formData.harga_ppn),
-        diskon: Number(formData.diskon),
-        harga_diskon: Number(formData.harga_diskon),
-        presentase_insheet: Number(formData.presentase_insheet),
-        ukuran_jadi_panjang: Number(formData.ukuran_jadi_panjang),
-        ukuran_jadi_lebar: Number(formData.ukuran_jadi_lebar),
-        ukuran_jadi_tinggi: Number(formData.ukuran_jadi_tinggi),
-        ukuran_jadi_terb_panjang: Number(formData.ukuran_jadi_terb_panjang),
-        ukuran_jadi_terb_lebar: Number(formData.ukuran_jadi_terb_lebar),
-        ukuran_cetak_panjang_1: Number(formData.ukuran_cetak_panjang_1),
-        ukuran_cetak_lebar_1: Number(formData.ukuran_cetak_lebar_1),
-        ukuran_cetak_bagian_1: Number(formData.ukuran_cetak_bagian_1),
-        ukuran_cetak_isi_1: Number(formData.ukuran_cetak_isi_1),
-        ukuran_cetak_panjang_2: Number(formData.ukuran_cetak_panjang_2),
-        ukuran_cetak_lebar_2: Number(formData.ukuran_cetak_lebar_2),
-        ukuran_cetak_bagian_2: Number(formData.ukuran_cetak_bagian_2),
-        ukuran_cetak_isi_2: Number(formData.ukuran_cetak_isi_2),
-        lain_lain: formData.lain_lain || [],
-        total_harga_lain_lain: Number(formData.total_harga_lain_lain || 0),
+        harga_ppn: safeNumber(formData.harga_ppn),
+        diskon: safeNumber(formData.diskon),
+        harga_diskon: safeNumber(formData.harga_diskon),
+        presentase_insheet: safeNumber(formData.presentase_insheet),
+        ukuran_jadi_panjang: safeNumber(formData.ukuran_jadi_panjang),
+        ukuran_jadi_lebar: safeNumber(formData.ukuran_jadi_lebar),
+        ukuran_jadi_tinggi: safeNumber(formData.ukuran_jadi_tinggi),
+        ukuran_jadi_terb_panjang: safeNumber(formData.ukuran_jadi_terb_panjang),
+        ukuran_jadi_terb_lebar: safeNumber(formData.ukuran_jadi_terb_lebar),
+        ukuran_cetak_panjang_1: safeNumber(formData.ukuran_cetak_panjang_1),
+        ukuran_cetak_lebar_1: safeNumber(formData.ukuran_cetak_lebar_1),
+        ukuran_cetak_bagian_1: safeNumber(formData.ukuran_cetak_bagian_1),
+        ukuran_cetak_isi_1: safeNumber(formData.ukuran_cetak_isi_1),
+        ukuran_cetak_panjang_2: safeNumber(formData.ukuran_cetak_panjang_2),
+        ukuran_cetak_lebar_2: safeNumber(formData.ukuran_cetak_lebar_2),
+        ukuran_cetak_bagian_2: safeNumber(formData.ukuran_cetak_bagian_2),
+        ukuran_cetak_isi_2: safeNumber(formData.ukuran_cetak_isi_2),
+        lain_lain: Array.isArray(formData.lain_lain) ? formData.lain_lain : [],
+        total_harga_lain_lain: safeNumber(formData.total_harga_lain_lain),
 
         // Convert PostPress fields to proper types
         pons_insheet: formData.pons_insheet || '',
         id_jenis_pons: formData.id_jenis_pons
-          ? Number(formData.id_jenis_pons)
+          ? safeNumber(formData.id_jenis_pons)
           : null,
         id_mesin_pons: formData.id_mesin_pons
-          ? Number(formData.id_mesin_pons)
+          ? safeNumber(formData.id_mesin_pons)
           : null,
-        harga_pisau: formData.harga_pisau ? Number(formData.harga_pisau) : 0,
+        harga_pisau: safeNumber(formData.harga_pisau),
         ongkos_pons: formData.ongkos_pons || 'No',
-        ongkos_pons_qty: formData.ongkos_pons_qty
-          ? Number(formData.ongkos_pons_qty)
-          : 1,
-        harga_satuan_ongkos_pons: formData.harga_satuan_ongkos_pons,
-        total_harga_ongkos_pons: formData.total_harga_ongkos_pons,
+        ongkos_pons_qty: safeNumber(formData.ongkos_pons_qty, 1),
+        harga_satuan_ongkos_pons: safeNumber(formData.harga_satuan_ongkos_pons),
+        total_harga_ongkos_pons: safeNumber(formData.total_harga_ongkos_pons),
 
         lipat: formData.lipat || 'No',
         id_mesin_lipat: formData.id_mesin_lipat
-          ? Number(formData.id_mesin_lipat)
+          ? safeNumber(formData.id_mesin_lipat)
           : null,
-        qty_lipat: formData.qty_lipat ? Number(formData.qty_lipat) : 1,
-        harga_lipat: formData.harga_lipat,
+        qty_lipat: safeNumber(formData.qty_lipat, 1),
+        harga_lipat: safeNumber(formData.harga_lipat),
         potong_jadi: formData.potong_jadi || 'No',
-        qty_potong: formData.qty_potong ? Number(formData.qty_potong) : 1,
-        harga_potong_jadi: formData.harga_potong_jadi,
+        id_mesin_potong: formData.id_mesin_potong
+          ? safeNumber(formData.id_mesin_potong)
+          : null,
+        qty_potong: safeNumber(formData.qty_potong, 1),
+        harga_potong_jadi: safeNumber(formData.harga_potong_jadi),
 
         // PostPress2 fields
         finishing_insheet: formData.finishing_insheet || '',
-        id_lem: formData.id_lem ? Number(formData.id_lem) : null,
-        jumlah_harga_lem: formData.jumlah_harga_lem,
+        id_lem: formData.id_lem ? safeNumber(formData.id_lem) : null,
+        jumlah_harga_lem: safeNumber(formData.jumlah_harga_lem),
         id_mesin_finishing: formData.id_mesin_finishing
-          ? Number(formData.id_mesin_finishing)
+          ? safeNumber(formData.id_mesin_finishing)
           : null,
         foil: formData.foil || '-',
         spot_foil: formData.spot_foil || '-',
-        harga_foil_manual: formData.harga_foil_manual,
-        harga_spot_foil_manual: formData.harga_spot_foil_manual,
-        harga_polimer_manual: formData.harga_polimer_manual,
+        harga_foil_manual: safeNumber(formData.harga_foil_manual),
+        harga_spot_foil_manual: safeNumber(formData.harga_spot_foil_manual),
+        harga_polimer_manual: safeNumber(formData.harga_polimer_manual),
         jenis_packing: formData.jenis_packing || '-',
-        id_packing: formData.id_packing ? Number(formData.id_packing) : null,
-        qty_packing: formData.qty_packing ? Number(formData.qty_packing) : 1,
-        harga_packing: formData.harga_packing
-          ? Number(formData.harga_packing)
-          : 0,
+        id_packing: formData.id_packing
+          ? safeNumber(formData.id_packing)
+          : null,
+        qty_packing: safeNumber(formData.qty_packing, 1),
+        harga_packing: safeNumber(formData.harga_packing),
         panjang_packaging: formData.panjang_packaging
-          ? Number(formData.panjang_packaging)
+          ? safeNumber(formData.panjang_packaging)
           : null,
         lebar_packaging: formData.lebar_packaging
-          ? Number(formData.lebar_packaging)
+          ? safeNumber(formData.lebar_packaging)
           : null,
-        no_packaging: formData.no_packaging ? Number(formData.no_packaging) : 0,
-        jumlah_kirim: formData.jumlah_kirim ? Number(formData.jumlah_kirim) : 1,
-        harga_packaging: formData.harga_packaging
-          ? Number(formData.harga_packaging)
-          : 0,
-        harga_pengiriman: formData.harga_pengiriman
-          ? Number(formData.harga_pengiriman)
-          : 0,
+        no_packaging: safeNumber(formData.no_packaging),
+        jumlah_kirim: safeNumber(formData.jumlah_kirim, 1),
+        harga_packaging: safeNumber(formData.harga_packaging),
+        harga_pengiriman: safeNumber(formData.harga_pengiriman),
         id_kalkulasi_previous: originalData.id,
         status_kalkulasi: copyType === 'repeat' ? 'repeat' : 'repeat perubahan',
       };
@@ -400,14 +435,14 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
 
   // Calculate effects for repeat perubahan only
   useEffect(() => {
-    if (isReadOnly) return;
+    if (isReadOnly || !formData.harga_produksi) return;
 
     const newHargaProduksi = calculateHargaProduksi(formData);
-    const currentHargaProduksi = formData.harga_produksi
-      ? parseFloat(formData.harga_produksi.toString().replace(/[Rp.\s,]/g, ''))
-      : 0;
+    const currentHargaProduksi = safeNumber(
+      String(formData.harga_produksi).replace(/[Rp.\s,]/g, ''),
+    );
 
-    if (currentHargaProduksi !== newHargaProduksi) {
+    if (Math.abs(currentHargaProduksi - newHargaProduksi) > 0.01) {
       setFormData((prev) => ({
         ...prev,
         harga_produksi: newHargaProduksi.toString(),
@@ -432,18 +467,25 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
   ]);
 
   useEffect(() => {
-    if (isReadOnly) return;
+    if (isReadOnly || !formData.harga_produksi) return;
 
     const financialData = calculateFinancialData(formData);
 
     const needsUpdate =
-      parseFloat(formData.profit_harga || '0') !== financialData.profit_harga ||
-      parseFloat(formData.jumlah_harga_jual || '0') !==
-        financialData.jumlah_harga_jual ||
-      parseFloat(formData.harga_ppn || '0') !== financialData.harga_ppn ||
-      parseFloat(formData.harga_diskon || '0') !== financialData.harga_diskon ||
-      parseFloat(formData.total_harga || '0') !== financialData.total_harga ||
-      parseFloat(formData.harga_satuan || '0') !== financialData.harga_satuan;
+      Math.abs(safeNumber(formData.profit_harga) - financialData.profit_harga) >
+        0.01 ||
+      Math.abs(
+        safeNumber(formData.jumlah_harga_jual) -
+          financialData.jumlah_harga_jual,
+      ) > 0.01 ||
+      Math.abs(safeNumber(formData.harga_ppn) - financialData.harga_ppn) >
+        0.01 ||
+      Math.abs(safeNumber(formData.harga_diskon) - financialData.harga_diskon) >
+        0.01 ||
+      Math.abs(safeNumber(formData.total_harga) - financialData.total_harga) >
+        0.01 ||
+      Math.abs(safeNumber(formData.harga_satuan) - financialData.harga_satuan) >
+        0.01;
 
     if (needsUpdate) {
       setFormData((prev) => ({
@@ -566,7 +608,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
                   </h2>
                   <textarea
                     name="keterangan_kerja"
-                    value={formData.keterangan_kerja}
+                    value={formData.keterangan_kerja || ''}
                     onChange={handleInputChange}
                     rows={4}
                     readOnly={isReadOnly}
@@ -602,5 +644,4 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
     </div>
   );
 };
-
 export default CopyKalkulasiModal;
