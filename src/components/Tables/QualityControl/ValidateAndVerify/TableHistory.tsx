@@ -494,15 +494,15 @@ const TableHistory = () => {
 
       {/* Data Rows - Responsive Cards */}
       {ticketProsesHistory?.data.map((data: any, index: number) => {
-        const tglTicket = convertTimeStampToDateOnly(data.tiket.createdAt);
-        const jamTicket = convertDateToTime(data.tiket.createdAt);
+        const tglTicket = convertTimeStampToDateOnly(data.createdAt);
+        const jamTicket = convertDateToTime(data.tiket.waktu_selesai_mtc);
         const tglSelesaiTicket =
           data.waktu_selesai_mtc == null
             ? '-'
             : convertTimeStampToDate(data.waktu_selesai_mtc);
         const waktuRespon = calculateResponTime2(
-          data.tiket?.waktu_selesai_mtc,
-          data.tiket?.waktu_selesai,
+          data.waktu_selesai_mtc,
+          data.waktu_selesai,
         );
         const waktuBreakdownMinutes = calculateResponTime2(
           data.tiket?.createdAt,
