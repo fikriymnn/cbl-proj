@@ -305,7 +305,7 @@ const OKPKabag: React.FC = () => {
   };
 
   const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
+    if (!text || text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
   };
 
@@ -503,7 +503,7 @@ const OKPKabag: React.FC = () => {
                         className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
                         title={item.no_okp}
                       >
-                        {item.no_okp ? truncateText(item.no_okp, 10) : '-'}
+                        {item.no_okp ? truncateText(item.no_okp, 20) : '-'}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">

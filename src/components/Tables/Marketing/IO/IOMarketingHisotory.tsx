@@ -263,8 +263,8 @@ const IOMarketingHistory: React.FC = () => {
     });
   };
 
-  const getStatusColor = (status: string): string => {
-    switch (status.toLowerCase()) {
+  const getStatusColor = (status?: string): string => {
+    switch (status?.toLowerCase()) {
       case 'baru':
         return 'bg-blue-100 text-blue-800';
       case 'repeat perubahan':
@@ -276,7 +276,7 @@ const IOMarketingHistory: React.FC = () => {
     }
   };
 
-  const getStatusColor2 = (status: string) => {
+  const getStatusColor2 = (status?: string) => {
     switch (status?.toLowerCase()) {
       case 'draft':
         return 'bg-yellow-100 text-yellow-800 border border-yellow-200';
@@ -487,7 +487,7 @@ const IOMarketingHistory: React.FC = () => {
                         className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
                         title={item.no_io}
                       >
-                        {item.no_io ? truncateText(item.no_io, 12) : '-'}
+                        {item.no_io ? truncateText(item.no_io, 20) : '-'}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
