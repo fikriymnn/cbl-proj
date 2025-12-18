@@ -241,6 +241,7 @@ import ListReturPage from './pages/Accounting/ListReturPage';
 import CreatePerubahanPage from './pages/Marketing/CreatePerubahanPage';
 import ListPerubahanPage from './pages/Marketing/ListPerubahanPage';
 import ListApprovalPerubahanPage from './pages/Accounting/ListApprovalPerubahanPage';
+import KabagApprovalHistory from './pages/Marketing/Kabag/KabagApprovalHistory';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1957,7 +1958,7 @@ function App() {
           element={
             <>
               <PageTitle title="PT CBL" />
-              <KabagApproval />
+              <KabagApprovalHistory />
             </>
           }
         />

@@ -1,6 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
-import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 
@@ -39,12 +38,9 @@ interface ApiError {
   status?: number;
 }
 
-const KabagApprovalIO: React.FC = () => {
+const KabagApprovalIOHistory: React.FC = () => {
   const [data, setData] = useState<IOItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [alasanPending, setalasanPending] = useState<string>('');
-  const [showPending, setShowPending] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
   // Pagination states
   const [page, setPage] = useState<number>(1);
@@ -54,17 +50,6 @@ const KabagApprovalIO: React.FC = () => {
   // Search states
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
-
-  const openModalPending = (id: number) => {
-    setSelectedItemId(id);
-    setShowPending(true);
-  };
-
-  const closeModalPending = () => {
-    setShowPending(false);
-    setSelectedItemId(null);
-    setalasanPending('');
-  };
 
   useEffect(() => {
     fetchIOData();
@@ -79,6 +64,7 @@ const KabagApprovalIO: React.FC = () => {
           page: page,
           limit: limit,
           search: searchTerm,
+          status: 'history',
         },
         withCredentials: true,
       });
@@ -125,58 +111,6 @@ const KabagApprovalIO: React.FC = () => {
     setPage(1); // Reset to first page when changing limit
   };
 
-  // Updated approve function
-  async function RequestKabag(id: number) {
-    if (window.confirm('Apakah Anda yakin ingin Approve IO Ini?')) {
-      try {
-        const url = `${
-          import.meta.env.VITE_API_LINK
-        }/marketing/io/approve/${id}`;
-        const res = await axios.put(
-          url,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
-        fetchIOData();
-      } catch (error: any) {
-        console.log(error);
-        alert('Error approving IO');
-      }
-    }
-  }
-
-  // Updated reject function
-  async function RejectKabag(id: number) {
-    if (!alasanPending.trim()) {
-      alert('Alasan reject harus diisi');
-      return;
-    }
-
-    if (window.confirm('Apakah Anda yakin ingin Reject IO Ini?')) {
-      try {
-        const url = `${
-          import.meta.env.VITE_API_LINK
-        }/marketing/io/reject/${id}`;
-        const res = await axios.put(
-          url,
-          {
-            note_reject: alasanPending,
-          },
-          {
-            withCredentials: true,
-          },
-        );
-        closeModalPending();
-        fetchIOData();
-      } catch (error: any) {
-        console.log(error);
-        alert('Error rejecting IO');
-      }
-    }
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -192,7 +126,7 @@ const KabagApprovalIO: React.FC = () => {
         <div className="flex items-center gap-3">
           <input
             type="text"
-            placeholder="Search IO..."
+            placeholder="Search IO History..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -207,7 +141,7 @@ const KabagApprovalIO: React.FC = () => {
           {searchTerm && (
             <button
               onClick={handleClearSearch}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1.5 rounded-md text-sm font-medium transition-colors"
             >
               Clear
             </button>
@@ -245,9 +179,6 @@ const KabagApprovalIO: React.FC = () => {
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
                   Status Proses
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -282,32 +213,12 @@ const KabagApprovalIO: React.FC = () => {
                         {item.status_proses}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs">
-                      <div className="flex flex-col gap-2">
-                        {item.status === 'requested' && (
-                          <>
-                            <button
-                              onClick={() => RequestKabag(item.id)}
-                              className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => openModalPending(item.id)}
-                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={8}
                     className="px-6 py-4 text-center text-gray-500"
                   >
                     {searchTerm
@@ -356,35 +267,8 @@ const KabagApprovalIO: React.FC = () => {
           </Stack>
         </div>
       </div>
-
-      {/* Reject Modal */}
-      {showPending && (
-        <ModalKosonganSmall
-          isOpen={showPending}
-          onClose={closeModalPending}
-          judul="Alasan Reject"
-        >
-          <div className="flex flex-col gap-2 px-4 py-4">
-            <div className="flex gap-2 flex-col w-full">
-              <textarea
-                value={alasanPending}
-                onChange={(e) => setalasanPending(e.target.value)}
-                placeholder="Masukkan alasan reject..."
-                className="border-2 border-stroke w-full rounded-sm col-span-2 h-20 p-2 resize-none"
-              />
-            </div>
-            <button
-              onClick={() => selectedItemId && RejectKabag(selectedItemId)}
-              disabled={!alasanPending.trim()}
-              className="w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer disabled:opacity-50"
-            >
-              REJECT
-            </button>
-          </div>
-        </ModalKosonganSmall>
-      )}
     </div>
   );
 };
 
-export default KabagApprovalIO;
+export default KabagApprovalIOHistory;

@@ -6,10 +6,10 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import KabagApprovalTable from './KabagApprovalTable';
-import OKPKabag from '../OKP/OKBKabag';
-import KabagApprovalIO from './KabagApprovalIO';
-import SOApprovalKabag from './SOApprovalKabat';
+import OKPKabagHistory from '../OKP/OKPKabagHistory';
+import KabagApprovalTableHistory from './History/KabagApprovalTableHistory';
+import KabagApprovalIOHistory from './History/KabagApprovalIOHistory';
+import SOApprovalKabagHistory from './History/SOApprovalKabatHistory';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -46,7 +46,7 @@ function a11yProps(index: number) {
   };
 }
 
-export default function TabKabagApprove() {
+export default function TabKabagApproveHistory() {
   const theme = createTheme({
     palette: {
       primary: {
@@ -153,17 +153,17 @@ export default function TabKabagApprove() {
           </ThemeProvider>
         </AppBar>
         <TabPanel value={value} index={0} dir={theme.direction}>
-          <KabagApprovalTable />
+          <KabagApprovalTableHistory />
         </TabPanel>
 
         <TabPanel value={value} index={1} dir={theme.direction}>
-          <OKPKabag />
+          <OKPKabagHistory />
         </TabPanel>
         <TabPanel value={value} index={2} dir={theme.direction}>
-          <KabagApprovalIO />
+          <KabagApprovalIOHistory />
         </TabPanel>
         <TabPanel value={value} index={3} dir={theme.direction}>
-          <SOApprovalKabag />
+          <SOApprovalKabagHistory />
         </TabPanel>
       </Box>
     </>
