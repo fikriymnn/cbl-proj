@@ -213,8 +213,8 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       const totalBeforeDiscount = totalQty * harga;
       const total = totalBeforeDiscount - diskonProduk;
 
-      const dpp = total / 1.11;
-      const pajak = total - dpp;
+      const dpp = (11 / 12) * total;
+      const pajak = dpp * 0.12;
 
       const product: InvoiceProduct = {
         id_produk: id_produk,
