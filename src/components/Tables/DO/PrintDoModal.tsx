@@ -1,6 +1,6 @@
 // PrintDoModal.tsx
 import React, { useRef, useEffect, useState } from 'react';
-import Logo from '../../../images/logo/logo-cbl 1.svg';
+import Logo from '../../../images/logo/CBL Logo 3.png';
 import axios from 'axios';
 
 interface DOPrintData {
@@ -167,30 +167,43 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Print DO - ${printData?.no_do || 'Delivery Order'}</title>
+        <meta charset="UTF-8">
+        <title>DO-${printData?.no_do || 'Delivery Order'}</title>
         <style>
           @page {
-            size: A4 portrait;
-            margin: 15mm;
+            size: 241mm 280mm;
+            margin: 10mm 8mm 10mm 8mm;
           }
           * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
           }
           body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
             line-height: 1.4;
+            color: #000;
+            width: 225mm;
           }
           @media print {
             body {
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
             }
+            @page {
+              margin: 10mm 8mm 10mm 8mm;
+            }
+            html, body {
+              width: 241mm;
+              height: 280mm;
+            }
           }
           .container {
             padding: 0;
+            width: 100%;
           }
           .header-section {
             display: flex;
@@ -198,16 +211,16 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             align-items: flex-start;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 2px solid black;
+            border-bottom: 2px solid #000;
           }
           .header-left {
             display: flex;
             align-items: flex-start;
-            gap: 15px;
-            flex: 1;
+            gap: 12px;
+            flex: 0 0 50%;
           }
           .logo {
-            width: 70px;
+            width: 75px;
             height: auto;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
@@ -215,69 +228,76 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           .company-info {
             display: flex;
             flex-direction: column;
+            gap: 2px;
           }
           .company-name {
-            font-size: 11px;
+            font-size: 12px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
           }
           .doc-info {
             display: flex;
             flex-direction: column;
             gap: 2px;
-            font-size: 9px;
+            font-size: 11px;
           }
           .header-right {
-            text-align: right;
-            flex: 1;
+            flex: 0 0 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding-left: 15px;
           }
           .date-location {
-            font-size: 10px;
-            margin-bottom: 15px;
+            font-size: 11px;
+            margin-bottom: 12px;
+            font-weight: 600;
           }
           .recipient-label {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: normal;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
           }
           .recipient-name {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
           }
           .recipient-address {
-            font-size: 10px;
+            font-size: 11px;
             line-height: 1.5;
           }
           .doc-title-section {
             text-align: center;
-            margin: 20px 0 15px 0;
+            margin: 18px 0 15px 0;
           }
           .doc-title {
             font-size: 16px;
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
           }
           .doc-subtitle {
-            font-size: 10px;
+            font-size: 11px;
           }
           .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
-            font-size: 10px;
+            margin-bottom: 12px;
+            font-size: 11px;
           }
           .items-table th,
           .items-table td {
-            border: 1px solid black;
-            padding: 6px 8px;
+            border: 1.5px solid #000;
+            padding: 7px 8px;
             text-align: left;
           }
           .items-table th {
-            background-color: white;
+            background-color: #fff;
             font-weight: bold;
             text-align: center;
-            font-size: 10px;
+            font-size: 11px;
           }
           .items-table td {
             vertical-align: top;
@@ -301,21 +321,21 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            font-size: 10px;
-            margin-bottom: 10px;
+            font-size: 11px;
+            margin-bottom: 12px;
           }
           .footer-info-left {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 3px;
           }
           .footer-info-right {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: bold;
             text-align: right;
           }
           .signature-section {
-            margin-top: 30px;
+            margin-top: 35px;
             display: flex;
             justify-content: space-between;
           }
@@ -325,15 +345,27 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           }
           .signature-title {
             font-weight: bold;
-            margin-bottom: 60px;
-            font-size: 10px;
+            margin-bottom: 65px;
+            font-size: 11px;
           }
           .signature-name {
-            font-size: 10px;
+            font-size: 11px;
+            font-weight: 600;
           }
           .no-jo-red {
-            color: red;
+            color: #CC0000;
             font-weight: bold;
+            font-size: 12px;
+          }
+          .product-name {
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.3;
+          }
+          .po-number {
+            font-size: 10px;
+            color: #222;
+            margin-top: 3px;
           }
         </style>
       </head>
@@ -376,8 +408,8 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           <table class="items-table">
             <thead>
               <tr>
-                <th style="width: 12%;">Jumlah Qty</th>
-                <th style="width: 43%;" class="no-border-right">Nama Barang</th>
+                <th style="width: 13%;">Jumlah Qty</th>
+                <th style="width: 42%;" class="no-border-right">Nama Barang</th>
                 <th style="width: 12%;" class="no-border-left"></th>
                 <th style="width: 33%;">Keterangan</th>
               </tr>
@@ -393,10 +425,10 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
                       item.jumlah_qty?.toLocaleString('id-ID') || 0
                     } PCS</strong></td>
                     <td class="no-border-right">
-                      ${getValue(item.produk)}<br/>
-                      <span style="font-size: 9px;">PO: ${
-                        item.po_qty?.toLocaleString('id-ID') || 0
-                      }/${getValue(printData?.no_po_customer)}</span>
+                      <div class="product-name">${getValue(item.produk)}</div>
+                      <div class="po-number">PO: ${getValue(
+                        printData?.no_po_customer,
+                      )}</div>
                     </td>
                     <td class="text-center no-jo-red no-border-left">${removeJOPrefix(
                       printData?.no_jo || '',
@@ -415,7 +447,7 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             </tbody>
           </table>
 
-          <!-- Footer Info - NO BORDERS -->
+          <!-- Footer Info -->
           <div class="footer-info-row">
             <div class="footer-info-left">
               <div>Terima kasih atas kepercayaan anda kepada kami.</div>
@@ -503,13 +535,13 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
               <div className="text-white text-xl">No data available</div>
             </div>
           ) : (
-            <div className="max-w-[210mm] mx-auto bg-white shadow-2xl">
+            <div className="max-w-[241mm] mx-auto bg-white shadow-2xl">
               {/* PDF Preview using iframe */}
               <iframe
                 srcDoc={getPrintContent()}
                 className="w-full"
                 style={{
-                  height: '297mm', // A4 height
+                  height: '280mm', // Continuous form height
                   border: 'none',
                   backgroundColor: 'white',
                 }}
@@ -522,8 +554,8 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
         {/* Footer info */}
         <div className="bg-gray-800 text-white p-3 text-center text-sm">
           <p>
-            Preview may differ slightly from final print. Click "Print /
-            Download" to generate the final PDF.
+            Optimized for continuous form paper (241mm x 280mm). Click "Print /
+            Download" to print.
           </p>
         </div>
       </div>

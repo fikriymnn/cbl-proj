@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { KalkulasiDetailItem } from '../Kalkulasi/types/kalkulasi';
+import Logo from '../../../../images/logo/logo-cbl 1.svg';
 
 interface KalkulasiPrintModalProps {
   kalkulasiId: number;
@@ -14,10 +15,29 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
   const [data, setData] = useState<KalkulasiDetailItem | null>(null);
   const [loading, setLoading] = useState(true);
   const printRef = useRef<HTMLDivElement>(null);
+  const [logoBase64, setLogoBase64] = useState<string>('');
 
   useEffect(() => {
     fetchData();
   }, [kalkulasiId]);
+
+  useEffect(() => {
+    // Convert logo to base64 for better print quality
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/png');
+        setLogoBase64(dataURL);
+      }
+    };
+    img.src = Logo;
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -41,6 +61,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
     if (printRef.current) {
       const printWindow = window.open('', '_blank');
       if (printWindow) {
+        const logoSrc = logoBase64 || Logo;
         printWindow.document.write(`
           <!DOCTYPE html>
           <html>
@@ -49,7 +70,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
               <style>
                 @page {
                   size: A4 portrait;
-                  margin: 0;
+                  margin: 10mm;
                 }
                 body {
                   margin: 0;
@@ -118,6 +139,12 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
     return `Rp. ${num.toLocaleString('id-ID', { minimumFractionDigits: 0 })}`;
   };
 
+  const formatCurrencyInteger = (value: number | string) => {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    return `Rp. ${Math.floor(num).toLocaleString('id-ID', {
+      minimumFractionDigits: 0,
+    })}`;
+  };
   const getValue = (value: any, defaultValue: string = '-') => {
     if (value === null || value === undefined || value === '') {
       return defaultValue;
@@ -193,7 +220,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 width: '210mm',
                 height: '297mm',
                 margin: 0,
-                padding: 0,
+                padding: '10mm', // Added padding for print margins
               }}
             >
               {/* Main Container with border */}
@@ -814,7 +841,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         </td>
                         <td className="border border-black bg-gray-300">
                           {formatCurrency(
-                            getNumericValue(data.total_harga_ongkos_pons),
+                            getNumericValue(data.harga_satuan_ongkos_pons),
                           )}
                         </td>
                         <td className="border border-black bg-green-300 font-bold">
@@ -842,7 +869,8 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         <td className="border border-black"></td>
                         <td className="border border-black bg-gray-300">
                           {formatCurrency(
-                            getNumericValue(data.total_harga_ongkos_pons),
+                            getNumericValue(data.harga_pisau) +
+                              getNumericValue(data.harga_satuan_ongkos_pons),
                           )}
                         </td>
                         <td className="border border-black">Foil</td>
@@ -918,9 +946,21 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         <td className="border border-black bg-yellow-200 text-right">
                           {getNumericValue(data.lebar_packaging)}
                         </td>
-                        <td className="border border-black">No. Delivery</td>
-                        <td className="border border-black bg-yellow-200 text-right">
-                          {getNumericValue(data.jumlah_kirim, 5)}
+                        <td className="border border-black">
+                          Harga Pengiriman
+                        </td>
+                        <td
+                          className="border border-black bg-yellow-200 text-right"
+                          style={{ fontSize: '8px' }}
+                        >
+                          {getNumericValue(data.jumlah_kirim)} x{' '}
+                          {formatCurrency(
+                            getNumericValue(data.harga_area_pengiriman),
+                          )}{' '}
+                          ={' '}
+                          {formatCurrency(
+                            getNumericValue(data.harga_pengiriman),
+                          )}
                         </td>
                       </tr>
                       <tr>
@@ -1011,9 +1051,8 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                           colSpan={2}
                           style={{ width: '30%' }}
                         >
-                          {formatCurrency(
-                            Number(data.harga_produksi || 0) /
-                              Number(data.qty_kalkulasi || 1),
+                          {formatCurrencyInteger(
+                            getNumericValue(data.harga_satuan),
                           )}
                         </td>
                       </tr>
@@ -1028,10 +1067,10 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                           {formatCurrency(getNumericValue(data.profit_harga))}
                         </td>
                         <td className="border border-black bg-green-300">
-                          Profit Margin (%)
+                          Profit Margin per pc
                         </td>
                         <td className="border border-black bg-gray-300 text-right">
-                          {formatCurrency(
+                          {formatCurrencyInteger(
                             Number(data.profit_harga || 0) /
                               Number(data.qty_kalkulasi || 1),
                           )}
@@ -1053,7 +1092,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                           Harga Jual per pc
                         </td>
                         <td className="border border-black bg-gray-300 text-right">
-                          {formatCurrency(
+                          {formatCurrencyInteger(
                             Number(data.jumlah_harga_jual || 0) /
                               Number(data.qty_kalkulasi || 1),
                           )}
@@ -1064,16 +1103,16 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                           PPN
                         </td>
                         <td className="border border-black bg-yellow-200">
-                          {getNumericValue(data.ppn)}
+                          {getNumericValue(data.ppn)}%
                         </td>
                         <td className="border border-black bg-gray-300 text-right">
                           {formatCurrency(getNumericValue(data.harga_ppn))}
                         </td>
                         <td className="border border-black bg-green-300">
-                          PPN
+                          PPN per pc
                         </td>
                         <td className="border border-black bg-gray-300 text-right">
-                          {formatCurrency(
+                          {formatCurrencyInteger(
                             Number(data.harga_ppn || 0) /
                               Number(data.qty_kalkulasi || 1),
                           )}
@@ -1084,16 +1123,16 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                           Discount (%)
                         </td>
                         <td className="border border-black bg-yellow-200">
-                          {getNumericValue(data.diskon)}
+                          {getNumericValue(data.diskon)}%
                         </td>
                         <td className="border border-black bg-gray-300 text-right">
                           {formatCurrency(getNumericValue(data.harga_diskon))}
                         </td>
                         <td className="border border-black bg-green-300">
-                          Discount (%)
+                          Discount per pc
                         </td>
                         <td className="border border-black bg-red-400 text-right">
-                          {formatCurrency(
+                          {formatCurrencyInteger(
                             Number(data.harga_diskon || 0) /
                               Number(data.qty_kalkulasi || 1),
                           )}
@@ -1108,12 +1147,11 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                           {formatCurrency(getNumericValue(data.total_harga))}
                         </td>
                         <td className="border border-black bg-green-300 font-bold">
-                          TOTAL
+                          TOTAL per pc
                         </td>
                         <td className="border border-black bg-red-400  font-bold text-right">
-                          {formatCurrency(
-                            Number(data.total_harga || 0) /
-                              Number(data.qty_kalkulasi || 1),
+                          {formatCurrencyInteger(
+                            getNumericValue(data.total_harga_satuan_customer),
                           )}
                         </td>
                       </tr>
@@ -1122,16 +1160,18 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                           className="border border-black bg-red-400  text-center font-bold"
                           colSpan={3}
                         >
-                          Rp {Number(data.total_harga || 0).toLocaleString()}
+                          Rp{' '}
+                          {Math.floor(
+                            Number(data.total_harga || 0),
+                          ).toLocaleString()}
                         </td>
                         <td
                           className="border border-black bg-yellow-200 text-center font-bold"
                           colSpan={2}
                         >
                           Rp.{' '}
-                          {(
-                            Number(data.total_harga || 0) /
-                            Number(data.qty_kalkulasi || 1)
+                          {Math.floor(
+                            Number(data.total_harga_satuan_customer || 0),
                           ).toLocaleString()}
                         </td>
                       </tr>
@@ -1163,7 +1203,6 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                     </tbody>
                   </table>
                 </div>
-
                 {/* Footer Section - Image 6 - Always at bottom */}
                 <table
                   className="w-full border-collapse"

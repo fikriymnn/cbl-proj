@@ -43,6 +43,7 @@ interface InvoiceProduct {
   total: number;
   pajak: number;
   diskon_produk: number;
+  no_do?: string;
 }
 
 interface CreateInvoiceModalProps {
@@ -156,80 +157,69 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   };
 
   const processProducts = (items: DOItem[]) => {
-    const productMap = new Map<
-      number,
-      {
-        nama_produk: string;
-        totalQty: number;
-        harga: number;
-        so: any;
-      }
-    >();
+    const products: InvoiceProduct[] = [];
 
     items.forEach((item: any) => {
       if (item.delivery_order && Array.isArray(item.delivery_order)) {
+        // Process each delivery order separately
         item.delivery_order.forEach((order: any) => {
           if (!order.id_produk) return;
 
           const qty = order.jumlah_qty || 0;
+          const harga = item.so?.harga_jual || 0;
+          const diskonProduk = 0;
 
-          if (productMap.has(order.id_produk)) {
-            const existing = productMap.get(order.id_produk)!;
-            existing.totalQty += qty;
-          } else {
-            productMap.set(order.id_produk, {
-              nama_produk: order.produk || '',
-              totalQty: qty,
-              harga: item.so?.harga_jual || 0,
-              so: item.so,
-            });
-          }
+          const totalBeforeDiscount = qty * harga;
+          const total = totalBeforeDiscount - diskonProduk;
+
+          const dpp = (11 / 12) * total;
+          const pajak = dpp * 0.12;
+
+          const product: InvoiceProduct = {
+            id_produk: order.id_produk,
+            nama_produk: order.produk || '',
+            no_do: item.no_do || '',
+            kode_produk: `P-${String(order.id_produk).padStart(5, '0')}`,
+            qty: qty,
+            unit: 'PCS',
+            harga: harga,
+            dpp: dpp,
+            total: total,
+            pajak: pajak,
+            diskon_produk: diskonProduk,
+          };
+
+          products.push(product);
         });
       } else {
+        // Process single item
         if (item.id_produk) {
           const qty = item.jumlah_qty || item.po_qty || 0;
+          const harga = item.so?.harga_jual || 0;
+          const diskonProduk = 0;
 
-          if (productMap.has(item.id_produk)) {
-            const existing = productMap.get(item.id_produk)!;
-            existing.totalQty += qty;
-          } else {
-            productMap.set(item.id_produk, {
-              nama_produk: item.produk || '',
-              totalQty: qty,
-              harga: item.so?.harga_jual || 0,
-              so: item.so,
-            });
-          }
+          const totalBeforeDiscount = qty * harga;
+          const total = totalBeforeDiscount - diskonProduk;
+
+          const dpp = (11 / 12) * total;
+          const pajak = dpp * 0.12;
+
+          const product: InvoiceProduct = {
+            id_produk: item.id_produk,
+            nama_produk: item.produk || '',
+            kode_produk: `P-${String(item.id_produk).padStart(5, '0')}`,
+            qty: qty,
+            unit: 'PCS',
+            harga: harga,
+            dpp: dpp,
+            total: total,
+            pajak: pajak,
+            diskon_produk: diskonProduk,
+          };
+
+          products.push(product);
         }
       }
-    });
-
-    const products: InvoiceProduct[] = [];
-
-    productMap.forEach((value, id_produk) => {
-      const { nama_produk, totalQty, harga } = value;
-      const diskonProduk = 0;
-
-      const totalBeforeDiscount = totalQty * harga;
-      const total = totalBeforeDiscount - diskonProduk;
-
-      const dpp = (11 / 12) * total;
-      const pajak = dpp * 0.12;
-
-      const product: InvoiceProduct = {
-        id_produk: id_produk,
-        nama_produk: nama_produk,
-        kode_produk: `P-${String(id_produk).padStart(5, '0')}`,
-        qty: totalQty,
-        unit: 'PCS',
-        harga: harga,
-        dpp: dpp,
-        total: total,
-        pajak: pajak,
-        diskon_produk: diskonProduk,
-      };
-
-      products.push(product);
     });
 
     setInvoiceProducts(products);
