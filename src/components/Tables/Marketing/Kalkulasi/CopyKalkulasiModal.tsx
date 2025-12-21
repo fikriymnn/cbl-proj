@@ -36,7 +36,6 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
   );
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
-  const isReadOnly = copyType === 'repeat';
 
   // Helper function to safely convert to string
   const safeToString = (value: any, defaultValue: string = '0'): string => {
@@ -226,7 +225,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent): string | void => {
-      if (hasUnsavedChanges && !isReadOnly) {
+      if (hasUnsavedChanges) {
         e.preventDefault();
         e.returnValue =
           'You have unsaved changes. Are you sure you want to leave?';
@@ -236,15 +235,13 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedChanges, isReadOnly]);
+  }, [hasUnsavedChanges]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => {
-    if (isReadOnly) return; // Prevent changes if read-only
-
     const { name, value } = e.target;
 
     setFormData((prev) => {
@@ -422,7 +419,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
 
   const handleCancelClick = (): void => {
     if (!isSubmitting) {
-      if (!isReadOnly && hasUnsavedChanges) {
+      if (hasUnsavedChanges) {
         const confirmCancel = window.confirm(
           'Data akan hilang. Apakah Anda yakin ingin membatalkan?',
         );
@@ -435,7 +432,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
 
   // Calculate effects for repeat perubahan only
   useEffect(() => {
-    if (isReadOnly || !formData.harga_produksi) return;
+    if (!formData.harga_produksi) return;
 
     const newHargaProduksi = calculateHargaProduksi(formData);
     const currentHargaProduksi = safeNumber(
@@ -463,11 +460,10 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
     formData.harga_polimer_manual,
     formData.total_harga_lain_lain,
     formData.lain_lain,
-    isReadOnly,
   ]);
 
   useEffect(() => {
-    if (isReadOnly || !formData.harga_produksi) return;
+    if (!formData.harga_produksi) return;
 
     const financialData = calculateFinancialData(formData);
 
@@ -504,7 +500,6 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
     formData.ppn,
     formData.diskon,
     formData.qty_kalkulasi,
-    isReadOnly,
   ]);
 
   const getHeaderTitle = () => {
@@ -529,11 +524,6 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold">{getHeaderTitle()}</h1>
-              {isReadOnly && (
-                <p className="text-blue-100 text-sm mt-1">
-                  Mode View Only - Data tidak dapat diubah
-                </p>
-              )}
             </div>
             <button
               type="button"
@@ -571,7 +561,8 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
                 <BasicInfoForm
                   formData={formData}
                   onInputChange={handleInputChange}
-                  isReadOnly={isReadOnly}
+                  isReadOnly={false}
+                  copyType={copyType}
                 />
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -583,7 +574,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
                     activeTab={activeTab}
                     formData={formData}
                     onInputChange={handleInputChange}
-                    isReadOnly={isReadOnly}
+                    isReadOnly={false}
                     copyType={copyType}
                   />
                 </div>
@@ -611,12 +602,8 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
                     value={formData.keterangan_kerja || ''}
                     onChange={handleInputChange}
                     rows={4}
-                    readOnly={isReadOnly}
-                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg transition-all ${
-                      isReadOnly
-                        ? 'bg-gray-100 cursor-not-allowed'
-                        : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                    }`}
+                    readOnly={false} // CHANGE: Always false
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg transition-all focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Masukkan keterangan Kerja dan informasi tambahan..."
                   />
                 </div>
@@ -632,7 +619,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
             isSubmitting={isSubmitting}
             onCancel={handleCancelClick}
             copyType={copyType}
-            isReadOnly={isReadOnly}
+            isReadOnly={false}
             submitButtonText={
               copyType === 'repeat'
                 ? 'Simpan Repeat'

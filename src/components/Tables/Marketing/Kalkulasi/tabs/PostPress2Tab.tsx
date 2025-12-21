@@ -82,7 +82,7 @@ const PostPress2Tab: React.FC<PostPressTabProps> = ({
   const [selectedSpotFoil, setSelectedSpotFoil] = useState<string>('');
 
   // Determine if component should be read-only
-  const isComponentReadOnly = isReadOnly || copyType === 'repeat';
+  const isComponentReadOnly = isReadOnly;
 
   const getInputClassName = (baseClassName: string) => {
     return isComponentReadOnly
