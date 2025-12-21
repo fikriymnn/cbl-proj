@@ -229,6 +229,7 @@ const IOMarketing: React.FC = () => {
       if (res.data.succes && res.data.data && res.data.data.no_io) {
         return res.data.data.no_io;
       }
+
       return null;
     } catch (error) {
       console.error('Error fetching previous OKP data:', error);

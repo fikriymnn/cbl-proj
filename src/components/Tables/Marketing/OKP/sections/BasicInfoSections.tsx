@@ -121,7 +121,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
     <div>
       <div>
         <label className="block text-xl font-medium text-blue-700 mb-2">
-          LABEL : {selectedKalkulasi?.label || '-'}
+          LABEL : {selectedKalkulasi?.label || formData.kalkulasi?.label || '-'}
         </label>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

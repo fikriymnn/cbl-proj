@@ -522,11 +522,11 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
                 <div class="company-text">
                   <div class="company-name">PT. CAHAYA BERLIAN LESTARI</div>
                   <div class="company-info">
-                    <div>Jl. Pancaloi B No. 5 Bandung 40234</div>
-                    <div>Telp: (022) 6033023</div>
+                    <div>Jl. Paralon II No 5 Cigondewah Kaler, 40124</div>
+                    <div>Telp: (022) 6033823</div>
                   </div>
                 </div>
-              </div>
+              </div>  
               
               <div class="date-location">Bandung, ${formatDate(
                 invoiceData.tgl_faktur,
