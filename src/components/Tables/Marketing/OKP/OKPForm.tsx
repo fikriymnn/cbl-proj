@@ -141,7 +141,7 @@ const OKPForm: React.FC<OKPFormProps> = ({
       onClose();
     } catch (error) {
       console.error('Error creating OKP:', error);
-      alert('Error creating OKP');
+      alert('Error creating OKP', error);
     } finally {
       setIsSubmitting(false);
     }

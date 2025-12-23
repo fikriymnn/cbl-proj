@@ -110,6 +110,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       }));
     } catch (error) {
       console.error('Error generating SO number:', error);
+
       // Optionally show error message to user
     } finally {
       setLoadingSONumber(false);
