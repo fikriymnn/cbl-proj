@@ -139,9 +139,9 @@ const OKPForm: React.FC<OKPFormProps> = ({
       console.log('OKP created successfully:', response.data);
       setHasUnsavedChanges(false);
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating OKP:', error);
-      alert('Error creating OKP', error);
+      alert(error.response?.data?.msg || 'Failed to create OKP');
     } finally {
       setIsSubmitting(false);
     }

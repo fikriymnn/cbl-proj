@@ -252,9 +252,12 @@ const SOMarketing: React.FC = () => {
         fetchsoData();
         alert('Sales Order created successfully!');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating SO:', error);
-      alert('Error creating Sales Order. Please try again.');
+      alert(
+        error.response?.data?.msg ||
+          'error creating Sales Order. Please try again.',
+      );
     } finally {
       setSubmitLoading(false);
     }

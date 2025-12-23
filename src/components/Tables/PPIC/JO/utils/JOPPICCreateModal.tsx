@@ -210,62 +210,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     });
   };
 
-  // Calculate qty from total insheet (reverse calculation)
-  const calculateQtyFromInsheet = (
-    totalInsheet: number,
-    mounting: MountingData,
-  ) => {
-    const isi = mounting.ukuran_cetak_isi_1 || 1;
-
-    // Find matching ketentuan based on raw druk
-    let ketentuanMatch = null;
-    for (const ketentuan of ketentuanInsheetData) {
-      if (ketentuan.is_persentase) {
-        // Estimate raw druk from total insheet
-        const estimatedRawDruk = (totalInsheet * 100) / ketentuan.nilai;
-        const batasBawah = parseInt(ketentuan.batas_bawah);
-        const batasAtas =
-          ketentuan.batas_atas === '-'
-            ? Infinity
-            : parseInt(ketentuan.batas_atas);
-
-        if (estimatedRawDruk >= batasBawah && estimatedRawDruk <= batasAtas) {
-          ketentuanMatch = ketentuan;
-          break;
-        }
-      } else {
-        if (totalInsheet === ketentuan.nilai) {
-          ketentuanMatch = ketentuan;
-          break;
-        }
-      }
-    }
-
-    if (!ketentuanMatch) {
-      ketentuanMatch = ketentuanInsheetData[0];
-    }
-
-    let rawDruk: number;
-
-    if (ketentuanMatch.is_persentase) {
-      // Calculate raw druk from total insheet
-      rawDruk = Math.ceil((totalInsheet * 100) / ketentuanMatch.nilai);
-    } else {
-      // For fixed value, estimate raw druk from batas
-      const batasBawah = parseInt(ketentuanMatch.batas_bawah);
-      const batasAtas =
-        ketentuanMatch.batas_atas === '-'
-          ? batasBawah * 2
-          : parseInt(ketentuanMatch.batas_atas);
-      rawDruk = Math.floor((batasBawah + batasAtas) / 2);
-    }
-
-    // NEW FORMULA: qty = (raw_druk + total_insheet) * isi
-    const calculatedQty = (rawDruk + totalInsheet) * isi;
-
-    return Math.max(0, calculatedQty);
-  };
-
   useEffect(() => {
     if (isOpen) {
       fetchSOData();
@@ -852,8 +796,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       //console.log('Create JO submit data:', submitData);
     } catch (error: any) {
       console.error('Error saving JO:', error);
-      const errorMessage =
-        error.response?.data?.message || 'Gagal menyimpan JO';
+      const errorMessage = error.response?.data?.msg || 'Gagal menyimpan JO';
       alert(errorMessage);
     } finally {
       setLoading(false);

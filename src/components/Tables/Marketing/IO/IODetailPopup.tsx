@@ -72,8 +72,9 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
         // Refresh the table after creating mounting
         await fetchIODetail();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating mounting:', error);
+      alert(error.response?.data?.msg || 'Failed to delete mounting');
     } finally {
       setLoading(false);
     }
@@ -111,9 +112,10 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
         // Refresh the table after deleting mounting
         await fetchIODetail();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting mounting:', error);
-      alert('Failed to delete mounting');
+
+      alert(error.response?.data?.msg || 'Failed to delete mounting');
     } finally {
       setDeletingMountingId(null);
     }

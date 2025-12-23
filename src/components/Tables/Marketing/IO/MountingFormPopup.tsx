@@ -307,8 +307,9 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
       if (res.data.succes) {
         onClose();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving mounting:', error);
+      alert(error.response?.data?.msg || 'Error saving mounting');
     } finally {
       setLoading(false);
     }
