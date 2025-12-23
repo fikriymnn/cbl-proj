@@ -467,7 +467,8 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           <label className="block text-xs font-medium text-gray-700">
             Status
           </label>
-          <select
+          <input
+            type="text"
             name="status_kalkulasi"
             value={formData.status_kalkulasi}
             onChange={onInputChange}
@@ -476,12 +477,8 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                 ? 'bg-gray-100 cursor-not-allowed'
                 : 'focus:ring-2 focus:ring-blue-500 focus:border-transparent'
             }`}
-            disabled={isFieldDisabled('status_kalkulasi')}
-          >
-            <option value="baru">Baru</option>
-            <option value="repeat">Repeat</option>
-            <option value="repeat perubahan">Repeat Perubahan</option>
-          </select>
+            disabled
+          ></input>
         </div>
 
         <div className="space-y-2">
