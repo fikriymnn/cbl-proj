@@ -9,6 +9,24 @@ interface WarnaTabProps {
 }
 
 const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
+  // Handle warna depan change and auto-calculate total
+  const handleWarnaDepanChange = (value: string) => {
+    const warnaDepan = parseFloat(value) || 0;
+    const warnaBelakang = parseFloat(String(formData.warna_belakang)) || 0;
+
+    onInputChange('warna_depan', parseFloat(value) || 0);
+    onInputChange('jumlah_warna', warnaDepan + warnaBelakang);
+  };
+
+  // Handle warna belakang change and auto-calculate total
+  const handleWarnaBelakangChange = (value: string) => {
+    const warnaDepan = parseFloat(String(formData.warna_depan)) || 0;
+    const warnaBelakang = parseFloat(value) || 0;
+
+    onInputChange('warna_belakang', parseFloat(value) || 0);
+    onInputChange('jumlah_warna', warnaDepan + warnaBelakang);
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -30,7 +48,7 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             value={formData.warna_depan}
-            onChange={(e) => onInputChange('warna_depan', e.target.value)}
+            onChange={(e) => handleWarnaDepanChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-pink-100"
           />
         </div>
@@ -41,7 +59,7 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             value={formData.warna_belakang}
-            onChange={(e) => onInputChange('warna_belakang', e.target.value)}
+            onChange={(e) => handleWarnaBelakangChange(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-pink-100"
           />
         </div>
@@ -52,8 +70,8 @@ const WarnaTab: React.FC<WarnaTabProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             value={formData.jumlah_warna}
-            onChange={(e) => onInputChange('jumlah_warna', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-pink-100"
+            readOnly
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100 cursor-not-allowed"
           />
         </div>
       </div>
