@@ -171,8 +171,8 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
         <title>DO-${printData?.no_do || 'Delivery Order'}</title>
         <style>
           @page {
-            size: 241mm 280mm;
-            margin: 10mm 8mm 10mm 8mm;
+            size: 241mm 140mm;
+            margin: 6mm 4mm 6mm 4mm;
           }
           * {
             box-sizing: border-box;
@@ -182,12 +182,12 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           body {
             margin: 0;
             padding: 0;
-            font-family: Arial, 'Helvetica Neue', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            line-height: 1.5;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            line-height: 1.3;
             color: #000;
-            width: 225mm;
+            width: 233mm;
+            background: white;
           }
           @media print {
             body {
@@ -196,14 +196,13 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
               color: #000 !important;
             }
             @page {
-              margin: 10mm 8mm 10mm 8mm;
-            }
-            html, body {
-              width: 241mm;
-              height: 280mm;
+              margin: 6mm 4mm 6mm 4mm;
             }
             * {
               color: #000 !important;
+            }
+            .no-print {
+              display: none !important;
             }
           }
           .container {
@@ -214,18 +213,18 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 3px solid #000;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #000;
           }
           .header-left {
             display: flex;
             align-items: flex-start;
-            gap: 15px;
-            flex: 0 0 50%;
+            gap: 8px;
+            flex: 0 0 48%;
           }
           .logo {
-            width: 80px;
+            width: 65px;
             height: auto;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
@@ -233,83 +232,81 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           .company-info {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
           }
           .company-name {
-            font-size: 14px;
+            font-size: 11px;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
+            line-height: 1.2;
           }
           .doc-info {
             display: flex;
             flex-direction: column;
-            gap: 3px;
-            font-size: 13px;
-            font-weight: 600;
+            gap: 2px;
+            font-size: 10px;
           }
           .header-right {
-            flex: 0 0 50%;
+            flex: 0 0 52%;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding-left: 15px;
+            padding-left: 8px;
           }
           .date-location {
-            font-size: 13px;
-            margin-bottom: 15px;
+            font-size: 10px;
+            margin-bottom: 8px;
             font-weight: bold;
           }
           .recipient-label {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 5px;
+            font-size: 10px;
+            margin-bottom: 3px;
           }
           .recipient-name {
-            font-size: 15px;
+            font-size: 12px;
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
           }
           .recipient-address {
-            font-size: 13px;
-            line-height: 1.6;
-            font-weight: 600;
+            font-size: 10px;
+            line-height: 1.4;
           }
           .doc-title-section {
             text-align: center;
-            margin: 20px 0 18px 0;
+            margin: 12px 0 10px 0;
           }
           .doc-title {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
+            margin-bottom: 3px;
+            letter-spacing: 0.5px;
           }
           .doc-subtitle {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 10px;
           }
           .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
-            font-size: 13px;
+            margin-bottom: 10px;
+            font-size: 10px;
           }
           .items-table th,
           .items-table td {
-            border: 2px solid #000;
-            padding: 10px 10px;
+            border: 1.5px solid #000;
+            padding: 5px 6px;
             text-align: left;
           }
           .items-table th {
             background-color: #fff;
             font-weight: bold;
             text-align: center;
-            font-size: 13px;
+            font-size: 10px;
+            line-height: 1.3;
           }
           .items-table td {
             vertical-align: top;
-            font-weight: 600;
+            line-height: 1.4;
           }
           .items-table .no-border-left {
             border-left: none;
@@ -330,22 +327,21 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            font-size: 13px;
-            margin-bottom: 15px;
-            font-weight: 600;
+            font-size: 10px;
+            margin-bottom: 12px;
           }
           .footer-info-left {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
           }
           .footer-info-right {
-            font-size: 15px;
+            font-size: 12px;
             font-weight: bold;
             text-align: right;
           }
           .signature-section {
-            margin-top: 40px;
+            margin-top: 25px;
             display: flex;
             justify-content: space-between;
           }
@@ -355,28 +351,31 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           }
           .signature-title {
             font-weight: bold;
-            margin-bottom: 70px;
-            font-size: 13px;
+            margin-bottom: 50px;
+            font-size: 10px;
           }
           .signature-name {
-            font-size: 13px;
+            font-size: 10px;
             font-weight: bold;
+            border-top: 1px solid #000;
+            padding-top: 3px;
+            display: inline-block;
+            min-width: 150px;
           }
           .no-jo-red {
             color: #CC0000;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 11px;
           }
           .product-name {
-            font-size: 13px;
+            font-size: 10px;
             font-weight: bold;
-            line-height: 1.4;
+            line-height: 1.3;
           }
           .po-number {
-            font-size: 12px;
-            color: #000;
-            margin-top: 4px;
-            font-weight: 600;
+            font-size: 9px;
+            color: #333;
+            margin-top: 2px;
           }
           strong {
             font-weight: bold;
@@ -422,7 +421,7 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           <table class="items-table">
             <thead>
               <tr>
-                <th style="width: 13%;">Jumlah Qty</th>
+                <th style="width: 13%;">Jumlah<br/>Qty</th>
                 <th style="width: 42%;" class="no-border-right">Nama Barang</th>
                 <th style="width: 12%;" class="no-border-left"></th>
                 <th style="width: 33%;">Keterangan</th>
@@ -481,7 +480,7 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           <div class="signature-section">
             <div class="signature-box">
               <div class="signature-title">Hormat Kami,</div>
-              <div class="signature-name">(PT. Cahaya Berlian Lestari)</div>
+              <div class="signature-name">(PT. CBL)</div>
             </div>
             <div class="signature-box">
               <div class="signature-title">Yang Menerima,</div>

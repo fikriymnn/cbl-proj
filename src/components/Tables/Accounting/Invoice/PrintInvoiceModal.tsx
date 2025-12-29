@@ -233,7 +233,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 
     // Determine paper height based on number of items
     const itemCount = invoiceData.invoice_produk?.length || 0;
-    const paperHeight = itemCount > 3 ? '560mm' : '280mm'; // Double height if more than 3 items
+    const paperHeight = itemCount > 3 ? '560mm' : '140mm'; // Half the original height for single page
 
     return `
     <!DOCTYPE html>
@@ -244,7 +244,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
         <style>
           @page {
             size: 241mm ${paperHeight};
-            margin: 10mm 8mm 10mm 8mm;
+            margin: 6mm 4mm 6mm 4mm;
           }
 
           * {
@@ -256,12 +256,12 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
           body {
             margin: 0;
             padding: 0;
-            font-family: Arial, 'Helvetica Neue', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            line-height: 1.5;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            line-height: 1.3;
             color: #000;
-            width: 225mm;
+            width: 233mm;
+            background: white;
           }
 
           @media print {
@@ -271,7 +271,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
               color: #000 !important;
             }
             @page {
-              margin: 10mm 8mm 10mm 8mm;
+              margin: 6mm 4mm 6mm 4mm;
             }
             html, body {
               width: 241mm;
@@ -292,13 +292,13 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 18px;
+            margin-bottom: 10px;
           }
 
           .company-header {
             display: flex;
             align-items: flex-start;
-            gap: 15px;
+            gap: 8px;
           }
 
           .logo {
@@ -315,23 +315,22 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 
           .company-name {
             font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 4px;
-            line-height: 1.4;
+            font-size: 11px;
+            margin-bottom: 3px;
+            line-height: 1.2;
           }
 
           .company-info {
-            font-size: 13px;
-            line-height: 1.6;
-            font-weight: 600;
+            font-size: 10px;
+            line-height: 1.4;
           }
 
           .company-info div {
-            margin-bottom: 3px;
+            margin-bottom: 2px;
           }
 
           .date-location {
-            font-size: 13px;
+            font-size: 10px;
             text-align: right;
             font-weight: bold;
           }
@@ -341,7 +340,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 22px;
+            margin-bottom: 12px;
           }
 
           .invoice-details-left {
@@ -351,26 +350,25 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 
           .detail-row {
             display: flex;
-            margin-bottom: 4px;
-            font-size: 13px;
-            line-height: 1.6;
+            margin-bottom: 3px;
+            font-size: 10px;
+            line-height: 1.4;
           }
 
           .detail-label {
-            width: 120px;
+            width: 110px;
             flex-shrink: 0;
             font-weight: bold;
           }
 
           .detail-colon {
-            width: 15px;
+            width: 12px;
             flex-shrink: 0;
             font-weight: bold;
           }
 
           .detail-value {
             flex: 1;
-            font-weight: 600;
           }
 
           .customer-info-right {
@@ -380,45 +378,44 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
           }
 
           .customer-label {
-            font-size: 13px;
-            margin-bottom: 5px;
-            font-weight: 600;
+            font-size: 10px;
+            margin-bottom: 4px;
           }
 
           .customer-name {
             font-weight: bold;
-            font-size: 15px;
-            margin-bottom: 5px;
+            font-size: 12px;
+            margin-bottom: 4px;
           }
 
           .customer-address {
-            font-size: 13px;
-            line-height: 1.7;
-            font-weight: 600;
+            font-size: 10px;
+            line-height: 1.5;
           }
 
           /* ITEMS TABLE */
           .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
           }
 
           .items-table th,
           .items-table td {
-            border: 2px solid #000;
-            padding: 10px 10px;
-            font-size: 13px;
+            border: 1.5px solid #000;
+            padding: 5px 6px;
+            font-size: 10px;
           }
 
           .items-table th {
             background-color: #fff;
             font-weight: bold;
             text-align: center;
+            line-height: 1.3;
           }
 
           .items-table td {
-            font-weight: 600;
+            line-height: 1.4;
           }
 
           .text-center {
@@ -434,15 +431,15 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-top: 15px;
-            margin-bottom: 25px;
+            margin-top: 10px;
+            margin-bottom: 15px;
           }
 
           .terbilang {
             flex: 0 0 50%;
             max-width: 50%;
-            font-size: 13px;
-            padding-right: 20px;
+            font-size: 10px;
+            padding-right: 15px;
             font-weight: bold;
           }
 
@@ -454,28 +451,27 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
           .total-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            font-size: 13px;
+            padding: 4px 0;
+            font-size: 10px;
           }
 
           .total-label {
             text-align: right;
             font-weight: bold;
             flex: 1;
-            padding-right: 25px;
+            padding-right: 20px;
           }
 
           .total-value {
             text-align: right;
-            width: 160px;
-            font-weight: 600;
+            width: 140px;
           }
 
           .grand-total-row {
-            border-top: 2px solid #000;
-            border-bottom: 4px double #000;
-            padding: 8px 0 !important;
-            margin-top: 6px;
+            border-top: 1.5px solid #000;
+            border-bottom: 3px double #000;
+            padding: 6px 0 !important;
+            margin-top: 4px;
             font-weight: bold;
           }
 
@@ -488,29 +484,28 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-top: 30px;
+            margin-top: 20px;
           }
 
           .bank-section {
             flex: 0 0 50%;
             max-width: 50%;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 10px;
           }
 
           .bank-label {
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
           }
 
           .bank-row {
             display: flex;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
           }
 
           .bank-name {
             font-weight: bold;
-            width: 95px;
+            width: 85px;
             flex-shrink: 0;
           }
 
@@ -518,17 +513,20 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             flex: 0 0 50%;
             max-width: 50%;
             text-align: center;
-            font-size: 13px;
+            font-size: 10px;
           }
 
           .signature-label {
             font-weight: bold;
-            margin-bottom: 75px;
+            margin-bottom: 50px;
           }
 
           .signature-line {
             display: inline-block;
             font-weight: bold;
+            border-top: 1px solid #000;
+            padding-top: 3px;
+            min-width: 150px;
           }
 
           strong {
