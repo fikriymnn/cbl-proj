@@ -704,6 +704,8 @@ const SOMarketing: React.FC = () => {
           setSelectedSO(null);
         }}
         data={selectedSO}
+        isEditMode={true}
+        onUpdate={fetchsoData}
       />
       {/* Done IO Manual Popup */}
       <SODoneIOManualPopup

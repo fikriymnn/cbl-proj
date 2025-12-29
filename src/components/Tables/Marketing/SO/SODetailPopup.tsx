@@ -1,13 +1,15 @@
 // components/SODetailPopup.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { SOData } from './types/SOTypes';
+import { SOData, KalkulasiData, Gudang } from './types/SOTypes';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface SODetailPopupProps {
   isOpen: boolean;
   onClose: () => void;
   data: SOData | null;
+  isEditMode?: boolean; // New prop to control edit mode
+  onUpdate?: () => void; // Callback after successful update
 }
 
 interface KelengkapanPOFormData {
@@ -26,6 +28,8 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
   isOpen,
   onClose,
   data: initialData,
+  isEditMode = false,
+  onUpdate,
 }) => {
   const [data, setData] = useState<SOData | null>(initialData);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -33,6 +37,15 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
   const [ppicOptions, setPpicOptions] = useState<
     Array<{ value: string; label: string }>
   >([]);
+
+  // Edit form state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [gudangOptions, setGudangOptions] = useState<
+    Array<{ value: string; label: string; data: Gudang }>
+  >([]);
+  const [editFormData, setEditFormData] = useState<Partial<SOData>>({});
+
   const [formData, setFormData] = useState<KelengkapanPOFormData>({
     status_pemesanan: '',
     acuan_warna: '',
@@ -74,9 +87,31 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     { value: 'TIDAK', label: 'TIDAK' },
   ];
 
-  // Update local data when initialData changes
+  const statusProdukOptions = [
+    { value: 'OKP', label: 'OKP' },
+    { value: 'PROFF', label: 'PROFF' },
+    { value: 'ACC', label: 'ACC' },
+  ];
+
+  const statusJOOptions = [
+    { value: 'baru', label: 'Baru' },
+    { value: 'repeat', label: 'Repeat' },
+    { value: 'repeat perubahan', label: 'Repeat Perubahan' },
+  ];
+
   useEffect(() => {
     setData(initialData);
+    if (initialData) {
+      // Create a deep copy to avoid reference issues
+      setEditFormData({ ...initialData });
+      // Fetch gudang options when data is loaded
+      if (initialData.id_kalkulasi) {
+        fetchGudangOptions(initialData.id_kalkulasi);
+      }
+    } else {
+      // Reset editFormData when initialData is null
+      setEditFormData({});
+    }
   }, [initialData]);
 
   useEffect(() => {
@@ -96,12 +131,33 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
           kirim_semua: data.kirim_semua || '',
           note: data.note || '',
           ppic: data.ppic || '',
-          // create_by will be set by fetchUserData
         }));
       }
     }
-    console.log(data);
   }, [isFormOpen, data]);
+
+  // Fetch gudang options based on kalkulasi
+  const fetchGudangOptions = async (kalkulasiId: number) => {
+    try {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/marketing/kalkulasi/${kalkulasiId}`;
+      const res = await axios.get(url, { withCredentials: true });
+
+      if (res.data.succes && res.data.data?.customer?.gudang) {
+        const gudangOpts = res.data.data.customer.gudang.map(
+          (gudang: Gudang) => ({
+            value: gudang.alamat_gudang,
+            label: gudang.alamat_gudang,
+            data: gudang,
+          }),
+        );
+        setGudangOptions(gudangOpts);
+      }
+    } catch (error) {
+      console.error('Error fetching gudang options:', error);
+    }
+  };
 
   // Function to refresh SO data
   const refreshSOData = async () => {
@@ -113,6 +169,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
 
       if (res.data.succes && res.data.data) {
         setData(res.data.data);
+        setEditFormData(res.data.data);
         console.log('Refreshed SO data:', res.data.data);
       }
     } catch (error) {
@@ -124,12 +181,11 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     try {
       const url = `${import.meta.env.VITE_API_LINK}/me`;
       const res = await axios.get(url, { withCredentials: true });
-      console.log('user', res);
 
       if (res.data) {
         setFormData((prev) => ({
           ...prev,
-          create_by: res.data.nama || '', // This should now correctly access nama
+          create_by: res.data.nama || '',
         }));
       }
     } catch (error) {
@@ -166,7 +222,6 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
         }));
 
       setPpicOptions(ppicKaryawan);
-      console.log('PPIC Karyawan:', ppicKaryawan);
     } catch (error) {
       console.error('Error fetching PPIC karyawan:', error);
     }
@@ -180,6 +235,87 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleEditInputChange = (field: keyof SOData, value: any) => {
+    setEditFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    // Auto calculate total_harga when harga_jual or po_qty changes
+    if (field === 'harga_jual') {
+      const total = value * (editFormData.po_qty || 0);
+      setEditFormData((prev) => ({
+        ...prev,
+        total_harga: isNaN(total) ? 0 : total,
+      }));
+    }
+
+    if (field === 'po_qty') {
+      const total = (editFormData.harga_jual || 0) * value;
+      setEditFormData((prev) => ({
+        ...prev,
+        total_harga: isNaN(total) ? 0 : total,
+      }));
+    }
+  };
+
+  const handleSubmitEdit = async () => {
+    if (!data?.id) return;
+
+    if (
+      window.confirm('Apakah Anda yakin ingin menyimpan perubahan data SO ini?')
+    ) {
+      try {
+        setEditLoading(true);
+        const url = `${import.meta.env.VITE_API_LINK}/marketing/so/${data.id}`;
+
+        // Merge original data with edited data to ensure all fields are sent
+        const soData = {
+          // Include all original data first
+          ...data,
+          // Then override with edited fields
+          ...editFormData,
+          // Ensure critical fields are preserved (using optional chaining for safety)
+          id: data.id,
+          no_so: data.no_so || '',
+          no_io: data.no_io || '',
+          tgl_input_po: data.tgl_input_po || '',
+          id_io: data.id_io,
+          id_kalkulasi: data.id_kalkulasi,
+          status: data.status || 'draft',
+        };
+
+        // Wrap the data in data_so object
+        const payload = {
+          data_so: soData,
+        };
+
+        console.log('Update SO payload:', payload);
+
+        const res = await axios.put(url, payload, {
+          withCredentials: true,
+        });
+
+        if (res.data.succes) {
+          alert('Data SO berhasil diperbarui!');
+          setIsEditing(false);
+          await refreshSOData();
+          if (onUpdate) {
+            onUpdate();
+          }
+        }
+      } catch (error: any) {
+        console.error('Error updating SO:', error);
+        alert(
+          error.response?.data?.message ||
+            'Gagal memperbarui data SO. Silakan coba lagi.',
+        );
+      } finally {
+        setEditLoading(false);
+      }
+    }
   };
 
   const handleSubmitKelengkapanPO = async () => {
@@ -225,15 +361,11 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
             withCredentials: true,
           },
         );
-        console.log(res);
+
         if (res.data.succes) {
           alert('Form Checklist Kelengkapan PO berhasil disimpan!');
           setIsFormOpen(false);
-
-          // Refresh the SO data to get updated kelengkapan PO data
           await refreshSOData();
-
-          // Reset form
           setFormData({
             status_pemesanan: '',
             acuan_warna: '',
@@ -272,6 +404,11 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     return new Date(dateString).toLocaleDateString('id-ID');
   };
 
+  const formatDateForInput = (dateString: string): string => {
+    if (!dateString) return '';
+    return new Date(dateString).toISOString().split('T')[0];
+  };
+
   // Check if kelengkapan PO data exists
   const hasKelengkapanPO =
     data.acuan_warna ||
@@ -287,7 +424,9 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
         <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b">
-            <h2 className="text-xl font-semibold">Detail Sales Order</h2>
+            <h2 className="text-xl font-semibold">
+              {isEditing ? 'Edit Sales Order' : 'Detail Sales Order'}
+            </h2>
             <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 text-2xl"
@@ -296,19 +435,33 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
               ×
             </button>
           </div>
-          <div className="px-4 py-2">
-            <button
-              type="button"
-              onClick={() => setIsFormOpen(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              Form Checklist Kelengkapan PO
-            </button>
+
+          {/* Action Buttons */}
+          <div className="px-4 py-2 flex gap-2">
+            {isEditMode && !isEditing && (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Edit SO
+              </button>
+            )}
+            {!isEditing && (
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(true)}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                Form Checklist Kelengkapan PO
+              </button>
+            )}
           </div>
+
           {/* Content */}
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* All existing SO fields... */}
+              {/* Tanggal Input PO - Always Read-only */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Tanggal Input PO
@@ -318,6 +471,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 </div>
               </div>
 
+              {/* Nomor SO - Always Read-only */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Nomor SO
@@ -327,6 +481,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 </div>
               </div>
 
+              {/* Nomor IO - Always Read-only */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Nomor IO
@@ -336,177 +491,441 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 </div>
               </div>
 
+              {/* SO Cancel */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   SO Cancel
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.so_cancel || '-'}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editFormData.so_cancel || ''}
+                    onChange={(e) =>
+                      handleEditInputChange('so_cancel', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.so_cancel || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* No Booking */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   No Booking
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.no_booking || '-'}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editFormData.no_booking || ''}
+                    onChange={(e) =>
+                      handleEditInputChange('no_booking', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.no_booking || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Status Job Order */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Status Job Order
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.status_jo || '-'}
-                </div>
+                {isEditing ? (
+                  <SearchableSelect
+                    placeholder="Pilih Status JO"
+                    value={editFormData.status_jo || ''}
+                    onChange={(value) =>
+                      handleEditInputChange('status_jo', String(value))
+                    }
+                    options={statusJOOptions}
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.status_jo || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Customer */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Customer
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.customer || '-'}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editFormData.customer || ''}
+                    onChange={(e) =>
+                      handleEditInputChange('customer', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.customer || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Produk */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Produk
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.produk || '-'}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editFormData.produk || ''}
+                    onChange={(e) =>
+                      handleEditInputChange('produk', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.produk || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Status Produk */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Status Produk
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.status_produk || '-'}
-                </div>
+                {isEditing ? (
+                  <SearchableSelect
+                    placeholder="Pilih Status Produk"
+                    value={editFormData.status_produk || ''}
+                    onChange={(value) =>
+                      handleEditInputChange('status_produk', String(value))
+                    }
+                    options={statusProdukOptions}
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.status_produk || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Tanggal Acc Customer */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Tanggal Acc Customer
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {formatDate(data.tgl_acc_customer)}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="date"
+                    value={formatDateForInput(
+                      editFormData.tgl_acc_customer || '',
+                    )}
+                    onChange={(e) =>
+                      handleEditInputChange('tgl_acc_customer', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {formatDate(data.tgl_acc_customer)}
+                  </div>
+                )}
               </div>
 
+              {/* Tanggal PO Customer */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Tanggal PO Customer
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {formatDate(data.tgl_po_customer)}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="date"
+                    value={formatDateForInput(
+                      editFormData.tgl_po_customer || '',
+                    )}
+                    onChange={(e) =>
+                      handleEditInputChange('tgl_po_customer', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {formatDate(data.tgl_po_customer)}
+                  </div>
+                )}
               </div>
 
+              {/* PO Qty */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   PO Qty
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.po_qty?.toLocaleString('id-ID') || '0'}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={editFormData.po_qty || 0}
+                    onChange={(e) =>
+                      handleEditInputChange(
+                        'po_qty',
+                        parseInt(e.target.value) || 0,
+                      )
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.po_qty?.toLocaleString('id-ID') || '0'}
+                  </div>
+                )}
               </div>
 
+              {/* Harga Jual */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Harga Jual
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {formatCurrency(data.harga_jual || 0)}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={editFormData.harga_jual || 0}
+                    onChange={(e) =>
+                      handleEditInputChange(
+                        'harga_jual',
+                        parseFloat(e.target.value) || 0,
+                      )
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {formatCurrency(data.harga_jual || 0)}
+                  </div>
+                )}
               </div>
 
+              {/* Total Harga */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Total Harga
                 </label>
                 <div className="w-full p-2 border border-gray-200 rounded bg-gray-50 font-semibold">
-                  {formatCurrency(data.total_harga)}
+                  {formatCurrency(editFormData.total_harga || data.total_harga)}
                 </div>
               </div>
 
+              {/* PPN */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   PPN
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.ppn || '-'}
-                </div>
+                {isEditing ? (
+                  <select
+                    value={editFormData.ppn || ''}
+                    onChange={(e) =>
+                      handleEditInputChange('ppn', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Pilih PPN</option>
+                    <option value="yes">Ya</option>
+                    <option value="no">Tidak</option>
+                  </select>
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.ppn || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Profit */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Profit
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.profit || 0}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={editFormData.profit || 0}
+                    onChange={(e) =>
+                      handleEditInputChange(
+                        'profit',
+                        parseInt(e.target.value) || 0,
+                      )
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.profit || 0}
+                  </div>
+                )}
               </div>
 
+              {/* Tanggal Pengiriman */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Tanggal Pengiriman
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {formatDate(data.tgl_pengiriman)}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="date"
+                    value={formatDateForInput(
+                      editFormData.tgl_pengiriman || '',
+                    )}
+                    onChange={(e) =>
+                      handleEditInputChange('tgl_pengiriman', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {formatDate(data.tgl_pengiriman)}
+                  </div>
+                )}
               </div>
 
+              {/* Nomor PO Customer */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Nomor PO Customer
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.no_po_customer || '-'}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editFormData.no_po_customer || ''}
+                    onChange={(e) =>
+                      handleEditInputChange('no_po_customer', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.no_po_customer || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Alamat Pengiriman */}
               <div className="col-span-2">
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Alamat Pengiriman
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.alamat_pengiriman || '-'}
-                </div>
+                {isEditing ? (
+                  <SearchableSelect
+                    placeholder="Pilih Alamat Gudang"
+                    value={editFormData.alamat_pengiriman || ''}
+                    onChange={(value) =>
+                      handleEditInputChange('alamat_pengiriman', String(value))
+                    }
+                    options={gudangOptions}
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.alamat_pengiriman || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Keterangan */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Keterangan
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.keterangan || '-'}
-                </div>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editFormData.keterangan || ''}
+                    onChange={(e) =>
+                      handleEditInputChange('keterangan', e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.keterangan || '-'}
+                  </div>
+                )}
               </div>
 
+              {/* Ada Standar Warna */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Ada Standar Warna
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.ada_standar_warna || '-'}
-                </div>
+                {isEditing ? (
+                  <div className="flex items-center space-x-4 pt-2">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="ada_standar_warna"
+                        value="Ya"
+                        checked={editFormData.ada_standar_warna === 'Ya'}
+                        onChange={(e) =>
+                          handleEditInputChange(
+                            'ada_standar_warna',
+                            e.target.value,
+                          )
+                        }
+                        className="mr-2"
+                      />
+                      Ya
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        name="ada_standar_warna"
+                        value="Tidak"
+                        checked={editFormData.ada_standar_warna === 'Tidak'}
+                        onChange={(e) =>
+                          handleEditInputChange(
+                            'ada_standar_warna',
+                            e.target.value,
+                          )
+                        }
+                        className="mr-2"
+                      />
+                      Tidak
+                    </label>
+                  </div>
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.ada_standar_warna || '-'}
+                  </div>
+                )}
               </div>
-
+              {/* IO Selesai */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   IO Selesai
                 </label>
-                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                  {data.is_io_selesai ? 'Ya' : 'Tidak'}
-                </div>
+                {isEditing ? (
+                  <label className="flex items-center space-x-2 pt-2">
+                    <input
+                      type="checkbox"
+                      checked={editFormData.is_io_selesai || false}
+                      onChange={(e) =>
+                        handleEditInputChange('is_io_selesai', e.target.checked)
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="text-sm">Ya</span>
+                  </label>
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.is_io_selesai ? 'Ya' : 'Tidak'}
+                  </div>
+                )}
               </div>
 
+              {/* Status */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Status
@@ -528,7 +947,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
             </div>
 
             {/* Kelengkapan PO Section - Display if data exists */}
-            {hasKelengkapanPO && (
+            {hasKelengkapanPO && !isEditing && (
               <div className="mt-8 pt-6 border-t">
                 <h3 className="text-lg font-semibold mb-4 text-gray-800">
                   Checklist Kelengkapan PO
@@ -619,19 +1038,43 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
 
             {/* Action Buttons */}
             <div className="flex justify-between mt-6 pt-4 border-t">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Close
-              </button>
+              {isEditing ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditFormData(data);
+                    }}
+                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={editLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSubmitEdit}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    disabled={editLoading}
+                  >
+                    {editLoading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 text-gray-700 border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Close
+                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Form Checklist Kelengkapan PO Modal - Keep existing code */}
+      {/* Form Checklist Kelengkapan PO Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -811,5 +1254,4 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     </>
   );
 };
-
 export default SODetailPopup;
