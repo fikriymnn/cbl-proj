@@ -293,11 +293,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         'nama_produk',
         'id_area_pengiriman',
         'nama_area_pengiriman',
+        'harga_pengiriman_awal', // ADD THIS
       ];
 
       fieldsToReset.forEach((field) => {
         onInputChange({
-          target: { name: field, value: field.startsWith('id_') ? 0 : '' },
+          target: {
+            name: field,
+            value:
+              field.startsWith('id_') || field.startsWith('harga_') ? 0 : '',
+          },
         } as React.ChangeEvent<HTMLSelectElement>);
       });
     }
@@ -409,7 +414,18 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   const getSelectedPengirimanId = () => {
     return formData.id_area_pengiriman || 0;
   };
-
+  useEffect(() => {
+    if (isEditMode && formData.id_customer && customers.length > 0) {
+      const customer = customers.find((c) => c.id === formData.id_customer);
+      if (customer) {
+        setSelectedCustomer(customer);
+        // Load marketing, products, and pengiriman for this customer
+        getMarketingList(customer.id_marketing);
+        getMarketingPengiriman(customer.id_harga_pengiriman);
+        getProduks(customer.id);
+      }
+    }
+  }, [isEditMode, formData.id_customer, customers]);
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-xs font-semibold text-gray-800 mb-6 flex items-center">

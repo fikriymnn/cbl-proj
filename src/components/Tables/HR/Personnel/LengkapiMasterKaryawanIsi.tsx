@@ -601,19 +601,21 @@ function LengkapiMasterKaryawanIsi() {
     setSaving(true);
 
     try {
-      if (!detailInformasi.tempat_lahir || !detailInformasi.tanggal_lahir) {
-        alert('Tempat lahir dan tanggal lahir harus diisi');
-        setSaving(false);
-        return;
-      }
-
       let response;
+
+      // Prepare payload with null for empty date fields
+      const payload = {
+        ...detailInformasi,
+        tanggal_lahir: detailInformasi.tanggal_lahir || null,
+        tanggal_terdaftar_npwp: detailInformasi.tanggal_terdaftar_npwp || null,
+        masa_berlaku_ktp: detailInformasi.masa_berlaku_ktp || null,
+      };
 
       if (originalData && originalData.id_karyawan) {
         const updateUrl = `${
           import.meta.env.VITE_API_LINK
         }/hr/karyawanDetailInformasi/${originalData.id || employeeId}`;
-        response = await axios.put(updateUrl, detailInformasi, {
+        response = await axios.put(updateUrl, payload, {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' },
         });
@@ -623,7 +625,7 @@ function LengkapiMasterKaryawanIsi() {
           import.meta.env.VITE_API_LINK
         }/hr/karyawanDetailInformasi`;
         const createPayload = {
-          ...detailInformasi,
+          ...payload,
           id_karyawan: employeeId,
           id_biodata_karyawan: biodataKaryawan,
         };
@@ -673,19 +675,21 @@ function LengkapiMasterKaryawanIsi() {
     setSaving(true);
 
     try {
-      if (!detailKeluarga.status_kawin) {
-        alert('Status kawin harus diisi');
-        setSaving(false);
-        return;
-      }
-
       let response;
+
+      // Prepare payload with null for empty date fields
+      const payload = {
+        ...detailKeluarga,
+        tanggal_lahir_pasangan: detailKeluarga.tanggal_lahir_pasangan || null,
+        tanggal_lahir_ayah: detailKeluarga.tanggal_lahir_ayah || null,
+        tanggal_lahir_ibu: detailKeluarga.tanggal_lahir_ibu || null,
+      };
 
       if (originalKeluargaData && originalKeluargaData.id_karyawan) {
         const updateUrl = `${
           import.meta.env.VITE_API_LINK
         }/hr/karyawanDetailKeluarga/${originalKeluargaData.id || employeeId}`;
-        response = await axios.put(updateUrl, detailKeluarga, {
+        response = await axios.put(updateUrl, payload, {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' },
         });
@@ -695,7 +699,7 @@ function LengkapiMasterKaryawanIsi() {
           import.meta.env.VITE_API_LINK
         }/hr/karyawanDetailKeluarga`;
         const createPayload = {
-          ...detailKeluarga,
+          ...payload,
           id_karyawan: employeeId,
           id_biodata_karyawan: biodataKaryawan,
         };

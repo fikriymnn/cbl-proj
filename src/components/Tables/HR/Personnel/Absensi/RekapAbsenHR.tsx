@@ -3,6 +3,7 @@ import axios from 'axios';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDate from '../../../../../utils/convertDate';
+import ExcelExportRekapAbsen from './ExcelExportRekapAbsen'; // Import the new component
 
 function RekapAbsenHR() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +17,8 @@ function RekapAbsenHR() {
   const filteredAbsen = absen?.filter((data: any) =>
     data.nama_karyawan.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  // ... (keep all your existing functions: getDepartment, getabsen, calculateOvertimeHours, calculateTimeMetrics)
 
   useEffect(() => {
     getDepartment();
@@ -49,6 +52,7 @@ function RekapAbsenHR() {
           startDate: dateFrom1,
           endDate: dateTo1,
           idDepartment: idDepartment,
+          is_active: true,
           page: 1,
           limit: 10,
         },
@@ -63,7 +67,6 @@ function RekapAbsenHR() {
     }
   }
 
-  // Updated calculation function
   const calculateOvertimeHours = (absensiData: any[]) => {
     let lemburDenganSPL = 0;
     let lemburTanpaSPL = 0;
@@ -80,13 +83,13 @@ function RekapAbsenHR() {
         if (record.status_lembur_spl === 'dengan SPL') {
           lemburDenganSPL += jamLembur;
         } else {
-          lemburTanpaSPL += 1; // Count times/occurrences
+          lemburTanpaSPL += 1;
         }
       } else if (record.status_lembur === 'Lembur Libur') {
         if (record.status_lembur_spl === 'dengan SPL') {
           lemburLiburDenganSPL += jamLembur;
         } else {
-          lemburLiburTanpaSPL += 1; // Count times/occurrences
+          lemburLiburTanpaSPL += 1;
         }
       }
     });
@@ -98,17 +101,16 @@ function RekapAbsenHR() {
       lemburLiburTanpaSPL: lemburLiburTanpaSPL.toFixed(0),
     };
   };
-  // Calculate late minutes and early leave minutes
+
   const calculateTimeMetrics = (absensiData: any[]) => {
     let totalTerlambat = 0;
     let totalPulangCepat = 0;
     let totalIstirahatLembur = 0;
     let jumlahHariTerlambat = 0;
-    let terlambatKurangDari30Menit = 0; // <= 30 minutes
-    let terlambatLebihDari30Menit = 0; // > 30 minutes
+    let terlambatKurangDari30Menit = 0;
+    let terlambatLebihDari30Menit = 0;
 
     absensiData?.forEach((record: any) => {
-      // Use parseFloat to handle decimal values properly
       const menitTerlambat = parseFloat(record.menit_terlambat || 0);
       const menitPulangCepat = parseFloat(record.menit_pulang_cepat || 0);
       const jamIstirahatLembur = parseFloat(record.jam_istirahat_lembur || 0);
@@ -120,7 +122,6 @@ function RekapAbsenHR() {
       if (menitTerlambat > 0) {
         jumlahHariTerlambat++;
 
-        // Compare with 0.5 hours (30 minutes)
         if (menitTerlambat <= 0.5) {
           terlambatKurangDari30Menit++;
         } else {
@@ -129,19 +130,20 @@ function RekapAbsenHR() {
       }
     });
 
-    // Values are already in hours from API
     const totalJamTerlambat = totalTerlambat.toFixed(1);
     const totalJamPulangCepat = totalPulangCepat.toFixed(1);
 
     return {
-      totalTerlambat: totalJamTerlambat, // Already in hours
-      totalPulangCepat: totalJamPulangCepat, // Already in hours
+      totalTerlambat: totalJamTerlambat,
+      totalPulangCepat: totalJamPulangCepat,
       totalIstirahatLembur: totalIstirahatLembur.toFixed(1),
       jumlahHariTerlambat,
-      terlambatKurangDari30Menit, // <= 30 minutes
-      terlambatLebihDari30Menit, // > 30 minutes
+      terlambatKurangDari30Menit,
+      terlambatLebihDari30Menit,
     };
   };
+
+  // ... (keep all your existing modal and detail functions)
 
   const [showModal, setShowModal] = useState<boolean[]>([]);
   const openModalModal = (i: any) => {
@@ -173,14 +175,13 @@ function RekapAbsenHR() {
       <main className="overflow-x-scroll">
         {isLoading && <Loading />}
 
-        {/* Filter Section - Improved Layout */}
+        {/* Filter Section */}
         <div className="bg-white rounded-md shadow-md mb-5 border-2 border-stroke">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-primary mb-4">
               Filter Rekap Absensi
             </h3>
 
-            {/* Filter Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Date Range Section */}
               <div className="lg:col-span-2">
@@ -270,6 +271,19 @@ function RekapAbsenHR() {
                       >
                         Tampilkan Data
                       </button>
+                    )}
+                    {/* Add Export Button Here */}
+                    {filteredAbsen && filteredAbsen.length > 0 && (
+                      <div className="mt-4 flex justify-end">
+                        <ExcelExportRekapAbsen
+                          filteredAbsen={filteredAbsen}
+                          dateFrom={dateFrom}
+                          dateTo={dateTo}
+                          calculateOvertimeHours={calculateOvertimeHours}
+                          calculateTimeMetrics={calculateTimeMetrics}
+                          convertTimeStampToDate={convertTimeStampToDate}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

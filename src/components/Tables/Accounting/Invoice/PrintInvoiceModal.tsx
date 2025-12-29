@@ -236,472 +236,494 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
     const paperHeight = itemCount > 3 ? '560mm' : '280mm'; // Double height if more than 3 items
 
     return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Invoice-${invoiceData.no_invoice || 'Invoice'}</title>
-          <style>
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Invoice-${invoiceData.no_invoice || 'Invoice'}</title>
+        <style>
+          @page {
+            size: 241mm ${paperHeight};
+            margin: 10mm 8mm 10mm 8mm;
+          }
+
+          * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+          }
+
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, 'Helvetica Neue', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
+            color: #000;
+            width: 225mm;
+          }
+
+          @media print {
+            body {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              color: #000 !important;
+            }
             @page {
-              size: 241mm ${paperHeight};
               margin: 10mm 8mm 10mm 8mm;
             }
-
+            html, body {
+              width: 241mm;
+              height: ${paperHeight};
+            }
             * {
-              box-sizing: border-box;
-              margin: 0;
-              padding: 0;
+              color: #000 !important;
             }
+          }
 
-            body {
-              margin: 0;
-              padding: 0;
-              font-family: 'Courier New', Courier, monospace;
-              font-size: 12px;
-              line-height: 1.4;
-              color: #000;
-              width: 225mm;
-            }
+          .container {
+            width: 100%;
+            padding: 0;
+          }
 
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              @page {
-                margin: 10mm 8mm 10mm 8mm;
-              }
-              html, body {
-                width: 241mm;
-                height: ${paperHeight};
-              }
-            }
+          /* SECTION 1: Logo + Company Info AND Date */
+          .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 18px;
+          }
 
-            .container {
-              width: 100%;
-              padding: 0;
-            }
+          .company-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+          }
 
-            /* SECTION 1: Logo + Company Info AND Date */
-            .top-row {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 15px;
-            }
+          .logo {
+            width: 65px;
+            height: auto;
+            flex-shrink: 0;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+          }
 
-            .company-header {
-              display: flex;
-              align-items: flex-start;
-              gap: 12px;
-            }
+          .company-text {
+            flex: 1;
+          }
 
-            .logo {
-              width: 60px;
-              height: auto;
-              flex-shrink: 0;
-              image-rendering: -webkit-optimize-contrast;
-              image-rendering: crisp-edges;
-            }
+          .company-name {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+            line-height: 1.4;
+          }
 
-            .company-text {
-              flex: 1;
-            }
+          .company-info {
+            font-size: 13px;
+            line-height: 1.6;
+            font-weight: 600;
+          }
 
-            .company-name {
-              font-weight: bold;
-              font-size: 12px;
-              margin-bottom: 3px;
-              line-height: 1.3;
-            }
+          .company-info div {
+            margin-bottom: 3px;
+          }
 
-            .company-info {
-              font-size: 11px;
-              line-height: 1.5;
-            }
+          .date-location {
+            font-size: 13px;
+            text-align: right;
+            font-weight: bold;
+          }
 
-            .company-info div {
-              margin-bottom: 2px;
-            }
+          /* SECTION 2: Invoice Details AND Customer Info */
+          .details-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 22px;
+          }
 
-            .date-location {
-              font-size: 11px;
-              text-align: right;
-              font-weight: 600;
-            }
+          .invoice-details-left {
+            flex: 0 0 50%;
+            max-width: 50%;
+          }
 
-            /* SECTION 2: Invoice Details AND Customer Info */
-            .details-row {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 20px;
-            }
+          .detail-row {
+            display: flex;
+            margin-bottom: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+          }
 
-            .invoice-details-left {
-              flex: 0 0 50%;
-              max-width: 50%;
-            }
+          .detail-label {
+            width: 120px;
+            flex-shrink: 0;
+            font-weight: bold;
+          }
 
-            .detail-row {
-              display: flex;
-              margin-bottom: 3px;
-              font-size: 11px;
-              line-height: 1.5;
-            }
+          .detail-colon {
+            width: 15px;
+            flex-shrink: 0;
+            font-weight: bold;
+          }
 
-            .detail-label {
-              width: 115px;
-              flex-shrink: 0;
-              font-weight: 600;
-            }
+          .detail-value {
+            flex: 1;
+            font-weight: 600;
+          }
 
-            .detail-colon {
-              width: 12px;
-              flex-shrink: 0;
-            }
+          .customer-info-right {
+            flex: 0 0 50%;
+            max-width: 50%;
+            text-align: center;
+          }
 
-            .detail-value {
-              flex: 1;
-            }
+          .customer-label {
+            font-size: 13px;
+            margin-bottom: 5px;
+            font-weight: 600;
+          }
 
-            .customer-info-right {
-              flex: 0 0 50%;
-              max-width: 50%;
-              text-align: center;
-            }
+          .customer-name {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 5px;
+          }
 
-            .customer-label {
-              font-size: 11px;
-              margin-bottom: 4px;
-            }
+          .customer-address {
+            font-size: 13px;
+            line-height: 1.7;
+            font-weight: 600;
+          }
 
-            .customer-name {
-              font-weight: bold;
-              font-size: 13px;
-              margin-bottom: 4px;
-            }
+          /* ITEMS TABLE */
+          .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+          }
 
-            .customer-address {
-              font-size: 11px;
-              line-height: 1.6;
-            }
+          .items-table th,
+          .items-table td {
+            border: 2px solid #000;
+            padding: 10px 10px;
+            font-size: 13px;
+          }
 
-            /* ITEMS TABLE */
-            .items-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 12px;
-            }
+          .items-table th {
+            background-color: #fff;
+            font-weight: bold;
+            text-align: center;
+          }
 
-            .items-table th,
-            .items-table td {
-              border: 1.5px solid #000;
-              padding: 7px 8px;
-              font-size: 11px;
-            }
+          .items-table td {
+            font-weight: 600;
+          }
 
-            .items-table th {
-              background-color: #fff;
-              font-weight: bold;
-              text-align: center;
-            }
+          .text-center {
+            text-align: center;
+          }
 
-            .text-center {
-              text-align: center;
-            }
+          .text-right {
+            text-align: right;
+          }
 
-            .text-right {
-              text-align: right;
-            }
+          /* TOTALS AND TERBILANG SECTION */
+          .totals-terbilang-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 15px;
+            margin-bottom: 25px;
+          }
 
-            /* TOTALS AND TERBILANG SECTION */
-            .totals-terbilang-wrapper {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-top: 12px;
-              margin-bottom: 20px;
-            }
+          .terbilang {
+            flex: 0 0 50%;
+            max-width: 50%;
+            font-size: 13px;
+            padding-right: 20px;
+            font-weight: bold;
+          }
 
-            .terbilang {
-              flex: 0 0 50%;
-              max-width: 50%;
-              font-size: 11px;
-              padding-right: 20px;
-              font-weight: 600;
-            }
+          .totals-section {
+            flex: 0 0 50%;
+            max-width: 50%;
+          }
 
-            .totals-section {
-              flex: 0 0 50%;
-              max-width: 50%;
-            }
+          .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 13px;
+          }
 
-            .total-row {
-              display: flex;
-              justify-content: space-between;
-              padding: 4px 0;
-              font-size: 11px;
-            }
+          .total-label {
+            text-align: right;
+            font-weight: bold;
+            flex: 1;
+            padding-right: 25px;
+          }
 
-            .total-label {
-              text-align: right;
-              font-weight: bold;
-              flex: 1;
-              padding-right: 20px;
-            }
+          .total-value {
+            text-align: right;
+            width: 160px;
+            font-weight: 600;
+          }
 
-            .total-value {
-              text-align: right;
-              width: 150px;
-            }
+          .grand-total-row {
+            border-top: 2px solid #000;
+            border-bottom: 4px double #000;
+            padding: 8px 0 !important;
+            margin-top: 6px;
+            font-weight: bold;
+          }
 
-            .grand-total-row {
-              border-top: 1.5px solid #000;
-              border-bottom: 3px double #000;
-              padding: 6px 0 !important;
-              margin-top: 5px;
-              font-weight: bold;
-            }
+          .grand-total-row .total-value {
+            font-weight: bold;
+          }
 
-            /* BOTTOM SECTION: Bank info AND Signature side by side */
-            .bottom-row {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-top: 25px;
-            }
+          /* BOTTOM SECTION: Bank info AND Signature side by side */
+          .bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 30px;
+          }
 
-            .bank-section {
-              flex: 0 0 50%;
-              max-width: 50%;
-              font-size: 11px;
-            }
+          .bank-section {
+            flex: 0 0 50%;
+            max-width: 50%;
+            font-size: 13px;
+            font-weight: 600;
+          }
 
-            .bank-label {
-              font-weight: bold;
-              margin-bottom: 10px;
-            }
+          .bank-label {
+            font-weight: bold;
+            margin-bottom: 12px;
+          }
 
-            .bank-row {
-              display: flex;
-              margin-bottom: 4px;
-            }
+          .bank-row {
+            display: flex;
+            margin-bottom: 5px;
+          }
 
-            .bank-name {
-              font-weight: bold;
-              width: 90px;
-              flex-shrink: 0;
-            }
+          .bank-name {
+            font-weight: bold;
+            width: 95px;
+            flex-shrink: 0;
+          }
 
-            .signature-section {
-              flex: 0 0 50%;
-              max-width: 50%;
-              text-align: center;
-              font-size: 11px;
-            }
+          .signature-section {
+            flex: 0 0 50%;
+            max-width: 50%;
+            text-align: center;
+            font-size: 13px;
+          }
 
-            .signature-label {
-              font-weight: bold;
-              margin-bottom: 70px;
-            }
+          .signature-label {
+            font-weight: bold;
+            margin-bottom: 75px;
+          }
 
-            .signature-line {
-              display: inline-block;
-              font-weight: 600;
-            }
-          </style>
-        </head>
+          .signature-line {
+            display: inline-block;
+            font-weight: bold;
+          }
 
-        <body>
-          <div class="container">
-            <!-- SECTION 1: Logo + Company Info (LEFT) AND Date (RIGHT) -->
-            <div class="top-row">
-              <div class="company-header">
-                <img src="${logoSrc}" alt="Logo" class="logo" />
-                <div class="company-text">
-                  <div class="company-name">PT. CAHAYA BERLIAN LESTARI</div>
-                  <div class="company-info">
-                    <div>Jl. Paralon II No 5 Cigondewah Kaler, 40124</div>
-                    <div>Telp: (022) 6033823</div>
-                  </div>
+          strong {
+            font-weight: bold;
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="container">
+          <!-- SECTION 1: Logo + Company Info (LEFT) AND Date (RIGHT) -->
+          <div class="top-row">
+            <div class="company-header">
+              <img src="${logoSrc}" alt="Logo" class="logo" />
+              <div class="company-text">
+                <div class="company-name">PT. CAHAYA BERLIAN LESTARI</div>
+                <div class="company-info">
+                  <div>Jl. Paralon II No 5 Cigondewah Kaler, 40124</div>
+                  <div>Telp: (022) 6033823</div>
                 </div>
-              </div>  
-              
-              <div class="date-location">Bandung, ${formatDate(
-                invoiceData.tgl_faktur,
+              </div>
+            </div>  
+            
+            <div class="date-location">Bandung, ${formatDate(
+              invoiceData.tgl_faktur,
+            )}</div>
+          </div>
+
+          <!-- SECTION 2: Invoice Details (LEFT) AND Customer Info (RIGHT) -->
+          <div class="details-row">
+            <div class="invoice-details-left">
+              <div class="detail-row">
+                <div class="detail-label">NOMOR FAKTUR</div>
+                <div class="detail-colon">:</div>
+                <div class="detail-value">${getValue(
+                  invoiceData.no_invoice,
+                )}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">NOMOR DO</div>
+                <div class="detail-colon">:</div>
+                <div class="detail-value">${getValue(invoiceData.no_do)}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">NOMOR PO</div>
+                <div class="detail-colon">:</div>
+                <div class="detail-value">${getValue(invoiceData.no_po)}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">JATUH TEMPO</div>
+                <div class="detail-colon">:</div>
+                <div class="detail-value">${formatDate(
+                  invoiceData.tgl_jatuh_tempo,
+                )}</div>
+              </div>
+            </div>
+
+            <div class="customer-info-right">
+              <div class="customer-label">KEPADA YTH:</div>
+              <div class="customer-name">${getValue(
+                invoiceData.nama_customer,
+              )}</div>
+              <div class="customer-address">${getValue(
+                invoiceData.alamat,
               )}</div>
             </div>
+          </div>
 
-            <!-- SECTION 2: Invoice Details (LEFT) AND Customer Info (RIGHT) -->
-            <div class="details-row">
-              <div class="invoice-details-left">
-                <div class="detail-row">
-                  <div class="detail-label">NOMOR FAKTUR</div>
-                  <div class="detail-colon">:</div>
-                  <div class="detail-value">${getValue(
-                    invoiceData.no_invoice,
-                  )}</div>
-                </div>
-                <div class="detail-row">
-                  <div class="detail-label">NOMOR DO</div>
-                  <div class="detail-colon">:</div>
-                  <div class="detail-value">${getValue(invoiceData.no_do)}</div>
-                </div>
-                <div class="detail-row">
-                  <div class="detail-label">NOMOR PO</div>
-                  <div class="detail-colon">:</div>
-                  <div class="detail-value">${getValue(invoiceData.no_po)}</div>
-                </div>
-                <div class="detail-row">
-                  <div class="detail-label">JATUH TEMPO</div>
-                  <div class="detail-colon">:</div>
-                  <div class="detail-value">${formatDate(
-                    invoiceData.tgl_jatuh_tempo,
-                  )}</div>
-                </div>
-              </div>
-
-              <div class="customer-info-right">
-                <div class="customer-label">KEPADA YTH:</div>
-                <div class="customer-name">${getValue(
-                  invoiceData.nama_customer,
-                )}</div>
-                <div class="customer-address">${getValue(
-                  invoiceData.alamat,
-                )}</div>
-              </div>
-            </div>
-
-            <!-- ITEMS TABLE -->
-            <table class="items-table">
-              <thead>
+          <!-- ITEMS TABLE -->
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width: 12%;">BANYAK</th>
+                <th style="width: 10%;">Unit</th>
+                <th style="width: 43%;">NAMA BARANG</th>
+                <th style="width: 17%;">HARGA</th>
+                <th style="width: 18%;">JUMLAH</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${
+                invoiceData.invoice_produk &&
+                invoiceData.invoice_produk.length > 0
+                  ? invoiceData.invoice_produk
+                      .map(
+                        (item) => `
                 <tr>
-                  <th style="width: 12%;">BANYAK</th>
-                  <th style="width: 10%;">Unit</th>
-                  <th style="width: 43%;">NAMA BARANG</th>
-                  <th style="width: 17%;">HARGA</th>
-                  <th style="width: 18%;">JUMLAH</th>
+                  <td class="text-center">${getValue(
+                    item.qty?.toLocaleString('id-ID'),
+                    '0',
+                  )}</td>
+                  <td class="text-center">${getValue(item.unit, 'PCS')}</td>
+                  <td>${getValue(item.nama_produk, '-')}</td>
+                  <td class="text-right">${formatCurrency(item.harga)}</td>
+                  <td class="text-right">${formatCurrency(item.total)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                ${
-                  invoiceData.invoice_produk &&
-                  invoiceData.invoice_produk.length > 0
-                    ? invoiceData.invoice_produk
-                        .map(
-                          (item) => `
-                  <tr>
-                    <td class="text-center">${getValue(
-                      item.qty?.toLocaleString('id-ID'),
-                      '0',
-                    )}</td>
-                    <td class="text-center">${getValue(item.unit, 'PCS')}</td>
-                    <td>${getValue(item.nama_produk, '-')}</td>
-                    <td class="text-right">${formatCurrency(item.harga)}</td>
-                    <td class="text-right">${formatCurrency(item.total)}</td>
-                  </tr>
-                `,
-                        )
-                        .join('')
-                    : `
-                  <tr>
-                    <td colspan="5" class="text-center">No items</td>
-                  </tr>
-                `
-                }
-              </tbody>
-            </table>
+              `,
+                      )
+                      .join('')
+                  : `
+                <tr>
+                  <td colspan="5" class="text-center">No items</td>
+                </tr>
+              `
+              }
+            </tbody>
+          </table>
 
-            <!-- TOTALS AND TERBILANG SECTION: Side by side -->
-            <div class="totals-terbilang-wrapper">
-              <!-- LEFT: Terbilang -->
-              <div class="terbilang">
-                <strong>Terbilang : ${convertToWords(
-                  Math.floor(finalTotal),
-                )} Rupiah</strong>
-              </div>
-
-              <!-- RIGHT: Totals -->
-              <div class="totals-section">
-                <div class="total-row">
-                  <div class="total-label">Subtotal</div>
-                  <div class="total-value">${formatCurrency(
-                    invoiceData.sub_total,
-                  )}</div>
-                </div>
-                ${
-                  invoiceData.is_show_dpp
-                    ? `
-                <div class="total-row">
-                  <div class="total-label">DPP</div>
-                  <div class="total-value">${formatCurrency(
-                    invoiceData.dpp,
-                  )}</div>
-                </div>
-                `
-                    : ''
-                }
-                ${
-                  showDiskon && invoiceData.diskon > 0
-                    ? `
-                <div class="total-row">
-                  <div class="total-label">Discount</div>
-                  <div class="total-value">${formatCurrency(
-                    invoiceData.diskon,
-                  )}</div>
-                </div>
-                `
-                    : ''
-                }
-                <div class="total-row">
-                  <div class="total-label">PPN</div>
-                  <div class="total-value">${formatCurrency(
-                    invoiceData.ppn,
-                  )}</div>
-                </div>
-                ${
-                  invoiceData.dp > 0
-                    ? `
-                <div class="total-row">
-                  <div class="total-label">DP</div>
-                  <div class="total-value">${formatCurrency(
-                    invoiceData.dp,
-                  )}</div>
-                </div>
-                `
-                    : ''
-                }
-                <div class="total-row grand-total-row">
-                  <div class="total-label">Total</div>
-                  <div class="total-value">${formatCurrency(finalTotal)}</div>
-                </div>
-              </div>
+          <!-- TOTALS AND TERBILANG SECTION: Side by side -->
+          <div class="totals-terbilang-wrapper">
+            <!-- LEFT: Terbilang -->
+            <div class="terbilang">
+              <strong>Terbilang : ${convertToWords(
+                Math.floor(finalTotal),
+              )} Rupiah</strong>
             </div>
 
-            <!-- BOTTOM ROW: Bank Transfer (LEFT) AND Signature (RIGHT) -->
-            <div class="bottom-row">
-              <div class="bank-section">
-                <div class="bank-label">Transfer Ke Rek : PT. CAHAYA BERLIAN LESTARI</div>
-                <div class="bank-row">
-                  <div class="bank-name">BCA</div>
-                  <div>517.116.988.8</div>
-                </div>
-                <div class="bank-row">
-                  <div class="bank-name">MANDIRI</div>
-                  <div>132.00.2216816.6</div>
-                </div>
+            <!-- RIGHT: Totals -->
+            <div class="totals-section">
+              <div class="total-row">
+                <div class="total-label">Subtotal</div>
+                <div class="total-value">${formatCurrency(
+                  invoiceData.sub_total,
+                )}</div>
               </div>
-
-              <div class="signature-section">
-                <div class="signature-label">Hormat Kami</div>
-                <div class="signature-line">(...................................)</div>
+              ${
+                invoiceData.is_show_dpp
+                  ? `
+              <div class="total-row">
+                <div class="total-label">DPP</div>
+                <div class="total-value">${formatCurrency(
+                  invoiceData.dpp,
+                )}</div>
+              </div>
+              `
+                  : ''
+              }
+              ${
+                showDiskon && invoiceData.diskon > 0
+                  ? `
+              <div class="total-row">
+                <div class="total-label">Discount</div>
+                <div class="total-value">${formatCurrency(
+                  invoiceData.diskon,
+                )}</div>
+              </div>
+              `
+                  : ''
+              }
+              <div class="total-row">
+                <div class="total-label">PPN</div>
+                <div class="total-value">${formatCurrency(
+                  invoiceData.ppn,
+                )}</div>
+              </div>
+              ${
+                invoiceData.dp > 0
+                  ? `
+              <div class="total-row">
+                <div class="total-label">DP</div>
+                <div class="total-value">${formatCurrency(invoiceData.dp)}</div>
+              </div>
+              `
+                  : ''
+              }
+              <div class="total-row grand-total-row">
+                <div class="total-label">Total</div>
+                <div class="total-value">${formatCurrency(finalTotal)}</div>
               </div>
             </div>
           </div>
-        </body>
-      </html>
-    `;
+
+          <!-- BOTTOM ROW: Bank Transfer (LEFT) AND Signature (RIGHT) -->
+          <div class="bottom-row">
+            <div class="bank-section">
+              <div class="bank-label">Transfer Ke Rek : PT. CAHAYA BERLIAN LESTARI</div>
+              <div class="bank-row">
+                <div class="bank-name">BCA</div>
+                <div>517.116.988.8</div>
+              </div>
+              <div class="bank-row">
+                <div class="bank-name">MANDIRI</div>
+                <div>132.00.2216816.6</div>
+              </div>
+            </div>
+
+            <div class="signature-section">
+              <div class="signature-label">Hormat Kami</div>
+              <div class="signature-line">(...................................)</div>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
   };
 
   const handlePrint = () => {

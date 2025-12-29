@@ -323,6 +323,7 @@ const IOMarketing: React.FC = () => {
         setShowCreateForm(false);
         setFormData({ id_okp: '', is_revisi: false });
         fetchIOData();
+        fetchOKPData();
       }
     } catch (error) {
       console.error('Error creating IO:', error);

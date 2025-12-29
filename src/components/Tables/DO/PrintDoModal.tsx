@@ -182,9 +182,10 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           body {
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 12px;
-            line-height: 1.4;
+            font-family: Arial, 'Helvetica Neue', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.5;
             color: #000;
             width: 225mm;
           }
@@ -192,6 +193,7 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             body {
               -webkit-print-color-adjust: exact;
               print-color-adjust: exact;
+              color: #000 !important;
             }
             @page {
               margin: 10mm 8mm 10mm 8mm;
@@ -199,6 +201,9 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             html, body {
               width: 241mm;
               height: 280mm;
+            }
+            * {
+              color: #000 !important;
             }
           }
           .container {
@@ -209,18 +214,18 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #000;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #000;
           }
           .header-left {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
+            gap: 15px;
             flex: 0 0 50%;
           }
           .logo {
-            width: 75px;
+            width: 80px;
             height: auto;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
@@ -228,18 +233,19 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           .company-info {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 3px;
           }
           .company-name {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
           }
           .doc-info {
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            font-size: 11px;
+            gap: 3px;
+            font-size: 13px;
+            font-weight: 600;
           }
           .header-right {
             flex: 0 0 50%;
@@ -250,57 +256,60 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             padding-left: 15px;
           }
           .date-location {
-            font-size: 11px;
-            margin-bottom: 12px;
-            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-weight: bold;
           }
           .recipient-label {
-            font-size: 11px;
-            font-weight: normal;
-            margin-bottom: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 5px;
           }
           .recipient-name {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: bold;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
           }
           .recipient-address {
-            font-size: 11px;
-            line-height: 1.5;
+            font-size: 13px;
+            line-height: 1.6;
+            font-weight: 600;
           }
           .doc-title-section {
             text-align: center;
-            margin: 18px 0 15px 0;
+            margin: 20px 0 18px 0;
           }
           .doc-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
-            margin-bottom: 4px;
-            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
           }
           .doc-subtitle {
-            font-size: 11px;
+            font-size: 13px;
+            font-weight: 600;
           }
           .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
-            font-size: 11px;
+            margin-bottom: 15px;
+            font-size: 13px;
           }
           .items-table th,
           .items-table td {
-            border: 1.5px solid #000;
-            padding: 7px 8px;
+            border: 2px solid #000;
+            padding: 10px 10px;
             text-align: left;
           }
           .items-table th {
             background-color: #fff;
             font-weight: bold;
             text-align: center;
-            font-size: 11px;
+            font-size: 13px;
           }
           .items-table td {
             vertical-align: top;
+            font-weight: 600;
           }
           .items-table .no-border-left {
             border-left: none;
@@ -321,21 +330,22 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            font-size: 11px;
-            margin-bottom: 12px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-weight: 600;
           }
           .footer-info-left {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 4px;
           }
           .footer-info-right {
-            font-size: 13px;
+            font-size: 15px;
             font-weight: bold;
             text-align: right;
           }
           .signature-section {
-            margin-top: 35px;
+            margin-top: 40px;
             display: flex;
             justify-content: space-between;
           }
@@ -345,27 +355,31 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           }
           .signature-title {
             font-weight: bold;
-            margin-bottom: 65px;
-            font-size: 11px;
+            margin-bottom: 70px;
+            font-size: 13px;
           }
           .signature-name {
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: bold;
           }
           .no-jo-red {
             color: #CC0000;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 14px;
           }
           .product-name {
-            font-size: 11px;
-            font-weight: 600;
-            line-height: 1.3;
+            font-size: 13px;
+            font-weight: bold;
+            line-height: 1.4;
           }
           .po-number {
-            font-size: 10px;
-            color: #222;
-            margin-top: 3px;
+            font-size: 12px;
+            color: #000;
+            margin-top: 4px;
+            font-weight: 600;
+          }
+          strong {
+            font-weight: bold;
           }
         </style>
       </head>

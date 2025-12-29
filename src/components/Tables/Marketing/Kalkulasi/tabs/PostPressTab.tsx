@@ -313,7 +313,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   useEffect(() => {
     if (isReadOnly) return;
 
-    if (selectedOngkosPons === 'Yes' && ongkosPonsOptions.length > 0) {
+    if (selectedOngkosPons === 'yes' && ongkosPonsOptions.length > 0) {
       const total_kertasString = formData.total_kertas?.toString() || '0';
       const total_kertas = parseFloat(total_kertasString.replace(/\./g, ''));
 
@@ -365,7 +365,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   useEffect(() => {
     if (isReadOnly) return;
 
-    if (selectedLipat === 'Yes' && specialFinishingOptions.length > 0) {
+    if (selectedLipat === 'yes' && specialFinishingOptions.length > 0) {
       const lipatOption = specialFinishingOptions.find(
         (option) => option.sub_kategori === 'Lipat',
       );
@@ -399,7 +399,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
   useEffect(() => {
     if (isReadOnly) return;
 
-    if (selectedPotongJadi === 'Yes' && specialFinishingOptions.length > 0) {
+    if (selectedPotongJadi === 'yes' && specialFinishingOptions.length > 0) {
       const potongJadiOption = specialFinishingOptions.find(
         (option) => option.sub_kategori === 'Potong Jadi',
       );
@@ -616,8 +616,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               )}
               disabled={isReadOnly}
             >
-              <option value="No">No</option>
-              <option value="Yes">Yes</option>
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
             </select>
           </div>
 
@@ -678,7 +678,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
         </div>
 
         {/* Formula Display for Ongkos Pons - Only show if not readonly or if Yes */}
-        {selectedOngkosPons === 'Yes' && (
+        {selectedOngkosPons === 'yes' && (
           <div className="p-6 bg-blue-50 rounded-xl border border-blue-200">
             <h4 className="text-sm font-semibold text-blue-900 mb-4">
               Ongkos Pons Formula Calculation:
@@ -727,8 +727,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               )}
               disabled={isReadOnly}
             >
-              <option value="No">No</option>
-              <option value="Yes">Yes</option>
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
             </select>
           </div>
 
@@ -793,7 +793,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
         </div>
 
         {/* Formula Display for Lipat */}
-        {selectedLipat === 'Yes' && (
+        {selectedLipat === 'yes' && (
           <div className="p-6 bg-green-50 rounded-xl border border-green-200">
             <h4 className="text-sm font-semibold text-green-900 mb-4">
               Lipat Formula Calculation:
@@ -849,8 +849,8 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
               )}
               disabled={isReadOnly}
             >
-              <option value="No">No</option>
-              <option value="Yes">Yes</option>
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
             </select>
           </div>
 
@@ -897,7 +897,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
         </div>
 
         {/* Formula Display for Potong Jadi */}
-        {selectedPotongJadi === 'Yes' && (
+        {selectedPotongJadi === 'yes' && (
           <div className="p-6 bg-red-50 rounded-xl border border-red-200">
             <h4 className="text-sm font-semibold text-red-900 mb-4">
               Potong Jadi Formula Calculation:
@@ -921,9 +921,9 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
       {/* Readonly Information Panel - Only show when readonly and has data */}
       {isReadOnly &&
         (selectedJenisPons > 0 ||
-          selectedOngkosPons === 'Yes' ||
-          selectedLipat === 'Yes' ||
-          selectedPotongJadi === 'Yes') && (
+          selectedOngkosPons === 'yes' ||
+          selectedLipat === 'yes' ||
+          selectedPotongJadi === 'yes') && (
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <h4 className="text-sm font-semibold text-blue-800 mb-2">
               Post Press Configuration Summary
@@ -938,7 +938,7 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
                   </div>
                 </div>
               )}
-              {selectedOngkosPons === 'Yes' && (
+              {selectedOngkosPons === 'yes' && (
                 <div>
                   <span className="text-blue-600 font-medium">
                     Ongkos Pons:
@@ -946,13 +946,13 @@ const PostPressTab: React.FC<PostPressTabProps> = ({
                   <div className="text-blue-800">Active</div>
                 </div>
               )}
-              {selectedLipat === 'Yes' && (
+              {selectedLipat === 'yes' && (
                 <div>
                   <span className="text-blue-600 font-medium">Lipat:</span>
                   <div className="text-blue-800">Active</div>
                 </div>
               )}
-              {selectedPotongJadi === 'Yes' && (
+              {selectedPotongJadi === 'yes' && (
                 <div>
                   <span className="text-blue-600 font-medium">
                     Potong Jadi:

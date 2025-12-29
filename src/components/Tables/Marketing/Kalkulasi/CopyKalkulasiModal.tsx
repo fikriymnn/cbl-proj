@@ -58,7 +58,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
       const initialData: KalkulasiFormData = {
         kode_kalkulasi: originalData.kode_kalkulasi || '',
         tgl_kalkulasi: (originalData.tgl_kalkulasi || '').split('T')[0],
-        status_kalkulasi: originalData.status_kalkulasi || 'draft',
+        status_kalkulasi: copyType === 'repeat' ? 'repeat' : 'repeat perubahan',
         id_customer: originalData.id_customer || 0,
         id_marketing: originalData.id_marketing || 0,
         id_produk: originalData.id_produk || 0,
@@ -199,6 +199,10 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
                 0,
               )
             : 0,
+        ),
+        harga_pengiriman_awal: safeToString(
+          originalData.harga_area_pengiriman ||
+            originalData.harga_pengiriman_awal,
         ),
         // Type
         tipe_kalkulasi:
