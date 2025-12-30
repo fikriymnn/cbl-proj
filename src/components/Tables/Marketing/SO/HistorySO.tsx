@@ -20,8 +20,8 @@ const HistorySO: React.FC = () => {
   const [isDetailPopupOpen, setIsDetailPopupOpen] = useState<boolean>(false);
   const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
-  const [printData, setPrintData] = useState<SOData | null>(null);
-  // Pagination states
+  const [printData, setPrintData] = useState<number | null>(null);
+
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
@@ -51,9 +51,10 @@ const HistorySO: React.FC = () => {
     setPage(1); // Reset to first page on new search
   };
   const handlePrint = (item: SOData) => {
-    setPrintData(item);
     setIsPrintModalOpen(true);
+    setPrintData(item.id); // Pass the ID instead of the full data object
   };
+
   const handleClearSearch = (): void => {
     setSearchInput('');
     setSearchTerm('');
@@ -559,7 +560,7 @@ const HistorySO: React.FC = () => {
       />
       <SOMarketingPrintModal
         isOpen={isPrintModalOpen}
-        printData={printData}
+        soId={printData} // Changed prop name
         onClose={() => {
           setIsPrintModalOpen(false);
           setPrintData(null);

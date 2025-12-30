@@ -1,19 +1,55 @@
 // SOMarketingPrintModal.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import Logo from '../../../../images/logo/logo-cbl 1.svg';
 import { SOData } from './types/SOTypes';
 
 interface SOMarketingPrintModalProps {
   isOpen: boolean;
-  printData: SOData | null;
+  soId: number | null; // Changed from printData to soId
   onClose: () => void;
 }
 
 const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
   isOpen,
-  printData,
+  soId,
   onClose,
 }) => {
+  const [printData, setPrintData] = useState<SOData | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch SO data when modal opens
+  useEffect(() => {
+    if (isOpen && soId) {
+      fetchSOData(soId);
+    }
+  }, [isOpen, soId]);
+
+  const fetchSOData = async (id: number) => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/so/${id}`;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      if (response.data.succes && response.data.data) {
+        setPrintData(response.data.data);
+        console.log('Fetched SO Data for Printing:', response.data.data);
+      } else {
+        setError('Failed to fetch SO data');
+      }
+    } catch (err) {
+      console.error('Error fetching SO data:', err);
+      setError('An error occurred while fetching SO data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getValue = (value: any, defaultValue: string = '-') => {
     if (value === null || value === undefined || value === '') {
       return defaultValue;
@@ -199,6 +235,10 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
             .signature-label {
               margin-bottom: 3px;
             }
+            .signature-name {
+              font-weight: bold;
+              margin-top: 3px;
+            }
             .separator {
               border-top: 1px dashed #999;
               margin: 15px 0;
@@ -316,7 +356,7 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                   <td class="text-center">${getValue(printData.customer)}</td>
                   <td class="text-center">${getValue(printData.produk)}</td>
                   <td class="text-center">${printData.harga_jual}</td>
-                  <td></td>
+                  <td>${getValue(printData.keterangan)}</td>
                 </tr>
               </tbody>
             </table>
@@ -343,7 +383,10 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                 <div class="signature-label">Dibuat Oleh,</div>
                 <div class="signature-space"></div>
                 <div>.......................................</div>
-                <div>(Marketing)</div>
+                <div class="signature-name">${getValue(
+                  printData.create_by,
+                ).toUpperCase()}</div>
+               
                 <div>Tgl:</div>
               </div>
 
@@ -460,7 +503,7 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                   <td class="text-center">${printData.po_qty?.toLocaleString(
                     'id-ID',
                   )}</td>
-                  <td></td>
+                  <td>${getValue(printData.keterangan)}</td>
                 </tr>
               </tbody>
             </table>
@@ -496,7 +539,9 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                     <td>
                       ${getValue(printData.partial)}
                       <span style="margin-left: 100px"></span>
-                      <span style="margin-left: 150px">Kirim Semua : YA</span>
+                      <span style="margin-left: 150px">Kirim Semua : ${getValue(
+                        printData.kirim_semua,
+                      )}</span>
                     </td>
                   </tr>
                   <tr>
@@ -520,6 +565,10 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                 <div class="signature-label">Dibuat Oleh,</div>
                 <div class="signature-space"></div>
                 <div>(...................................)</div>
+                <div class="signature-name">${getValue(
+                  printData.create_by,
+                ).toUpperCase()}</div>
+                
               </div>
 
               <!-- Right Column -->
@@ -527,6 +576,9 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                 <div class="signature-label">PPIC</div>
                 <div class="signature-space"></div>
                 <div>(...................................)</div>
+                <div class="signature-name">${getValue(
+                  printData.ppic,
+                ).toUpperCase()}</div>
               </div>
             </div>
           </div>
@@ -549,7 +601,7 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
     }
   };
 
-  if (!isOpen || !printData) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black bg-opacity-75">
@@ -557,12 +609,13 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
         {/* Header with buttons */}
         <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold">
-            Print Preview - {printData.no_so}
+            Print Preview {printData ? `- ${printData.no_so}` : ''}
           </h2>
           <div className="flex gap-2 items-center">
             <button
               onClick={handlePrint}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              disabled={loading || !printData}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               🖨️ Print / Download
             </button>
@@ -575,21 +628,33 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
           </div>
         </div>
 
-        {/* Scrollable preview area */}
+        {/* Content area */}
         <div className="flex-1 overflow-auto bg-gray-600 p-8">
-          <div className="max-w-[210mm] mx-auto bg-white shadow-2xl">
-            {/* PDF Preview using iframe */}
-            <iframe
-              srcDoc={getPrintContent()}
-              className="w-full"
-              style={{
-                height: '297mm', // A4 height
-                border: 'none',
-                backgroundColor: 'white',
-              }}
-              title="SO Preview"
-            />
-          </div>
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+            </div>
+          ) : error ? (
+            <div className="flex justify-center items-center h-full">
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            </div>
+          ) : printData ? (
+            <div className="max-w-[210mm] mx-auto bg-white shadow-2xl">
+              {/* PDF Preview using iframe */}
+              <iframe
+                srcDoc={getPrintContent()}
+                className="w-full"
+                style={{
+                  height: '297mm', // A4 height
+                  border: 'none',
+                  backgroundColor: 'white',
+                }}
+                title="SO Preview"
+              />
+            </div>
+          ) : null}
         </div>
 
         {/* Footer info */}

@@ -9,7 +9,7 @@ interface PDFPreviewModalProps {
   selectedPage: string;
   setSelectedPage: (page: string) => void;
   uploading: boolean;
-  setUploading: (uploading: boolean) => void; // Add this
+  setUploading: (uploading: boolean) => void;
   handleFileUpload: (file: File) => Promise<string>;
   handleInputChange: (field: keyof OKPFormData, value: any) => void;
   setFilePreview: (preview: string) => void;
@@ -33,6 +33,7 @@ const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [showCropTool, setShowCropTool] = useState(false);
+  const [rotation, setRotation] = useState(0); // Add rotation state
   const imageRef = useRef<HTMLImageElement>(null);
 
   const handleCropStart = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -66,6 +67,13 @@ const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     setIsDragging(false);
   };
 
+  // Add rotation handler
+  const handleRotate = () => {
+    setRotation((prev) => (prev + 90) % 360);
+    // Clear crop area when rotating
+    setCropArea({ x: 0, y: 0, width: 0, height: 0 });
+  };
+
   const handleCropAndSave = async () => {
     if (!selectedPage) return;
 
@@ -90,89 +98,136 @@ const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           }
 
           const imageRect = imageElement.getBoundingClientRect();
-          const scaleX = img.naturalWidth / imageRect.width;
-          const scaleY = img.naturalHeight / imageRect.height;
 
-          // If no crop area selected, use full image
-          let crop = {
-            x: 0,
-            y: 0,
-            width: img.naturalWidth,
-            height: img.naturalHeight,
-          };
+          // Adjust for rotation when calculating scale
+          let scaleX, scaleY;
+          if (rotation === 90 || rotation === 270) {
+            scaleX = img.naturalHeight / imageRect.width;
+            scaleY = img.naturalWidth / imageRect.height;
+          } else {
+            scaleX = img.naturalWidth / imageRect.width;
+            scaleY = img.naturalHeight / imageRect.height;
+          }
 
+          // Set canvas size based on rotation
+          if (rotation === 90 || rotation === 270) {
+            canvas.width = img.naturalHeight;
+            canvas.height = img.naturalWidth;
+          } else {
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+          }
+
+          // Apply rotation
+          ctx.save();
+          switch (rotation) {
+            case 90:
+              ctx.translate(canvas.width, 0);
+              ctx.rotate((90 * Math.PI) / 180);
+              break;
+            case 180:
+              ctx.translate(canvas.width, canvas.height);
+              ctx.rotate((180 * Math.PI) / 180);
+              break;
+            case 270:
+              ctx.translate(0, canvas.height);
+              ctx.rotate((270 * Math.PI) / 180);
+              break;
+          }
+
+          // Draw the full rotated image first
+          ctx.drawImage(img, 0, 0);
+          ctx.restore();
+
+          // If crop area is selected, crop the rotated image
           if (cropArea.width > 0 && cropArea.height > 0) {
-            crop = {
+            const croppedCanvas = document.createElement('canvas');
+            const croppedCtx = croppedCanvas.getContext('2d');
+
+            if (!croppedCtx) {
+              throw new Error('Could not get cropped canvas context');
+            }
+
+            const crop = {
               x: Math.max(0, cropArea.x * scaleX),
               y: Math.max(0, cropArea.y * scaleY),
               width: Math.min(
                 cropArea.width * scaleX,
-                img.naturalWidth - cropArea.x * scaleX,
+                canvas.width - cropArea.x * scaleX,
               ),
               height: Math.min(
                 cropArea.height * scaleY,
-                img.naturalHeight - cropArea.y * scaleY,
+                canvas.height - cropArea.y * scaleY,
               ),
             };
+
+            croppedCanvas.width = crop.width;
+            croppedCanvas.height = crop.height;
+
+            croppedCtx.drawImage(
+              canvas,
+              crop.x,
+              crop.y,
+              crop.width,
+              crop.height,
+              0,
+              0,
+              crop.width,
+              crop.height,
+            );
+
+            // Use the cropped canvas for final output
+            croppedCanvas.toBlob(
+              async (blob) => {
+                await uploadBlob(blob);
+              },
+              'image/png',
+              0.9,
+            );
+          } else {
+            // Use the full rotated canvas
+            canvas.toBlob(
+              async (blob) => {
+                await uploadBlob(blob);
+              },
+              'image/png',
+              0.9,
+            );
           }
 
-          canvas.width = crop.width;
-          canvas.height = crop.height;
+          async function uploadBlob(blob: Blob | null) {
+            if (!blob) {
+              console.error('Failed to create image blob');
+              setUploading(false);
+              return;
+            }
 
-          // Draw cropped portion
-          ctx.drawImage(
-            img,
-            crop.x,
-            crop.y,
-            crop.width,
-            crop.height,
-            0,
-            0,
-            crop.width,
-            crop.height,
-          );
+            try {
+              const file = new File([blob], `cropped-image-${Date.now()}.png`, {
+                type: 'image/png',
+              });
 
-          // Convert to blob
-          canvas.toBlob(
-            async (blob) => {
-              if (!blob) {
-                console.error('Failed to create image blob');
-                setUploading(false);
-                return;
-              }
+              // Upload the file
+              const fileName = await handleFileUpload(file);
+              const preview = URL.createObjectURL(blob);
 
-              try {
-                const file = new File(
-                  [blob],
-                  `cropped-image-${Date.now()}.png`,
-                  {
-                    type: 'image/png',
-                  },
-                );
+              // Update form data and UI
+              handleInputChange('file_spek_customer', fileName);
+              setFilePreview(preview);
+              setSelectedFile(file);
 
-                // Upload the file
-                const fileName = await handleFileUpload(file);
-                const preview = canvas.toDataURL();
-
-                // Update form data and UI
-                handleInputChange('file_spek_customer', fileName);
-                setFilePreview(preview);
-                setSelectedFile(file);
-
-                // Close modal and reset states
-                setShowPdfPreview(false);
-                setCropArea({ x: 0, y: 0, width: 0, height: 0 });
-                setShowCropTool(false);
-              } catch (uploadError) {
-                console.error('Error uploading cropped image:', uploadError);
-                alert('Failed to upload cropped image. Please try again.');
-              } finally {
-                setUploading(false);
-              }
-            },
-            'image/png',
-            0.9,
-          );
+              // Close modal and reset states
+              setShowPdfPreview(false);
+              setCropArea({ x: 0, y: 0, width: 0, height: 0 });
+              setShowCropTool(false);
+              setRotation(0); // Reset rotation
+            } catch (uploadError) {
+              console.error('Error uploading cropped image:', uploadError);
+              alert('Failed to upload cropped image. Please try again.');
+            } finally {
+              setUploading(false);
+            }
+          }
         } catch (canvasError) {
           console.error('Canvas processing error:', canvasError);
           alert('Error processing image. Please try again.');
@@ -198,6 +253,14 @@ const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
     setShowPdfPreview(false);
     setCropArea({ x: 0, y: 0, width: 0, height: 0 });
     setShowCropTool(false);
+    setRotation(0); // Reset rotation on cancel
+  };
+
+  // Reset rotation when changing pages
+  const handlePageSelect = (page: string) => {
+    setSelectedPage(page);
+    setCropArea({ x: 0, y: 0, width: 0, height: 0 });
+    setRotation(0);
   };
 
   if (!showPdfPreview) return null;
@@ -227,6 +290,26 @@ const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
                 Clear Selection
               </button>
             )}
+            <button
+              onClick={handleRotate}
+              className="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600 flex items-center gap-1"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Rotate ({rotation}°)
+            </button>
           </div>
         </div>
 
@@ -244,10 +327,7 @@ const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
-                  onClick={() => {
-                    setSelectedPage(page);
-                    setCropArea({ x: 0, y: 0, width: 0, height: 0 });
-                  }}
+                  onClick={() => handlePageSelect(page)}
                 >
                   <img
                     src={page}
@@ -281,6 +361,8 @@ const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
                     style={{
                       userSelect: 'none',
                       maxHeight: '60vh',
+                      transform: `rotate(${rotation}deg)`,
+                      transition: 'transform 0.3s ease',
                     }}
                   />
 
