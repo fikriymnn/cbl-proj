@@ -171,7 +171,19 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     const year = date.getFullYear();
     return `${year}-${month}-${day}`;
   };
+  const getRevisiFromIO = (noIO: string): number => {
+    if (!noIO) return 0;
 
+    // Extract the revision number from IO format: IO-00328-2/12/2025
+    // The number after the second dash is the revision
+    const match = noIO.match(/IO-\d+-(\d+)\//);
+    if (match && match[1]) {
+      return parseInt(match[1], 10);
+    }
+
+    // If no revision number found (e.g., IO-00328/12/2025), it's revision 0
+    return 0;
+  };
   const calculateLayout = (): LayoutCalculation => {
     const mounting = getSelectedMounting();
     if (!mounting) {
@@ -395,7 +407,6 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               </tr>
             </tbody>
           </table>
-
           <!-- Main Info Table -->
           <table class="info-table">
             <tbody>
@@ -411,8 +422,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               <tr>
                 <td class="info-label">Nama Produk</td>
                 <td class="info-colon">:</td>
-                <td colspan="3">${getValue(printData?.produk)}</td>
-                <td rowspan="4"></td>
+                <td colspan="4">${getValue(printData?.produk)}</td>
                 <td class="info-label">Tanggal JO</td>
                 <td class="info-colon">:</td>
                 <td>${formatDate(printData?.createdAt || '')}</td>
@@ -420,7 +430,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               <tr>
                 <td class="info-label">Spesifikasi</td>
                 <td class="info-colon">:</td>
-                <td colspan="3">${getValue(printData?.spesifikasi)}</td>
+                <td colspan="4">${getValue(printData?.spesifikasi)}</td>
                 <td class="info-label">No SO</td>
                 <td class="info-colon">:</td>
                 <td>${getValue(printData?.no_so)}</td>
@@ -430,7 +440,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 <td class="info-colon">:</td>
                 <td>${printData?.po_qty?.toLocaleString()}</td>
                 <td class="info-label">Qty Produksi</td>
-                <td>${printData?.qty?.toLocaleString()}</td>
+                <td colspan="2">${printData?.qty?.toLocaleString()}</td>
                 <td class="info-label">No PO</td>
                 <td class="info-colon">:</td>
                 <td>${getValue(printData?.no_po_customer)}</td>
@@ -440,23 +450,23 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 <td class="info-colon">:</td>
                 <td>${getValue(printData?.keterangan_pengerjaan)}</td>
                 <td class="info-label">Stok FG</td>
-                <td>${printData?.stok_fg?.toLocaleString() || 0}</td>
+                <td colspan="2">${
+                  printData?.stok_fg?.toLocaleString() || 0
+                }</td>
                 <td class="info-label">Tgl PO</td>
                 <td class="info-colon">:</td>
                 <td>${formatDate(printData?.tgl_po_customer || '')}</td>
               </tr>
               <tr>
-                <td class="info-label">Repeat Ke</td>
+                <td class="info-label">Revisi</td>
                 <td class="info-colon">:</td>
-                <td colspan="3">${getValue(printData?.tipe_jo)}</td>
-                <td></td>
+                <td colspan="4">${getRevisiFromIO(printData?.no_io || '')}</td>
                 <td class="info-label">Tgl Pengiriman</td>
                 <td class="info-colon">:</td>
                 <td>${formatDate(printData?.tgl_kirim || '')}</td>
               </tr>
               <tr>
-                <td colspan="5"></td>
-                <td></td>
+                <td colspan="6"></td>
                 <td class="info-label">Toleransi Pengiriman</td>
                 <td class="info-colon">:</td>
                 <td>${getValue(printData?.toleransi, '3D')}</td>
@@ -521,22 +531,20 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 <td colspan="3">${selectedMounting.ukuran_cetak_panjang_1} x ${
                   selectedMounting.ukuran_cetak_lebar_1
                 } mm</td>
-                <td class="info-label">${
-                  selectedMounting.ukuran_cetak_bagian_1 || 2
-                } Bagian</td>
-                <td>Isi</td>
-                <td colspan="2">${
-                  selectedMounting.ukuran_cetak_isi_1 || layout.isi
-                }</td>
+                <td class="info-label">Bagian</td>
+                <td>${selectedMounting.ukuran_cetak_bagian_1 || 2}</td>
+                <td class="info-label">Isi</td>
+                <td>${selectedMounting.ukuran_cetak_isi_1 || layout.isi}</td>
               </tr>
               <tr>
                 <td class="info-label">UK Cetak (P×L)</td>
                 <td colspan="3">${
                   selectedMounting.ukuran_cetak_panjang_2 || 0
                 } x ${selectedMounting.ukuran_cetak_lebar_2 || 0} mm</td>
-                <td class="info-label">0 Bagian</td>
-                <td>Isi</td>
-                <td colspan="2">0</td>
+                <td class="info-label">Bagian</td>
+                <td>0</td>
+                <td class="info-label">Isi</td>
+                <td>0</td>
               </tr>
             </tbody>
           </table>
@@ -555,31 +563,32 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                       : ''
                   }
                   
+                 
                   <div style="display: flex; justify-content: center; align-items: center; min-height: 220px; position: relative;">
                     <div style="position: relative; display: inline-block; margin: 30px;">
                       ${(() => {
                         const acrossX1 = Math.floor(
-                          selectedMounting.lebar_kertas /
+                          selectedMounting.panjang_kertas /
                             selectedMounting.ukuran_cetak_panjang_1,
                         );
                         const downY1 = Math.floor(
-                          selectedMounting.panjang_kertas /
+                          selectedMounting.lebar_kertas /
                             selectedMounting.ukuran_cetak_lebar_1,
                         );
                         const usedWidthPercent =
                           ((acrossX1 *
                             selectedMounting.ukuran_cetak_panjang_1) /
-                            selectedMounting.lebar_kertas) *
+                            selectedMounting.panjang_kertas) *
                           100;
                         const usedHeightPercent =
                           ((downY1 * selectedMounting.ukuran_cetak_lebar_1) /
-                            selectedMounting.panjang_kertas) *
+                            selectedMounting.lebar_kertas) *
                           100;
                         const sisaLebar =
-                          selectedMounting.lebar_kertas -
+                          selectedMounting.panjang_kertas -
                           acrossX1 * selectedMounting.ukuran_cetak_panjang_1;
                         const sisaPanjang =
-                          selectedMounting.panjang_kertas -
+                          selectedMounting.lebar_kertas -
                           downY1 * selectedMounting.ukuran_cetak_lebar_1;
 
                         const boxWidth = 240;
@@ -599,19 +608,19 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
 
                         return `
                           <!-- Top dimension -->
-                          <div style="position: absolute; top: -25px; left: 0; right: 0; text-align: center;">
+                          <div style="position: absolute; top: -15px; left: 0; right: 0; text-align: center;">
                             <div style="font-size: 8px; font-weight: bold; margin-bottom: 2px;">${
-                              selectedMounting.lebar_kertas
+                              selectedMounting.panjang_kertas
                             }</div>
                             <div style="width: 100%; height: 0px; background-color: black;"></div>
                           </div>
 
-                          <!-- Left dimension -->
-                          <div style="position: absolute; left: -25px; top: 0; bottom: 0; display: flex; align-items: center;">
-                            <div style="width: 0px; height: 100%; background-color: black; margin-right: 2px;"></div>
-                            <div style="font-size: 8px; font-weight: bold; writing-mode: vertical-rl; text-orientation: mixed;">${
-                              selectedMounting.panjang_kertas
+                          <!-- Left dimension - closer to box -->
+                          <div style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 3px;">
+                            <div style="font-size: 8px; font-weight: bold;">${
+                              selectedMounting.lebar_kertas
                             }</div>
+                            <div style="width: 0px; height: 60px; background-color: black;"></div>
                           </div>
 
                           <!-- Main rectangle -->
@@ -626,24 +635,35 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                             </div>
 
                             <!-- Left cut dimension -->
-                            <div style="position: absolute; left: 5px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; writing-mode: vertical-rl; text-orientation: mixed; display: flex; align-items: center; gap: 8px; z-index: 10;">
+                            <div style="position: absolute; left: 5px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; z-index: 10;">
                               <span>${
                                 selectedMounting.ukuran_cetak_lebar_1
                               }</span>
-                              <span>→</span>
+                              <span>↓</span>
                               <span>${downY1}x</span>
                             </div>
 
-                            <!-- Used area -->
+                            <!-- Used area (white space) -->
                             <div style="position: absolute; top: 0; left: 0; width: ${usedWidthPercent}%; height: ${usedHeightPercent}%; background-color: white; display: flex; justify-content: center; align-items: center;">
                               ${
                                 selectedMounting.ukuran_cetak_bagian_1 > 1
                                   ? `<div style="font-size: 10px; font-weight: bold;">1/${selectedMounting.ukuran_cetak_bagian_1} Bagian</div>`
                                   : ''
                               }
+                              
+                              <!-- Isi inside white space at bottom right -->
+                              <div style="position: absolute; bottom: 5px; right: 10px; font-size: 8px;">
+                                Isi: ${
+                                  selectedMounting.ukuran_cetak_isi_1 ||
+                                  acrossX1 *
+                                    downY1 *
+                                    (selectedMounting.ukuran_cetak_bagian_1 ||
+                                      1)
+                                }
+                              </div>
                             </div>
 
-                            <!-- Waste areas -->
+                            <!-- Waste areas (grey) -->
                             ${
                               sisaLebar > 0
                                 ? `<div style="position: absolute; top: 0; right: 0; width: ${
@@ -658,16 +678,6 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                                   }%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
                                 : ''
                             }
-
-                            <!-- Isi -->
-                            <div style="position: absolute; bottom: 5px; right: 5px; font-size: 8px; z-index: 10;">
-                              Isi: ${
-                                selectedMounting.ukuran_cetak_isi_1 ||
-                                acrossX1 *
-                                  downY1 *
-                                  (selectedMounting.ukuran_cetak_bagian_1 || 1)
-                              }
-                            </div>
                           </div>
 
                           <!-- Bottom info -->
@@ -709,11 +719,12 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                       <tr>
                         <td style="border: 1px solid black; padding: 3px;">Finishing</td>
                         <td style="border:1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_druk_finishing?.toLocaleString()}</td>
-<td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
-<td style="border: 1px solid black; padding: 3px;">druk</td>
-</tr>
-</tbody>
-</table><!-- Keterangan -->
+                        <td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
+                        <td style="border: 1px solid black; padding: 3px;">druk</td>
+                        </tr>
+                    </tbody>
+                  </table>
+              <!-- Keterangan -->
               <div style="border: 1px solid black; padding: 5px; font-size: 7px; margin-bottom: 5px;">
                 <div style="font-weight: bold; margin-bottom: 3px;">Keterangan Pengerjaan :</div>
                 <div style="min-height: 40px;">${getValue(
@@ -721,10 +732,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 )}</div>
               </div>
 
-              <!-- Pakai Ukuran Standar -->
-              <div style="border: 1px solid black; padding: 5px; font-size: 7px; min-height: 30px;">
-                Pakai Ukuran Standar
-              </div>
+              
             </td>
           </tr>
         </tbody>
@@ -800,7 +808,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
           <div>Tgl:</div>
         </div>
         <div class="signature-box">
-          <div class="signature-title">(Ponda)</div>
+          <div class="signature-title">(Pond)</div>
           <div>Tgl:</div>
         </div>
         <div class="signature-box">
