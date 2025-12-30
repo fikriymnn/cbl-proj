@@ -10,6 +10,7 @@ export interface SOData {
   no_so: string;
   no_io: string;
   customer: string;
+  no_po_customer: string;
   produk: string;
   po_qty: number;
   harga_jual: number | null;
@@ -174,6 +175,7 @@ export interface JOFormData {
   id_io: number;
   id_jo?: number;
   id_so: number;
+  no_po_customer: string;
   id_customer: number;
   id_produk: number;
   no_jo: string;

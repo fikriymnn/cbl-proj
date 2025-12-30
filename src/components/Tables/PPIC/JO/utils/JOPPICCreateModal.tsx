@@ -52,6 +52,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     no_io: '',
     no_so: '',
     customer: '',
+    no_po_customer: '',
     produk: '',
     status_kalkulasi: 'BARU',
     status_jo: 'BARU',
@@ -231,6 +232,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         params: { is_jo_done: false },
         withCredentials: true,
       });
+      console.log('SO data response:', res.data);
       setSOData(res.data.data || []);
     } catch (error) {
       console.error('Error fetching SO data:', error);
@@ -415,7 +417,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             id_io: joDetail.id_io,
             nama_mounting: jm.nama_mounting || '',
             id_kertas: jm.id_kertas,
-            jenis_kertas: jm.nama_kertas,
+            nama_kertas: jm.nama_kertas,
             gramature_kertas: jm.gramature_kertas,
             panjang_plano: jm.panjang_kertas,
             lebar_plano: jm.lebar_kertas,
@@ -540,6 +542,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         customer: selectedSO.customer,
         produk: selectedSO.produk,
         po_qty: selectedSO.po_qty,
+        no_po_customer: selectedSO.no_po_customer,
         alamat_pengiriman: selectedSO.alamat_pengiriman || '',
         standar_warna: selectedSO.ada_standar_warna || '',
       }));
@@ -698,7 +701,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           id_jo: formData.id_jo,
           id_io_mounting: mounting.id, // ✅ This is the correct id_io_mounting
           id_kertas: mounting.id_kertas,
-          nama_kertas: mounting.jenis_kertas,
+          nama_kertas: mounting.nama_kertas,
           nama_mounting: mounting.nama_mounting,
           gramature_kertas: mounting.gramature_kertas,
           panjang_kertas: mounting.panjang_plano,
@@ -732,7 +735,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           id_io_mounting: mounting.id, // ✅ This is the correct id_io_mounting
           nama_mounting: mounting.nama_mounting,
           id_kertas: mounting.id_kertas,
-          nama_kertas: mounting.jenis_kertas,
+          nama_kertas: mounting.nama_kertas,
           gramature_kertas: mounting.gramature_kertas,
           panjang_kertas: mounting.panjang_plano,
           lebar_kertas: mounting.lebar_plano,

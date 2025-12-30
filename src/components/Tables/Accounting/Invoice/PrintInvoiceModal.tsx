@@ -233,7 +233,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 
     // Determine paper height based on number of items
     const itemCount = invoiceData.invoice_produk?.length || 0;
-    const paperHeight = itemCount > 3 ? '560mm' : '140mm'; // Half the original height for single page
+    const paperHeight = itemCount > 3 ? '560mm' : '280mm';
 
     return `
     <!DOCTYPE html>
@@ -244,7 +244,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
         <style>
           @page {
             size: 241mm ${paperHeight};
-            margin: 6mm 4mm 6mm 4mm;
+            margin: 8mm 6mm 8mm 6mm;
           }
 
           * {
@@ -256,11 +256,12 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
           body {
             margin: 0;
             padding: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 11px;
-            line-height: 1.3;
+            /* Use monospace font for dot matrix compatibility */
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
             color: #000;
-            width: 233mm;
+            width: 229mm;
             background: white;
           }
 
@@ -271,7 +272,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
               color: #000 !important;
             }
             @page {
-              margin: 6mm 4mm 6mm 4mm;
+              margin: 8mm 6mm 8mm 6mm;
             }
             html, body {
               width: 241mm;
@@ -279,6 +280,12 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             }
             * {
               color: #000 !important;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            /* Ensure borders print */
+            table, th, td {
+              border-color: #000 !important;
             }
           }
 
@@ -292,17 +299,19 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
           }
 
           .company-header {
             display: flex;
             align-items: flex-start;
-            gap: 8px;
+            gap: 12px;
           }
 
           .logo {
-            width: 65px;
+            width: 80px;
             height: auto;
             flex-shrink: 0;
             image-rendering: -webkit-optimize-contrast;
@@ -315,22 +324,22 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 
           .company-name {
             font-weight: bold;
-            font-size: 11px;
-            margin-bottom: 3px;
-            line-height: 1.2;
+            font-size: 16px;
+            margin-bottom: 5px;
+            line-height: 1.3;
           }
 
           .company-info {
-            font-size: 10px;
-            line-height: 1.4;
+            font-size: 13px;
+            line-height: 1.6;
           }
 
           .company-info div {
-            margin-bottom: 2px;
+            margin-bottom: 3px;
           }
 
           .date-location {
-            font-size: 10px;
+            font-size: 13px;
             text-align: right;
             font-weight: bold;
           }
@@ -340,7 +349,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
           }
 
           .invoice-details-left {
@@ -350,19 +359,19 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 
           .detail-row {
             display: flex;
-            margin-bottom: 3px;
-            font-size: 10px;
-            line-height: 1.4;
+            margin-bottom: 5px;
+            font-size: 13px;
+            line-height: 1.6;
           }
 
           .detail-label {
-            width: 110px;
+            width: 130px;
             flex-shrink: 0;
             font-weight: bold;
           }
 
           .detail-colon {
-            width: 12px;
+            width: 15px;
             flex-shrink: 0;
             font-weight: bold;
           }
@@ -375,47 +384,50 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             flex: 0 0 50%;
             max-width: 50%;
             text-align: center;
+            border: 2px solid #000;
+            padding: 10px;
           }
 
           .customer-label {
-            font-size: 10px;
-            margin-bottom: 4px;
+            font-size: 13px;
+            margin-bottom: 6px;
+            font-weight: bold;
           }
 
           .customer-name {
             font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 4px;
+            font-size: 15px;
+            margin-bottom: 6px;
           }
 
           .customer-address {
-            font-size: 10px;
-            line-height: 1.5;
+            font-size: 13px;
+            line-height: 1.6;
           }
 
           /* ITEMS TABLE */
           .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
           }
 
           .items-table th,
           .items-table td {
-            border: 1.5px solid #000;
-            padding: 5px 6px;
-            font-size: 10px;
+            border: 2px solid #000;
+            padding: 8px 8px;
+            font-size: 13px;
           }
 
           .items-table th {
             background-color: #fff;
             font-weight: bold;
             text-align: center;
-            line-height: 1.3;
+            line-height: 1.4;
           }
 
           .items-table td {
-            line-height: 1.4;
+            line-height: 1.5;
           }
 
           .text-center {
@@ -431,48 +443,51 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-top: 10px;
-            margin-bottom: 15px;
+            margin-top: 12px;
+            margin-bottom: 18px;
+            border-top: 2px solid #000;
+            padding-top: 10px;
           }
 
           .terbilang {
-            flex: 0 0 50%;
-            max-width: 50%;
-            font-size: 10px;
+            flex: 0 0 48%;
+            max-width: 48%;
+            font-size: 13px;
             padding-right: 15px;
             font-weight: bold;
           }
 
           .totals-section {
-            flex: 0 0 50%;
-            max-width: 50%;
+            flex: 0 0 52%;
+            max-width: 52%;
           }
 
           .total-row {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
-            font-size: 10px;
+            padding: 5px 0;
+            font-size: 13px;
           }
 
           .total-label {
             text-align: right;
             font-weight: bold;
             flex: 1;
-            padding-right: 20px;
+            padding-right: 25px;
           }
 
           .total-value {
             text-align: right;
-            width: 140px;
+            width: 160px;
           }
 
           .grand-total-row {
-            border-top: 1.5px solid #000;
+            border-top: 2px solid #000;
             border-bottom: 3px double #000;
-            padding: 6px 0 !important;
-            margin-top: 4px;
+            padding: 8px 0 !important;
+            margin-top: 5px;
             font-weight: bold;
+            font-size: 14px;
           }
 
           .grand-total-row .total-value {
@@ -484,28 +499,30 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-top: 20px;
+            margin-top: 25px;
+            border-top: 2px solid #000;
+            padding-top: 15px;
           }
 
           .bank-section {
             flex: 0 0 50%;
             max-width: 50%;
-            font-size: 10px;
+            font-size: 13px;
           }
 
           .bank-label {
             font-weight: bold;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
           }
 
           .bank-row {
             display: flex;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
           }
 
           .bank-name {
             font-weight: bold;
-            width: 85px;
+            width: 100px;
             flex-shrink: 0;
           }
 
@@ -513,20 +530,20 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             flex: 0 0 50%;
             max-width: 50%;
             text-align: center;
-            font-size: 10px;
+            font-size: 13px;
           }
 
           .signature-label {
             font-weight: bold;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
           }
 
           .signature-line {
             display: inline-block;
             font-weight: bold;
-            border-top: 1px solid #000;
-            padding-top: 3px;
-            min-width: 150px;
+            border-top: 2px solid #000;
+            padding-top: 5px;
+            min-width: 180px;
           }
 
           strong {
@@ -600,7 +617,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
             <thead>
               <tr>
                 <th style="width: 12%;">BANYAK</th>
-                <th style="width: 10%;">Unit</th>
+                <th style="width: 10%;">UNIT</th>
                 <th style="width: 43%;">NAMA BARANG</th>
                 <th style="width: 17%;">HARGA</th>
                 <th style="width: 18%;">JUMLAH</th>
@@ -693,7 +710,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
                   : ''
               }
               <div class="total-row grand-total-row">
-                <div class="total-label">Total</div>
+                <div class="total-label">TOTAL</div>
                 <div class="total-value">${formatCurrency(finalTotal)}</div>
               </div>
             </div>
@@ -807,9 +824,9 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
         {/* Footer info */}
         <div className="bg-gray-800 text-white p-3 text-center text-sm">
           <p>
-            Optimized for continuous form paper (241mm x{' '}
-            {itemCount > 3 ? '560mm' : '280mm'}). Click "Print / Download" to
-            print.
+            Optimized for DOT MATRIX continuous form paper (241mm x{' '}
+            {itemCount > 3 ? '560mm' : '280mm'}). Larger fonts for better
+            readability.
           </p>
         </div>
       </div>

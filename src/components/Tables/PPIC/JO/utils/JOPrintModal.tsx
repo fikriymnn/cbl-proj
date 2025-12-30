@@ -510,8 +510,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               </tr>
               <tr>
                 <td class="info-label">Ukuran</td>
-                <td colspan="3">${selectedMounting.lebar_kertas} x ${
-                  selectedMounting.panjang_kertas
+                <td colspan="3">${selectedMounting.panjang_kertas} x ${
+                  selectedMounting.lebar_kertas
                 } mm</td>
                 <td class="info-label">JML</td>
                 <td colspan="3">${selectedMounting.jumlah_kertas.toLocaleString()} LP</td>
