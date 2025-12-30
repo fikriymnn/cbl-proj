@@ -484,6 +484,11 @@ const PressTab: React.FC<PressTabProps> = ({
 
   // Calculate total harga plate
   const calculateHargaPlate = () => {
+    // If copyType is 'repeat', return 0 (using existing plate)
+    if (copyType === 'repeat') {
+      return 0;
+    }
+
     if (!selectedMesin) return 0;
     const plateCount = getPlateCount();
     return selectedMesin.harga * plateCount;
@@ -536,10 +541,9 @@ const PressTab: React.FC<PressTabProps> = ({
   };
 
   const handlePrintInsheetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (componentIsReadOnly) return;
+    if (isReadOnly) return; // Only check isReadOnly, not copyType
     onInputChange(e);
   };
-
   // Update calculated values in formData
   useEffect(() => {
     const hargaCetak = calculateJumlahHargaCetak();
@@ -638,9 +642,9 @@ const PressTab: React.FC<PressTabProps> = ({
               name="print_insheet"
               value={getSafeStringValue(formData.print_insheet)}
               onChange={handlePrintInsheetChange}
-              readOnly={componentIsReadOnly}
+              readOnly={isReadOnly} // Changed from componentIsReadOnly
               className={`w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
-                componentIsReadOnly ? 'bg-gray-100 cursor-not-allowed' : ''
+                isReadOnly ? 'bg-gray-100 cursor-not-allowed' : '' // Changed from componentIsReadOnly
               }`}
               placeholder="Enter insheet"
             />
@@ -714,15 +718,31 @@ const PressTab: React.FC<PressTabProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Total Harga Plate
+              {copyType === 'repeat' && (
+                <span className="ml-2 text-xs text-blue-600">
+                  (Using existing plate)
+                </span>
+              )}
             </label>
-            <div className="w-full px-3 py-2 border border-gray-300 rounded bg-blue-50">
-              <span className="font-semibold text-blue-700">
+            <div
+              className={`w-full px-3 py-2 border border-gray-300 rounded ${
+                copyType === 'repeat' ? 'bg-blue-50' : 'bg-blue-50'
+              }`}
+            >
+              <span
+                className={`font-semibold ${
+                  copyType === 'repeat' ? 'text-blue-500' : 'text-blue-700'
+                }`}
+              >
                 {new Intl.NumberFormat('id-ID', {
                   style: 'currency',
                   currency: 'IDR',
                   minimumFractionDigits: 0,
                 }).format(calculateHargaPlate())}
               </span>
+              {copyType === 'repeat' && (
+                <span className="ml-2 text-xs text-gray-500">(Rp 0)</span>
+              )}
             </div>
           </div>
         </div>
@@ -733,6 +753,11 @@ const PressTab: React.FC<PressTabProps> = ({
         <div className="border-b pb-4">
           <h4 className="text-sm font-medium text-gray-600 mb-2">
             Selected Machine Details
+            {copyType === 'repeat' && (
+              <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                Reusing existing plate
+              </span>
+            )}
           </h4>
           <div className="grid grid-cols-5 gap-4 text-sm">
             <div>
@@ -750,22 +775,29 @@ const PressTab: React.FC<PressTabProps> = ({
             <div>
               <span className="text-gray-500">Unit Price:</span>
               <div className="font-medium">
-                {new Intl.NumberFormat('id-ID', {
-                  style: 'currency',
-                  currency: 'IDR',
-                  minimumFractionDigits: 0,
-                }).format(selectedMesin.harga)}
+                {copyType === 'repeat' ? (
+                  <span className="text-blue-600">Rp 0 (Reused)</span>
+                ) : (
+                  new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                  }).format(selectedMesin.harga)
+                )}
               </div>
             </div>
             <div>
               <span className="text-gray-500">Calculation:</span>
               <div className="font-medium text-xs">
-                {getPlateCount()} ×{' '}
-                {new Intl.NumberFormat('id-ID', {
-                  style: 'currency',
-                  currency: 'IDR',
-                  minimumFractionDigits: 0,
-                }).format(selectedMesin.harga)}
+                {copyType === 'repeat' ? (
+                  <span className="text-blue-600">Using existing plate</span>
+                ) : (
+                  `${getPlateCount()} × ${new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0,
+                  }).format(selectedMesin.harga)}`
+                )}
               </div>
             </div>
           </div>

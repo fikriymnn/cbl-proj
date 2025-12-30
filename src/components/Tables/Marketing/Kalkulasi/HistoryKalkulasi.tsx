@@ -317,11 +317,6 @@ const HistoryKalkulasi: React.FC = () => {
 
   const sortedData = sortData(data);
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (!text || text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -362,18 +357,18 @@ const HistoryKalkulasi: React.FC = () => {
       {/* Data Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full table-auto text-xs">
+          <table className="min-w-full table-fixed text-[10px]">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase w-16">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-12">
                   <button className="flex items-center hover:text-gray-700 focus:outline-none">
                     No
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase w-24">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-24">
                   Actions
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-32">
                   <button
                     onClick={() => handleSort('kode_kalkulasi')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -382,7 +377,7 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('kode_kalkulasi')}
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-20">
                   <button
                     onClick={() => handleSort('tipe_kalkulasi')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -391,7 +386,7 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('tipe_kalkulasi')}
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-24">
                   <button
                     onClick={() => handleSort('tgl_kalkulasi')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -400,7 +395,7 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('tgl_kalkulasi')}
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-40">
                   <button
                     onClick={() => handleSort('nama_customer')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -409,7 +404,7 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('nama_customer')}
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-48">
                   <button
                     onClick={() => handleSort('nama_produk')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -418,7 +413,7 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('nama_produk')}
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-20">
                   <button
                     onClick={() => handleSort('qty_kalkulasi')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -427,7 +422,7 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('qty_kalkulasi')}
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-32">
                   <button
                     onClick={() => handleSort('total_harga_satuan_customer')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -436,7 +431,7 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('total_harga_satuan_customer')}
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-20">
                   <button
                     onClick={() => handleSort('status')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -445,7 +440,7 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('status')}
                   </button>
                 </th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-32">
                   <button
                     onClick={() => handleSort('status_proses')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -460,15 +455,15 @@ const HistoryKalkulasi: React.FC = () => {
               {sortedData.length > 0 ? (
                 sortedData.map((item: KalkulasiItem, index: number) => (
                   <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 text-xs text-left">
+                    <td className="px-2 py-1.5 text-[10px] text-left">
                       {(page - 1) * limit + index + 1}
                     </td>
-                    <td className="px-4 py-2 text-xs">
-                      <div className="flex flex-col gap-2">
+                    <td className="px-2 py-1.5 text-[10px]">
+                      <div className="flex flex-col gap-0.5">
                         <button
                           onClick={() => handleViewDetail(item.id)}
                           disabled={detailLoading}
-                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50"
                         >
                           {detailLoading ? 'Loading...' : 'Detail'}
                         </button>
@@ -476,7 +471,7 @@ const HistoryKalkulasi: React.FC = () => {
                         {item.status === 'draft' && (
                           <button
                             onClick={() => RequestKabag(item.id)}
-                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50"
                           >
                             Submit
                           </button>
@@ -486,7 +481,7 @@ const HistoryKalkulasi: React.FC = () => {
                           <button
                             onClick={() => handleCopyClick(item.id)}
                             disabled={detailLoading}
-                            className="bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50"
+                            className="bg-pink-500 hover:bg-pink-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50"
                           >
                             {detailLoading ? 'Loading...' : 'Copy'}
                           </button>
@@ -494,32 +489,29 @@ const HistoryKalkulasi: React.FC = () => {
                         <button
                           onClick={() => handlePrint(item.id)}
                           disabled={detailLoading}
-                          className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 transition-colors"
+                          className="bg-purple-500 hover:bg-purple-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50 transition-colors"
                           title="Print"
                         >
                           Print
                         </button>
                       </div>
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-left flex flex-col gap-2">
-                      <span
-                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
-                        title={item.kode_kalkulasi || ''}
-                      >
-                        {item.kode_kalkulasi
-                          ? truncateText(item.kode_kalkulasi, 20)
-                          : '-'}
-                      </span>
-                      <span className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium">
-                        {item.status_kalkulasi}
-                      </span>
-                      <span className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium">
-                        {item.label || 'No Label'}
-                      </span>
+                    <td className="px-2 py-1.5 text-left">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="bg-blue-100 text-blue-800 text-[9px] px-1 py-0.5 rounded font-medium break-words">
+                          {item.kode_kalkulasi || '-'}
+                        </span>
+                        <span className="bg-blue-100 text-blue-800 text-[9px] px-1 py-0.5 rounded font-medium">
+                          {item.status_kalkulasi}
+                        </span>
+                        <span className="bg-blue-100 text-blue-800 text-[9px] px-1 py-0.5 rounded font-medium">
+                          {item.label || 'No Label'}
+                        </span>
+                      </div>
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-left">
+                    <td className="px-2 py-1.5 text-left">
                       <span
-                        className={`px-2 py-1 rounded text-xs uppercase ${
+                        className={`px-1.5 py-0.5 rounded text-[9px] uppercase ${
                           item.tipe_kalkulasi === 'multi'
                             ? 'bg-green-100 text-green-800'
                             : item.tipe_kalkulasi === 'manual'
@@ -530,26 +522,26 @@ const HistoryKalkulasi: React.FC = () => {
                         {item.tipe_kalkulasi || 'normal'}
                       </span>
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-xs text-left">
+                    <td className="px-2 py-1.5 text-[10px] text-left">
                       {new Date(item.tgl_kalkulasi).toLocaleDateString('id-ID')}
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-left">
-                      <span className="text-xs" title={item.nama_customer}>
-                        {truncateText(item.nama_customer, 15)}
+                    <td className="px-2 py-1.5 text-left">
+                      <span className="text-[10px] break-words leading-tight">
+                        {item.nama_customer}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-xs max-w-xs text-left">
-                      <span title={item.nama_produk}>
-                        {truncateText(item.nama_produk, 20)}
+                    <td className="px-2 py-1.5 text-[10px] text-left">
+                      <span className="break-words leading-tight">
+                        {item.nama_produk}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-xs text-left">
+                    <td className="px-2 py-1.5 text-[10px] text-left">
                       {item.tipe_kalkulasi === 'multi' && item.qty_list ? (
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-0.5">
                           {item.qty_list.map((qtyItem, idx) => (
                             <span
                               key={idx}
-                              className={`text-xs ${
+                              className={`text-[10px] ${
                                 qtyItem.is_selected ? 'font-bold' : ''
                               }`}
                             >
@@ -562,24 +554,23 @@ const HistoryKalkulasi: React.FC = () => {
                         item.qty_kalkulasi?.toLocaleString()
                       )}
                     </td>
-                    <td className="px-4 py-2 text-xs whitespace-nowrap text-left">
+                    <td className="px-2 py-1.5 text-[10px] text-left">
                       Rp{' '}
                       {Number(
                         item.total_harga_satuan_customer || 0,
                       ).toLocaleString()}
                     </td>
-                    <td className="px-4 py-2 text-xs whitespace-nowrap text-left">
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs uppercase">
+                    <td className="px-2 py-1.5 text-[10px] text-left">
+                      <span className="bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded text-[9px] uppercase">
                         {item.status}
                       </span>
                     </td>
-                    <td className="px-4 py-2 text-xs text-left">
-                      <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs uppercase">
+                    <td className="px-2 py-1.5 text-[10px] text-left">
+                      <span className="bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded text-[9px] uppercase block mb-1">
                         {item.status_proses}
                       </span>
-                      <br />
                       {item.status_proses === 'reject kabag' && (
-                        <span className="text-red-500 text-xs">
+                        <span className="text-red-500 text-[9px] break-words">
                           {item?.note_kabag}
                         </span>
                       )}

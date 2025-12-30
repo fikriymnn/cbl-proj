@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosResponse, AxiosError } from 'axios';
+
 import BasicInfoForm from './BasicInfoForm';
 import TabNavigation from './TabNavigation';
 import TabContent from './TabContent';
@@ -458,9 +459,23 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
       }
     } catch (error) {
       console.error('Error submitting kalkulasi:', error);
-      alert(
-        `Terjadi kesalahan: ${(error as any).message || 'Failed to save data'}`,
-      );
+
+      let errorMessage = 'Gagal menyimpan data. Silakan coba lagi.';
+
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<any>;
+
+        // Priority: API message
+        if (axiosError.response?.data?.msg) {
+          errorMessage = axiosError.response.data.msg;
+        } else if (axiosError.message) {
+          errorMessage = axiosError.message;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

@@ -20,8 +20,8 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
 }) => {
   const lainLainItems = formData.lain_lain || [];
 
-  // Determine if component should be read-only
-  const isComponentReadOnly = isReadOnly || copyType === 'repeat';
+  // Changed: Only check isReadOnly prop, not copyType
+  const isComponentReadOnly = isReadOnly;
 
   const getInputClassName = (baseClassName: string) => {
     return isComponentReadOnly
@@ -130,6 +130,12 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
           {isComponentReadOnly && (
             <span className="ml-2 text-sm bg-gray-100 text-gray-600 px-2 py-1 rounded">
               View Only
+            </span>
+          )}
+          {/* Optional: Add badge to show this is editable in repeat mode */}
+          {copyType === 'repeat' && !isComponentReadOnly && (
+            <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+              Editable
             </span>
           )}
         </h3>
@@ -322,15 +328,16 @@ const LainLainTab: React.FC<LainLainTabProps> = ({
         </div>
       )}
 
-      {/* Readonly Information Panel */}
+      {/* Removed the readonly information panel for repeat mode */}
+      {/* Only show if truly in view-only mode */}
       {isComponentReadOnly && lainLainItems.length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="text-sm font-semibold text-blue-800 mb-2">
-            Lain-lain Information
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <h4 className="text-sm font-semibold text-gray-800 mb-2">
+            📋 View Only Mode
           </h4>
-          <p className="text-sm text-blue-600">
-            This section is in read-only mode because this is a repeat
-            calculation. To make changes, create a "repeat perubahan" instead.
+          <p className="text-sm text-gray-600">
+            This section is in read-only mode. You cannot make changes to these
+            items.
           </p>
         </div>
       )}

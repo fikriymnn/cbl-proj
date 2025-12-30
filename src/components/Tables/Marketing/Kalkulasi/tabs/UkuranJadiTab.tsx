@@ -65,8 +65,9 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
               </label>
               <input
                 type="number"
+                step="any"
                 name={field.name}
-                value={field.value}
+                value={field.value ?? ''}
                 onChange={onInputChange}
                 readOnly={isReadOnly}
                 className={getInputClassName(
@@ -154,8 +155,9 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
                 ) : (
                   <input
                     type="number"
+                    step="any"
                     name={field.name}
-                    value={field.value}
+                    value={field.value ?? ''}
                     onChange={onInputChange}
                     readOnly={isReadOnly}
                     className={getInputClassName(
@@ -225,8 +227,9 @@ const UkuranJadiTab: React.FC<UkuranJadiTabProps> = ({
                 ) : (
                   <input
                     type="number"
+                    step="any"
                     name={field.name}
-                    value={field.value}
+                    value={field.value ?? ''}
                     onChange={onInputChange}
                     readOnly={isReadOnly}
                     className={getInputClassName(
