@@ -547,7 +547,8 @@ const HistorySO: React.FC = () => {
           setSelectedSO(null);
         }}
         data={selectedSO}
-        isEditMode={false}
+        isEditMode={true}
+        onUpdate={fetchsoData}
       />
       <CancelPopup
         isOpen={isCancelPopupOpen}

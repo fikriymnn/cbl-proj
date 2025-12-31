@@ -1,5 +1,6 @@
 // types/jo.types.ts
 export interface SOData {
+  status_produk: string;
   id_customer: number;
   id: number;
   id_io: number;
@@ -185,6 +186,7 @@ export interface JOFormData {
   produk: string;
   status_kalkulasi: string;
   status_jo: string;
+  status_produk: string;
   stok_fg: number;
   qty: number;
   qty_druk: number; // NEW FIELD

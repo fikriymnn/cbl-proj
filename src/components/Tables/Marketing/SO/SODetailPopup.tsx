@@ -102,14 +102,12 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
   useEffect(() => {
     setData(initialData);
     if (initialData) {
-      // Create a deep copy to avoid reference issues
       setEditFormData({ ...initialData });
-      // Fetch gudang options when data is loaded
-      if (initialData.id_kalkulasi) {
-        fetchGudangOptions(initialData.id_kalkulasi);
+      // Fetch gudang options using customer ID
+      if (initialData.id_customer) {
+        fetchGudangOptions(initialData.id_customer);
       }
     } else {
-      // Reset editFormData when initialData is null
       setEditFormData({});
     }
   }, [initialData]);
@@ -136,26 +134,33 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     }
   }, [isFormOpen, data]);
 
-  // Fetch gudang options based on kalkulasi
-  const fetchGudangOptions = async (kalkulasiId: number) => {
+  // Fetch gudang options based on customer ID
+  const fetchGudangOptions = async (customerId: number) => {
     try {
       const url = `${
         import.meta.env.VITE_API_LINK
-      }/marketing/kalkulasi/${kalkulasiId}`;
-      const res = await axios.get(url, { withCredentials: true });
+      }/master/marketing/customer/${customerId}`;
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
 
-      if (res.data.succes && res.data.data?.customer?.gudang) {
-        const gudangOpts = res.data.data.customer.gudang.map(
-          (gudang: Gudang) => ({
+      if (res.data.succes && res.data.data) {
+        const customer = res.data.data;
+
+        if (customer && customer.gudang) {
+          const gudangOpts = customer.gudang.map((gudang: Gudang) => ({
             value: gudang.alamat_gudang,
             label: gudang.alamat_gudang,
             data: gudang,
-          }),
-        );
-        setGudangOptions(gudangOpts);
+          }));
+          setGudangOptions(gudangOpts);
+        } else {
+          setGudangOptions([]);
+        }
       }
     } catch (error) {
       console.error('Error fetching gudang options:', error);
+      setGudangOptions([]);
     }
   };
 

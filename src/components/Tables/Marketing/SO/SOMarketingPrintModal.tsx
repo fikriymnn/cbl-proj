@@ -303,7 +303,7 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                   <span class="info-label">Marketing</span>
                   <span class="info-colon">:</span>
                   <span class="info-value">${getValue(
-                    printData.create_by,
+                    printData.nama_marketing,
                   )}</span>
                 </div>
                 <div class="info-item">
@@ -452,7 +452,7 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                   <span class="info-label">Marketing</span>
                   <span class="info-colon">:</span>
                   <span class="info-value">${getValue(
-                    printData.create_by,
+                    printData.nama_marketing,
                   )}</span>
                 </div>
                 <div class="info-item">

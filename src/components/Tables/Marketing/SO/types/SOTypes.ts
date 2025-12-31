@@ -199,12 +199,14 @@ export interface IOData {
 }
 
 export interface SOData {
+  id_customer: any;
   status_work: string;
   create_by: string;
   note: string;
   status_pemesanan: string;
   ppic: any;
   kirim_semua: any;
+  nama_marketing: any;
   partial: any;
   harga: any;
   artwork: any;

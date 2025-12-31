@@ -498,7 +498,7 @@ const JOApproval: React.FC = () => {
                               title="EDIT JO"
                               disabled={actionLoading[item.id]}
                             >
-                              EDIT JO
+                              Preview JO
                             </button>
 
                             <button

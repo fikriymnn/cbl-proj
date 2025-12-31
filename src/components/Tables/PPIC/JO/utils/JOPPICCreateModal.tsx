@@ -52,10 +52,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     no_io: '',
     no_so: '',
     customer: '',
+    status_produk: '',
     no_po_customer: '',
     produk: '',
-    status_kalkulasi: 'BARU',
-    status_jo: 'BARU',
+    status_kalkulasi: '',
+    status_jo: '',
     stok_fg: 0,
     qty: 0,
     qty_druk: 0, // NEW FIELD
@@ -545,6 +546,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         no_po_customer: selectedSO.no_po_customer,
         alamat_pengiriman: selectedSO.alamat_pengiriman || '',
         standar_warna: selectedSO.ada_standar_warna || '',
+        status_produk: selectedSO.status_produk || '',
+        status_jo: selectedSO.status_jo || '-',
       }));
 
       // Only fetch mounting data if not in edit mode
@@ -837,11 +840,34 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
         {/* TWO COLUMN LAYOUT */}
         <div className="relative w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg flex flex-col">
-          {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-blue-600 to-blue-700 flex-shrink-0">
-            <h2 className="text-xl font-bold text-white">
-              {editMode ? `Edit ${tipeJO}` : `Tambah ${tipeJO}`}
-            </h2>
+            <div className="flex flex-col">
+              <h2 className="text-xl font-bold text-white">
+                {editMode ? `Edit ${tipeJO}` : `Tambah ${tipeJO}`}
+              </h2>
+              {/* ADD THIS STATUS PRODUK BADGE */}
+              {formData.status_produk && (
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="text-xs text-white opacity-90">
+                    Status Produk:
+                  </span>
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                      formData.status_produk?.toLowerCase() === 'acc'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-yellow-400 text-gray-800'
+                    }`}
+                  >
+                    {formData.status_produk}
+                  </span>
+                  {formData.status_produk?.toLowerCase() !== 'acc' && (
+                    <span className="text-xs text-yellow-200">
+                      ⚠ Product not yet accepted
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
             <button
               onClick={handleClose}
               className="text-white hover:text-gray-200 transition-colors"
@@ -861,7 +887,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
               </svg>
             </button>
           </div>
-
           {/* Body - Two Column Layout */}
           <div className="flex-1 overflow-hidden flex">
             {/* LEFT COLUMN - Basic Info & Production Details */}
@@ -907,7 +932,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
               </div>
             </div>
           </div>
-
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 flex-shrink-0">
             <button

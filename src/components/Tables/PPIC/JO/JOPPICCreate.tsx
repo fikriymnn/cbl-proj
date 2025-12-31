@@ -8,6 +8,8 @@ import JOPrintModal from './utils/JOPrintModal';
 type SortDirection = 'asc' | 'desc';
 
 interface JOData {
+  so: any;
+  status_produk: string;
   status_proses: string;
   status: any;
   id: number;
@@ -285,7 +287,24 @@ const JOPPICCreate: React.FC = () => {
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
   });
+  const isProductAccepted = (statusProduk: string): boolean => {
+    return statusProduk?.toLowerCase() === 'acc';
+  };
 
+  const getRowClassName = (item: JOData): string => {
+    const baseClass = 'hover:bg-gray-50 transition-colors';
+    if (!isProductAccepted(item.so?.status_produk)) {
+      return `${baseClass} bg-yellow-50`; // Light yellow background for non-ACC
+    }
+    return baseClass;
+  };
+
+  const getStatusProdukColor = (status: string): string => {
+    if (status?.toLowerCase() === 'acc') {
+      return 'bg-green-100 text-green-800';
+    }
+    return 'bg-yellow-100 text-yellow-800';
+  };
   return (
     <div className="">
       {/* Header Section */}
@@ -455,6 +474,15 @@ const JOPPICCreate: React.FC = () => {
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
+                    onClick={() => handleSort('status_produk')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    STATUS PRODUK
+                    {getSortIcon('status_produk')}
+                  </button>
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
                     onClick={() => handleSort('status_proses')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
@@ -490,7 +518,7 @@ const JOPPICCreate: React.FC = () => {
                 sortedData.map((item, index) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-gray-50 transition-colors"
+                    className={getRowClassName(item)} // MODIFIED THIS LINE
                   >
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
                       {(page - 1) * limit + index + 1}
@@ -514,8 +542,19 @@ const JOPPICCreate: React.FC = () => {
 
                             <button
                               onClick={() => NextProcessKabag(item.id)}
-                              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                              title="Next Process"
+                              disabled={
+                                !isProductAccepted(item.so?.status_produk)
+                              }
+                              className={`px-3 py-1 rounded text-xs transition-colors ${
+                                isProductAccepted(item.so?.status_produk)
+                                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              }`}
+                              title={
+                                isProductAccepted(item.so?.status_produk)
+                                  ? 'Next Process'
+                                  : 'Product must be ACC to proceed'
+                              }
                             >
                               NEXT PROCESS
                             </button>
@@ -577,6 +616,15 @@ const JOPPICCreate: React.FC = () => {
                         )}`}
                       >
                         {item.status_jo || '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusProdukColor(
+                          item.status_produk,
+                        )}`}
+                      >
+                        {item.so?.status_produk || '-'}
                       </span>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap">

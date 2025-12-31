@@ -210,16 +210,12 @@ export const ProductionDetailsSection: React.FC<
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Status Kalkulasi
           </label>
-          <SearchableSelect
-            options={[
-              { value: 'BARU', label: 'BARU' },
-              { value: 'REPEAT', label: 'REPEAT' },
-              { value: 'REPEAT PERUBAHAN', label: 'REPEAT PERUBAHAN' },
-            ]}
-            value={formData.status_kalkulasi || 'BARU'}
-            onChange={(value) => onChange('status_kalkulasi', value)}
-            placeholder="Pilih Status Kalkulasi"
-            required
+          <input
+            type="text"
+            value={formData.status_jo || ''}
+            onChange={(value) => onChange('status_jo', value)}
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled
           />
         </div>
 
