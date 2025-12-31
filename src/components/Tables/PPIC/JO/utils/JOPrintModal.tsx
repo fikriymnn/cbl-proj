@@ -78,6 +78,37 @@ interface JOPrintData {
     createdAt: string;
     updatedAt: string;
     nama_mounting?: string;
+    // Add io_mounting nested data
+    io_mounting?: {
+      jumlah_warna: number;
+      ukuran_jadi_panjang: number;
+      ukuran_jadi_lebar: number;
+      ukuran_jadi_tinggi: number;
+      ukuran_jadi_terb_panjang: number;
+      ukuran_jadi_terb_lebar: number;
+      warna_depan: number;
+      warna_belakang: number;
+      tahapan: Array<{
+        id: number;
+        id_io: number | null;
+        id_io_mounting: number;
+        id_tahapan_mesin: number;
+        id_setting_kapasitas: number | null;
+        id_drying_time: number | null;
+        index: number;
+        nama_proses: string;
+        nama_mesin: string;
+        nama_setting: string;
+        nama_kapasitas: string;
+        nama_drying_time: string;
+        value_setting: number;
+        value_kapasitas: number;
+        value_drying_time: number;
+        is_active: boolean;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+    };
   }>;
 }
 interface JOPrintModalProps {
@@ -208,7 +239,23 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
   };
 
   const getProcessTableRows = () => {
-    const processes = [
+    const selectedMounting = getSelectedMounting();
+
+    // Use real tahapan from API if available
+    if (
+      selectedMounting?.io_mounting?.tahapan &&
+      selectedMounting.io_mounting.tahapan.length > 0
+    ) {
+      return selectedMounting.io_mounting.tahapan
+        .sort((a, b) => a.index - b.index)
+        .map((tahap) => ({
+          name: tahap.nama_proses,
+          mesin: tahap.nama_mesin,
+        }));
+    }
+
+    // Fallback to default if no tahapan data
+    return [
       { name: 'Potong', mesin: 'ITTOH' },
       { name: 'Plate', mesin: 'CTP' },
       { name: 'CETAK', mesin: 'R700' },
@@ -220,9 +267,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
       { name: 'SAMPLING', mesin: 'MANUAL' },
       { name: 'FINAL INSPECTION', mesin: 'MANUAL' },
     ];
-    return processes;
   };
-
   // Get the HTML content for printing
   const getPrintContent = () => {
     const layout = calculateLayout();
@@ -465,45 +510,69 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 <td class="info-colon">:</td>
                 <td>${formatDate(printData?.tgl_kirim || '')}</td>
               </tr>
-              <tr>
-                <td colspan="6"></td>
+                <tr>
+                <td class="info-label">Status JO</td>
+                <td class="info-colon">:</td>
+                <td colspan="4">${getValue(printData?.status_jo || '')}</td>
                 <td class="info-label">Toleransi Pengiriman</td>
                 <td class="info-colon">:</td>
                 <td>${getValue(printData?.toleransi, '3D')}</td>
               </tr>
+              
             </tbody>
           </table>
+
+                ${
+                  selectedMounting
+                    ? `
+            <!-- UK & WARNA Section -->
+            <table class="warna-table">
+              <thead>
+                <tr>
+                  <th colspan="6">UK & WARNA</th>
+                  
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="info-label">Ukuran Jadi</td>
+                  <td colspan="3">${
+                    selectedMounting.io_mounting?.ukuran_jadi_panjang ||
+                    selectedMounting.ukuran_cetak_panjang_1
+                  } X ${
+                    selectedMounting.io_mounting?.ukuran_jadi_lebar ||
+                    selectedMounting.ukuran_cetak_lebar_1
+                  }${
+                    selectedMounting.io_mounting?.ukuran_jadi_tinggi
+                      ? ` X ${selectedMounting.io_mounting.ukuran_jadi_tinggi}`
+                      : ''
+                  } mm</td>
+                  <td class="info-label">Ukuran Terbentang</td>
+                  <td>${
+                    selectedMounting.io_mounting?.ukuran_jadi_terb_panjang ||
+                    '-'
+                  } X ${
+                    selectedMounting.io_mounting?.ukuran_jadi_terb_lebar || '-'
+                  } mm</td>
+                </tr>
+                <tr>
+                  <td class="info-label">Warna Depan</td>
+                  <td colspan="3">${
+                    selectedMounting.io_mounting?.warna_depan ||
+                    getValue(printData?.spesifikasi)
+                  }</td>
+                  <td class="info-label">Warna Belakang</td>
+                  <td>${selectedMounting.io_mounting?.warna_belakang || 0}</td>
+                </tr>
+              </tbody>
+            </table>
+          `
+                    : ''
+                }
 
           ${
             selectedMounting
               ? `
-          <!-- UK & WARNA Section -->
-          <table class="warna-table">
-            <thead>
-              <tr>
-                <th colspan="4">UK & WARNA</th>
-                <th colspan="2">Terbentang</th>
-                <th colspan="2">${layout.across} X ${layout.down} = ${
-                  layout.total
-                }</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="info-label">Ukuran Jadi</td>
-                <td colspan="3">${selectedMounting.ukuran_cetak_panjang_1} X ${
-                  selectedMounting.ukuran_cetak_lebar_1
-                } mm</td>
-                <td colspan="4"></td>
-              </tr>
-              <tr>
-                <td class="info-label">Warna Depan</td>
-                <td colspan="3">${getValue(printData?.spesifikasi)}</td>
-                <td colspan="4"></td>
-              </tr>
-            </tbody>
-          </table>
-
           <!-- KERTAS Section -->
           <table class="warna-table">
             <thead>
@@ -630,16 +699,16 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                               <span>${
                                 selectedMounting.ukuran_cetak_panjang_1
                               }</span>
-                              <span>→</span>
+                              <span style="font-size: 14px;">→</span>
                               <span>${acrossX1}x</span>
                             </div>
 
-                            <!-- Left cut dimension -->
+                                                      <!-- Left cut dimension -->
                             <div style="position: absolute; left: 5px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; z-index: 10;">
                               <span>${
                                 selectedMounting.ukuran_cetak_lebar_1
                               }</span>
-                              <span>↓</span>
+                              <span style="font-size: 14px;">↓</span>
                               <span>${downY1}x</span>
                             </div>
 
