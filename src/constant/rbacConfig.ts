@@ -717,6 +717,7 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/production/approve-lkh'),
       fullAccess('/production/alldata-lkh'),
       fullAccess('/production/list-jo-selesai'),
+      fullAccess('/production/buka-lkh'),
       fullAccess('/production/breakdown-recap'),
       fullAccess('/production/waste-report'),
       fullAccess('/production/os2'),
@@ -747,6 +748,7 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/production/input-lkh'),
       fullAccess('/production/monitoring-lkh'),
       fullAccess('/production/approve-lkh'),
+      fullAccess('/production/buka-lkh'),
       fullAccess('/production/alldata-lkh'),
       readOnly('/production/breakdown-recap'),
       fullAccess('/production/waste-report'),
@@ -777,6 +779,7 @@ export const mockRBACData: RolePermissions[] = [
       // Production Menu
       fullAccess('/production/input-lkh'),
       readOnly('/production/monitoring-lkh'),
+      fullAccess('/production/buka-lkh'),
       createPermission('/production/approve-lkh', true, false, false, false),
       readOnly('/production/breakdown-recap'),
       fullAccess('/production/alldata-lkh'),

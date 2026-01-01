@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
 
 interface JoDoneItem {
+  so: any;
   id: number;
   id_jo: number;
   id_io: number;
@@ -47,12 +48,26 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
+  // Calculate max quantity allowed
+  const poQty = item.so?.po_qty || 0;
+  const currentQtyKirim = item.qty_kirim || 0;
+  const maxAllowed = poQty - currentQtyKirim;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (qtyKirim <= 0) {
       setError('Quantity must be greater than 0');
+      return;
+    }
+
+    if (qtyKirim > maxAllowed) {
+      setError(
+        `Quantity cannot exceed ${maxAllowed.toLocaleString(
+          'id-ID',
+        )} (PO Qty - Already Sent)`,
+      );
       return;
     }
 
@@ -80,6 +95,16 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
       setError(err.response?.data?.message || 'Failed to send data');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleQtyChange = (value: number) => {
+    if (value > maxAllowed) {
+      setQtyKirim(maxAllowed);
+      setError(`Maximum quantity is ${maxAllowed.toLocaleString('id-ID')}`);
+    } else {
+      setQtyKirim(value);
+      setError('');
     }
   };
 
@@ -130,17 +155,57 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Quantity Kirim <span className="text-red-500">*</span>
+                PO Quantity
+              </label>
+              <input
+                type="text"
+                value={poQty.toLocaleString('id-ID')}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Already Sent
+              </label>
+              <input
+                type="text"
+                value={currentQtyKirim.toLocaleString('id-ID')}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Remaining Quantity
+              </label>
+              <input
+                type="text"
+                value={maxAllowed.toLocaleString('id-ID')}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-blue-50 text-blue-700 font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quantity to Send <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
                 value={qtyKirim}
-                onChange={(e) => setQtyKirim(Number(e.target.value))}
+                onChange={(e) => handleQtyChange(Number(e.target.value))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter quantity"
                 min="1"
+                max={maxAllowed}
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                Maximum: {maxAllowed.toLocaleString('id-ID')}
+              </p>
             </div>
 
             <div className="flex items-center">
@@ -174,7 +239,7 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || maxAllowed <= 0}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Sending...' : 'Kirim'}
@@ -336,13 +401,13 @@ const ListJoSelesai: React.FC = () => {
                   No IO
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                  No SO
-                </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   Customer
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   Produk
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  QTY PO
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   QTY Kirim
@@ -401,13 +466,13 @@ const ListJoSelesai: React.FC = () => {
                       {item.no_io || '-'}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {item.no_so || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                       {truncateText(item.customer, 20)}
                     </td>
                     <td className="px-3 py-2 text-xs text-gray-900 max-w-xs">
                       {truncateText(item.produk, 30)}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                      {formatNumber(item.so?.po_qty)}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                       {formatNumber(item.qty_kirim)}
@@ -534,30 +599,42 @@ const ListJoSelesai: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <span className="text-gray-500 text-xs font-medium">
+                      QTY PO:
+                    </span>
+                    <div className="text-gray-900 text-xs">
+                      {formatNumber(item.so?.po_qty)}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 text-xs font-medium">
                       QTY Kirim:
                     </span>
                     <div className="text-gray-900 text-xs">
                       {formatNumber(item.qty_kirim)}
                     </div>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
                   <div>
                     <span className="text-gray-500 text-xs font-medium">
                       Status:
                     </span>
                     <div className="mt-1">{getStatusBadge(item.status)}</div>
                   </div>
-                </div>
-
-                <div>
-                  <span className="text-gray-500 text-xs font-medium">
-                    JO Done:
-                  </span>
-                  <div className="text-gray-900 text-xs mt-1">
-                    {item.is_jo_done ? (
-                      <span className="text-green-600 font-medium">✓ Yes</span>
-                    ) : (
-                      <span className="text-gray-400">✗ No</span>
-                    )}
+                  <div>
+                    <span className="text-gray-500 text-xs font-medium">
+                      JO Done:
+                    </span>
+                    <div className="text-gray-900 text-xs mt-1">
+                      {item.is_jo_done ? (
+                        <span className="text-green-600 font-medium">
+                          ✓ Yes
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">✗ No</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

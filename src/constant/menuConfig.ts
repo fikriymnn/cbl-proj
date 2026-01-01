@@ -561,9 +561,15 @@ export const menuCategories: MenuCategory[] = [
         path: '/production/approve-lkh',
         icon: 'input',
       },
+
       {
         name: 'All Data LKH',
         path: '/production/alldata-lkh',
+        icon: 'input',
+      },
+      {
+        name: 'Buka LKH',
+        path: '/production/buka-lkh',
         icon: 'input',
       },
       {

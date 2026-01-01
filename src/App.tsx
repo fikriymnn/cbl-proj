@@ -242,6 +242,7 @@ import CreatePerubahanPage from './pages/Marketing/CreatePerubahanPage';
 import ListPerubahanPage from './pages/Marketing/ListPerubahanPage';
 import ListApprovalPerubahanPage from './pages/Accounting/ListApprovalPerubahanPage';
 import KabagApprovalHistory from './pages/Marketing/Kabag/KabagApprovalHistory';
+import BukaLKHPage from './pages/Produksi/MonitoringLKH/BukaLKHPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1819,6 +1820,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <MonitoringLKHPage />
+            </>
+          }
+        />
+        <Route
+          path="/production/buka-lkh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <BukaLKHPage />
             </>
           }
         />

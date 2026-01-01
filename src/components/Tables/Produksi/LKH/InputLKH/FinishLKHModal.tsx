@@ -26,6 +26,13 @@ const FinishLKHModal: React.FC<FinishLKHModalProps> = ({
 }) => {
   if (!show) return null;
 
+  // Sort data by latest waktu_selesai on top
+  const sortedData = [...finishData].sort((a, b) => {
+    const dateA = new Date(a.waktu_selesai || a.waktu_mulai).getTime();
+    const dateB = new Date(b.waktu_selesai || b.waktu_mulai).getTime();
+    return dateB - dateA; // Descending order (latest first)
+  });
+
   const formatDateTime = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -127,102 +134,113 @@ const FinishLKHModal: React.FC<FinishLKHModalProps> = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {finishData.map((item, index) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {item.kode}
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-900">
-                        {item.deskripsi}
-                      </td>
-                      <td className="px-3 py-2 text-xs text-gray-900">
-                        <div className="whitespace-nowrap">
-                          <div className="text-gray-700 font-medium">
-                            {formatDateTime(item.waktu_mulai)}
+                  {sortedData.map((item, index) => {
+                    // Find original index for onDataChange callback
+                    const originalIndex = finishData.findIndex(
+                      (original) => original.id === item.id,
+                    );
+
+                    return (
+                      <tr key={item.id} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                          {item.kode}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-900">
+                          {item.deskripsi}
+                        </td>
+                        <td className="px-3 py-2 text-xs text-gray-900">
+                          <div className="whitespace-nowrap">
+                            <div className="text-gray-700 font-medium">
+                              {formatDateTime(item.waktu_mulai)}
+                            </div>
+                            <div className="text-gray-500 mt-0.5">
+                              {formatDateTime(item.waktu_selesai || '')}
+                            </div>
                           </div>
-                          <div className="text-gray-500 mt-0.5">
-                            {formatDateTime(item.waktu_selesai || '')}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                          <div className="font-medium">
+                            {formatDuration(item.total_waktu || '0')}
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                        <div className="font-medium">
-                          {formatDuration(item.total_waktu || '0')}
-                        </div>
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        <input
-                          type="number"
-                          value={item.baik || ''}
-                          onChange={(e) =>
-                            onDataChange(
-                              index,
-                              'baik',
-                              e.target.value ? Number(e.target.value) : 0,
-                            )
-                          }
-                          className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="0"
-                        />
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        <input
-                          type="number"
-                          value={item.rusak_sebagian || ''}
-                          onChange={(e) =>
-                            onDataChange(
-                              index,
-                              'rusak_sebagian',
-                              e.target.value ? Number(e.target.value) : 0,
-                            )
-                          }
-                          className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="0"
-                        />
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        <input
-                          type="number"
-                          value={item.rusak_total || ''}
-                          onChange={(e) =>
-                            onDataChange(
-                              index,
-                              'rusak_total',
-                              e.target.value ? Number(e.target.value) : 0,
-                            )
-                          }
-                          className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="0"
-                        />
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap">
-                        <input
-                          type="number"
-                          value={item.pallet || ''}
-                          onChange={(e) =>
-                            onDataChange(
-                              index,
-                              'pallet',
-                              e.target.value ? Number(e.target.value) : 0,
-                            )
-                          }
-                          className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="0"
-                        />
-                      </td>
-                      <td className="px-3 py-2">
-                        <input
-                          type="text"
-                          value={item.note || ''}
-                          onChange={(e) =>
-                            onDataChange(index, 'note', e.target.value)
-                          }
-                          className="w-32 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          placeholder="Catatan"
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            value={item.baik || ''}
+                            onChange={(e) =>
+                              onDataChange(
+                                originalIndex,
+                                'baik',
+                                e.target.value ? Number(e.target.value) : 0,
+                              )
+                            }
+                            className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            value={item.rusak_sebagian || ''}
+                            onChange={(e) =>
+                              onDataChange(
+                                originalIndex,
+                                'rusak_sebagian',
+                                e.target.value ? Number(e.target.value) : 0,
+                              )
+                            }
+                            className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            value={item.rusak_total || ''}
+                            onChange={(e) =>
+                              onDataChange(
+                                originalIndex,
+                                'rusak_total',
+                                e.target.value ? Number(e.target.value) : 0,
+                              )
+                            }
+                            className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <input
+                            type="number"
+                            value={item.pallet || ''}
+                            onChange={(e) =>
+                              onDataChange(
+                                originalIndex,
+                                'pallet',
+                                e.target.value ? Number(e.target.value) : 0,
+                              )
+                            }
+                            className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <input
+                            type="text"
+                            value={item.note || ''}
+                            onChange={(e) =>
+                              onDataChange(
+                                originalIndex,
+                                'note',
+                                e.target.value,
+                              )
+                            }
+                            className="w-32 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="Catatan"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
