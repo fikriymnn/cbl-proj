@@ -30,6 +30,7 @@ interface ProduksiLKHProses {
   status: string;
   note: string;
   id_kode_produksi: number;
+  is_final_result: boolean;
 }
 
 interface ProduksiLKH {
@@ -59,11 +60,20 @@ interface LKHTahapanData {
   id_tahapan: number;
   tahapan: Tahapan;
   produksi_lkh: ProduksiLKH[];
+  produksi_lkh_proses: ProduksiLKHProses[];
 }
 
 interface LKHResponse {
   data: LKHTahapanData[];
   total_page: number;
+}
+
+interface EditableProses {
+  id: number;
+  baik: number;
+  rusak_sebagian: number;
+  rusak_total: number;
+  pallet: number;
 }
 
 const ApproveSPVLKH: React.FC = () => {
@@ -78,6 +88,9 @@ const ApproveSPVLKH: React.FC = () => {
   const [showApprovalModal, setShowApprovalModal] = useState<boolean>(false);
   const [selectedLKHForApproval, setSelectedLKHForApproval] =
     useState<LKHTahapanData | null>(null);
+
+  // State for editable data
+  const [editableData, setEditableData] = useState<EditableProses[]>([]);
 
   useEffect(() => {
     fetchLKHData();
@@ -109,12 +122,37 @@ const ApproveSPVLKH: React.FC = () => {
 
   const openApprovalModal = (lkh: LKHTahapanData) => {
     setSelectedLKHForApproval(lkh);
+
+    // Initialize editable data from produksi_lkh_proses
+    const initialEditableData = lkh.produksi_lkh_proses.map((proses) => ({
+      id: proses.id,
+      baik: proses.baik,
+      rusak_sebagian: proses.rusak_sebagian,
+      rusak_total: proses.rusak_total,
+      pallet: proses.pallet,
+    }));
+    setEditableData(initialEditableData);
+
     setShowApprovalModal(true);
   };
 
   const closeApprovalModal = () => {
     setShowApprovalModal(false);
     setSelectedLKHForApproval(null);
+    setEditableData([]);
+  };
+
+  const handleEditChange = (
+    id: number,
+    field: keyof EditableProses,
+    value: string,
+  ) => {
+    const numValue = parseInt(value) || 0;
+    setEditableData((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, [field]: numValue } : item,
+      ),
+    );
   };
 
   const handleApprove = async (id: number): Promise<void> => {
@@ -123,16 +161,22 @@ const ApproveSPVLKH: React.FC = () => {
     );
 
     if (!confirmed) {
-      closeApprovalModal();
       return;
     }
 
     const url = `${
       import.meta.env.VITE_API_LINK
     }/produksi/lkhTahapan/approve/${id}`;
+
     try {
       setActionLoading((prev) => ({ ...prev, [id]: true }));
-      await axios.put(url, {}, { withCredentials: true });
+
+      // Prepare the body with updated produksi_lkh_proses
+      const body = {
+        produksi_lkh_proses: editableData,
+      };
+
+      await axios.put(url, body, { withCredentials: true });
       alert('LKH approved successfully!');
       closeApprovalModal();
       fetchLKHData();
@@ -163,39 +207,16 @@ const ApproveSPVLKH: React.FC = () => {
     return parts.join(' ');
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (!text) return '-';
-    return text.length > maxLength
-      ? `${text.substring(0, maxLength)}...`
-      : text;
-  };
-
   const formatDateTime = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-
-    const day = date.getDate();
-    const month = months[date.getMonth()];
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
 
-    return `${day} ${month} ${year} ${hours}:${minutes}:${seconds}`;
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
   const getStatusColor = (status: string): string => {
@@ -215,19 +236,55 @@ const ApproveSPVLKH: React.FC = () => {
     }
   };
 
-  // Calculate totals from produksi_lkh_proses array
+  // Calculate totals from produksi_lkh_proses array (only is_final_result: true)
   const calculateTotals = (prosesList: ProduksiLKHProses[]) => {
-    return prosesList.reduce(
-      (acc, proses) => {
-        acc.baik += proses.baik || 0;
-        acc.rusak_sebagian += proses.rusak_sebagian || 0;
-        acc.rusak_total += proses.rusak_total || 0;
-        acc.pallet += proses.pallet || 0;
-        acc.total_waktu += parseInt(proses.total_waktu) || 0;
-        return acc;
-      },
-      { baik: 0, rusak_sebagian: 0, rusak_total: 0, pallet: 0, total_waktu: 0 },
-    );
+    return prosesList
+      .filter((proses) => proses.is_final_result === true)
+      .reduce(
+        (acc, proses) => {
+          acc.baik += proses.baik || 0;
+          acc.rusak_sebagian += proses.rusak_sebagian || 0;
+          acc.rusak_total += proses.rusak_total || 0;
+          acc.pallet += proses.pallet || 0;
+          acc.total_waktu += parseInt(proses.total_waktu) || 0;
+          return acc;
+        },
+        {
+          baik: 0,
+          rusak_sebagian: 0,
+          rusak_total: 0,
+          pallet: 0,
+          total_waktu: 0,
+        },
+      );
+  };
+
+  // Calculate totals from editable data (only is_final_result: true)
+  const calculateEditableTotals = () => {
+    if (!selectedLKHForApproval) return null;
+
+    return selectedLKHForApproval.produksi_lkh_proses
+      .filter((proses) => proses.is_final_result === true)
+      .reduce(
+        (acc, proses) => {
+          const editedData = editableData.find((e) => e.id === proses.id);
+          if (editedData) {
+            acc.baik += editedData.baik || 0;
+            acc.rusak_sebagian += editedData.rusak_sebagian || 0;
+            acc.rusak_total += editedData.rusak_total || 0;
+            acc.pallet += editedData.pallet || 0;
+          }
+          acc.total_waktu += parseInt(proses.total_waktu) || 0;
+          return acc;
+        },
+        {
+          baik: 0,
+          rusak_sebagian: 0,
+          rusak_total: 0,
+          pallet: 0,
+          total_waktu: 0,
+        },
+      );
   };
 
   return (
@@ -284,10 +341,7 @@ const ApproveSPVLKH: React.FC = () => {
                 </tr>
               ) : (
                 lkhData.map((lkh) => {
-                  const produksiLKH = lkh.produksi_lkh?.[0];
-                  const totals = produksiLKH
-                    ? calculateTotals(produksiLKH.produksi_lkh_proses)
-                    : null;
+                  const totals = calculateTotals(lkh.produksi_lkh_proses);
 
                   return (
                     <tr key={lkh.id} className="hover:bg-gray-50">
@@ -318,21 +372,17 @@ const ApproveSPVLKH: React.FC = () => {
                         {lkh.qty_jo || '-'}
                       </td>
                       <td className="px-3 py-2 text-xs text-gray-900">
-                        {totals ? (
-                          <div className="flex gap-1 flex-wrap">
-                            <span className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
-                              ✓ {totals.baik}
-                            </span>
-                            <span className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded">
-                              ⚠ {totals.rusak_sebagian}
-                            </span>
-                            <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
-                              ✕ {totals.rusak_total}
-                            </span>
-                          </div>
-                        ) : (
-                          '-'
-                        )}
+                        <div className="flex gap-1 flex-wrap">
+                          <span className="bg-green-50 text-green-700 px-1.5 py-0.5 rounded">
+                            ✓ {totals.baik}
+                          </span>
+                          <span className="bg-yellow-50 text-yellow-700 px-1.5 py-0.5 rounded">
+                            ⚠ {totals.rusak_sebagian}
+                          </span>
+                          <span className="bg-red-50 text-red-700 px-1.5 py-0.5 rounded">
+                            ✕ {totals.rusak_total}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         <span
@@ -364,10 +414,7 @@ const ApproveSPVLKH: React.FC = () => {
           </div>
         ) : (
           lkhData.map((lkh) => {
-            const produksiLKH = lkh.produksi_lkh?.[0];
-            const totals = produksiLKH
-              ? calculateTotals(produksiLKH.produksi_lkh_proses)
-              : null;
+            const totals = calculateTotals(lkh.produksi_lkh_proses);
 
             return (
               <div key={lkh.id} className="bg-white rounded-lg shadow p-4">
@@ -416,24 +463,22 @@ const ApproveSPVLKH: React.FC = () => {
                     <div className="text-gray-900">{lkh.qty_jo || '-'}</div>
                   </div>
 
-                  {totals && (
-                    <div>
-                      <span className="text-gray-500 text-xs">
-                        Total Produksi:
+                  <div>
+                    <span className="text-gray-500 text-xs">
+                      Total Produksi:
+                    </span>
+                    <div className="flex gap-2 mt-1 flex-wrap">
+                      <span className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs">
+                        ✓ Baik: {totals.baik}
                       </span>
-                      <div className="flex gap-2 mt-1 flex-wrap">
-                        <span className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs">
-                          ✓ Baik: {totals.baik}
-                        </span>
-                        <span className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded text-xs">
-                          ⚠ RS: {totals.rusak_sebagian}
-                        </span>
-                        <span className="bg-red-50 text-red-700 px-2 py-1 rounded text-xs">
-                          ✕ RT: {totals.rusak_total}
-                        </span>
-                      </div>
+                      <span className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded text-xs">
+                        ⚠ RS: {totals.rusak_sebagian}
+                      </span>
+                      <span className="bg-red-50 text-red-700 px-2 py-1 rounded text-xs">
+                        ✕ RT: {totals.rusak_total}
+                      </span>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             );
@@ -444,13 +489,19 @@ const ApproveSPVLKH: React.FC = () => {
       {/* Approval Modal */}
       {showApprovalModal && selectedLKHForApproval && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Approval Detail - {selectedLKHForApproval.no_jo}
-                </h2>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Approval Detail - {selectedLKHForApproval.no_jo}
+                  </h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {selectedLKHForApproval.customer} •{' '}
+                    {selectedLKHForApproval.produk}
+                  </p>
+                </div>
                 <button
                   onClick={closeApprovalModal}
                   className="text-gray-400 hover:text-gray-600"
@@ -474,278 +525,250 @@ const ApproveSPVLKH: React.FC = () => {
 
             {/* Modal Body */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
-              {/* General Information */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Informasi Umum
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">
-                      No JO
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedLKHForApproval.no_jo}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">
-                      No IO
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedLKHForApproval.no_io}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">
-                      No SO
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedLKHForApproval.no_so}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">
-                      Customer
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedLKHForApproval.customer}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">
-                      Produk
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedLKHForApproval.produk}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">
-                      Tahapan
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedLKHForApproval.tahapan?.nama_tahapan || '-'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">
-                      Qty JO
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedLKHForApproval.qty_jo}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">
-                      Spesifikasi
-                    </label>
-                    <p className="text-sm text-gray-900">
-                      {selectedLKHForApproval.spesifikasi || '-'}
-                    </p>
-                  </div>
+              {/* Compact Info Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <label className="text-xs font-medium text-gray-500">
+                    No IO/SO
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedLKHForApproval.no_io} /{' '}
+                    {selectedLKHForApproval.no_so}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500">
+                    Tahapan
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedLKHForApproval.tahapan?.nama_tahapan || '-'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500">
+                    Qty JO
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedLKHForApproval.qty_jo}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500">
+                    Spesifikasi
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedLKHForApproval.spesifikasi || '-'}
+                  </p>
                 </div>
               </div>
 
-              {/* Produksi LKH Details */}
-              {selectedLKHForApproval.produksi_lkh?.map((produksi, index) => (
-                <div key={produksi.id} className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                    Detail Produksi {index + 1}
-                  </h3>
+              {/* Editable Table */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Detail Proses (
+                  {selectedLKHForApproval.produksi_lkh_proses?.length || 0}{' '}
+                  Items)
+                </h3>
 
-                  {/* Operator Info */}
-                  {produksi.operator && (
-                    <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                        Operator
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                        <div>
-                          <label className="text-xs font-medium text-gray-500">
-                            Nama
-                          </label>
-                          <p className="text-sm text-gray-900">
-                            {produksi.operator.nama}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-500">
-                            Bagian
-                          </label>
-                          <p className="text-sm text-gray-900">
-                            {produksi.operator.bagian}
-                          </p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-500">
-                            No
-                          </label>
-                          <p className="text-sm text-gray-900">
-                            {produksi.operator.no}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Process Details */}
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-semibold text-gray-900">
-                      Detail Proses ({produksi.produksi_lkh_proses?.length || 0}
-                      )
-                    </h4>
-                    {produksi.produksi_lkh_proses?.map(
-                      (proses, prosesIndex) => (
-                        <div
-                          key={proses.id}
-                          className="border border-gray-200 rounded-lg p-4"
-                        >
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <h5 className="font-medium text-gray-900">
-                                Proses {prosesIndex + 1} - {proses.kode}
-                              </h5>
-                              <p className="text-sm text-gray-600">
-                                {proses.deskripsi}
-                              </p>
-                            </div>
-                            <span
-                              className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                                proses.status,
-                              )}`}
-                            >
-                              {proses.status}
-                            </span>
-                          </div>
-
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                            <div>
-                              <label className="text-xs font-medium text-gray-500">
-                                Waktu Mulai
-                              </label>
-                              <p className="text-xs text-gray-900">
-                                {formatDateTime(proses.waktu_mulai)}
-                              </p>
-                            </div>
-                            <div>
-                              <label className="text-xs font-medium text-gray-500">
-                                Waktu Selesai
-                              </label>
-                              <p className="text-xs text-gray-900">
-                                {formatDateTime(proses.waktu_selesai)}
-                              </p>
-                            </div>
-                            <div>
-                              <label className="text-xs font-medium text-gray-500">
-                                Durasi
-                              </label>
-                              <p className="text-xs text-gray-900">
-                                {formatDuration(proses.total_waktu)}
-                              </p>
-                            </div>
-                            <div>
-                              <label className="text-xs font-medium text-gray-500">
-                                Pallet
-                              </label>
-                              <p className="text-xs text-gray-900">
-                                {proses.pallet}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2 flex-wrap mb-2">
-                            <span className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs">
-                              ✓ Baik: {proses.baik}
-                            </span>
-                            <span className="bg-yellow-50 text-yellow-700 px-2 py-1 rounded text-xs">
-                              ⚠ Rusak Sebagian: {proses.rusak_sebagian}
-                            </span>
-                            <span className="bg-red-50 text-red-700 px-2 py-1 rounded text-xs">
-                              ✕ Rusak Total: {proses.rusak_total}
-                            </span>
-                          </div>
-
-                          {proses.note && (
-                            <div className="mt-2 p-2 bg-gray-50 rounded">
-                              <label className="text-xs font-medium text-gray-500">
-                                Catatan:
-                              </label>
-                              <p className="text-xs text-gray-900">
-                                {proses.note}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      ),
-                    )}
-                  </div>
-
-                  {/* Total Summary */}
-                  {produksi.produksi_lkh_proses?.length > 0 && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                        Total Keseluruhan
-                      </h4>
-                      <div className="flex gap-3 flex-wrap">
-                        {(() => {
-                          const totals = calculateTotals(
-                            produksi.produksi_lkh_proses,
+                <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Kode
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Deskripsi
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Waktu
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Baik
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          RS
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          RT
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Pallet
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {selectedLKHForApproval.produksi_lkh_proses?.map(
+                        (proses) => {
+                          const editedData = editableData.find(
+                            (e) => e.id === proses.id,
                           );
                           return (
-                            <>
-                              <div className="bg-green-100 text-green-800 px-3 py-2 rounded">
-                                <span className="text-xs font-medium">
-                                  Total Baik:
+                            <tr key={proses.id} className="hover:bg-gray-50">
+                              <td className="px-3 py-2 text-xs font-medium text-gray-900">
+                                {proses.kode}
+                                {proses.is_final_result && (
+                                  <span
+                                    className="ml-1 text-blue-600"
+                                    title="Final Result"
+                                  >
+                                    ★
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-3 py-2 text-xs text-gray-900">
+                                {proses.deskripsi}
+                              </td>
+                              <td className="px-3 py-2 text-xs text-gray-600">
+                                <div>{formatDateTime(proses.waktu_mulai)}</div>
+                                <div className="text-blue-600">
+                                  {formatDuration(proses.total_waktu)}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={editedData?.baik || 0}
+                                  onChange={(e) =>
+                                    handleEditChange(
+                                      proses.id,
+                                      'baik',
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={editedData?.rusak_sebagian || 0}
+                                  onChange={(e) =>
+                                    handleEditChange(
+                                      proses.id,
+                                      'rusak_sebagian',
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={editedData?.rusak_total || 0}
+                                  onChange={(e) =>
+                                    handleEditChange(
+                                      proses.id,
+                                      'rusak_total',
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={editedData?.pallet || 0}
+                                  onChange={(e) =>
+                                    handleEditChange(
+                                      proses.id,
+                                      'pallet',
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <span
+                                  className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(
+                                    proses.status,
+                                  )}`}
+                                >
+                                  {proses.status}
                                 </span>
-                                <span className="text-sm font-bold ml-1">
-                                  {totals.baik}
-                                </span>
-                              </div>
-                              <div className="bg-yellow-100 text-yellow-800 px-3 py-2 rounded">
-                                <span className="text-xs font-medium">
-                                  Total RS:
-                                </span>
-                                <span className="text-sm font-bold ml-1">
-                                  {totals.rusak_sebagian}
-                                </span>
-                              </div>
-                              <div className="bg-red-100 text-red-800 px-3 py-2 rounded">
-                                <span className="text-xs font-medium">
-                                  Total RT:
-                                </span>
-                                <span className="text-sm font-bold ml-1">
-                                  {totals.rusak_total}
-                                </span>
-                              </div>
-                              <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded">
-                                <span className="text-xs font-medium">
-                                  Total Pallet:
-                                </span>
-                                <span className="text-sm font-bold ml-1">
-                                  {totals.pallet}
-                                </span>
-                              </div>
-                              <div className="bg-purple-100 text-purple-800 px-3 py-2 rounded">
-                                <span className="text-xs font-medium">
-                                  Total Waktu:
-                                </span>
-                                <span className="text-sm font-bold ml-1">
-                                  {formatDuration(totals.total_waktu)}
-                                </span>
-                              </div>
-                            </>
+                              </td>
+                            </tr>
                           );
-                        })()}
-                      </div>
-                    </div>
-                  )}
+                        },
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              ))}
-            </div>
+              </div>
 
+              {/* Total Summary - Only Final Results */}
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-semibold text-gray-900">
+                    Total Keseluruhan (Final Results Only)
+                  </h4>
+                  <span className="text-xs text-blue-600">
+                    ★ = Final Result
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {(() => {
+                    const totals = calculateEditableTotals();
+                    return totals ? (
+                      <>
+                        <div className="bg-white p-3 rounded-lg shadow-sm border border-green-200">
+                          <span className="text-xs font-medium text-gray-500 block">
+                            Total Baik
+                          </span>
+                          <span className="text-lg font-bold text-green-600">
+                            {totals.baik}
+                          </span>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg shadow-sm border border-yellow-200">
+                          <span className="text-xs font-medium text-gray-500 block">
+                            Total RS
+                          </span>
+                          <span className="text-lg font-bold text-yellow-600">
+                            {totals.rusak_sebagian}
+                          </span>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg shadow-sm border border-red-200">
+                          <span className="text-xs font-medium text-gray-500 block">
+                            Total RT
+                          </span>
+                          <span className="text-lg font-bold text-red-600">
+                            {totals.rusak_total}
+                          </span>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg shadow-sm border border-blue-200">
+                          <span className="text-xs font-medium text-gray-500 block">
+                            Total Pallet
+                          </span>
+                          <span className="text-lg font-bold text-blue-600">
+                            {totals.pallet}
+                          </span>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg shadow-sm border border-purple-200">
+                          <span className="text-xs font-medium text-gray-500 block">
+                            Total Waktu
+                          </span>
+                          <span className="text-sm font-bold text-purple-600">
+                            {formatDuration(totals.total_waktu)}
+                          </span>
+                        </div>
+                      </>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+            </div>
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
               <button
                 onClick={closeApprovalModal}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -755,11 +778,31 @@ const ApproveSPVLKH: React.FC = () => {
               <button
                 onClick={() => handleApprove(selectedLKHForApproval.id)}
                 disabled={actionLoading[selectedLKHForApproval.id]}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {actionLoading[selectedLKHForApproval.id]
-                  ? 'Approving...'
-                  : 'Approve'}
+                {actionLoading[selectedLKHForApproval.id] ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Approving...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Approve
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -768,5 +811,4 @@ const ApproveSPVLKH: React.FC = () => {
     </div>
   );
 };
-
 export default ApproveSPVLKH;
