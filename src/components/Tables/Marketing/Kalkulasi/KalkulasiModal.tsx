@@ -73,6 +73,13 @@ const initialFormData: KalkulasiFormData = {
   qty_list: [{ qty: 0, is_selected: true }],
 };
 
+// Helper function to safely convert to string
+const safeToString = (value: any, defaultValue: string = '0'): string => {
+  if (value === null || value === undefined || value === '')
+    return defaultValue;
+  return String(value);
+};
+
 const convertDetailToFormData = (
   detail: KalkulasiDetailItem,
 ): KalkulasiFormData => {
@@ -84,34 +91,34 @@ const convertDetailToFormData = (
     id_marketing: detail.id_marketing,
     id_produk: detail.id_produk,
     id_area_pengiriman: detail.id_area_pengiriman,
-    qty_kalkulasi: detail.qty_kalkulasi.toString(),
-    presentase_insheet: detail.presentase_insheet.toString(),
+    qty_kalkulasi: safeToString(detail.qty_kalkulasi),
+    presentase_insheet: safeToString(detail.presentase_insheet),
     spesifikasi: detail.spesifikasi,
-    ukuran_jadi_panjang: detail.ukuran_jadi_panjang.toString(),
-    ukuran_jadi_lebar: detail.ukuran_jadi_lebar.toString(),
-    ukuran_jadi_tinggi: detail.ukuran_jadi_tinggi.toString(),
-    ukuran_jadi_terb_panjang: detail.ukuran_jadi_terb_panjang.toString(),
-    ukuran_jadi_terb_lebar: detail.ukuran_jadi_terb_lebar.toString(),
-    ukuran_cetak_panjang_1: detail.ukuran_cetak_panjang_1.toString(),
-    ukuran_cetak_lebar_1: detail.ukuran_cetak_lebar_1.toString(),
-    ukuran_cetak_bagian_1: detail.ukuran_cetak_bagian_1.toString(),
-    ukuran_cetak_isi_1: detail.ukuran_cetak_isi_1.toString(),
+    ukuran_jadi_panjang: safeToString(detail.ukuran_jadi_panjang),
+    ukuran_jadi_lebar: safeToString(detail.ukuran_jadi_lebar),
+    ukuran_jadi_tinggi: safeToString(detail.ukuran_jadi_tinggi),
+    ukuran_jadi_terb_panjang: safeToString(detail.ukuran_jadi_terb_panjang),
+    ukuran_jadi_terb_lebar: safeToString(detail.ukuran_jadi_terb_lebar),
+    ukuran_cetak_panjang_1: safeToString(detail.ukuran_cetak_panjang_1),
+    ukuran_cetak_lebar_1: safeToString(detail.ukuran_cetak_lebar_1),
+    ukuran_cetak_bagian_1: safeToString(detail.ukuran_cetak_bagian_1),
+    ukuran_cetak_isi_1: safeToString(detail.ukuran_cetak_isi_1),
     ukuran_cetak_bbs_1: detail.ukuran_cetak_bbs_1,
-    ukuran_cetak_panjang_2: detail.ukuran_cetak_panjang_2?.toString() || '0',
-    ukuran_cetak_lebar_2: detail.ukuran_cetak_lebar_2?.toString() || '0',
-    ukuran_cetak_bagian_2: detail.ukuran_cetak_bagian_2?.toString() || '0',
-    ukuran_cetak_isi_2: detail.ukuran_cetak_isi_2?.toString() || '0',
+    ukuran_cetak_panjang_2: safeToString(detail.ukuran_cetak_panjang_2),
+    ukuran_cetak_lebar_2: safeToString(detail.ukuran_cetak_lebar_2),
+    ukuran_cetak_bagian_2: safeToString(detail.ukuran_cetak_bagian_2),
+    ukuran_cetak_isi_2: safeToString(detail.ukuran_cetak_isi_2),
     ukuran_cetak_bbs_2: detail.ukuran_cetak_bbs_2 || 'no',
-    warna_depan: detail.warna_depan.toString(),
-    warna_belakang: detail.warna_belakang.toString(),
-    jumlah_warna: detail.jumlah_warna.toString(),
+    warna_depan: safeToString(detail.warna_depan),
+    warna_belakang: safeToString(detail.warna_belakang),
+    jumlah_warna: safeToString(detail.jumlah_warna),
     nama_customer: detail.nama_customer,
     nama_marketing: detail.nama_marketing,
     nama_area_pengiriman: detail.nama_area_pengiriman,
     nama_produk: detail.nama_produk,
-    print_insheet: detail.print_insheet?.toString(),
-    pons_insheet: detail.pons_insheet?.toString(),
-    finishing_insheet: detail.finishing_insheet?.toString() || '0',
+    print_insheet: safeToString(detail.print_insheet),
+    pons_insheet: safeToString(detail.pons_insheet),
+    finishing_insheet: safeToString(detail.finishing_insheet),
 
     // Kertas
     id_kertas: detail.id_kertas,
@@ -127,7 +134,7 @@ const convertDetailToFormData = (
     // Cetak
     id_jenis_mesin_cetak: detail.id_jenis_mesin_cetak,
     jumlah_harga_cetak: detail.jumlah_harga_cetak,
-    harga_plate: detail.harga_plate.toString(),
+    harga_plate: safeToString(detail.harga_plate),
 
     // Coating
     id_coating_depan: detail.id_coating_depan,
@@ -139,65 +146,67 @@ const convertDetailToFormData = (
     total_harga_coating: detail.total_harga_coating,
 
     // PostPress
-    id_jenis_pons: detail.id_jenis_pons?.toString(),
-    id_mesin_pons: detail.id_mesin_pons?.toString(),
-    harga_pisau: detail.harga_pisau?.toString(),
+    id_jenis_pons: safeToString(detail.id_jenis_pons, ''),
+    id_mesin_pons: safeToString(detail.id_mesin_pons, ''),
+    harga_pisau: safeToString(detail.harga_pisau),
     ongkos_pons: detail.ongkos_pons,
-    ongkos_pons_qty: detail.ongkos_pons_qty?.toString(),
-    harga_satuan_ongkos_pons: detail.harga_satuan_ongkos_pons?.toString(),
-    total_harga_ongkos_pons: detail.total_harga_ongkos_pons?.toString(),
+    ongkos_pons_qty: safeToString(detail.ongkos_pons_qty),
+    harga_satuan_ongkos_pons: safeToString(detail.harga_satuan_ongkos_pons),
+    total_harga_ongkos_pons: safeToString(detail.total_harga_ongkos_pons),
 
     // Lipat
     lipat: detail.lipat,
-    id_mesin_lipat: detail.id_mesin_lipat?.toString(),
-    qty_lipat: detail.qty_lipat?.toString(),
-    harga_lipat: detail.harga_lipat?.toString() || '0',
+    id_mesin_lipat: safeToString(detail.id_mesin_lipat, ''),
+    qty_lipat: safeToString(detail.qty_lipat),
+    harga_lipat: safeToString(detail.harga_lipat),
 
     // Potong
     potong_jadi: detail.potong_jadi,
-    id_mesin_potong: detail.id_mesin_potong?.toString(),
-    qty_potong: detail.qty_potong?.toString(),
-    harga_potong_jadi: detail.harga_potong_jadi?.toString() || '0',
+    id_mesin_potong: safeToString(detail.id_mesin_potong, ''),
+    qty_potong: safeToString(detail.qty_potong),
+    harga_potong_jadi: safeToString(detail.harga_potong_jadi),
 
     // PostPress2 - Finishing & Lem
-    id_lem: detail.id_lem?.toString() || '',
-    jumlah_harga_lem: detail.jumlah_harga_lem?.toString() || '0',
-    id_mesin_finishing: detail.id_mesin_finishing?.toString() || '',
+    id_lem: safeToString(detail.id_lem, ''),
+    jumlah_harga_lem: safeToString(detail.jumlah_harga_lem),
+    id_mesin_finishing: safeToString(detail.id_mesin_finishing, ''),
 
     // PostPress2 - Foil
     foil: detail.foil || null,
     spot_foil: detail.spot_foil || null,
-    harga_foil_manual: detail.harga_foil_manual?.toString() || '0',
-    harga_spot_foil_manual: detail.harga_spot_foil_manual?.toString() || '0',
-    harga_polimer_manual: detail.harga_polimer_manual?.toString() || '0',
+    harga_foil_manual: safeToString(detail.harga_foil_manual),
+    harga_spot_foil_manual: safeToString(detail.harga_spot_foil_manual),
+    harga_polimer_manual: safeToString(detail.harga_polimer_manual),
 
     // PostPress2 - Packing
     jenis_packing: detail.jenis_packing || '',
-    id_packing: detail.id_packing?.toString() || '',
-    qty_packing: detail.qty_packing?.toString() || '0',
-    harga_packing: detail.harga_packing?.toString() || '0',
-    harga_pengiriman_awal: detail.harga_area_pengiriman?.toString() || '0',
+    id_packing: safeToString(detail.id_packing, ''),
+    qty_packing: safeToString(detail.qty_packing),
+    harga_packing: safeToString(detail.harga_packing),
+    harga_pengiriman_awal: safeToString(detail.harga_area_pengiriman),
 
     // PostPress2 - Packaging
-    panjang_packaging: detail.panjang_packaging?.toString() || '',
-    lebar_packaging: detail.lebar_packaging?.toString() || '',
+    panjang_packaging: safeToString(detail.panjang_packaging, ''),
+    lebar_packaging: safeToString(detail.lebar_packaging, ''),
     no_packaging: detail.no_packaging || '0.00',
-    jumlah_kirim: detail.jumlah_kirim?.toString() || '0',
-    harga_packaging: detail.harga_packaging?.toString() || '0',
-    harga_pengiriman: detail.harga_pengiriman?.toString() || '0',
+    jumlah_kirim: safeToString(detail.jumlah_kirim),
+    harga_packaging: safeToString(detail.harga_packaging),
+    harga_pengiriman: safeToString(detail.harga_pengiriman),
 
     // Profit
-    harga_produksi: detail.harga_produksi.toString(),
-    profit: detail.profit.toString(),
-    profit_harga: detail.profit_harga.toString(),
-    jumlah_harga_jual: detail.jumlah_harga_jual.toString(),
-    ppn: detail.ppn.toString(),
-    harga_ppn: detail.harga_ppn.toString(),
-    diskon: detail.diskon.toString(),
-    harga_diskon: detail.harga_diskon.toString(),
-    total_harga: detail.total_harga.toString(),
-    harga_satuan: detail.harga_satuan.toString(),
-    total_harga_satuan_customer: detail.total_harga_satuan_customer.toString(),
+    harga_produksi: safeToString(detail.harga_produksi),
+    profit: safeToString(detail.profit),
+    profit_harga: safeToString(detail.profit_harga),
+    jumlah_harga_jual: safeToString(detail.jumlah_harga_jual),
+    ppn: safeToString(detail.ppn),
+    harga_ppn: safeToString(detail.harga_ppn),
+    diskon: safeToString(detail.diskon),
+    harga_diskon: safeToString(detail.harga_diskon),
+    total_harga: safeToString(detail.total_harga),
+    harga_satuan: safeToString(detail.harga_satuan),
+    total_harga_satuan_customer: safeToString(
+      detail.total_harga_satuan_customer,
+    ),
     keterangan_harga: detail.keterangan_harga || '',
     keterangan_kerja: detail.keterangan_kerja || '',
 
@@ -207,9 +216,9 @@ const convertDetailToFormData = (
         nama_item: item.nama_item,
         harga: item.harga,
       })) || [],
-    total_harga_lain_lain:
-      detail.lain_lain?.reduce((sum, item) => sum + item.harga, 0).toString() ||
-      '0',
+    total_harga_lain_lain: safeToString(
+      detail.lain_lain?.reduce((sum, item) => sum + item.harga, 0),
+    ),
 
     // Type
     tipe_kalkulasi:
@@ -290,12 +299,14 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
 
         // Recalculate financial data with new quantity
         const financialData = calculateFinancialData(updated);
-        updated.profit_harga = financialData.profit_harga.toString();
-        updated.jumlah_harga_jual = financialData.jumlah_harga_jual.toString();
-        updated.harga_ppn = financialData.harga_ppn.toString();
-        updated.harga_diskon = financialData.harga_diskon.toString();
-        updated.total_harga = financialData.total_harga.toString();
-        updated.harga_satuan = financialData.harga_satuan.toString();
+        updated.profit_harga = safeToString(financialData.profit_harga);
+        updated.jumlah_harga_jual = safeToString(
+          financialData.jumlah_harga_jual,
+        );
+        updated.harga_ppn = safeToString(financialData.harga_ppn);
+        updated.harga_diskon = safeToString(financialData.harga_diskon);
+        updated.total_harga = safeToString(financialData.total_harga);
+        updated.harga_satuan = safeToString(financialData.harga_satuan);
       }
 
       return updated;
@@ -320,7 +331,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
           updated.lain_lain = JSON.parse(value);
           // Recalculate lain_lain total
           const lainLainTotal = calculateLainLainTotal(updated.lain_lain);
-          updated.total_harga_lain_lain = lainLainTotal.toString();
+          updated.total_harga_lain_lain = safeToString(lainLainTotal);
         } catch (error) {
           console.error('Error parsing lain_lain:', error);
           updated.lain_lain = [];
@@ -332,16 +343,16 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
 
       // Always recalculate production cost
       const newHargaProduksi = calculateHargaProduksi(updated);
-      updated.harga_produksi = newHargaProduksi.toString();
+      updated.harga_produksi = safeToString(newHargaProduksi);
 
       // Always recalculate financial data
       const financialData = calculateFinancialData(updated);
-      updated.profit_harga = financialData.profit_harga.toString();
-      updated.jumlah_harga_jual = financialData.jumlah_harga_jual.toString();
-      updated.harga_ppn = financialData.harga_ppn.toString();
-      updated.harga_diskon = financialData.harga_diskon.toString();
-      updated.total_harga = financialData.total_harga.toString();
-      updated.harga_satuan = financialData.harga_satuan.toString();
+      updated.profit_harga = safeToString(financialData.profit_harga);
+      updated.jumlah_harga_jual = safeToString(financialData.jumlah_harga_jual);
+      updated.harga_ppn = safeToString(financialData.harga_ppn);
+      updated.harga_diskon = safeToString(financialData.harga_diskon);
+      updated.total_harga = safeToString(financialData.total_harga);
+      updated.harga_satuan = safeToString(financialData.harga_satuan);
 
       return updated;
     });
