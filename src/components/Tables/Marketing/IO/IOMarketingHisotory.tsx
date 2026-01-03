@@ -1,3 +1,4 @@
+// IOMarketingHistory.tsx
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
@@ -5,24 +6,70 @@ import IODetailPopup from './IODetailPopup';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 
-import { MountingData } from './Mounting';
+import { MountingData, TahapanData } from './Mounting';
 import IOMarketingPrintModal from './IOMarketingPrintModal';
+
+interface UserActionData {
+  id: number;
+  id_io: number;
+  id_user: number;
+  status: string;
+  tgl: string;
+  createdAt: string;
+  updatedAt: string;
+  is_active: boolean;
+  user: {
+    id: number;
+    nama: string;
+    bagian: string;
+    email: string;
+    role: string;
+    no: string;
+    status: string;
+  };
+}
+
+interface UserData {
+  id: number;
+  nama: string;
+  bagian: string;
+  email: string;
+  role: string;
+  no: string;
+  status: string;
+}
 
 interface IOData {
   id: number;
   no_io: string;
+  base_no_io: string;
   customer: string;
   produk: string;
   status_io: string;
   status: string;
   status_proses: string;
   tgl_pembuatan_io: string;
-  is_revisi: boolean;
-  revisi_no_io: string;
+  tgl_approve_io?: string;
+  revisi_ke: number;
   is_active: boolean;
+  is_updated: boolean;
   note_reject: string;
+  keterangan: string;
+  label: string;
+  status_send_proof: string;
+  id_customer: number;
+  id_produk: number;
+  id_okp: number;
+  id_create_io: number;
+  id_approve_io: number;
+  createdAt: string;
+  updatedAt: string;
   io_mounting?: MountingData[];
+  io_action_user?: UserActionData[];
+  user_create?: UserData;
+  user_approve?: UserData;
 }
+
 interface OKPData {
   id: number;
   no_okp: string;

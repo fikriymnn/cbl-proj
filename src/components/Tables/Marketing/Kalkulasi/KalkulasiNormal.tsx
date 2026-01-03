@@ -493,14 +493,22 @@ const KalkulasiNormal: React.FC = () => {
                             >
                               Edit
                             </button>
-
-                            {/* Submit Button */}
-                            <button
-                              onClick={() => RequestKabag(item.id)}
-                              className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50"
-                            >
-                              Submit
-                            </button>
+                            {item.label === '' ? (
+                              <button
+                                onClick={() => handleEdit(item.id)}
+                                disabled={detailLoading}
+                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50"
+                              >
+                                Isi Label
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => RequestKabag(item.id)}
+                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50"
+                              >
+                                Submit
+                              </button>
+                            )}
                           </>
                         )}
 

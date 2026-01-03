@@ -1,21 +1,7 @@
 // IOMarketingPrintModal.tsx
 import React from 'react';
 import Logo from '../../../../images/logo/logo-cbl 1.svg';
-import { MountingData } from './Mounting';
-
-interface IOData {
-  id: number;
-  no_io: string;
-  customer: string;
-  produk: string;
-  status_io: string;
-  status: string;
-  tgl_pembuatan_io: string;
-  is_revisi: boolean;
-  revisi_no_io: string;
-  is_active: boolean;
-  io_mounting?: MountingData[];
-}
+import { IOData } from '../IO/types/IOTypes';
 
 interface IOMarketingPrintModalProps {
   isOpen: boolean;
@@ -39,10 +25,164 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
     return value;
   };
 
+  const getRevisionNumber = (noIO: string, revisiKe: number): string => {
+    if (!noIO) return '0';
+    if (revisiKe === 0) return '0';
+
+    const parts = noIO.split('/');
+    if (parts.length === 0) return '0';
+
+    const basePart = parts[0];
+    const dashCount = (basePart.match(/-/g) || []).length;
+
+    if (dashCount >= 2) {
+      const lastDashIndex = basePart.lastIndexOf('-');
+      const potentialRevision = basePart.substring(lastDashIndex + 1);
+      const revisionMatch = potentialRevision.match(/^(\d+)[A-Z]?$/);
+      if (revisionMatch) {
+        return revisionMatch[1];
+      }
+    } else if (dashCount === 1) {
+      const dashIndex = basePart.indexOf('-');
+      const afterDash = basePart.substring(dashIndex + 1);
+      const revisionMatch = afterDash.match(/^(\d+)[A-Z]?$/);
+      if (revisionMatch) {
+        return revisionMatch[1];
+      }
+    }
+
+    return revisiKe > 0 ? revisiKe.toString() : 'No';
+  };
+
+  const getBaseIONumber = (noIO: string): string => {
+    if (!noIO) return '-';
+    const parts = noIO.split('/');
+
+    if (parts.length >= 3) {
+      const basePart = parts[0];
+      const numberMatch = basePart.match(/IO-(\d+)/);
+      if (numberMatch) {
+        return numberMatch[1];
+      }
+    }
+
+    return noIO;
+  };
+
+  const formatDateTime = (dateString: string): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getStatusLabel = (status: string): string => {
+    const statusMap: { [key: string]: string } = {
+      requested: 'Requested',
+      approve: 'Approved',
+      draft: 'Draft',
+      'reject npd': 'Rejected NPD',
+      done: 'Done',
+    };
+    return statusMap[status] || status;
+  };
+
   const getPrintContent = () => {
     if (!printData) return '';
 
     const mounting = printData.io_mounting?.[selectedMountingIndex];
+    const revisionNumber = getRevisionNumber(
+      printData.no_io,
+      printData.revisi_ke,
+    );
+
+    // Get ALL tahapan data (no limit)
+    const tahapan = mounting?.tahapan || [];
+
+    // Generate tahapan rows dynamically (6 columns per row)
+    const generateTahapanRows = () => {
+      let rows = '';
+      const columnsPerRow = 6;
+
+      // Calculate how many rows we need
+      const totalRows = Math.ceil(tahapan.length / columnsPerRow);
+
+      for (let rowIndex = 0; rowIndex < totalRows; rowIndex++) {
+        // Process row (with numbering)
+        rows += '<tr>';
+        for (let col = 0; col < columnsPerRow; col++) {
+          const index = rowIndex * columnsPerRow + col;
+          const stepNumber = index + 1;
+          if (index < tahapan.length) {
+            rows += `<td style="width: 16.66%">${stepNumber}.${getValue(
+              tahapan[index].nama_proses,
+            )}</td>`;
+          } else {
+            rows += `<td style="width: 16.66%">${stepNumber}.</td>`;
+          }
+        }
+        rows += '</tr>';
+
+        // Machine row
+        rows += '<tr>';
+        for (let col = 0; col < columnsPerRow; col++) {
+          const index = rowIndex * columnsPerRow + col;
+          if (index < tahapan.length) {
+            rows += `<td>${getValue(tahapan[index].nama_mesin)}</td>`;
+          } else {
+            rows += '<td></td>';
+          }
+        }
+        rows += '</tr>';
+      }
+
+      return rows;
+    };
+
+    // Get mounting letter (A, B, C, etc.)
+    const mountingLetter = String.fromCharCode(65 + selectedMountingIndex); // 65 is 'A' in ASCII
+
+    // Helper function to get layout data for specific column
+    const getLayoutData = (column: string) => {
+      if (column === mountingLetter) {
+        return {
+          formatData: getValue(mounting?.format_data),
+          ukuranPxLxT: `${getValue(mounting?.panjang_layout, '0')} x ${getValue(
+            mounting?.lebar_layout,
+            '0',
+          )} x 0 mm`,
+          ukuranTerbentang: `${getValue(
+            mounting?.ukuran_jadi_terb_panjang,
+            '0',
+          )} x ${getValue(mounting?.ukuran_jadi_terb_lebar, '0')} mm`,
+          isiA: getValue(mounting?.ukuran_cetak_isi_1, '0'),
+          isiB: getValue(mounting?.ukuran_cetak_isi_2, '0'),
+          ukuranLayoutPascres: '0 x 0',
+        };
+      }
+      return {
+        formatData: '-',
+        ukuranPxLxT: '0 x 0 x 0 mm',
+        ukuranTerbentang: '0 x 0 mm',
+        isiA: '0',
+        isiB: '0',
+        ukuranLayoutPascres: '0 x 0',
+      };
+    };
+
+    const layoutA = getLayoutData('A');
+    const layoutB = getLayoutData('B');
+    const layoutC = getLayoutData('C');
+
+    // Helper function to get pond ID for specific column
+    const getPondId = (column: string) => {
+      return column === mountingLetter ? getValue(mounting?.id_layout) : '';
+    };
 
     return `
       <!DOCTYPE html>
@@ -106,6 +246,10 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
             .text-2xl {
               font-size: 18px;
             }
+
+            .text-sm {
+              font-size: 8px;
+            }
           </style>
         </head>
 
@@ -120,7 +264,8 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                 <td rowspan="2" class="text-center font-bold" style="width: 40%">
                   <div>PT. CAHAYA BERLIAN LESTARI</div>
                   <div class="text-lg font-bold">INSTRUKSI OFFSET</div>
-                  <div>MARKETING: GIYONO</div>
+                  <div>MARKETING: </div>
+                  <div>${getValue(printData.label)}</div>
                 </td>
                 <td class="text-center" style="width: 15%">PEMBUAT</td>
                 <td colspan="2" class="text-center" style="width: 15%">PEMERIKSA</td>
@@ -142,9 +287,13 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                 <td style="width: 20%">Nama Pelanggan</td>
                 <td style="width: 35%">${getValue(printData.customer)}</td>
                 <td style="width: 15%">Barcode</td>
-                <td rowspan="2" class="text-center font-bold" style="width: 15%">No. IO</td>
-                <td rowspan="2" class="text-center font-bold text-2xl" style="width: 15%">
-                  ${printData.no_io}
+                <td rowspan="2" class="text-center font-bold" style="width: 15%">
+                  <div style="font-size: 10px; margin-bottom: 2px;">No. IO</div>
+                  <div class="text-2xl">${getValue(printData.no_io)}</div>
+                </td>
+                <td rowspan="2" class="text-center font-bold" style="width: 15%">
+                  <div style="font-size: 10px; margin-bottom: 2px;">No. Revisi</div>
+                  <div class="text-2xl">${revisionNumber}</div>
                 </td>
               </tr>
               <tr>
@@ -154,16 +303,15 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
               </tr>
               <tr>
                 <td>Keterangan Revisi :</td>
-                <td colspan="2">${getValue(mounting?.keterangan_revisi)}</td>
-                <td class="text-center">No. Revisi</td>
-                <td class="text-center font-bold">${
-                  printData.is_revisi ? 'Yes' : '-'
-                }</td>
+                <td colspan="4">${getValue(mounting?.keterangan_revisi)}</td>
               </tr>
               <tr>
                 <td>Ukuran Jadi</td>
                 <td colspan="4">
-                  A: ${getValue(mounting?.ukuran_jadi_panjang, '0')} x 
+                  ${mountingLetter}: ${getValue(
+                    mounting?.ukuran_jadi_panjang,
+                    '0',
+                  )} x 
                   ${getValue(mounting?.ukuran_jadi_lebar, '0')} x 
                   ${getValue(mounting?.ukuran_jadi_tinggi, '0')} mm
                 </td>
@@ -179,38 +327,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td style="width: 16.66%">1.Plate</td>
-                <td style="width: 16.66%">2.Cetak 1</td>
-                <td style="width: 16.66%">3.SORTIR</td>
-                <td style="width: 16.66%">4.Potong</td>
-                <td style="width: 16.66%">5.Lem</td>
-                <td style="width: 16.66%">6.</td>
-              </tr>
-              <tr>
-                <td>GTO</td>
-                <td>GTO</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>7.</td>
-                <td>8.</td>
-                <td>9.</td>
-                <td>10.</td>
-                <td>11.</td>
-                <td>12.</td>
-              </tr>
-              <tr>
-                <td style="height: 12px"></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
+              ${generateTahapanRows()}
             </tbody>
           </table>
 
@@ -232,21 +349,36 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
             </thead>
             <tbody>
               <tr>
-                <td class="font-bold">
-                  A (Default)<br />Buku
-                </td>
+                <td class="font-bold">${mountingLetter} (Default)</td>
                 <td>${getValue(mounting?.merk_serat_kertas)}</td>
                 <td>${getValue(mounting?.jenis_kertas)}</td>
                 <td>
-                  ${getValue(mounting?.ukuran_cetak_panjang_1, '0')} x 
-                  ${getValue(mounting?.ukuran_cetak_lebar_1, '0')}<br />0 kg 0
+                  ${getValue(
+                    mounting?.ukuran_cetak_panjang_1,
+                    '0',
+                  )} x ${getValue(mounting?.ukuran_cetak_lebar_1, '0')}
+                  ${
+                    mounting?.ukuran_cetak_panjang_2 &&
+                    mounting?.ukuran_cetak_lebar_2
+                      ? `<br />${getValue(
+                          mounting?.ukuran_cetak_panjang_2,
+                        )} x ${getValue(mounting?.ukuran_cetak_lebar_2)}`
+                      : ''
+                  }
                 </td>
                 <td>
-                  ${getValue(mounting?.lebar_plano, '0')} x 
-                  ${getValue(mounting?.panjang_plano, '0')}
+                  ${getValue(mounting?.panjang_plano, '0')} x ${getValue(
+                    mounting?.lebar_plano,
+                    '0',
+                  )}
                 </td>
                 <td class="text-center">
-                  ${getValue(mounting?.ukuran_cetak_bagian_1, '0')}<br />0
+                  ${getValue(mounting?.ukuran_cetak_bagian_1, '0')}
+                  ${
+                    mounting?.ukuran_cetak_bagian_2
+                      ? `<br />${getValue(mounting?.ukuran_cetak_bagian_2)}`
+                      : ''
+                  }
                 </td>
                 <td class="text-center">
                   ${getValue(mounting?.gramature_kertas, '0')}
@@ -270,56 +402,51 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
             <tbody>
               <tr>
                 <td style="width: 16.66%">Format Data</td>
-                <td style="width: 16.66%">${getValue(
-                  mounting?.format_data,
-                )}</td>
+                <td style="width: 16.66%">${layoutA.formatData}</td>
                 <td style="width: 16.66%">Format Data</td>
-                <td style="width: 16.66%">-</td>
+                <td style="width: 16.66%">${layoutB.formatData}</td>
                 <td style="width: 16.66%">Format Data</td>
-                <td style="width: 16.66%">-</td>
+                <td style="width: 16.66%">${layoutC.formatData}</td>
               </tr>
               <tr>
                 <td>Ukuran (pxlxt)</td>
-                <td>
-                  ${getValue(mounting?.panjang_layout, '0')} x 
-                  ${getValue(mounting?.lebar_layout, '0')} x 0 mm
-                </td>
+                <td>${layoutA.ukuranPxLxT}</td>
                 <td>Ukuran (pxlxt)</td>
-                <td>0 x 0 x 0 mm</td>
+                <td>${layoutB.ukuranPxLxT}</td>
                 <td>Ukuran (pxlxt)</td>
-                <td>0 x 0 x 0 mm</td>
+                <td>${layoutC.ukuranPxLxT}</td>
               </tr>
               <tr>
                 <td>Ukuran Terbentang</td>
-                <td>0 x 0 mm</td>
+                <td>${layoutA.ukuranTerbentang}</td>
                 <td>Ukuran Terbentang</td>
-                <td>0 x 0 mm</td>
+                <td>${layoutB.ukuranTerbentang}</td>
                 <td>Ukuran Terbentang</td>
-                <td>0 x 0 mm</td>
+                <td>${layoutC.ukuranTerbentang}</td>
               </tr>
               <tr>
                 <td>Isi A</td>
-                <td>${getValue(mounting?.ukuran_cetak_isi_1, '0')}</td>
+                <td>${layoutA.isiA}</td>
                 <td>Isi A</td>
-                <td>0</td>
+                <td>${layoutB.isiA}</td>
                 <td>Isi A</td>
-                <td>0</td>
+                <td>${layoutC.isiA}</td>
               </tr>
               <tr>
                 <td>Isi B</td>
-                <td>0</td>
+                <td>${layoutA.isiB}</td>
                 <td>Isi B</td>
-                <td>0</td>
+                <td>${layoutB.isiB}</td>
                 <td>Isi B</td>
-                <td>0</td>
+                <td>${layoutC.isiB}</td>
               </tr>
               <tr>
                 <td>Ukuran Layout(pascres)</td>
-                <td>0 x 0</td>
+                <td>${layoutA.ukuranLayoutPascres}</td>
                 <td>Ukuran Layout(pascres)</td>
-                <td>0 x 0</td>
+                <td>${layoutB.ukuranLayoutPascres}</td>
                 <td>Ukuran Layout(pascres)</td>
-                <td>0 x 0</td>
+                <td>${layoutC.ukuranLayoutPascres}</td>
               </tr>
             </tbody>
           </table>
@@ -339,18 +466,19 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
             </thead>
             <tbody>
               <tr>
-                <td>1</td>
+                <td>8</td>
                 <td></td>
                 <td>
-                  Warna Depan : ${getValue(
-                    mounting?.warna_depan,
-                    '0',
-                  )}<br />Hitam
+                  Warna Depan : ${getValue(mounting?.warna_depan, '0')}<br />
+                  ${getValue(mounting?.keterangan_warna_depan, '')}
                 </td>
-                <td>Warna Belakang : ${getValue(
-                  mounting?.warna_belakang,
-                  '0',
-                )}</td>
+                <td>
+                  Warna Belakang : ${getValue(
+                    mounting?.warna_belakang,
+                    '0',
+                  )}<br />
+                  ${getValue(mounting?.keterangan_warna_belakang, '')}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -371,9 +499,9 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
               </tr>
               <tr>
                 <td>${getValue(mounting?.nama_coating_depan)}</td>
-                <td></td>
+                <td>${getValue(mounting?.merk_coating_depan)}</td>
                 <td>${getValue(mounting?.nama_coating_belakang)}</td>
-                <td></td>
+                <td>${getValue(mounting?.merk_coating_belakang)}</td>
               </tr>
             </tbody>
           </table>
@@ -397,48 +525,83 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                 <td style="width: 14.28%">BLOCK LEM</td>
               </tr>
               <tr>
-                <td>${getValue(mounting?.id_layout)}</td>
                 <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>Merk & Komposisi<br />Lem</td>
+                <td>${getPondId('A')}</td>
+                <td>${getPondId('B')}</td>
+                <td>${getPondId('C')}</td>
+                <td>${getPondId('D')}</td>
+                <td>Merk & Komposisi Lem</td>
                 <td>${getValue(mounting?.merk_komp_lem)}</td>
               </tr>
               <tr>
-                <td colspan="5"></td>
+                <td>POND</td>
+                <td colspan="4">${getValue(
+                  mounting?.nama_jenis_pons,
+                )}<br />${getValue(mounting?.keterangan_jenis_pons)}</td>
                 <td>Ket Untuk Lem</td>
-                <td>Potong Jadi</td>
+                <td>${getValue(mounting?.keterangan_lem)}</td>
               </tr>
               <tr>
                 <td colspan="5" class="bg-gray text-center font-bold">L A I N - L A I N</td>
-                <td>-</td>
-                <td>Blok Lem Atas</td>
-              </tr>
-              <tr>
-                <td colspan="5" rowspan="3">Tali Mata Itik<br />bor</td>
                 <td colspan="2" class="bg-gray text-center font-bold">P A C K I N G</td>
               </tr>
               <tr>
+                <td colspan="5" rowspan="3">${getValue(mounting?.lampiran)}</td>
                 <td>Isi dalam 1 Pack</td>
                 <td>${getValue(mounting?.isi_dalam_1_pack)}</td>
               </tr>
               <tr>
                 <td>Jenis Packing</td>
-                <td></td>
+                <td>${getValue(mounting?.jenis_pack)}</td>
               </tr>
               <tr>
-                <td colspan="5">Lampiran IO<br />1 lbr Contoh Cetakan</td>
                 <td>Sat</td>
                 <td></td>
               </tr>
               <tr>
-                <td colspan="5"></td>
+                <td colspan="5">Lampiran IO</td>
                 <td>Keterangan</td>
-                <td></td>
+                <td>${getValue(mounting?.keterangan_pack)}</td>
               </tr>
             </tbody>
           </table>
+
+          <!-- User Action Log -->
+          ${
+            printData.io_action_user && printData.io_action_user.length > 0
+              ? `
+          <table style="margin-top: 16px;">
+            <thead>
+              <tr class="bg-gray">
+                <th colspan="4" class="text-center">LOG AKTIVITAS IO</th>
+              </tr>
+              <tr>
+                <th style="width: 25%" class="text-center">Nama</th>
+                <th style="width: 20%" class="text-center">Bagian</th>
+                <th style="width: 30%" class="text-center">Waktu</th>
+                <th style="width: 25%" class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${printData.io_action_user
+                .map(
+                  (action) => `
+                <tr>
+                  <td>${getValue(action.user?.nama)}</td>
+                  <td>${getValue(action.user?.bagian)}</td>
+                  <td class="text-center">${formatDateTime(
+                    action.createdAt,
+                  )}</td>
+                  <td class="text-center">${getStatusLabel(action.status)}</td>
+                </tr>
+              `,
+                )
+                .join('')}
+            </tbody>
+          </table>
+          `
+              : ''
+          }
         </body>
       </html>
     `;
