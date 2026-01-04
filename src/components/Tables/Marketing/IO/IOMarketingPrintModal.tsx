@@ -201,68 +201,82 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
       <html>
         <head>
           <title>Print - ${printData.no_io || 'IO'}</title>
-          <style>
-            @page {
-              size: A4 portrait;
-              margin: 10mm;
-            }
+       
 
-            * {
-              box-sizing: border-box;
-            }
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
 
-            body {
-              margin: 0;
-              padding: 0;
-              font-family: Arial, sans-serif;
-              font-size: 9px;
-              line-height: 1.3;
-            }
+  * {
+    box-sizing: border-box;
+  }
 
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-            }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    font-size: 9px;
+    line-height: 1.3;
+    min-height: 277mm; /* A4 height minus margins */
+    display: flex;
+    flex-direction: column;
+  }
 
-            table {
-              border-collapse: collapse;
-              width: 100%;
-              margin-bottom: 8px;
-            }
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
 
-            td, th {
-              border: 1px solid black;
-              padding: 2px 4px;
-              line-height: 1.3;
-              vertical-align: top;
-            }
+  .content-wrapper {
+    flex: 1;
+  }
 
-            .text-center {
-              text-align: center;
-            }
+  .log-section {
+    margin-top: auto;
+    padding-top: 16px;
+  }
 
-            .font-bold {
-              font-weight: bold;
-            }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 8px;
+  }
 
-            .bg-gray {
-              background-color: #e5e7eb;
-            }
+  td, th {
+    border: 1px solid black;
+    padding: 2px 4px;
+    line-height: 1.3;
+    vertical-align: top;
+  }
 
-            .text-lg {
-              font-size: 12px;
-            }
+  .text-center {
+    text-align: center;
+  }
 
-            .text-2xl {
-              font-size: 18px;
-            }
+  .font-bold {
+    font-weight: bold;
+  }
 
-            .text-sm {
-              font-size: 8px;
-            }
-          </style>
+  .bg-gray {
+    background-color: #e5e7eb;
+  }
+
+  .text-lg {
+    font-size: 12px;
+  }
+
+  .text-2xl {
+    font-size: 18px;
+  }
+
+  .text-sm {
+    font-size: 8px;
+  }
+</style>
         </head>
 
         <body>
@@ -320,10 +334,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
               <tr>
                 <td>Ukuran Jadi</td>
                 <td colspan="4">
-                  ${mountingLetter}: ${getValue(
-                    mounting?.ukuran_jadi_panjang,
-                    '0',
-                  )} x 
+                   ${getValue(mounting?.ukuran_jadi_panjang, '0')} x 
                   ${getValue(mounting?.ukuran_jadi_lebar, '0')} x 
                   ${getValue(mounting?.ukuran_jadi_tinggi, '0')} mm
                 </td>
@@ -350,7 +361,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                 <th colspan="7" class="text-center">M A T E R I A L</th>
               </tr>
               <tr>
-                <td style="width: 12%"></td>
+                <td style="width: 12%">Mounting</td>
                 <td style="width: 18%">Merek/Arah Serat</td>
                 <td style="width: 18%">Jenis</td>
                 <td style="width: 18%">Ukuran Cetak</td>
@@ -361,7 +372,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
             </thead>
             <tbody>
               <tr>
-                <td class="font-bold">${mountingLetter} (Default)</td>
+                <td class="font-bold">${mountingLetter} </td>
                 <td>${getValue(mounting?.merk_serat_kertas)}</td>
                 <td>${getValue(mounting?.jenis_kertas)}</td>
                 <td>
@@ -481,14 +492,11 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                 <td>8</td>
                 <td></td>
                 <td>
-                  Warna Depan : ${getValue(mounting?.warna_depan, '0')}<br />
+                  ${getValue(mounting?.warna_depan, '0')}<br />
                   ${getValue(mounting?.keterangan_warna_depan, '')}
                 </td>
                 <td>
-                  Warna Belakang : ${getValue(
-                    mounting?.warna_belakang,
-                    '0',
-                  )}<br />
+                  ${getValue(mounting?.warna_belakang, '0')}<br />
                   ${getValue(mounting?.keterangan_warna_belakang, '')}
                 </td>
               </tr>
@@ -578,42 +586,95 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
             </tbody>
           </table>
 
+
           <!-- User Action Log -->
           ${
             printData.io_action_user && printData.io_action_user.length > 0
               ? `
-          <table style="margin-top: 16px;">
-            <thead>
-              <tr class="bg-gray">
-                <th colspan="4" class="text-center">LOG AKTIVITAS IO</th>
-              </tr>
-              <tr>
-                <th style="width: 25%" class="text-center">Nama</th>
-                <th style="width: 20%" class="text-center">Bagian</th>
-                <th style="width: 30%" class="text-center">Waktu</th>
-                <th style="width: 25%" class="text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${printData.io_action_user
-                .map(
-                  (action) => `
-                <tr>
-                  <td>${getValue(action.user?.nama)}</td>
-                  <td>${getValue(action.user?.bagian)}</td>
-                  <td class="text-center">${formatDateTime(
-                    action.createdAt,
-                  )}</td>
-                  <td class="text-center">${getStatusLabel(action.status)}</td>
-                </tr>
-              `,
-                )
-                .join('')}
-            </tbody>
-          </table>
+          <div style="margin-top: 16px; page-break-inside: avoid;">
+        
+            
+            <!-- Creator Info (if available) -->
+            ${
+              printData.user_create || printData.createdAt
+                ? `
+            <div style="margin-bottom: 4px; line-height: 1.5;">
+              <span style="font-weight: bold;">Dibuat oleh:</span> ${getValue(
+                printData.user_create?.nama || printData.user_create,
+              )} 
+              ${
+                printData.user_create?.bagian
+                  ? `(<span style="font-weight: bold;">Bagian:</span> ${getValue(
+                      printData.user_create.bagian,
+                    )})`
+                  : ''
+              }
+              ${
+                printData.createdAt
+                  ? `pada <span style="font-weight: bold;">${formatDateTime(
+                      printData.createdAt,
+                    )}</span>`
+                  : ''
+              }
+            </div>
+            `
+                : ''
+            }
+            
+            <!-- Action Logs -->
+            ${printData.io_action_user
+              .map(
+                (action) => `
+            <div style="margin-bottom: 4px; line-height: 1.5;">
+              <span style="font-weight: bold;">${getStatusLabel(
+                action.status,
+              )}</span> oleh ${getValue(action.user?.nama)} 
+              ${
+                action.user?.bagian
+                  ? `(<span style="font-weight: bold;">Bagian:</span> ${getValue(
+                      action.user.bagian,
+                    )})`
+                  : ''
+              }
+              pada <span style="font-weight: bold;">${formatDateTime(
+                action.createdAt,
+              )}</span>
+            </div>
+            `,
+              )
+              .join('')}
+          </div>
+          `
+              : printData.user_create || printData.createdAt
+              ? `
+          <div style="margin-top: 16px; page-break-inside: avoid;">
+            <div style="font-weight: bold; margin-bottom: 8px; font-size: 10px;">LOG AKTIVITAS IO:</div>
+            <div style="margin-bottom: 4px; line-height: 1.5;">
+              <span style="font-weight: bold;">Dibuat oleh:</span> ${getValue(
+                printData.user_create?.nama || printData.user_create,
+              )} 
+              ${
+                printData.user_create?.bagian
+                  ? `(<span style="font-weight: bold;">Bagian:</span> ${getValue(
+                      printData.user_create.bagian,
+                    )})`
+                  : ''
+              }
+              ${
+                printData.createdAt
+                  ? `pada <span style="font-weight: bold;">${formatDateTime(
+                      printData.createdAt,
+                    )}</span>`
+                  : ''
+              }
+            </div>
+          </div>
           `
               : ''
           }
+
+
+
         </body>
       </html>
     `;
