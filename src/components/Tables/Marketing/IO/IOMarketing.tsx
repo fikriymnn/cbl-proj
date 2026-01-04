@@ -8,20 +8,64 @@ import Stack from '@mui/material/Stack';
 import { MountingData } from './Mounting';
 import IOMarketingPrintModal from './IOMarketingPrintModal';
 
+interface UserActionData {
+  id: number;
+  id_io: number;
+  id_user: number;
+  status: string;
+  tgl: string;
+  createdAt: string;
+  updatedAt: string;
+  is_active: boolean;
+  user: {
+    id: number;
+    nama: string;
+    bagian: string;
+    email: string;
+    role: string;
+    no: string;
+    status: string;
+  };
+}
+
+interface UserData {
+  id: number;
+  nama: string;
+  bagian: string;
+  email: string;
+  role: string;
+  no: string;
+  status: string;
+}
 interface IOData {
   id: number;
   no_io: string;
+  base_no_io: string;
   customer: string;
   produk: string;
   status_io: string;
   status: string;
   status_proses: string;
   tgl_pembuatan_io: string;
-  is_revisi: boolean;
-  revisi_no_io: string;
+  tgl_approve_io?: string;
+  revisi_ke: number;
   is_active: boolean;
+  is_updated: boolean;
   note_reject: string;
+  keterangan: string;
+  label: string;
+  status_send_proof: string;
+  id_customer: number;
+  id_produk: number;
+  id_okp: number;
+  id_create_io: number;
+  id_approve_io: number;
+  createdAt: string;
+  updatedAt: string;
   io_mounting?: MountingData[];
+  io_action_user?: UserActionData[];
+  user_create?: UserData;
+  user_approve?: UserData;
 }
 
 interface OKPData {
@@ -241,7 +285,7 @@ const IOMarketing: React.FC = () => {
   const generateIONumber = async (): Promise<string> => {
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = now.getFullYear();
+    const year = String(now.getFullYear()).slice(-2); // Get last 2 digits of year
 
     const selectedOKP = okpData.find(
       (okp) => okp.id.toString() === formData.id_okp,
@@ -251,7 +295,7 @@ const IOMarketing: React.FC = () => {
       return `IO-00001/${month}/${year}`;
     }
 
-    // If status is 'baru', generate new IO number
+    // If status is 'baru', generate new IO number with CURRENT date
     if (selectedOKP.status_okp === 'baru') {
       const totalData = await fetchIOCount();
       const nextNumber = totalData + 1;
@@ -271,18 +315,69 @@ const IOMarketing: React.FC = () => {
     }
 
     // Parse the previous IO number to extract revision number
-    const ioMatch = previousIONumber.match(
-      /^IO-(\d+)(?:-(\d+))?\/(\d{2})\/(\d{4})$/,
+    // Patterns:
+    // 1. IO-00333/12/25 (rev 0) -> IO-00333-1/12/25 (rev 1) - KEEPS ORIGINAL DATE
+    // 2. IO-00333-1/12/25 (rev 1) -> IO-00333-2/12/25 (rev 2) - KEEPS ORIGINAL DATE
+    // 3. 4498 (rev 0) -> 4498-1 (rev 1) - NO DATE
+    // 4. 4498-1 (rev 1) -> 4498-2 (rev 2) - NO DATE
+    // 5. 4158A (rev 0) -> 4158-1A (rev 1) - NO DATE, WITH LETTER SUFFIX
+    // 6. 4158-2A (rev 2) -> 4158-3A (rev 3) - NO DATE, WITH LETTER SUFFIX
+
+    // Pattern 1 & 2: With "IO-" prefix and date
+    let ioMatch = previousIONumber.match(
+      /^IO-(\d+)(?:-(\d+)([A-Z]?))?\/(\d{2})\/(\d{2,4})$/,
     );
 
     if (ioMatch) {
       const baseNumber = ioMatch[1];
-      const currentRevision = ioMatch[2] ? parseInt(ioMatch[2]) : 0;
-      const prevMonth = ioMatch[3];
-      const prevYear = ioMatch[4];
+      const currentRevisionNum = ioMatch[2] ? parseInt(ioMatch[2]) : 0;
+      const suffix = ioMatch[3] || ''; // Letter suffix (A, B, etc.)
+      const prevMonth = ioMatch[4]; // PRESERVE ORIGINAL MONTH
+      const prevYear = ioMatch[5]; // PRESERVE ORIGINAL YEAR
 
-      const nextRevision = currentRevision + 1;
-      return `IO-${baseNumber}-${nextRevision}/${prevMonth}/${prevYear}`;
+      const nextRevision = currentRevisionNum + 1;
+      const revisionPart = suffix ? `${nextRevision}${suffix}` : nextRevision;
+
+      // Return with ORIGINAL date (prevMonth/prevYear)
+      return `IO-${baseNumber}-${revisionPart}/${prevMonth}/${prevYear}`;
+    }
+
+    // Pattern 3 & 4: Without "IO-" prefix, with revision number, NO date
+    ioMatch = previousIONumber.match(/^(\d+)-(\d+)([A-Z]?)$/);
+
+    if (ioMatch) {
+      const baseNumber = ioMatch[1];
+      const currentRevisionNum = parseInt(ioMatch[2]);
+      const suffix = ioMatch[3] || ''; // Letter suffix (A, B, etc.)
+
+      const nextRevision = currentRevisionNum + 1;
+      const revisionPart = suffix ? `${nextRevision}${suffix}` : nextRevision;
+
+      // Return without date
+      return `${baseNumber}-${revisionPart}`;
+    }
+
+    // Pattern 5: Without "IO-" prefix, NO revision number yet, with letter suffix
+    // Example: 4158A -> 4158-1A
+    ioMatch = previousIONumber.match(/^(\d+)([A-Z]+)$/);
+
+    if (ioMatch) {
+      const baseNumber = ioMatch[1];
+      const suffix = ioMatch[2]; // Letter suffix (A, B, etc.)
+
+      // First revision
+      return `${baseNumber}-1${suffix}`;
+    }
+
+    // Pattern 6: Without "IO-" prefix, NO revision number, NO letter suffix
+    // Example: 4498 -> 4498-1
+    ioMatch = previousIONumber.match(/^(\d+)$/);
+
+    if (ioMatch) {
+      const baseNumber = ioMatch[1];
+
+      // First revision
+      return `${baseNumber}-1`;
     }
 
     // Fallback if parsing fails
@@ -672,7 +767,7 @@ const IOMarketing: React.FC = () => {
                         className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
                         title={item.no_io}
                       >
-                        {item.no_io ? truncateText(item.no_io, 12) : '-'}
+                        {item.no_io ? truncateText(item.no_io, 20) : '-'}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -687,12 +782,12 @@ const IOMarketing: React.FC = () => {
                     </td>
                     <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                       <span title={item.customer}>
-                        {truncateText(item.customer, 20)}
+                        {truncateText(item.customer, 40)}
                       </span>
                     </td>
                     <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                       <span title={item.produk}>
-                        {truncateText(item.produk, 20)}
+                        {truncateText(item.produk, 100)}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">

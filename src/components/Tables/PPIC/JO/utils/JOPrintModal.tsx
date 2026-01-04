@@ -17,7 +17,10 @@ interface JOPrintData {
   po_qty: number;
   tgl_kirim: string;
   tgl_pengiriman: string;
-
+  so?: {
+    no_po_customer: string;
+    tgl_po_customer: string;
+  };
   keterangan_pengerjaan: string;
   toleransi: string;
   alamat_pengiriman: string;
@@ -88,6 +91,8 @@ interface JOPrintData {
       ukuran_jadi_terb_lebar: number;
       warna_depan: number;
       warna_belakang: number;
+      keterangan_warna_depan?: string;
+      keterangan_warna_belakang?: string;
       tahapan: Array<{
         id: number;
         id_io: number | null;
@@ -197,23 +202,43 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
   const formatDate = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate();
+    const month = getIndonesianMonth(date.getMonth());
     const year = date.getFullYear();
-    return `${year}-${month}-${day}`;
+    return `${day} ${month} ${year}`;
   };
-  const getRevisiFromIO = (noIO: string): number => {
-    if (!noIO) return 0;
 
-    // Extract the revision number from IO format: IO-00328-2/12/2025
-    // The number after the second dash is the revision
-    const match = noIO.match(/IO-\d+-(\d+)\//);
-    if (match && match[1]) {
-      return parseInt(match[1], 10);
+  const getRevisiFromIO = (noIO: string): string => {
+    if (!noIO) return '0';
+
+    // Split by '/' to get the base part
+    const parts = noIO.split('/');
+    if (parts.length === 0) return '0';
+
+    const basePart = parts[0];
+    const dashCount = (basePart.match(/-/g) || []).length;
+
+    // Case 1: Two or more dashes (e.g., IO-00328-2/12/2025)
+    if (dashCount >= 2) {
+      const lastDashIndex = basePart.lastIndexOf('-');
+      const potentialRevision = basePart.substring(lastDashIndex + 1);
+      const revisionMatch = potentialRevision.match(/^(\d+)[A-Z]?$/);
+      if (revisionMatch) {
+        return revisionMatch[1];
+      }
+    }
+    // Case 2: Only one dash (e.g., IO-00328/12/2025)
+    else if (dashCount === 1) {
+      const dashIndex = basePart.indexOf('-');
+      const afterDash = basePart.substring(dashIndex + 1);
+      const revisionMatch = afterDash.match(/^(\d+)[A-Z]?$/);
+      if (revisionMatch) {
+        return revisionMatch[1];
+      }
     }
 
-    // If no revision number found (e.g., IO-00328/12/2025), it's revision 0
-    return 0;
+    // Default: No revision found
+    return '0';
   };
   const calculateLayout = (): LayoutCalculation => {
     const mounting = getSelectedMounting();
@@ -237,7 +262,23 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
 
     return { across, down, total, isi };
   };
-
+  const getIndonesianMonth = (month: number): string => {
+    const months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+    return months[month];
+  };
   const getProcessTableRows = () => {
     const selectedMounting = getSelectedMounting();
 
@@ -488,7 +529,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 <td colspan="2">${printData?.qty?.toLocaleString()}</td>
                 <td class="info-label">No PO</td>
                 <td class="info-colon">:</td>
-                <td>${getValue(printData?.no_po_customer)}</td>
+                <td>${getValue(printData?.so?.no_po_customer)}</td>
               </tr>
               <tr>
                 <td class="info-label">Keterangan</td>
@@ -500,7 +541,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 }</td>
                 <td class="info-label">Tgl PO</td>
                 <td class="info-colon">:</td>
-                <td>${formatDate(printData?.tgl_po_customer || '')}</td>
+                <td>${formatDate(printData?.so?.tgl_po_customer || '')}</td>
               </tr>
               <tr>
                 <td class="info-label">Revisi</td>
@@ -521,54 +562,49 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               
             </tbody>
           </table>
-
-                ${
-                  selectedMounting
-                    ? `
-            <!-- UK & WARNA Section -->
-            <table class="warna-table">
-              <thead>
-                <tr>
-                  <th colspan="6">UK & WARNA</th>
-                  
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="info-label">Ukuran Jadi</td>
-                  <td colspan="3">${
-                    selectedMounting.io_mounting?.ukuran_jadi_panjang ||
-                    selectedMounting.ukuran_cetak_panjang_1
-                  } X ${
-                    selectedMounting.io_mounting?.ukuran_jadi_lebar ||
-                    selectedMounting.ukuran_cetak_lebar_1
-                  }${
-                    selectedMounting.io_mounting?.ukuran_jadi_tinggi
-                      ? ` X ${selectedMounting.io_mounting.ukuran_jadi_tinggi}`
-                      : ''
-                  } mm</td>
-                  <td class="info-label">Ukuran Terbentang</td>
-                  <td>${
-                    selectedMounting.io_mounting?.ukuran_jadi_terb_panjang ||
-                    '-'
-                  } X ${
-                    selectedMounting.io_mounting?.ukuran_jadi_terb_lebar || '-'
-                  } mm</td>
-                </tr>
-                <tr>
-                  <td class="info-label">Warna Depan</td>
-                  <td colspan="3">${
-                    selectedMounting.io_mounting?.warna_depan ||
-                    getValue(printData?.spesifikasi)
-                  }</td>
-                  <td class="info-label">Warna Belakang</td>
-                  <td>${selectedMounting.io_mounting?.warna_belakang || 0}</td>
-                </tr>
-              </tbody>
-            </table>
-          `
-                    : ''
-                }
+${
+  selectedMounting
+    ? `
+<!-- UK & WARNA Section -->
+<table class="warna-table">
+  <thead>
+    <tr>
+      <th colspan="6">UK & WARNA</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="info-label">Ukuran Jadi</td>
+      <td colspan="3">${
+        selectedMounting.io_mounting?.ukuran_jadi_panjang ||
+        selectedMounting.ukuran_cetak_panjang_1
+      } X ${
+        selectedMounting.io_mounting?.ukuran_jadi_lebar ||
+        selectedMounting.ukuran_cetak_lebar_1
+      }${
+        selectedMounting.io_mounting?.ukuran_jadi_tinggi
+          ? ` X ${selectedMounting.io_mounting.ukuran_jadi_tinggi}`
+          : ''
+      } mm</td>
+      <td class="info-label">Ukuran Terbentang</td>
+      <td>${selectedMounting.io_mounting?.ukuran_jadi_terb_panjang || '-'} X ${
+        selectedMounting.io_mounting?.ukuran_jadi_terb_lebar || '-'
+      } mm</td>
+    </tr>
+    <tr>
+      <td class="info-label">Warna Depan</td>
+      <td colspan="3">${selectedMounting.io_mounting
+        ?.warna_depan}, ${selectedMounting.io_mounting?.keterangan_warna_depan} 
+      </td>
+      <td class="info-label">Warna Belakang</td>
+      <td>${selectedMounting.io_mounting?.warna_belakang}, ${selectedMounting
+        .io_mounting?.keterangan_warna_belakang} </td>
+    </tr>
+  </tbody>
+</table>
+`
+    : ''
+}
 
           ${
             selectedMounting
@@ -618,149 +654,143 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             </tbody>
           </table>
 
-          <!-- KERTAS POTONG Section with Layout Diagram -->
-          <table class="warna-table" style="page-break-inside: avoid; margin-top: 8px;">
-            <tbody>
-              <tr>
-                <td style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 9px; border: 1px solid black; padding: 5px;">
-                  KERTAS<br />POTONG
-                </td>
-                <td style="width: 350px; padding: 30px 20px; vertical-align: middle; text-align: center; border: 1px solid black; position: relative;">
-                  ${
-                    selectedMounting.nama_mounting
-                      ? `<div style="position: absolute; top: 8px; left: 8px; font-size: 12px; font-weight: bold; text-align: left; z-index: 5;">${selectedMounting.nama_mounting}</div>`
-                      : ''
-                  }
-                  
-                 
-                  <div style="display: flex; justify-content: center; align-items: center; min-height: 220px; position: relative;">
-                    <div style="position: relative; display: inline-block; margin: 30px;">
-                      ${(() => {
-                        const acrossX1 = Math.floor(
-                          selectedMounting.panjang_kertas /
-                            selectedMounting.ukuran_cetak_panjang_1,
-                        );
-                        const downY1 = Math.floor(
-                          selectedMounting.lebar_kertas /
-                            selectedMounting.ukuran_cetak_lebar_1,
-                        );
-                        const usedWidthPercent =
-                          ((acrossX1 *
-                            selectedMounting.ukuran_cetak_panjang_1) /
-                            selectedMounting.panjang_kertas) *
-                          100;
-                        const usedHeightPercent =
-                          ((downY1 * selectedMounting.ukuran_cetak_lebar_1) /
-                            selectedMounting.lebar_kertas) *
-                          100;
-                        const sisaLebar =
-                          selectedMounting.panjang_kertas -
-                          acrossX1 * selectedMounting.ukuran_cetak_panjang_1;
-                        const sisaPanjang =
-                          selectedMounting.lebar_kertas -
-                          downY1 * selectedMounting.ukuran_cetak_lebar_1;
+<!-- KERTAS POTONG Section with Layout Diagram -->
+<table class="warna-table" style="page-break-inside: avoid; margin-top: 8px;">
+  <tbody>
+    <tr>
+      <td style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 9px; border: 1px solid black; padding: 5px;">
+        KERTAS<br />POTONG
+      </td>
+      <td style="width: 350px; padding: 10px; vertical-align: middle; text-align: center; border: 1px solid black; position: relative;">
+       ${(() => {
+         const panjangKertas = selectedMounting.panjang_kertas;
+         const lebarKertas = selectedMounting.lebar_kertas;
+         const panjangCetak = selectedMounting.ukuran_cetak_panjang_1;
+         const lebarCetak = selectedMounting.ukuran_cetak_lebar_1;
 
-                        const boxWidth = 240;
-                        const boxHeight = 160;
+         // Determine which dimension is longer
+         const topDimension = Math.max(panjangKertas, lebarKertas);
+         const leftDimension = Math.min(panjangKertas, lebarKertas);
 
-                        const totalPlanoArea =
-                          selectedMounting.lebar_kertas *
-                          selectedMounting.panjang_kertas;
-                        const totalUsedArea =
-                          acrossX1 *
-                          selectedMounting.ukuran_cetak_panjang_1 *
-                          (downY1 * selectedMounting.ukuran_cetak_lebar_1);
-                        const efficiency = (
-                          (totalUsedArea / totalPlanoArea) *
-                          100
-                        ).toFixed(1);
+         // Determine which cut dimension goes where based on paper orientation
+         let horizontalCut, verticalCut, horizontalCount, verticalCount;
 
-                        return `
-                          <!-- Top dimension -->
-                          <div style="position: absolute; top: -15px; left: 0; right: 0; text-align: center;">
-                            <div style="font-size: 8px; font-weight: bold; margin-bottom: 2px;">${
-                              selectedMounting.panjang_kertas
-                            }</div>
-                            <div style="width: 100%; height: 0px; background-color: black;"></div>
-                          </div>
+         if (panjangKertas === topDimension) {
+           // panjang is on top (horizontal)
+           horizontalCut = panjangCetak;
+           horizontalCount = Math.floor(panjangKertas / panjangCetak);
+           verticalCut = lebarCetak;
+           verticalCount = Math.floor(lebarKertas / lebarCetak);
+         } else {
+           // lebar is on top (horizontal)
+           horizontalCut = lebarCetak;
+           horizontalCount = Math.floor(lebarKertas / lebarCetak);
+           verticalCut = panjangCetak;
+           verticalCount = Math.floor(panjangKertas / panjangCetak);
+         }
 
-                          <!-- Left dimension - closer to box -->
-                          <div style="position: absolute; left: -35px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 3px;">
-                            <div style="font-size: 8px; font-weight: bold;">${
-                              selectedMounting.lebar_kertas
-                            }</div>
-                            <div style="width: 0px; height: 60px; background-color: black;"></div>
-                          </div>
+         const usedWidthPercent =
+           ((horizontalCount * horizontalCut) / topDimension) * 100;
+         const usedHeightPercent =
+           ((verticalCount * verticalCut) / leftDimension) * 100;
 
-                          <!-- Main rectangle -->
-                          <div style="border: 2px solid black; background-color: white; display: inline-block; position: relative; width: ${boxWidth}px; height: ${boxHeight}px;">
-                            <!-- Top cut dimension -->
-                            <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%); font-size: 8px; font-weight: bold; display: flex; align-items: center; gap: 8px; z-index: 10;">
-                              <span>${
-                                selectedMounting.ukuran_cetak_panjang_1
-                              }</span>
-                              <span style="font-size: 14px;">→</span>
-                              <span>${acrossX1}x</span>
-                            </div>
+         const sisaHorizontal = topDimension - horizontalCount * horizontalCut;
+         const sisaVertical = leftDimension - verticalCount * verticalCut;
 
-                                                      <!-- Left cut dimension -->
-                            <div style="position: absolute; left: 5px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; z-index: 10;">
-                              <span>${
-                                selectedMounting.ukuran_cetak_lebar_1
-                              }</span>
-                              <span style="font-size: 14px;">↓</span>
-                              <span>${downY1}x</span>
-                            </div>
+         const boxWidth = 240;
+         const boxHeight = 160;
 
-                            <!-- Used area (white space) -->
-                            <div style="position: absolute; top: 0; left: 0; width: ${usedWidthPercent}%; height: ${usedHeightPercent}%; background-color: white; display: flex; justify-content: center; align-items: center;">
-                              ${
-                                selectedMounting.ukuran_cetak_bagian_1 > 1
-                                  ? `<div style="font-size: 10px; font-weight: bold;">1/${selectedMounting.ukuran_cetak_bagian_1} Bagian</div>`
-                                  : ''
-                              }
-                              
-                              <!-- Isi inside white space at bottom right -->
-                              <div style="position: absolute; bottom: 5px; right: 10px; font-size: 8px;">
-                                Isi: ${
-                                  selectedMounting.ukuran_cetak_isi_1 ||
-                                  acrossX1 *
-                                    downY1 *
-                                    (selectedMounting.ukuran_cetak_bagian_1 ||
-                                      1)
-                                }
-                              </div>
-                            </div>
+         const totalPlanoArea = topDimension * leftDimension;
+         const totalUsedArea =
+           horizontalCount * horizontalCut * (verticalCount * verticalCut);
+         const efficiency = ((totalUsedArea / totalPlanoArea) * 100).toFixed(1);
 
-                            <!-- Waste areas (grey) -->
-                            ${
-                              sisaLebar > 0
-                                ? `<div style="position: absolute; top: 0; right: 0; width: ${
-                                    100 - usedWidthPercent
-                                  }%; height: ${usedHeightPercent}%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
-                                : ''
-                            }
-                            ${
-                              sisaPanjang > 0
-                                ? `<div style="position: absolute; bottom: 0; left: 0; width: 100%; height: ${
-                                    100 - usedHeightPercent
-                                  }%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
-                                : ''
-                            }
-                          </div>
+         return `
+    <div style="position: relative; display: inline-block; padding: 25px 15px 35px 60px;">
+     ${
+       selectedMounting.nama_mounting
+         ? `<div style="position: absolute; top: 8px; left: 8px; font-size: 12px; font-weight: bold; text-align: left; z-index: 5;">${selectedMounting.nama_mounting}</div>`
+         : ''
+     }
+<!-- Top dimension (longer one) - positioned at top right corner of rectangle -->
+      <div style="position: absolute; top: 15px; left: ${
+        60 + boxWidth - 30
+      }px;">
+        <div style="font-size: 8px; font-weight: bold;">
+          ${topDimension}
+        </div>
+      </div>
 
-                          <!-- Bottom info -->
-                          <div style="position: absolute; bottom: -25px; left: 0; right: 0; font-size: 7px; display: flex; justify-content: space-between;">
-                            <div><strong>Sisa Potong:</strong> ${sisaLebar.toFixed(
-                              0,
-                            )} × ${sisaPanjang.toFixed(0)} mm</div>
-                            <div><strong>Efisiensi:</strong> ${efficiency}%</div>
-                          </div>
-                        `;
-                      })()}
-                    </div>
-                  </div>
-                </td>
+      <!-- Left dimension (shorter one) - positioned at bottom left corner of rectangle -->
+      <div style="position: absolute; left: 38px; top: ${boxHeight + 3}px;">
+        <div style="font-size: 8px; font-weight: bold; white-space: nowrap;">
+          ${leftDimension}
+        </div>
+      </div>
+
+      <!-- Main rectangle -->
+      <div style="border: 2px solid black; background-color: white; display: inline-block; position: relative; width: ${boxWidth}px; height: ${boxHeight}px;">
+        <!-- Top/Horizontal cut dimension (inside box, near top) -->
+        <div style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 8px; font-weight: bold; display: flex; align-items: center; gap: 8px; z-index: 10;">
+          <span>${horizontalCut}</span>
+          <span style="font-size: 14px;">→</span>
+          <span>${horizontalCount}x</span>
+        </div>
+
+        <!-- Left/Vertical cut dimension (inside box, near left) -->
+        <div style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; z-index: 10;">
+          <span>${verticalCut}</span>
+          <span style="font-size: 14px;">↓</span>
+          <span>${verticalCount}x</span>
+        </div>
+
+        <!-- Used area (white space) -->
+        <div style="position: absolute; top: 0; left: 0; width: ${usedWidthPercent}%; height: ${usedHeightPercent}%; background-color: white; display: flex; justify-content: center; align-items: center;">
+          ${
+            selectedMounting.ukuran_cetak_bagian_1 > 1
+              ? `<div style="font-size: 10px; font-weight: bold;">1/${selectedMounting.ukuran_cetak_bagian_1} Bagian</div>`
+              : ''
+          }
+          
+          <!-- Isi inside white space at bottom right -->
+          <div style="position: absolute; bottom: 5px; right: 10px; font-size: 8px;">
+            Isi: ${
+              selectedMounting.ukuran_cetak_isi_1 ||
+              horizontalCount *
+                verticalCount *
+                (selectedMounting.ukuran_cetak_bagian_1 || 1)
+            }
+          </div>
+        </div>
+
+        <!-- Waste areas (grey) -->
+        ${
+          sisaHorizontal > 0
+            ? `<div style="position: absolute; top: 0; right: 0; width: ${
+                100 - usedWidthPercent
+              }%; height: ${usedHeightPercent}%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
+            : ''
+        }
+        ${
+          sisaVertical > 0
+            ? `<div style="position: absolute; bottom: 0; left: 0; width: 100%; height: ${
+                100 - usedHeightPercent
+              }%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
+            : ''
+        }
+      </div>
+
+      <!-- Bottom info (now inside the padding area) -->
+      <div style="position: absolute; bottom: 5px; left: 60px; right: 15px; font-size: 7px; display: flex; justify-content: space-between;">
+        <div><strong>Sisa Potong:</strong> ${sisaHorizontal.toFixed(
+          0,
+        )} × ${sisaVertical.toFixed(0)} mm</div>
+        <div><strong>Efisiensi:</strong> ${efficiency}%</div>
+      </div>
+    </div>
+  `;
+       })()}
+      </td>
                 <td style="padding: 5px; vertical-align: top; border: 1px solid black;">
                   <!-- Process table -->
                   <table style="width: 100%; border-collapse: collapse; font-size: 7px; margin-bottom: 5px;">

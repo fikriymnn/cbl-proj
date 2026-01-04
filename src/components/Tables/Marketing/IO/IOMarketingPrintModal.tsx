@@ -92,6 +92,17 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
     return statusMap[status] || status;
   };
 
+  // Get marketing name from the nested structure
+  const getMarketingName = (): string => {
+    try {
+      const marketingName =
+        printData?.okp?.kalkulasi?.marketing?.data_karyawan?.name;
+      return getValue(marketingName);
+    } catch (error) {
+      return '-';
+    }
+  };
+
   const getPrintContent = () => {
     if (!printData) return '';
 
@@ -100,6 +111,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
       printData.no_io,
       printData.revisi_ke,
     );
+    const marketingName = getMarketingName();
 
     // Get ALL tahapan data (no limit)
     const tahapan = mounting?.tahapan || [];
@@ -264,7 +276,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                 <td rowspan="2" class="text-center font-bold" style="width: 40%">
                   <div>PT. CAHAYA BERLIAN LESTARI</div>
                   <div class="text-lg font-bold">INSTRUKSI OFFSET</div>
-                  <div>MARKETING: </div>
+                  <div>MARKETING: ${marketingName}</div>
                   <div>${getValue(printData.label)}</div>
                 </td>
                 <td class="text-center" style="width: 15%">PEMBUAT</td>

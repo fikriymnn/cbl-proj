@@ -60,6 +60,18 @@ export interface IOData {
   io_action_user?: UserActionData[];
   user_create?: UserData;
   user_approve?: UserData;
+  okp?: {
+    id: number;
+    kalkulasi?: {
+      id: number;
+      marketing?: {
+        id_karyawan: number;
+        data_karyawan?: {
+          name: string;
+        };
+      };
+    };
+  };
 }
 
 export interface OKPData {

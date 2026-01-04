@@ -549,12 +549,12 @@ const IOMarketingHistory: React.FC = () => {
                     </td>
                     <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                       <span title={item.customer}>
-                        {truncateText(item.customer, 20)}
+                        {truncateText(item.customer, 40)}
                       </span>
                     </td>
                     <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                       <span title={item.produk}>
-                        {truncateText(item.produk, 20)}
+                        {truncateText(item.produk, 100)}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
