@@ -96,163 +96,163 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
       <html>
         <head>
           <title>Print - ${printData.no_so || 'SO'}</title>
-          <style>
-            @page {
-              size: A4 portrait;
-              margin: 10mm;
-            }
-            * {
-              box-sizing: border-box;
-            }
-            body {
-              margin: 0;
-              padding: 20px;
-              font-family: Arial, sans-serif;
-              font-size: 9px;
-              line-height: 1.3;
-            }
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-            }
-            .header-flex {
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              margin-bottom: 12px;
-            }
-            .header-logo {
-              width: 50px;
-              height: auto;
-            }
-            .header-title {
-              font-size: 12px;
-              font-weight: bold;
-            }
-            .header-label {
-              margin-left: auto;
-              text-align: right;
-              font-size: 12px;
-            }
-            .title-center {
-              text-align: center;
-              font-size: 14px;
-              font-weight: bold;
-              margin-bottom: 12px;
-            }
-            .info-grid {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 30px;
-              margin-bottom: 10px;
-              font-size: 8px;
-            }
-            .info-item {
-              margin-bottom: 2px;
-              display: flex;
-            }
-            .info-label {
-              display: inline-block;
-              width: 120px;
-            }
-            .info-colon {
-              display: inline-block;
-              width: 10px;
-            }
-            .info-value {
-              flex: 1;
-            }
-            .address-line {
-              margin-bottom: 10px;
-              font-size: 8px;
-              display: flex;
-            }
-            .address-label {
-              display: inline-block;
-              width: 120px;
-            }
-            .address-colon {
-              display: inline-block;
-              width: 10px;
-            }
-            .address-value {
-              flex: 1;
-            }
-            table {
-              border-collapse: collapse;
-              width: 100%;
-              margin-bottom: 8px;
-            }
-            td, th {
-              border: 1px solid black;
-              padding: 3px 5px;
-              vertical-align: top;
-              font-size: 8px;
-            }
-            th {
-              text-align: center;
-              font-weight: bold;
-            }
-            .text-center { 
-              text-align: center; 
-            }
-            .text-right { 
-              text-align: right; 
-            }
-            .total-wrapper {
-              display: flex;
-              justify-content: flex-end;
-              margin-bottom: 12px;
-            }
-            .total-box {
-              width: 300px;
-            }
-            .total-line {
-              display: flex;
-              justify-content: space-between;
-              border-top: 2px double black;
-              border-bottom: 2px double black;
-              padding: 4px 0;
-              font-weight: bold;
-              font-size: 9px;
-            }
-            .date-line {
-              margin-bottom: 8px;
-              font-size: 8px;
-            }
-            .signature-grid {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 60px;
-              text-align: center;
-              font-size: 8px;
-            }
-            .signature-space {
-              height: 40px;
-            }
-            .signature-label {
-              margin-bottom: 3px;
-            }
-            .signature-name {
-              font-weight: bold;
-              margin-top: 3px;
-            }
-            .separator {
-              border-top: 1px dashed #999;
-              margin: 15px 0;
-            }
-            .form-title {
-              text-align: center;
-              font-weight: bold;
-              margin-bottom: 8px;
-              font-size: 9px;
-            }
-            .form-table td {
-              font-size: 8px;
-            }
-          </style>
+  <style>
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    font-size: 10px; /* Changed from 9px to 10px (moderate increase) */
+    line-height: 1.35; /* Changed from 1.3 to 1.35 */
+  }
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+  .header-flex {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .header-logo {
+    width: 55px; /* Changed from 50px to 55px */
+    height: auto;
+  }
+  .header-title {
+    font-size: 13px; /* Changed from 12px to 13px */
+    font-weight: bold;
+  }
+  .header-label {
+    margin-left: auto;
+    text-align: right;
+    font-size: 13px; /* Changed from 12px to 13px */
+  }
+  .title-center {
+    text-align: center;
+    font-size: 15px; /* Changed from 14px to 15px */
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 10px;
+    font-size: 9px; /* Changed from 8px to 9px */
+  }
+  .info-item {
+    margin-bottom: 2px;
+    display: flex;
+  }
+  .info-label {
+    display: inline-block;
+    width: 120px;
+  }
+  .info-colon {
+    display: inline-block;
+    width: 10px;
+  }
+  .info-value {
+    flex: 1;
+  }
+  .address-line {
+    margin-bottom: 10px;
+    font-size: 9px; /* Changed from 8px to 9px */
+    display: flex;
+  }
+  .address-label {
+    display: inline-block;
+    width: 120px;
+  }
+  .address-colon {
+    display: inline-block;
+    width: 10px;
+  }
+  .address-value {
+    flex: 1;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  td, th {
+    border: 1px solid black;
+    padding: 3px 5px;
+    vertical-align: top;
+    font-size: 9px; /* Changed from 8px to 9px */
+  }
+  th {
+    text-align: center;
+    font-weight: bold;
+  }
+  .text-center { 
+    text-align: center; 
+  }
+  .text-right { 
+    text-align: right; 
+  }
+  .total-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+  }
+  .total-box {
+    width: 300px;
+  }
+  .total-line {
+    display: flex;
+    justify-content: space-between;
+    border-top: 2px double black;
+    border-bottom: 2px double black;
+    padding: 4px 0;
+    font-weight: bold;
+    font-size: 10px; /* Changed from 9px to 10px */
+  }
+  .date-line {
+    margin-bottom: 8px;
+    font-size: 9px; /* Changed from 8px to 9px */
+  }
+  .signature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    text-align: center;
+    font-size: 9px; /* Changed from 8px to 9px */
+  }
+  .signature-space {
+    height: 40px;
+  }
+  .signature-label {
+    margin-bottom: 3px;
+  }
+  .signature-name {
+    font-weight: bold;
+    margin-top: 3px;
+  }
+  .separator {
+    border-top: 1px dashed #999;
+    margin: 15px 0;
+  }
+  .form-title {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 10px; /* Changed from 9px to 10px */
+  }
+  .form-table td {
+    font-size: 9px; /* Changed from 8px to 9px */
+  }
+</style>
         </head>
         <body>
           <!-- ============ FIRST SECTION - Sales Order ============ -->

@@ -12,7 +12,7 @@ interface BasicInfoFormProps {
   ) => void;
   onQtyListChange?: (newList: QtyListItem[]) => void;
   isReadOnly?: boolean;
-  isEditMode?: boolean; // NEW PROP
+  isEditMode?: boolean;
   copyType?: 'repeat' | 'repeat_perubahan';
 }
 
@@ -48,7 +48,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   onInputChange,
   onQtyListChange,
   isReadOnly = false,
-  isEditMode = false, // NEW PROP
+  isEditMode = false,
   copyType,
 }) => {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -64,10 +64,20 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
 
   const isFieldDisabled = (fieldName?: string) => {
     if (isReadOnly) return true;
-    if (fieldName && copyType === 'repeat') {
+    if (
+      fieldName &&
+      (copyType === 'repeat' || copyType === 'repeat_perubahan')
+    ) {
       return isFieldDisabledForRepeat(fieldName);
     }
     return false;
+  };
+
+  // NEW: Helper to check if qty list operations are disabled
+  const isQtyListDisabled = () => {
+    // Only disabled if isReadOnly is true
+    // In repeat modes, qty list should be editable
+    return isReadOnly;
   };
 
   useEffect(() => {
@@ -117,10 +127,15 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   }, [selectedCustomer, isEditMode]);
 
   const isFieldDisabledForRepeat = (fieldName: string) => {
-    if (copyType !== 'repeat') return false;
+    if (copyType !== 'repeat' && copyType !== 'repeat_perubahan') return false;
 
-    // Only qty_kalkulasi and label are editable in repeat mode
-    const editableFields = ['qty_kalkulasi', 'label'];
+    // Fields that are editable in both repeat and repeat_perubahan modes
+    const editableFields = [
+      'qty_kalkulasi',
+      'label',
+      'presentase_insheet',
+      'spesifikasi',
+    ];
     return !editableFields.includes(fieldName);
   };
 
@@ -293,7 +308,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         'nama_produk',
         'id_area_pengiriman',
         'nama_area_pengiriman',
-        'harga_pengiriman_awal', // ADD THIS
+        'harga_pengiriman_awal',
       ];
 
       fieldsToReset.forEach((field) => {
@@ -363,8 +378,9 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     } as React.ChangeEvent<HTMLSelectElement>);
   };
 
+  // UPDATED: Use isQtyListDisabled instead of isReadOnly
   const handleAddQty = () => {
-    if (onQtyListChange && !isReadOnly) {
+    if (onQtyListChange && !isQtyListDisabled()) {
       const newList = [
         ...(formData.qty_list || []),
         { qty: 0, is_selected: false },
@@ -373,15 +389,17 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     }
   };
 
+  // UPDATED: Use isQtyListDisabled instead of isReadOnly
   const handleRemoveQty = (index: number) => {
-    if (onQtyListChange && !isReadOnly) {
+    if (onQtyListChange && !isQtyListDisabled()) {
       const newList = (formData.qty_list || []).filter((_, i) => i !== index);
       onQtyListChange(newList);
     }
   };
 
+  // UPDATED: Use isQtyListDisabled instead of isReadOnly
   const handleQtyChange = (index: number, value: number) => {
-    if (onQtyListChange && !isReadOnly) {
+    if (onQtyListChange && !isQtyListDisabled()) {
       const newList = (formData.qty_list || []).map((item, i) =>
         i === index ? { ...item, qty: value } : item,
       );
@@ -389,8 +407,9 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     }
   };
 
+  // UPDATED: Use isQtyListDisabled instead of isReadOnly
   const handleSelectQty = (index: number) => {
-    if (onQtyListChange && !isReadOnly) {
+    if (onQtyListChange && !isQtyListDisabled()) {
       const newList = (formData.qty_list || []).map((item, i) => ({
         ...item,
         is_selected: i === index,
@@ -414,6 +433,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
   const getSelectedPengirimanId = () => {
     return formData.id_area_pengiriman || 0;
   };
+
   useEffect(() => {
     if (isEditMode && formData.id_customer && customers.length > 0) {
       const customer = customers.find((c) => c.id === formData.id_customer);
@@ -426,6 +446,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       }
     }
   }, [isEditMode, formData.id_customer, customers]);
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 className="text-xs font-semibold text-gray-800 mb-6 flex items-center">
@@ -582,7 +603,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           />
         </div>
 
-        {/* Qty - EDITABLE in repeat mode */}
+        {/* Qty - NOW EDITABLE in both repeat modes */}
         {formData.tipe_kalkulasi !== 'multi' ? (
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-700">
@@ -623,7 +644,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         )}
       </div>
 
-      {/* Label - EDITABLE in repeat mode */}
+      {/* Label - NOW EDITABLE in both repeat modes */}
       {formData.tipe_kalkulasi === 'multi' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
           <div className="space-y-2">
@@ -671,7 +692,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         </div>
       )}
 
-      {/* Qty List for Multi Type - Compact Design */}
+      {/* Qty List for Multi Type - NOW EDITABLE in both repeat modes */}
       {formData.tipe_kalkulasi === 'multi' && (
         <div className="mt-6 border-t pt-6">
           <div className="flex justify-between items-center mb-4">
@@ -681,7 +702,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             <button
               type="button"
               onClick={handleAddQty}
-              disabled={isReadOnly}
+              disabled={isQtyListDisabled()}
               className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 transition-colors"
             >
               + Tambah
@@ -703,7 +724,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                   name="selected_qty"
                   checked={item.is_selected}
                   onChange={() => handleSelectQty(index)}
-                  disabled={isReadOnly}
+                  disabled={isQtyListDisabled()}
                   className="w-4 h-4 text-green-600 cursor-pointer"
                 />
                 <input
@@ -712,33 +733,34 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
                   onChange={(e) =>
                     handleQtyChange(index, Number(e.target.value))
                   }
-                  disabled={isReadOnly}
+                  disabled={isQtyListDisabled()}
                   className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                   placeholder="Qty"
                   min="0"
                   required
                 />
-                {(formData.qty_list || []).length > 1 && !isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveQty(index)}
-                    className="text-red-500 hover:text-red-700 transition-colors"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                {(formData.qty_list || []).length > 1 &&
+                  !isQtyListDisabled() && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveQty(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                )}
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  )}
               </div>
             ))}
           </div>
@@ -748,7 +770,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         </div>
       )}
 
-      {/* Non-multi label section */}
+      {/* Non-multi label section - NOW EDITABLE in both repeat modes */}
       {formData.tipe_kalkulasi !== 'multi' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
           <div className="space-y-2">
@@ -794,7 +816,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           </div>
         </div>
       )}
-
+      {/* Spesifikasi - NOW EDITABLE in both repeat modes */}
       <div className="mt-6">
         <label className="block text-xs font-medium text-gray-700 mb-2">
           Spesifikasi
@@ -816,5 +838,4 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
     </div>
   );
 };
-
 export default BasicInfoForm;

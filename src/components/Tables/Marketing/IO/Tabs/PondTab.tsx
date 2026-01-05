@@ -101,7 +101,12 @@ const PondTab: React.FC<PondTabProps> = ({
   };
 
   const handlePonsChange = (value: number | string) => {
+    const selectedPons = ponsOptions.find(
+      (option) => option.id === Number(value),
+    );
     onInputChange('id_jenis_pons', Number(value));
+    // You can also store the name if needed in the future
+    // onInputChange('nama_jenis_pons', selectedPons?.nama_barang || '');
   };
 
   const getPonsSearchableOptions = () => {
@@ -118,7 +123,14 @@ const PondTab: React.FC<PondTabProps> = ({
   };
 
   const handleLemChange = (value: number | string) => {
+    const selectedLem = lemOptions.find(
+      (option) => option.id === Number(value),
+    );
     onInputChange('id_lem', Number(value));
+    // Store the nama_lem (nama_barang) as well
+    if (selectedLem) {
+      onInputChange('nama_lem', selectedLem.nama_barang);
+    }
   };
 
   const getLemSearchableOptions = () => {

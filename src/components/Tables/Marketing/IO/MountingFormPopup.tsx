@@ -57,6 +57,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     id_kertas: null,
     id_jenis_pons: null,
     id_lem: null,
+    nama_lem: '', // Added
     merk_coating_depan: '',
     merk_coating_belakang: '',
     keterangan_warna_depan: '',
@@ -174,6 +175,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         id_kertas: mountingData.id_kertas || null,
         id_jenis_pons: mountingData.id_jenis_pons || null,
         id_lem: mountingData.id_lem || null,
+        nama_lem: mountingData.nama_lem || '', // Added
         merk_coating_depan: mountingData.merk_coating_depan || '',
         merk_coating_belakang: mountingData.merk_coating_belakang || '',
         keterangan_warna_depan: mountingData.keterangan_warna_depan || '',
@@ -235,6 +237,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         id_kertas: templateMounting?.id_kertas || null,
         id_jenis_pons: templateMounting?.id_jenis_pons || null,
         id_lem: templateMounting?.id_lem || null,
+        nama_lem: templateMounting?.nama_lem || '', // Added
         merk_coating_depan: templateMounting?.merk_coating_depan || '',
         merk_coating_belakang: templateMounting?.merk_coating_belakang || '',
         keterangan_warna_depan: templateMounting?.keterangan_warna_depan || '',

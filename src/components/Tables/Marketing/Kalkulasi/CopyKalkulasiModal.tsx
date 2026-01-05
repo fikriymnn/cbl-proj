@@ -15,6 +15,7 @@ import {
   KalkulasiFormData,
   KalkulasiDetailItem,
   ApiResponse,
+  QtyListItem,
 } from '../Kalkulasi/types/kalkulasi';
 
 interface CopyKalkulasiModalProps {
@@ -289,7 +290,29 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
 
     setHasUnsavedChanges(true);
   };
+  const handleQtyListChange = (newList: QtyListItem[]) => {
+    setFormData((prev) => {
+      const updated = { ...prev, qty_list: newList };
 
+      // If any qty is selected, update qty_kalkulasi
+      const selectedQty = newList.find((item) => item.is_selected);
+      if (selectedQty && prev.tipe_kalkulasi === 'multi') {
+        updated.qty_kalkulasi = selectedQty.qty.toString();
+
+        // Recalculate financial data with new qty
+        const financialData = calculateFinancialData(updated);
+        updated.harga_produksi = financialData.harga_produksi.toString();
+        updated.jumlah_harga_jual = financialData.jumlah_harga_jual.toString();
+        updated.harga_ppn = financialData.harga_ppn.toString();
+        updated.harga_diskon = financialData.harga_diskon.toString();
+        updated.total_harga = financialData.total_harga.toString();
+        updated.harga_satuan = financialData.harga_satuan.toString();
+      }
+
+      return updated;
+    });
+    setHasUnsavedChanges(true);
+  };
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> => {
@@ -565,6 +588,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
                 <BasicInfoForm
                   formData={formData}
                   onInputChange={handleInputChange}
+                  onQtyListChange={handleQtyListChange}
                   isReadOnly={false}
                   copyType={copyType}
                 />

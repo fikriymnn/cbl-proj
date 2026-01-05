@@ -164,17 +164,23 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
       if (column === mountingLetter) {
         return {
           formatData: getValue(mounting?.format_data),
-          ukuranPxLxT: `${getValue(mounting?.panjang_layout, '0')} x ${getValue(
-            mounting?.lebar_layout,
+          ukuranPxLxT: `${getValue(
+            mounting?.ukuran_jadi_panjang,
             '0',
-          )} x 0 mm`,
+          )} x ${getValue(mounting?.ukuran_jadi_lebar, '0')} x ${getValue(
+            mounting?.ukuran_jadi_tinggi,
+            '0',
+          )} mm`,
           ukuranTerbentang: `${getValue(
             mounting?.ukuran_jadi_terb_panjang,
             '0',
           )} x ${getValue(mounting?.ukuran_jadi_terb_lebar, '0')} mm`,
           isiA: getValue(mounting?.ukuran_cetak_isi_1, '0'),
           isiB: getValue(mounting?.ukuran_cetak_isi_2, '0'),
-          ukuranLayoutPascres: '0 x 0',
+          ukuranLayoutPascres: `${getValue(
+            mounting?.ukuran_jadi_panjang,
+            '0',
+          )} x ${getValue(mounting?.ukuran_jadi_lebar, '0')} mm`,
         };
       }
       return {
@@ -217,9 +223,9 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    font-size: 9px;
-    line-height: 1.3;
-    min-height: 277mm; /* A4 height minus margins */
+    font-size: 11px; /* Changed from 9px to 11px */
+    line-height: 1.4; /* Changed from 1.3 to 1.4 */
+    min-height: 277mm;
     display: flex;
     flex-direction: column;
   }
@@ -243,14 +249,15 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
   table {
     border-collapse: collapse;
     width: 100%;
-    margin-bottom: 8px;
+    margin-bottom: 10px; /* Changed from 8px to 10px */
   }
 
   td, th {
     border: 1px solid black;
-    padding: 2px 4px;
-    line-height: 1.3;
+    padding: 3px 5px; /* Changed from 2px 4px to 3px 5px */
+    line-height: 1.4; /* Changed from 1.3 to 1.4 */
     vertical-align: top;
+    font-size: 11px; /* Added explicit font size */
   }
 
   .text-center {
@@ -266,15 +273,15 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
   }
 
   .text-lg {
-    font-size: 12px;
+    font-size: 14px; /* Changed from 12px to 14px */
   }
 
   .text-2xl {
-    font-size: 18px;
+    font-size: 20px; /* Changed from 18px to 20px */
   }
 
   .text-sm {
-    font-size: 8px;
+    font-size: 10px; /* Changed from 8px to 10px */
   }
 </style>
         </head>
@@ -542,7 +549,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                 <td style="width: 14.28%">C</td>
                 <td style="width: 14.28%">D</td>
                 <td style="width: 14.28%">Proses LEM</td>
-                <td style="width: 14.28%">BLOCK LEM</td>
+                <td style="width: 14.28%">${getValue(mounting?.nama_lem)}</td>
               </tr>
               <tr>
                 <td></td>
