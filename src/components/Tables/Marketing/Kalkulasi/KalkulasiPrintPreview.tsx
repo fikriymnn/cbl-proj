@@ -308,9 +308,9 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         </td>
                         <td className="border border-black  bg-yellow-200 text-center">
                           {getValue(data.nama_produk)}
-                          <br />({getNumericValue(data.ukuran_jadi_panjang)}x
+                          {/* <br />({getNumericValue(data.ukuran_jadi_panjang)}x
                           {getNumericValue(data.ukuran_jadi_lebar)}x
-                          {getNumericValue(data.ukuran_jadi_tinggi)})
+                          {getNumericValue(data.ukuran_jadi_tinggi)}) */}
                         </td>
                         <td className="border border-black  font-bold">
                           Tanggal Kalkulasi

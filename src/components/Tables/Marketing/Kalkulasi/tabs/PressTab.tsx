@@ -78,9 +78,6 @@ const PressTab: React.FC<PressTabProps> = ({
   const [isLoadingMesinCoatingBelakang, setIsLoadingMesinCoatingBelakang] =
     useState(false);
 
-  // Determine if component should be read-only
-  const componentIsReadOnly = isReadOnly || copyType === 'repeat';
-
   const normalRateTable = {
     R700: { base: 225000, rates: [65, 60, 55, 50, 45, 40] },
     RR: { base: 200000, rates: [65, 60, 55, 50, 45, 40] },
@@ -494,9 +491,9 @@ const PressTab: React.FC<PressTabProps> = ({
     return selectedMesin.harga * plateCount;
   };
 
-  // Modified handle functions with read-only checks
+  // Modified handle functions - only check isReadOnly prop
   const handleMesinChange = (value: any) => {
-    if (componentIsReadOnly) return;
+    if (isReadOnly) return;
 
     const selected = mesinOptions.find((mesin) => mesin.id === value) || null;
     setSelectedMesin(selected);
@@ -505,7 +502,7 @@ const PressTab: React.FC<PressTabProps> = ({
   };
 
   const handleCoatingDepanChange = (value: any) => {
-    if (componentIsReadOnly) return;
+    if (isReadOnly) return;
 
     const selected =
       coatingDepanOptions.find((coating) => coating.id === value) || null;
@@ -515,7 +512,7 @@ const PressTab: React.FC<PressTabProps> = ({
   };
 
   const handleCoatingBelakangChange = (value: any) => {
-    if (componentIsReadOnly) return;
+    if (isReadOnly) return;
 
     const selected =
       coatingBelakangOptions.find((coating) => coating.id === value) || null;
@@ -525,14 +522,14 @@ const PressTab: React.FC<PressTabProps> = ({
   };
 
   const handleMesinCoatingDepanChange = (value: any) => {
-    if (componentIsReadOnly) return;
+    if (isReadOnly) return;
 
     setSelectedMesinCoatingDepan(value);
     onInputChange(createSyntheticEvent('id_mesin_coating_depan', value || ''));
   };
 
   const handleMesinCoatingBelakangChange = (value: any) => {
-    if (componentIsReadOnly) return;
+    if (isReadOnly) return;
 
     setSelectedMesinCoatingBelakang(value);
     onInputChange(
@@ -541,9 +538,10 @@ const PressTab: React.FC<PressTabProps> = ({
   };
 
   const handlePrintInsheetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isReadOnly) return; // Only check isReadOnly, not copyType
+    if (isReadOnly) return;
     onInputChange(e);
   };
+
   // Update calculated values in formData
   useEffect(() => {
     const hargaCetak = calculateJumlahHargaCetak();
@@ -561,7 +559,12 @@ const PressTab: React.FC<PressTabProps> = ({
   useEffect(() => {
     const hargaPlate = calculateHargaPlate();
     onInputChange(createSyntheticEvent('harga_plate', hargaPlate.toString()));
-  }, [selectedMesin, formData.jumlah_warna]);
+  }, [
+    selectedMesin,
+    formData.jumlah_warna,
+    copyType,
+    formData.status_kalkulasi,
+  ]);
 
   useEffect(() => {
     const hargaCoatingDepan = calculateHargaCoatingDepan();
@@ -642,9 +645,9 @@ const PressTab: React.FC<PressTabProps> = ({
               name="print_insheet"
               value={getSafeStringValue(formData.print_insheet)}
               onChange={handlePrintInsheetChange}
-              readOnly={isReadOnly} // Changed from componentIsReadOnly
+              readOnly={isReadOnly}
               className={`w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 ${
-                isReadOnly ? 'bg-gray-100 cursor-not-allowed' : '' // Changed from componentIsReadOnly
+                isReadOnly ? 'bg-gray-100 cursor-not-allowed' : ''
               }`}
               placeholder="Enter insheet"
             />
@@ -659,7 +662,7 @@ const PressTab: React.FC<PressTabProps> = ({
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
               </div>
-            ) : componentIsReadOnly ? (
+            ) : isReadOnly ? (
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
                 {selectedMesin
                   ? `${selectedMesin.kode_barang} - ${selectedMesin.nama_barang}`
@@ -753,7 +756,6 @@ const PressTab: React.FC<PressTabProps> = ({
           </div>
         </div>
       </div>
-
       {/* Selected Machine Details */}
       {selectedMesin && (
         <div className="border-b pb-4">
@@ -1027,7 +1029,7 @@ const PressTab: React.FC<PressTabProps> = ({
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
               </div>
-            ) : componentIsReadOnly ? (
+            ) : isReadOnly ? (
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
                 {selectedCoatingDepan
                   ? `${selectedCoatingDepan.kode_barang} - ${selectedCoatingDepan.nama_barang}`
@@ -1074,7 +1076,7 @@ const PressTab: React.FC<PressTabProps> = ({
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
               </div>
-            ) : componentIsReadOnly ? (
+            ) : isReadOnly ? (
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
                 {selectedCoatingBelakang
                   ? `${selectedCoatingBelakang.kode_barang} - ${selectedCoatingBelakang.nama_barang}`
@@ -1140,7 +1142,7 @@ const PressTab: React.FC<PressTabProps> = ({
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
               </div>
-            ) : componentIsReadOnly ? (
+            ) : isReadOnly ? (
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
                 {mesinCoatingDepanOptions.find(
                   (opt) => opt.value === selectedMesinCoatingDepan,
@@ -1168,7 +1170,7 @@ const PressTab: React.FC<PressTabProps> = ({
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-gray-500 text-sm">
                 Loading...
               </div>
-            ) : componentIsReadOnly ? (
+            ) : isReadOnly ? (
               <div className="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700">
                 {mesinCoatingBelakangOptions.find(
                   (opt) => opt.value === selectedMesinCoatingBelakang,
@@ -1240,7 +1242,7 @@ const PressTab: React.FC<PressTabProps> = ({
                             } + ${formData.ukuran_cetak_lebar_2 || 0})) × ${
                               selectedCoatingDepan.harga
                             }
-                             `
+                         `
                           )}
                         </div>
                       </div>
@@ -1337,5 +1339,4 @@ const PressTab: React.FC<PressTabProps> = ({
     </div>
   );
 };
-
 export default PressTab;

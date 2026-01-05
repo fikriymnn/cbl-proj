@@ -852,7 +852,100 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/master/marketing/stage-machine'),
     ],
   },
+  {
+    role: 'supervisor',
+    bagian: 'marketing',
+    permissions: [
+      // Dashboard
+      readOnly('/dashboard'),
 
+      // Marketing Menu - Calculation
+      fullAccess('/marketing/calculation/create'),
+      readOnly('/marketing/calculation/history'),
+
+      // Kabag Approval
+      createPermission(
+        '/marketing/kabag-approval/list',
+        true,
+        false,
+        false,
+        false,
+      ),
+      readOnly('/marketing/kabag-approval/history'),
+
+      // OKP
+      fullAccess('/marketing/okp/create'),
+      readOnly('/marketing/okp/history'),
+
+      // IO
+      fullAccess('/marketing/io/create'),
+      fullAccess('/marketing/io/npd'),
+      readOnly('/marketing/io/history'),
+
+      // SO
+      fullAccess('/marketing/so/create'),
+      readOnly('/marketing/so/history'),
+
+      // Master Data - Marketing
+      fullAccess('/master/marketing/marketing'),
+      fullAccess('/master/marketing/customer'),
+      fullAccess('/master/marketing/brand'),
+      fullAccess('/master/marketing/delivery'),
+      fullAccess('/master/marketing/product'),
+      fullAccess('/master/marketing/unit'),
+      fullAccess('/master/marketing/item'),
+      fullAccess('/master/marketing/machine-stage'),
+      fullAccess('/master/marketing/stage'),
+      fullAccess('/master/marketing/stage-machine'),
+    ],
+  },
+  {
+    role: 'section head',
+    bagian: 'marketing',
+    permissions: [
+      // Dashboard
+      readOnly('/dashboard'),
+
+      // Marketing Menu - Calculation
+      fullAccess('/marketing/calculation/create'),
+      readOnly('/marketing/calculation/history'),
+
+      // Kabag Approval
+      createPermission(
+        '/marketing/kabag-approval/list',
+        true,
+        false,
+        false,
+        false,
+      ),
+      readOnly('/marketing/kabag-approval/history'),
+
+      // OKP
+      fullAccess('/marketing/okp/create'),
+      readOnly('/marketing/okp/history'),
+
+      // IO
+      fullAccess('/marketing/io/create'),
+      fullAccess('/marketing/io/npd'),
+      readOnly('/marketing/io/history'),
+
+      // SO
+      fullAccess('/marketing/so/create'),
+      readOnly('/marketing/so/history'),
+
+      // Master Data - Marketing
+      fullAccess('/master/marketing/marketing'),
+      fullAccess('/master/marketing/customer'),
+      fullAccess('/master/marketing/brand'),
+      fullAccess('/master/marketing/delivery'),
+      fullAccess('/master/marketing/product'),
+      fullAccess('/master/marketing/unit'),
+      fullAccess('/master/marketing/item'),
+      fullAccess('/master/marketing/machine-stage'),
+      fullAccess('/master/marketing/stage'),
+      fullAccess('/master/marketing/stage-machine'),
+    ],
+  },
   // ============================================
   // PRE-PRESS DEPARTMENT
   // ============================================

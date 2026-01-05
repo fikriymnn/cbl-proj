@@ -106,6 +106,13 @@ const ExcelExportRekapAbsen = ({
     return violationsData;
   };
 
+  // Calculate total fine for an employee
+  const calculateTotalFine = (violationsData: any[]) => {
+    return violationsData.reduce((total, record) => {
+      return total + (record.violationFine || 0);
+    }, 0);
+  };
+
   const exportToExcel = () => {
     if (!filteredAbsen || filteredAbsen.length === 0) {
       alert('Tidak ada data untuk diexport');
@@ -115,12 +122,56 @@ const ExcelExportRekapAbsen = ({
     // Prepare workbook
     const wb = XLSX.utils.book_new();
 
+    // Prepare summary data
+    const summaryData: any[] = [];
+    summaryData.push(['RINGKASAN TOTAL DENDA KARYAWAN']);
+    summaryData.push([
+      'Periode',
+      `${convertTimeStampToDate(dateFrom)} s/d ${convertTimeStampToDate(
+        dateTo,
+      )}`,
+    ]);
+    summaryData.push([]);
+    summaryData.push([
+      'No',
+      'NIK',
+      'Nama Karyawan',
+      'Department',
+      'Divisi',
+      'Total Pelanggaran',
+      'Total Denda (Rp)',
+    ]);
+
+    let grandTotalFine = 0;
+    let grandTotalViolations = 0;
+
+    // Store employee worksheets temporarily
+    const employeeSheets: Array<{ ws: XLSX.WorkSheet; name: string }> = [];
+
     filteredAbsen.forEach((employee: any, empIndex: number) => {
       const overtimeCalc = calculateOvertimeHours(employee.absensi);
       const timeMetrics = calculateTimeMetrics(employee.absensi);
       const violationsData = calculateMonthlyViolations(employee.absensi);
+      const totalFine = calculateTotalFine(violationsData);
+      const totalViolations = violationsData.filter(
+        (v) => v.violationFine > 0,
+      ).length;
 
-      // Prepare sheet data
+      grandTotalFine += totalFine;
+      grandTotalViolations += totalViolations;
+
+      // Add to summary
+      summaryData.push([
+        empIndex + 1,
+        employee.nik,
+        employee.nama_karyawan,
+        employee.department,
+        employee.divisi,
+        totalViolations,
+        `Rp ${totalFine.toLocaleString('id-ID')}`,
+      ]);
+
+      // Prepare sheet data for individual employee
       const sheetData: any[] = [];
 
       // Header - Employee Info
@@ -365,6 +416,15 @@ const ExcelExportRekapAbsen = ({
         ]);
       });
 
+      // Add Total Denda section BELOW the detail table
+      sheetData.push([]);
+      sheetData.push(['TOTAL DENDA']);
+      sheetData.push(['Total Pelanggaran', totalViolations]);
+      sheetData.push([
+        'Total Denda',
+        `Rp ${totalFine.toLocaleString('id-ID')}`,
+      ]);
+
       // Create worksheet
       const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
@@ -391,12 +451,47 @@ const ExcelExportRekapAbsen = ({
       ];
       ws['!cols'] = colWidths;
 
-      // Add worksheet to workbook with employee name as sheet name
+      // Store worksheet with employee name
       const sheetName = `${employee.nik}-${employee.nama_karyawan.substring(
         0,
         20,
       )}`;
-      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      employeeSheets.push({ ws, name: sheetName });
+    });
+
+    // Add grand total to summary
+    summaryData.push([]);
+    summaryData.push([
+      '',
+      '',
+      '',
+      '',
+      'TOTAL KESELURUHAN',
+      grandTotalViolations,
+      `Rp ${grandTotalFine.toLocaleString('id-ID')}`,
+    ]);
+
+    // Create summary worksheet
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+
+    // Set column widths for summary
+    const summaryColWidths = [
+      { wch: 5 }, // No
+      { wch: 15 }, // NIK
+      { wch: 25 }, // Nama Karyawan
+      { wch: 20 }, // Department
+      { wch: 20 }, // Divisi
+      { wch: 20 }, // Total Pelanggaran
+      { wch: 20 }, // Total Denda
+    ];
+    summaryWs['!cols'] = summaryColWidths;
+
+    // Add summary sheet FIRST
+    XLSX.utils.book_append_sheet(wb, summaryWs, 'Ringkasan Denda');
+
+    // Then add all employee sheets
+    employeeSheets.forEach((sheet) => {
+      XLSX.utils.book_append_sheet(wb, sheet.ws, sheet.name);
     });
 
     // Generate Excel file
