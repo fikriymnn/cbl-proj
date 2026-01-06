@@ -318,7 +318,7 @@ const KalkulasiDetailModal: React.FC<KalkulasiDetailModalProps> = ({
                   </div>
                   <div className="flex justify-between border-b border-zinc-200">
                     <span className="text-gray-600">Ongkos Pons / QTY</span>
-                    <span>{data.ongkos_pons === 'Yes' ? 'YES' : 'NO'}</span>
+                    <span>{data.ongkos_pons}</span>
                     <span>{data.ongkos_pons_qty}</span>
                   </div>
                   <div className="flex justify-between border-b border-zinc-200">
