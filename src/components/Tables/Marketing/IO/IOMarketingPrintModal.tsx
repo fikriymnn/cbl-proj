@@ -178,9 +178,9 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
           isiA: getValue(mounting?.ukuran_cetak_isi_1, '0'),
           isiB: getValue(mounting?.ukuran_cetak_isi_2, '0'),
           ukuranLayoutPascres: `${getValue(
-            mounting?.ukuran_jadi_panjang,
+            mounting?.panjang_layout,
             '0',
-          )} x ${getValue(mounting?.ukuran_jadi_lebar, '0')} mm`,
+          )} x ${getValue(mounting?.lebar_layout, '0')} mm`,
         };
       }
       return {

@@ -52,7 +52,15 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
     const num = typeof value === 'number' ? value : parseFloat(value);
     return isNaN(num) ? defaultValue : num;
   };
+  const parseIndonesianNumber = (value: any): number => {
+    if (value === null || value === undefined || value === '') return 0;
+    if (typeof value === 'number') return value;
 
+    // Remove dots (thousand separators) from Indonesian format
+    const stringValue = String(value).replace(/\./g, '');
+    const num = parseFloat(stringValue);
+    return isNaN(num) ? 0 : num;
+  };
   useEffect(() => {
     // Initialize form data from original data
     const initializeFormData = () => {
@@ -108,7 +116,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
         lebarMm: safeNumber(originalData.lebar_kertas),
         percentage: safeNumber(originalData.persentase_kertas),
         apki: safeNumber(originalData.persentase_apki_kertas),
-        total_kertas: safeNumber(originalData.total_kertas),
+        total_kertas: parseIndonesianNumber(originalData.total_kertas),
         total_harga_kertas: safeNumber(originalData.total_harga_kertas),
         // Cetak
         id_jenis_mesin_cetak: originalData.id_jenis_mesin_cetak || 0,
@@ -333,6 +341,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
         total_harga_satuan_customer: safeNumber(
           formData.total_harga_satuan_customer,
         ),
+        total_kertas: Math.round(parseIndonesianNumber(formData.total_kertas)),
         harga_ppn: safeNumber(formData.harga_ppn),
         diskon: safeNumber(formData.diskon),
         harga_diskon: safeNumber(formData.harga_diskon),

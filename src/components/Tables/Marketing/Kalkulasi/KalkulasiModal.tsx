@@ -79,7 +79,26 @@ const safeToString = (value: any, defaultValue: string = '0'): string => {
     return defaultValue;
   return String(value);
 };
+// const parseIndonesianNumber = (value: any): number => {
+//   if (value === null || value === undefined || value === '') return 0;
+//   if (typeof value === 'number') return value;
 
+//   // Convert to string and handle Indonesian format
+//   // Indonesian format: 1.234.567,89 (dots for thousands, comma for decimal)
+//   let stringValue = String(value);
+
+//   // Remove currency symbols and spaces
+//   stringValue = stringValue.replace(/[Rp\s]/g, '');
+
+//   // Replace dots (thousand separators) with empty string
+//   stringValue = stringValue.replace(/\./g, '');
+
+//   // Replace comma (decimal separator) with dot
+//   stringValue = stringValue.replace(/,/g, '.');
+
+//   const num = parseFloat(stringValue);
+//   return isNaN(num) ? 0 : num;
+// };
 const convertDetailToFormData = (
   detail: KalkulasiDetailItem,
 ): KalkulasiFormData => {
@@ -229,7 +248,6 @@ const convertDetailToFormData = (
     ],
   };
 };
-
 const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
   onClose,
   onSuccess,
@@ -359,7 +377,11 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
 
     setHasUnsavedChanges(true);
   };
-
+  const safeToString = (value: any, defaultValue: string = '0'): string => {
+    if (value === null || value === undefined || value === '')
+      return defaultValue;
+    return String(value);
+  };
   // Handle form submission
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>,

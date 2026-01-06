@@ -294,7 +294,11 @@ const PressTab: React.FC<PressTabProps> = ({
   ): number => {
     if (!value) return 0;
     if (typeof value === 'number') return value;
-    return Number(String(value).replace(/\./g, ''));
+
+    // Handle Indonesian format: remove dots (thousand separators)
+    const stringValue = String(value).replace(/\./g, '').replace(/,/g, '.');
+    const parsed = Number(stringValue);
+    return isNaN(parsed) ? 0 : parsed;
   };
 
   // Function to get safe string value
@@ -334,7 +338,6 @@ const PressTab: React.FC<PressTabProps> = ({
     return name.includes('sanbe') || name.includes('caprifarmindo');
   };
 
-  // Main calculation function for printing cost
   const calculateJumlahHargaCetak = (): number => {
     if (
       !selectedMesin ||
@@ -355,6 +358,7 @@ const PressTab: React.FC<PressTabProps> = ({
 
     const calculatedRate =
       total_kertas * (ukuranCetakBagian1 + ukuranCetakBagian2);
+
     const rateTable = normalRateTable;
     const machineType = getMachineType(selectedMesin.nama_barang);
     const machineRates = rateTable[machineType as keyof typeof rateTable];
