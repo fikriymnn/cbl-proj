@@ -1,10 +1,14 @@
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import axios from 'axios';
 
 interface ExcelExportProps {
   filteredAbsen: any[];
   dateFrom: string;
   dateTo: string;
+  idDepartment?: string;
+  tipePenggajian?: string;
+  idDivisi?: string;
   calculateOvertimeHours: (absensiData: any[]) => any;
   calculateTimeMetrics: (absensiData: any[]) => any;
   convertTimeStampToDate: (date: string) => string;
@@ -14,6 +18,9 @@ const ExcelExportRekapAbsen = ({
   filteredAbsen,
   dateFrom,
   dateTo,
+  idDepartment,
+  tipePenggajian,
+  idDivisi,
   calculateOvertimeHours,
   calculateTimeMetrics,
   convertTimeStampToDate,
@@ -24,7 +31,7 @@ const ExcelExportRekapAbsen = ({
 
     absensiData?.forEach((record: any) => {
       if (record.tgl_absen) {
-        const monthKey = record.tgl_absen.substring(0, 7); // YYYY-MM format
+        const monthKey = record.tgl_absen.substring(0, 7);
         if (!grouped[monthKey]) {
           grouped[monthKey] = [];
         }
@@ -40,14 +47,12 @@ const ExcelExportRekapAbsen = ({
     const attendanceByMonth = groupAttendanceByMonth(absensiData);
     const violationsData: any[] = [];
 
-    // Sort months chronologically
     const sortedMonths = Object.keys(attendanceByMonth).sort();
 
     sortedMonths.forEach((monthKey) => {
       const monthRecords = attendanceByMonth[monthKey];
       let monthlyViolationCount = 0;
 
-      // Sort records by date within month
       monthRecords.sort(
         (a, b) =>
           new Date(a.tgl_absen).getTime() - new Date(b.tgl_absen).getTime(),
@@ -61,12 +66,9 @@ const ExcelExportRekapAbsen = ({
         if (menitTerlambat > 0) {
           monthlyViolationCount++;
 
-          // Determine violation type and fine
           if (menitTerlambat <= 0.5) {
-            // <= 30 minutes (0.5 hours)
             violationType = '> 5 menit - 30 menit';
 
-            // Calculate fine based on monthly violation count
             if (monthlyViolationCount === 1) {
               violationFine = 5000;
             } else if (monthlyViolationCount === 2) {
@@ -77,10 +79,8 @@ const ExcelExportRekapAbsen = ({
               violationFine = 30000;
             }
           } else {
-            // > 30 minutes
             violationType = '> 30 menit';
 
-            // Calculate fine based on monthly violation count
             if (monthlyViolationCount === 1) {
               violationFine = 35000;
             } else if (monthlyViolationCount === 2) {
@@ -113,14 +113,74 @@ const ExcelExportRekapAbsen = ({
     }, 0);
   };
 
-  const exportToExcel = () => {
+  // Fetch all data without pagination for export
+  const fetchAllDataForExport = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/absensiRekap`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          startDate: dateFrom,
+          endDate: dateTo,
+          idDepartment: idDepartment || undefined,
+          tipe_penggajian: tipePenggajian || undefined,
+          id_divisi: idDivisi || undefined,
+          is_active: true,
+          // No page and limit for export
+        },
+        withCredentials: true,
+      });
+      return res.data.data || [];
+    } catch (error: any) {
+      console.error('Error fetching data for export:', error);
+      alert('Gagal mengambil data untuk export');
+      return [];
+    }
+  };
+
+  const exportToExcel = async () => {
     if (!filteredAbsen || filteredAbsen.length === 0) {
+      alert('Tidak ada data untuk diexport');
+      return;
+    }
+
+    // Fetch all data for export
+    const allDataForExport = await fetchAllDataForExport();
+
+    if (allDataForExport.length === 0) {
       alert('Tidak ada data untuk diexport');
       return;
     }
 
     // Prepare workbook
     const wb = XLSX.utils.book_new();
+
+    // Prepare employee data with calculations
+    const employeeDataWithCalculations = allDataForExport.map(
+      (employee: any, empIndex: number) => {
+        const overtimeCalc = calculateOvertimeHours(employee.absensi);
+        const timeMetrics = calculateTimeMetrics(employee.absensi);
+        const violationsData = calculateMonthlyViolations(employee.absensi);
+        const totalFine = calculateTotalFine(violationsData);
+        const totalViolations = violationsData.filter(
+          (v) => v.violationFine > 0,
+        ).length;
+
+        return {
+          employee,
+          overtimeCalc,
+          timeMetrics,
+          violationsData,
+          totalFine,
+          totalViolations,
+          empIndex,
+        };
+      },
+    );
+
+    // Sort employees by total denda (highest to lowest)
+    const sortedEmployeeData = [...employeeDataWithCalculations].sort(
+      (a, b) => b.totalFine - a.totalFine,
+    );
 
     // Prepare summary data
     const summaryData: any[] = [];
@@ -139,35 +199,40 @@ const ExcelExportRekapAbsen = ({
       'Department',
       'Divisi',
       'Total Pelanggaran',
+      'Total Jam Terlambat',
       'Total Denda (Rp)',
     ]);
 
     let grandTotalFine = 0;
     let grandTotalViolations = 0;
+    let grandTotalJamTerlambat = 0;
 
     // Store employee worksheets temporarily
     const employeeSheets: Array<{ ws: XLSX.WorkSheet; name: string }> = [];
 
-    filteredAbsen.forEach((employee: any, empIndex: number) => {
-      const overtimeCalc = calculateOvertimeHours(employee.absensi);
-      const timeMetrics = calculateTimeMetrics(employee.absensi);
-      const violationsData = calculateMonthlyViolations(employee.absensi);
-      const totalFine = calculateTotalFine(violationsData);
-      const totalViolations = violationsData.filter(
-        (v) => v.violationFine > 0,
-      ).length;
+    sortedEmployeeData.forEach((empData, sortedIndex) => {
+      const {
+        employee,
+        overtimeCalc,
+        timeMetrics,
+        violationsData,
+        totalFine,
+        totalViolations,
+      } = empData;
 
       grandTotalFine += totalFine;
       grandTotalViolations += totalViolations;
+      grandTotalJamTerlambat += parseFloat(timeMetrics.totalTerlambat);
 
       // Add to summary
       summaryData.push([
-        empIndex + 1,
+        sortedIndex + 1,
         employee.nik,
         employee.nama_karyawan,
         employee.department,
         employee.divisi,
         totalViolations,
+        `${timeMetrics.totalTerlambat} Jam`,
         `Rp ${totalFine.toLocaleString('id-ID')}`,
       ]);
 
@@ -419,7 +484,11 @@ const ExcelExportRekapAbsen = ({
       // Add Total Denda section BELOW the detail table
       sheetData.push([]);
       sheetData.push(['TOTAL DENDA']);
-      sheetData.push(['Total Pelanggaran', totalViolations]);
+      sheetData.push(['Total Terlambat', totalViolations]);
+      sheetData.push([
+        'Total Jam Terlambat',
+        `${timeMetrics.totalTerlambat} Jam`,
+      ]);
       sheetData.push([
         'Total Denda',
         `Rp ${totalFine.toLocaleString('id-ID')}`,
@@ -430,24 +499,24 @@ const ExcelExportRekapAbsen = ({
 
       // Set column widths
       const colWidths = [
-        { wch: 5 }, // No
-        { wch: 15 }, // Tanggal
-        { wch: 10 }, // Hari
-        { wch: 12 }, // Jam Masuk
-        { wch: 12 }, // Jam Keluar
-        { wch: 10 }, // Shift
-        { wch: 15 }, // Status Absen
-        { wch: 12 }, // Jam Lembur
-        { wch: 15 }, // Jam Istirahat
-        { wch: 20 }, // Menit Terlambat
-        { wch: 20 }, // Menit Pulang Cepat
-        { wch: 15 }, // Status Lembur
-        { wch: 18 }, // Status SPL
-        { wch: 15 }, // Bulan
-        { wch: 20 }, // Jumlah Pelanggaran
-        { wch: 25 }, // Jenis Pelanggaran
-        { wch: 15 }, // Denda
-        { wch: 30 }, // Keterangan
+        { wch: 5 },
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 12 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 18 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 25 },
+        { wch: 15 },
+        { wch: 30 },
       ];
       ws['!cols'] = colWidths;
 
@@ -468,6 +537,7 @@ const ExcelExportRekapAbsen = ({
       '',
       'TOTAL KESELURUHAN',
       grandTotalViolations,
+      `${grandTotalJamTerlambat.toFixed(1)} Jam`,
       `Rp ${grandTotalFine.toLocaleString('id-ID')}`,
     ]);
 
@@ -476,20 +546,21 @@ const ExcelExportRekapAbsen = ({
 
     // Set column widths for summary
     const summaryColWidths = [
-      { wch: 5 }, // No
-      { wch: 15 }, // NIK
-      { wch: 25 }, // Nama Karyawan
-      { wch: 20 }, // Department
-      { wch: 20 }, // Divisi
-      { wch: 20 }, // Total Pelanggaran
-      { wch: 20 }, // Total Denda
+      { wch: 5 },
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
     ];
     summaryWs['!cols'] = summaryColWidths;
 
     // Add summary sheet FIRST
     XLSX.utils.book_append_sheet(wb, summaryWs, 'Ringkasan Denda');
 
-    // Then add all employee sheets
+    // Then add all employee sheets (already sorted by highest denda)
     employeeSheets.forEach((sheet) => {
       XLSX.utils.book_append_sheet(wb, sheet.ws, sheet.name);
     });
@@ -504,11 +575,10 @@ const ExcelExportRekapAbsen = ({
     )}_${convertTimeStampToDate(dateTo)}.xlsx`;
     saveAs(blob, fileName);
   };
-
   return (
     <button
       onClick={exportToExcel}
-      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2"
+      className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -528,5 +598,4 @@ const ExcelExportRekapAbsen = ({
     </button>
   );
 };
-
 export default ExcelExportRekapAbsen;

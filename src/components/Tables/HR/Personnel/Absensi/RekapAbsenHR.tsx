@@ -3,7 +3,7 @@ import axios from 'axios';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDate from '../../../../../utils/convertDate';
-import ExcelExportRekapAbsen from './ExcelExportRekapAbsen'; // Import the new component
+import ExcelExportRekapAbsen from './ExcelExportRekapAbsen';
 
 function RekapAbsenHR() {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,15 +13,17 @@ function RekapAbsenHR() {
   const [dateTo, setDateTo] = useState<any>(null);
   const [idDepartment, setidDepartment] = useState<any>();
   const [department, setDepartment] = useState<any>();
+  const [tipePenggajian, setTipePenggajian] = useState<any>('');
+  const [idDivisi, setIdDivisi] = useState<any>('');
+  const [divisi, setDivisi] = useState<any>();
 
   const filteredAbsen = absen?.filter((data: any) =>
     data.nama_karyawan.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // ... (keep all your existing functions: getDepartment, getabsen, calculateOvertimeHours, calculateTimeMetrics)
-
   useEffect(() => {
     getDepartment();
+    getDivisi();
   }, []);
 
   async function getDepartment() {
@@ -43,6 +45,22 @@ function RekapAbsenHR() {
     }
   }
 
+  async function getDivisi() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          is_active: true,
+        },
+        withCredentials: true,
+      });
+      setDivisi(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
   async function getabsen(dateFrom1: any, dateTo1: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/absensiRekap`;
     try {
@@ -51,7 +69,9 @@ function RekapAbsenHR() {
         params: {
           startDate: dateFrom1,
           endDate: dateTo1,
-          idDepartment: idDepartment,
+          idDepartment: idDepartment || undefined,
+          tipe_penggajian: tipePenggajian || undefined,
+          id_divisi: idDivisi || undefined,
           is_active: true,
           page: 1,
           limit: 10,
@@ -143,8 +163,6 @@ function RekapAbsenHR() {
     };
   };
 
-  // ... (keep all your existing modal and detail functions)
-
   const [showModal, setShowModal] = useState<boolean[]>([]);
   const openModalModal = (i: any) => {
     const onchangeVal: any = [...showModal];
@@ -176,26 +194,67 @@ function RekapAbsenHR() {
         {isLoading && <Loading />}
 
         {/* Filter Section */}
-        <div className="bg-white rounded-md shadow-md mb-5 border-2 border-stroke">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-primary mb-4">
-              Filter Rekap Absensi
-            </h3>
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg mb-6 border border-gray-200">
+          <div className="p-8">
+            {/* Header with Icon */}
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+              <div className="bg-primary/10 p-3 rounded-lg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-primary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-800">
+                  Filter Rekap Absensi
+                </h3>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  Pilih kriteria filter untuk menampilkan data absensi karyawan
+                </p>
+              </div>
+            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Date Range Section */}
-              <div className="lg:col-span-2">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-semibold text-primary mb-3">
-                    Periode Tanggal
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Filter Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+              {/* Date Range Section - Takes 3 columns */}
+              <div className="lg:col-span-3">
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-blue-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Periode Tanggal
+                    </h4>
+                  </div>
+                  <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-2">
                         Tanggal Mulai
                       </label>
                       <input
-                        className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all"
                         type="date"
                         value={dateFrom || ''}
                         onChange={(e) => {
@@ -205,11 +264,11 @@ function RekapAbsenHR() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-2">
                         Tanggal Selesai
                       </label>
                       <input
-                        className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all"
                         type="date"
                         value={dateTo || ''}
                         onChange={(e) => setDateTo(e.target.value)}
@@ -219,19 +278,43 @@ function RekapAbsenHR() {
                 </div>
               </div>
 
-              {/* Department Section */}
-              <div>
-                <div className="bg-gray-50 p-4 rounded-lg h-full">
-                  <h4 className="text-sm font-semibold text-primary mb-3">
-                    Department
-                  </h4>
+              {/* Department Section - Takes 2 columns */}
+              <div className="lg:col-span-2">
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-purple-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Department
+                    </h4>
+                  </div>
                   <select
                     name="nama_department"
+                    value={idDepartment || ''}
                     onChange={(e) => setidDepartment(e.target.value)}
-                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.5em 1.5em',
+                      paddingRight: '2.5rem',
+                    }}
                   >
                     <option value="" className="text-gray-500">
-                      Pilih Department
+                      Semua Department
                     </option>
                     {department?.data?.map((data: any, i: number) => (
                       <option key={i} value={data.id} className="text-gray-800">
@@ -242,48 +325,212 @@ function RekapAbsenHR() {
                 </div>
               </div>
 
-              {/* Search and Action Section */}
-              <div>
-                <div className="bg-gray-50 p-4 rounded-lg h-full">
-                  <h4 className="text-sm font-semibold text-primary mb-3">
-                    Pencarian
-                  </h4>
+              {/* Divisi Section - Takes 2 columns */}
+              <div className="lg:col-span-2">
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-indigo-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Divisi
+                    </h4>
+                  </div>
+                  <select
+                    name="id_divisi"
+                    value={idDivisi || ''}
+                    onChange={(e) => setIdDivisi(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.5em 1.5em',
+                      paddingRight: '2.5rem',
+                    }}
+                  >
+                    <option value="" className="text-gray-500">
+                      Semua Divisi
+                    </option>
+                    {divisi?.data?.map((data: any, i: number) => (
+                      <option key={i} value={data.id} className="text-gray-800">
+                        {data.nama_divisi}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Tipe Penggajian Section - Takes 2 columns */}
+              <div className="lg:col-span-2">
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-green-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Tipe Penggajian
+                    </h4>
+                  </div>
+                  <select
+                    name="tipe_penggajian"
+                    value={tipePenggajian || ''}
+                    onChange={(e) => setTipePenggajian(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.5em 1.5em',
+                      paddingRight: '2.5rem',
+                    }}
+                  >
+                    <option value="" className="text-gray-500">
+                      Semua Tipe
+                    </option>
+                    <option value="mingguan" className="text-gray-800">
+                      Mingguan
+                    </option>
+                    <option value="bulanan" className="text-gray-800">
+                      Bulanan
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Search and Action Section - Takes 3 columns */}
+              <div className="lg:col-span-3">
+                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
+                  <div className="flex items-center gap-2 mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-orange-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    <h4 className="text-sm font-semibold text-gray-700">
+                      Pencarian
+                    </h4>
+                  </div>
                   <div className="space-y-3">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Cari nama karyawan..."
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                      </div>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Cari nama karyawan..."
+                        className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all"
+                      />
+                    </div>
 
                     {dateFrom == null || dateTo == null ? (
                       <button
                         disabled
-                        className="w-full bg-gray-400 text-white px-4 py-2 rounded-lg text-sm cursor-not-allowed"
+                        className="w-full bg-gray-300 text-gray-500 px-4 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                        Pilih Tanggal Dulu
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                          />
+                        </svg>
+                        Pilih Tanggal Terlebih Dahulu
                       </button>
                     ) : (
                       <button
                         onClick={() => getabsen(dateFrom, dateTo)}
-                        className="w-full bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                       >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
                         Tampilkan Data
                       </button>
                     )}
-                    {/* Add Export Button Here */}
+
                     {filteredAbsen && filteredAbsen.length > 0 && (
-                      <div className="mt-4 flex justify-end">
-                        <ExcelExportRekapAbsen
-                          filteredAbsen={filteredAbsen}
-                          dateFrom={dateFrom}
-                          dateTo={dateTo}
-                          calculateOvertimeHours={calculateOvertimeHours}
-                          calculateTimeMetrics={calculateTimeMetrics}
-                          convertTimeStampToDate={convertTimeStampToDate}
-                        />
-                      </div>
+                      <ExcelExportRekapAbsen
+                        filteredAbsen={filteredAbsen}
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        idDepartment={idDepartment}
+                        tipePenggajian={tipePenggajian}
+                        idDivisi={idDivisi}
+                        calculateOvertimeHours={calculateOvertimeHours}
+                        calculateTimeMetrics={calculateTimeMetrics}
+                        convertTimeStampToDate={convertTimeStampToDate}
+                      />
                     )}
                   </div>
                 </div>
