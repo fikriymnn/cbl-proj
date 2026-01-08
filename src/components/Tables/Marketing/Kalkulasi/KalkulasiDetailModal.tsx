@@ -18,11 +18,21 @@ const KalkulasiDetailModal: React.FC<KalkulasiDetailModalProps> = ({
   };
 
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
+    const date = new Date(dateString);
+
+    const datePart = date.toLocaleDateString('id-ID', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    const timePart = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+      date.getSeconds(),
+    )}`;
+
+    return `${datePart}, ${timePart}`;
   };
 
   return (
@@ -724,18 +734,18 @@ const KalkulasiDetailModal: React.FC<KalkulasiDetailModalProps> = ({
             </p>
             {data.kalkulasi_action_user?.map((user: any) => (
               <p key={user.id}>
-                Submited: {user.user.nama}
+                {user.status}: {user.user.nama}
                 {', '}
-                {user.createdAt ? formatDate(user.createdAt) : 'Unknown'},
+                {user.createdAt ? formatDate(user.createdAt) : 'Unknown'}
               </p>
             ))}
 
             <p>
               Approved: {data.user_approve?.nama || 'Unknown'}
               {', '}
-              {data.user_approve?.createdAt
-                ? formatDate(data.user_approve?.createdAt)
-                : 'Unknown'}
+              {data.tgl_approve_kalkulasi
+                ? formatDate(data.tgl_approve_kalkulasi)
+                : '-'}
             </p>
           </div>
         </div>
