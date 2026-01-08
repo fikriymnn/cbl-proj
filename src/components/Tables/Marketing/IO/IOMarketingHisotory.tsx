@@ -100,6 +100,9 @@ const IOMarketingHistory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
 
+  // Add is_active filter state
+  const [isActiveFilter, setIsActiveFilter] = useState<string>('active');
+
   // Add sorting state
   const [sortKey, setSortKey] = useState<SortField>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -238,17 +241,35 @@ const IOMarketingHistory: React.FC = () => {
     setPage(1);
   };
 
+  // Handle is_active filter change
+  const handleIsActiveFilterChange = (value: string): void => {
+    setIsActiveFilter(value);
+    setPage(1);
+  };
+
   const fetchIOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
     try {
       setLoading(true);
+
+      // Prepare params object
+      const params: any = {
+        page: page,
+        limit: limit,
+        search: searchTerm,
+        status: 'history',
+      };
+
+      // Add is_active param based on filter selection
+      if (isActiveFilter === 'active') {
+        params.is_active = true;
+      } else if (isActiveFilter === 'inactive') {
+        params.is_active = false;
+      }
+      // If 'all', don't add is_active param
+
       const res: AxiosResponse = await axios.get(url, {
-        params: {
-          page: page,
-          limit: limit,
-          search: searchTerm,
-          status: 'history',
-        },
+        params: params,
         withCredentials: true,
       });
       console.log('Fetched IO data:', res.data);
@@ -358,7 +379,7 @@ const IOMarketingHistory: React.FC = () => {
 
   useEffect(() => {
     fetchIOData();
-  }, [page, limit, searchTerm]);
+  }, [page, limit, searchTerm, isActiveFilter]);
 
   const handleShowDetail = (ioId: number) => {
     setSelectedIOId(ioId);
@@ -367,7 +388,7 @@ const IOMarketingHistory: React.FC = () => {
 
   return (
     <div className="">
-      {/* Header with Search */}
+      {/* Header with Search and Filter */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <input
@@ -387,11 +408,25 @@ const IOMarketingHistory: React.FC = () => {
           {searchTerm && (
             <button
               onClick={handleClearSearch}
-              className="bg-gray-500 hover:bg-gray-600 text-red-500 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              className="bg-gray-500 hover:bg-gray-600 text-red-600 px-4 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Clear
             </button>
           )}
+
+          {/* Is Active Filter Dropdown */}
+          <div className="flex items-center gap-2 ml-4">
+            <label className="text-sm font-medium text-gray-700">Status:</label>
+            <select
+              value={isActiveFilter}
+              onChange={(e) => handleIsActiveFilterChange(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white"
+            >
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
         </div>
       </div>
 
