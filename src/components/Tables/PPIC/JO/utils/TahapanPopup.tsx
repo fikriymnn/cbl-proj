@@ -57,7 +57,7 @@ const TahapanPopup: React.FC<TahapanPopupProps> = ({
         </div>
 
         {/* Body - Table Format */}
-        <div className="">
+        <div className="overflow-y-auto max-h-96 p-6">
           {tahapanData.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               Tidak ada data tahapan untuk mounting ini

@@ -43,6 +43,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   // ADD THIS NEW STATE
   const [isManualInsheetEdit, setIsManualInsheetEdit] = useState(false);
 
+  // ✅ ADD THESE NEW STATES FOR EDIT MODE CONTROL
+  const [isInitialEditLoad, setIsInitialEditLoad] = useState(false);
+  const [originalQty, setOriginalQty] = useState<number>(0);
+  const [hasQtyBeenEdited, setHasQtyBeenEdited] = useState(false);
+
   const initialFormData: Partial<JOFormData> = {
     id_io: 0,
     id_so: 0,
@@ -59,8 +64,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     status_jo: '',
     stok_fg: 0,
     qty: 0,
-    qty_druk: 0, // NEW FIELD
-    qty_lp: 0, // NEW FIELD
+    qty_druk: 0,
+    qty_lp: 0,
     po_qty: 0,
     spesifikasi: '',
     keterangan_pengerjaan: '',
@@ -92,8 +97,14 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     jumlah_lp: 0,
   });
 
-  // Auto-calculate qty when stok_fg or po_qty changes
+  // ✅ MODIFIED: Auto-calculate qty when stok_fg or po_qty changes
   useEffect(() => {
+    // Skip entirely in edit mode during initial load or if qty hasn't been edited
+    if (editMode && (!hasQtyBeenEdited || isInitialEditLoad)) return;
+
+    // Skip in create mode during initial load
+    if (!editMode && isInitialEditLoad) return;
+
     const calculatedQty = Math.max(
       0,
       (formData.po_qty || 0) - (formData.stok_fg || 0),
@@ -106,15 +117,26 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   }, [formData.po_qty, formData.stok_fg]);
 
+  // ✅ MODIFIED: Auto-calculate insheet
   useEffect(() => {
-    // Only auto-calculate if NOT manually editing insheet
-    if (selectedMounting && formData.qty && !isManualInsheetEdit) {
+    // Skip entirely in edit mode during initial load or if qty hasn't been edited
+    if (editMode && (!hasQtyBeenEdited || isInitialEditLoad)) return;
+
+    // Skip in create mode during initial load
+    if (!editMode && isInitialEditLoad) return;
+
+    // Skip if manually editing insheet
+    if (isManualInsheetEdit) return;
+
+    // Only auto-calculate if we have the necessary data
+    if (selectedMounting && formData.qty) {
       const mounting = mountingData.find((m) => m.id === selectedMounting);
       if (mounting) {
         calculateInsheetFromQty(formData.qty, mounting);
       }
     }
   }, [formData.qty, selectedMounting]);
+
   useEffect(() => {
     if (isManualInsheetEdit) {
       const timer = setTimeout(() => {
@@ -123,6 +145,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       return () => clearTimeout(timer);
     }
   }, [isManualInsheetEdit]);
+
   useEffect(() => {
     if (formData.id_so || selectedMounting) {
       setHasUnsavedChanges(true);
@@ -255,6 +278,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       no_jo: joNumber,
     }));
   };
+
   const fetchJumlahJO = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/joJumlahData`;
     try {
@@ -292,6 +316,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       }));
     }
   };
+
   const fetchMountingData = async (idIO: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${idIO}`;
     try {
@@ -369,16 +394,43 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
+  // ✅ NEW FUNCTION: Fetch IO Mounting with Tahapan
+  const fetchIOMountingWithTahapan = async (
+    idIO: number,
+  ): Promise<MountingData[]> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${idIO}`;
+    try {
+      const res: AxiosResponse = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('IO Mounting with Tahapan response:', res.data);
+      if (res.data.data && res.data.data.io_mounting) {
+        return res.data.data.io_mounting || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error fetching IO mounting with tahapan:', error);
+      return [];
+    }
+  };
+
+  // ✅ MODIFIED: fetchJODetail
   const fetchJODetail = async (joId: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${joId}`;
     try {
       setLoading(true);
+      // ✅ SET FLAG TO PREVENT AUTO-CALCULATION
+      setIsInitialEditLoad(true);
+
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
 
       if (res.data.data) {
         const joDetail = res.data.data;
+
+        // ✅ STORE ORIGINAL QTY
+        setOriginalQty(joDetail.qty || 0);
 
         setFormData({
           id_io: joDetail.id_io,
@@ -410,55 +462,80 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           jo_mounting: joDetail.jo_mounting || [],
         });
 
-        // MODIFIED: In edit mode, use jo_mounting data directly instead of fetching io_mounting
-        if (joDetail.jo_mounting && joDetail.jo_mounting.length > 0) {
-          // Convert jo_mounting to mountingData format
-          const mountingsFromJO = joDetail.jo_mounting.map((jm: any) => ({
-            id: jm.id_io_mounting,
-            id_io: joDetail.id_io,
-            nama_mounting: jm.nama_mounting || '',
-            id_kertas: jm.id_kertas,
-            nama_kertas: jm.nama_kertas,
-            gramature_kertas: jm.gramature_kertas,
-            panjang_plano: jm.panjang_kertas,
-            lebar_plano: jm.lebar_kertas,
-            ukuran_cetak_panjang_1: jm.ukuran_cetak_panjang_1,
-            ukuran_cetak_lebar_1: jm.ukuran_cetak_lebar_1,
-            ukuran_cetak_bagian_1: jm.ukuran_cetak_bagian_1,
-            ukuran_cetak_isi_1: jm.ukuran_cetak_isi_1,
-            ukuran_cetak_panjang_2: jm.ukuran_cetak_panjang_2 || 0,
-            ukuran_cetak_lebar_2: jm.ukuran_cetak_lebar_2 || 0,
-            ukuran_cetak_bagian_2: jm.ukuran_cetak_bagian_2 || 0,
-            ukuran_cetak_isi_2: jm.ukuran_cetak_isi_2 || 0,
-            // Add other necessary fields from your MountingData type
-            warna_depan: 0, // You may need to store these in jo_mounting if needed
-            warna_belakang: 0,
-            nama_coating_depan: '',
-            nama_coating_belakang: '',
-          }));
-
-          setMountingData(mountingsFromJO);
-
-          // Find and set the selected mounting
-          const selectedJoMounting = joDetail.jo_mounting.find(
-            (jm: any) => jm.is_selected,
+        // ✅ FETCH IO_MOUNTING TO GET TAHAPAN DATA
+        if (joDetail.id_io) {
+          const ioMountingData = await fetchIOMountingWithTahapan(
+            joDetail.id_io,
           );
 
-          if (selectedJoMounting) {
-            setSelectedMounting(selectedJoMounting.id_io_mounting);
+          if (
+            ioMountingData.length > 0 &&
+            joDetail.jo_mounting &&
+            joDetail.jo_mounting.length > 0
+          ) {
+            // Merge tahapan from io_mounting into jo_mounting data
+            const mountingsWithTahapan = joDetail.jo_mounting.map((jm: any) => {
+              // Find corresponding io_mounting to get tahapan
+              const ioMounting = ioMountingData.find(
+                (io: any) => io.id === jm.id_io_mounting,
+              );
 
-            setInsheetValues({
-              jumlah_druk:
-                selectedJoMounting.jumlah_druk_cetak -
-                  selectedJoMounting.total_insheet || 0,
-              jumlah_insheet_cetak:
-                selectedJoMounting.jumlah_insheet_cetak || 0,
-              jumlah_insheet_pond: selectedJoMounting.jumlah_insheet_pond || 0,
-              jumlah_insheet_finishing:
-                selectedJoMounting.jumlah_insheet_finishing || 0,
-              total_insheet: selectedJoMounting.total_insheet || 0,
-              jumlah_lp: selectedJoMounting.jumlah_kertas || 0,
+              return {
+                id: jm.id_io_mounting,
+                id_io: joDetail.id_io,
+                nama_mounting: jm.nama_mounting || '',
+                id_kertas: jm.id_kertas,
+                nama_kertas: jm.nama_kertas,
+                gramature_kertas: jm.gramature_kertas,
+                panjang_plano: jm.panjang_kertas,
+                lebar_plano: jm.lebar_kertas,
+                ukuran_cetak_panjang_1: jm.ukuran_cetak_panjang_1,
+                ukuran_cetak_lebar_1: jm.ukuran_cetak_lebar_1,
+                ukuran_cetak_bagian_1: jm.ukuran_cetak_bagian_1,
+                ukuran_cetak_isi_1: jm.ukuran_cetak_isi_1,
+                ukuran_cetak_panjang_2: jm.ukuran_cetak_panjang_2 || 0,
+                ukuran_cetak_lebar_2: jm.ukuran_cetak_lebar_2 || 0,
+                ukuran_cetak_bagian_2: jm.ukuran_cetak_bagian_2 || 0,
+                ukuran_cetak_isi_2: jm.ukuran_cetak_isi_2 || 0,
+                warna_depan: ioMounting?.warna_depan || 0,
+                warna_belakang: ioMounting?.warna_belakang || 0,
+                nama_coating_depan: ioMounting?.nama_coating_depan || '',
+                nama_coating_belakang: ioMounting?.nama_coating_belakang || '',
+                jenis_kertas: ioMounting?.jenis_kertas || '',
+                jumlah_warna: ioMounting?.jumlah_warna || '',
+                format_data: ioMounting?.format_data || '',
+                nama_jenis_pons: ioMounting?.nama_jenis_pons || '',
+                nama_lem: ioMounting?.nama_lem || '',
+                // ✅ INCLUDE TAHAPAN FROM IO_MOUNTING
+                tahapan: ioMounting?.tahapan || [],
+              };
             });
+
+            setMountingData(mountingsWithTahapan);
+
+            // Find and set the selected mounting
+            const selectedJoMounting = joDetail.jo_mounting.find(
+              (jm: any) => jm.is_selected,
+            );
+
+            if (selectedJoMounting) {
+              setSelectedMounting(selectedJoMounting.id_io_mounting);
+
+              // ✅ USE DIRECT VALUES FROM API WITHOUT RECALCULATION
+              setInsheetValues({
+                jumlah_druk:
+                  selectedJoMounting.jumlah_druk_cetak -
+                    selectedJoMounting.total_insheet || 0,
+                jumlah_insheet_cetak:
+                  selectedJoMounting.jumlah_insheet_cetak || 0,
+                jumlah_insheet_pond:
+                  selectedJoMounting.jumlah_insheet_pond || 0,
+                jumlah_insheet_finishing:
+                  selectedJoMounting.jumlah_insheet_finishing || 0,
+                total_insheet: selectedJoMounting.total_insheet || 0,
+                jumlah_lp: selectedJoMounting.jumlah_kertas || 0,
+              });
+            }
           }
         }
 
@@ -466,10 +543,17 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         if (joDetail.id_customer) {
           await fetchCustomerData(joDetail.id_customer);
         }
+
+        // ✅ AFTER ALL DATA IS LOADED, RELEASE THE FLAG
+        // Use a small timeout to ensure all state updates are complete
+        setTimeout(() => {
+          setIsInitialEditLoad(false);
+        }, 100);
       }
     } catch (error) {
       console.error('Error fetching JO detail:', error);
       alert('Gagal mengambil data JO');
+      setIsInitialEditLoad(false);
     } finally {
       setLoading(false);
     }
@@ -491,6 +575,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       jumlah_lp: 0,
     });
     setHasUnsavedChanges(false);
+    // ✅ RESET NEW STATES
+    setIsInitialEditLoad(false);
+    setOriginalQty(0);
+    setHasQtyBeenEdited(false);
   };
 
   useEffect(() => {
@@ -590,7 +678,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         const spesifikasi = generateSpesifikasi(mounting);
         setFormData((prev) => ({ ...prev, spesifikasi }));
 
-        if (formData.qty) {
+        // ✅ Only recalculate if not in edit mode or if qty has been edited
+        if (!editMode && formData.qty) {
           calculateInsheetFromQty(formData.qty, mounting);
         }
       }
@@ -655,29 +744,38 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       total_insheet: totalValue,
       jumlah_lp: jumlahLP,
     });
+
+    // ✅ Mark that qty has been edited (when insheet changes, qty changes)
+    if (editMode) {
+      setHasQtyBeenEdited(true);
+    }
   };
 
+  // ✅ MODIFIED: handleQtyChange
   const handleQtyChange = (newQty: number) => {
-    setIsManualInsheetEdit(false); // Allow recalculation when qty changes
+    // ✅ Mark that qty has been edited if value changed from original
+    if (editMode && newQty !== originalQty) {
+      setHasQtyBeenEdited(true);
+    }
+    setFormData((prev) => ({ ...prev, qty: newQty }));
 
     if (!selectedMounting) {
-      setFormData((prev) => ({ ...prev, qty: newQty }));
       return;
     }
 
     const mounting = mountingData.find((m) => m.id === selectedMounting);
     if (mounting) {
-      setFormData((prev) => ({ ...prev, qty: newQty }));
-      calculateInsheetFromQty(newQty, mounting);
+      // Only recalculate if qty has been edited or not in edit mode
+      if (!editMode || hasQtyBeenEdited || newQty !== originalQty) {
+        calculateInsheetFromQty(newQty, mounting);
+      }
     }
   };
-
   const handleSubmit = async () => {
     if (!formData.id_so) {
       alert('Pilih SO terlebih dahulu');
       return;
     }
-
     if (!selectedMounting) {
       alert('Pilih mounting terlebih dahulu');
       return;
@@ -700,9 +798,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
       if (isSelected) {
         return {
-          id: originalJOMount?.id, // ✅ Use original jo_mounting.id if exists
+          id: originalJOMount?.id,
           id_jo: formData.id_jo,
-          id_io_mounting: mounting.id, // ✅ This is the correct id_io_mounting
+          id_io_mounting: mounting.id,
           id_kertas: mounting.id_kertas,
           nama_kertas: mounting.nama_kertas,
           nama_mounting: mounting.nama_mounting,
@@ -733,9 +831,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         };
       } else {
         return {
-          id: originalJOMount?.id, // ✅ Use original jo_mounting.id if exists
+          id: originalJOMount?.id,
           id_jo: formData.id_jo,
-          id_io_mounting: mounting.id, // ✅ This is the correct id_io_mounting
+          id_io_mounting: mounting.id,
           nama_mounting: mounting.nama_mounting,
           id_kertas: mounting.id_kertas,
           nama_kertas: mounting.nama_kertas,
@@ -799,7 +897,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         }
         console.log('Create JO submit data:', submitData);
       }
-      //console.log('Create JO submit data:', submitData);
     } catch (error: any) {
       console.error('Error saving JO:', error);
       const errorMessage = error.response?.data?.msg || 'Gagal menyimpan JO';
@@ -808,9 +905,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       setLoading(false);
     }
   };
-
   if (!isOpen) return null;
-
   const handleClose = () => {
     if (hasUnsavedChanges) {
       const confirmClose = window.confirm(
@@ -825,11 +920,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       onClose();
     }
   };
-
   const selectedMountingData = selectedMounting
     ? mountingData.find((m) => m.id === selectedMounting)
     : null;
-
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="flex items-center justify-center w-full h-full px-4 py-4">
@@ -837,7 +930,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
           onClick={handleClose}
         />
-
         {/* TWO COLUMN LAYOUT */}
         <div className="relative w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg flex flex-col">
           <div className="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-blue-600 to-blue-700 flex-shrink-0">
@@ -958,5 +1050,4 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     document.body,
   );
 };
-
 export default JOPPICCreateModal;

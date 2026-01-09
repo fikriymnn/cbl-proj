@@ -459,7 +459,7 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                   <span class="info-label">Tanggal SO</span>
                   <span class="info-colon">:</span>
                   <span class="info-value">${formatDate(
-                    printData.tgl_pembuatan_so,
+                    printData.createdAt,
                   )}</span>
                 </div>
                 <div class="info-item">

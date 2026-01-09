@@ -296,18 +296,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     }
 
     // Fallback to default if no tahapan data
-    return [
-      { name: 'Potong', mesin: 'ITTOH' },
-      { name: 'Plate', mesin: 'CTP' },
-      { name: 'CETAK', mesin: 'R700' },
-      { name: 'WATERBASE', mesin: 'HOCK' },
-      { name: 'POND', mesin: 'BAODER' },
-      { name: 'RABUT', mesin: 'MANUAL' },
-      { name: 'SORTIR', mesin: 'MANUAL' },
-      { name: 'LEM SAMPING', mesin: 'JK 650' },
-      { name: 'SAMPLING', mesin: 'MANUAL' },
-      { name: 'FINAL INSPECTION', mesin: 'MANUAL' },
-    ];
+    return [];
   };
   // Get the HTML content for printing
   const getPrintContent = () => {
