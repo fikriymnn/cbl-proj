@@ -443,11 +443,9 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
       } else {
         throw new Error('Failed to save data');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting kalkulasi:', error);
-      alert(
-        `Terjadi kesalahan: ${(error as any).message || 'Failed to save data'}`,
-      );
+      alert(`${error.response?.data?.msg}`);
     } finally {
       setIsSubmitting(false);
     }
