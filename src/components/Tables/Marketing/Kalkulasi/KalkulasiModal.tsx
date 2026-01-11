@@ -260,10 +260,17 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState<boolean>(false);
 
-  // Initialize form with edit data if in edit mode
   useEffect(() => {
     if (isEditMode && editData) {
       const convertedData = convertDetailToFormData(editData);
+      setFormData(convertedData);
+    } else if (editData && !isEditMode) {
+      // This is copy mode - editData exists but isEditMode is false
+      const convertedData = convertDetailToFormData(editData);
+      // Override fields for copy
+      convertedData.kode_kalkulasi = '';
+      convertedData.tgl_kalkulasi = new Date().toISOString().split('T')[0];
+      convertedData.status_kalkulasi = 'baru';
       setFormData(convertedData);
     } else {
       setFormData((prev) => ({
@@ -535,7 +542,11 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold items-center">
-                {isEditMode ? 'Edit Kalkulasi' : 'Tambah Kalkulasi Baru'}{' '}
+                {isEditMode
+                  ? 'Edit Kalkulasi'
+                  : editData
+                  ? 'Copy Kalkulasi'
+                  : 'Tambah Kalkulasi Baru'}{' '}
                 <span
                   className={`inline-block mt-2 px-3 py-1 rounded-full text-sm font-semibold ${
                     kalkulasiType === 'multi'

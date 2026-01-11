@@ -130,7 +130,15 @@ const HistoryKalkulasi: React.FC = () => {
     }
   };
 
-  const fetchKalkulasiDetailForCopy = async (id: number): Promise<void> => {
+  const fetchKalkulasiDetailForCopy = async (
+    id: number,
+    hasIo: boolean,
+  ): Promise<void> => {
+    if (!hasIo) {
+      alert('Tidak dapat menyalin kalkulasi karena IO kosong');
+      return;
+    }
+
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi/${id}`;
     try {
       setDetailLoading(true);
@@ -159,8 +167,8 @@ const HistoryKalkulasi: React.FC = () => {
     setSelectedDetailData(null);
   };
 
-  const handleCopyClick = (id: number): void => {
-    fetchKalkulasiDetailForCopy(id);
+  const handleCopyClick = (id: number, hasIo: boolean): void => {
+    fetchKalkulasiDetailForCopy(id, hasIo);
   };
 
   const handleCloseCopyOptionsModal = (): void => {
@@ -377,6 +385,15 @@ const HistoryKalkulasi: React.FC = () => {
                     {getSortIcon('kode_kalkulasi')}
                   </button>
                 </th>
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-28">
+                  <button
+                    onClick={() => handleSort('no_io')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    No IO
+                    {getSortIcon('no_io')}
+                  </button>
+                </th>
                 <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-20">
                   <button
                     onClick={() => handleSort('tipe_kalkulasi')}
@@ -479,11 +496,26 @@ const HistoryKalkulasi: React.FC = () => {
 
                         {item.status === 'history' && (
                           <button
-                            onClick={() => handleCopyClick(item.id)}
-                            disabled={detailLoading}
-                            className="bg-pink-500 hover:bg-pink-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50"
+                            onClick={() =>
+                              handleCopyClick(item.id, !!item.id_io)
+                            }
+                            disabled={detailLoading || !item.id_io}
+                            className={`px-2 py-0.5 rounded text-[9px] transition-colors ${
+                              item.id_io
+                                ? 'bg-pink-500 hover:bg-pink-600 text-white'
+                                : 'bg-gray-400 text-white cursor-not-allowed'
+                            } disabled:opacity-50`}
+                            title={
+                              item.id_io
+                                ? 'Copy Kalkulasi'
+                                : 'IO Kosong - Tidak bisa copy'
+                            }
                           >
-                            {detailLoading ? 'Loading...' : 'Copy'}
+                            {detailLoading
+                              ? 'Loading...'
+                              : item.id_io
+                              ? 'Copy'
+                              : 'IO Kosong'}
                           </button>
                         )}
                         <button
@@ -508,6 +540,17 @@ const HistoryKalkulasi: React.FC = () => {
                           {item.label || 'No Label'}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-2 py-1.5 text-left">
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded ${
+                          item.no_io
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {item.no_io || 'Kosong'}
+                      </span>
                     </td>
                     <td className="px-2 py-1.5 text-left">
                       <span
@@ -580,7 +623,7 @@ const HistoryKalkulasi: React.FC = () => {
               ) : (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={12}
                     className="px-6 py-4 text-center text-gray-500"
                   >
                     {searchTerm

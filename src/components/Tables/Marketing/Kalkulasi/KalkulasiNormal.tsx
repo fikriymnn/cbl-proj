@@ -11,6 +11,7 @@ import {
   KalkulasiDetailItem,
   ApiResponse,
   ApiError,
+  KalkulasiFormData,
 } from '../Kalkulasi/types/kalkulasi';
 
 type SortKey = keyof KalkulasiItem | 'index';
@@ -23,6 +24,8 @@ const KalkulasiNormal: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+  const [isCopyMode, setIsCopyMode] = useState<boolean>(false);
+  const [copySourceId, setCopySourceId] = useState<number | null>(null);
 
   const [selectedKalkulasiType, setSelectedKalkulasiType] = useState<
     'normal' | 'multi' | 'manual' | null
@@ -115,12 +118,64 @@ const KalkulasiNormal: React.FC = () => {
     setShowTypeModal(true);
   };
 
-  const handleSelectType = (type: 'normal' | 'multi' | 'manual'): void => {
+  const handleSelectType = async (
+    type: 'normal' | 'multi' | 'manual',
+  ): Promise<void> => {
     setSelectedKalkulasiType(type);
     setShowTypeModal(false);
-    setIsEditMode(false);
-    setEditData(null);
-    setShowModal(true);
+
+    // Check if this is copy mode
+    if (isCopyMode && copySourceId) {
+      try {
+        setDetailLoading(true);
+        const detail = await fetchKalkulasiDetail(copySourceId);
+
+        if (detail) {
+          // Convert detail to form data
+          const copiedData = convertDetailToFormData(detail);
+
+          // Reset fields that should be new for copy
+          copiedData.kode_kalkulasi = ''; // Will get new code from API
+          copiedData.tgl_kalkulasi = new Date().toISOString().split('T')[0]; // Today's date
+          copiedData.status_kalkulasi = 'baru';
+          copiedData.label = ''; // Reset label for multi type
+          copiedData.tipe_kalkulasi = type; // Use selected type
+
+          // If changing to/from multi type, adjust qty_list
+          if (type === 'multi' && detail.tipe_kalkulasi !== 'multi') {
+            // Converting to multi - create default qty_list
+            copiedData.qty_list = [
+              { qty: Number(copiedData.qty_kalkulasi), is_selected: true },
+            ];
+          } else if (type !== 'multi' && detail.tipe_kalkulasi === 'multi') {
+            // Converting from multi - use selected qty or first qty
+            const selectedQty = detail.qty_list?.find((q) => q.is_selected);
+            copiedData.qty_kalkulasi = selectedQty
+              ? selectedQty.qty.toString()
+              : copiedData.qty_kalkulasi;
+            copiedData.qty_list = [
+              { qty: Number(copiedData.qty_kalkulasi), is_selected: true },
+            ];
+          }
+
+          setEditData(copiedData as any);
+          setIsEditMode(false); // Important: set to false so it creates new
+          setShowModal(true);
+        }
+      } catch (error) {
+        console.error('Error copying kalkulasi:', error);
+        alert('Gagal menyalin kalkulasi. Silakan coba lagi.');
+      } finally {
+        setDetailLoading(false);
+        setIsCopyMode(false);
+        setCopySourceId(null);
+      }
+    } else {
+      // Normal create mode
+      setIsEditMode(false);
+      setEditData(null);
+      setShowModal(true);
+    }
   };
 
   const handleCloseModal = (): void => {
@@ -128,14 +183,19 @@ const KalkulasiNormal: React.FC = () => {
     setSelectedKalkulasiType(null);
     setIsEditMode(false);
     setEditData(null);
+    setIsCopyMode(false);
+    setCopySourceId(null);
   };
 
+  // Update handleModalSuccess to reset copy mode
   const handleModalSuccess = (): void => {
     fetchKalkulasiData();
     setShowModal(false);
     setSelectedKalkulasiType(null);
     setIsEditMode(false);
     setEditData(null);
+    setIsCopyMode(false);
+    setCopySourceId(null);
   };
 
   const handleCloseDetailModal = (): void => {
@@ -197,7 +257,141 @@ const KalkulasiNormal: React.FC = () => {
       setDetailLoading(false);
     }
   };
+  const handleCopy = (id: number): void => {
+    setCopySourceId(id);
+    setShowTypeModal(true);
+    setIsCopyMode(true);
+  };
 
+  const safeToString = (value: any, defaultValue: string = '0'): string => {
+    if (value === null || value === undefined || value === '')
+      return defaultValue;
+    return String(value);
+  };
+  const convertDetailToFormData = (
+    detail: KalkulasiDetailItem,
+  ): KalkulasiFormData => {
+    // Use the same conversion logic from KalkulasiModal
+    return {
+      kode_kalkulasi: detail.kode_kalkulasi || '',
+      tgl_kalkulasi: detail.tgl_kalkulasi.split('T')[0],
+      status_kalkulasi: detail.status_kalkulasi,
+      id_customer: detail.id_customer,
+      id_marketing: detail.id_marketing,
+      id_produk: detail.id_produk,
+      id_area_pengiriman: detail.id_area_pengiriman,
+      qty_kalkulasi: safeToString(detail.qty_kalkulasi),
+      presentase_insheet: safeToString(detail.presentase_insheet),
+      spesifikasi: detail.spesifikasi,
+      ukuran_jadi_panjang: safeToString(detail.ukuran_jadi_panjang),
+      ukuran_jadi_lebar: safeToString(detail.ukuran_jadi_lebar),
+      ukuran_jadi_tinggi: safeToString(detail.ukuran_jadi_tinggi),
+      ukuran_jadi_terb_panjang: safeToString(detail.ukuran_jadi_terb_panjang),
+      ukuran_jadi_terb_lebar: safeToString(detail.ukuran_jadi_terb_lebar),
+      ukuran_cetak_panjang_1: safeToString(detail.ukuran_cetak_panjang_1),
+      ukuran_cetak_lebar_1: safeToString(detail.ukuran_cetak_lebar_1),
+      ukuran_cetak_bagian_1: safeToString(detail.ukuran_cetak_bagian_1),
+      ukuran_cetak_isi_1: safeToString(detail.ukuran_cetak_isi_1),
+      ukuran_cetak_bbs_1: detail.ukuran_cetak_bbs_1,
+      ukuran_cetak_panjang_2: safeToString(detail.ukuran_cetak_panjang_2),
+      ukuran_cetak_lebar_2: safeToString(detail.ukuran_cetak_lebar_2),
+      ukuran_cetak_bagian_2: safeToString(detail.ukuran_cetak_bagian_2),
+      ukuran_cetak_isi_2: safeToString(detail.ukuran_cetak_isi_2),
+      ukuran_cetak_bbs_2: detail.ukuran_cetak_bbs_2 || 'no',
+      warna_depan: safeToString(detail.warna_depan),
+      warna_belakang: safeToString(detail.warna_belakang),
+      jumlah_warna: safeToString(detail.jumlah_warna),
+      nama_customer: detail.nama_customer,
+      nama_marketing: detail.nama_marketing,
+      nama_area_pengiriman: detail.nama_area_pengiriman,
+      nama_produk: detail.nama_produk,
+      print_insheet: safeToString(detail.print_insheet),
+      pons_insheet: safeToString(detail.pons_insheet),
+      finishing_insheet: safeToString(detail.finishing_insheet),
+      id_kertas: detail.id_kertas,
+      jenis_kertas: detail.jenis_kertas,
+      gramature: detail.gramature_kertas,
+      panjangMm: detail.panjang_kertas,
+      lebarMm: detail.lebar_kertas,
+      percentage: detail.persentase_kertas,
+      apki: detail.persentase_apki_kertas,
+      total_kertas: detail.total_kertas,
+      total_harga_kertas: detail.total_harga_kertas,
+      id_jenis_mesin_cetak: detail.id_jenis_mesin_cetak,
+      jumlah_harga_cetak: detail.jumlah_harga_cetak,
+      harga_plate: safeToString(detail.harga_plate),
+      id_coating_depan: detail.id_coating_depan,
+      id_coating_belakang: detail.id_coating_belakang,
+      id_mesin_coating_depan: detail.id_mesin_coating_depan,
+      id_mesin_coating_belakang: detail.id_mesin_coating_belakang,
+      jumlah_harga_coating_depan: detail.jumlah_harga_coating_depan,
+      jumlah_harga_coating_belakang: detail.jumlah_harga_coating_belakang,
+      total_harga_coating: detail.total_harga_coating,
+      id_jenis_pons: safeToString(detail.id_jenis_pons, ''),
+      id_mesin_pons: safeToString(detail.id_mesin_pons, ''),
+      harga_pisau: safeToString(detail.harga_pisau),
+      ongkos_pons: detail.ongkos_pons,
+      ongkos_pons_qty: safeToString(detail.ongkos_pons_qty),
+      harga_satuan_ongkos_pons: safeToString(detail.harga_satuan_ongkos_pons),
+      total_harga_ongkos_pons: safeToString(detail.total_harga_ongkos_pons),
+      lipat: detail.lipat,
+      id_mesin_lipat: safeToString(detail.id_mesin_lipat, ''),
+      qty_lipat: safeToString(detail.qty_lipat),
+      harga_lipat: safeToString(detail.harga_lipat),
+      potong_jadi: detail.potong_jadi,
+      id_mesin_potong: safeToString(detail.id_mesin_potong, ''),
+      qty_potong: safeToString(detail.qty_potong),
+      harga_potong_jadi: safeToString(detail.harga_potong_jadi),
+      id_lem: safeToString(detail.id_lem, ''),
+      jumlah_harga_lem: safeToString(detail.jumlah_harga_lem),
+      id_mesin_finishing: safeToString(detail.id_mesin_finishing, ''),
+      foil: detail.foil || null,
+      spot_foil: detail.spot_foil || null,
+      harga_foil_manual: safeToString(detail.harga_foil_manual),
+      harga_spot_foil_manual: safeToString(detail.harga_spot_foil_manual),
+      harga_polimer_manual: safeToString(detail.harga_polimer_manual),
+      jenis_packing: detail.jenis_packing || '',
+      id_packing: safeToString(detail.id_packing, ''),
+      qty_packing: safeToString(detail.qty_packing),
+      harga_packing: safeToString(detail.harga_packing),
+      harga_pengiriman_awal: safeToString(detail.harga_area_pengiriman),
+      panjang_packaging: safeToString(detail.panjang_packaging, ''),
+      lebar_packaging: safeToString(detail.lebar_packaging, ''),
+      no_packaging: detail.no_packaging || '0.00',
+      jumlah_kirim: safeToString(detail.jumlah_kirim),
+      harga_packaging: safeToString(detail.harga_packaging),
+      harga_pengiriman: safeToString(detail.harga_pengiriman),
+      harga_produksi: safeToString(detail.harga_produksi),
+      profit: safeToString(detail.profit),
+      profit_harga: safeToString(detail.profit_harga),
+      jumlah_harga_jual: safeToString(detail.jumlah_harga_jual),
+      ppn: safeToString(detail.ppn),
+      harga_ppn: safeToString(detail.harga_ppn),
+      diskon: safeToString(detail.diskon),
+      harga_diskon: safeToString(detail.harga_diskon),
+      total_harga: safeToString(detail.total_harga),
+      harga_satuan: safeToString(detail.harga_satuan),
+      total_harga_satuan_customer: safeToString(
+        detail.total_harga_satuan_customer,
+      ),
+      keterangan_harga: detail.keterangan_harga || '',
+      keterangan_kerja: detail.keterangan_kerja || '',
+      lain_lain:
+        detail.lain_lain?.map((item) => ({
+          nama_item: item.nama_item,
+          harga: item.harga,
+        })) || [],
+      total_harga_lain_lain: safeToString(
+        detail.lain_lain?.reduce((sum, item) => sum + item.harga, 0),
+      ),
+      tipe_kalkulasi:
+        (detail.tipe_kalkulasi as 'normal' | 'multi' | 'manual') || 'normal',
+      label: detail.label || '',
+      qty_list: detail.qty_list || [
+        { qty: detail.qty_kalkulasi, is_selected: true },
+      ],
+    };
+  };
   const handlePrint = (id: number): void => {
     setPrintKalkulasiId(id);
     setShowPrintModal(true);
@@ -481,7 +675,15 @@ const KalkulasiNormal: React.FC = () => {
                         >
                           {detailLoading ? 'Loading...' : 'Detail'}
                         </button>
-
+                        {/* Copy Button - Available for all statuses */}
+                        <button
+                          onClick={() => handleCopy(item.id)}
+                          disabled={detailLoading}
+                          className="bg-teal-500 hover:bg-teal-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50 transition-colors"
+                          title="Copy"
+                        >
+                          Copy
+                        </button>
                         {item.status === 'draft' && (
                           <>
                             {/* Edit Button */}
@@ -661,7 +863,11 @@ const KalkulasiNormal: React.FC = () => {
       {/* Type Selection Modal */}
       {showTypeModal && (
         <KalkulasiTypeModal
-          onClose={() => setShowTypeModal(false)}
+          onClose={() => {
+            setShowTypeModal(false);
+            setIsCopyMode(false);
+            setCopySourceId(null);
+          }}
           onSelectType={handleSelectType}
         />
       )}

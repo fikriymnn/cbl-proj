@@ -7,6 +7,8 @@ export interface QtyListItem {
 
 // Base interfaces from HistoryKalkulasi
 export interface KalkulasiItem {
+  id_io: any;
+  no_io: any;
   note_kabag?: string | null;
   status_proses: string;
   id: number;
@@ -62,6 +64,12 @@ export interface LainLainItem {
 }
 
 export interface KalkulasiDetailItem extends KalkulasiItem {
+  tgl_approve_kalkulasi: any;
+  tgl_approve: any;
+  user_approve: any;
+  tgl_submit: any;
+  user_submit: any;
+  user_create: any;
   lain_lain: LainLainItem[];
   kalkulasi_action_user: any[];
   brand_kertas: string;

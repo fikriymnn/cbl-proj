@@ -45,6 +45,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
         import.meta.env.VITE_API_LINK
       }/marketing/kalkulasi/${kalkulasiId}`;
       const res = await axios.get(url, { withCredentials: true });
+      console.log('Fetch Kalkulasi Data Detail:', res.data);
       if (res.data && res.data.data) {
         setData(res.data.data);
       }
@@ -79,7 +80,22 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
     }
     return typeof value === 'string' ? parseFloat(value) : value;
   };
+  const getActionUser = (status: string) => {
+    return data?.kalkulasi_action_user?.find(
+      (action: any) => action.status === status,
+    );
+  };
 
+  const formatActionLog = (label: string, status: string) => {
+    const action = getActionUser(status);
+    if (!action) return '';
+
+    return `
+    | <span style="font-weight: bold">${label}:</span> 
+    ${action.user?.nama || '-'},
+    ${action.tgl ? new Date(action.tgl).toLocaleString('id-ID') : '-'}
+  `;
+  };
   const getPrintContent = () => {
     if (!data) return '';
 
@@ -868,24 +884,30 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
               </tr>
               <tr>
                 <td colspan="3" class="border" style="font-size: 8px; padding: 1px 4px">
-                  <span style="font-weight: bold">Submitted:</span> 
+                  <span style="font-weight: bold">Created:</span> 
+                  ${data.user_create?.nama || '-'},
                   ${
                     data.createdAt
                       ? new Date(data.createdAt).toLocaleString('id-ID')
-                      : '-'
-                  } |
-                  <span style="font-weight: bold"> Created:</span> 
-                  ${
-                    data.createdAt
-                      ? new Date(data.createdAt).toLocaleString('id-ID')
-                      : '-'
-                  } |
-                  <span style="font-weight: bold"> Updated:</span> 
-                  ${
-                    data.updatedAt
-                      ? new Date(data.updatedAt).toLocaleString('id-ID')
                       : '-'
                   }
+                  ${
+                    data.status_kalkulasi !== 'draft'
+                      ? `
+                  ${formatActionLog('Submitted', 'submited')}
+                  | <span style="font-weight: bold">Approved:</span> 
+                  ${data.user_approve?.nama || '-'},
+                  ${
+                    data.tgl_approve_kalkulasi
+                      ? new Date(data.tgl_approve_kalkulasi).toLocaleString(
+                          'id-ID',
+                        )
+                      : '-'
+                  }
+                  `
+                      : ''
+                  }
+                  ${formatActionLog('Updated', 'updated')}
                 </td>
               </tr>
             </tbody>
