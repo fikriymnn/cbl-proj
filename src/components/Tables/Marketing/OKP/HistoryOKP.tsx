@@ -338,10 +338,10 @@ const HistoryOKP: React.FC = () => {
       {/* Data Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-xs">
+          <table className="min-w-full text-xs table-fixed">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                   <button className="flex items-center hover:text-gray-700 focus:outline-none">
                     NO
                   </button>
@@ -349,7 +349,7 @@ const HistoryOKP: React.FC = () => {
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   ACT
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   <button
                     onClick={() => handleSort('no_okp')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -358,7 +358,7 @@ const HistoryOKP: React.FC = () => {
                     {getSortIcon('no_okp')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   <button
                     onClick={() => handleSort('customer')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -367,7 +367,7 @@ const HistoryOKP: React.FC = () => {
                     {getSortIcon('customer')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
                   <button
                     onClick={() => handleSort('produk')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -376,7 +376,7 @@ const HistoryOKP: React.FC = () => {
                     {getSortIcon('produk')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   <button
                     onClick={() => handleSort('label')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -385,7 +385,7 @@ const HistoryOKP: React.FC = () => {
                     {getSortIcon('label')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   <button
                     onClick={() => handleSort('status_okp')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -394,7 +394,7 @@ const HistoryOKP: React.FC = () => {
                     {getSortIcon('status_okp')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   <button
                     onClick={() => handleSort('tgl_target_marketing')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -403,7 +403,7 @@ const HistoryOKP: React.FC = () => {
                     {getSortIcon('tgl_target_marketing')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                   <button
                     onClick={() => handleSort('jenis_pekerjaan')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -412,7 +412,7 @@ const HistoryOKP: React.FC = () => {
                     {getSortIcon('jenis_pekerjaan')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                   <button
                     onClick={() => handleSort('posisi_proses')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -421,7 +421,7 @@ const HistoryOKP: React.FC = () => {
                     {getSortIcon('posisi_proses')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   <button
                     onClick={() => handleSort('status_po')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -450,67 +450,69 @@ const HistoryOKP: React.FC = () => {
                     key={item.id || item.id_kalkulasi}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                    <td className="px-2 py-2 text-xs text-gray-900">
                       {(page - 1) * limit + index + 1}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium flex flex-col gap-2">
-                      <button
-                        onClick={() =>
-                          handleDetailOKP(item.id || item.id_kalkulasi)
-                        }
-                        className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                        title="View Details"
-                      >
-                        Detail
-                      </button>
-                      <button
-                        onClick={() =>
-                          handlePrintOKP(item.id || item.id_kalkulasi)
-                        }
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                        title="Print OKP"
-                      >
-                        Print
-                      </button>
+                    <td className="px-2 py-2 text-xs font-medium">
+                      <div className="flex flex-col gap-1">
+                        <button
+                          onClick={() =>
+                            handleDetailOKP(item.id || item.id_kalkulasi)
+                          }
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors w-full"
+                          title="View Details"
+                        >
+                          Detail
+                        </button>
+                        <button
+                          onClick={() =>
+                            handlePrintOKP(item.id || item.id_kalkulasi)
+                          }
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors w-full"
+                          title="Print OKP"
+                        >
+                          Print
+                        </button>
+                      </div>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
+                    <td className="px-2 py-2">
                       <span
-                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium break-words"
                         title={item.no_okp}
                       >
-                        {item.no_okp ? truncateText(item.no_okp, 20) : '-'}
+                        {item.no_okp || '-'}
                       </span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
+                    <td className="px-2 py-2">
                       <span
-                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium break-words"
                         title={item.customer}
                       >
-                        {item.customer ? truncateText(item.customer, 20) : '-'}
+                        {item.customer || '-'}
                       </span>
                     </td>
-                    <td className=" whitespace-nowrap">
+                    <td className="px-2 py-2">
                       <span
-                        className="px-2 py-2 whitespace-nowrap text-xs text-gray-900"
+                        className="text-xs text-gray-900 break-words"
                         title={item.produk}
                       >
-                        {item.produk ? truncateText(item.produk, 20) : '-'}
+                        {item.produk || '-'}
                       </span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                    <td className="px-2 py-2 text-xs text-gray-900">
                       <span
                         className={`${
                           item.label == 'CARTONING'
                             ? 'bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium'
                             : 'bg-blue-100 text-yellow-800 px-1.5 py-0.5 rounded font-medium'
-                        }`}
+                        } break-words`}
                       >
                         {item.label || '-'}
                       </span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
+                    <td className="px-2 py-2">
                       <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium break-words ${
                           item.status_okp === 'Baru'
                             ? 'bg-blue-100 text-blue-800'
                             : item.status_okp === 'Approved'
@@ -521,15 +523,18 @@ const HistoryOKP: React.FC = () => {
                         }`}
                         title={item.status_okp}
                       >
-                        {item.status_okp}
+                        {item.status_okp || '-'}
                       </span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      <span title={item.tgl_target_marketing}>
+                    <td className="px-2 py-2 text-xs text-gray-900">
+                      <span
+                        title={item.tgl_target_marketing}
+                        className="break-words"
+                      >
                         {formatDate(item.tgl_target_marketing)}
                       </span>
                     </td>
-                    <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
+                    <td className="px-2 py-2 text-xs text-gray-900">
                       {Array.isArray(item.jenis_pekerjaan) &&
                       item.jenis_pekerjaan.length > 0 ? (
                         <div className="flex flex-wrap gap-0.5">
@@ -538,10 +543,10 @@ const HistoryOKP: React.FC = () => {
                             .map((jp, jpIndex) => (
                               <span
                                 key={jpIndex}
-                                className="bg-indigo-100 text-indigo-800 text-xs px-1 py-0.5 rounded font-medium"
+                                className="bg-indigo-100 text-indigo-800 text-xs px-1 py-0.5 rounded font-medium break-words"
                                 title={jp}
                               >
-                                {truncateText(jp, 8)}
+                                {jp}
                               </span>
                             ))}
                           {item.jenis_pekerjaan.length > 2 && (
@@ -557,20 +562,19 @@ const HistoryOKP: React.FC = () => {
                         '-'
                       )}
                     </td>
-
-                    <td className="px-2 py-2 whitespace-nowrap">
+                    <td className="px-2 py-2">
                       <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${getPosisiProsesColor(
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase break-words ${getPosisiProsesColor(
                           item.posisi_proses,
                         )}`}
                         title={item.posisi_proses}
                       >
-                        {truncateText(item.posisi_proses, 8)}
+                        {item.posisi_proses || '-'}
                       </span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
+                    <td className="px-2 py-2">
                       <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${
+                        className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase break-words ${
                           item.status_po === 'tidak'
                             ? 'bg-red-100 text-red-800'
                             : item.status_po === 'ada'
@@ -579,7 +583,7 @@ const HistoryOKP: React.FC = () => {
                         }`}
                         title={item.status_po}
                       >
-                        {truncateText(item.status_po, 6)}
+                        {item.status_po || '-'}
                       </span>
                     </td>
                   </tr>
