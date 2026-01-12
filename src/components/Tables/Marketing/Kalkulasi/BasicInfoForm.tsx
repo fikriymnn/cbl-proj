@@ -322,7 +322,14 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
       });
     }
   };
-
+  const handleHargaSatuanCustomerChange = (index: number, value: number) => {
+    if (onQtyListChange && !isQtyListDisabled()) {
+      const newList = (formData.qty_list || []).map((item, i) =>
+        i === index ? { ...item, harga_satuan_customer: value } : item,
+      );
+      onQtyListChange(newList);
+    }
+  };
   const handleMarketingChange = (value: any) => {
     if (isFieldDisabled()) return;
 
@@ -465,7 +472,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         </svg>
         Informasi Dasar
       </h2>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Nomor Kalkulasi - Always disabled */}
         <div className="space-y-2">
@@ -538,7 +544,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           />
         </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-700">
@@ -580,7 +585,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             onChange={handleProductChange}
             placeholder="Pilih Produk"
             required
-            disabled={isFieldDisabled('id_produk')}
           />
         </div>
 
@@ -643,7 +647,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
           </div>
         )}
       </div>
-
       {/* Label - NOW EDITABLE in both repeat modes */}
       {formData.tipe_kalkulasi === 'multi' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
@@ -692,12 +695,12 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
         </div>
       )}
 
-      {/* Qty List for Multi Type - NOW EDITABLE in both repeat modes */}
       {formData.tipe_kalkulasi === 'multi' && (
         <div className="mt-6 border-t pt-6">
           <div className="flex justify-between items-center mb-4">
             <label className="block text-xs font-semibold text-gray-800">
-              Daftar Quantity <span className="text-red-500">*</span>
+              Daftar Quantity & Harga Customer{' '}
+              <span className="text-red-500">*</span>
             </label>
             <button
               type="button"
@@ -709,67 +712,119 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* Responsive Grid: 1 column on mobile, 2 on tablet, 3 on desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(formData.qty_list || []).map((item, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-2 p-3 border-2 rounded-lg transition-all ${
+                className={`relative p-4 border-2 rounded-lg transition-all ${
                   item.is_selected
                     ? 'border-green-500 bg-green-50'
                     : 'border-gray-300 bg-white'
                 }`}
               >
-                <input
-                  type="radio"
-                  name="selected_qty"
-                  checked={item.is_selected}
-                  onChange={() => handleSelectQty(index)}
-                  disabled={isQtyListDisabled()}
-                  className="w-4 h-4 text-green-600 cursor-pointer"
-                />
-                <input
-                  type="number"
-                  value={item.qty}
-                  onChange={(e) =>
-                    handleQtyChange(index, Number(e.target.value))
-                  }
-                  disabled={isQtyListDisabled()}
-                  className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
-                  placeholder="Qty"
-                  min="0"
-                  required
-                />
+                {/* Radio Button - Top Right Corner */}
+                <div className="absolute top-3 right-3">
+                  <input
+                    type="radio"
+                    name="selected_qty"
+                    checked={item.is_selected}
+                    onChange={() => handleSelectQty(index)}
+                    disabled={isQtyListDisabled()}
+                    className="w-5 h-5 text-green-600 cursor-pointer"
+                    title="Pilih quantity ini"
+                  />
+                </div>
+
+                {/* Delete Button - Top Left Corner (if more than 1 item) */}
                 {(formData.qty_list || []).length > 1 &&
                   !isQtyListDisabled() && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveQty(index)}
-                      className="text-red-500 hover:text-red-700 transition-colors"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div className="absolute top-3 left-3">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveQty(index)}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                        title="Hapus"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
-                      </svg>
-                    </button>
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   )}
+
+                {/* Content with top margin to avoid overlap with buttons */}
+                <div className="space-y-3 mt-6">
+                  {/* Qty Input */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Quantity <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={item.qty}
+                      onChange={(e) =>
+                        handleQtyChange(index, Number(e.target.value))
+                      }
+                      disabled={isQtyListDisabled()}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      placeholder="Masukkan quantity"
+                      min="0"
+                      required
+                    />
+                  </div>
+
+                  {/* Harga Satuan Customer Input - Below Qty */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Harga Satuan Customer{' '}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-600">
+                        Rp
+                      </span>
+                      <input
+                        type="number"
+                        value={item.harga_satuan_customer || 0}
+                        onChange={(e) =>
+                          handleHargaSatuanCustomerChange(
+                            index,
+                            Number(e.target.value),
+                          )
+                        }
+                        disabled={isQtyListDisabled()}
+                        className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        placeholder="0"
+                        min="0"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Per pcs</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-500 mt-2">
-            * Pilih salah satu quantity untuk kalkulasi
+
+          <p className="text-xs text-gray-500 mt-3">
+            <span className="font-semibold">Petunjuk:</span> Klik radio button
+            di pojok kanan atas untuk memilih quantity yang akan digunakan dalam
+            kalkulasi
           </p>
         </div>
       )}
-
       {/* Non-multi label section - NOW EDITABLE in both repeat modes */}
       {formData.tipe_kalkulasi !== 'multi' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">

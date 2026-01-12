@@ -447,6 +447,11 @@ export const menuCategories: MenuCategory[] = [
         icon: 'schedule',
       },
       {
+        name: 'Approval Perubahan Tanggal Kirim',
+        path: '/ppic/perubahan-tanggal-kirim',
+        icon: 'schedule',
+      },
+      {
         name: 'Delivery Schedule',
         path: '/ppic/delivery-schedule',
         icon: 'schedule',

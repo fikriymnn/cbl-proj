@@ -3,6 +3,7 @@ export interface QtyListItem {
   id?: number;
   qty: number;
   is_selected: boolean;
+  harga_satuan_customer?: number;
 }
 
 // Base interfaces from HistoryKalkulasi

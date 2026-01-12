@@ -302,10 +302,9 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
           </div>
         </div>
 
-        {/* Manual Customer Price Input */}
         <div
           className={`rounded-lg p-3 border ${
-            isReadOnly
+            isReadOnly || formData.tipe_kalkulasi === 'multi'
               ? 'bg-gray-100 border-gray-300'
               : 'bg-gradient-to-r from-yellow-100 to-yellow-200 border-yellow-300'
           }`}
@@ -313,15 +312,24 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
           <div className="space-y-2">
             <label
               className={`block text-xs font-medium ${
-                isReadOnly ? 'text-gray-600' : 'text-yellow-800'
+                isReadOnly || formData.tipe_kalkulasi === 'multi'
+                  ? 'text-gray-600'
+                  : 'text-yellow-800'
               }`}
             >
               Harga untuk Customer (per pcs)
+              {formData.tipe_kalkulasi === 'multi' && (
+                <span className="ml-2 text-xs text-blue-600">
+                  (Auto dari Multi Qty)
+                </span>
+              )}
             </label>
             <div className="flex items-center space-x-2">
               <span
                 className={`text-sm font-medium ${
-                  isReadOnly ? 'text-gray-600' : 'text-yellow-800'
+                  isReadOnly || formData.tipe_kalkulasi === 'multi'
+                    ? 'text-gray-600'
+                    : 'text-yellow-800'
                 }`}
               >
                 Rp
@@ -331,11 +339,11 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
                 name="total_harga_satuan_customer"
                 value={formData.total_harga_satuan_customer || ''}
                 onChange={onInputChange}
-                readOnly={isReadOnly}
+                readOnly={isReadOnly || formData.tipe_kalkulasi === 'multi'}
                 className={getInputClassName(
                   `flex-1 px-2 py-1 text-sm border ${
-                    isReadOnly
-                      ? 'border-gray-300'
+                    isReadOnly || formData.tipe_kalkulasi === 'multi'
+                      ? 'border-gray-300 bg-gray-100 cursor-not-allowed'
                       : 'border-yellow-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent'
                   } rounded bg-white text-right font-semibold`,
                 )}
@@ -346,10 +354,14 @@ const ProfitSidebar: React.FC<ProfitSidebarProps> = ({
             </div>
             <div
               className={`text-xs text-center ${
-                isReadOnly ? 'text-gray-500' : 'text-yellow-700'
+                isReadOnly || formData.tipe_kalkulasi === 'multi'
+                  ? 'text-gray-500'
+                  : 'text-yellow-700'
               }`}
             >
-              {isReadOnly
+              {formData.tipe_kalkulasi === 'multi'
+                ? 'Harga otomatis dari quantity terpilih'
+                : isReadOnly
                 ? 'Harga satuan untuk customer'
                 : 'Masukkan harga Satuan untuk customer'}
             </div>

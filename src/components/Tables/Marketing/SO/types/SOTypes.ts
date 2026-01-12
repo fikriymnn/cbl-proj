@@ -197,9 +197,25 @@ export interface IOData {
   tgl_pembuatan_io: string;
   updatedAt: string;
 }
-
+export interface PerubahanTglKirim {
+  id: number;
+  id_so: number;
+  id_user_create: number;
+  id_user_approve: number | null;
+  id_user_reject: number | null;
+  no_so: string;
+  tgl_awal: string;
+  tgl_perubahan: string;
+  note: string;
+  note_reject: string | null;
+  status: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface SOData {
   id_customer: any;
+  so_perubahan_tgl_kirim?: PerubahanTglKirim[];
   status_work: string;
   create_by: string;
   note: string;

@@ -9,6 +9,7 @@ interface CancelPopupProps {
   onClose: () => void;
   soData: SOData | null;
   onSuccess: () => void;
+  showCancelAndNew?: boolean; // New prop to control visibility
 }
 
 const CancelPopup: React.FC<CancelPopupProps> = ({
@@ -16,6 +17,7 @@ const CancelPopup: React.FC<CancelPopupProps> = ({
   onClose,
   soData,
   onSuccess,
+  showCancelAndNew = true, // Default to true for backward compatibility
 }) => {
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -40,7 +42,11 @@ const CancelPopup: React.FC<CancelPopupProps> = ({
       const url = `${import.meta.env.VITE_API_LINK}/marketing/so/cancel/${
         soData.id
       }`;
-      const response = await axios.post(url, {}, { withCredentials: true });
+
+      // Use PUT method if showCancelAndNew is false, otherwise use POST
+      const response = showCancelAndNew
+        ? await axios.put(url, {}, { withCredentials: true })
+        : await axios.put(url, {}, { withCredentials: true });
 
       if (response.data.succes) {
         alert('SO berhasil dibatalkan');
@@ -79,13 +85,15 @@ const CancelPopup: React.FC<CancelPopupProps> = ({
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleCancelAndNew}
-                  className="w-full px-4 py-3 bg-orange-500 text-white rounded hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors"
-                  disabled={loading}
-                >
-                  Cancel & Buat Baru
-                </button>
+                {showCancelAndNew && (
+                  <button
+                    onClick={handleCancelAndNew}
+                    className="w-full px-4 py-3 bg-orange-500 text-white rounded hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors"
+                    disabled={loading}
+                  >
+                    Cancel & Buat Baru
+                  </button>
+                )}
                 <button
                   onClick={onClose}
                   className="w-full px-4 py-3 text-gray-700 border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"

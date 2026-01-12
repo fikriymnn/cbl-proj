@@ -298,6 +298,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
 
     setHasUnsavedChanges(true);
   };
+  // Update handleQtyListChange function (around line 300)
   const handleQtyListChange = (newList: QtyListItem[]) => {
     setFormData((prev) => {
       const updated = { ...prev, qty_list: newList };
@@ -306,6 +307,11 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
       const selectedQty = newList.find((item) => item.is_selected);
       if (selectedQty && prev.tipe_kalkulasi === 'multi') {
         updated.qty_kalkulasi = selectedQty.qty.toString();
+
+        // Update total_harga_satuan_customer from selected qty
+        updated.total_harga_satuan_customer = (
+          selectedQty.harga_satuan_customer || 0
+        ).toString();
 
         // Recalculate financial data with new qty
         const financialData = calculateFinancialData(updated);

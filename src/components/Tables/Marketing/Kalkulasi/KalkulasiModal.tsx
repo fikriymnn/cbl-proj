@@ -312,7 +312,7 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
     };
   }, [hasUnsavedChanges]);
 
-  // Handle quantity list changes with automatic recalculation
+  // Update handleQtyListChange function (around line 215)
   const handleQtyListChange = (newList: QtyListItem[]) => {
     setFormData((prev) => {
       const updated = { ...prev, qty_list: newList };
@@ -321,6 +321,13 @@ const KalkulasiModal: React.FC<KalkulasiModalProps> = ({
       const selectedQty = newList.find((item) => item.is_selected);
       if (selectedQty) {
         updated.qty_kalkulasi = selectedQty.qty.toString();
+
+        // For multi type, also update total_harga_satuan_customer from selected qty
+        if (updated.tipe_kalkulasi === 'multi') {
+          updated.total_harga_satuan_customer = (
+            selectedQty.harga_satuan_customer || 0
+          ).toString();
+        }
 
         // Recalculate financial data with new quantity
         const financialData = calculateFinancialData(updated);

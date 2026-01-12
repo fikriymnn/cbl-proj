@@ -243,6 +243,7 @@ import ListPerubahanPage from './pages/Marketing/ListPerubahanPage';
 import ListApprovalPerubahanPage from './pages/Accounting/ListApprovalPerubahanPage';
 import KabagApprovalHistory from './pages/Marketing/Kabag/KabagApprovalHistory';
 import BukaLKHPage from './pages/Produksi/MonitoringLKH/BukaLKHPage';
+import PerubahanTglKirimPage from './pages/PPIC/PerubahanTglKirimPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1690,6 +1691,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <RekapPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/perubahan-tanggal-kirim"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PerubahanTglKirimPage />
               </ProtectedRoute>
             </>
           }

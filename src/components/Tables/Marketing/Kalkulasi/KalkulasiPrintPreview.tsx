@@ -569,13 +569,13 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       </td>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Lem</td>
                       <td class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_lem, 'LEM SAMPING')}
+                        ${getValue(data.nama_lem)}
                       </td>
                     </tr>
                     <tr>
                       <td class="border" style="padding: 1px 3px">Ongkos pons</td>
                       <td class="border bg-yellow-200" style="padding: 1px 3px">
-                        ${getValue(data.ongkos_pons, 'YES')}
+                        ${getValue(data.ongkos_pons)}
                       </td>
                       <td class="border bg-gray-300" style="padding: 1px 3px; font-size: 12px">
                         ${formatCurrency(
@@ -584,7 +584,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       </td>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Mesin Finishing</td>
                       <td class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_mesin_finishing, 'JK 650')}
+                        ${getValue(data.nama_mesin_finishing)}
                       </td>
                     </tr>
                     <tr>
@@ -615,7 +615,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 <tr>
                   <td class="border" style="padding: 1px 3px">Lipat</td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getValue(data.lipat, 'NO')}
+                    ${getValue(data.lipat)}
                   </td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px">
                     ${getNumericValue(data.qty_lipat)}

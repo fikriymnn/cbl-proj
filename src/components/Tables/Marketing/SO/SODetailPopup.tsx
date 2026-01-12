@@ -1040,7 +1040,102 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 </div>
               </div>
             )}
+            {data.so_perubahan_tgl_kirim &&
+              data.so_perubahan_tgl_kirim.length > 0 &&
+              !isEditing && (
+                <div className="mt-8 pt-6 border-t">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                    Riwayat Perubahan Tanggal Kirim
+                  </h3>
+                  <div className="space-y-4">
+                    {data.so_perubahan_tgl_kirim
+                      .sort(
+                        (a, b) =>
+                          new Date(b.createdAt).getTime() -
+                          new Date(a.createdAt).getTime(),
+                      )
+                      .map((perubahan, index) => (
+                        <div
+                          key={perubahan.id}
+                          className={`p-4 rounded-lg border-2 ${
+                            perubahan.status === 'requested'
+                              ? 'bg-yellow-50 border-yellow-200'
+                              : perubahan.status === 'approved'
+                              ? 'bg-green-50 border-green-200'
+                              : 'bg-red-50 border-red-200'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-gray-700">
+                                #
+                                {(data.so_perubahan_tgl_kirim?.length || 0) -
+                                  index}
+                              </span>
+                              <span
+                                className={`text-xs px-2 py-1 rounded font-medium uppercase ${
+                                  perubahan.status === 'requested'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : perubahan.status === 'approved'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}
+                              >
+                                {perubahan.status}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {formatDate(perubahan.createdAt)}
+                            </div>
+                          </div>
 
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Tanggal Awal
+                              </label>
+                              <div className="text-sm font-semibold text-gray-800">
+                                {formatDate(perubahan.tgl_awal)}
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-medium text-gray-600 mb-1">
+                                Tanggal Perubahan
+                              </label>
+                              <div className="text-sm font-semibold text-gray-800">
+                                {formatDate(perubahan.tgl_perubahan)}
+                              </div>
+                            </div>
+
+                            {perubahan.note && (
+                              <div className="col-span-2">
+                                <label className="block text-xs font-medium text-gray-600 mb-1">
+                                  Catatan
+                                </label>
+                                <div className="text-sm text-gray-800 bg-white p-2 rounded border border-gray-200">
+                                  {perubahan.note}
+                                </div>
+                              </div>
+                            )}
+
+                            {perubahan.status === 'rejected' &&
+                              perubahan.note_reject && (
+                                <div className="col-span-2">
+                                  <label className="block text-xs font-medium text-red-600 mb-1">
+                                    Alasan Reject
+                                  </label>
+                                  <div className="text-sm text-red-800 bg-red-100 p-2 rounded border border-red-300">
+                                    {perubahan.note_reject}
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
             {/* Action Buttons */}
             <div className="flex justify-between mt-6 pt-4 border-t">
               {isEditing ? (

@@ -14,6 +14,7 @@ import SODoneIOManualPopup from './SODoneIOPopup';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import SOMarketingPrintModal from './SOMarketingPrintModal';
+import CancelPopup from './CancelPopup';
 
 const SOMarketing: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -50,6 +51,10 @@ const SOMarketing: React.FC = () => {
   const [isDoneIOManualPopupOpen, setIsDoneIOManualPopupOpen] =
     useState<boolean>(false);
   const [doneWorkLoading, setDoneWorkLoading] = useState<number | null>(null);
+  const [isCancelPopupOpen, setIsCancelPopupOpen] = useState<boolean>(false);
+  const [selectedSOForCancel, setSelectedSOForCancel] = useState<SOData | null>(
+    null,
+  );
 
   useEffect(() => {
     fetchKalkulasiData();
@@ -334,6 +339,10 @@ const SOMarketing: React.FC = () => {
     setSelectedSO(item);
     setIsDetailPopupOpen(true);
   };
+  const handleCancelClick = (item: SOData) => {
+    setSelectedSOForCancel(item);
+    setIsCancelPopupOpen(true);
+  };
 
   return (
     <div className="">
@@ -529,6 +538,13 @@ const SOMarketing: React.FC = () => {
                           >
                             DETAIL
                           </button>
+                          <button
+                            onClick={() => handleCancelClick(item)}
+                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            title="CLOSE SO"
+                          >
+                            CLOSE SO
+                          </button>
                           {item.status === 'draft' && (
                             <button
                               onClick={() => RequestKabag(item.id)}
@@ -697,6 +713,16 @@ const SOMarketing: React.FC = () => {
         onClose={() => setIsPopupOpen(false)}
         onSubmit={handleCreateSO}
         loading={submitLoading}
+      />
+      <CancelPopup
+        isOpen={isCancelPopupOpen}
+        onClose={() => {
+          setIsCancelPopupOpen(false);
+          setSelectedSOForCancel(null);
+        }}
+        soData={selectedSOForCancel}
+        onSuccess={fetchsoData}
+        showCancelAndNew={false}
       />
       <SODetailPopup
         isOpen={isDetailPopupOpen}

@@ -8,6 +8,8 @@ import CancelPopup from './CancelPopup';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import SOMarketingPrintModal from './SOMarketingPrintModal';
+import UbahTglKirimPopup from './UbahTglKirimPopup';
+
 const HistorySO: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [soData, setsoData] = useState<SOData[]>([]);
@@ -21,7 +23,10 @@ const HistorySO: React.FC = () => {
   const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
   const [printData, setPrintData] = useState<number | null>(null);
-
+  const [isUbahTglKirimPopupOpen, setIsUbahTglKirimPopupOpen] =
+    useState<boolean>(false);
+  const [selectedSOForUbahTgl, setSelectedSOForUbahTgl] =
+    useState<SOData | null>(null);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
@@ -239,6 +244,39 @@ const HistorySO: React.FC = () => {
     setSelectedSO(item);
     setIsDetailPopupOpen(true);
   };
+  const handleUbahTglKirimClick = (item: SOData) => {
+    setSelectedSOForUbahTgl(item);
+    setIsUbahTglKirimPopupOpen(true);
+  };
+  // Update the helper function to get the LATEST request
+  const getPerubahanTglKirimStatus = (
+    item: SOData,
+  ): {
+    status: string | null;
+    noteReject: string | null;
+    canRequest: boolean;
+  } => {
+    if (
+      !item.so_perubahan_tgl_kirim ||
+      item.so_perubahan_tgl_kirim.length === 0
+    ) {
+      return { status: null, noteReject: null, canRequest: true };
+    }
+
+    // Sort by createdAt descending to get the latest request
+    const sortedRequests = [...item.so_perubahan_tgl_kirim].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    // Get the most recent request
+    const latestRequest = sortedRequests[0];
+
+    return {
+      status: latestRequest.status,
+      noteReject: latestRequest.note_reject,
+      canRequest: latestRequest.status !== 'requested', // Can request if status is not 'requested'
+    };
+  };
 
   return (
     <div className="">
@@ -373,6 +411,9 @@ const HistorySO: React.FC = () => {
                       {getSortIcon('tgl_input_po')}
                     </button>
                   </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    STATUS PERUBAHAN TGL
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -407,13 +448,39 @@ const HistorySO: React.FC = () => {
                             DETAIL
                           </button>
                           {item.status_proses === 'done' && (
-                            <button
-                              onClick={() => handleCancelClick(item)}
-                              className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                              title="Cancel SO"
-                            >
-                              CANCEL
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleCancelClick(item)}
+                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                                title="Cancel SO"
+                              >
+                                CANCEL
+                              </button>
+                              {(() => {
+                                const perubahanStatus =
+                                  getPerubahanTglKirimStatus(item);
+                                return (
+                                  <button
+                                    onClick={() =>
+                                      handleUbahTglKirimClick(item)
+                                    }
+                                    disabled={!perubahanStatus.canRequest}
+                                    className={`${
+                                      perubahanStatus.canRequest
+                                        ? 'bg-orange-500 hover:bg-orange-600'
+                                        : 'bg-gray-300 cursor-not-allowed'
+                                    } text-white px-2 py-1 rounded text-xs transition-colors`}
+                                    title={
+                                      perubahanStatus.canRequest
+                                        ? 'Ubah Tanggal Kirim'
+                                        : 'Menunggu approval perubahan tanggal kirim'
+                                    }
+                                  >
+                                    UBAH TGL KIRIM
+                                  </button>
+                                );
+                              })()}
+                            </>
                           )}
                           <button
                             onClick={() => handlePrint(item)}
@@ -496,6 +563,45 @@ const HistorySO: React.FC = () => {
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                         {formatDate(item.tgl_input_po)}
                       </td>
+                      <td className="px-2 py-2 text-xs">
+                        {(() => {
+                          const perubahanStatus =
+                            getPerubahanTglKirimStatus(item);
+                          if (!perubahanStatus.status) return '-';
+
+                          return (
+                            <div className="flex flex-col gap-1">
+                              <span
+                                className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${
+                                  perubahanStatus.status === 'requested'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : perubahanStatus.status === 'approved'
+                                    ? 'bg-green-100 text-green-800'
+                                    : perubahanStatus.status === 'rejected'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {perubahanStatus.status}
+                              </span>
+                              {perubahanStatus.status === 'rejected' &&
+                                perubahanStatus.noteReject && (
+                                  <span
+                                    className="text-red-600 text-xs"
+                                    title={perubahanStatus.noteReject}
+                                  >
+                                    {perubahanStatus.noteReject.length > 15
+                                      ? perubahanStatus.noteReject.substring(
+                                          0,
+                                          15,
+                                        ) + '...'
+                                      : perubahanStatus.noteReject}
+                                  </span>
+                                )}
+                            </div>
+                          );
+                        })()}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -566,6 +672,15 @@ const HistorySO: React.FC = () => {
           setIsPrintModalOpen(false);
           setPrintData(null);
         }}
+      />
+      <UbahTglKirimPopup
+        isOpen={isUbahTglKirimPopupOpen}
+        onClose={() => {
+          setIsUbahTglKirimPopupOpen(false);
+          setSelectedSOForUbahTgl(null);
+        }}
+        soData={selectedSOForUbahTgl}
+        onSuccess={fetchsoData}
       />
     </div>
   );
