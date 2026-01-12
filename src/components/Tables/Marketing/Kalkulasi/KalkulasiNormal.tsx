@@ -583,6 +583,15 @@ const KalkulasiNormal: React.FC = () => {
                     {getSortIcon('kode_kalkulasi')}
                   </button>
                 </th>
+                <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-28">
+                  <button
+                    onClick={() => handleSort('no_io')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    No IO
+                    {getSortIcon('no_io')}
+                  </button>
+                </th>
                 <th className="px-2 py-1.5 text-left text-[10px] font-medium text-gray-500 uppercase w-20">
                   <button
                     onClick={() => handleSort('tipe_kalkulasi')}
@@ -737,6 +746,17 @@ const KalkulasiNormal: React.FC = () => {
                           {item.label || 'No Label'}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-2 py-1.5 text-left">
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded ${
+                          item.no_io
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {item.no_io || 'Kosong'}
+                      </span>
                     </td>
                     <td className="px-2 py-1.5 text-left">
                       <span
