@@ -756,7 +756,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 <tr>
                   <td class="border bg-green-300" style="padding: 1px 3px">Profit Margin (%)</td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getNumericValue(data.profit)}
+                    ${getNumericValue(data.profit)}%
                   </td>
                   <td class="border bg-gray-300 text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(getNumericValue(data.profit_harga))}
