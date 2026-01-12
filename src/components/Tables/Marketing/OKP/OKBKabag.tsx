@@ -72,6 +72,7 @@ const OKPKabag: React.FC = () => {
       const res: AxiosResponse<ApiResponse<OKPItem[]>> = await axios.get(url, {
         params: {
           posisi_proses: 'kabag',
+          status_proses: 'request approval kabag',
           page: page,
           limit: limit,
           search: searchTerm,
