@@ -4,7 +4,7 @@ import axios from 'axios';
 import {
   MenuNode,
   Role,
-  RoleMenuPermission,
+  RoleMenuResponse,
   CreateMenuDto,
   CreateRoleDto,
   UpdatePermissionDto,
@@ -18,6 +18,7 @@ export const masterMenuApi = {
     const response = await axios.get(`${API_BASE}/master/menu`, {
       withCredentials: true,
     });
+    console.log('Fetched menus:', response.data.data);
     return response.data.data;
   },
 
@@ -34,21 +35,12 @@ export const masterMenuApi = {
     });
   },
 
-  getMenuByRole: async (roleId: number): Promise<MenuNode[]> => {
-    const response = await axios.get(
-      `${API_BASE}/master/menuByRole/${roleId}`,
-      {
-        withCredentials: true,
-      },
-    );
-    return response.data.data;
-  },
-
   // Role endpoints
   getAllRoles: async (): Promise<Role[]> => {
     const response = await axios.get(`${API_BASE}/master/roles`, {
       withCredentials: true,
     });
+    console.log('Fetched roles:', response.data.data);
     return response.data.data;
   },
 
@@ -59,30 +51,24 @@ export const masterMenuApi = {
     return response.data;
   },
 
-  // Role Menu endpoints
-  getRoleMenuByRoleId: async (
-    roleId: number,
-  ): Promise<RoleMenuPermission[]> => {
+  // Role Menu endpoints - returns role data AND menus with permissions
+  getRoleMenuByRoleId: async (roleId: number): Promise<RoleMenuResponse> => {
     const response = await axios.get(
       `${API_BASE}/master/roleMenu/byIdRole/${roleId}`,
       {
         withCredentials: true,
       },
     );
+    console.log('Fetched role menu data:', response.data.data);
     return response.data.data;
   },
 
   updatePermission: async (
     id: number,
     data: UpdatePermissionDto,
-  ): Promise<RoleMenuPermission> => {
-    const response = await axios.put(
-      `${API_BASE}/master/roleMenu/single/${id}`,
-      data,
-      {
-        withCredentials: true,
-      },
-    );
-    return response.data;
+  ): Promise<void> => {
+    await axios.put(`${API_BASE}/master/roleMenu/single/${id}`, data, {
+      withCredentials: true,
+    });
   },
 };
