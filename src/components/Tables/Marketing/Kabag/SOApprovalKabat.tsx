@@ -479,8 +479,8 @@ const SOApprovalKabag: React.FC = () => {
                           title={item.no_so}
                         >
                           {item.no_so
-                            ? item.no_so.substring(0, 12) +
-                              (item.no_so.length > 12 ? '...' : '')
+                            ? item.no_so.substring(0, 20) +
+                              (item.no_so.length > 20 ? '...' : '')
                             : '-'}
                         </span>
                         <span
@@ -488,8 +488,8 @@ const SOApprovalKabag: React.FC = () => {
                           title={item.label}
                         >
                           {item.label
-                            ? item.label.substring(0, 12) +
-                              (item.label.length > 12 ? '...' : '')
+                            ? item.label.substring(0, 20) +
+                              (item.label.length > 20 ? '...' : '')
                             : '-'}
                         </span>
                       </td>
@@ -499,24 +499,24 @@ const SOApprovalKabag: React.FC = () => {
                           title={item.no_io}
                         >
                           {item.no_io
-                            ? item.no_io.substring(0, 10) +
-                              (item.no_io.length > 10 ? '...' : '')
+                            ? item.no_io.substring(0, 20) +
+                              (item.no_io.length > 20 ? '...' : '')
                             : '-'}
                         </span>
                       </td>
                       <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                         <span title={item.customer}>
                           {item.customer
-                            ? item.customer.substring(0, 15) +
-                              (item.customer.length > 15 ? '...' : '')
+                            ? item.customer.substring(0, 90) +
+                              (item.customer.length > 90 ? '...' : '')
                             : '-'}
                         </span>
                       </td>
                       <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                         <span title={item.produk}>
                           {item.produk
-                            ? item.produk.substring(0, 15) +
-                              (item.produk.length > 15 ? '...' : '')
+                            ? item.produk.substring(0, 90) +
+                              (item.produk.length > 90 ? '...' : '')
                             : '-'}
                         </span>
                       </td>
