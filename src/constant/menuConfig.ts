@@ -1098,6 +1098,11 @@ export const menuCategories: MenuCategory[] = [
             icon: 'access',
           },
           {
+            name: 'Menu',
+            path: '/master/menu',
+            icon: 'menu',
+          },
+          {
             name: 'User',
             path: '/master/user',
             icon: 'user',

@@ -57,7 +57,9 @@ const ListDO: React.FC = () => {
   useEffect(() => {
     fetchDOData();
   }, [page, searchTerm, limit]);
-
+  useEffect(() => {
+    fetchMenuData();
+  }, []);
   const fetchDOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/deliveryOrder`;
     try {
@@ -76,6 +78,23 @@ const ListDO: React.FC = () => {
 
       setDoData(res.data.data || []);
       setTotalPages(res.data.total_page || 1);
+    } catch (error) {
+      console.error('Error fetching DO data:', error);
+      setDoData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchMenuData = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/menu`;
+    try {
+      setLoading(true);
+
+      const res: AxiosResponse<DOResponse> = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      console.log('Fetched Menu data:', res.data);
     } catch (error) {
       console.error('Error fetching DO data:', error);
       setDoData([]);

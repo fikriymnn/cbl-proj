@@ -1,310 +1,411 @@
+// pages/Master/MasterHakAkses.tsx
 
-import DefaultLayout from '../../layout/DefaultLayout'
-import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import DefaultLayout from '../../layout/DefaultLayout';
+import React, { useEffect, useState } from 'react';
 import Loading from '../../components/Loading';
 import ModalKosonganSmall from '../../components/Modals/ModalKosonganSmall';
 import ModalXL from '../../components/Tables/PPIC/JadwalProduksi/ModalXL';
+import { masterMenuApi } from './services/masterMenuApi';
+import {
+  Role,
+  RoleMenuPermission,
+  MenuNode,
+  CreateRoleDto,
+  UpdatePermissionDto,
+} from './types/masterMenu.types';
+
 function MasterHakAkses() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [role, setrole] = useState<any>();
-    const [roleDetail, setroleDetail] = useState<any>();
-    const [namaRole, setnamaRole] = useState<any>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [rolePermissions, setRolePermissions] = useState<RoleMenuPermission[]>(
+    [],
+  );
+  const [allMenus, setAllMenus] = useState<MenuNode[]>([]);
 
+  // Form states
+  const [newRole, setNewRole] = useState<CreateRoleDto>({
+    name: '',
+    description: '',
+  });
 
-    useEffect(() => {
+  const [showModalTambah, setShowModalTambah] = useState(false);
+  const [showEdit, setShowEdit] = useState<boolean[]>([]);
 
-        getRole()
-    }, []);
+  useEffect(() => {
+    loadRoles();
+    loadAllMenus();
+  }, []);
 
-    async function getRole() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/master/role`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(
-                url,
-                {
-
-                    withCredentials: true,
-                },
-            );
-            setIsLoading(false)
-            setrole(res.data)
-            console.log('role', res.data)
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
+  const loadRoles = async () => {
+    try {
+      setIsLoading(true);
+      const data = await masterMenuApi.getAllRoles();
+      setRoles(data);
+      setShowEdit(new Array(data.length).fill(false));
+    } catch (error) {
+      console.error('Error loading roles:', error);
+      alert('Failed to load roles');
+    } finally {
+      setIsLoading(false);
     }
-    async function postRole() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/master/role`;
-        try {
-            setIsLoading(true)
-            const res = await axios.post(
-                url,
-                {
-                    nama_role: namaRole
-                },
-                {
+  };
 
-                    withCredentials: true,
-                },
-            );
-            closeModalTambah()
-            getRole()
-            alert('Role Berhasil Ditambah')
-            setIsLoading(false)
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
+  const loadAllMenus = async () => {
+    try {
+      const data = await masterMenuApi.getAllMenus();
+      setAllMenus(data);
+    } catch (error) {
+      console.error('Error loading menus:', error);
     }
-    async function getRole1(id: any) {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/master/role/${id}`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(
-                url,
-                {
+  };
 
-                    withCredentials: true,
-                },
-            );
-            setroleDetail(res.data)
-            setIsLoading(false)
-            console.log('role Detail', res.data)
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
+  const loadRolePermissions = async (roleId: number) => {
+    try {
+      setIsLoading(true);
+      const data = await masterMenuApi.getRoleMenuByRoleId(roleId);
+      setRolePermissions(data);
+    } catch (error) {
+      console.error('Error loading permissions:', error);
+      alert('Failed to load permissions');
+    } finally {
+      setIsLoading(false);
     }
-    const [showModalTambah, setShowModalTambah] = useState(false);
+  };
 
-    const openModalTambah = () => setShowModalTambah(true);
-    const closeModalTambah = () => setShowModalTambah(false);
+  const handleCreateRole = async () => {
+    if (!newRole.name.trim()) {
+      alert('Role name is required');
+      return;
+    }
 
-    const [showEdit, setShowEdit] = useState<any>([]);
-    const openEdit = (i: any, id: any) => {
-        const onchangeVal: any = [...showEdit];
-        onchangeVal[i] = true;
-        getRole1(id)
-        setShowEdit(onchangeVal);
-    };
-    const closeEdit = (i: any) => {
-        const onchangeVal: any = [...showEdit];
-        onchangeVal[i] = false;
+    try {
+      setIsLoading(true);
+      await masterMenuApi.createRole(newRole);
+      setNewRole({ name: '', description: '' });
+      closeModalTambah();
+      await loadRoles();
+      alert('Role created successfully');
+    } catch (error) {
+      console.error('Error creating role:', error);
+      alert('Failed to create role');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-        setShowEdit(onchangeVal);
-    };
+  const handleUpdatePermission = async (
+    permissionId: number,
+    updates: Partial<UpdatePermissionDto>,
+  ) => {
+    try {
+      const permission = rolePermissions?.find((p) => p.id === permissionId);
+      if (!permission) return;
+
+      const updateData: UpdatePermissionDto = {
+        can_view: updates.can_view ?? permission.can_view,
+        can_create: updates.can_create ?? permission.can_create,
+        can_edit: updates.can_edit ?? permission.can_edit,
+        can_delete: updates.can_delete ?? permission.can_delete,
+        is_active: updates.is_active ?? permission.is_active,
+      };
+
+      await masterMenuApi.updatePermission(permissionId, updateData);
+
+      // Reload permissions to reflect changes
+      if (selectedRole) {
+        await loadRolePermissions(selectedRole.id);
+      }
+    } catch (error) {
+      console.error('Error updating permission:', error);
+      alert('Failed to update permission');
+    }
+  };
+
+  const openModalTambah = () => setShowModalTambah(true);
+  const closeModalTambah = () => {
+    setShowModalTambah(false);
+    setNewRole({ name: '', description: '' });
+  };
+
+  const openEdit = async (index: number, role: Role) => {
+    const newShowEdit = [...showEdit];
+    newShowEdit[index] = true;
+    setShowEdit(newShowEdit);
+    setSelectedRole(role);
+    await loadRolePermissions(role.id);
+  };
+
+  const closeEdit = (index: number) => {
+    const newShowEdit = [...showEdit];
+    newShowEdit[index] = false;
+    setShowEdit(newShowEdit);
+    setSelectedRole(null);
+    setRolePermissions([]);
+  };
+
+  // Helper function to organize permissions by menu hierarchy
+  const organizePermissionsByMenu = () => {
+    const menuMap = new Map<number, MenuNode>();
+    allMenus.forEach((menu) => {
+      menuMap.set(menu.id, menu);
+    });
+
+    const permissionMap = new Map<number, RoleMenuPermission>();
+    rolePermissions.forEach((perm) => {
+      permissionMap.set(perm.menu_id, perm);
+    });
+
+    return { menuMap, permissionMap };
+  };
+
+  const renderPermissionRow = (
+    menu: MenuNode,
+    permission: RoleMenuPermission | undefined,
+    level: number = 0,
+  ) => {
+    if (!permission) return null;
+
+    const indentClass = level > 0 ? `pl-${level * 8}` : '';
 
     return (
-        <DefaultLayout>
-            <>
-                {isLoading && <Loading />}
-                <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px] d'>Master Data &gt; Hak Akses</p>
-                <div className="flex w-full bg-white p-2">
-                    <div className='flex justify-between w-full'>
-                        <div className='my-auto w-full flex justify-end items-end'>
-                            <button onClick={openModalTambah} className='w-40 text-xs font-semibold rounded-sm py-1 text-white bg-primary '>ADD ROLE</button>
-                            {showModalTambah && (
-                                <ModalKosonganSmall
-                                    isOpen={showModalTambah}
-                                    onClose={closeModalTambah}
-                                    judul={'Tambah Role'}>
-                                    <>
-                                        <div className="flex w-full flex-col py-4 px-4 ">
+      <div key={menu.id} className="border-b border-stroke">
+        <div className={`grid grid-cols-12 gap-4 py-3 px-4 ${indentClass}`}>
+          {/* Menu Name */}
+          <div className="col-span-4 flex items-center">
+            <span className="font-medium text-sm">
+              {level > 0 && '→ '.repeat(level)}
+              {menu.name}
+            </span>
+            {menu.path && (
+              <span className="ml-2 text-xs text-gray-500">({menu.path})</span>
+            )}
+          </div>
 
-                                            <label className="text-black text-xs font-bold">
-                                                Nama Role
-                                            </label>
-                                            <div className="flex w-full">
-                                                <input
-                                                    name="nama_role"
-                                                    onChange={(e) => { setnamaRole(e.target.value) }}
-                                                    type="text"
-                                                    className=" w-full h-8 border-2 border-stroke rounded-md"
-                                                />
-                                            </div>
-                                            <div className="flex w-full pt-3">
-                                                <button
-                                                    onClick={() => postRole()}
-                                                    disabled={isLoading}
-                                                    className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
-                                                >
-                                                    Tambah
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </>
-                                </ModalKosonganSmall>
-                            )}
-                        </div>
-                    </div>
+          {/* Can View */}
+          <div className="col-span-2 flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={permission.can_view}
+              onChange={(e) =>
+                handleUpdatePermission(permission.id, {
+                  can_view: e.target.checked,
+                })
+              }
+              className="w-4 h-4"
+            />
+          </div>
+
+          {/* Can Create */}
+          <div className="col-span-2 flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={permission.can_create}
+              onChange={(e) =>
+                handleUpdatePermission(permission.id, {
+                  can_create: e.target.checked,
+                })
+              }
+              className="w-4 h-4"
+              disabled={!permission.can_view}
+            />
+          </div>
+
+          {/* Can Edit */}
+          <div className="col-span-2 flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={permission.can_edit}
+              onChange={(e) =>
+                handleUpdatePermission(permission.id, {
+                  can_edit: e.target.checked,
+                })
+              }
+              className="w-4 h-4"
+              disabled={!permission.can_view}
+            />
+          </div>
+
+          {/* Can Delete */}
+          <div className="col-span-2 flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={permission.can_delete}
+              onChange={(e) =>
+                handleUpdatePermission(permission.id, {
+                  can_delete: e.target.checked,
+                })
+              }
+              className="w-4 h-4"
+              disabled={!permission.can_view}
+            />
+          </div>
+        </div>
+
+        {/* Render children recursively */}
+        {menu.children &&
+          menu.children.map((child) => {
+            const childPermission = rolePermissions?.find(
+              (p) => p.menu_id === child.id,
+            );
+            return renderPermissionRow(child, childPermission, level + 1);
+          })}
+      </div>
+    );
+  };
+
+  return (
+    <DefaultLayout>
+      <>
+        {isLoading && <Loading />}
+
+        <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
+          Master Data &gt; Role & Permissions
+        </p>
+
+        {/* Add Role Button */}
+        <div className="flex w-full bg-white p-4 mb-4 justify-end">
+          <button
+            onClick={openModalTambah}
+            className="px-6 py-2 text-sm font-semibold rounded-md text-white bg-primary hover:bg-primary/90"
+          >
+            Add New Role
+          </button>
+        </div>
+
+        {/* Add Role Modal */}
+        {showModalTambah && (
+          <ModalKosonganSmall
+            isOpen={showModalTambah}
+            onClose={closeModalTambah}
+            judul="Create New Role"
+          >
+            <div className="flex flex-col gap-4 py-4 px-4">
+              <div>
+                <label className="text-black text-sm font-bold mb-2 block">
+                  Role Name *
+                </label>
+                <input
+                  type="text"
+                  value={newRole.name}
+                  onChange={(e) =>
+                    setNewRole({ ...newRole, name: e.target.value })
+                  }
+                  className="w-full h-10 border-2 border-stroke rounded-md px-3"
+                  placeholder="Enter role name"
+                />
+              </div>
+
+              <div>
+                <label className="text-black text-sm font-bold mb-2 block">
+                  Description
+                </label>
+                <textarea
+                  value={newRole.description}
+                  onChange={(e) =>
+                    setNewRole({ ...newRole, description: e.target.value })
+                  }
+                  className="w-full h-20 border-2 border-stroke rounded-md px-3 py-2"
+                  placeholder="Enter role description"
+                />
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={closeModalTambah}
+                  className="px-6 py-2 text-sm font-semibold rounded-md border-2 border-stroke hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateRole}
+                  disabled={isLoading || !newRole.name.trim()}
+                  className="px-6 py-2 text-sm font-semibold rounded-md text-white bg-primary hover:bg-primary/90 disabled:opacity-50"
+                >
+                  Create Role
+                </button>
+              </div>
+            </div>
+          </ModalKosonganSmall>
+        )}
+
+        {/* Header */}
+        <div className="flex bg-white py-3 w-full mb-2 px-5 text-sm font-semibold rounded-md">
+          <p className="w-20">No</p>
+          <div className="grid grid-cols-12 w-full gap-4">
+            <div className="col-span-3">Role Name</div>
+            <div className="col-span-6">Description</div>
+            <div className="col-span-3 text-center">Actions</div>
+          </div>
+        </div>
+
+        {/* Roles List */}
+        {roles.map((role, index) => (
+          <div key={role.id}>
+            <div className="flex bg-white py-3 w-full mb-2 px-5 text-sm rounded-md">
+              <p className="w-20">{index + 1}</p>
+              <div className="grid grid-cols-12 w-full gap-4">
+                <div className="col-span-3 font-semibold">{role.name}</div>
+                <div className="col-span-6 text-gray-600">
+                  {role.description || '-'}
                 </div>
-                <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-m'>
-                    <p className='w-20'>No</p>
-                    <div className='grid grid-cols-12 w-full'>
-                        <div className='col-span-9'>Role</div>
-                        <div className='col-span-3'>
-
-
-                        </div>
-
-                    </div>
+                <div className="col-span-3 flex justify-center">
+                  <button
+                    onClick={() => openEdit(index, role)}
+                    className="px-4 py-2 text-xs bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md"
+                  >
+                    Manage Permissions
+                  </button>
                 </div>
-                {role?.map((data: any, i: any) => (
-                    <>
-                        <div
-                            key={i}
-                            className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-m'>
-                            <p className='w-20'>{i + 1}</p>
-                            <div className='grid grid-cols-12 w-full'>
-                                <div className='col-span-9'>{data.nama_role}</div>
-                                <div className='col-span-3'>
-                                    <button
-                                        onClick={() => openEdit(i, data.id)}
-                                        className='px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full '>
-                                        Hak Akses
-                                    </button>
-                                    {showEdit[i] == true && (
+              </div>
+            </div>
 
-                                        <ModalXL
-                                            isOpen={showEdit[i]}
-                                            onClose={() => closeEdit(i)}
-                                            judul={'Hak Akses'}
-                                        >
-                                            <>
-                                                <div className=' grid  bg-white py-2 w-full'>
-                                                    {roleDetail?.data?.akses?.map((data2: any, ii: any) => (
+            {/* Permissions Modal */}
+            {showEdit[index] && selectedRole?.id === role.id && (
+              <ModalXL
+                isOpen={showEdit[index]}
+                onClose={() => closeEdit(index)}
+                judul={`Permissions for: ${role.name}`}
+              >
+                <div className="bg-white">
+                  {/* Header */}
+                  <div className="grid grid-cols-12 gap-4 py-3 px-4 bg-gray-100 font-semibold text-sm border-b-2">
+                    <div className="col-span-4">Menu / Feature</div>
+                    <div className="col-span-2 text-center">View</div>
+                    <div className="col-span-2 text-center">Create</div>
+                    <div className="col-span-2 text-center">Edit</div>
+                    <div className="col-span-2 text-center">Delete</div>
+                  </div>
 
-                                                        <>
-                                                            <div
-                                                                key={ii}
-                                                                className=' grid grid-cols-12 bg-white py-2 w-full border-b-2 border-stroke gap-1'>
-                                                                <div className='flex col-span-2 items-center gap-2'>
-                                                                    <p>
-                                                                        {data2.bagian}
-                                                                    </p>
-                                                                    <input
-                                                                        checked={data2.is_active}
-                                                                        type="checkbox" />
-                                                                </div>
-                                                            </div>
-                                                            <div className='grid grid-cols-12 border-b-2 border-stroke gap-2'>
-                                                                <div className='col-span-2'>
+                  {/* Permissions List */}
+                  <div className="max-h-[600px] overflow-y-auto">
+                    {allMenus.map((menu) => {
+                      const permission = rolePermissions?.find(
+                        (p) => p.menu_id === menu.id,
+                      );
+                      return renderPermissionRow(menu, permission, 0);
+                    })}
+                  </div>
 
-                                                                </div>
-                                                                {data2.parent_1?.map((data3: any, iii: any) => (
+                  {rolePermissions.length === 0 && !isLoading && (
+                    <div className="text-center py-8 text-gray-500">
+                      No permissions found for this role
+                    </div>
+                  )}
+                </div>
+              </ModalXL>
+            )}
+          </div>
+        ))}
 
-                                                                    <>
-                                                                        <div
-                                                                            key={iii}
-                                                                            className='  col-span-2 bg-white py-2 w-full  gap-1 flex-col'>
-                                                                            <div className='flex col-span-2 items-center gap-2'>
-                                                                                <p>
-                                                                                    Dashboard {data3.nama}
-                                                                                </p>
-                                                                                <input
-                                                                                    checked={data3.is_active}
-                                                                                    type="checkbox" />
-                                                                            </div>
-                                                                        </div>
-                                                                        <div className='grid grid-cols-12 col-span-8 border-b-2 border-stroke'>
-                                                                            {data3.parent_2?.map((data4: any, iiii: any) => (
-
-                                                                                <>
-                                                                                    <div
-                                                                                        key={iiii}
-                                                                                        className='flex flex-col col-span-8 bg-white py-2 w-full gap-1'>
-                                                                                        <div className='flex col-span-2 items-center gap-2 justify-between'>
-                                                                                            <p>
-                                                                                                {data4.nama}
-                                                                                            </p>
-                                                                                            {data4.is_main == false && (
-                                                                                                <input
-                                                                                                    checked={data4.is_active}
-                                                                                                    type="checkbox" />
-                                                                                            )}
-
-
-                                                                                        </div>
-                                                                                    </div>
-                                                                                    <div className='grid grid-cols-12 col-span-8 '>
-                                                                                        <>
-                                                                                            {data4.parent_3?.map((data5: any, iiiii: any) => (
-                                                                                                <>
-                                                                                                    <div
-                                                                                                        key={iiiii}
-                                                                                                        className='flex flex-col col-span-8 bg-white py-2 w-full gap-1'>
-                                                                                                        <div className='flex col-span-2 items-center gap-2 justify-between'>
-                                                                                                            <p>
-                                                                                                                {data5.nama}
-                                                                                                            </p>
-
-                                                                                                            <input
-                                                                                                                checked={data5.is_active}
-                                                                                                                type="checkbox" />
-                                                                                                        </div>
-                                                                                                    </div>
-
-
-                                                                                                    <div className='grid grid-cols-12 col-span-8 '>
-
-                                                                                                        {data5.parent_4?.map((data6: any, iiiiii: any) => (
-                                                                                                            <div
-                                                                                                                key={iiiiii}
-                                                                                                                className='flex flex-col col-span-8 bg-white py-2 w-full gap-1'>
-
-                                                                                                                <div className='flex col-span-2 items-center gap-2 justify-between'>
-                                                                                                                    <p>
-                                                                                                                        - {data6.nama}
-                                                                                                                    </p>
-
-                                                                                                                    <input
-                                                                                                                        checked={data6.is_active}
-                                                                                                                        type="checkbox" />
-                                                                                                                </div>
-                                                                                                            </div>
-
-                                                                                                        ))}
-
-
-                                                                                                    </div >
-                                                                                                </>
-                                                                                            ))}
-                                                                                        </>
-
-                                                                                    </div>
-                                                                                </>
-
-                                                                            ))}
-                                                                        </div>
-
-                                                                    </>
-
-                                                                ))}
-                                                            </div>
-                                                        </>
-
-                                                    ))}
-                                                </div>
-                                            </>
-                                        </ModalXL>
-                                    )}
-
-                                </div>
-                            </div>
-                        </div >
-                    </>
-                ))}
-
-
-            </>
-        </DefaultLayout >
-    )
+        {roles.length === 0 && !isLoading && (
+          <div className="bg-white py-8 text-center text-gray-500 rounded-md">
+            No roles found. Create your first role to get started.
+          </div>
+        )}
+      </>
+    </DefaultLayout>
+  );
 }
 
-export default MasterHakAkses
+export default MasterHakAkses;

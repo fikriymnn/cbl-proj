@@ -244,6 +244,7 @@ import ListApprovalPerubahanPage from './pages/Accounting/ListApprovalPerubahanP
 import KabagApprovalHistory from './pages/Marketing/Kabag/KabagApprovalHistory';
 import BukaLKHPage from './pages/Produksi/MonitoringLKH/BukaLKHPage';
 import PerubahanTglKirimPage from './pages/PPIC/PerubahanTglKirimPage';
+import MasterMenu from './pages/MasterData/MasterMenu';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2728,6 +2729,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterHakAkses />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/master/menu"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterMenu />
               </ProtectedRoute>
             </>
           }
