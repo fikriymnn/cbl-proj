@@ -18,14 +18,22 @@ interface LainLainSectionProps {
   onRemoveItem: (index: number) => void;
   formatNumber: (value: number | string) => string;
   parseFormattedNumber: (value: string) => number;
+  getInputDisplayValue: (
+    section: string,
+    index: number,
+    field: string,
+    actualValue: number,
+  ) => string;
+  handleInputBlur: (section: string, index: number, field: string) => void;
 }
 
 const LainLainSection: React.FC<LainLainSectionProps> = ({
   items,
   onItemChange,
-
   formatNumber,
   parseFormattedNumber,
+  getInputDisplayValue,
+  handleInputBlur,
 }) => {
   if (items.length === 0) {
     return (
@@ -91,14 +99,16 @@ const LainLainSection: React.FC<LainLainSectionProps> = ({
                 <td className="px-4 py-3">
                   <input
                     type="text"
-                    value={formatNumber(item.harga)}
+                    value={getInputDisplayValue(
+                      'lainlain',
+                      index,
+                      'harga',
+                      item.harga,
+                    )}
                     onChange={(e) =>
-                      onItemChange(
-                        index,
-                        'harga',
-                        parseFormattedNumber(e.target.value),
-                      )
+                      onItemChange(index, 'harga', e.target.value)
                     }
+                    onBlur={() => handleInputBlur('lainlain', index, 'harga')}
                     className="w-full px-3 py-2 text-right border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm font-medium bg-white"
                     placeholder="0"
                     readOnly

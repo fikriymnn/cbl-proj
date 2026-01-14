@@ -9,12 +9,21 @@ interface CoatingSectionProps {
     value: string | number,
   ) => void;
   formatNumber: (value: number | string) => string;
+  getInputDisplayValue: (
+    section: string,
+    index: number,
+    field: string,
+    actualValue: number,
+  ) => string;
+  handleInputBlur: (section: string, index: number, field: string) => void;
 }
 
 const CoatingSection: React.FC<CoatingSectionProps> = ({
   items,
   onItemChange,
   formatNumber,
+  getInputDisplayValue,
+  handleInputBlur,
 }) => {
   if (items.length === 0) return null;
 
@@ -47,16 +56,16 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
                 Varnish Doff
               </th>
-              <th className="px-4 py-3  text-xs font-bold text-gray-700 uppercase bg-green-50">
+              <th className="px-4 py-3 text-xs font-bold text-gray-700 uppercase bg-green-50">
                 Stock Depan
               </th>
-              <th className="px-4 py-3  text-xs font-bold text-gray-700 uppercase bg-orange-50">
+              <th className="px-4 py-3 text-xs font-bold text-gray-700 uppercase bg-orange-50">
                 Beli Depan
               </th>
-              <th className="px-4 py-3  text-xs font-bold text-gray-700 uppercase bg-green-50">
+              <th className="px-4 py-3 text-xs font-bold text-gray-700 uppercase bg-green-50">
                 Stock Belakang
               </th>
-              <th className="px-4 py-3  text-xs font-bold text-gray-700 uppercase bg-orange-50">
+              <th className="px-4 py-3 text-xs font-bold text-gray-700 uppercase bg-orange-50">
                 Beli Belakang
               </th>
             </tr>
@@ -86,12 +95,24 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                 <td className="px-4 py-3 bg-green-50">
                   <input
                     type="text"
-                    value={formatNumber(item.qty_stok_coating_depan)}
+                    value={getInputDisplayValue(
+                      'coating',
+                      index,
+                      'qty_stok_coating_depan',
+                      item.qty_stok_coating_depan,
+                    )}
                     onChange={(e) =>
                       onItemChange(
                         index,
                         'qty_stok_coating_depan',
                         e.target.value,
+                      )
+                    }
+                    onBlur={() =>
+                      handleInputBlur(
+                        'coating',
+                        index,
+                        'qty_stok_coating_depan',
                       )
                     }
                     className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium bg-white"
@@ -101,7 +122,12 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                 <td className="px-4 py-3 bg-orange-50">
                   <input
                     type="text"
-                    value={formatNumber(item.qty_beli_coating_depan)}
+                    value={getInputDisplayValue(
+                      'coating',
+                      index,
+                      'qty_beli_coating_depan',
+                      item.qty_beli_coating_depan,
+                    )}
                     onChange={(e) =>
                       onItemChange(
                         index,
@@ -109,15 +135,26 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                         e.target.value,
                       )
                     }
-                    className="w-full px-3 py-2  border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"
+                    onBlur={() =>
+                      handleInputBlur(
+                        'coating',
+                        index,
+                        'qty_beli_coating_depan',
+                      )
+                    }
+                    className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"
                     placeholder="0"
                   />
                 </td>
-
                 <td className="px-4 py-3 bg-green-50">
                   <input
                     type="text"
-                    value={formatNumber(item.qty_stok_coating_belakang)}
+                    value={getInputDisplayValue(
+                      'coating',
+                      index,
+                      'qty_stok_coating_belakang',
+                      item.qty_stok_coating_belakang,
+                    )}
                     onChange={(e) =>
                       onItemChange(
                         index,
@@ -125,14 +162,26 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                         e.target.value,
                       )
                     }
-                    className="w-full px-3 py-2  border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium bg-white"
+                    onBlur={() =>
+                      handleInputBlur(
+                        'coating',
+                        index,
+                        'qty_stok_coating_belakang',
+                      )
+                    }
+                    className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium bg-white"
                     placeholder="0"
                   />
                 </td>
                 <td className="px-4 py-3 bg-orange-50">
                   <input
                     type="text"
-                    value={formatNumber(item.qty_beli_coating_belakang)}
+                    value={getInputDisplayValue(
+                      'coating',
+                      index,
+                      'qty_beli_coating_belakang',
+                      item.qty_beli_coating_belakang,
+                    )}
                     onChange={(e) =>
                       onItemChange(
                         index,
@@ -140,7 +189,14 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                         e.target.value,
                       )
                     }
-                    className="w-full px-3 py-2  border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"
+                    onBlur={() =>
+                      handleInputBlur(
+                        'coating',
+                        index,
+                        'qty_beli_coating_belakang',
+                      )
+                    }
+                    className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"
                     placeholder="0"
                   />
                 </td>

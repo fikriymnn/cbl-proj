@@ -1,4 +1,3 @@
-// File: components/TintaSection.tsx
 import React from 'react';
 import { BOMPPICTinta } from '../../Types/bompiic.types';
 
@@ -11,12 +10,21 @@ interface TintaSectionProps {
     value: string,
   ) => void;
   formatNumber: (value: number | string) => string;
+  getInputDisplayValue: (
+    section: string,
+    index: number,
+    field: string,
+    actualValue: number,
+  ) => string;
+  handleInputBlur: (section: string, index: number, field: string) => void;
 }
 
 const TintaSection: React.FC<TintaSectionProps> = ({
   items,
   onDetailChange,
   formatNumber,
+  getInputDisplayValue,
+  handleInputBlur,
 }) => {
   if (items.length === 0) return null;
 
@@ -87,13 +95,25 @@ const TintaSection: React.FC<TintaSectionProps> = ({
                     <td className="px-4 py-3 bg-green-50">
                       <input
                         type="text"
-                        value={formatNumber(detail.qty_stok)}
+                        value={getInputDisplayValue(
+                          `tinta-${tintaIndex}`,
+                          detailIndex,
+                          'qty_stok',
+                          detail.qty_stok,
+                        )}
                         onChange={(e) =>
                           onDetailChange(
                             tintaIndex,
                             detailIndex,
                             'qty_stok',
                             e.target.value,
+                          )
+                        }
+                        onBlur={() =>
+                          handleInputBlur(
+                            `tinta-${tintaIndex}`,
+                            detailIndex,
+                            'qty_stok',
                           )
                         }
                         className="w-full px-3 py-2 text-right border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium bg-white"
@@ -103,13 +123,25 @@ const TintaSection: React.FC<TintaSectionProps> = ({
                     <td className="px-4 py-3 bg-orange-50">
                       <input
                         type="text"
-                        value={formatNumber(detail.qty_beli)}
+                        value={getInputDisplayValue(
+                          `tinta-${tintaIndex}`,
+                          detailIndex,
+                          'qty_beli',
+                          detail.qty_beli,
+                        )}
                         onChange={(e) =>
                           onDetailChange(
                             tintaIndex,
                             detailIndex,
                             'qty_beli',
                             e.target.value,
+                          )
+                        }
+                        onBlur={() =>
+                          handleInputBlur(
+                            `tinta-${tintaIndex}`,
+                            detailIndex,
+                            'qty_beli',
                           )
                         }
                         className="w-full px-3 py-2 text-right border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"

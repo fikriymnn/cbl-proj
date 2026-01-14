@@ -75,18 +75,23 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
     );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200 shadow-sm">
+    <div className="grid grid-cols-3 gap-3 py-2">
+      {' '}
+      {/* 3 columns, smaller gap and padding */}
+      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-2 rounded-md border border-blue-200 shadow-sm">
+        {' '}
+        {/* Smaller padding */}
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-blue-600 font-medium mb-1">
-              Total Materials
-            </p>
-            <p className="text-2xl font-bold text-blue-900">{totalItems}</p>
+            <p className="text-xs text-blue-600 font-medium">Materials</p>
+            <p className="text-lg font-bold text-blue-900">{totalItems}</p>{' '}
+            {/* Smaller text */}
           </div>
-          <div className="bg-blue-200 p-3 rounded-full">
+          <div className="bg-blue-200 p-2 rounded-full">
+            {' '}
+            {/* Smaller icon container */}
             <svg
-              className="w-6 h-6 text-blue-600"
+              className="w-4 h-4 text-blue-600" /* Smaller icon */
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -101,20 +106,17 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
           </div>
         </div>
       </div>
-
-      <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200 shadow-sm">
+      <div className="bg-gradient-to-br from-green-50 to-green-100 p-2 rounded-md border border-green-200 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-green-600 font-medium mb-1">
-              Total Stock
-            </p>
-            <p className="text-2xl font-bold text-green-900">
+            <p className="text-xs text-green-600 font-medium">Stock</p>
+            <p className="text-lg font-bold text-green-900">
               {formatNumber(totalStock)}
             </p>
           </div>
-          <div className="bg-green-200 p-3 rounded-full">
+          <div className="bg-green-200 p-2 rounded-full">
             <svg
-              className="w-6 h-6 text-green-600"
+              className="w-4 h-4 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -129,20 +131,17 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
           </div>
         </div>
       </div>
-
-      <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200 shadow-sm">
+      <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-2 rounded-md border border-orange-200 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-orange-600 font-medium mb-1">
-              Total Purchase
-            </p>
-            <p className="text-2xl font-bold text-orange-900">
+            <p className="text-xs text-orange-600 font-medium">Purchase</p>
+            <p className="text-lg font-bold text-orange-900">
               {formatNumber(totalPurchase)}
             </p>
           </div>
-          <div className="bg-orange-200 p-3 rounded-full">
+          <div className="bg-orange-200 p-2 rounded-full">
             <svg
-              className="w-6 h-6 text-orange-600"
+              className="w-4 h-4 text-orange-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"

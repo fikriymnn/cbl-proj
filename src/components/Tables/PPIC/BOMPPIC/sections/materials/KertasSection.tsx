@@ -10,12 +10,21 @@ interface KertasSectionProps {
     value: string | number,
   ) => void;
   formatNumber: (value: number | string) => string;
+  getInputDisplayValue: (
+    section: string,
+    index: number,
+    field: string,
+    actualValue: number,
+  ) => string;
+  handleInputBlur: (section: string, index: number, field: string) => void;
 }
 
 const KertasSection: React.FC<KertasSectionProps> = ({
   items,
   onItemChange,
   formatNumber,
+  getInputDisplayValue,
+  handleInputBlur,
 }) => {
   if (items.length === 0) return null;
 
@@ -50,9 +59,10 @@ const KertasSection: React.FC<KertasSectionProps> = ({
       render: (value: number, item: BOMPPICKertas, index: number) => (
         <input
           type="text"
-          value={formatNumber(value)}
+          value={getInputDisplayValue('kertas', index, 'qty_stok', value)}
           onChange={(e) => onItemChange(index, 'qty_stok', e.target.value)}
-          className="w-full px-3 py-2  border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium bg-white"
+          onBlur={() => handleInputBlur('kertas', index, 'qty_stok')}
+          className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium bg-white"
           placeholder="0"
         />
       ),
@@ -65,9 +75,10 @@ const KertasSection: React.FC<KertasSectionProps> = ({
       render: (value: number, item: BOMPPICKertas, index: number) => (
         <input
           type="text"
-          value={formatNumber(value)}
+          value={getInputDisplayValue('kertas', index, 'qty_beli', value)}
           onChange={(e) => onItemChange(index, 'qty_beli', e.target.value)}
-          className="w-full px-3 py-2  border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"
+          onBlur={() => handleInputBlur('kertas', index, 'qty_beli')}
+          className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"
           placeholder="0"
         />
       ),

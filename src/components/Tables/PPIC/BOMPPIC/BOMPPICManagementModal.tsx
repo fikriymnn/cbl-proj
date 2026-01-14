@@ -50,6 +50,11 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
   const [lemItems, setLemItems] = useState<BOMPPICLem[]>([]);
   const [lainLainItems, setLainLainItems] = useState<LainLainItem[]>([]);
 
+  // New state for tracking input display values
+  const [inputDisplayValues, setInputDisplayValues] = useState<{
+    [key: string]: string;
+  }>({});
+
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -119,12 +124,57 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       setBomDetails(bomData);
 
       const initializedData = initializeCreateMode(bomData);
-      setKertasItems(initializedData.kertasItems);
-      setTintaItems(initializedData.tintaItems);
-      setCorrugatedItems(initializedData.corrugatedItems);
-      setPolibanItems(initializedData.polibanItems);
-      setCoatingItems(initializedData.coatingItems);
-      setLemItems(initializedData.lemItems);
+
+      // Initialize with default beli = qty
+      const initializedKertas = initializedData.kertasItems.map((item) => ({
+        ...item,
+        qty_beli: item.qty_beli || item.qty_lembar_plano || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
+
+      const initializedTinta = initializedData.tintaItems.map((tinta) => ({
+        ...tinta,
+        tinta_detail: tinta.tinta_detail.map((detail) => ({
+          ...detail,
+          qty_beli: detail.qty_beli || detail.qty_tinta || 0,
+          qty_stok: detail.qty_stok || 0,
+        })),
+      }));
+
+      const initializedCorrugated = initializedData.corrugatedItems.map(
+        (item) => ({
+          ...item,
+          qty_beli: item.qty_beli || item.qty_corrugated || 0,
+          qty_stok: item.qty_stok || 0,
+        }),
+      );
+
+      const initializedPoliban = initializedData.polibanItems.map((item) => ({
+        ...item,
+        qty_beli: item.qty_beli || item.qty_poliban || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
+
+      const initializedCoating = initializedData.coatingItems.map((item) => ({
+        ...item,
+        qty_beli_coating_depan: item.qty_beli_coating_depan || 0,
+        qty_stok_coating_depan: item.qty_stok_coating_depan || 0,
+        qty_beli_coating_belakang: item.qty_beli_coating_belakang || 0,
+        qty_stok_coating_belakang: item.qty_stok_coating_belakang || 0,
+      }));
+
+      const initializedLem = initializedData.lemItems.map((item) => ({
+        ...item,
+        qty_beli: item.qty_beli || item.qty_lem || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
+
+      setKertasItems(initializedKertas);
+      setTintaItems(initializedTinta);
+      setCorrugatedItems(initializedCorrugated);
+      setPolibanItems(initializedPoliban);
+      setCoatingItems(initializedCoating);
+      setLemItems(initializedLem);
       setLainLainItems(initializedData.lainLainItems);
     } else {
       throw new Error('Invalid BOM response structure');
@@ -143,28 +193,332 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
   };
 
   const initializeEditMode = (bomData: BOMData) => {
-    setKertasItems(bomData.bom_ppic_kertas || []);
-    setTintaItems(bomData.bom_ppic_tinta || []);
-    setCorrugatedItems(bomData.bom_ppic_corrugated || []);
-    setPolibanItems(bomData.bom_ppic_poliban || []);
-    setCoatingItems(bomData.bom_ppic_coating || []);
-    setLemItems(bomData.bom_ppic_lem || []);
+    // Initialize Kertas with qty as default for beli if beli is 0 or undefined
+    const initializedKertas = (bomData.bom_ppic_kertas || []).map((item) => ({
+      ...item,
+      qty_beli: item.qty_beli || item.qty_lembar_plano || 0,
+      qty_stok: item.qty_stok || 0,
+    }));
+
+    // Initialize Tinta
+    const initializedTinta = (bomData.bom_ppic_tinta || []).map((tinta) => ({
+      ...tinta,
+      tinta_detail: tinta.tinta_detail.map((detail) => ({
+        ...detail,
+        qty_beli: detail.qty_beli || detail.qty_tinta || 0,
+        qty_stok: detail.qty_stok || 0,
+      })),
+    }));
+
+    // Initialize Corrugated
+    const initializedCorrugated = (bomData.bom_ppic_corrugated || []).map(
+      (item) => ({
+        ...item,
+        qty_beli: item.qty_beli || item.qty_corrugated || 0,
+        qty_stok: item.qty_stok || 0,
+      }),
+    );
+
+    // Initialize Poliban
+    const initializedPoliban = (bomData.bom_ppic_poliban || []).map((item) => ({
+      ...item,
+      qty_beli: item.qty_beli || item.qty_poliban || 0,
+      qty_stok: item.qty_stok || 0,
+    }));
+
+    // Initialize Coating
+    const initializedCoating = (bomData.bom_ppic_coating || []).map((item) => ({
+      ...item,
+      qty_beli_coating_depan: item.qty_beli_coating_depan || 0,
+      qty_stok_coating_depan: item.qty_stok_coating_depan || 0,
+      qty_beli_coating_belakang: item.qty_beli_coating_belakang || 0,
+      qty_stok_coating_belakang: item.qty_stok_coating_belakang || 0,
+    }));
+
+    // Initialize Lem
+    const initializedLem = (bomData.bom_ppic_lem || []).map((item) => ({
+      ...item,
+      qty_beli: item.qty_beli || item.qty_lem || 0,
+      qty_stok: item.qty_stok || 0,
+    }));
+
+    setKertasItems(initializedKertas);
+    setTintaItems(initializedTinta);
+    setCorrugatedItems(initializedCorrugated);
+    setPolibanItems(initializedPoliban);
+    setCoatingItems(initializedCoating);
+    setLemItems(initializedLem);
     setLainLainItems(bomData.lain_lain || []);
   };
 
+  // ========================================
+  // NUMBER FORMATTING FUNCTIONS
+  // ========================================
+
   const formatNumber = (value: number | string): string => {
+    if (value === '' || value === null || value === undefined) return '';
     const num = typeof value === 'string' ? parseFloat(value) : value;
-    if (isNaN(num)) return '0';
+    if (isNaN(num)) return '';
     return new Intl.NumberFormat('id-ID', {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: 9,
     }).format(num);
   };
 
   const parseFormattedNumber = (value: string): number => {
-    const cleaned = value.replace(/\./g, '').replace(/,/g, '.');
+    if (!value || value === '') return 0;
+    // Remove thousand separators (.) and replace decimal comma (,) with dot
+    const cleaned = value.replace(/\./g, '').replace(',', '.');
     const num = parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
+  };
+
+  // Handle input formatting while typing
+  const handleNumberInputFormat = (value: string): string => {
+    // Allow empty string
+    if (value === '') return '';
+
+    // Remove all characters except digits, comma, and dot
+    let cleaned = value.replace(/[^\d,.]/g, '');
+
+    // Handle multiple commas - keep only the first one
+    const commaCount = (cleaned.match(/,/g) || []).length;
+    if (commaCount > 1) {
+      const firstCommaIndex = cleaned.indexOf(',');
+      cleaned =
+        cleaned.substring(0, firstCommaIndex + 1) +
+        cleaned.substring(firstCommaIndex + 1).replace(/,/g, '');
+    }
+
+    // Split by comma to handle integer and decimal parts
+    const parts = cleaned.split(',');
+
+    if (parts.length > 1) {
+      // Has decimal part
+      const integerPart = parts[0].replace(/\./g, ''); // Remove existing dots
+      const decimalPart = parts[1].substring(0, 9); // Max 9 decimal places
+
+      // Format integer part with thousand separators
+      const formattedInteger = integerPart.replace(
+        /\B(?=(\d{3})+(?!\d))/g,
+        '.',
+      );
+
+      return `${formattedInteger},${decimalPart}`;
+    } else {
+      // No decimal part yet
+      const integerPart = cleaned.replace(/\./g, '');
+      return integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+  };
+
+  // Get input display value
+  const getInputDisplayValue = (
+    section: string,
+    index: number,
+    field: string,
+    actualValue: number,
+  ): string => {
+    const key = `${section}-${index}-${field}`;
+    return inputDisplayValues[key] !== undefined
+      ? inputDisplayValues[key]
+      : formatNumber(actualValue);
+  };
+
+  // Clear display value on blur
+  const handleInputBlur = (section: string, index: number, field: string) => {
+    const key = `${section}-${index}-${field}`;
+    setInputDisplayValues((prev) => {
+      const newState = { ...prev };
+      delete newState[key];
+      return newState;
+    });
+  };
+
+  // ========================================
+  // MATERIAL CHANGE HANDLERS
+  // ========================================
+
+  const handleKertasChange = (
+    index: number,
+    field: keyof BOMPPICKertas,
+    value: string | number,
+  ) => {
+    const updatedItems = [...kertasItems];
+
+    if (typeof value === 'string') {
+      // Store display value
+      const key = `kertas-${index}-${field}`;
+      const formattedValue = handleNumberInputFormat(value);
+
+      // Update display state
+      setInputDisplayValues((prev) => ({
+        ...prev,
+        [key]: formattedValue,
+      }));
+
+      // Update actual numeric value
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: parseFormattedNumber(formattedValue),
+      };
+    } else {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: value,
+      };
+    }
+
+    setKertasItems(updatedItems);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleCorrugatedChange = (
+    index: number,
+    field: keyof BOMPPICCorrugated,
+    value: string | number,
+  ) => {
+    const updatedItems = [...corrugatedItems];
+
+    if (typeof value === 'string') {
+      const key = `corrugated-${index}-${field}`;
+      const formattedValue = handleNumberInputFormat(value);
+
+      setInputDisplayValues((prev) => ({
+        ...prev,
+        [key]: formattedValue,
+      }));
+
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: parseFormattedNumber(formattedValue),
+      };
+    } else {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: value,
+      };
+    }
+
+    setCorrugatedItems(updatedItems);
+    setHasUnsavedChanges(true);
+  };
+
+  const handlePolibanChange = (
+    index: number,
+    field: keyof BOMPPICPoliban,
+    value: string | number,
+  ) => {
+    const updatedItems = [...polibanItems];
+
+    if (typeof value === 'string') {
+      const key = `poliban-${index}-${field}`;
+      const formattedValue = handleNumberInputFormat(value);
+
+      setInputDisplayValues((prev) => ({
+        ...prev,
+        [key]: formattedValue,
+      }));
+
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: parseFormattedNumber(formattedValue),
+      };
+    } else {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: value,
+      };
+    }
+
+    setPolibanItems(updatedItems);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleCoatingChange = (
+    index: number,
+    field: keyof BOMPPICCoating,
+    value: string | number,
+  ) => {
+    const updatedItems = [...coatingItems];
+
+    if (typeof value === 'string') {
+      const key = `coating-${index}-${field}`;
+      const formattedValue = handleNumberInputFormat(value);
+
+      setInputDisplayValues((prev) => ({
+        ...prev,
+        [key]: formattedValue,
+      }));
+
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: parseFormattedNumber(formattedValue),
+      };
+    } else {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: value,
+      };
+    }
+
+    setCoatingItems(updatedItems);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleLemChange = (
+    index: number,
+    field: keyof BOMPPICLem,
+    value: string | number,
+  ) => {
+    const updatedItems = [...lemItems];
+
+    if (typeof value === 'string') {
+      const key = `lem-${index}-${field}`;
+      const formattedValue = handleNumberInputFormat(value);
+
+      setInputDisplayValues((prev) => ({
+        ...prev,
+        [key]: formattedValue,
+      }));
+
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: parseFormattedNumber(formattedValue),
+      };
+    } else {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: value,
+      };
+    }
+
+    setLemItems(updatedItems);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleTintaDetailChange = (
+    tintaIndex: number,
+    detailIndex: number,
+    field: 'qty_beli' | 'qty_stok',
+    value: string,
+  ) => {
+    const updatedItems = [...tintaItems];
+    const key = `tinta-${tintaIndex}-${detailIndex}-${field}`;
+    const formattedValue = handleNumberInputFormat(value);
+
+    setInputDisplayValues((prev) => ({
+      ...prev,
+      [key]: formattedValue,
+    }));
+
+    updatedItems[tintaIndex].tinta_detail[detailIndex] = {
+      ...updatedItems[tintaIndex].tinta_detail[detailIndex],
+      [field]: parseFormattedNumber(formattedValue),
+    };
+
+    setTintaItems(updatedItems);
+    setHasUnsavedChanges(true);
   };
 
   const handleLainLainChange = (
@@ -173,10 +527,28 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     value: string | number | boolean,
   ) => {
     const updatedItems = [...lainLainItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      [field]: value,
-    };
+
+    // Handle number fields with proper parsing
+    if (field === 'harga' && typeof value === 'string') {
+      const key = `lainlain-${index}-${field}`;
+      const formattedValue = handleNumberInputFormat(value);
+
+      setInputDisplayValues((prev) => ({
+        ...prev,
+        [key]: formattedValue,
+      }));
+
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: parseFormattedNumber(formattedValue),
+      };
+    } else {
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [field]: value,
+      };
+    }
+
     setLainLainItems(updatedItems);
     setHasUnsavedChanges(true);
   };
@@ -233,7 +605,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         data: payload,
         withCredentials: true,
       });
-
+      console.log('Payload to be sent:', payload);
       alert(
         isEditMode
           ? 'BOM PPIC updated successfully!'
@@ -264,91 +636,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     } else {
       onClose();
     }
-  };
-
-  const handleKertasChange = (
-    index: number,
-    field: keyof BOMPPICKertas,
-    value: string | number,
-  ) => {
-    const updatedItems = [...kertasItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      [field]: typeof value === 'string' ? parseFormattedNumber(value) : value,
-    };
-    setKertasItems(updatedItems);
-    setHasUnsavedChanges(true);
-  };
-
-  const handleCorrugatedChange = (
-    index: number,
-    field: keyof BOMPPICCorrugated,
-    value: string | number,
-  ) => {
-    const updatedItems = [...corrugatedItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      [field]: typeof value === 'string' ? parseFormattedNumber(value) : value,
-    };
-    setCorrugatedItems(updatedItems);
-    setHasUnsavedChanges(true);
-  };
-
-  const handlePolibanChange = (
-    index: number,
-    field: keyof BOMPPICPoliban,
-    value: string | number,
-  ) => {
-    const updatedItems = [...polibanItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      [field]: typeof value === 'string' ? parseFormattedNumber(value) : value,
-    };
-    setPolibanItems(updatedItems);
-    setHasUnsavedChanges(true);
-  };
-
-  const handleCoatingChange = (
-    index: number,
-    field: keyof BOMPPICCoating,
-    value: string | number,
-  ) => {
-    const updatedItems = [...coatingItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      [field]: typeof value === 'string' ? parseFormattedNumber(value) : value,
-    };
-    setCoatingItems(updatedItems);
-    setHasUnsavedChanges(true);
-  };
-
-  const handleLemChange = (
-    index: number,
-    field: keyof BOMPPICLem,
-    value: string | number,
-  ) => {
-    const updatedItems = [...lemItems];
-    updatedItems[index] = {
-      ...updatedItems[index],
-      [field]: typeof value === 'string' ? parseFormattedNumber(value) : value,
-    };
-    setLemItems(updatedItems);
-    setHasUnsavedChanges(true);
-  };
-
-  const handleTintaDetailChange = (
-    tintaIndex: number,
-    detailIndex: number,
-    field: 'qty_beli' | 'qty_stok',
-    value: string,
-  ) => {
-    const updatedItems = [...tintaItems];
-    updatedItems[tintaIndex].tinta_detail[detailIndex] = {
-      ...updatedItems[tintaIndex].tinta_detail[detailIndex],
-      [field]: parseFormattedNumber(value),
-    };
-    setTintaItems(updatedItems);
-    setHasUnsavedChanges(true);
   };
 
   if (!bomDetails) {
@@ -409,7 +696,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         </div>
 
         {/* Info and Summary Section */}
-        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0 bg-gray-50">
+        <div className="px-6 py-2 border-b border-gray-200 flex-shrink-0 bg-gray-50">
           <BOMPPICInfoSection bomDetails={bomDetails} />
           <BOMPPICSummaryCards
             kertasItems={kertasItems}
@@ -447,36 +734,48 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
                 items={kertasItems}
                 onItemChange={handleKertasChange}
                 formatNumber={formatNumber}
+                getInputDisplayValue={getInputDisplayValue}
+                handleInputBlur={handleInputBlur}
               />
 
               <TintaSection
                 items={tintaItems}
                 onDetailChange={handleTintaDetailChange}
                 formatNumber={formatNumber}
+                getInputDisplayValue={getInputDisplayValue}
+                handleInputBlur={handleInputBlur}
               />
 
               <CorrugatedSection
                 items={corrugatedItems}
                 onItemChange={handleCorrugatedChange}
                 formatNumber={formatNumber}
+                getInputDisplayValue={getInputDisplayValue}
+                handleInputBlur={handleInputBlur}
               />
 
               <PolibanSection
                 items={polibanItems}
                 onItemChange={handlePolibanChange}
                 formatNumber={formatNumber}
+                getInputDisplayValue={getInputDisplayValue}
+                handleInputBlur={handleInputBlur}
               />
 
               <CoatingSection
                 items={coatingItems}
                 onItemChange={handleCoatingChange}
                 formatNumber={formatNumber}
+                getInputDisplayValue={getInputDisplayValue}
+                handleInputBlur={handleInputBlur}
               />
 
               <LemSection
                 items={lemItems}
                 onItemChange={handleLemChange}
                 formatNumber={formatNumber}
+                getInputDisplayValue={getInputDisplayValue}
+                handleInputBlur={handleInputBlur}
               />
 
               <LainLainSection
@@ -486,6 +785,8 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
                 onRemoveItem={handleRemoveLainLainItem}
                 formatNumber={formatNumber}
                 parseFormattedNumber={parseFormattedNumber}
+                getInputDisplayValue={getInputDisplayValue}
+                handleInputBlur={handleInputBlur}
               />
             </div>
           )}
