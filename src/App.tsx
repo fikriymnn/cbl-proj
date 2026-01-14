@@ -245,6 +245,7 @@ import KabagApprovalHistory from './pages/Marketing/Kabag/KabagApprovalHistory';
 import BukaLKHPage from './pages/Produksi/MonitoringLKH/BukaLKHPage';
 import PerubahanTglKirimPage from './pages/PPIC/PerubahanTglKirimPage';
 import MasterMenu from './pages/MasterData/MasterMenu';
+import AbsenPPICPage from './pages/PPIC/AbsenPPIC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1715,6 +1716,15 @@ function App() {
               <ProtectedRoute>
                 <PengajuanAllDept />
               </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/absensi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AbsenPPICPage />
             </>
           }
         />

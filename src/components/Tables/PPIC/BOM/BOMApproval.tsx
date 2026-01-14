@@ -3,8 +3,16 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import BOMManagementModal from './BOMManagementModal';
 import { SOData } from './Types/bom.types';
+import Pagination from '@mui/material/Pagination/Pagination';
+import Stack from '@mui/material/Stack';
 
 type SortDirection = 'asc' | 'desc';
+
+interface APIResponse<T> {
+  succes: boolean;
+  data: T;
+  total_page?: number;
+}
 
 const BOMApproval: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -14,6 +22,13 @@ const BOMApproval: React.FC = () => {
   const [selectedSOId, setSelectedSOId] = useState<number | null>(null);
   const [selectedIOId, setSelectedIOId] = useState<number | null>(null);
   const [showBOMModal, setShowBOMModal] = useState<boolean>(false);
+
+  // Pagination and Search states
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchInput, setSearchInput] = useState<string>('');
 
   const handleSort = (field: string) => {
     if (sortKey === field) {
@@ -73,23 +88,49 @@ const BOMApproval: React.FC = () => {
     );
   };
 
-  const truncateText = (text: string, maxLength: number) => {
-    if (!text) return '-';
-    return text.length > maxLength
-      ? `${text.substring(0, maxLength)}...`
-      : text;
+  const handleSearch = (): void => {
+    setSearchTerm(searchInput);
+    setPage(1); // Reset to first page on new search
+  };
+
+  const handleClearSearch = (): void => {
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleLimitChange = (newLimit: number): void => {
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
   };
 
   const fetchSOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
     try {
       setLoading(true);
-      const res: AxiosResponse = await axios.get(url, {
-        params: { status: 'history' },
+      const res: AxiosResponse<APIResponse<SOData[]>> = await axios.get(url, {
+        params: {
+          status: 'history',
+          page: page,
+          limit: limit,
+          search: searchTerm,
+          status_bom: 'requested',
+        },
         withCredentials: true,
       });
       console.log('Fetched SO data:', res.data);
-      setSOData(res.data.data || []);
+      if (res.data.succes) {
+        setSOData(res.data.data || []);
+        if (res.data.total_page) {
+          setTotalPages(res.data.total_page);
+        }
+      }
     } catch (error) {
       console.error('Error fetching SO data:', error);
       setSOData([]);
@@ -156,7 +197,9 @@ const BOMApproval: React.FC = () => {
           </span>
           {item.bom?.no_bom && (
             <span className="text-xs text-gray-600" title={item.bom.no_bom}>
-              {truncateText(item.bom.no_bom, 15)}
+              {item.bom.no_bom.length > 15
+                ? item.bom.no_bom.substring(0, 15) + '...'
+                : item.bom.no_bom}
             </span>
           )}
         </div>
@@ -226,7 +269,7 @@ const BOMApproval: React.FC = () => {
 
   useEffect(() => {
     fetchSOData();
-  }, []);
+  }, [page, limit, searchTerm]);
 
   const sortedData = React.useMemo(() => {
     const sorted = [...soData].sort((a, b) => {
@@ -270,6 +313,39 @@ const BOMApproval: React.FC = () => {
 
   return (
     <div className="">
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Search</label>
+            <input
+              type="text"
+              placeholder="Search by No SO, No IO, Customer, Produk..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-end gap-2">
+            <button
+              onClick={handleSearch}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors h-[42px]"
+            >
+              Search
+            </button>
+            {searchTerm && (
+              <button
+                onClick={handleClearSearch}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors h-[42px]"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -382,7 +458,9 @@ const BOMApproval: React.FC = () => {
                     colSpan={11}
                     className="px-4 py-6 text-center text-gray-500 text-sm"
                   >
-                    No SO data available
+                    {searchTerm
+                      ? 'No SO found matching your search'
+                      : 'No SO data available'}
                   </td>
                 </tr>
               ) : (
@@ -392,7 +470,7 @@ const BOMApproval: React.FC = () => {
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {index + 1}
+                      {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
@@ -441,7 +519,10 @@ const BOMApproval: React.FC = () => {
                         className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
                         title={item.no_so}
                       >
-                        {item.no_so ? truncateText(item.no_so, 12) : '-'}
+                        {item.no_so
+                          ? item.no_so.substring(0, 20) +
+                            (item.no_so.length > 20 ? '...' : '')
+                          : '-'}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -449,17 +530,26 @@ const BOMApproval: React.FC = () => {
                         className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium"
                         title={item.no_io}
                       >
-                        {item.no_io ? truncateText(item.no_io, 12) : '-'}
+                        {item.no_io
+                          ? item.no_io.substring(0, 20) +
+                            (item.no_io.length > 20 ? '...' : '')
+                          : '-'}
                       </span>
                     </td>
                     <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                       <span title={item.customer}>
-                        {truncateText(item.customer, 15)}
+                        {item.customer
+                          ? item.customer.substring(0, 50) +
+                            (item.customer.length > 50 ? '...' : '')
+                          : '-'}
                       </span>
                     </td>
-                    <td className="px-2 py-2 text-xs text-gray-900 max-w-40">
+                    <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                       <span title={item.produk}>
-                        {truncateText(item.produk, 20)}
+                        {item.produk
+                          ? item.produk.substring(0, 90) +
+                            (item.produk.length > 90 ? '...' : '')
+                          : '-'}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -469,7 +559,10 @@ const BOMApproval: React.FC = () => {
                         )}`}
                         title={item.status_jo}
                       >
-                        {truncateText(item.status_jo, 8)}
+                        {item.status_jo
+                          ? item.status_jo.substring(0, 8) +
+                            (item.status_jo.length > 8 ? '...' : '')
+                          : '-'}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
@@ -485,7 +578,8 @@ const BOMApproval: React.FC = () => {
                           )}`}
                           title={item.bom.status_proses}
                         >
-                          {truncateText(item.bom.status_proses, 8)}
+                          {item.bom.status_proses.substring(0, 8) +
+                            (item.bom.status_proses.length > 8 ? '...' : '')}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-400">-</span>
@@ -510,6 +604,41 @@ const BOMApproval: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Pagination with Rows per page selector */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600">Rows per page:</span>
+          <div className="flex gap-2">
+            {[10, 25, 50, 100].map((pageSize) => (
+              <button
+                key={pageSize}
+                onClick={() => handleLimitChange(pageSize)}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  limit === pageSize
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {pageSize}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              color="primary"
+              onChange={(e, i) => {
+                setPage(i);
+              }}
+            />
+          </Stack>
         </div>
       </div>
 

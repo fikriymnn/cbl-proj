@@ -467,6 +467,11 @@ export const menuCategories: MenuCategory[] = [
         icon: 'recap',
       },
       {
+        name: 'Absensi',
+        path: '/ppic/absensi',
+        icon: 'attendance',
+      },
+      {
         name: 'BOM',
         path: '#',
         icon: 'bom',

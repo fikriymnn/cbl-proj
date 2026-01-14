@@ -192,11 +192,14 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
           break;
       }
 
-      summary.baik += proses.baik;
-      summary.rusak_sebagian += proses.rusak_sebagian;
-      summary.rusak_total += proses.rusak_total;
-      summary.total_qty =
-        summary.baik + summary.rusak_sebagian + summary.rusak_total;
+      // Only sum quantities if is_final_result is true
+      if (proses.is_final_result) {
+        summary.baik += proses.baik;
+        summary.rusak_sebagian += proses.rusak_sebagian;
+        summary.rusak_total += proses.rusak_total;
+        summary.total_qty =
+          summary.baik + summary.rusak_sebagian + summary.rusak_total;
+      }
     });
 
     return Array.from(tahapanMap.values());
@@ -432,8 +435,8 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
                   {lkhData.produksi_lkh_proses
                     .sort(
                       (a, b) =>
-                        new Date(a.waktu_mulai).getTime() -
-                        new Date(b.waktu_mulai).getTime(),
+                        new Date(b.waktu_mulai).getTime() -
+                        new Date(a.waktu_mulai).getTime(),
                     )
                     .map((proses) => (
                       <tr key={proses.id} className="hover:bg-gray-50">

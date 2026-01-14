@@ -636,6 +636,7 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/ppic/outstanding'),
       fullAccess('/ppic/recap'),
       fullAccess('/ppic/perubahan-tanggal-kirim'),
+      fullAccess('/ppic/absensi'),
       // BOM
       fullAccess('/ppic/bom/create'),
       fullAccess('/ppic/bom/approval'),
@@ -674,6 +675,7 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/ppic/delivery-schedule'),
       readOnly('/ppic/outstanding'),
       readOnly('/ppic/recap'),
+      fullAccess('/ppic/absensi'),
       fullAccess('/ppic/perubahan-tanggal-kirim'),
       // BOM
       fullAccess('/ppic/bom/create'),

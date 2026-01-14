@@ -264,6 +264,9 @@ export interface SOData {
   is_io_selesai: any;
   no_booking: any;
   label?: string;
+  job_order?: {
+    no_jo: string;
+  };
 }
 
 export interface SOFormData {

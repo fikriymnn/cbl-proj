@@ -355,14 +355,11 @@ const HistorySO: React.FC = () => {
                     </button>
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <button
-                      onClick={() => handleSort('no_io')}
-                      className="flex items-center hover:text-gray-700 focus:outline-none"
-                    >
-                      NO IO
-                      {getSortIcon('no_io')}
+                    <button className="flex items-center hover:text-gray-700 focus:outline-none">
+                      NOMOR
                     </button>
                   </th>
+
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
                       onClick={() => handleSort('customer')}
@@ -511,17 +508,27 @@ const HistorySO: React.FC = () => {
                             : '-'}
                         </span>
                       </td>
-                      <td className="px-2 py-2 whitespace-nowrap">
-                        <span
-                          className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                      <td className="px-2 py-2 whitespace-nowrap gap-1">
+                        <div
+                          className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium mb-2"
                           title={item.no_io}
                         >
                           {item.no_io
                             ? item.no_io.substring(0, 20) +
                               (item.no_io.length > 20 ? '...' : '')
                             : '-'}
-                        </span>
+                        </div>
+                        <div
+                          className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                          title={item.job_order?.no_jo}
+                        >
+                          {item.job_order?.no_jo
+                            ? item.job_order.no_jo.substring(0, 20) +
+                              (item.job_order.no_jo.length > 20 ? '...' : '')
+                            : '-'}
+                        </div>
                       </td>
+
                       <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                         <span title={item.customer}>
                           {item.customer
