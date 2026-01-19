@@ -119,7 +119,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           withCredentials: true,
         },
       );
-
       if (response.data?.data) {
         const fetchedSOData = response.data.data;
         setSOData(fetchedSOData);
@@ -236,7 +235,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           withCredentials: true,
         },
       );
-
+      console.log('IO Data Response:', response.data);
       if (response.data?.data) {
         const ioData = response.data.data;
         const mountings = ioData.io_mounting || [];
@@ -569,13 +568,8 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                 <BOMKertasTab
                   data={bomData.bom_kertas}
                   onChange={(data) => handleBOMDataChange({ bom_kertas: data })}
-                  id_kalkulasi={soData.id_kalkulasi}
                   po_qty={soData.po_qty}
-                  id_kertas_default={selectedMounting?.id_kertas}
-                  ukuran_cetak_lebar_2={selectedMounting?.ukuran_cetak_lebar_2}
-                  ukuran_cetak_panjang_2={
-                    selectedMounting?.ukuran_cetak_panjang_2
-                  }
+                  selectedMounting={selectedMounting}
                 />
               )}
               {activeTab === 'tinta' && (

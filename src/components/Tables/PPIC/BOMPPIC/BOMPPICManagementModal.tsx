@@ -77,6 +77,22 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     try {
       setLoading(true);
 
+      // STEP 1: Always fetch the latest BOM data first
+      const bomResponse = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/ppic/bom/${bomId}`,
+        { withCredentials: true },
+      );
+
+      const latestBomData = bomResponse.data?.data || bomResponse.data;
+
+      if (!latestBomData) {
+        throw new Error('BOM data not found');
+      }
+
+      console.log('Fetched latest BOM data:', latestBomData);
+      setBomDetails(latestBomData);
+
+      // STEP 2: Try to fetch BOM PPIC data
       try {
         const bomPPICResponse = await axios.get(
           `${import.meta.env.VITE_API_LINK}/ppic/bomppic/${bomId}`,
@@ -88,14 +104,20 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         if (ppicData && hasBOMPPICData(ppicData)) {
           console.log('BOM PPIC exists, entering edit mode', ppicData);
           setIsEditMode(true);
-          setBomDetails(ppicData);
-          initializeEditMode(ppicData);
+
+          // STEP 3: Initialize with latest BOM data structure but preserve qty_beli and qty_stok from PPIC
+          initializeEditModeWithLatestBOM(latestBomData, ppicData);
         } else {
-          await fetchBOMAndInitialize();
+          // No BOM PPIC found, initialize create mode with latest BOM data
+          console.log('No BOM PPIC found, entering create mode');
+          setIsEditMode(false);
+          initializeCreateModeWithBOM(latestBomData);
         }
       } catch (ppicError: any) {
-        console.log('BOM PPIC not found, fetching from BOM endpoint');
-        await fetchBOMAndInitialize();
+        // BOM PPIC not found or error, initialize create mode with latest BOM data
+        console.log('BOM PPIC not found, entering create mode');
+        setIsEditMode(false);
+        initializeCreateModeWithBOM(latestBomData);
       }
     } catch (error: any) {
       console.error('Error fetching BOM data:', error);
@@ -110,77 +132,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     }
   };
 
-  const fetchBOMAndInitialize = async () => {
-    const bomResponse = await axios.get(
-      `${import.meta.env.VITE_API_LINK}/ppic/bom/${bomId}`,
-      { withCredentials: true },
-    );
-
-    const bomData = bomResponse.data?.data || bomResponse.data;
-
-    if (bomData) {
-      console.log('Fetched BOM data, entering create mode', bomData);
-      setIsEditMode(false);
-      setBomDetails(bomData);
-
-      const initializedData = initializeCreateMode(bomData);
-
-      // Initialize with default beli = qty
-      const initializedKertas = initializedData.kertasItems.map((item) => ({
-        ...item,
-        qty_beli: item.qty_beli || item.qty_lembar_plano || 0,
-        qty_stok: item.qty_stok || 0,
-      }));
-
-      const initializedTinta = initializedData.tintaItems.map((tinta) => ({
-        ...tinta,
-        tinta_detail: tinta.tinta_detail.map((detail) => ({
-          ...detail,
-          qty_beli: detail.qty_beli || detail.qty_tinta || 0,
-          qty_stok: detail.qty_stok || 0,
-        })),
-      }));
-
-      const initializedCorrugated = initializedData.corrugatedItems.map(
-        (item) => ({
-          ...item,
-          qty_beli: item.qty_beli || item.qty_corrugated || 0,
-          qty_stok: item.qty_stok || 0,
-        }),
-      );
-
-      const initializedPoliban = initializedData.polibanItems.map((item) => ({
-        ...item,
-        qty_beli: item.qty_beli || item.qty_poliban || 0,
-        qty_stok: item.qty_stok || 0,
-      }));
-
-      const initializedCoating = initializedData.coatingItems.map((item) => ({
-        ...item,
-        qty_beli_coating_depan: item.qty_beli_coating_depan || 0,
-        qty_stok_coating_depan: item.qty_stok_coating_depan || 0,
-        qty_beli_coating_belakang: item.qty_beli_coating_belakang || 0,
-        qty_stok_coating_belakang: item.qty_stok_coating_belakang || 0,
-      }));
-
-      const initializedLem = initializedData.lemItems.map((item) => ({
-        ...item,
-        qty_beli: item.qty_beli || item.qty_lem || 0,
-        qty_stok: item.qty_stok || 0,
-      }));
-
-      setKertasItems(initializedKertas);
-      setTintaItems(initializedTinta);
-      setCorrugatedItems(initializedCorrugated);
-      setPolibanItems(initializedPoliban);
-      setCoatingItems(initializedCoating);
-      setLemItems(initializedLem);
-      setLainLainItems(initializedData.lainLainItems);
-    } else {
-      throw new Error('Invalid BOM response structure');
-    }
-  };
-
   const hasBOMPPICData = (bomData: BOMData): boolean => {
     return !!(
       (bomData.bom_ppic_kertas && bomData.bom_ppic_kertas.length > 0) ||
@@ -192,16 +143,18 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     );
   };
 
-  const initializeEditMode = (bomData: BOMData) => {
-    // Initialize Kertas with qty as default for beli if beli is 0 or undefined
-    const initializedKertas = (bomData.bom_ppic_kertas || []).map((item) => ({
+  // NEW FUNCTION: Initialize create mode with latest BOM data
+  const initializeCreateModeWithBOM = (bomData: BOMData) => {
+    const initializedData = initializeCreateMode(bomData);
+
+    // Initialize with default beli = qty
+    const initializedKertas = initializedData.kertasItems.map((item) => ({
       ...item,
       qty_beli: item.qty_beli || item.qty_lembar_plano || 0,
       qty_stok: item.qty_stok || 0,
     }));
 
-    // Initialize Tinta
-    const initializedTinta = (bomData.bom_ppic_tinta || []).map((tinta) => ({
+    const initializedTinta = initializedData.tintaItems.map((tinta) => ({
       ...tinta,
       tinta_detail: tinta.tinta_detail.map((detail) => ({
         ...detail,
@@ -210,8 +163,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       })),
     }));
 
-    // Initialize Corrugated
-    const initializedCorrugated = (bomData.bom_ppic_corrugated || []).map(
+    const initializedCorrugated = initializedData.corrugatedItems.map(
       (item) => ({
         ...item,
         qty_beli: item.qty_beli || item.qty_corrugated || 0,
@@ -219,15 +171,13 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       }),
     );
 
-    // Initialize Poliban
-    const initializedPoliban = (bomData.bom_ppic_poliban || []).map((item) => ({
+    const initializedPoliban = initializedData.polibanItems.map((item) => ({
       ...item,
       qty_beli: item.qty_beli || item.qty_poliban || 0,
       qty_stok: item.qty_stok || 0,
     }));
 
-    // Initialize Coating
-    const initializedCoating = (bomData.bom_ppic_coating || []).map((item) => ({
+    const initializedCoating = initializedData.coatingItems.map((item) => ({
       ...item,
       qty_beli_coating_depan: item.qty_beli_coating_depan || 0,
       qty_stok_coating_depan: item.qty_stok_coating_depan || 0,
@@ -235,8 +185,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       qty_stok_coating_belakang: item.qty_stok_coating_belakang || 0,
     }));
 
-    // Initialize Lem
-    const initializedLem = (bomData.bom_ppic_lem || []).map((item) => ({
+    const initializedLem = initializedData.lemItems.map((item) => ({
       ...item,
       qty_beli: item.qty_beli || item.qty_lem || 0,
       qty_stok: item.qty_stok || 0,
@@ -248,12 +197,206 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setPolibanItems(initializedPoliban);
     setCoatingItems(initializedCoating);
     setLemItems(initializedLem);
-    setLainLainItems(bomData.lain_lain || []);
+    setLainLainItems(initializedData.lainLainItems);
   };
 
-  // ========================================
-  // NUMBER FORMATTING FUNCTIONS
-  // ========================================
+  const initializeEditModeWithLatestBOM = (
+    latestBomData: BOMData,
+    ppicData: any,
+  ) => {
+    console.log('Initializing edit mode with latest BOM structure');
+    console.log('Latest BOM Data:', latestBomData);
+    console.log('Existing PPIC Data:', ppicData);
+
+    // Get the latest BOM structure
+    const latestBomStructure = initializeCreateMode(latestBomData);
+
+    // FIXED: Helper function to match items between BOM and BOM PPIC
+    const mergeWithPPICData = <T extends { [key: string]: any }>(
+      latestItems: T[],
+      ppicItems: any[],
+      matchFields: string[], // Fields to match items (e.g., ['id_kertas', 'id_jenis_kertas'])
+      qtyFields: string[],
+    ): T[] => {
+      return latestItems.map((latestItem) => {
+        // Find matching PPIC item using multiple match fields
+        const matchingPPIC = ppicItems?.find((ppicItem) => {
+          return matchFields.every((field) => {
+            // Handle nested fields (e.g., 'id_coating' in coating items)
+            if (field.includes('.')) {
+              const [parent, child] = field.split('.');
+              return latestItem[parent]?.[child] === ppicItem[parent]?.[child];
+            }
+            return latestItem[field] === ppicItem[field];
+          });
+        });
+
+        if (matchingPPIC) {
+          console.log(`Found matching PPIC for:`, latestItem, matchingPPIC);
+          // Preserve qty_beli and qty_stok from PPIC data
+          const preservedValues: any = {};
+          qtyFields.forEach((field) => {
+            if (
+              matchingPPIC[field] !== undefined &&
+              matchingPPIC[field] !== null
+            ) {
+              preservedValues[field] = matchingPPIC[field];
+            }
+          });
+          return { ...latestItem, ...preservedValues };
+        }
+
+        // If no match found, use default values from latest BOM
+        console.log(`No matching PPIC found for:`, latestItem);
+        const defaultValues: any = {};
+        qtyFields.forEach((field) => {
+          if (field.includes('beli')) {
+            // Set beli to qty value from BOM
+            const baseQtyField = field
+              .replace('qty_beli_', 'qty_')
+              .replace('qty_beli', 'qty_');
+
+            // Handle different naming conventions
+            if (latestItem[baseQtyField] !== undefined) {
+              defaultValues[field] = latestItem[baseQtyField] || 0;
+            } else if (latestItem['qty_lembar_plano'] !== undefined) {
+              defaultValues[field] = latestItem['qty_lembar_plano'] || 0;
+            } else if (latestItem['qty_corrugated'] !== undefined) {
+              defaultValues[field] = latestItem['qty_corrugated'] || 0;
+            } else if (latestItem['qty_poliban'] !== undefined) {
+              defaultValues[field] = latestItem['qty_poliban'] || 0;
+            } else if (latestItem['qty_lem'] !== undefined) {
+              defaultValues[field] = latestItem['qty_lem'] || 0;
+            } else {
+              defaultValues[field] = 0;
+            }
+          } else if (field.includes('stok')) {
+            defaultValues[field] = 0;
+          }
+        });
+        return { ...latestItem, ...defaultValues };
+      });
+    };
+
+    const initializedKertas = mergeWithPPICData(
+      latestBomStructure.kertasItems,
+      ppicData.bom_ppic_kertas || [],
+      ['id_kertas', 'id_jenis_kertas'], // Match fields
+      ['qty_beli', 'qty_stok'],
+    );
+
+    // Initialize Tinta (special case with nested tinta_detail)
+    const initializedTinta = latestBomStructure.tintaItems.map(
+      (latestTinta) => {
+        const matchingPPICTinta = ppicData.bom_ppic_tinta?.find(
+          (ppicTinta: any) =>
+            ppicTinta.id_jenis_tinta === latestTinta.id_jenis_tinta &&
+            ppicTinta.id_jenis_kertas === latestTinta.id_jenis_kertas,
+        );
+
+        return {
+          ...latestTinta,
+          tinta_detail: latestTinta.tinta_detail.map((latestDetail) => {
+            const matchingPPICDetail = matchingPPICTinta?.tinta_detail?.find(
+              (ppicDetail: any) =>
+                ppicDetail.id_item_tinta === latestDetail.id_item_tinta,
+            );
+
+            if (matchingPPICDetail) {
+              console.log('Found matching tinta detail:', matchingPPICDetail);
+              return {
+                ...latestDetail,
+                qty_beli: matchingPPICDetail.qty_beli || 0,
+                qty_stok: matchingPPICDetail.qty_stok || 0,
+              };
+            }
+
+            return {
+              ...latestDetail,
+              qty_beli: latestDetail.qty_tinta || 0,
+              qty_stok: 0,
+            };
+          }),
+        };
+      },
+    );
+    const initializedCorrugated = mergeWithPPICData(
+      latestBomStructure.corrugatedItems,
+      ppicData.bom_ppic_corrugated || [],
+      ['id_corrugated'],
+      ['qty_beli', 'qty_stok'],
+    );
+
+    // Initialize Poliban - match by id_poliban
+    const initializedPoliban = mergeWithPPICData(
+      latestBomStructure.polibanItems,
+      ppicData.bom_ppic_poliban || [],
+      ['id_poliban'],
+      ['qty_beli', 'qty_stok'],
+    );
+
+    // Initialize Coating - match by id_coating and tipe_coating
+    const initializedCoating = latestBomStructure.coatingItems.map(
+      (latestItem) => {
+        const matchingPPIC = ppicData.bom_ppic_coating?.find(
+          (ppicItem: any) =>
+            ppicItem.id_coating === latestItem.id_coating &&
+            ppicItem.tipe_coating === latestItem.tipe_coating,
+        );
+
+        if (matchingPPIC) {
+          console.log('Found matching coating:', matchingPPIC);
+          return {
+            ...latestItem,
+            qty_beli_coating_depan: matchingPPIC.qty_beli_coating_depan || 0,
+            qty_stok_coating_depan: matchingPPIC.qty_stok_coating_depan || 0,
+            qty_beli_coating_belakang:
+              matchingPPIC.qty_beli_coating_belakang || 0,
+            qty_stok_coating_belakang:
+              matchingPPIC.qty_stok_coating_belakang || 0,
+          };
+        }
+
+        return {
+          ...latestItem,
+          qty_beli_coating_depan:
+            latestItem.tipe_coating === 'Depan'
+              ? latestItem.qty_coating || 0
+              : 0,
+          qty_stok_coating_depan: 0,
+          qty_beli_coating_belakang:
+            latestItem.tipe_coating === 'Belakang'
+              ? latestItem.qty_coating || 0
+              : 0,
+          qty_stok_coating_belakang: 0,
+        };
+      },
+    );
+
+    // Initialize Lem - match by id_lem
+    const initializedLem = mergeWithPPICData(
+      latestBomStructure.lemItems,
+      ppicData.bom_ppic_lem || [],
+      ['id_lem'],
+      ['qty_beli', 'qty_stok'],
+    );
+
+    // Initialize Lain-lain - preserve from PPIC
+    const initializedLainLain =
+      ppicData.lain_lain || latestBomStructure.lainLainItems;
+
+    console.log('Initialized Kertas:', initializedKertas);
+    console.log('Initialized Tinta:', initializedTinta);
+    console.log('Initialized Coating:', initializedCoating);
+
+    setKertasItems(initializedKertas);
+    setTintaItems(initializedTinta);
+    setCorrugatedItems(initializedCorrugated);
+    setPolibanItems(initializedPoliban);
+    setCoatingItems(initializedCoating);
+    setLemItems(initializedLem);
+    setLainLainItems(initializedLainLain);
+  };
 
   const formatNumber = (value: number | string): string => {
     if (value === '' || value === null || value === undefined) return '';
@@ -575,6 +718,71 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     try {
       setLoading(true);
 
+      // FIXED: Clean the data before sending - remove BOM IDs, keep only PPIC-specific data
+      const cleanKertasItems = kertasItems.map(
+        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
+          id_kertas: item.id_kertas,
+          id_jenis_kertas: item.id_jenis_kertas,
+          qty_beli: item.qty_beli || 0,
+          qty_stok: item.qty_stok || 0,
+        }),
+      );
+
+      const cleanTintaItems = tintaItems.map(
+        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
+          id_jenis_tinta: item.id_jenis_tinta,
+          id_jenis_kertas: item.id_jenis_kertas,
+          tinta_detail: item.tinta_detail.map(
+            ({ id, id_bom_tinta, createdAt, updatedAt, ...detail }) => ({
+              id_item_tinta: detail.id_item_tinta,
+              qty_beli: detail.qty_beli || 0,
+              qty_stok: detail.qty_stok || 0,
+            }),
+          ),
+        }),
+      );
+
+      const cleanCorrugatedItems = corrugatedItems.map(
+        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
+          id_corrugated: item.id_corrugated,
+          qty_beli: item.qty_beli || 0,
+          qty_stok: item.qty_stok || 0,
+        }),
+      );
+
+      const cleanPolibanItems = polibanItems.map(
+        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
+          id_poliban: item.id_poliban,
+          qty_beli: item.qty_beli || 0,
+          qty_stok: item.qty_stok || 0,
+        }),
+      );
+
+      const cleanCoatingItems = coatingItems.map(
+        ({ id, id_bom, createdAt, updatedAt, ...item }) => {
+          const isDepan = item.tipe_coating?.toLowerCase() === 'depan';
+
+          return {
+            id_coating: item.id_coating,
+            tipe_coating: item.tipe_coating,
+            qty_beli: isDepan
+              ? item.qty_beli_coating_depan
+              : item.qty_beli_coating_belakang,
+            qty_stok: isDepan
+              ? item.qty_stok_coating_depan
+              : item.qty_stok_coating_belakang,
+          };
+        },
+      );
+
+      const cleanLemItems = lemItems.map(
+        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
+          id_lem: item.id_lem,
+          qty_beli: item.qty_beli || 0,
+          qty_stok: item.qty_stok || 0,
+        }),
+      );
+
       const payload: any = {
         id_io: bomDetails.id_io,
         id_so: bomDetails.id_so,
@@ -585,15 +793,21 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         customer: bomDetails.customer,
         produk: bomDetails.produk,
         tgl_kirim_customer: bomDetails.tgl_kirim_customer || '',
-        bom_ppic_kertas: kertasItems.length > 0 ? kertasItems : undefined,
-        bom_ppic_tinta: tintaItems.length > 0 ? tintaItems : undefined,
+        bom_ppic_kertas:
+          cleanKertasItems.length > 0 ? cleanKertasItems : undefined,
+        bom_ppic_tinta:
+          cleanTintaItems.length > 0 ? cleanTintaItems : undefined,
         bom_ppic_corrugated:
-          corrugatedItems.length > 0 ? corrugatedItems : undefined,
-        bom_ppic_poliban: polibanItems.length > 0 ? polibanItems : undefined,
-        bom_ppic_coating: coatingItems.length > 0 ? coatingItems : undefined,
-        bom_ppic_lem: lemItems.length > 0 ? lemItems : undefined,
+          cleanCorrugatedItems.length > 0 ? cleanCorrugatedItems : undefined,
+        bom_ppic_poliban:
+          cleanPolibanItems.length > 0 ? cleanPolibanItems : undefined,
+        bom_ppic_coating:
+          cleanCoatingItems.length > 0 ? cleanCoatingItems : undefined,
+        bom_ppic_lem: cleanLemItems.length > 0 ? cleanLemItems : undefined,
         lain_lain: lainLainItems.length > 0 ? lainLainItems : undefined,
       };
+
+      console.log('Clean Payload to be sent:', payload);
 
       const baseUrl = `${import.meta.env.VITE_API_LINK}/ppic/bomppic`;
       const url = isEditMode ? `${baseUrl}/${bomId}` : baseUrl;
@@ -605,7 +819,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         data: payload,
         withCredentials: true,
       });
-      console.log('Payload to be sent:', payload);
+
       alert(
         isEditMode
           ? 'BOM PPIC updated successfully!'
@@ -707,7 +921,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
             lemItems={lemItems}
           />
         </div>
-
         {/* Content Section */}
         <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
           {totalItems === 0 ? (
@@ -873,5 +1086,4 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     </div>
   );
 };
-
 export default BOMPPICManagementModal;

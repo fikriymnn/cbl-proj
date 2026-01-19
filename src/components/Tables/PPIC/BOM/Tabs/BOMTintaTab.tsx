@@ -207,15 +207,7 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
   };
 
   const handleSaveFromModal = (newData: BOMTinta) => {
-    const currentTotal = getTotalAreaCetak(editingTintaIndex ?? undefined);
-    const newTotal = currentTotal + newData.area_cetak;
-
-    if (newTotal > 100) {
-      alert(
-        `Total area cetak tidak boleh melebihi 100%! Saat ini: ${currentTotal}%, Mencoba menambah: ${newData.area_cetak}%`,
-      );
-      return;
-    }
+    // ✅ REMOVED: No validation for total area cetak exceeding 100%
 
     if (editingTintaIndex !== null) {
       const updated = safeData.map((item, i) =>
@@ -257,6 +249,7 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
       currentDetails.reduce((sum, d) => sum + d.persentase_tinta, 0) +
       newDetail.persentase_tinta;
 
+    // ✅ KEEP: Detail tinta still locked at 100%
     if (totalPersentase > 100) {
       alert(
         `Total persentase tidak boleh melebihi 100%! Saat ini: ${totalPersentase}%`,
@@ -339,22 +332,26 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
         <button
           onClick={handleAdd}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-          disabled={currentTotalAreaCetak >= 100}
+          // ✅ REMOVED: disabled={currentTotalAreaCetak >= 100}
         >
           <span>+</span>
           Tambah Data Tinta
         </button>
 
+        {/* ✅ UPDATED: Show warning instead of error when > 100% */}
         <div
           className={`text-sm font-medium ${
-            currentTotalAreaCetak === 100
+            currentTotalAreaCetak > 100
+              ? 'text-orange-600'
+              : currentTotalAreaCetak === 100
               ? 'text-green-600'
-              : currentTotalAreaCetak > 100
-              ? 'text-red-600'
-              : 'text-orange-600'
+              : 'text-blue-600'
           }`}
         >
-          Total Area Cetak: {currentTotalAreaCetak}% / 100%
+          Total Area Cetak: {currentTotalAreaCetak}%
+          {currentTotalAreaCetak > 100 && (
+            <span className="ml-2 text-xs">(⚠️ Melebihi 100%)</span>
+          )}
         </div>
       </div>
 
@@ -388,7 +385,9 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
                     <td className="px-4 py-3 font-medium">
                       {item.nama_item_tinta}
                     </td>
-                    <td className="px-4 py-3">{item.total_qty} Kg</td>
+                    <td className="px-4 py-3">
+                      {item.total_qty.toFixed(3)} Kg
+                    </td>
                   </tr>
                 ))}
                 <tr className="bg-gray-50 font-semibold">
@@ -396,10 +395,9 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
                     Grand Total:
                   </td>
                   <td className="px-4 py-3">
-                    {summedDetailTinta.reduce(
-                      (sum, item) => sum + item.total_qty,
-                      0,
-                    )}{' '}
+                    {summedDetailTinta
+                      .reduce((sum, item) => sum + item.total_qty, 0)
+                      .toFixed(3)}{' '}
                     Kg
                   </td>
                 </tr>
@@ -521,7 +519,7 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
                             Qty Tinta
                           </label>
                           <div className="text-sm font-semibold text-blue-600">
-                            {item.qty_tinta} Kg
+                            {item.qty_tinta.toFixed(3)} Kg
                           </div>
                         </div>
 
@@ -612,7 +610,7 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
                               {detail.persentase_tinta}%
                             </td>
                             <td className="px-3 py-2">
-                              {detail.qty_tinta_detail ?? 0} Kg
+                              {(detail.qty_tinta_detail ?? 0).toFixed(3)} Kg
                             </td>
                             <td className="px-3 py-2">
                               <button
@@ -631,7 +629,9 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
                             Total:
                           </td>
                           <td className="px-3 py-2">{totalPersentase}%</td>
-                          <td className="px-3 py-2">{item.qty_tinta} Kg</td>
+                          <td className="px-3 py-2">
+                            {item.qty_tinta.toFixed(3)} Kg
+                          </td>
                           <td></td>
                         </tr>
                       </tbody>
@@ -657,7 +657,7 @@ const BOMTintaTab: React.FC<BOMTintaTabProps> = ({
         currentTotalAreaCetak={getTotalAreaCetak(
           editingTintaIndex ?? undefined,
         )}
-        maxAreaCetak={100 - getTotalAreaCetak(editingTintaIndex ?? undefined)}
+        // ✅ REMOVED: maxAreaCetak prop - no longer needed
       />
 
       <TambahDetailTintaModal

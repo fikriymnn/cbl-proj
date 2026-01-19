@@ -10,7 +10,6 @@ interface TambahKomponenTintaModalProps {
   onSave: (data: BOMTinta) => void;
   editData?: BOMTinta;
   currentTotalAreaCetak: number; // ✅ Added
-  maxAreaCetak: number; // ✅ Added
 }
 
 interface KomponenTintaData {
@@ -62,7 +61,6 @@ const TambahKomponenTintaModal: React.FC<TambahKomponenTintaModalProps> = ({
   onSave,
   editData,
   currentTotalAreaCetak, // ✅ Added
-  maxAreaCetak, // ✅ Added
 }) => {
   const [formData, setFormData] = useState<KomponenTintaData>({
     warna_tinta: '#000000',
@@ -406,18 +404,9 @@ const TambahKomponenTintaModal: React.FC<TambahKomponenTintaModalProps> = ({
       return;
     }
 
-    // ✅ Validate area cetak
-    if (formData.area_cetak <= 0 || formData.area_cetak > 100) {
-      alert('Area cetak harus antara 1-100%');
-      return;
-    }
-
-    // ✅ Validate total area cetak
-    if (formData.area_cetak > maxAreaCetak) {
-      alert(
-        `Area cetak melebihi batas! Maksimal yang bisa ditambahkan: ${maxAreaCetak}%\n` +
-          `Total area cetak saat ini: ${currentTotalAreaCetak}%`,
-      );
+    // ✅ Only validate that area cetak is positive
+    if (formData.area_cetak <= 0) {
+      alert('Area cetak harus lebih dari 0%');
       return;
     }
 
@@ -466,15 +455,20 @@ const TambahKomponenTintaModal: React.FC<TambahKomponenTintaModalProps> = ({
             <h2 className="text-xl font-semibold text-gray-800">
               {editData ? 'Edit Data Tinta' : 'Tambah Data Tinta'}
             </h2>
-            {/* ✅ Show area cetak info */}
+            {/* ✅ UPDATED: Show info without limits */}
             <p className="text-sm text-gray-600 mt-1">
               Total area cetak saat ini:{' '}
-              <span className="font-semibold">{currentTotalAreaCetak}%</span> /
-              100%
-              {maxAreaCetak > 0 && (
-                <span className="text-blue-600 ml-2">
-                  (Sisa: {maxAreaCetak}%)
-                </span>
+              <span
+                className={`font-semibold ${
+                  currentTotalAreaCetak > 100
+                    ? 'text-orange-600'
+                    : 'text-blue-600'
+                }`}
+              >
+                {currentTotalAreaCetak}%
+              </span>
+              {currentTotalAreaCetak > 100 && (
+                <span className="text-orange-600 ml-2">(⚠️ Melebihi 100%)</span>
               )}
             </p>
           </div>
@@ -769,18 +763,18 @@ const TambahKomponenTintaModal: React.FC<TambahKomponenTintaModalProps> = ({
               value={formData.area_cetak}
               onChange={(e) => {
                 const value = Number(e.target.value);
-                if (value >= 0 && value <= 100) {
+                if (value >= 0) {
+                  // ✅ Only check if positive
                   handleInputChange('area_cetak', value);
                 }
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0"
               min="0"
-              max="100"
               step="0.01"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Maksimal yang bisa ditambahkan: {maxAreaCetak}%
+              Masukkan persentase area cetak (dapat melebihi 100%)
             </p>
           </div>
 

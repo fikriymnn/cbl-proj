@@ -20,6 +20,7 @@ export const initializeCreateMode = (bomData: BOMData) => {
     .filter((kertas: any) => kertas.is_selected === true)
     .map((kertas: any) => ({
       id_kertas: kertas.id_kertas,
+      id_jenis_kertas: kertas.id_jenis_kertas,
       nama_kertas: kertas.nama_kertas || '',
       qty_lembar_plano: parseFloat(kertas.qty_lembar_plano) || 0,
       qty_beli: 0,
@@ -39,7 +40,7 @@ export const initializeCreateMode = (bomData: BOMData) => {
         id_item_tinta: detail.id_item_tinta,
         nama_item_tinta: detail.nama_item_tinta,
         persentase_tinta: detail.persentase_tinta || 0,
-        qty_tinta: detail.qty_tinta_detail || detail.qty_tinta || 0, // Use qty_tinta_detail
+        qty_tinta: detail.qty_tinta_detail || detail.qty_tinta || 0,
         qty_beli: 0,
         qty_stok: 0,
       })),
@@ -60,6 +61,7 @@ export const initializeCreateMode = (bomData: BOMData) => {
   const polibanData: BOMPPICPoliban[] = (bomData.bom_poliban || [])
     .filter((poliban: any) => poliban.is_selected === true)
     .map((poliban: any) => ({
+      id_poliban: poliban.id_poliban,
       item_poliban: poliban.item_poliban || '',
       isi_satu_ikat: poliban.isi_satu_ikat || 0,
       lembar_poliban: poliban.lembar_poliban || 0,
@@ -68,22 +70,26 @@ export const initializeCreateMode = (bomData: BOMData) => {
       qty_stok: 0,
     }));
 
+  // UPDATED: Coating now handles separate items based on tipe_coating
   const coatingData: BOMPPICCoating[] = (bomData.bom_coating || [])
     .filter((coating: any) => coating.is_selected === true)
-    .map((coating: any) => ({
-      id_coating_depan: coating.id_coating_depan,
-      id_coating_belakang: coating.id_coating_belakang,
-      nama_coating_depan: coating.nama_coating_depan || '',
-      nama_coating_belakang: coating.nama_coating_belakang || '',
-      qty_coating_depan: coating.qty_coating_depan || 0,
-      qty_coating_belakang: coating.qty_coating_belakang || 0,
-      uv_wb: coating.uv_wb || 0,
-      varnish_doff: coating.varnish_doff || 0,
-      qty_beli_coating_depan: 0,
-      qty_stok_coating_depan: 0,
-      qty_beli_coating_belakang: 0,
-      qty_stok_coating_belakang: 0,
-    }));
+    .map((coating: any) => {
+      const isDepan = coating.tipe_coating?.toLowerCase() === 'depan';
+
+      return {
+        id_coating: coating.id_coating,
+        nama_coating: coating.nama_coating || '',
+        tipe_coating: coating.tipe_coating,
+        qty_coating: coating.qty_coating || 0,
+        uv_wb: coating.uv_wb || 0,
+        varnish_doff: coating.varnish_doff || 0,
+        // Set the appropriate fields based on tipe_coating
+        qty_beli_coating_depan: isDepan ? coating.qty_coating || 0 : 0,
+        qty_stok_coating_depan: 0,
+        qty_beli_coating_belakang: !isDepan ? coating.qty_coating || 0 : 0,
+        qty_stok_coating_belakang: 0,
+      };
+    });
 
   const lemData: BOMPPICLem[] = (bomData.bom_lem || [])
     .filter((lem: any) => lem.is_selected === true)

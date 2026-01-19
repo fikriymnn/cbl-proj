@@ -191,18 +191,9 @@ const BOMApproval: React.FC = () => {
   const getBOMStatusBadge = (item: SOData) => {
     if (hasBOM(item)) {
       return (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200 font-medium">
-            ✓ BOM Created
-          </span>
-          {item.bom?.no_bom && (
-            <span className="text-xs text-gray-600" title={item.bom.no_bom}>
-              {item.bom.no_bom.length > 15
-                ? item.bom.no_bom.substring(0, 15) + '...'
-                : item.bom.no_bom}
-            </span>
-          )}
-        </div>
+        <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200 font-medium">
+          ✓ BOM Created
+        </span>
       );
     }
     return (
@@ -281,9 +272,12 @@ const BOMApproval: React.FC = () => {
         aValue = hasBOM(a) ? 1 : 0;
         bValue = hasBOM(b) ? 1 : 0;
       } else if (sortKey === 'status_proses') {
-        // Add sorting for status_proses
         aValue = a.bom?.status_proses || '';
         bValue = b.bom?.status_proses || '';
+      } else if (sortKey === 'no_bom') {
+        // ✅ Add sorting for no_bom
+        aValue = a.bom?.no_bom || '';
+        bValue = b.bom?.no_bom || '';
       } else {
         aValue = a[sortKey as keyof SOData];
         bValue = b[sortKey as keyof SOData];
@@ -352,77 +346,30 @@ const BOMApproval: React.FC = () => {
           <table className="min-w-full text-xs">
             <thead className="bg-gray-50">
               <tr>
+                {/* NO */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                   <button className="flex items-center hover:text-gray-700 focus:outline-none">
                     NO
                   </button>
                 </th>
+
+                {/* ACTION */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   ACTION
                 </th>
+
+                {/* ✅ NO BOM - NEW COLUMN */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
-                    onClick={() => handleSort('no_so')}
+                    onClick={() => handleSort('no_bom')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    NO SO
-                    {getSortIcon('no_so')}
+                    NO BOM
+                    {getSortIcon('no_bom')}
                   </button>
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('no_io')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    NO IO
-                    {getSortIcon('no_io')}
-                  </button>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('customer')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    CUSTOMER
-                    {getSortIcon('customer')}
-                  </button>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('produk')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    PRODUK
-                    {getSortIcon('produk')}
-                  </button>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('status_jo')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    STATUS JO
-                    {getSortIcon('status_jo')}
-                  </button>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('tgl_pembuatan_so')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    TGL BUAT
-                    {getSortIcon('tgl_pembuatan_so')}
-                  </button>
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('status_proses')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    STATUS
-                    {getSortIcon('status_proses')}
-                  </button>
-                </th>
+
+                {/* ✅ BOM INFO - MOVED HERE */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort('bom')}
@@ -432,6 +379,85 @@ const BOMApproval: React.FC = () => {
                     {getSortIcon('bom')}
                   </button>
                 </th>
+
+                {/* NO SO */}
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('no_so')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    NO SO
+                    {getSortIcon('no_so')}
+                  </button>
+                </th>
+
+                {/* NO IO */}
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('no_io')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    NO IO
+                    {getSortIcon('no_io')}
+                  </button>
+                </th>
+
+                {/* CUSTOMER */}
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('customer')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    CUSTOMER
+                    {getSortIcon('customer')}
+                  </button>
+                </th>
+
+                {/* PRODUK */}
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('produk')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    PRODUK
+                    {getSortIcon('produk')}
+                  </button>
+                </th>
+
+                {/* STATUS JO */}
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('status_jo')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    STATUS JO
+                    {getSortIcon('status_jo')}
+                  </button>
+                </th>
+
+                {/* TGL BUAT */}
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('tgl_pembuatan_so')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    TGL BUAT
+                    {getSortIcon('tgl_pembuatan_so')}
+                  </button>
+                </th>
+
+                {/* STATUS */}
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <button
+                    onClick={() => handleSort('status_proses')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    STATUS
+                    {getSortIcon('status_proses')}
+                  </button>
+                </th>
+
+                {/* ACTIVE */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort('is_active')}
@@ -446,7 +472,7 @@ const BOMApproval: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={11} className="px-4 py-6 text-center">
+                  <td colSpan={12} className="px-4 py-6 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
@@ -455,7 +481,7 @@ const BOMApproval: React.FC = () => {
               ) : sortedData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={12}
                     className="px-4 py-6 text-center text-gray-500 text-sm"
                   >
                     {searchTerm
@@ -469,9 +495,12 @@ const BOMApproval: React.FC = () => {
                     key={item.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
+                    {/* NO */}
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                       {(page - 1) * limit + index + 1}
                     </td>
+
+                    {/* ACTION */}
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
                         {/* Show EDIT button only if BOM exists and status is draft, rejected, or requested */}
@@ -514,6 +543,28 @@ const BOMApproval: React.FC = () => {
                         )}
                       </div>
                     </td>
+
+                    {/* ✅ NO BOM - NEW COLUMN */}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      {item.bom?.no_bom ? (
+                        <span
+                          className="bg-indigo-100 text-indigo-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                          title={item.bom.no_bom}
+                        >
+                          {item.bom.no_bom.substring(0, 20) +
+                            (item.bom.no_bom.length > 20 ? '...' : '')}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
+                    </td>
+
+                    {/* ✅ BOM INFO - MOVED HERE */}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      {getBOMStatusBadge(item)}
+                    </td>
+
+                    {/* NO SO */}
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
                         className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
@@ -525,6 +576,8 @@ const BOMApproval: React.FC = () => {
                           : '-'}
                       </span>
                     </td>
+
+                    {/* NO IO */}
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
                         className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium"
@@ -536,6 +589,8 @@ const BOMApproval: React.FC = () => {
                           : '-'}
                       </span>
                     </td>
+
+                    {/* CUSTOMER */}
                     <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                       <span title={item.customer}>
                         {item.customer
@@ -544,6 +599,8 @@ const BOMApproval: React.FC = () => {
                           : '-'}
                       </span>
                     </td>
+
+                    {/* PRODUK */}
                     <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
                       <span title={item.produk}>
                         {item.produk
@@ -552,6 +609,8 @@ const BOMApproval: React.FC = () => {
                           : '-'}
                       </span>
                     </td>
+
+                    {/* STATUS JO */}
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
                         className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor(
@@ -565,11 +624,15 @@ const BOMApproval: React.FC = () => {
                           : '-'}
                       </span>
                     </td>
+
+                    {/* TGL BUAT */}
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                       <span title={item.tgl_pembuatan_so}>
                         {formatDate(item.tgl_pembuatan_so)}
                       </span>
                     </td>
+
+                    {/* STATUS */}
                     <td className="px-2 py-2 whitespace-nowrap">
                       {hasBOM(item) && item.bom?.status_proses ? (
                         <span
@@ -585,9 +648,8 @@ const BOMApproval: React.FC = () => {
                         <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      {getBOMStatusBadge(item)}
-                    </td>
+
+                    {/* ACTIVE */}
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
                         className={`text-xs px-1.5 py-0.5 rounded font-medium ${

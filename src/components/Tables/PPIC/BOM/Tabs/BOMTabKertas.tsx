@@ -2,35 +2,31 @@
 import React, { useState, useEffect } from 'react';
 import { BOMKertas } from '../Types/bom.types';
 import TambahKertasModal from '../Modals/TambahKertasModal';
-import axios from 'axios';
 
 interface BOMKertasTabProps {
   data: BOMKertas[];
   onChange: (data: BOMKertas[]) => void;
-  id_kalkulasi?: number;
   po_qty?: number;
-  id_kertas_default?: number;
-  ukuran_cetak_lebar_2?: number;
-  ukuran_cetak_panjang_2?: number;
+  selectedMounting?: any;
 }
 
 const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
   data,
   onChange,
-  id_kalkulasi,
   po_qty,
-  id_kertas_default,
-  ukuran_cetak_lebar_2,
-  ukuran_cetak_panjang_2,
+  selectedMounting,
 }) => {
   const [showModal, setShowModal] = useState(false);
-  const [kalkulasiData, setKalkulasiData] = useState<{
-    ukuran_cetak_bagian_1: number;
-    ukuran_cetak_isi_1: number;
-  } | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const safeData = Array.isArray(data) ? data : [];
+
+  // ✅ Get data from selectedMounting instead of kalkulasi
+  const ukuran_cetak_bagian_1 = selectedMounting?.ukuran_cetak_bagian_1 || 0;
+  const ukuran_cetak_isi_1 = selectedMounting?.ukuran_cetak_isi_1 || 0;
+  const ukuran_cetak_lebar_2 = selectedMounting?.ukuran_cetak_lebar_2 || 0;
+  const ukuran_cetak_panjang_2 = selectedMounting?.ukuran_cetak_panjang_2 || 0;
+  const id_kertas_default = selectedMounting?.id_kertas;
+  const nama_kertas_default = selectedMounting?.nama_kertas;
 
   // Determine max selections based on ukuran_cetak_lebar_2 and ukuran_cetak_panjang_2
   const hasSecondaryDimensions =
@@ -43,43 +39,9 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
 
   const maxSelections = hasSecondaryDimensions ? 2 : 1;
 
-  // Fetch kalkulasi data when id_kalkulasi changes
-  useEffect(() => {
-    if (id_kalkulasi) {
-      fetchKalkulasiData();
-    }
-  }, [id_kalkulasi]);
-
-  const fetchKalkulasiData = async () => {
-    if (!id_kalkulasi) return;
-
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi/${id_kalkulasi}`,
-        {
-          withCredentials: true,
-        },
-      );
-
-      if (response.data && response.data.data) {
-        setKalkulasiData({
-          ukuran_cetak_bagian_1: response.data.data.ukuran_cetak_bagian_1,
-          ukuran_cetak_isi_1: response.data.data.ukuran_cetak_isi_1,
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching kalkulasi data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Calculate qty_lembar_plano
+  // ✅ Calculate qty_lembar_plano using mounting data
   const calculateQtyLembarPlano = (): number => {
-    if (!po_qty || !kalkulasiData) return 0;
-
-    const { ukuran_cetak_bagian_1, ukuran_cetak_isi_1 } = kalkulasiData;
+    if (!po_qty || !selectedMounting) return 0;
 
     if (ukuran_cetak_bagian_1 === 0 || ukuran_cetak_isi_1 === 0) return 0;
 
@@ -87,9 +49,9 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
     return Math.ceil(result);
   };
 
-  // Auto-update all items when kalkulasi data or po_qty changes
+  // Auto-update all items when mounting data or po_qty changes
   useEffect(() => {
-    if (kalkulasiData && po_qty && safeData.length > 0) {
+    if (selectedMounting && po_qty && safeData.length > 0) {
       const calculatedQty = calculateQtyLembarPlano();
       const updated = safeData.map((item) => ({
         ...item,
@@ -97,7 +59,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
       }));
       onChange(updated);
     }
-  }, [kalkulasiData, po_qty]);
+  }, [selectedMounting, po_qty]);
 
   const handleAdd = () => {
     setShowModal(true);
@@ -109,16 +71,15 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
     qty_lembar_plano: number;
     tipe: string;
   }) => {
-    // Auto-calculate qty_lembar_plano
     const calculatedQty = calculateQtyLembarPlano();
 
     const newItem: BOMKertas = {
-      id: null, // ✅ Add this - explicitly set to null for new items
+      id: null,
       id_kertas: newData.id_kertas,
       nama_kertas: newData.nama_kertas,
       qty_lembar_plano: calculatedQty,
       tipe: newData.tipe,
-      is_selected: false,
+      is_selected: false, // ✅ User needs to manually select after adding
     };
     onChange([...safeData, newItem]);
   };
@@ -130,11 +91,9 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
     onChange(updated);
   };
 
-  // Handle checkbox selection with dynamic max limit
   const handleCheckboxChange = (index: number, checked: boolean) => {
     const currentSelectedCount = data.filter((item) => item.is_selected).length;
 
-    // If trying to check and already at max selections
     if (checked && currentSelectedCount >= maxSelections) {
       alert(
         `Maksimal ${maxSelections} kertas yang dapat dipilih${
@@ -154,7 +113,6 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
     onChange(data.filter((_, i) => i !== index));
   };
 
-  // Get the selected kertas
   const selectedKertas = safeData.filter((item) => item.is_selected);
 
   return (
@@ -163,7 +121,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
         <button
           onClick={handleAdd}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-          disabled={loading || !id_kalkulasi || !po_qty}
+          disabled={!selectedMounting || !po_qty}
         >
           <span>+</span>
           Tambah Data Pokok Kertas
@@ -181,15 +139,9 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
         )}
       </div>
 
-      {loading && (
-        <div className="mb-4 text-sm text-blue-600">
-          Loading kalkulasi data...
-        </div>
-      )}
-
-      {!id_kalkulasi && (
+      {!selectedMounting && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          ⚠️ ID Kalkulasi belum tersedia
+          ⚠️ Pilih mounting terlebih dahulu
         </div>
       )}
 
@@ -213,14 +165,19 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
         </div>
       </div>
 
-      {kalkulasiData && (
+      {/* ✅ Show mounting info instead of kalkulasi */}
+      {selectedMounting && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
           <div className="font-semibold text-gray-700 mb-1">
-            Kalkulasi Info:
+            Mounting Info: {selectedMounting.nama_mounting}
           </div>
           <div className="text-gray-600">
-            Qty SO: {po_qty} | Bagian : {kalkulasiData.ukuran_cetak_bagian_1} |
-            Isi : {kalkulasiData.ukuran_cetak_isi_1}
+            Qty SO: {po_qty} | Bagian: {ukuran_cetak_bagian_1} | Isi:{' '}
+            {ukuran_cetak_isi_1}
+          </div>
+          <div className="text-gray-600 mt-1">
+            Kertas Default:{' '}
+            <span className="font-semibold">{nama_kertas_default}</span>
           </div>
           <div className="text-gray-600 mt-1">
             Calculated Qty Lembar Plano:{' '}
@@ -278,7 +235,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
                         handleUpdate(index, 'tipe', e.target.value)
                       }
                       className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="DRAFT"
+                      placeholder="POKOK"
                     />
                   </td>
                   <td className="px-4 py-2 border-b">
@@ -304,7 +261,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
                         value={item.qty_lembar_plano}
                         className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none bg-gray-100 text-gray-700"
                         readOnly
-                        title="Auto-calculated based on kalkulasi"
+                        title="Auto-calculated based on mounting data"
                       />
                     </div>
                   </td>
@@ -339,16 +296,17 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
           onClose={() => setShowModal(false)}
           onSave={handleSaveFromModal}
           calculatedQtyLembarPlano={calculateQtyLembarPlano()}
-          kalkulasiInfo={
-            kalkulasiData && po_qty
+          mountingInfo={
+            selectedMounting && po_qty
               ? {
                   po_qty,
-                  ukuran_cetak_bagian_1: kalkulasiData.ukuran_cetak_bagian_1,
-                  ukuran_cetak_isi_1: kalkulasiData.ukuran_cetak_isi_1,
+                  ukuran_cetak_bagian_1,
+                  ukuran_cetak_isi_1,
                 }
               : undefined
           }
           defaultKertasId={id_kertas_default}
+          defaultKertasName={nama_kertas_default}
         />
       )}
     </div>

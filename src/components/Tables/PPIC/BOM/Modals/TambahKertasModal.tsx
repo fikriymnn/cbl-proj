@@ -21,20 +21,22 @@ interface TambahKertasModalProps {
     tipe: string;
   }) => void;
   calculatedQtyLembarPlano?: number;
-  kalkulasiInfo?: {
+  mountingInfo?: {
     po_qty?: number;
     ukuran_cetak_bagian_1?: number;
     ukuran_cetak_isi_1?: number;
   };
-  defaultKertasId?: number; // Add this prop
+  defaultKertasId?: number;
+  defaultKertasName?: string;
 }
 
 const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
   onClose,
   onSave,
   calculatedQtyLembarPlano = 0,
-  kalkulasiInfo,
-  defaultKertasId, // Add this
+  mountingInfo,
+  defaultKertasId,
+  defaultKertasName,
 }) => {
   const [kertasOptions, setKertasOptions] = useState<KertasOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -42,14 +44,14 @@ const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
     id_kertas: '',
     nama_kertas: '',
     jenis_kertas: '',
-    tipe: 'DRAFT',
+    tipe: 'POKOK',
   });
 
   useEffect(() => {
     fetchKertasOptions();
   }, []);
 
-  // Set default kertas when options are loaded and defaultKertasId is provided
+  // ✅ Set default kertas when options are loaded and defaultKertasId is provided
   useEffect(() => {
     if (defaultKertasId && kertasOptions.length > 0) {
       const selectedKertas = kertasOptions.find(
@@ -61,7 +63,7 @@ const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
           id_kertas: selectedKertas.id.toString(),
           nama_kertas: selectedKertas.nama_barang,
           jenis_kertas: selectedKertas.kode_barang,
-          tipe: 'DRAFT',
+          tipe: 'POKOK',
         });
       }
     }
@@ -150,6 +152,35 @@ const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
 
         {/* Form Content */}
         <div className="space-y-4">
+          {/* ✅ Show default kertas info */}
+          {defaultKertasName && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="text-sm font-semibold text-green-800 mb-1">
+                🎯 Kertas Default dari Mounting:
+              </div>
+              <div className="text-sm text-green-700">{defaultKertasName}</div>
+              <div className="text-xs text-green-600 mt-1">
+                (Anda masih bisa mengubahnya)
+              </div>
+            </div>
+          )}
+
+          {/* Tipe Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tipe Kertas
+            </label>
+            <input
+              type="text"
+              value={formData.tipe}
+              onChange={(e) =>
+                setFormData({ ...formData, tipe: e.target.value })
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="POKOK / DRAFT"
+            />
+          </div>
+
           {/* Item Kertas Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -174,9 +205,11 @@ const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
             )}
           </div>
 
-          {/* Data Kalkulasi Section */}
+          {/* Data Mounting Section */}
           <div className="mt-6">
-            <h4 className="font-semibold text-gray-800 mb-3">Data Kalkulasi</h4>
+            <h4 className="font-semibold text-gray-800 mb-3">
+              Data Kertas Terpilih
+            </h4>
             <div className="space-y-2 text-sm">
               <div>
                 <span className="text-gray-600">Jenis Kertas: </span>
@@ -198,15 +231,15 @@ const TambahKertasModal: React.FC<TambahKertasModalProps> = ({
             <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
               📊 Qty Lembar Plano (Auto-Calculated)
             </h4>
-            {kalkulasiInfo && kalkulasiInfo.po_qty ? (
+            {mountingInfo && mountingInfo.po_qty ? (
               <div className="space-y-1 text-sm">
                 <div className="text-gray-600">
-                  Formula: (PO Qty / Ukuran Jadi Bagian 1) / Ukuran Jadi Isi 1
+                  Formula: (PO Qty / Ukuran Cetak Bagian 1) / Ukuran Cetak Isi 1
                 </div>
                 <div className="text-gray-600">
-                  = ({kalkulasiInfo.po_qty} /{' '}
-                  {kalkulasiInfo.ukuran_cetak_bagian_1}) /{' '}
-                  {kalkulasiInfo.ukuran_cetak_isi_1}
+                  = ({mountingInfo.po_qty} /{' '}
+                  {mountingInfo.ukuran_cetak_bagian_1}) /{' '}
+                  {mountingInfo.ukuran_cetak_isi_1}
                 </div>
                 <div className="text-lg font-bold text-blue-600 mt-2">
                   = {calculatedQtyLembarPlano} lembar
