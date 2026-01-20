@@ -130,6 +130,7 @@ const MasterTableKodeProduksi: React.FC = () => {
       const params: any = {
         page: page,
         limit: limit,
+        is_active: true,
       };
 
       if (search) {

@@ -9,6 +9,7 @@ import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import SOMarketingPrintModal from './SOMarketingPrintModal';
 import UbahTglKirimPopup from './UbahTglKirimPopup';
+import UbahHargaPopup from './UbahHargaPopup';
 
 const HistorySO: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -45,6 +46,10 @@ const HistorySO: React.FC = () => {
   const [selectedSOForCancel, setSelectedSOForCancel] = useState<SOData | null>(
     null,
   );
+  const [isUbahHargaPopupOpen, setIsUbahHargaPopupOpen] =
+    useState<boolean>(false);
+  const [selectedSOForUbahHarga, setSelectedSOForUbahHarga] =
+    useState<SOData | null>(null);
 
   const handleCancelClick = (item: SOData) => {
     setSelectedSOForCancel(item);
@@ -273,11 +278,39 @@ const HistorySO: React.FC = () => {
 
     return {
       status: latestRequest.status,
-      noteReject: latestRequest.note_reject,
+      noteReject: latestRequest.note_reject ?? null,
       canRequest: latestRequest.status !== 'requested', // Can request if status is not 'requested'
     };
   };
+  const handleUbahHargaClick = (item: SOData) => {
+    setSelectedSOForUbahHarga(item);
+    setIsUbahHargaPopupOpen(true);
+  };
+  const getPerubahanHargaStatus = (
+    item: SOData,
+  ): {
+    status: string | null;
+    noteReject: string | null;
+    canRequest: boolean;
+  } => {
+    if (!item.so_perubahan_harga || item.so_perubahan_harga.length === 0) {
+      return { status: null, noteReject: null, canRequest: true };
+    }
 
+    // Sort by createdAt descending to get the latest request
+    const sortedRequests = [...item.so_perubahan_harga].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    // Get the most recent request
+    const latestRequest = sortedRequests[0];
+
+    return {
+      status: latestRequest.status,
+      noteReject: latestRequest.note_reject ?? null,
+      canRequest: latestRequest.status !== 'requested',
+    };
+  };
   return (
     <div className="">
       {/* Search and Filter Bar */}
@@ -401,15 +434,18 @@ const HistorySO: React.FC = () => {
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
-                      onClick={() => handleSort('tgl_input_po')}
+                      onClick={() => handleSort('tgl_pengiriman')}
                       className="flex items-center hover:text-gray-700 focus:outline-none"
                     >
-                      TGL INPUT
-                      {getSortIcon('tgl_input_po')}
+                      TGL KIRIM
+                      {getSortIcon('tgl_pengiriman')}
                     </button>
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     STATUS PERUBAHAN TGL
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    STATUS PERUBAHAN HARGA
                   </th>
                 </tr>
               </thead>
@@ -474,6 +510,28 @@ const HistorySO: React.FC = () => {
                                     }
                                   >
                                     UBAH TGL KIRIM
+                                  </button>
+                                );
+                              })()}
+                              {(() => {
+                                const perubahanHargaStatus =
+                                  getPerubahanHargaStatus(item);
+                                return (
+                                  <button
+                                    onClick={() => handleUbahHargaClick(item)}
+                                    disabled={!perubahanHargaStatus.canRequest}
+                                    className={`${
+                                      perubahanHargaStatus.canRequest
+                                        ? 'bg-green-500 hover:bg-green-600'
+                                        : 'bg-gray-300 cursor-not-allowed'
+                                    } text-white px-2 py-1 rounded text-xs transition-colors`}
+                                    title={
+                                      perubahanHargaStatus.canRequest
+                                        ? 'Ubah Harga'
+                                        : 'Menunggu approval perubahan harga'
+                                    }
+                                  >
+                                    UBAH HARGA
                                   </button>
                                 );
                               })()}
@@ -568,7 +626,7 @@ const HistorySO: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {formatDate(item.tgl_input_po)}
+                        {formatDate(item.tgl_pengiriman)}
                       </td>
                       <td className="px-2 py-2 text-xs">
                         {(() => {
@@ -603,6 +661,45 @@ const HistorySO: React.FC = () => {
                                           15,
                                         ) + '...'
                                       : perubahanStatus.noteReject}
+                                  </span>
+                                )}
+                            </div>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-2 py-2 text-xs">
+                        {(() => {
+                          const perubahanHargaStatus =
+                            getPerubahanHargaStatus(item);
+                          if (!perubahanHargaStatus.status) return '-';
+
+                          return (
+                            <div className="flex flex-col gap-1">
+                              <span
+                                className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${
+                                  perubahanHargaStatus.status === 'requested'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : perubahanHargaStatus.status === 'approved'
+                                    ? 'bg-green-100 text-green-800'
+                                    : perubahanHargaStatus.status === 'rejected'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {perubahanHargaStatus.status}
+                              </span>
+                              {perubahanHargaStatus.status === 'rejected' &&
+                                perubahanHargaStatus.noteReject && (
+                                  <span
+                                    className="text-red-600 text-xs"
+                                    title={perubahanHargaStatus.noteReject}
+                                  >
+                                    {perubahanHargaStatus.noteReject.length > 15
+                                      ? perubahanHargaStatus.noteReject.substring(
+                                          0,
+                                          15,
+                                        ) + '...'
+                                      : perubahanHargaStatus.noteReject}
                                   </span>
                                 )}
                             </div>
@@ -660,7 +757,7 @@ const HistorySO: React.FC = () => {
           setSelectedSO(null);
         }}
         data={selectedSO}
-        isEditMode={true}
+        isEditMode={false}
         onUpdate={fetchsoData}
       />
       <CancelPopup
@@ -687,6 +784,15 @@ const HistorySO: React.FC = () => {
           setSelectedSOForUbahTgl(null);
         }}
         soData={selectedSOForUbahTgl}
+        onSuccess={fetchsoData}
+      />
+      <UbahHargaPopup
+        isOpen={isUbahHargaPopupOpen}
+        onClose={() => {
+          setIsUbahHargaPopupOpen(false);
+          setSelectedSOForUbahHarga(null);
+        }}
+        soData={selectedSOForUbahHarga}
         onSuccess={fetchsoData}
       />
     </div>

@@ -10,6 +10,7 @@ import OKPKabagHistory from '../OKP/OKPKabagHistory';
 import KabagApprovalTableHistory from './History/KabagApprovalTableHistory';
 import KabagApprovalIOHistory from './History/KabagApprovalIOHistory';
 import SOApprovalKabagHistory from './History/SOApprovalKabatHistory';
+import SOPerubahanHargaHistory from './History/SOPerubahanHargaHistory';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -142,8 +143,9 @@ export default function TabKabagApproveHistory() {
               <Tab label="Kalkulasi" {...a11yProps(0)} />
 
               <Tab label="OKP KABAG" {...a11yProps(1)} />
-              <Tab label="IO" {...a11yProps(2)} />
-              <Tab label="SO" {...a11yProps(3)} />
+
+              <Tab label="SO" {...a11yProps(2)} />
+              <Tab label="Perubahan Harga" {...a11yProps(3)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -159,11 +161,12 @@ export default function TabKabagApproveHistory() {
         <TabPanel value={value} index={1} dir={theme.direction}>
           <OKPKabagHistory />
         </TabPanel>
+
         <TabPanel value={value} index={2} dir={theme.direction}>
-          <KabagApprovalIOHistory />
+          <SOApprovalKabagHistory />
         </TabPanel>
         <TabPanel value={value} index={3} dir={theme.direction}>
-          <SOApprovalKabagHistory />
+          <SOPerubahanHargaHistory />
         </TabPanel>
       </Box>
     </>

@@ -10,6 +10,7 @@ import KabagApprovalTable from './KabagApprovalTable';
 import OKPKabag from '../OKP/OKBKabag';
 import KabagApprovalIO from './KabagApprovalIO';
 import SOApprovalKabag from './SOApprovalKabat';
+import SOPerubahanHargaApproval from './SOPerubahanHargaApproval';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -144,6 +145,7 @@ export default function TabKabagApprove() {
               <Tab label="OKP KABAG" {...a11yProps(1)} />
 
               <Tab label="SO" {...a11yProps(2)} />
+              <Tab label="Perubahan Harga" {...a11yProps(3)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -162,6 +164,9 @@ export default function TabKabagApprove() {
 
         <TabPanel value={value} index={2} dir={theme.direction}>
           <SOApprovalKabag />
+        </TabPanel>
+        <TabPanel value={value} index={3} dir={theme.direction}>
+          <SOPerubahanHargaApproval />
         </TabPanel>
       </Box>
     </>

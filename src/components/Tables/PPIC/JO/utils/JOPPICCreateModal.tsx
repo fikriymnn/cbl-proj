@@ -445,6 +445,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           produk: joDetail.produk,
           status_kalkulasi: joDetail.status_kalkulasi,
           status_jo: joDetail.status_jo,
+          status_produk: joDetail.status_produk, // Add this if missing
           stok_fg: joDetail.stok_fg || 0,
           qty: joDetail.qty || 0,
           qty_druk: joDetail.qty_druk || 0,
@@ -459,6 +460,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             : new Date().toISOString().split('T')[0],
           standar_warna: joDetail.standar_warna || '',
           tipe_jo: joDetail.tipe_jo,
+          // ✅ ADD no_po_customer from SO object
+          no_po_customer:
+            joDetail.so?.no_po_customer || joDetail.no_po_customer || '',
           jo_mounting: joDetail.jo_mounting || [],
         });
 
@@ -558,7 +562,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       setLoading(false);
     }
   };
-
   const resetForm = () => {
     setFormData({
       ...initialFormData,

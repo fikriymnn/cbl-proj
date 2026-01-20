@@ -185,6 +185,10 @@ export interface JOFormData {
   customer: string;
   produk: string;
   status_kalkulasi: string;
+  so?: {
+    no_po_customer: string;
+    tgl_po_customer: string;
+  };
   status_jo: string;
   status_produk: string;
   stok_fg: number;

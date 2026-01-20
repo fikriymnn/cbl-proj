@@ -115,6 +115,10 @@ const IOMarketing: React.FC = () => {
   const [selectedMountingIndex, setSelectedMountingIndex] = useState<number>(0);
   const printRef = useRef<HTMLDivElement>(null);
 
+  // Delete confirmation state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
+  const [deleteIOId, setDeleteIOId] = useState<number | null>(null);
+
   // Add sorting functions
   const handleSort = (field: SortField) => {
     if (sortKey === field) {
@@ -456,6 +460,7 @@ const IOMarketing: React.FC = () => {
           limit: limit,
           search: searchTerm,
           status: 'draft',
+          is_active: true,
         },
         withCredentials: true,
       });
@@ -508,6 +513,43 @@ const IOMarketing: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Delete IO function
+  const handleDeleteIO = (ioId: number): void => {
+    setDeleteIOId(ioId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteIO = async (): Promise<void> => {
+    if (!deleteIOId) return;
+
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${deleteIOId}`;
+    try {
+      setLoading(true);
+      const res: AxiosResponse = await axios.delete(url, {
+        withCredentials: true,
+      });
+
+      if (res.data.succes || res.status === 200) {
+        alert('IO successfully deactivated');
+        fetchIOData();
+        setShowDeleteConfirm(false);
+        setDeleteIOId(null);
+      } else {
+        alert('Failed to deactivate IO');
+      }
+    } catch (error) {
+      console.error('Error deleting IO:', error);
+      alert('Error deactivating IO. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cancelDelete = (): void => {
+    setShowDeleteConfirm(false);
+    setDeleteIOId(null);
   };
 
   const formatDate = (dateString: string): string => {
@@ -746,12 +788,21 @@ const IOMarketing: React.FC = () => {
                           DETAIL
                         </button>
                         {item.status == 'draft' && (
-                          <button
-                            onClick={() => putNextProcess(item.id)}
-                            className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                          >
-                            NEXT
-                          </button>
+                          <>
+                            <button
+                              onClick={() => putNextProcess(item.id)}
+                              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            >
+                              NEXT
+                            </button>
+                            <button
+                              onClick={() => handleDeleteIO(item.id)}
+                              className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                              title="Nonactive IO"
+                            >
+                              NonActive IO
+                            </button>
+                          </>
                         )}
                         <button
                           onClick={() => handlePrintIO(item.id)}
@@ -891,7 +942,51 @@ const IOMarketing: React.FC = () => {
           onMountingIndexChange={setSelectedMountingIndex}
         />
       )}
-
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center mb-4">
+              <svg
+                className="w-6 h-6 text-red-600 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <h2 className="text-xl font-bold text-gray-900">
+                Confirm Delete
+              </h2>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to deactivate this IO? This action cannot be
+              undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteIO}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+              >
+                {loading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Create IO Modal */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

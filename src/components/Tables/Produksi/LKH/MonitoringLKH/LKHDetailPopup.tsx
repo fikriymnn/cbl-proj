@@ -405,6 +405,9 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
                     <th className="border border-gray-300 px-3 py-2 text-left font-bold">
                       History
                     </th>
+                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
+                      Keterangan
+                    </th>
                     <th
                       className="border border-gray-300 px-3 py-2 text-center font-bold"
                       colSpan={2}
@@ -426,8 +429,8 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
                     <th className="border border-gray-300 px-3 py-2 text-center font-bold">
                       Pallet
                     </th>
-                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
-                      Keterangan
+                    <th className="border border-gray-300 px-3 py-2 text-center font-bold">
+                      Notes
                     </th>
                   </tr>
                 </thead>
@@ -450,7 +453,10 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
                           {proses.tahapan?.nama_tahapan || '-'}
                         </td>
                         <td className="border border-gray-300 px-3 py-1.5">
-                          {proses.proses}
+                          {proses.kode} {proses.proses}
+                        </td>
+                        <td className="border border-gray-300 px-3 py-1.5">
+                          {proses.deskripsi || '-'}
                         </td>
                         <td className="border border-gray-300 px-2 py-1.5 text-center text-gray-500 text-[10px] bg-gray-50">
                           <div className="font-semibold">start</div>
@@ -464,7 +470,15 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
                           {formatDuration(proses.total_waktu)}
                         </td>
                         <td className="border border-gray-300 px-3 py-1.5 text-center">
-                          {formatNumber(proses.baik || 0)}
+                          {formatNumber(proses.baik || 0)}{' '}
+                          {proses.is_final_result && (
+                            <span
+                              className="ml-1 text-blue-600"
+                              title="Final Result"
+                            >
+                              ★
+                            </span>
+                          )}
                         </td>
                         <td className="border border-gray-300 px-3 py-1.5 text-center">
                           {formatNumber(proses.rusak_sebagian || 0)}
@@ -476,7 +490,7 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
                           {formatNumber(proses.pallet || 0)}
                         </td>
                         <td className="border border-gray-300 px-3 py-1.5">
-                          {proses.note || proses.deskripsi || '-'}
+                          {proses.note || '-'}
                         </td>
                       </tr>
                     ))}

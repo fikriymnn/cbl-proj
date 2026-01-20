@@ -180,15 +180,17 @@ const LKHAllData: React.FC = () => {
   };
 
   const calculateTotalResults = (proses: ProduksiLKHProses[]) => {
-    return proses.reduce(
-      (acc, p) => ({
-        baik: acc.baik + p.baik,
-        rusak_sebagian: acc.rusak_sebagian + p.rusak_sebagian,
-        rusak_total: acc.rusak_total + p.rusak_total,
-        tambah_bahan: 0,
-      }),
-      { baik: 0, rusak_sebagian: 0, rusak_total: 0, tambah_bahan: 0 },
-    );
+    return proses
+      .filter((p) => p.is_final_result === true) // Only sum final results
+      .reduce(
+        (acc, p) => ({
+          baik: acc.baik + p.baik,
+          rusak_sebagian: acc.rusak_sebagian + p.rusak_sebagian,
+          rusak_total: acc.rusak_total + p.rusak_total,
+          tambah_bahan: 0,
+        }),
+        { baik: 0, rusak_sebagian: 0, rusak_total: 0, tambah_bahan: 0 },
+      );
   };
 
   const calculateTotalTime = (proses: ProduksiLKHProses[]) => {

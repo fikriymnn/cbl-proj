@@ -267,6 +267,8 @@ export interface SOData {
   job_order?: {
     no_jo: string;
   };
+
+  so_perubahan_harga?: SOPerubahanHarga[]; // Add this new field
 }
 
 export interface SOFormData {
@@ -302,4 +304,15 @@ export interface APIResponse<T> {
   succes: boolean;
   status_code: number;
   data: T;
+}
+export interface SOPerubahanHarga {
+  id: number;
+  id_so: number;
+  harga_awal: number;
+  harga_perubahan: number;
+  note: string;
+  status: 'requested' | 'approved' | 'rejected';
+  note_reject?: string;
+  createdAt: string;
+  updatedAt: string;
 }

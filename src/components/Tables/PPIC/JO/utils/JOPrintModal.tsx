@@ -207,34 +207,25 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
   };
-
   const getRevisiFromIO = (noIO: string): string => {
     if (!noIO) return '0';
 
-    // Split by '/' to get the base part
+    // Split by '/' to get the base part (before any date)
     const parts = noIO.split('/');
-    if (parts.length === 0) return '0';
+    const basePart = parts[0].trim();
 
-    const basePart = parts[0];
-    const dashCount = (basePart.match(/-/g) || []).length;
-
-    // Case 1: Two or more dashes (e.g., IO-00328-2/12/2025)
-    if (dashCount >= 2) {
-      const lastDashIndex = basePart.lastIndexOf('-');
-      const potentialRevision = basePart.substring(lastDashIndex + 1);
-      const revisionMatch = potentialRevision.match(/^(\d+)[A-Z]?$/);
-      if (revisionMatch) {
-        return revisionMatch[1];
-      }
+    // Pattern 1: Check for dash followed by 1-2 digit number and optional letter (e.g., "4630-2", "4429-3A", "IO-00341-1")
+    // This pattern indicates revision number
+    const dashRevisionMatch = basePart.match(/-(\d{1,2})[A-Z]?$/);
+    if (dashRevisionMatch) {
+      return dashRevisionMatch[1]; // Return the number part (e.g., "2" from "4630-2", "3" from "4429-3A")
     }
-    // Case 2: Only one dash (e.g., IO-00328/12/2025)
-    else if (dashCount === 1) {
-      const dashIndex = basePart.indexOf('-');
-      const afterDash = basePart.substring(dashIndex + 1);
-      const revisionMatch = afterDash.match(/^(\d+)[A-Z]?$/);
-      if (revisionMatch) {
-        return revisionMatch[1];
-      }
+
+    // Pattern 2: Check for number followed by letter only (e.g., "4429A")
+    // This indicates revision 0 with a variant letter
+    const letterOnlyMatch = basePart.match(/\d+[A-Z]$/);
+    if (letterOnlyMatch) {
+      return '0'; // Letter suffix without dash means revision 0
     }
 
     // Default: No revision found
@@ -298,190 +289,246 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     // Fallback to default if no tahapan data
     return [];
   };
-  // Get the HTML content for printing
+
   const getPrintContent = () => {
     const layout = calculateLayout();
     const selectedMounting = getSelectedMounting();
     const logoSrc = logoBase64 || Logo;
 
     return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Print JO - ${printData?.no_jo || 'Job Order'}</title>
-          <style>
-            @page {
-              size: A4 portrait;
-              margin: 10mm;
-            }
-            * {
-              box-sizing: border-box;
-            }
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Print JO - ${printData?.no_jo || 'Job Order'}</title>
+        <style>
+          @page {
+            size: A4 portrait;
+            margin: 10mm;
+          }
+          * {
+            box-sizing: border-box;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            font-size: 8px;
+            line-height: 1.2;
+          }
+          @media print {
             body {
-              margin: 0;
-              padding: 0;
-              font-family: Arial, sans-serif;
-              font-size: 8px;
-              line-height: 1.2;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
-            @media print {
-              body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-            }
-            .header-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 8px;
-            }
-            .header-table td {
-              border: 1px solid black;
-              padding: 3px 5px;
-              font-size: 8px;
-            }
-            .logo-cell {
-              width: 80px;
-              text-align: center;
-              vertical-align: middle;
-            }
-            .logo {
-              width: 50px;
-              height: auto;
-              image-rendering: -webkit-optimize-contrast;
-              image-rendering: crisp-edges;
-            }
-            .company-name {
-              font-size: 10px;
-              font-weight: bold;
-              text-align: center;
-            }
-            .qr-cell {
-              width: 100px;
-              text-align: center;
-              vertical-align: middle;
-              position: relative;
-            }
-            .qr-code {
-              width: 60px;
-              height: 60px;
-            }
-            .form-code {
-              position: absolute;
-              top: 3px;
-              right: 3px;
-              font-size: 7px;
-              font-weight: bold;
-            }
-            .info-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 8px;
-              font-size: 7px;
-            }
-            .info-table td {
-              border: 1px solid black;
-              padding: 2px 4px;
-              vertical-align: top;
-            }
-            .info-label {
-              width: 100px;
-              font-weight: bold;
-            }
-            .info-colon {
-              width: 10px;
-            }
-            .warna-table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 8px;
-              font-size: 7px;
-            }
-            .warna-table td, .warna-table th {
-              border: 1px solid black;
-              padding: 2px 4px;
-            }
-            .warna-table th {
-              background-color: #f0f0f0;
-              font-weight: bold;
-              text-align: center;
-            }
-            .process-table {
-              width: 100%;
-              border-collapse: collapse;
-              font-size: 7px;
-              margin-top: 8px;
-            }
-            .process-table td, .process-table th {
-              border: 1px solid black;
-              padding: 3px 5px;
-              text-align: center;
-            }
-            .process-table th {
-              background-color: #f0f0f0;
-              font-weight: bold;
-            }
-            .signature-section {
-              margin-top: 15px;
-              display: grid;
-              grid-template-columns: repeat(4, 1fr);
-              gap: 10px;
-              text-align: center;
-              font-size: 7px;
-            }
-            .signature-box {
-              border: 1px solid black;
-              padding: 5px;
-              min-height: 60px;
-            }
-            .signature-title {
-              font-weight: bold;
-              margin-bottom: 30px;
-            }
-            .date-location {
-              text-align: right;
-              margin: 10px 0;
-              font-size: 7px;
-            }
-          </style>
-        </head>
-        <body>
-          <!-- Header Table -->
-          <table class="header-table">
-            <tbody>
-              <tr>
-                <td rowspan="2" class="logo-cell">
-                  <img src="${logoSrc}" alt="Logo" class="logo" />
-                </td>
-                <td class="info-label">No JO</td>
-                <td>${getValue(printData?.no_jo)}</td>
-                <td rowspan="4" class="qr-cell">
-                  <div class="form-code">FM-PPIC-001</div>
-                  <div class="qr-code" style="border: 1px solid #ccc; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 6px; color: #999;">
-                    QR CODE
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                
-              </tr>
-              <tr>
-                <td class="company-name" rowspan="2">
-                  PT. CAHAYA BERLIAN LESTARI
-                  <br />
-                  <span style="font-size: 9px">JOB ORDER</span>
-                </td>
-                <td class="info-label">No IO</td>
-                <td>${getValue(printData?.no_io)}</td>
-              </tr>
-              <tr>
-                <td class="info-label" colspan="2">${getValue(
-                  printData?.label,
-                  '',
-                )}</td>
-              </tr>
-            </tbody>
-          </table>
+          }
+          
+          /* New Header Styles */
+          .header-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid black;
+          }
+          
+          .header-left {
+            flex: 0 0 200px;
+          }
+          
+          .header-left table {
+            border-collapse: collapse;
+            width: 100%;
+          }
+          
+          .header-left td {
+            border: 1px solid black;
+            padding: 4px 8px;
+            font-size: 8px;
+          }
+          
+          .header-left .label-cell {
+            font-weight: bold;
+            width: 60px;
+          }
+          
+          .header-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 20px;
+          }
+          
+          .logo {
+            width: 60px;
+            height: auto;
+            margin-bottom: 5px;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+          }
+          
+          .company-name {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 2px;
+          }
+          
+          .job-order-text {
+            font-size: 9px;
+            font-weight: bold;
+          }
+          
+          .header-right {
+            flex: 0 0 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+          }
+          
+          .qr-code-container {
+            position: relative;
+            text-align: center;
+          }
+          
+          .form-code {
+            font-size: 7px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            text-align: right;
+          }
+          
+          .qr-code {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+            color: #999;
+          }
+          
+          .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+            font-size: 7px;
+          }
+          .info-table td {
+            border: 1px solid black;
+            padding: 2px 4px;
+            vertical-align: top;
+          }
+          .info-label {
+            width: 100px;
+            font-weight: bold;
+          }
+          .info-colon {
+            width: 10px;
+          }
+          .warna-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+            font-size: 7px;
+          }
+          .warna-table td, .warna-table th {
+            border: 1px solid black;
+            padding: 2px 4px;
+          }
+          .warna-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+          }
+          .process-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 7px;
+            margin-top: 8px;
+          }
+          .process-table td, .process-table th {
+            border: 1px solid black;
+            padding: 3px 5px;
+            text-align: center;
+          }
+          .process-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+          }
+          .signature-section {
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+            font-size: 7px;
+          }
+          .signature-box {
+            border: 1px solid black;
+            padding: 5px;
+            min-height: 60px;
+          }
+          .signature-title {
+            font-weight: bold;
+            margin-bottom: 30px;
+          }
+          .date-location {
+            text-align: right;
+            margin: 10px 0;
+            font-size: 7px;
+          }
+        </style>
+      </head>
+      <body>
+        <!-- New Header Design -->
+        <div class="header-container">
+          <!-- Left: JO and IO -->
+          <div class="header-left">
+            <table>
+              <tbody>
+                <tr>
+                  <td class="label-cell">No JO</td>
+                  <td>${getValue(printData?.no_jo)}</td>
+                </tr>
+                <tr>
+                  <td class="label-cell">No IO</td>
+                  <td>${getValue(printData?.no_io)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Center: Logo and Company Name -->
+          <div class="header-center">
+            <img src="${logoSrc}" alt="Logo" class="logo" />
+            <div class="company-name">PT. CAHAYA BERLIAN LESTARI</div>
+            <div class="job-order-text">JOB ORDER</div>
+          </div>
+          
+          <!-- Right: QR Code and Form Code -->
+          <div class="header-right">
+            <div class="qr-code-container">
+              <div class="form-code">FM-PPIC-001</div>
+              <div class="qr-code">QR CODE</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Label row (if exists) -->
+        ${
+          printData?.label
+            ? `
+        <div style="text-align: center; font-size: 9px; font-weight: bold; margin-bottom: 10px; padding: 5px; background-color: #f0f0f0; border: 1px solid black;">
+          ${getValue(printData?.label, '')}
+        </div>
+        `
+            : ''
+        }
           <!-- Main Info Table -->
           <table class="info-table">
             <tbody>
