@@ -1,4 +1,4 @@
-import { MenuItem, MenuCategory } from './menuConfig';
+import { MenuItem, MenuCategory } from '../menuConfig';
 
 export const canAccessDepartmentMasterData = (role: string) => {
   const departmentMasterDataRoles = [

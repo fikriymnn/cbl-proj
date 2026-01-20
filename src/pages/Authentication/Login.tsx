@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import Layout2 from '../../layout/Layout2';
 import Gambar from '../../images/BACKGROUND.png';
@@ -6,6 +6,7 @@ import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';
 import Loading from '../../components/Loading';
+import { getPermissionsForRole } from '../../constant/rbacConfig';
 
 const Login: React.FC = () => {
   const [Email, setEmail] = useState('');
@@ -13,8 +14,30 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
-  // const router = useRouter();
-  // const { push } = useRouter();
+
+  // Function to get first accessible route
+  const getFirstAccessibleRoute = (role: string, bagian: string): string => {
+    const normalizedRole = role?.toLowerCase();
+
+    // Super Admin and Developer get dashboard as default
+    if (normalizedRole === 'super admin' || normalizedRole === 'developer') {
+      return '/dashboard';
+    }
+
+    const permissions = getPermissionsForRole(role, bagian);
+
+    // Filter only accessible routes (excluding wildcard)
+    const accessibleRoutes = permissions.filter(
+      (p) => p.access === true && p.path !== '*',
+    );
+
+    if (accessibleRoutes.length === 0) {
+      return '/dashboard'; // Fallback to dashboard
+    }
+
+    // Return the first accessible route
+    return accessibleRoutes[0].path;
+  };
 
   async function submitLogin(e: any) {
     e.preventDefault();
@@ -23,30 +46,20 @@ const Login: React.FC = () => {
       const response = await axios.post(
         `${import.meta.env.VITE_API_LINK}/login`,
         { email: Email, password: Password },
-
         {
           withCredentials: true,
         },
       );
       console.log(response.data);
       setIsLoading(false);
-      // router.push("/");
-      // push("/");
-      if (response.data.role == 'pre_press') {
-        navigate('/prepress');
-      } else if (response.data.bagian == 'hr') {
-        navigate('/hr/personnel/company');
-      } else if (response.data.bagian == 'maintenance') {
-        navigate('/dashboard/maintenance');
-      } else if (response.data.bagian == 'quality control') {
-        navigate('/qc/validate-verify');
-      } else if (response.data.bagian == 'ppic') {
-        navigate('/ppic/production-schedule');
-      } else if (response.data.bagian == 'produksi') {
-        navigate('/production/breakdown-recap');
-      } else {
-        navigate('/dashboard');
-      }
+
+      const { role, bagian } = response.data;
+
+      // Get the first accessible route based on role and bagian
+      const firstAccessibleRoute = getFirstAccessibleRoute(role, bagian);
+
+      // Navigate to the first accessible route
+      navigate(firstAccessibleRoute);
     } catch (error: any) {
       alert(error.response.data.msg);
       setIsLoading(false);

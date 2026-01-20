@@ -319,6 +319,7 @@ const ModalUser = ({
     { value: 'marketing', label: 'Marketing' },
     { value: 'delivery order', label: 'Delivery Order' },
     { value: 'accounting', label: 'Accounting' },
+    { value: 'security', label: 'Security' },
   ];
 
   // Role options
@@ -332,6 +333,7 @@ const ModalUser = ({
     { value: 'pre_press', label: 'Pre-Press' },
     { value: 'payroll', label: 'Payroll' },
     { value: 'inspector', label: 'Inspector' },
+    { value: 'security', label: 'Security' },
   ];
 
   return (

@@ -142,7 +142,7 @@ export const mockRBACData: RolePermissions[] = [
     permissions: [
       // Dashboard
       fullAccess('/dashboard/maintenance'),
-      noAccess('/dashboard'),
+      fullAccess('/dashboard'),
 
       // Corrective Maintenance
       fullAccess('/maintenance/corrective'),
@@ -212,7 +212,7 @@ export const mockRBACData: RolePermissions[] = [
     permissions: [
       // Dashboard
       fullAccess('/dashboard/maintenance'),
-      noAccess('/dashboard'),
+      fullAccess('/dashboard'),
 
       // Corrective Maintenance
       fullAccess('/maintenance/corrective'),
@@ -355,7 +355,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'quality control',
     permissions: [
       // Dashboard
-      fullAccess('/dashboard'),
+      noAccess('/dashboard'),
 
       // QC Menu
       fullAccess('/qc/validate-verify'),
@@ -475,7 +475,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'hr',
     permissions: [
       // Dashboard
-      fullAccess('/dashboard'),
+      noAccess('/dashboard'),
 
       // Personnel Management
       fullAccess('/hr/personnel/company'),
@@ -627,7 +627,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'ppic',
     permissions: [
       // Dashboard
-      fullAccess('/dashboard'),
+      noAccess('/dashboard'),
 
       // PPIC Menu
       fullAccess('/ppic/production-schedule'),
@@ -711,7 +711,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'produksi',
     permissions: [
       // Dashboard
-      fullAccess('/dashboard'),
+      noAccess('/dashboard'),
 
       // Production Menu
       fullAccess('/production/input-lkh'),
@@ -744,7 +744,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'produksi',
     permissions: [
       // Dashboard
-      readOnly('/dashboard'),
+      noAccess('/dashboard'),
 
       // Production Menu
       fullAccess('/production/input-lkh'),
@@ -776,7 +776,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'produksi',
     permissions: [
       // Dashboard
-      readOnly('/dashboard'),
+      noAccess('/dashboard'),
 
       // Production Menu
       fullAccess('/production/input-lkh'),
@@ -812,7 +812,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'marketing',
     permissions: [
       // Dashboard
-      readOnly('/dashboard'),
+      noAccess('/dashboard'),
 
       // Marketing Menu - Calculation
       fullAccess('/marketing/calculation/create'),
@@ -859,7 +859,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'marketing',
     permissions: [
       // Dashboard
-      readOnly('/dashboard'),
+      noAccess('/dashboard'),
 
       // Marketing Menu - Calculation
       fullAccess('/marketing/calculation/create'),
@@ -906,7 +906,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'marketing',
     permissions: [
       // Dashboard
-      readOnly('/dashboard'),
+      noAccess('/dashboard'),
 
       // Marketing Menu - Calculation
       fullAccess('/marketing/calculation/create'),
@@ -964,6 +964,18 @@ export const mockRBACData: RolePermissions[] = [
       fullAccess('/prepress'),
     ],
   },
+  // security
+  {
+    role: 'security',
+    bagian: 'security',
+    permissions: [
+      // Dashboard
+      noAccess('/dashboard'),
+
+      // Pre-Press Menu
+      fullAccess('/security/monitoring'),
+    ],
+  },
   // Add these new role configurations to the mockRBACData array
 
   // ============================================
@@ -976,7 +988,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'delivery order',
     permissions: [
       // Dashboard
-      fullAccess('/dashboard'),
+      noAccess('/dashboard'),
 
       // Delivery Order Menu
       fullAccess('/do/list-do'),
@@ -1048,7 +1060,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'accounting',
     permissions: [
       // Dashboard
-      fullAccess('/dashboard'),
+      noAccess('/dashboard'),
 
       // Accounting Menu
       fullAccess('/accounting/list-outstanding'),
@@ -1085,7 +1097,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'accounting',
     permissions: [
       // Dashboard
-      readOnly('/dashboard'),
+      noAccess('/dashboard'),
 
       // Accounting Menu
       fullAccess('/accounting/list-outstanding'),
@@ -1134,7 +1146,7 @@ export const mockRBACData: RolePermissions[] = [
     bagian: 'accounting',
     permissions: [
       // Dashboard
-      readOnly('/dashboard'),
+      noAccess('/dashboard'),
 
       // Accounting Menu
       fullAccess('/accounting/list-outstanding'),

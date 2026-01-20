@@ -246,6 +246,7 @@ import BukaLKHPage from './pages/Produksi/MonitoringLKH/BukaLKHPage';
 import PerubahanTglKirimPage from './pages/PPIC/PerubahanTglKirimPage';
 import MasterMenu from './pages/MasterData/MasterMenu';
 import AbsenPPICPage from './pages/PPIC/AbsenPPIC';
+import SecurityMonitoringPage from './pages/Security/SecurityMonitoringPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -304,7 +305,18 @@ function App() {
             </>
           }
         />
-
+        {/* ============== Security ROUTES ============== */}
+        <Route
+          path="/security/monitoring"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SecurityMonitoringPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
         {/* ============== MAINTENANCE ROUTES ============== */}
         <Route
           path="/maintenance/corrective"

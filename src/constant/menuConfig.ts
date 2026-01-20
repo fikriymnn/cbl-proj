@@ -38,6 +38,18 @@ export const menuCategories: MenuCategory[] = [
     ],
   },
   {
+    name: 'Security',
+    icon: Dashboard,
+    items: [
+      {
+        name: 'Monitoring',
+        path: '/security/monitoring',
+        icon: 'dashboard',
+      },
+    ],
+  },
+
+  {
     name: 'Maintenance',
     icon: MaintenanceIcon,
     items: [
