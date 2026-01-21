@@ -1,4 +1,4 @@
-// BOMCreate.tsx (Main Entry Point)
+// BOMIOProof.tsx (Updated)
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import BOMManagementModal from './BOMManagementModal';
@@ -14,12 +14,33 @@ interface APIResponse<T> {
   total_page?: number;
 }
 
-const BOMCreate: React.FC = () => {
+// ✅ NEW: Interface for IO data structure
+interface IOData {
+  id: number;
+  no_io: string;
+  no_so?: string;
+  customer: string;
+  produk: string;
+  status_io: string;
+  status_proses: string;
+  is_active: boolean;
+  is_send_proof: boolean;
+  tgl_pembuatan_io: string;
+  qty_send_proof: number;
+  bom: Array<{
+    id: number;
+    no_bom: string;
+    status_proses: string;
+    [key: string]: any;
+  }>;
+  [key: string]: any;
+}
+
+const BOMIOProof: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
-  const [soData, setSOData] = useState<SOData[]>([]);
+  const [ioData, setIOData] = useState<IOData[]>([]); // ✅ Changed from soData to ioData
   const [sortKey, setSortKey] = useState<string>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedSOId, setSelectedSOId] = useState<number | null>(null);
   const [selectedIOId, setSelectedIOId] = useState<number | null>(null);
   const [showBOMModal, setShowBOMModal] = useState<boolean>(false);
 
@@ -30,8 +51,9 @@ const BOMCreate: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
 
-  // NEW: BOM Status Filter
+  // BOM Status Filter
   const [statusBomFilter, setStatusBomFilter] = useState<string>('');
+  const [selectedIOQty, setSelectedIOQty] = useState<number>(0);
 
   const handleSort = (field: string) => {
     if (sortKey === field) {
@@ -93,7 +115,7 @@ const BOMCreate: React.FC = () => {
 
   const handleSearch = (): void => {
     setSearchTerm(searchInput);
-    setPage(1); // Reset to first page on new search
+    setPage(1);
   };
 
   const handleClearSearch = (): void => {
@@ -110,39 +132,38 @@ const BOMCreate: React.FC = () => {
 
   const handleLimitChange = (newLimit: number): void => {
     setLimit(newLimit);
-    setPage(1); // Reset to first page when changing limit
+    setPage(1);
   };
 
-  // NEW: Handle BOM Status Filter Change
   const handleStatusBomChange = (status: string): void => {
     setStatusBomFilter(status);
-    setPage(1); // Reset to first page when changing filter
+    setPage(1);
   };
 
-  const fetchSOData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
+  const fetchIOData = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
     try {
       setLoading(true);
-      const res: AxiosResponse<APIResponse<SOData[]>> = await axios.get(url, {
+      const res: AxiosResponse<APIResponse<IOData[]>> = await axios.get(url, {
         params: {
-          status: 'history',
           page: page,
           limit: limit,
           search: searchTerm,
           status_bom: statusBomFilter,
+          is_send_proof: true,
         },
         withCredentials: true,
       });
-      console.log('Fetched SO data:', res.data);
+      console.log('Fetched IO data:', res.data);
       if (res.data.succes) {
-        setSOData(res.data.data || []);
+        setIOData(res.data.data || []);
         if (res.data.total_page) {
           setTotalPages(res.data.total_page);
         }
       }
     } catch (error) {
-      console.error('Error fetching SO data:', error);
-      setSOData([]);
+      console.error('Error fetching IO data:', error);
+      setIOData([]);
     } finally {
       setLoading(false);
     }
@@ -191,13 +212,18 @@ const BOMCreate: React.FC = () => {
     }
   };
 
-  // Helper function to check if BOM exists
-  const hasBOM = (item: SOData): boolean => {
-    return item.bom !== null && item.bom !== undefined && item.bom.id !== null;
+  // ✅ UPDATED: Helper function to check if BOM exists (IO structure)
+  const hasBOM = (item: IOData): boolean => {
+    return Array.isArray(item.bom) && item.bom.length > 0;
   };
 
-  // Helper function to get BOM status badge
-  const getBOMStatusBadge = (item: SOData) => {
+  // ✅ UPDATED: Helper function to get first BOM from array
+  const getFirstBOM = (item: IOData) => {
+    return hasBOM(item) ? item.bom[0] : null;
+  };
+
+  // ✅ UPDATED: Helper function to get BOM status badge
+  const getBOMStatusBadge = (item: IOData) => {
     if (hasBOM(item)) {
       return (
         <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-200 font-medium">
@@ -212,13 +238,14 @@ const BOMCreate: React.FC = () => {
     );
   };
 
-  // Helper function to check if EDIT button should be shown
-  const canEditBOM = (item: SOData): boolean => {
+  // ✅ UPDATED: Helper function to check if EDIT button should be shown
+  const canEditBOM = (item: IOData): boolean => {
     if (!hasBOM(item)) return true;
-    const status = item.bom?.status_proses?.toLowerCase();
+    const bom = getFirstBOM(item);
+    const status = bom?.status_proses?.toLowerCase();
     return (
       status === 'draft' ||
-      status === 'reject kabag ' ||
+      status === 'reject kabag' ||
       status === 'kembali dari bom ppic'
     );
   };
@@ -234,7 +261,7 @@ const BOMCreate: React.FC = () => {
             withCredentials: true,
           },
         );
-        fetchSOData();
+        fetchIOData();
         alert('BOM berhasil di-request!');
       } catch (error: any) {
         console.log(error);
@@ -244,28 +271,31 @@ const BOMCreate: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchSOData();
+    fetchIOData();
   }, [page, limit, searchTerm, statusBomFilter]);
 
   const sortedData = React.useMemo(() => {
-    const sorted = [...soData].sort((a, b) => {
+    const sorted = [...ioData].sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
-      // Special handling for bom-related sorting
+      // ✅ UPDATED: Special handling for bom-related sorting
       if (sortKey === 'bom') {
         aValue = hasBOM(a) ? 1 : 0;
         bValue = hasBOM(b) ? 1 : 0;
       } else if (sortKey === 'status_proses') {
-        aValue = a.bom?.status_proses || '';
-        bValue = b.bom?.status_proses || '';
+        const aBom = getFirstBOM(a);
+        const bBom = getFirstBOM(b);
+        aValue = aBom?.status_proses || '';
+        bValue = bBom?.status_proses || '';
       } else if (sortKey === 'no_bom') {
-        // ✅ Add sorting for no_bom
-        aValue = a.bom?.no_bom || '';
-        bValue = b.bom?.no_bom || '';
+        const aBom = getFirstBOM(a);
+        const bBom = getFirstBOM(b);
+        aValue = aBom?.no_bom || '';
+        bValue = bBom?.no_bom || '';
       } else {
-        aValue = a[sortKey as keyof SOData];
-        bValue = b[sortKey as keyof SOData];
+        aValue = a[sortKey as keyof IOData];
+        bValue = b[sortKey as keyof IOData];
       }
 
       if (aValue === null || aValue === undefined) return 1;
@@ -282,11 +312,11 @@ const BOMCreate: React.FC = () => {
       return 0;
     });
     return sorted;
-  }, [soData, sortKey, sortDirection]);
+  }, [ioData, sortKey, sortDirection]);
 
-  const handleManageBOM = (so: SOData) => {
-    setSelectedIOId(so.id_io);
-    setSelectedSOId(so.id);
+  const handleManageBOM = (io: IOData) => {
+    setSelectedIOId(io.id);
+    setSelectedIOQty(io.qty_send_proof || 0); // ✅ Store the qty_send_proof
     setShowBOMModal(true);
   };
 
@@ -299,7 +329,7 @@ const BOMCreate: React.FC = () => {
             <label className="block text-sm font-medium mb-1">Search</label>
             <input
               type="text"
-              placeholder="Search by No SO, No IO, Customer, Produk..."
+              placeholder="Search by No IO, Customer, Produk..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -335,7 +365,7 @@ const BOMCreate: React.FC = () => {
                 handleClearSearch();
                 setStatusBomFilter('');
               }}
-              className="bg-gray-500 hover:bg-gray-600 text-red-600 px-4 py-2 rounded-md text-sm font-medium transition-colors h-[42px]"
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors h-[42px]"
             >
               Clear All Filters
             </button>
@@ -361,7 +391,7 @@ const BOMCreate: React.FC = () => {
                   ACTION
                 </th>
 
-                {/* ✅ NO BOM - NEW COLUMN */}
+                {/* NO BOM */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort('no_bom')}
@@ -372,7 +402,7 @@ const BOMCreate: React.FC = () => {
                   </button>
                 </th>
 
-                {/* ✅ BOM INFO - MOVED HERE */}
+                {/* BOM INFO */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort('bom')}
@@ -380,17 +410,6 @@ const BOMCreate: React.FC = () => {
                   >
                     BOM INFO
                     {getSortIcon('bom')}
-                  </button>
-                </th>
-
-                {/* NO SO */}
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('no_so')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    NO SO
-                    {getSortIcon('no_so')}
                   </button>
                 </th>
 
@@ -427,35 +446,35 @@ const BOMCreate: React.FC = () => {
                   </button>
                 </th>
 
-                {/* STATUS JO */}
+                {/* STATUS IO */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
-                    onClick={() => handleSort('status_jo')}
+                    onClick={() => handleSort('status_io')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    STATUS JO
-                    {getSortIcon('status_jo')}
+                    STATUS
+                    {getSortIcon('status_io')}
                   </button>
                 </th>
 
                 {/* TGL BUAT */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
-                    onClick={() => handleSort('tgl_pembuatan_so')}
+                    onClick={() => handleSort('tgl_pembuatan_io')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
                     TGL BUAT
-                    {getSortIcon('tgl_pembuatan_so')}
+                    {getSortIcon('tgl_pembuatan_io')}
                   </button>
                 </th>
 
-                {/* STATUS */}
+                {/* STATUS BOM */}
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort('status_proses')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    STATUS
+                    STATUS BOM
                     {getSortIcon('status_proses')}
                   </button>
                 </th>
@@ -475,7 +494,7 @@ const BOMCreate: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={12} className="px-4 py-6 text-center">
+                  <td colSpan={11} className="px-4 py-6 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
@@ -484,177 +503,169 @@ const BOMCreate: React.FC = () => {
               ) : sortedData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={12}
+                    colSpan={11}
                     className="px-4 py-6 text-center text-gray-500 text-sm"
                   >
                     {searchTerm || statusBomFilter
-                      ? 'No SO found matching your filters'
-                      : 'No SO data available'}
+                      ? 'No IO found matching your filters'
+                      : 'No IO data available'}
                   </td>
                 </tr>
               ) : (
-                sortedData.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    {/* NO */}
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {(page - 1) * limit + index + 1}
-                    </td>
+                sortedData.map((item, index) => {
+                  const firstBOM = getFirstBOM(item); // ✅ Get first BOM
 
-                    {/* ACTION */}
-                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
-                      <div className="flex flex-col gap-1">
-                        {canEditBOM(item) && (
-                          <button
-                            onClick={() => handleManageBOM(item)}
-                            className={`${
-                              hasBOM(item)
-                                ? 'bg-blue-500 hover:bg-blue-600'
-                                : 'bg-green-500 hover:bg-green-600'
-                            } text-white px-3 py-1 rounded text-xs transition-colors`}
-                            title={hasBOM(item) ? 'Edit BOM' : 'Create BOM'}
-                          >
-                            {hasBOM(item) ? 'EDIT BOM' : 'CREATE BOM'}
-                          </button>
-                        )}
+                  return (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      {/* NO */}
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                        {(page - 1) * limit + index + 1}
+                      </td>
 
-                        {hasBOM(item) &&
-                          (item.bom?.status_proses === 'draft' ||
-                            item.bom?.status_proses === 'reject kabag' ||
-                            item.bom?.status_proses ===
-                              'kembali dari BOM PPIC') && (
+                      {/* ACTION */}
+                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                        <div className="flex flex-col gap-1">
+                          {canEditBOM(item) && (
                             <button
-                              onClick={() => NextProcessKabag(item.bom!.id)}
-                              className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                              title="Next Process"
+                              onClick={() => handleManageBOM(item)}
+                              className={`${
+                                hasBOM(item)
+                                  ? 'bg-blue-500 hover:bg-blue-600'
+                                  : 'bg-green-500 hover:bg-green-600'
+                              } text-white px-3 py-1 rounded text-xs transition-colors`}
+                              title={hasBOM(item) ? 'Edit BOM' : 'Create BOM'}
                             >
-                              NEXT PROCESS
+                              {hasBOM(item) ? 'EDIT BOM' : 'CREATE BOM'}
                             </button>
                           )}
-                      </div>
-                    </td>
 
-                    {/* ✅ NO BOM - NEW COLUMN */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      {item.bom?.no_bom ? (
+                          {hasBOM(item) &&
+                            firstBOM &&
+                            (firstBOM.status_proses === 'draft' ||
+                              firstBOM.status_proses === 'reject kabag' ||
+                              firstBOM.status_proses ===
+                                'kembali dari BOM PPIC') && (
+                              <button
+                                onClick={() => NextProcessKabag(firstBOM.id)}
+                                className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                title="Next Process"
+                              >
+                                NEXT PROCESS
+                              </button>
+                            )}
+                        </div>
+                      </td>
+
+                      {/* NO BOM */}
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        {firstBOM?.no_bom ? (
+                          <span
+                            className="bg-indigo-100 text-indigo-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                            title={firstBOM.no_bom}
+                          >
+                            {firstBOM.no_bom.substring(0, 20) +
+                              (firstBOM.no_bom.length > 20 ? '...' : '')}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
+
+                      {/* BOM INFO */}
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        {getBOMStatusBadge(item)}
+                      </td>
+
+                      {/* NO IO */}
+                      <td className="px-2 py-2 whitespace-nowrap">
                         <span
-                          className="bg-indigo-100 text-indigo-800 text-xs px-1.5 py-0.5 rounded font-medium"
-                          title={item.bom.no_bom}
+                          className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                          title={item.no_io}
                         >
-                          {item.bom.no_bom.substring(0, 20) +
-                            (item.bom.no_bom.length > 20 ? '...' : '')}
+                          {item.no_io
+                            ? item.no_io.substring(0, 20) +
+                              (item.no_io.length > 20 ? '...' : '')
+                            : '-'}
                         </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
-                    </td>
+                      </td>
 
-                    {/* ✅ BOM INFO - MOVED HERE */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      {getBOMStatusBadge(item)}
-                    </td>
+                      {/* CUSTOMER */}
+                      <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
+                        <span title={item.customer}>
+                          {item.customer
+                            ? item.customer.substring(0, 50) +
+                              (item.customer.length > 50 ? '...' : '')
+                            : '-'}
+                        </span>
+                      </td>
 
-                    {/* NO SO */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
-                        title={item.no_so}
-                      >
-                        {item.no_so
-                          ? item.no_so.substring(0, 20) +
-                            (item.no_so.length > 20 ? '...' : '')
-                          : '-'}
-                      </span>
-                    </td>
+                      {/* PRODUK */}
+                      <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
+                        <span title={item.produk}>
+                          {item.produk
+                            ? item.produk.substring(0, 90) +
+                              (item.produk.length > 90 ? '...' : '')
+                            : '-'}
+                        </span>
+                      </td>
 
-                    {/* NO IO */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium"
-                        title={item.no_io}
-                      >
-                        {item.no_io
-                          ? item.no_io.substring(0, 20) +
-                            (item.no_io.length > 20 ? '...' : '')
-                          : '-'}
-                      </span>
-                    </td>
-
-                    {/* CUSTOMER */}
-                    <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
-                      <span title={item.customer}>
-                        {item.customer
-                          ? item.customer.substring(0, 50) +
-                            (item.customer.length > 50 ? '...' : '')
-                          : '-'}
-                      </span>
-                    </td>
-
-                    {/* PRODUK */}
-                    <td className="px-2 py-2 text-xs text-gray-900 max-w-32">
-                      <span title={item.produk}>
-                        {item.produk
-                          ? item.produk.substring(0, 90) +
-                            (item.produk.length > 90 ? '...' : '')
-                          : '-'}
-                      </span>
-                    </td>
-
-                    {/* STATUS JO */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor(
-                          item.status_jo,
-                        )}`}
-                        title={item.status_jo}
-                      >
-                        {item.status_jo
-                          ? item.status_jo.substring(0, 8) +
-                            (item.status_jo.length > 8 ? '...' : '')
-                          : '-'}
-                      </span>
-                    </td>
-
-                    {/* TGL BUAT */}
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      <span title={item.tgl_pembuatan_so}>
-                        {formatDate(item.tgl_pembuatan_so)}
-                      </span>
-                    </td>
-
-                    {/* STATUS */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      {hasBOM(item) && item.bom?.status_proses ? (
+                      {/* STATUS IO */}
+                      <td className="px-2 py-2 whitespace-nowrap">
                         <span
-                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(
-                            item.bom.status_proses,
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor(
+                            item.status_io,
                           )}`}
-                          title={item.bom.status_proses}
+                          title={item.status_io}
                         >
-                          {item.bom.status_proses.substring(0, 8) +
-                            (item.bom.status_proses.length > 8 ? '...' : '')}
+                          {item.status_io
+                            ? item.status_io.substring(0, 8) +
+                              (item.status_io.length > 8 ? '...' : '')
+                            : '-'}
                         </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
-                    </td>
+                      </td>
 
-                    {/* ACTIVE */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                          item.is_active
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {item.is_active ? 'YA' : 'TIDAK'}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                      {/* TGL BUAT */}
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                        <span title={item.tgl_pembuatan_io}>
+                          {formatDate(item.tgl_pembuatan_io)}
+                        </span>
+                      </td>
+
+                      {/* STATUS BOM */}
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        {firstBOM?.status_proses ? (
+                          <span
+                            className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(
+                              firstBOM.status_proses,
+                            )}`}
+                            title={firstBOM.status_proses}
+                          >
+                            {firstBOM.status_proses.substring(0, 8) +
+                              (firstBOM.status_proses.length > 8 ? '...' : '')}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                      </td>
+
+                      {/* ACTIVE */}
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                            item.is_active
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {item.is_active ? 'YA' : 'TIDAK'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -696,20 +707,21 @@ const BOMCreate: React.FC = () => {
         </div>
       </div>
 
-      {/* BOM Management Modal */}
-      {showBOMModal && selectedSOId && selectedIOId && (
+      {showBOMModal && selectedIOId && (
         <BOMManagementModal
-          soId={selectedSOId}
           ioId={selectedIOId}
-          dataSource="SO" // Specify SO as source
+          dataSource="IO"
+          qtyOverride={selectedIOQty} // ✅ Pass qty_send_proof as override
           onClose={() => {
             setShowBOMModal(false);
-            setSelectedSOId(null);
+            setSelectedIOId(null);
+            setSelectedIOQty(0); // ✅ Reset qty
           }}
           onSuccess={() => {
-            fetchSOData();
+            fetchIOData();
             setShowBOMModal(false);
-            setSelectedSOId(null);
+            setSelectedIOId(null);
+            setSelectedIOQty(0); // ✅ Reset qty
           }}
         />
       )}
@@ -717,4 +729,4 @@ const BOMCreate: React.FC = () => {
   );
 };
 
-export default BOMCreate;
+export default BOMIOProof;

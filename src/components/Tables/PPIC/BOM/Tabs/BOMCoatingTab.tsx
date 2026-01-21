@@ -7,14 +7,14 @@ interface BOMCoatingTabProps {
   data: BOMCoating[];
   onChange: (data: BOMCoating[]) => void;
   po_qty?: number;
-  id_kalkulasi?: number;
+  selectedMounting?: any; // Ganti id_kalkulasi dengan selectedMounting
 }
 
 const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
   data,
   onChange,
   po_qty,
-  id_kalkulasi,
+  selectedMounting, // Ganti id_kalkulasi
 }) => {
   const [showModal, setShowModal] = useState(false);
 
@@ -40,11 +40,9 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
     onChange([...data, newItem]);
   };
 
-  // Handle checkbox selection - maximum 2 can be selected at a time
   const handleCheckboxChange = (index: number, checked: boolean) => {
     const currentSelectedCount = data.filter((item) => item.is_selected).length;
 
-    // If trying to check and already have 2 selected, prevent it
     if (checked && currentSelectedCount >= 2) {
       alert('Maksimal hanya 2 coating yang dapat dipilih');
       return;
@@ -61,15 +59,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
     onChange(data.filter((_, i) => i !== index));
   };
 
-  // Get the selected coatings
   const selectedCoatings = data.filter((item) => item.is_selected);
-
-  // Format rumus display
-  const formatRumusDisplay = (rumus: string) => {
-    if (rumus === 'UV_WB') return 'UV & WB';
-    if (rumus === 'VARNISH_DOFF') return 'Varnish Doff';
-    return rumus;
-  };
 
   return (
     <div>
@@ -77,7 +67,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
         <button
           onClick={handleAdd}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-          disabled={!po_qty || !id_kalkulasi}
+          disabled={!selectedMounting} // Disable jika mounting belum dipilih
         >
           <span>+</span>
           Tambah Data Coating
@@ -100,9 +90,9 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
         )}
       </div>
 
-      {(!po_qty || !id_kalkulasi) && (
+      {!selectedMounting && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          ⚠️ Qty SO dan Data Kalkulasi belum tersedia.
+          ⚠️ Silakan pilih mounting terlebih dahulu untuk menambah coating.
         </div>
       )}
 
@@ -119,14 +109,12 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
                 Tipe Coating
               </th>
-
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
                 Qty UV / WB
               </th>
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
                 Qty Varnish Doff
               </th>
-
               <th className="px-3 py-2 border-b text-center font-medium text-gray-700">
                 <div className="flex flex-col items-center">
                   <span>Pilih</span>
@@ -143,7 +131,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
           <tbody>
             {data?.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                   Belum ada data coating
                 </td>
               </tr>
@@ -184,7 +172,6 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
                       readOnly
                     />
                   </td>
-
                   <td className="px-3 py-2 border-b">
                     <input
                       type="number"
@@ -211,7 +198,6 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
                       readOnly
                     />
                   </td>
-
                   <td className="px-3 py-2 border-b text-center">
                     <input
                       type="checkbox"
@@ -237,13 +223,12 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
         </table>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <TambahCoatingModal
           onClose={() => setShowModal(false)}
           onSave={handleSaveFromModal}
           po_qty={po_qty}
-          id_kalkulasi={id_kalkulasi}
+          selectedMounting={selectedMounting} // Pass mounting data
         />
       )}
     </div>

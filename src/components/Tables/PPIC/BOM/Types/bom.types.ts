@@ -132,7 +132,7 @@ export interface BOMLainLain {
 export interface BOMData {
   id?: any;
   id_io: number;
-  id_so: number;
+  id_so: any;
   id_io_mounting: number;
   id_create_bom?: number | null;
   id_approve_bom?: number | null;

@@ -456,20 +456,31 @@ function SecurityMonitoring() {
                       }
                     };
 
+                    // Get bagian_mesin from the first element of the array
+                    const bagianMesin =
+                      data.bagian_mesin?.[0]?.nama_bagian_mesin || '';
+
                     return (
                       <tr key={i} className={`border-b ${getRowBackground()}`}>
                         <td className="p-1.5 sm:p-2 text-[10px] sm:text-xs">
                           {i + 1}
                         </td>
                         <td className="p-1.5 sm:p-2 text-[10px] sm:text-xs font-medium">
-                          {data.name}
+                          <div className="flex flex-col">
+                            <span>{data.name}</span>
+                            {bagianMesin && (
+                              <span className="text-green-500 text-[9px] sm:text-[11px]">
+                                - {bagianMesin}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-1.5 sm:p-2 text-[10px] sm:text-xs">
                           <div className="flex flex-col">
                             <span className=" max-w-[120px]">
                               {data.nama_department}
                             </span>
-                            <span className="text-gray-500  max-w-[120px]">
+                            <span className="text-blue-500  max-w-[120px]">
                               {data.nama_divisi}
                             </span>
                           </div>

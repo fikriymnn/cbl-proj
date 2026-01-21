@@ -1,4 +1,4 @@
-import BOMCreate from '../../../components/Tables/PPIC/BOM/BOMCreate';
+import TabBOM from '../../../components/Tables/PPIC/BOM/TabBOM';
 import DefaultLayout from '../../../layout/DefaultLayout';
 
 function BOMMarketing() {
@@ -8,7 +8,7 @@ function BOMMarketing() {
         <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
           BOM
         </p>
-        <BOMCreate />
+        <TabBOM />
       </>
     </DefaultLayout>
   );

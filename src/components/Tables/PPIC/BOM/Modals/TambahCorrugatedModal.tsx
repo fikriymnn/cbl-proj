@@ -160,7 +160,7 @@ const TambahCorrugatedModal: React.FC<TambahCorrugatedModalProps> = ({
           {po_qty > 0 && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
               <div className="text-gray-700">
-                <span className="font-semibold">Qty SO:</span> {po_qty}
+                <span className="font-semibold">Qty:</span> {po_qty}
               </div>
               {formData.isi_per_pack > 0 && (
                 <div className="text-gray-700 mt-1">

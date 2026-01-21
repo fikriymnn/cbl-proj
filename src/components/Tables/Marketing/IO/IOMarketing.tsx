@@ -66,6 +66,7 @@ interface IOData {
   io_action_user?: UserActionData[];
   user_create?: UserData;
   user_approve?: UserData;
+  is_send_proof: boolean;
 }
 
 interface OKPData {
@@ -115,9 +116,14 @@ const IOMarketing: React.FC = () => {
   const [selectedMountingIndex, setSelectedMountingIndex] = useState<number>(0);
   const printRef = useRef<HTMLDivElement>(null);
 
-  // Delete confirmation state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [deleteIOId, setDeleteIOId] = useState<number | null>(null);
+
+  const [showSendProofConfirm, setShowSendProofConfirm] =
+    useState<boolean>(false);
+  const [sendProofIOId, setSendProofIOId] = useState<number | null>(null);
+  const [sendProofIONumber, setSendProofIONumber] = useState<string>('');
+  const [sendProofQty, setSendProofQty] = useState<number>(0);
 
   // Add sorting functions
   const handleSort = (field: SortField) => {
@@ -514,6 +520,60 @@ const IOMarketing: React.FC = () => {
       setLoading(false);
     }
   };
+  const handleSendProof = (ioId: number, ioNumber: string): void => {
+    setSendProofIOId(ioId);
+    setSendProofIONumber(ioNumber);
+    setSendProofQty(0); // Reset to default value
+    setShowSendProofConfirm(true);
+  };
+
+  const cancelSendProof = (): void => {
+    setShowSendProofConfirm(false);
+    setSendProofIOId(null);
+    setSendProofIONumber('');
+    setSendProofQty(0); // Reset quantity
+  };
+
+  const confirmSendProof = async (): Promise<void> => {
+    if (!sendProofIOId) return;
+
+    // Validate quantity
+    if (sendProofQty < 1) {
+      alert('Quantity must be at least 1');
+      return;
+    }
+
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/marketing/io/sendProof/${sendProofIOId}`;
+    try {
+      setLoading(true);
+      const res: AxiosResponse = await axios.put(
+        url,
+        { qty_send_proof: sendProofQty }, // Use the state value
+        {
+          withCredentials: true,
+        },
+      );
+
+      if (res.data.succes || res.status === 200) {
+        alert('Proof sent successfully');
+        fetchIOData();
+        setShowSendProofConfirm(false);
+        setSendProofIOId(null);
+        setSendProofIONumber('');
+        setSendProofQty(0); // Reset quantity
+      } else {
+        alert('Failed to send proof');
+      }
+      console.log('SendProof:', res.data);
+    } catch (error) {
+      console.error('Error sending proof:', error);
+      alert('Error sending proof. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Delete IO function
   const handleDeleteIO = (ioId: number): void => {
@@ -811,6 +871,22 @@ const IOMarketing: React.FC = () => {
                         >
                           PRINT
                         </button>
+                        <button
+                          onClick={() => handleSendProof(item.id, item.no_io)}
+                          disabled={item.is_send_proof === true}
+                          className={`px-2 py-1 rounded text-xs transition-colors ${
+                            item.is_send_proof === true
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              : 'bg-cyan-500 hover:bg-cyan-600 text-white'
+                          }`}
+                          title={
+                            item.is_send_proof
+                              ? 'Proof already sent'
+                              : 'Send Proof'
+                          }
+                        >
+                          {item.is_send_proof ? 'PROOF SENT' : 'SEND PROOF'}
+                        </button>
                       </div>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -1083,6 +1159,73 @@ const IOMarketing: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Send Proof Confirmation Modal */}
+      {showSendProofConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center mb-4">
+              <svg
+                className="w-6 h-6 text-cyan-600 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <h2 className="text-xl font-bold text-gray-900">
+                Confirm Send Proof
+              </h2>
+            </div>
+            <p className="text-gray-600 mb-2">
+              Apa Anda yakin ingin mengirim proof untuk IO berikut?
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+              <p className="text-sm font-medium text-gray-700">IO Number:</p>
+              <p className="text-sm font-bold text-blue-800">
+                {sendProofIONumber}
+              </p>
+            </div>
+
+            {/* Quantity Input */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Quantity to Send <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                min="0"
+                value={sendProofQty}
+                onChange={(e) => setSendProofQty(parseInt(e.target.value) || 0)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                placeholder="Enter quantity"
+                disabled={loading}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelSendProof}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSendProof}
+                className="px-4 py-2 bg-cyan-500 text-white rounded-md hover:bg-cyan-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+              >
+                {loading ? 'Sending...' : 'Send Proof'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -16,14 +16,14 @@ interface TambahCoatingModalProps {
     tipe: string;
   }) => void;
   po_qty?: number;
-  id_kalkulasi?: number;
+  selectedMounting?: any; // Data mounting dari IO
 }
 
 const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
   onClose,
   onSave,
   po_qty = 0,
-  id_kalkulasi,
+  selectedMounting,
 }) => {
   const [formData, setFormData] = useState({
     id_coating: '',
@@ -35,7 +35,6 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     Array<{ id: number; kode_barang: string; nama_barang: string }>
   >([]);
   const [loading, setLoading] = useState(false);
-  const [kalkulasiData, setKalkulasiData] = useState<any>(null);
   const [calculatedQty, setCalculatedQty] = useState(0);
   const [calculatedUVWB, setCalculatedUVWB] = useState(0);
   const [calculatedVarnishDoff, setCalculatedVarnishDoff] = useState(0);
@@ -44,40 +43,12 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     fetchCoatingData();
   }, []);
 
-  useEffect(() => {
-    if (id_kalkulasi) {
-      fetchKalkulasiData();
-    }
-  }, [id_kalkulasi]);
-
   // Calculate quantities when data is available
   useEffect(() => {
-    if (kalkulasiData && po_qty > 0 && formData.rumus_coating) {
+    if (selectedMounting && po_qty > 0 && formData.rumus_coating) {
       calculateQuantities();
     }
-  }, [po_qty, kalkulasiData, formData.rumus_coating]);
-
-  const fetchKalkulasiData = async () => {
-    if (!id_kalkulasi) return;
-
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi/${id_kalkulasi}`,
-        {
-          withCredentials: true,
-        },
-      );
-      console.log('kalkulasi', response.data.data);
-      if (response.data && response.data.data) {
-        setKalkulasiData(response.data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching kalkulasi data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [po_qty, selectedMounting, formData.rumus_coating]);
 
   const fetchCoatingData = async () => {
     setLoading(true);
@@ -102,20 +73,22 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
   };
 
   const calculateQuantities = () => {
-    if (!kalkulasiData || !formData.rumus_coating) return;
+    if (!selectedMounting || !formData.rumus_coating) return;
 
-    const panjangCetak = kalkulasiData.ukuran_cetak_panjang_1 || 0;
-    const lebarCetak = kalkulasiData.ukuran_cetak_lebar_1 || 0;
-    const ukuranCetakIsi = kalkulasiData.ukuran_cetak_isi_1 || 1;
+    // Ambil data dari mounting yang dipilih
+    const panjangCetak = selectedMounting.ukuran_cetak_panjang_1 || 0;
+    const lebarCetak = selectedMounting.ukuran_cetak_lebar_1 || 0;
+    const ukuranCetakIsi = selectedMounting.ukuran_cetak_isi_1 || 1;
 
     // qty_druk = po_qty / ukuran_cetak_isi_1
     const qtyDruk = po_qty / ukuranCetakIsi;
 
-    console.log('Calculating with:', {
+    console.log('Calculating with mounting data:', {
       panjangCetak,
       lebarCetak,
       qtyDruk,
       po_qty,
+      ukuranCetakIsi,
       rumus: formData.rumus_coating,
     });
 
@@ -223,11 +196,11 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
   ];
 
   const getFormulaDisplay = () => {
-    if (!kalkulasiData || !formData.rumus_coating) return null;
+    if (!selectedMounting || !formData.rumus_coating) return null;
 
-    const panjangCetak = kalkulasiData.ukuran_cetak_panjang_1;
-    const lebarCetak = kalkulasiData.ukuran_cetak_lebar_1;
-    const ukuranCetakIsi = kalkulasiData.ukuran_cetak_isi_1 || 1;
+    const panjangCetak = selectedMounting.ukuran_cetak_panjang_1;
+    const lebarCetak = selectedMounting.ukuran_cetak_lebar_1;
+    const ukuranCetakIsi = selectedMounting.ukuran_cetak_isi_1 || 1;
     const qtyDruk = (po_qty / ukuranCetakIsi).toFixed(2);
 
     if (formData.rumus_coating === 'UV_WB') {
@@ -257,28 +230,41 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6">
-          {/* Info Section */}
-          {po_qty > 0 && kalkulasiData && (
+          {/* Info Section dari Mounting */}
+          {po_qty > 0 && selectedMounting && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
+              <div className="font-semibold text-blue-800 mb-2">
+                Data Mounting: {selectedMounting.nama_mounting}
+              </div>
               <div className="grid grid-cols-2 gap-2 text-gray-700">
                 <div>
-                  <span className="font-semibold">Qty SO:</span> {po_qty} pcs
+                  <span className="font-semibold">Qty PO:</span> {po_qty} pcs
                 </div>
                 <div>
                   <span className="font-semibold">Qty Druk:</span>{' '}
-                  {(po_qty / (kalkulasiData.ukuran_cetak_isi_1 || 1)).toFixed(
-                    2,
-                  )}
+                  {(
+                    po_qty / (selectedMounting.ukuran_cetak_isi_1 || 1)
+                  ).toFixed(2)}
                 </div>
                 <div>
                   <span className="font-semibold">Panjang Cetak:</span>{' '}
-                  {kalkulasiData.ukuran_cetak_panjang_1} mm
+                  {selectedMounting.ukuran_cetak_panjang_1} mm
                 </div>
                 <div>
                   <span className="font-semibold">Lebar Cetak:</span>{' '}
-                  {kalkulasiData.ukuran_cetak_lebar_1} mm
+                  {selectedMounting.ukuran_cetak_lebar_1} mm
+                </div>
+                <div>
+                  <span className="font-semibold">Ukuran Cetak Isi:</span>{' '}
+                  {selectedMounting.ukuran_cetak_isi_1}
                 </div>
               </div>
+            </div>
+          )}
+
+          {!selectedMounting && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+              ⚠️ Data mounting belum tersedia
             </div>
           )}
 
@@ -338,7 +324,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
           </div>
 
           {/* Display selected formula */}
-          {kalkulasiData && formData.rumus_coating && (
+          {selectedMounting && formData.rumus_coating && (
             <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200 mb-4">
               <div className="text-xs text-blue-600 mb-2 font-semibold">
                 Formula Terpilih:{' '}
@@ -396,11 +382,12 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={
                 !formData.rumus_coating ||
                 !formData.id_coating ||
-                !formData.tipe_coating
+                !formData.tipe_coating ||
+                !selectedMounting
               }
             >
               Simpan
