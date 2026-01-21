@@ -1,7 +1,7 @@
 // components/SODetailPopup.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { SOData, KalkulasiData, Gudang } from './types/SOTypes';
+import { SOData, Gudang } from './types/SOTypes';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface SODetailPopupProps {
@@ -1040,6 +1040,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 </div>
               </div>
             )}
+            {/* Riwayat Perubahan Tanggal Kirim - SIMPLIFIED */}
             {data.so_perubahan_tgl_kirim &&
               data.so_perubahan_tgl_kirim.length > 0 &&
               !isEditing && (
@@ -1047,92 +1048,313 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                   <h3 className="text-lg font-semibold mb-4 text-gray-800">
                     Riwayat Perubahan Tanggal Kirim
                   </h3>
-                  <div className="space-y-4">
-                    {data.so_perubahan_tgl_kirim
-                      .sort(
-                        (a, b) =>
-                          new Date(b.createdAt).getTime() -
-                          new Date(a.createdAt).getTime(),
-                      )
-                      .map((perubahan, index) => (
-                        <div
-                          key={perubahan.id}
-                          className={`p-4 rounded-lg border-2 ${
-                            perubahan.status === 'requested'
-                              ? 'bg-yellow-50 border-yellow-200'
-                              : perubahan.status === 'approved'
-                              ? 'bg-green-50 border-green-200'
-                              : 'bg-red-50 border-red-200'
-                          }`}
-                        >
-                          <div className="flex justify-between items-start mb-3">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-700">
-                                #
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 border">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            #
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tanggal Awal
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tanggal Perubahan
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Catatan
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Pengaju
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Waktu Pengajuan
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Waktu Approve
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Waktu Reject
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {data.so_perubahan_tgl_kirim
+                          .sort(
+                            (a, b) =>
+                              new Date(b.createdAt).getTime() -
+                              new Date(a.createdAt).getTime(),
+                          )
+                          .map((perubahan, index) => (
+                            <tr
+                              key={perubahan.id}
+                              className={
+                                perubahan.status === 'requested'
+                                  ? 'bg-yellow-50'
+                                  : perubahan.status === 'approved'
+                                  ? 'bg-green-50'
+                                  : perubahan.status === 'rejected'
+                                  ? 'bg-red-50'
+                                  : 'bg-gray-50'
+                              }
+                            >
+                              <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {(data.so_perubahan_tgl_kirim?.length || 0) -
                                   index}
-                              </span>
-                              <span
-                                className={`text-xs px-2 py-1 rounded font-medium uppercase ${
-                                  perubahan.status === 'requested'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : perubahan.status === 'approved'
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-red-100 text-red-800'
-                                }`}
-                              >
-                                {perubahan.status}
-                              </span>
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {formatDate(perubahan.createdAt)}
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-xs font-medium text-gray-600 mb-1">
-                                Tanggal Awal
-                              </label>
-                              <div className="text-sm font-semibold text-gray-800">
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span
+                                  className={`text-xs px-2 py-1 rounded font-medium uppercase ${
+                                    perubahan.status === 'requested'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : perubahan.status === 'approved'
+                                      ? 'bg-green-100 text-green-800'
+                                      : perubahan.status === 'rejected'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-gray-100 text-gray-800'
+                                  }`}
+                                >
+                                  {perubahan.status}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                 {formatDate(perubahan.tgl_awal)}
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-xs font-medium text-gray-600 mb-1">
-                                Tanggal Perubahan
-                              </label>
-                              <div className="text-sm font-semibold text-gray-800">
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                 {formatDate(perubahan.tgl_perubahan)}
-                              </div>
-                            </div>
-
-                            {perubahan.note && (
-                              <div className="col-span-2">
-                                <label className="block text-xs font-medium text-gray-600 mb-1">
-                                  Catatan
-                                </label>
-                                <div className="text-sm text-gray-800 bg-white p-2 rounded border border-gray-200">
-                                  {perubahan.note}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                                <div title={perubahan.note}>
+                                  {perubahan.note || '-'}
                                 </div>
-                              </div>
-                            )}
-
-                            {perubahan.status === 'rejected' &&
-                              perubahan.note_reject && (
-                                <div className="col-span-2">
-                                  <label className="block text-xs font-medium text-red-600 mb-1">
-                                    Alasan Reject
-                                  </label>
-                                  <div className="text-sm text-red-800 bg-red-100 p-2 rounded border border-red-300">
-                                    {perubahan.note_reject}
+                                {perubahan.note_reject && (
+                                  <div
+                                    className="text-red-600 text-xs mt-1"
+                                    title={perubahan.note_reject}
+                                  >
+                                    Reject: {perubahan.note_reject}
                                   </div>
-                                </div>
-                              )}
-                          </div>
-                        </div>
-                      ))}
+                                )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                {perubahan.user_create?.nama || '-'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(perubahan.createdAt).toLocaleString(
+                                  'id-ID',
+                                  {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  },
+                                )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {perubahan.status === 'approved' ||
+                                perubahan.status === 'history'
+                                  ? new Date(
+                                      perubahan.updatedAt,
+                                    ).toLocaleString('id-ID', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })
+                                  : '-'}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {perubahan.status === 'rejected'
+                                  ? new Date(
+                                      perubahan.updatedAt,
+                                    ).toLocaleString('id-ID', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })
+                                  : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+            {/* Riwayat Perubahan Harga - NEW SECTION */}
+            {data.so_perubahan_harga &&
+              data.so_perubahan_harga.length > 0 &&
+              !isEditing && (
+                <div className="mt-8 pt-6 border-t">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                    Riwayat Perubahan Harga
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 border">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            #
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Harga Awal
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Harga Perubahan
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Selisih
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Catatan
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Pengaju
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Waktu Pengajuan
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Waktu Approve
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Waktu Reject
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {data.so_perubahan_harga
+                          .sort(
+                            (a, b) =>
+                              new Date(b.createdAt).getTime() -
+                              new Date(a.createdAt).getTime(),
+                          )
+                          .map((perubahan, index) => {
+                            const selisih =
+                              perubahan.harga_perubahan - perubahan.harga_awal;
+                            const isIncrease = selisih > 0;
+
+                            return (
+                              <tr
+                                key={perubahan.id}
+                                className={
+                                  perubahan.status === 'requested'
+                                    ? 'bg-yellow-50'
+                                    : perubahan.status === 'approved'
+                                    ? 'bg-green-50'
+                                    : perubahan.status === 'rejected'
+                                    ? 'bg-red-50'
+                                    : 'bg-gray-50'
+                                }
+                              >
+                                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                  {(data.so_perubahan_harga?.length || 0) -
+                                    index}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap">
+                                  <span
+                                    className={`text-xs px-2 py-1 rounded font-medium uppercase ${
+                                      perubahan.status === 'requested'
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : perubahan.status === 'approved'
+                                        ? 'bg-green-100 text-green-800'
+                                        : perubahan.status === 'rejected'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                    }`}
+                                  >
+                                    {perubahan.status}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                  {formatCurrency(perubahan.harga_awal)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                  {formatCurrency(perubahan.harga_perubahan)}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                  <span
+                                    className={
+                                      isIncrease
+                                        ? 'text-green-600 font-medium'
+                                        : 'text-red-600 font-medium'
+                                    }
+                                  >
+                                    {isIncrease ? '+' : ''}
+                                    {formatCurrency(selisih)}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate">
+                                  <div title={perubahan.note}>
+                                    {perubahan.note || '-'}
+                                  </div>
+                                  {perubahan.note_reject && (
+                                    <div
+                                      className="text-red-600 text-xs mt-1"
+                                      title={perubahan.note_reject}
+                                    >
+                                      Reject: {perubahan.note_reject}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                  {perubahan.user_create?.nama || '-'}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                  {new Date(perubahan.createdAt).toLocaleString(
+                                    'id-ID',
+                                    {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    },
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                  {perubahan.status === 'approved' ||
+                                  perubahan.status === 'history'
+                                    ? new Date(
+                                        perubahan.updatedAt,
+                                      ).toLocaleString('id-ID', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })
+                                    : '-'}
+                                </td>
+                                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                  {perubahan.status === 'rejected'
+                                    ? new Date(
+                                        perubahan.updatedAt,
+                                      ).toLocaleString('id-ID', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })
+                                    : '-'}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}

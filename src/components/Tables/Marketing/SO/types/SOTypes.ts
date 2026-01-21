@@ -165,7 +165,7 @@ export interface KalkulasiData {
   updatedAt: string;
   warna_belakang: number;
   warna_depan: number;
-  customer: Customer; // Add the nested customer object
+  customer: Customer;
   label?: string;
 }
 
@@ -197,6 +197,25 @@ export interface IOData {
   tgl_pembuatan_io: string;
   updatedAt: string;
 }
+
+// User interface for perubahan data
+export interface UserData {
+  id: number;
+  uuid: string;
+  id_karyawan: number | null;
+  id_role: number;
+  nama: string;
+  no: string;
+  email: string;
+  password: string;
+  role: string;
+  status: string;
+  bagian: string;
+  divisi_bawahan: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PerubahanTglKirim {
   id: number;
   id_so: number;
@@ -208,14 +227,41 @@ export interface PerubahanTglKirim {
   tgl_perubahan: string;
   note: string;
   note_reject: string | null;
-  status: string;
+  status: 'requested' | 'approved' | 'rejected' | 'history';
+  tgl_approve: string | null;
+  tgl_reject: string | null;
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
+  user_create?: UserData;
+  user_approve?: UserData | null;
+  user_reject?: UserData | null;
 }
+
+export interface SOPerubahanHarga {
+  id: number;
+  id_so: number;
+  id_user_create: number;
+  id_user_approve: number | null;
+  id_user_reject: number | null;
+  no_so: string;
+  harga_awal: number;
+  harga_perubahan: number;
+  note: string;
+  note_reject: string | null;
+  status: 'requested' | 'approved' | 'rejected' | 'history';
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user_create?: UserData;
+  user_approve?: UserData | null;
+  user_reject?: UserData | null;
+}
+
 export interface SOData {
   id_customer: any;
   so_perubahan_tgl_kirim?: PerubahanTglKirim[];
+  so_perubahan_harga?: SOPerubahanHarga[];
   status_work: string;
   create_by: string;
   note: string;
@@ -267,14 +313,15 @@ export interface SOData {
   job_order?: {
     no_jo: string;
   };
-
-  so_perubahan_harga?: SOPerubahanHarga[]; // Add this new field
+  user_approve?: {
+    nama: string;
+  };
 }
 
 export interface SOFormData {
   no_so: string;
   tgl_input_po: string;
-  id_kalkulasi: any; // Changed from id_io to id_kalkulasi
+  id_kalkulasi: any;
   id_so_cancel: any;
   so_cancel: string;
   no_booking: string;
@@ -304,15 +351,4 @@ export interface APIResponse<T> {
   succes: boolean;
   status_code: number;
   data: T;
-}
-export interface SOPerubahanHarga {
-  id: number;
-  id_so: number;
-  harga_awal: number;
-  harga_perubahan: number;
-  note: string;
-  status: 'requested' | 'approved' | 'rejected';
-  note_reject?: string;
-  createdAt: string;
-  updatedAt: string;
 }

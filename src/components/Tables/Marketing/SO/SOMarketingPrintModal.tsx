@@ -581,6 +581,10 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                 ).toUpperCase()}</div>
               </div>
             </div>
+             <!-- Approval Log -->
+            <div style="margin-top: 3 0px; padding-top: 10px;  font-size: 9px;">
+              <div>Approved by: ${getValue(printData.user_approve?.nama)}</div>
+            </div>
           </div>
         </body>
       </html>
