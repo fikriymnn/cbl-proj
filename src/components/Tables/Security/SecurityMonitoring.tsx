@@ -36,7 +36,11 @@ function SecurityMonitoring() {
   }, []);
 
   // Fetch Absensi Data
-  async function getAbsen(dateFrom1: any, dateTo1: any) {
+  async function getAbsen(
+    dateFrom1: any,
+    dateTo1: any,
+    departmentId: any = idDepartment,
+  ) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/absensi`;
     try {
       setIsLoading(true);
@@ -44,7 +48,7 @@ function SecurityMonitoring() {
         params: {
           startDate: dateFrom1,
           endDate: dateTo1,
-          idDepartment: idDepartment,
+          idDepartment: departmentId || undefined, // Don't send empty string
         },
         withCredentials: true,
       });
@@ -73,10 +77,9 @@ function SecurityMonitoring() {
     }
   }
 
-  // Apply filters
   const handleApplyFilters = () => {
     if (dateFrom && dateTo) {
-      getAbsen(dateFrom, dateTo);
+      getAbsen(dateFrom, dateTo, idDepartment);
     }
   };
 
@@ -90,17 +93,15 @@ function SecurityMonitoring() {
 
     setDateFrom(formattedDate);
     setDateTo(formattedDate);
-    setIdDepartment(null);
+    setIdDepartment('');
     setSearchQuery('');
     setSelectedTipeKaryawan('');
     setSelectedTipePenggajian('');
     setSelectedDivisi('');
 
-    setTimeout(() => {
-      getAbsen(formattedDate, formattedDate);
-    }, 100);
+    // Pass empty string explicitly to reset department filter
+    getAbsen(formattedDate, formattedDate, '');
   };
-
   // Filter absensi data
   const filteredAbsen = absen?.filter((data: any) => {
     return (
