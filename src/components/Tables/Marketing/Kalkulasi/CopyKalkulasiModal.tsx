@@ -1,6 +1,6 @@
 // CopyKalkulasiModal.tsx
 import React, { useEffect, useState } from 'react';
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import BasicInfoForm from './BasicInfoForm';
 import TabNavigation from './TabNavigation';
 import TabContent from './TabContent';
@@ -333,6 +333,40 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
     e.preventDefault();
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
 
+    // Validation: Check if customer unit price is set
+    if (
+      !formData.total_harga_satuan_customer ||
+      formData.total_harga_satuan_customer === '' ||
+      Number(formData.total_harga_satuan_customer) === 0
+    ) {
+      alert('Harga Satuan Customer Harus Diisi dan Tidak Boleh 0.');
+      return;
+    }
+
+    // Additional validation for multi type
+    if (formData.tipe_kalkulasi === 'multi') {
+      if (!formData.label || formData.label === '') {
+        alert('Label harus dipilih untuk kalkulasi multi.');
+        return;
+      }
+
+      const hasSelectedQty = formData.qty_list?.some(
+        (item) => item.is_selected,
+      );
+      if (!hasSelectedQty) {
+        alert('Pilih salah satu quantity untuk kalkulasi multi.');
+        return;
+      }
+
+      const hasEmptyQty = formData.qty_list?.some(
+        (item) => !item.qty || item.qty <= 0,
+      );
+      if (hasEmptyQty) {
+        alert('Semua quantity harus diisi dan lebih dari 0.');
+        return;
+      }
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -423,9 +457,18 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
         jumlah_kirim: safeNumber(formData.jumlah_kirim, 1),
         harga_packaging: safeNumber(formData.harga_packaging),
         harga_pengiriman: safeNumber(formData.harga_pengiriman),
+
+        // Add these missing fields from KalkulasiModal
+        tipe_kalkulasi: formData.tipe_kalkulasi,
+        label: formData.label || '',
+        qty_list: formData.qty_list || [],
+        harga_pengiriman_awal: safeNumber(formData.harga_pengiriman_awal || 0),
+
         id_kalkulasi_previous: originalData.id,
         status_kalkulasi: copyType === 'repeat' ? 'repeat' : 'repeat perubahan',
       };
+
+      console.log('Submitting kalkulasi data:', submitData);
 
       const res: AxiosResponse<ApiResponse> = await axios.post(
         url,
@@ -451,7 +494,23 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
       }
     } catch (error: any) {
       console.error('Error submitting kalkulasi:', error);
-      alert(`${error.response?.data?.msg}`);
+
+      let errorMessage = 'Gagal menyimpan data. Silakan coba lagi.';
+
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<any>;
+
+        // Priority: API message
+        if (axiosError.response?.data?.msg) {
+          errorMessage = axiosError.response.data.msg;
+        } else if (axiosError.message) {
+          errorMessage = axiosError.message;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

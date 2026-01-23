@@ -63,7 +63,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 2,
     }).format(num);
   };
 
@@ -96,9 +96,46 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
     ${action.tgl ? new Date(action.tgl).toLocaleString('id-ID') : '-'}
   `;
   };
+
   const getPrintContent = () => {
     if (!data) return '';
+    const getSpesifikasiString = () => {
+      const warnaDepan = getNumericValue(data.warna_depan, 0);
+      const warnaBelakang = getNumericValue(data.warna_belakang, 0);
+      const coatingDepan = getValue(data.nama_coating_depan, '');
+      const coatingBelakang = getValue(data.nama_coating_belakang, '');
 
+      // Build warna string
+      const warnaString = `${warnaDepan}/${warnaBelakang}`;
+
+      // Build coating string
+      let coatingString = '';
+      if (coatingDepan || coatingBelakang) {
+        const coatingDepanCount = coatingDepan && coatingDepan !== '-' ? 1 : 0;
+        const coatingBelakangCount =
+          coatingBelakang && coatingBelakang !== '-' ? 1 : 0;
+
+        const coatingDepanName =
+          coatingDepan && coatingDepan !== '-' ? coatingDepan : '';
+        const coatingBelakangName =
+          coatingBelakang && coatingBelakang !== '-' ? coatingBelakang : '';
+
+        coatingString = ` + ${coatingDepanCount}/${coatingBelakangCount}`;
+
+        // Add coating names
+        if (coatingDepanName || coatingBelakangName) {
+          coatingString += ` ${coatingDepanName || ''}${
+            coatingDepanName && coatingBelakangName ? '/' : ''
+          }${coatingBelakangName || ''}`;
+        }
+      }
+
+      return `${warnaString}${coatingString}`;
+    };
+    const getSONumbers = () => {
+      if (!data.so || data.so.length === 0) return '-';
+      return data.so.map((item) => item.no_so).join(', ');
+    };
     const logoSrc = logoBase64 || Logo;
 
     return `
@@ -283,42 +320,48 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         }
                       </td>
                     </tr>
-                    <tr>
-                      <td class="border font-bold" style="padding: 1px 4px">Spesifikasi</td>
-                      <td class="border bg-yellow-200 text-center font-bold" style="padding: 1px 4px">
-                        ${getValue(data.spesifikasi)}
-                      </td>
-                      <td class="border font-bold" style="padding: 1px 4px">Area</td>
-                      <td class="border bg-yellow-200 font-bold" style="padding: 1px 4px">
-                        ${getValue(data.nama_area_pengiriman)}
-                      </td>
-                    </tr>
+                   <tr>
+                    <td class="border font-bold" style="padding: 1px 4px">Spesifikasi</td>
+                    <td class="border bg-yellow-200 text-center font-bold" style="padding: 1px 4px">
+                      ${getSpesifikasiString()}
+                    </td>
+                    <td class="border font-bold" style="padding: 1px 4px">Area</td>
+                    <td class="border bg-yellow-200 font-bold" style="padding: 1px 4px">
+                      ${getValue(data.nama_area_pengiriman)}
+                    </td>
+                  </tr>
                     <tr>
                       <td class="border font-bold" style="padding: 1px 4px">Status</td>
                       <td class="border bg-yellow-200 text-center font-bold" style="padding: 1px 4px">
                         ${getValue(data.status_kalkulasi)}
                       </td>
                       <td class="border font-bold" style="padding: 1px 4px">No OKP</td>
-                      <td class="border bg-pink-300" style="padding: 1px 4px"></td>
+                      <td class="border bg-pink-300" style="padding: 1px 4px">${getValue(
+                        data.no_okp,
+                      )}</td>
                     </tr>
                     <tr>
                       <td class="border font-bold" style="padding: 1px 4px">Quantity</td>
                       <td class="border bg-yellow-200 text-center font-bold text-red-600" style="padding: 1px 4px">
                         ${getNumericValue(data.qty_kalkulasi).toLocaleString()}
                       </td>
-                      <td class="border font-bold" style="padding: 1px 4px">No SO</td>
-                      <td class="border bg-pink-300" style="padding: 1px 4px"></td>
+                     <td class="border font-bold" style="padding: 1px 4px">No SO</td>
+                      <td class="border bg-pink-300" style="padding: 1px 4px">
+                        ${getSONumbers()}
+                      </td>
                     </tr>
                     <tr>
                       <td class="border" style="padding: 1px 4px"></td>
                       <td class="border bg-yellow-200" style="padding: 1px 4px"></td>
                       <td class="border font-bold" style="padding: 1px 4px">No IO</td>
-                      <td class="border bg-pink-300" style="padding: 1px 4px"></td>
+                      <td class="border bg-pink-300" style="padding: 1px 4px">${getValue(
+                        data.no_io,
+                      )}</td>
                     </tr>
                   </tbody>
                 </table>
 
-                <!-- Ukuran Produk Section -->
+               <!-- Ukuran Produk Section -->
                 <table class="border" style="font-size: 12px">
                   <tbody>
                     <tr>
@@ -340,14 +383,15 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       <td class="border bg-yellow-200" style="width: 7%; padding: 1px 3px">
                         ${getNumericValue(data.ukuran_jadi_tinggi)}
                       </td>
-                      <td class="border" style="width: 10%; padding: 1px 3px">Terbentang</td>
+                      <td class="border" colspan="2" style="width: 10%; padding: 1px 3px">Terbentang</td>
                       <td class="border bg-yellow-200" style="width: 10%; padding: 1px 3px">
                         ${getNumericValue(data.ukuran_jadi_terb_panjang)}
                       </td>
                       <td class="border" style="width: 5%; padding: 1px 3px">x</td>
-                      <td colspan="2" class="border bg-yellow-200" style="width: 10%; padding: 1px 3px">
+                      <td class="border bg-yellow-200" style="width: 10%; padding: 1px 3px">
                         ${getNumericValue(data.ukuran_jadi_terb_lebar)}
                       </td>
+                      
                     </tr>
                     <tr>
                       <td class="border" style="padding: 1px 3px">Ukuran Cetak</td>
@@ -364,12 +408,12 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         ${getNumericValue(data.ukuran_cetak_bagian_1)}
                       </td>
                       <td class="border" style="padding: 1px 3px">Bagian</td>
-                      <td class="border bg-yellow-200" style="padding: 1px 3px ">Isi</td>
-                      <td class="border " style="padding: 1px 3px">
+                      <td class="border" style="padding: 1px 3px">Isi</td>
+                      <td class="border bg-yellow-200" style="padding: 1px 3px">
                         ${getNumericValue(data.ukuran_cetak_isi_1)}
                       </td>
-                      <td class="border bg-yellow-200" style="padding: 1px 3px">BBS</td>
-                      <td class="border " style="padding: 1px 3px">
+                      <td class="border" style="padding: 1px 3px">BBS</td>
+                      <td class="border bg-yellow-200" style="padding: 1px 3px">
                         ${getValue(data.ukuran_cetak_bbs_1, 'No')}
                       </td>
                     </tr>
@@ -388,17 +432,17 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         ${getNumericValue(data.ukuran_cetak_bagian_2)}
                       </td>
                       <td class="border" style="padding: 1px 3px">Bagian</td>
-                      <td class="border bg-yellow-200" style="padding: 1px 3px">Isi</td>
-                      <td class="border " style="padding: 1px 3px">
+                      <td class="border " style="padding: 1px 3px">Isi</td>
+                      <td class="border bg-yellow-200" style="padding: 1px 3px">
                         ${getNumericValue(data.ukuran_cetak_isi_2)}
                       </td>
-                      <td class="border bg-yellow-200" style="padding: 1px 3px">BBS</td>
-                      <td class="border " style="padding: 1px 3px">
+                      <td class="border" style="padding: 1px 3px">BBS</td>
+                      <td class="border bg-yellow-200" style="padding: 1px 3px">
                         ${getValue(data.ukuran_cetak_bbs_2, 'No')}
                       </td>
                     </tr>
                     <tr>
-                      <td colspan="13" class="border bg-blue-300 text-center font-bold" style="padding: 1px 4px">
+                      <td colspan="12" class="border bg-blue-300 text-center font-bold" style="padding: 1px 4px">
                         Warna Cetakan
                       </td>
                     </tr>
@@ -416,6 +460,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       <td class="border bg-gray-300" style="padding: 1px 3px">
                         ${getNumericValue(data.jumlah_warna)}
                       </td>
+                      <td colspan="2" class="border" style="padding: 1px 3px"></td>
                     </tr>
                   </tbody>
                 </table>
@@ -575,7 +620,9 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                     <tr>
                       <td class="border" style="padding: 1px 3px">Ongkos pons</td>
                       <td class="border bg-yellow-200" style="padding: 1px 3px">
-                        ${getValue(data.ongkos_pons)}
+                        ${getValue(data.ongkos_pons)}, ${getNumericValue(
+                          data.ongkos_pons_qty,
+                        )}
                       </td>
                       <td class="border bg-gray-300" style="padding: 1px 3px; font-size: 12px">
                         ${formatCurrency(
@@ -615,10 +662,12 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 <tr>
                   <td class="border" style="padding: 1px 3px">Lipat</td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getValue(data.lipat)}
+                    ${getValue(data.lipat)},  ${getNumericValue(
+                      data.qty_lipat,
+                    )}  
                   </td>
-                  <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getNumericValue(data.qty_lipat)}
+                  <td class="border bg-gray-300" style="padding: 1px 3px">
+                    ${formatCurrency(getNumericValue(data.harga_lipat))}
                   </td>
                   <td class="border" style="padding: 1px 3px">Harga Foil Manual</td>
                   <td class="border bg-gray-300 text-right" style="padding: 1px 3px; font-size: 12px">
@@ -631,7 +680,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                     ${getValue(data.nama_mesin_lipat, '-')}
                   </td>
                   <td class="border bg-gray-300" style="padding: 1px 3px; font-size: 12px">
-                    ${formatCurrency(getNumericValue(data.harga_lipat))}
+                    
                   </td>
                   <td class="border" style="padding: 1px 3px">Spot Foil</td>
                   <td class="border bg-yellow-200 text-right" style="padding: 1px 3px">
@@ -641,10 +690,12 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 <tr>
                   <td class="border" style="padding: 1px 3px">Potong jadi</td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getValue(data.potong_jadi, 'NO')}
+                    ${getValue(data.potong_jadi)} ,  ${getNumericValue(
+                      data.qty_potong,
+                    )}
                   </td>
-                  <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getNumericValue(data.qty_potong)}
+                  <td class="border bg-gray-300" style="padding: 1px 3px">
+                    ${formatCurrency(getNumericValue(data.harga_potong_jadi))}
                   </td>
                   <td class="border" style="padding: 1px 3px">Harga Spot Foil Manual</td>
                   <td class="border bg-gray-300 text-right" style="padding: 1px 3px; font-size: 12px">
@@ -749,7 +800,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td colspan="2" class="border bg-gray-300 text-right" style="width: 30%; padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(
                       getNumericValue(data.harga_produksi) /
-                        getNumericValue(data.qty_kalkulasi, 1),
+                        getNumericValue(data.qty_kalkulasi),
                     )}
                   </td>
                 </tr>
@@ -765,7 +816,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td class="border bg-gray-300 text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(
                       getNumericValue(data.profit_harga) /
-                        getNumericValue(data.qty_kalkulasi, 1),
+                        getNumericValue(data.qty_kalkulasi),
                     )}
                   </td>
                 </tr>
@@ -778,7 +829,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td class="border bg-gray-300 text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(
                       getNumericValue(data.jumlah_harga_jual) /
-                        getNumericValue(data.qty_kalkulasi, 1),
+                        getNumericValue(data.qty_kalkulasi),
                     )}
                   </td>
                 </tr>
@@ -794,7 +845,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td class="border bg-gray-300 text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(
                       getNumericValue(data.harga_ppn) /
-                        getNumericValue(data.qty_kalkulasi, 1),
+                        getNumericValue(data.qty_kalkulasi),
                     )}
                   </td>
                 </tr>
@@ -810,7 +861,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td class="border bg-red-400 text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(
                       getNumericValue(data.harga_diskon) /
-                        getNumericValue(data.qty_kalkulasi, 1),
+                        getNumericValue(data.qty_kalkulasi),
                     )}
                   </td>
                 </tr>
@@ -824,7 +875,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td class="border bg-red-400 font-bold text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(
                       getNumericValue(data.jumlah_harga_jual) /
-                        getNumericValue(data.qty_kalkulasi, 1),
+                        getNumericValue(data.qty_kalkulasi),
                     )}
                   </td>
                 </tr>
@@ -832,7 +883,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td colspan="3" class="border bg-red-400 text-center font-bold" style="padding: 1px 3px">
                     ${formatCurrency(
                       getNumericValue(data.total_harga_satuan_customer) *
-                        getNumericValue(data.qty_kalkulasi, 1),
+                        getNumericValue(data.qty_kalkulasi),
                     )}
                   </td>
                   <td colspan="2" class="border bg-yellow-200 text-center font-bold" style="padding: 1px 3px">

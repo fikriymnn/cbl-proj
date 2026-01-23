@@ -6,6 +6,12 @@ export interface QtyListItem {
   harga_satuan_customer?: number;
 }
 
+// Add SO interface
+export interface SalesOrderItem {
+  id: number;
+  no_so: string;
+}
+
 // Base interfaces from HistoryKalkulasi
 export interface KalkulasiItem {
   id_io: any;
@@ -52,6 +58,7 @@ export interface KalkulasiItem {
   tipe_kalkulasi?: string;
   label?: string;
   qty_list?: QtyListItem[];
+  so?: SalesOrderItem[]; // Add SO array
 }
 
 export interface LainLainItem {
@@ -65,6 +72,8 @@ export interface LainLainItem {
 }
 
 export interface KalkulasiDetailItem extends KalkulasiItem {
+  no_so(no_so: any): unknown; // Remove this method signature
+  no_okp(no_okp: any): unknown;
   tgl_approve_kalkulasi: any;
   tgl_approve: any;
   user_approve: any;
@@ -73,6 +82,7 @@ export interface KalkulasiDetailItem extends KalkulasiItem {
   user_create: any;
   lain_lain: LainLainItem[];
   kalkulasi_action_user: any[];
+  so: SalesOrderItem[]; // Add SO array here as well
   brand_kertas: string;
   finishing_insheet: number;
   harga_pengiriman_awal?: number;

@@ -565,7 +565,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             onChange={handleMarketingChange}
             placeholder="Pilih Marketing"
             required
-            disabled={isFieldDisabled('id_marketing')}
           />
         </div>
 
@@ -603,7 +602,6 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({
             value={getSelectedPengirimanId()}
             onChange={handlePengirimanChange}
             placeholder="Pilih Area Pengiriman"
-            disabled={isFieldDisabled('id_area_pengiriman')}
           />
         </div>
 
