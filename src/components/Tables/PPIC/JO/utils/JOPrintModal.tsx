@@ -20,6 +20,7 @@ interface JOPrintData {
   so?: {
     no_po_customer: string;
     tgl_po_customer: string;
+    status_produk: string;
   };
   keterangan_pengerjaan: string;
   toleransi: string;
@@ -570,7 +571,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               <tr>
                 <td class="info-label">Keterangan</td>
                 <td class="info-colon">:</td>
-                <td>${getValue(printData?.keterangan_pengerjaan)}</td>
+                <td>${getValue(printData?.so?.status_produk)}</td>
                 <td class="info-label">Stok FG</td>
                 <td colspan="2">${
                   printData?.stok_fg?.toLocaleString() || 0

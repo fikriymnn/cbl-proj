@@ -17,7 +17,7 @@ interface BOMManagementModalProps {
   onClose: () => void;
   onSuccess: () => void;
   ioID?: number; // Deprecated, keeping for backward compatibility
-  dataSource: 'SO' | 'IO'; // New prop to specify data source
+  dataSource?: 'SO' | 'IO'; // New prop to specify data source
   qtyOverride?: number;
 }
 
