@@ -172,7 +172,7 @@ const BOMKertasTab: React.FC<BOMKertasTabProps> = ({
             Mounting Info: {selectedMounting.nama_mounting}
           </div>
           <div className="text-gray-600">
-            Qty: {po_qty} | Bagian: {ukuran_cetak_bagian_1} | Isi:{' '}
+            Qty PCS: {po_qty} | Bagian: {ukuran_cetak_bagian_1} | Isi:{' '}
             {ukuran_cetak_isi_1}
           </div>
           <div className="text-gray-600 mt-1">

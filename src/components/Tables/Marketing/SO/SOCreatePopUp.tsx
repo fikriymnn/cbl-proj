@@ -74,6 +74,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     { value: 'OKP', label: 'OKP' },
     { value: 'PROFF', label: 'PROFF' },
     { value: 'ACC', label: 'ACC' },
+    { value: 'PPOS', label: 'PPOS' },
   ];
 
   // Status JO options

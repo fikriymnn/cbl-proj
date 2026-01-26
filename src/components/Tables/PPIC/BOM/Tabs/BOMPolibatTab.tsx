@@ -138,8 +138,8 @@ const BOMPolibanTab: React.FC<BOMPolibanTabProps> = ({
         <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
           <div className="font-semibold text-gray-700 mb-1">Info:</div>
           <div className="text-gray-600">
-            Qty : {po_qty} | Formula: (Qty ÷ Isi 1 Ikat) ÷ Lembar Poliban = Qty
-            Poliban
+            Qty PCS: {po_qty} | Formula: (Qty ÷ Isi 1 Ikat) ÷ Lembar Poliban =
+            Qty Poliban
           </div>
         </div>
       )}

@@ -82,7 +82,7 @@ interface OKPData {
 type SortField = keyof IOData;
 type SortDirection = 'asc' | 'desc';
 
-const IOMarketing: React.FC = () => {
+const IOMarketingNonActive: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [ioData, setIOData] = useState<IOData[]>([]);
   const [okpData, setOKPData] = useState<OKPData[]>([]);
@@ -114,16 +114,6 @@ const IOMarketing: React.FC = () => {
   const [printIOId, setPrintIOId] = useState<number | null>(null);
   const [printData, setPrintData] = useState<IOData | null>(null);
   const [selectedMountingIndex, setSelectedMountingIndex] = useState<number>(0);
-  const printRef = useRef<HTMLDivElement>(null);
-
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
-  const [deleteIOId, setDeleteIOId] = useState<number | null>(null);
-
-  const [showSendProofConfirm, setShowSendProofConfirm] =
-    useState<boolean>(false);
-  const [sendProofIOId, setSendProofIOId] = useState<number | null>(null);
-  const [sendProofIONumber, setSendProofIONumber] = useState<string>('');
-  const [sendProofQty, setSendProofQty] = useState<number>(400);
 
   // Add sorting functions
   const handleSort = (field: SortField) => {
@@ -324,15 +314,6 @@ const IOMarketing: React.FC = () => {
       return `IO-${paddedNumber}/${month}/${year}`;
     }
 
-    // Parse the previous IO number to extract revision number
-    // Patterns:
-    // 1. IO-00333/12/25 (rev 0) -> IO-00333-1/12/25 (rev 1) - KEEPS ORIGINAL DATE
-    // 2. IO-00333-1/12/25 (rev 1) -> IO-00333-2/12/25 (rev 2) - KEEPS ORIGINAL DATE
-    // 3. 4498 (rev 0) -> 4498-1 (rev 1) - NO DATE
-    // 4. 4498-1 (rev 1) -> 4498-2 (rev 2) - NO DATE
-    // 5. 4158A (rev 0) -> 4158-1A (rev 1) - NO DATE, WITH LETTER SUFFIX
-    // 6. 4158-2A (rev 2) -> 4158-3A (rev 3) - NO DATE, WITH LETTER SUFFIX
-
     // Pattern 1 & 2: With "IO-" prefix and date
     let ioMatch = previousIONumber.match(
       /^IO-(\d+)(?:-(\d+)([A-Z]?))?\/(\d{2})\/(\d{2,4})$/,
@@ -465,8 +446,8 @@ const IOMarketing: React.FC = () => {
           page: page,
           limit: limit,
           search: searchTerm,
-          status: 'draft',
-          is_active: true,
+          status: 'deleted',
+          is_active: false,
         },
         withCredentials: true,
       });
@@ -519,97 +500,6 @@ const IOMarketing: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-  const handleSendProof = (ioId: number, ioNumber: string): void => {
-    setSendProofIOId(ioId);
-    setSendProofIONumber(ioNumber);
-    setSendProofQty(400); // Reset to default value
-    setShowSendProofConfirm(true);
-  };
-
-  const cancelSendProof = (): void => {
-    setShowSendProofConfirm(false);
-    setSendProofIOId(null);
-    setSendProofIONumber('');
-    setSendProofQty(400); // Reset quantity
-  };
-
-  const confirmSendProof = async (): Promise<void> => {
-    if (!sendProofIOId) return;
-
-    // Validate quantity
-    if (sendProofQty < 1) {
-      alert('Quantity must be at least 1');
-      return;
-    }
-
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/marketing/io/sendProof/${sendProofIOId}`;
-    try {
-      setLoading(true);
-      const res: AxiosResponse = await axios.put(
-        url,
-        { qty_send_proof: sendProofQty }, // Use the state value
-        {
-          withCredentials: true,
-        },
-      );
-
-      if (res.data.succes || res.status === 200) {
-        alert('Proof sent successfully');
-        fetchIOData();
-        setShowSendProofConfirm(false);
-        setSendProofIOId(null);
-        setSendProofIONumber('');
-        setSendProofQty(400); // Reset quantity
-      } else {
-        alert('Failed to send proof');
-      }
-      console.log('SendProof:', res.data);
-    } catch (error) {
-      console.error('Error sending proof:', error);
-      alert('Error sending proof. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Delete IO function
-  const handleDeleteIO = (ioId: number): void => {
-    setDeleteIOId(ioId);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDeleteIO = async (): Promise<void> => {
-    if (!deleteIOId) return;
-
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${deleteIOId}`;
-    try {
-      setLoading(true);
-      const res: AxiosResponse = await axios.delete(url, {
-        withCredentials: true,
-      });
-
-      if (res.data.succes || res.status === 200) {
-        alert('IO successfully deactivated');
-        fetchIOData();
-        setShowDeleteConfirm(false);
-        setDeleteIOId(null);
-      } else {
-        alert('Failed to deactivate IO');
-      }
-    } catch (error) {
-      console.error('Error deleting IO:', error);
-      alert('Error deactivating IO. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const cancelDelete = (): void => {
-    setShowDeleteConfirm(false);
-    setDeleteIOId(null);
   };
 
   const formatDate = (dateString: string): string => {
@@ -721,13 +611,6 @@ const IOMarketing: React.FC = () => {
             </button>
           )}
         </div>
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-        >
-          <span>+</span>
-          Create IO
-        </button>
       </div>
 
       {/* Table */}
@@ -847,45 +730,13 @@ const IOMarketing: React.FC = () => {
                         >
                           DETAIL
                         </button>
-                        {item.status == 'draft' && (
-                          <>
-                            <button
-                              onClick={() => putNextProcess(item.id)}
-                              className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                            >
-                              NEXT
-                            </button>
-                            <button
-                              onClick={() => handleDeleteIO(item.id)}
-                              className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                              title="Nonactive IO"
-                            >
-                              NonActive IO
-                            </button>
-                          </>
-                        )}
+
                         <button
                           onClick={() => handlePrintIO(item.id)}
                           className="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs transition-colors"
                           title="Print IO"
                         >
                           PRINT
-                        </button>
-                        <button
-                          onClick={() => handleSendProof(item.id, item.no_io)}
-                          disabled={item.is_send_proof === true}
-                          className={`px-2 py-1 rounded text-xs transition-colors ${
-                            item.is_send_proof === true
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              : 'bg-cyan-500 hover:bg-cyan-600 text-white'
-                          }`}
-                          title={
-                            item.is_send_proof
-                              ? 'Proof already sent'
-                              : 'Send Proof'
-                          }
-                        >
-                          {item.is_send_proof ? 'PROOF SENT' : 'SEND PROOF'}
                         </button>
                       </div>
                     </td>
@@ -1018,218 +869,7 @@ const IOMarketing: React.FC = () => {
           onMountingIndexChange={setSelectedMountingIndex}
         />
       )}
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center mb-4">
-              <svg
-                className="w-6 h-6 text-red-600 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <h2 className="text-xl font-bold text-gray-900">
-                Confirm Delete
-              </h2>
-            </div>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to deactivate this IO? This action cannot be
-              undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={cancelDelete}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDeleteIO}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={loading}
-              >
-                {loading ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Create IO Modal */}
-      {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Create New IO</h2>
-              <button
-                onClick={() => setShowCreateForm(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <span className="text-2xl">&times;</span>
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Nomor OKP */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nomor OKP <span className="text-red-500">*</span>
-                </label>
-                <SearchableSelect
-                  options={[
-                    { value: '', label: 'Pilih OKP' },
-                    ...okpData.map((okp) => ({
-                      value: okp.id.toString(),
-                      label: `${okp.no_okp} - ${okp.customer} - ${okp.produk}`,
-                    })),
-                  ]}
-                  value={formData.id_okp}
-                  onChange={(value) =>
-                    setFormData({ ...formData, id_okp: String(value) })
-                  }
-                  placeholder="Pilih OKP"
-                  required
-                />
-              </div>
-
-              {/* Nomor IO (Auto Generated) */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nomor IO
-                </label>
-                <input
-                  type="text"
-                  value={generatedIONumber}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                />
-              </div>
-
-              {/* Status (Auto from OKP) */}
-              {formData.id_okp && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
-                  </label>
-                  <input
-                    type="text"
-                    value={
-                      okpData.find(
-                        (okp) => okp.id.toString() === formData.id_okp,
-                      )?.status_okp || ''
-                    }
-                    disabled
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                  />
-                </div>
-              )}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Keterangan <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  onChange={(e) => setKeterangan(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600"
-                ></input>
-              </div>
-              {/* Submit Buttons */}
-              <div className="flex justify-end gap-2 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateForm(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!formData.id_okp || loading}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Creating...' : 'Create IO'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* Send Proof Confirmation Modal */}
-      {showSendProofConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex items-center mb-4">
-              <svg
-                className="w-6 h-6 text-cyan-600 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h2 className="text-xl font-bold text-gray-900">
-                Confirm Send Proof
-              </h2>
-            </div>
-            <p className="text-gray-600 mb-2">
-              Apa Anda yakin ingin mengirim proof untuk IO berikut?
-            </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
-              <p className="text-sm font-medium text-gray-700">IO Number:</p>
-              <p className="text-sm font-bold text-blue-800">
-                {sendProofIONumber}
-              </p>
-            </div>
-
-            {/* Quantity Input */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantity DRUK to Send <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                min="0"
-                value={sendProofQty}
-                onChange={(e) => setSendProofQty(parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                placeholder="Enter quantity"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={cancelSendProof}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-                disabled={loading}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmSendProof}
-                className="px-4 py-2 bg-cyan-500 text-white rounded-md hover:bg-cyan-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={loading}
-              >
-                {loading ? 'Sending...' : 'Send Proof'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
-export default IOMarketing;
+export default IOMarketingNonActive;

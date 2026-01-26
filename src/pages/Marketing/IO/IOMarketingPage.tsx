@@ -1,4 +1,4 @@
-import IOMarketing from '../../../components/Tables/Marketing/IO/IOMarketing';
+import TABCreateIO from '../../../components/Tables/Marketing/IO/TabCreateIO';
 import DefaultLayout from '../../../layout/DefaultLayout';
 
 function IOMarketingPage() {
@@ -9,7 +9,7 @@ function IOMarketingPage() {
           IO
         </p>
       </>
-      <IOMarketing />
+      <TABCreateIO />
     </DefaultLayout>
   );
 }

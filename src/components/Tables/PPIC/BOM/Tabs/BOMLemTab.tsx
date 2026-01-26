@@ -90,7 +90,8 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
 
       {(!po_qty || !tinggi_io) && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          ⚠️ Qty dan Tinggi IO belum tersedia. Pilih mounting terlebih dahulu.
+          ⚠️ Qty PCS dan Tinggi IO belum tersedia. Pilih mounting terlebih
+          dahulu.
         </div>
       )}
 

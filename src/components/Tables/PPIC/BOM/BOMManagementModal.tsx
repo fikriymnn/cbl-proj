@@ -182,7 +182,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         `${import.meta.env.VITE_API_LINK}/marketing/io/${effectiveIOId}`,
         { withCredentials: true },
       );
-
+      console.log('IO Data Response:', response.data);
       if (response.data?.data) {
         const fetchedIOData = response.data.data;
         setIOData(fetchedIOData);
@@ -209,8 +209,12 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     }
   };
   const getEffectiveQty = (): number => {
-    // If qtyOverride is provided (from BOMIOProof), use it
+    // If qtyOverride is provided (from BOMIOProof), use it with formula for IO source
     if (qtyOverride !== undefined && qtyOverride !== null) {
+      if (dataSource === 'IO' && selectedMounting?.ukuran_cetak_isi_1) {
+        const calculatedQty = qtyOverride * selectedMounting.ukuran_cetak_isi_1;
+        return Math.max(0, calculatedQty); // Ensure non-negative
+      }
       return qtyOverride;
     }
 

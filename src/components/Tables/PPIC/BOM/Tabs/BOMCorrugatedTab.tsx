@@ -121,7 +121,7 @@ const BOMCorrugatedTab: React.FC<BOMCorrugatedTabProps> = ({
 
       {!po_qty && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          ⚠️ Qty belum tersedia
+          ⚠️ Qty PCS belum tersedia
         </div>
       )}
 
@@ -129,7 +129,7 @@ const BOMCorrugatedTab: React.FC<BOMCorrugatedTabProps> = ({
         <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
           <div className="font-semibold text-gray-700 mb-1">Info:</div>
           <div className="text-gray-600">
-            Qty: {po_qty} | Formula: Qty SO ÷ Isi per pack = Qty Corrugated
+            Qty PCS: {po_qty} | Formula: Qty SO ÷ Isi per pack = Qty Corrugated
           </div>
         </div>
       )}
