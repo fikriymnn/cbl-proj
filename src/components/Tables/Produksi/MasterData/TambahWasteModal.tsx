@@ -324,7 +324,7 @@ const TambahWasteModal: React.FC<TambahWasteModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto bg-black bg-opacity-50 p-4">
-      <div className="my-8 w-full max-w-7xl rounded-lg bg-white p-6 dark:bg-boxdark">
+      <div className="my-8 w-full max-w-7xl rounded-lg bg-white p-6 dark:bg-boxdark h-screen overflow-y-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between border-b border-stroke pb-4 dark:border-strokedark">
           <h3 className="text-xl font-semibold text-black dark:text-white">
@@ -374,7 +374,7 @@ const TambahWasteModal: React.FC<TambahWasteModalProps> = ({
                 <div className="h-16 w-16 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
               </div>
             ) : (
-              <div className="max-h-[60vh] overflow-y-auto">
+              <div className="max-h-screen overflow-y-auto">
                 {/* Add Waste Button */}
                 <div className="mb-4 flex justify-end">
                   <button
