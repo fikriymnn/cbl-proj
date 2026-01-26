@@ -41,7 +41,8 @@ const JOPPICCreate: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showTipeJOSelection, setShowTipeJOSelection] =
     useState<boolean>(false);
-  const [selectedTipeJO, setSelectedTipeJO] = useState<JOTipeOption>('JO REAL');
+  const [selectedTipeJO, setSelectedTipeJO] =
+    useState<JOTipeOption>('JO PRODUKSI');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -215,7 +216,7 @@ const JOPPICCreate: React.FC = () => {
   };
 
   const getTipeJOColor = (tipe: string): string => {
-    return tipe === 'JO REAL'
+    return tipe === 'JO PRODUKSI'
       ? 'bg-purple-100 text-purple-800'
       : 'bg-orange-100 text-orange-800';
   };
@@ -694,7 +695,7 @@ const JOPPICCreate: React.FC = () => {
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <button
-                    onClick={() => handleSelectTipeJO('JO REAL')}
+                    onClick={() => handleSelectTipeJO('JO PRODUKSI')}
                     className="flex flex-col items-center justify-center p-6 border-2 border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all group"
                   >
                     <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-purple-200">
@@ -713,7 +714,7 @@ const JOPPICCreate: React.FC = () => {
                       </svg>
                     </div>
                     <span className="text-lg font-semibold text-gray-900">
-                      JO REAL
+                      JO PRODUKSI
                     </span>
                     <span className="text-xs text-gray-500 mt-1">
                       Job Order untuk produksi sesungguhnya

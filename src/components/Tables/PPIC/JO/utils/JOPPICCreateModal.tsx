@@ -639,6 +639,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         standar_warna: selectedSO.ada_standar_warna || '',
         status_produk: selectedSO.status_produk || '',
         status_jo: selectedSO.status_jo || '-',
+        tgl_kirim: selectedSO.tgl_pengiriman
+          ? selectedSO.tgl_pengiriman.split('T')[0]
+          : new Date().toISOString().split('T')[0],
       }));
 
       // Only fetch mounting data if not in edit mode

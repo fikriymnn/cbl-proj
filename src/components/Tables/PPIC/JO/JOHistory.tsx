@@ -37,7 +37,8 @@ const JOHistory: React.FC = () => {
   const [sortKey, setSortKey] = useState<string>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [selectedTipeJO, setSelectedTipeJO] = useState<JOTipeOption>('JO REAL');
+  const [selectedTipeJO, setSelectedTipeJO] =
+    useState<JOTipeOption>('JO PRODUKSI');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -211,7 +212,7 @@ const JOHistory: React.FC = () => {
   };
 
   const getTipeJOColor = (tipe: string): string => {
-    return tipe === 'JO REAL'
+    return tipe === 'JO PRODUKSI'
       ? 'bg-purple-100 text-purple-800'
       : 'bg-orange-100 text-orange-800';
   };

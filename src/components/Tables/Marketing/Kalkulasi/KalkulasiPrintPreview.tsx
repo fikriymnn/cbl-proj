@@ -746,10 +746,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td class="border" style="padding: 1px 3px"></td>
                   <td colspan="2" class="border" style="padding: 1px 3px"></td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px; font-size: 12px">
-                    ${getValue(
-                      data.jenis_packing,
-                      'CGS-004 UK 435X315X340 SW-KK',
-                    )}
+                    ${getValue(data.nama_packing)}
                   </td>
                   <td class="border bg-gray-300 text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(getNumericValue(data.harga_packing))}

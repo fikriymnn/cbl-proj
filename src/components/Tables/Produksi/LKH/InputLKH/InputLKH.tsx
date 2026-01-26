@@ -16,7 +16,6 @@ import {
   MesinTahapanResponse,
 } from './types';
 import { FIXED_PROCESSES } from './constants';
-import { create } from 'lodash';
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
@@ -145,6 +144,7 @@ const InputLKH: React.FC = () => {
         params: { status_proses: 'done' },
         withCredentials: true,
       });
+      console.log('JO List Response:', response.data);
       setJoList(response.data.data || []);
     } catch (error) {
       console.error('Error fetching JO list:', error);
@@ -689,7 +689,7 @@ const InputLKH: React.FC = () => {
   // Convert data to react-select options
   const joOptions = joList.map((jo) => ({
     value: String(jo.id),
-    label: jo.no_jo,
+    label: `${jo.no_jo} - ${jo.produk}`,
   }));
 
   const tahapanOptions = tahapanList.map((tahapan) => ({

@@ -139,7 +139,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
         id_mesin_pons: safeToString(originalData.id_mesin_pons, ''),
         harga_pisau: safeToString(originalData.harga_pisau),
         ongkos_pons: originalData.ongkos_pons || 'No',
-        ongkos_pons_qty: safeToString(originalData.ongkos_pons_qty, '1'),
+        ongkos_pons_qty: safeToString(originalData.ongkos_pons_qty, '0'),
         harga_satuan_ongkos_pons: safeToString(
           originalData.harga_satuan_ongkos_pons,
         ),
@@ -149,12 +149,12 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
         // Lipat
         lipat: originalData.lipat || 'No',
         id_mesin_lipat: safeToString(originalData.id_mesin_lipat, ''),
-        qty_lipat: safeToString(originalData.qty_lipat, '1'),
+        qty_lipat: safeToString(originalData.qty_lipat, '0'),
         harga_lipat: safeToString(originalData.harga_lipat),
         // Potong
         potong_jadi: originalData.potong_jadi || 'No',
         id_mesin_potong: safeToString(originalData.id_mesin_potong, ''),
-        qty_potong: safeToString(originalData.qty_potong, '1'),
+        qty_potong: safeToString(originalData.qty_potong, '0'),
         harga_potong_jadi: safeToString(originalData.harga_potong_jadi),
         // PostPress2
         id_lem: safeToString(originalData.id_lem, ''),
@@ -412,7 +412,7 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
           : null,
         harga_pisau: safeNumber(formData.harga_pisau),
         ongkos_pons: formData.ongkos_pons || 'No',
-        ongkos_pons_qty: safeNumber(formData.ongkos_pons_qty, 1),
+        ongkos_pons_qty: safeNumber(formData.ongkos_pons_qty, 0),
         harga_satuan_ongkos_pons: safeNumber(formData.harga_satuan_ongkos_pons),
         total_harga_ongkos_pons: safeNumber(formData.total_harga_ongkos_pons),
 
@@ -420,13 +420,13 @@ const CopyKalkulasiModal: React.FC<CopyKalkulasiModalProps> = ({
         id_mesin_lipat: formData.id_mesin_lipat
           ? safeNumber(formData.id_mesin_lipat)
           : null,
-        qty_lipat: safeNumber(formData.qty_lipat, 1),
+        qty_lipat: safeNumber(formData.qty_lipat, 0),
         harga_lipat: safeNumber(formData.harga_lipat),
         potong_jadi: formData.potong_jadi || 'No',
         id_mesin_potong: formData.id_mesin_potong
           ? safeNumber(formData.id_mesin_potong)
           : null,
-        qty_potong: safeNumber(formData.qty_potong, 1),
+        qty_potong: safeNumber(formData.qty_potong, 0),
         harga_potong_jadi: safeNumber(formData.harga_potong_jadi),
 
         // PostPress2 fields

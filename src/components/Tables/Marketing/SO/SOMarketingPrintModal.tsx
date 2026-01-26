@@ -537,7 +537,7 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                     <td>Status Barang</td>
                     <td>:</td>
                     <td>
-                      ${getValue(printData.partial)}
+                     Partial : ${getValue(printData.partial)}
                       <span style="margin-left: 100px"></span>
                       <span style="margin-left: 150px">Kirim Semua : ${getValue(
                         printData.kirim_semua,

@@ -123,7 +123,7 @@ const IOMarketing: React.FC = () => {
     useState<boolean>(false);
   const [sendProofIOId, setSendProofIOId] = useState<number | null>(null);
   const [sendProofIONumber, setSendProofIONumber] = useState<string>('');
-  const [sendProofQty, setSendProofQty] = useState<number>(0);
+  const [sendProofQty, setSendProofQty] = useState<number>(400);
 
   // Add sorting functions
   const handleSort = (field: SortField) => {
@@ -523,7 +523,7 @@ const IOMarketing: React.FC = () => {
   const handleSendProof = (ioId: number, ioNumber: string): void => {
     setSendProofIOId(ioId);
     setSendProofIONumber(ioNumber);
-    setSendProofQty(0); // Reset to default value
+    setSendProofQty(400); // Reset to default value
     setShowSendProofConfirm(true);
   };
 
@@ -531,7 +531,7 @@ const IOMarketing: React.FC = () => {
     setShowSendProofConfirm(false);
     setSendProofIOId(null);
     setSendProofIONumber('');
-    setSendProofQty(0); // Reset quantity
+    setSendProofQty(400); // Reset quantity
   };
 
   const confirmSendProof = async (): Promise<void> => {
@@ -562,7 +562,7 @@ const IOMarketing: React.FC = () => {
         setShowSendProofConfirm(false);
         setSendProofIOId(null);
         setSendProofIONumber('');
-        setSendProofQty(0); // Reset quantity
+        setSendProofQty(400); // Reset quantity
       } else {
         alert('Failed to send proof');
       }

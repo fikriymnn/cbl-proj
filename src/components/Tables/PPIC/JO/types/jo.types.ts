@@ -1,5 +1,6 @@
 // types/jo.types.ts
 export interface SOData {
+  tgl_pengiriman: any;
   status_produk: string;
   id_customer: number;
   id: number;
@@ -202,8 +203,8 @@ export interface JOFormData {
   alamat_pengiriman: string;
   tgl_kirim: string;
   standar_warna: string;
-  tipe_jo: 'JO REAL' | 'JO PROOF';
+  tipe_jo: 'JO PRODUKSI' | 'JO PROOF';
   jo_mounting: JOMounting[];
 }
 
-export type JOTipeOption = 'JO REAL' | 'JO PROOF';
+export type JOTipeOption = 'JO PRODUKSI' | 'JO PROOF';
