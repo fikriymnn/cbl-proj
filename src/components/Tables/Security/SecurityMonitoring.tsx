@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Select from 'react-select';
 import Loading from '../../Loading';
+import Select from 'react-select';
 
 function SecurityMonitoring() {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +20,7 @@ function SecurityMonitoring() {
   const [selectedTipeKaryawan, setSelectedTipeKaryawan] = useState('');
   const [selectedTipePenggajian, setSelectedTipePenggajian] = useState('');
   const [selectedDivisi, setSelectedDivisi] = useState('');
+  const [selectedBagianMesin, setSelectedBagianMesin] = useState<any>(null);
 
   useEffect(() => {
     getDepartment();
@@ -48,7 +49,7 @@ function SecurityMonitoring() {
         params: {
           startDate: dateFrom1,
           endDate: dateTo1,
-          idDepartment: departmentId || undefined, // Don't send empty string
+          idDepartment: departmentId || undefined,
         },
         withCredentials: true,
       });
@@ -98,19 +99,22 @@ function SecurityMonitoring() {
     setSelectedTipeKaryawan('');
     setSelectedTipePenggajian('');
     setSelectedDivisi('');
+    setSelectedBagianMesin(null);
 
-    // Pass empty string explicitly to reset department filter
     getAbsen(formattedDate, formattedDate, '');
   };
+
   // Filter absensi data
   const filteredAbsen = absen?.filter((data: any) => {
+    const bagianMesin = data.bagian_mesin?.[0]?.nama_bagian_mesin || '';
     return (
       data.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (selectedTipeKaryawan === '' ||
         data.tipe_karyawan === selectedTipeKaryawan) &&
       (selectedTipePenggajian === '' ||
         data.tipe_penggajian === selectedTipePenggajian) &&
-      (selectedDivisi === '' || data.nama_divisi === selectedDivisi)
+      (selectedDivisi === '' || data.nama_divisi === selectedDivisi) &&
+      (!selectedBagianMesin || bagianMesin === selectedBagianMesin.value)
     );
   });
 
@@ -118,6 +122,72 @@ function SecurityMonitoring() {
   const uniqueDivisi = Array.from(
     new Set(absen?.map((data: any) => data.nama_divisi).filter(Boolean)),
   );
+
+  // Get unique bagian mesin values for filter
+  const uniqueBagianMesin = Array.from(
+    new Set(
+      absen
+        ?.map((data: any) => data.bagian_mesin?.[0]?.nama_bagian_mesin)
+        .filter(Boolean),
+    ),
+  );
+
+  // Create options for react-select
+  const bagianMesinOptions = uniqueBagianMesin.map((mesin: any) => ({
+    value: mesin,
+    label: mesin,
+  }));
+
+  const divisiOptions = uniqueDivisi.map((divisi: any) => ({
+    value: divisi,
+    label: divisi,
+  }));
+
+  const departmentOptions = department?.data?.map((data: any) => ({
+    value: data.id,
+    label: data.nama_department,
+  }));
+
+  // Group filtered data by bagian mesin
+  const groupedByMachine = filteredAbsen?.reduce((acc: any, data: any) => {
+    const bagianMesin =
+      data.bagian_mesin?.[0]?.nama_bagian_mesin || 'Tidak Ada Mesin';
+    if (!acc[bagianMesin]) {
+      acc[bagianMesin] = [];
+    }
+    acc[bagianMesin].push(data);
+    return acc;
+  }, {});
+
+  // Sort machine groups to put "Tidak Ada Mesin" at the bottom
+  const sortedMachineGroups = groupedByMachine
+    ? Object.keys(groupedByMachine).sort((a, b) => {
+        if (a === 'Tidak Ada Mesin') return 1;
+        if (b === 'Tidak Ada Mesin') return -1;
+        return a.localeCompare(b);
+      })
+    : [];
+
+  // Custom styles for react-select
+  const customSelectStyles = {
+    control: (base: any) => ({
+      ...base,
+      minHeight: '38px',
+      backgroundColor: '#eff6ff',
+      borderColor: '#bfdbfe',
+      '&:hover': {
+        borderColor: '#60a5fa',
+      },
+    }),
+    menu: (base: any) => ({
+      ...base,
+      zIndex: 9999,
+    }),
+    menuPortal: (base: any) => ({
+      ...base,
+      zIndex: 9999,
+    }),
+  };
 
   return (
     <>
@@ -180,19 +250,21 @@ function SecurityMonitoring() {
                   <label className="text-xs sm:text-sm text-gray-600 font-medium">
                     Department:
                   </label>
-                  <select
-                    name="nama_department"
-                    value={idDepartment || ''}
-                    onChange={(e) => setIdDepartment(e.target.value)}
-                    className="w-full rounded-lg bg-blue-50 border border-blue-200 py-2 sm:py-2.5 px-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all cursor-pointer"
-                  >
-                    <option value="">Semua Department</option>
-                    {department?.data?.map((data: any, i: any) => (
-                      <option key={i} value={data.id}>
-                        {data.nama_department}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    options={departmentOptions}
+                    value={departmentOptions?.find(
+                      (opt: any) => opt.value === idDepartment,
+                    )}
+                    onChange={(selected: any) =>
+                      setIdDepartment(selected?.value || '')
+                    }
+                    isClearable
+                    placeholder="Semua Department"
+                    styles={customSelectStyles}
+                    className="text-xs sm:text-sm"
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                  />
                 </div>
 
                 <div className="flex flex-col gap-2 justify-end">
@@ -234,18 +306,40 @@ function SecurityMonitoring() {
                   <label className="block text-xs sm:text-sm text-gray-600 font-medium mb-2">
                     Divisi
                   </label>
-                  <select
-                    className="w-full rounded-lg bg-blue-50 border border-blue-200 py-2 sm:py-2.5 px-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    value={selectedDivisi}
-                    onChange={(e) => setSelectedDivisi(e.target.value)}
-                  >
-                    <option value="">Semua Divisi</option>
-                    {uniqueDivisi.map((divisi: any, index: number) => (
-                      <option key={index} value={divisi}>
-                        {divisi}
-                      </option>
-                    ))}
-                  </select>
+                  <Select
+                    options={divisiOptions}
+                    value={divisiOptions.find(
+                      (opt: any) => opt.value === selectedDivisi,
+                    )}
+                    onChange={(selected: any) =>
+                      setSelectedDivisi(selected?.value || '')
+                    }
+                    isClearable
+                    placeholder="Semua Divisi"
+                    styles={customSelectStyles}
+                    className="text-xs sm:text-sm"
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm text-gray-600 font-medium mb-2">
+                    Bagian Mesin
+                  </label>
+                  <Select
+                    options={bagianMesinOptions}
+                    value={selectedBagianMesin}
+                    onChange={(selected: any) =>
+                      setSelectedBagianMesin(selected)
+                    }
+                    isClearable
+                    placeholder="Semua Bagian Mesin"
+                    styles={customSelectStyles}
+                    className="text-xs sm:text-sm"
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                  />
                 </div>
               </div>
             </div>
@@ -262,7 +356,7 @@ function SecurityMonitoring() {
           </div>
         </div>
 
-        {/* Absensi Table */}
+        {/* Absensi Table - Grouped by Machine */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-green-500 to-teal-600 p-3 sm:p-4">
             <h3 className="text-white text-base sm:text-lg md:text-xl font-bold flex items-center">
@@ -311,107 +405,144 @@ function SecurityMonitoring() {
                 </tr>
               </thead>
               <tbody>
-                {filteredAbsen?.map((data: any, i: any) => {
-                  const getRowBackground = () => {
-                    switch (data.status_absen) {
-                      case 'cuti khusus':
-                        return 'bg-orange-50';
-                      case 'sakit':
-                        return 'bg-green-50';
-                      case 'izin':
-                        return 'bg-blue-50';
-                      case 'Belum Masuk':
-                        return 'bg-red-50';
-                      case 'cuti tahunan':
-                        return 'bg-yellow-50';
-                      default:
-                        return '';
-                    }
-                  };
+                {sortedMachineGroups.map(
+                  (mesinName: string, mesinIndex: number) => {
+                    const mesinData = groupedByMachine[mesinName];
+                    let rowCounter = 0;
 
-                  const bagianMesin =
-                    data.bagian_mesin?.[0]?.nama_bagian_mesin || '';
-
-                  return (
-                    <tr key={i} className={`border-b ${getRowBackground()}`}>
-                      <td className="p-2 sm:p-3 text-xs">{i + 1}</td>
-                      <td className="p-2 sm:p-3 text-xs font-medium">
-                        <div className="flex flex-col">
-                          <span>{data.name}</span>
-                          {bagianMesin && (
-                            <span className="text-green-500 text-[10px] sm:text-[11px]">
-                              - {bagianMesin}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-2 sm:p-3 text-xs">
-                        <div className="flex flex-col">
-                          <span className="max-w-[120px]">
-                            {data.nama_department}
-                          </span>
-                          <span className="text-blue-500 max-w-[120px]">
-                            {data.nama_divisi}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-2 sm:p-3 text-xs">
-                        <div className="flex flex-col">
-                          <span>{data.hari}</span>
-                          <span>
-                            {data.tgl_masuk} -{' '}
-                            <span className="text-blue-400">{data.shift}</span>
-                          </span>
-                          {data.jenis_hari_masuk !== 'Biasa' &&
-                            data.jenis_hari_masuk != null && (
-                              <span className="text-blue-600 font-medium">
-                                Libur
+                    return (
+                      <React.Fragment key={mesinIndex}>
+                        {/* Machine Section Header */}
+                        <tr className="bg-gradient-to-r from-purple-100 to-purple-50 border-y-2 border-purple-300">
+                          <td
+                            colSpan={7}
+                            className="p-3 sm:p-4 text-left font-bold text-purple-900"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm sm:text-base">
+                                {mesinName}
                               </span>
-                            )}
-                        </div>
-                      </td>
-                      <td className="p-2 sm:p-3 text-xs">
-                        <div className="flex flex-col gap-0.5">
-                          <span>In: {data.jam_masuk || '~'}</span>
-                          <span>Out: {data.jam_keluar || '~'}</span>
-                        </div>
-                      </td>
-                      <td className="p-2 sm:p-3 text-xs">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-medium text-purple-600">
-                            {data.jam_lembur > 0
-                              ? `${data.jam_lembur} Jam`
-                              : '-'}
-                          </span>
-                          {data.jam_lembur_spl > 0 && (
-                            <span className="text-[10px] text-blue-500">
-                              SPL: {data.jam_lembur_spl} Jam
-                            </span>
-                          )}
-                          {data.status_lembur && (
-                            <span className="text-[10px] text-gray-500">
-                              {data.status_lembur}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-2 sm:p-3 text-xs">
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium">
-                            {data.status_absen}
-                          </span>
-
-                          {data.status_keluar &&
-                            data.status_keluar !== 'Belum Pulang' && (
-                              <span className="text-[10px] text-blue-500">
-                                {data.status_keluar}
+                              <span className="text-xs sm:text-sm bg-purple-200 px-2 py-1 rounded-full">
+                                {mesinData.length} Karyawan
                               </span>
-                            )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Employees in this machine */}
+                        {mesinData.map((data: any, i: any) => {
+                          rowCounter++;
+                          const getRowBackground = () => {
+                            switch (data.status_absen) {
+                              case 'cuti khusus':
+                                return 'bg-orange-50';
+                              case 'sakit':
+                                return 'bg-green-50';
+                              case 'izin':
+                                return 'bg-blue-50';
+                              case 'Belum Masuk':
+                                return 'bg-red-50';
+                              case 'cuti tahunan':
+                                return 'bg-yellow-50';
+                              default:
+                                return '';
+                            }
+                          };
+
+                          const bagianMesin =
+                            data.bagian_mesin?.[0]?.nama_bagian_mesin || '';
+
+                          return (
+                            <tr
+                              key={i}
+                              className={`border-b ${getRowBackground()}`}
+                            >
+                              <td className="p-2 sm:p-3 text-xs">
+                                {rowCounter}
+                              </td>
+                              <td className="p-2 sm:p-3 text-xs font-medium">
+                                <div className="flex flex-col">
+                                  <span>{data.name}</span>
+                                  {bagianMesin && (
+                                    <span className="text-green-500 text-[10px] sm:text-[11px]">
+                                      - {bagianMesin}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="p-2 sm:p-3 text-xs">
+                                <div className="flex flex-col">
+                                  <span className="max-w-[120px]">
+                                    {data.nama_department}
+                                  </span>
+                                  <span className="text-blue-500 max-w-[120px]">
+                                    {data.nama_divisi}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="p-2 sm:p-3 text-xs">
+                                <div className="flex flex-col">
+                                  <span>{data.hari}</span>
+                                  <span>
+                                    {data.tgl_masuk} -{' '}
+                                    <span className="text-blue-400">
+                                      {data.shift}
+                                    </span>
+                                  </span>
+                                  {data.jenis_hari_masuk !== 'Biasa' &&
+                                    data.jenis_hari_masuk != null && (
+                                      <span className="text-blue-600 font-medium">
+                                        Libur
+                                      </span>
+                                    )}
+                                </div>
+                              </td>
+                              <td className="p-2 sm:p-3 text-xs">
+                                <div className="flex flex-col gap-0.5">
+                                  <span>In: {data.jam_masuk || '~'}</span>
+                                  <span>Out: {data.jam_keluar || '~'}</span>
+                                </div>
+                              </td>
+                              <td className="p-2 sm:p-3 text-xs">
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="font-medium text-purple-600">
+                                    {data.jam_lembur > 0
+                                      ? `${data.jam_lembur} Jam`
+                                      : '-'}
+                                  </span>
+                                  {data.jam_lembur_spl > 0 && (
+                                    <span className="text-[10px] text-blue-500">
+                                      SPL: {data.jam_lembur_spl} Jam
+                                    </span>
+                                  )}
+                                  {data.status_lembur && (
+                                    <span className="text-[10px] text-gray-500">
+                                      {data.status_lembur}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="p-2 sm:p-3 text-xs">
+                                <div className="flex flex-col gap-1">
+                                  <span className="font-medium">
+                                    {data.status_absen}
+                                  </span>
+
+                                  {data.status_keluar &&
+                                    data.status_keluar !== 'Belum Pulang' && (
+                                      <span className="text-[10px] text-blue-500">
+                                        {data.status_keluar}
+                                      </span>
+                                    )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </React.Fragment>
+                    );
+                  },
+                )}
               </tbody>
             </table>
             {(!filteredAbsen || filteredAbsen.length === 0) && (
