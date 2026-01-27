@@ -400,6 +400,9 @@ function SecurityMonitoring() {
                     Jam Lembur
                   </th>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600">
+                    Terlambat
+                  </th>
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600">
                     Status
                   </th>
                 </tr>
@@ -415,7 +418,7 @@ function SecurityMonitoring() {
                         {/* Machine Section Header */}
                         <tr className="bg-gradient-to-r from-purple-100 to-purple-50 border-y-2 border-purple-300">
                           <td
-                            colSpan={7}
+                            colSpan={8}
                             className="p-3 sm:p-4 text-left font-bold text-purple-900"
                           >
                             <div className="flex items-center gap-2">
@@ -441,7 +444,7 @@ function SecurityMonitoring() {
                               case 'izin':
                                 return 'bg-blue-50';
                               case 'Belum Masuk':
-                                return 'bg-red-50';
+                                return 'bg-red-200';
                               case 'cuti tahunan':
                                 return 'bg-yellow-50';
                               default:
@@ -520,6 +523,17 @@ function SecurityMonitoring() {
                                       {data.status_lembur}
                                     </span>
                                   )}
+                                </div>
+                              </td>
+                              <td className="p-2 sm:p-3 text-xs">
+                                <div className="flex flex-col gap-0.5">
+                                  <span>{data.status_masuk}</span>
+                                  <span>
+                                    {data.menit_terlambat == null ||
+                                    data.menit_terlambat == 0
+                                      ? '~'
+                                      : `${data.menit_terlambat} JAM`}
+                                  </span>
                                 </div>
                               </td>
                               <td className="p-2 sm:p-3 text-xs">

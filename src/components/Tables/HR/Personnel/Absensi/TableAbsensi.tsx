@@ -852,7 +852,7 @@ function TableAbsensi() {
                               case 'izin':
                                 return 'bg-blue-50';
                               case 'Belum Masuk':
-                                return 'bg-red-50';
+                                return 'bg-red-200';
                               case 'cuti tahunan':
                                 return 'bg-yellow-50';
                               default:
