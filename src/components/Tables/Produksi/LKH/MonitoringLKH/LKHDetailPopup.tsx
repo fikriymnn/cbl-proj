@@ -1,4 +1,5 @@
 import React from 'react';
+import WasteTable from './WasteTable';
 
 interface Tahapan {
   id: number;
@@ -9,14 +10,26 @@ interface Tahapan {
   updatedAt: string;
 }
 
+interface Mesin {
+  id: number;
+  nama_mesin: string;
+  kode_mesin: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Operator {
   id: number;
+  uuid: string;
   nama: string;
   no: string;
   email: string;
   role: string;
-  status: string;
   bagian: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ProduksiLKHProses {
@@ -41,6 +54,32 @@ interface ProduksiLKHProses {
   proses: string;
   is_final_result: boolean;
   tahapan?: Tahapan;
+  mesin?: Mesin;
+  operator?: Operator;
+}
+
+interface ProduksiLKHWaste {
+  id: number;
+  id_jo: number;
+  id_produksi_lkh: number;
+  id_produksi_lkh_tahapan: number;
+  id_tahapan: number;
+  id_mesin: number;
+  id_operator: number;
+  id_kendala: number;
+  id_waste: number;
+  kode_kendala: string;
+  kode_waste: string;
+  deskripsi_kendala: string;
+  deskripsi_waste: string;
+  total_qty: number;
+  proses: string;
+  note: string | null;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  tahapan?: Tahapan;
+  mesin?: Mesin;
   operator?: Operator;
 }
 
@@ -69,6 +108,7 @@ interface LKHAllDataItem {
   createdAt: string;
   updatedAt: string;
   produksi_lkh_proses: ProduksiLKHProses[];
+  produksi_lkh_waste: ProduksiLKHWaste[];
   tahapan?: Tahapan;
 }
 
@@ -343,7 +383,7 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
           <h2 className="text-xl font-semibold text-gray-900">
             Preview{' '}
             {lkhData.produk
@@ -374,7 +414,7 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
         <div className="p-6">
           {/* Summary Section - Compact Design with Header on Top */}
           <div className="mb-6">
-            <h3 className="text-sm font-bold text-gray-700  bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-2 rounded border-l-4 border-blue-600">
+            <h3 className="text-sm font-bold text-gray-700 bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-2 rounded border-l-4 border-blue-600 mb-3">
               Ringkasan Produksi per Tahapan
             </h3>
             <div className="overflow-x-auto">
@@ -385,12 +425,12 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
           </div>
 
           {/* Detail Process Section */}
-          <div className="mb-6 ">
-            <h3 className="text-sm font-bold text-gray-700  bg-gradient-to-r from-green-50 to-green-100 px-4 py-2 rounded border-l-4 border-green-600">
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-700 bg-gradient-to-r from-green-50 to-green-100 px-4 py-2 rounded border-l-4 border-green-600 mb-3">
               Detail Proses Produksi
             </h3>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse border border-gray-300 text-xs ">
+              <table className="min-w-full border-collapse border border-gray-300 text-xs">
                 <thead className="bg-gradient-to-r from-green-700 to-green-600 text-white">
                   <tr>
                     <th className="border border-gray-300 px-3 py-2 text-left font-bold">
@@ -499,53 +539,9 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
             </div>
           </div>
 
-          {/* Additional Sections */}
-          <div className="grid grid-cols-1 gap-4">
-            {/* Waste Table */}
-            <div className="overflow-x-auto">
-              <h3 className="text-sm font-bold text-gray-700 bg-gradient-to-r from-orange-50 to-orange-100 px-4 py-2 rounded border-l-4 border-orange-600">
-                Data Waste
-              </h3>
-              <table className="min-w-full text-xs">
-                <thead className="bg-gradient-to-r from-orange-700 to-orange-600 text-white">
-                  <tr>
-                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
-                      Proses
-                    </th>
-                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
-                      Operator
-                    </th>
-                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
-                      Mesin
-                    </th>
-                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
-                      Waste
-                    </th>
-                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
-                      Kendala
-                    </th>
-                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
-                      Waste Total
-                    </th>
-                    <th className="border border-gray-300 px-3 py-2 text-left font-bold">
-                      Tgl Dibuat
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td
-                      className="border border-gray-300 px-3 py-3"
-                      colSpan={7}
-                    >
-                      <div className="text-center text-gray-500 italic">
-                        Belum ada data waste
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          {/* Waste Section */}
+          <div className="mb-6">
+            <WasteTable wasteData={lkhData.produksi_lkh_waste || []} />
           </div>
         </div>
 
@@ -568,4 +564,5 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
     </div>
   );
 };
+
 export default LKHDetailPopup;

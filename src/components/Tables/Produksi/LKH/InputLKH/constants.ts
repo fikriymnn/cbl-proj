@@ -5,5 +5,5 @@ export const FIXED_PROCESSES = [
   { name: 'Kendala', color: 'yellow' },
   { name: 'Pending', color: 'orange' },
   { name: 'Off', color: 'red' },
-  { name: 'Waste', color: 'gray' },
+  { name: 'Waste', color: 'gray', onlyForSortir: true },
 ];

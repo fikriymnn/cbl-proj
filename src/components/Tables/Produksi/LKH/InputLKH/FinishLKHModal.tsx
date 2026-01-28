@@ -1,16 +1,24 @@
 import React from 'react';
-import { LKHProses } from './types';
+import Select from 'react-select';
+import { LKHProses, LKHWaste, WasteData, Option } from './types';
+import { selectStyles } from './styles';
 
 interface FinishLKHModalProps {
   show: boolean;
   loading: boolean;
   finishData: LKHProses[];
-
+  finishWasteData: LKHWaste[];
+  wasteKendalaList: WasteData[];
   onClose: () => void;
   onSubmit: () => void;
   onDataChange: (
     index: number,
     field: keyof LKHProses,
+    value: string | number,
+  ) => void;
+  onWasteDataChange: (
+    index: number,
+    field: keyof LKHWaste,
     value: string | number,
   ) => void;
 }
@@ -19,10 +27,12 @@ const FinishLKHModal: React.FC<FinishLKHModalProps> = ({
   show,
   loading,
   finishData,
-
+  finishWasteData,
+  wasteKendalaList,
   onClose,
   onSubmit,
   onDataChange,
+  onWasteDataChange,
 }) => {
   if (!show) return null;
 
@@ -80,6 +90,28 @@ const FinishLKHModal: React.FC<FinishLKHModalProps> = ({
     return parts.join(' ');
   };
 
+  // Get available waste options
+  const getWasteOptions = (): Option[] => {
+    return wasteKendalaList.map((waste) => ({
+      value: String(waste.id),
+      label: `${waste.kode} - ${waste.deskripsi}`,
+    }));
+  };
+
+  // Get kendala options based on selected waste
+  const getKendalaOptions = (wasteId: number): Option[] => {
+    if (!wasteId) return [];
+
+    const selectedWaste = wasteKendalaList.find((w) => w.id === wasteId);
+
+    if (!selectedWaste) return [];
+
+    return selectedWaste.kendala.map((kendala) => ({
+      value: String(kendala.id),
+      label: `${kendala.kode} - ${kendala.deskripsi}`,
+    }));
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
@@ -95,154 +127,281 @@ const FinishLKHModal: React.FC<FinishLKHModalProps> = ({
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {finishData.length === 0 ? (
+          {finishData.length === 0 && finishWasteData.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Tidak ada data proses selesai</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Kode
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Deskripsi
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Waktu Pengerjaan
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Durasi
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Baik
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rusak Sebagian
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rusak Total
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Pallet
-                    </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Catatan
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sortedData.map((item, index) => {
-                    // Find original index for onDataChange callback
-                    const originalIndex = finishData.findIndex(
-                      (original) => original.id === item.id,
-                    );
+            <div className="space-y-6">
+              {/* Regular Process Data */}
+              {finishData.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                    Data Proses Produksi
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Kode
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Deskripsi
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Waktu Pengerjaan
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Durasi
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Baik
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Rusak Sebagian
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Rusak Total
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Pallet
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Catatan
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {sortedData.map((item, index) => {
+                          // Find original index for onDataChange callback
+                          const originalIndex = finishData.findIndex(
+                            (original) => original.id === item.id,
+                          );
 
-                    return (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                          {item.kode}
-                        </td>
-                        <td className="px-3 py-2 text-xs text-gray-900">
-                          {item.deskripsi}
-                        </td>
-                        <td className="px-3 py-2 text-xs text-gray-900">
-                          <div className="whitespace-nowrap">
-                            <div className="text-gray-700 font-medium">
-                              {formatDateTime(item.waktu_mulai)}
-                            </div>
-                            <div className="text-gray-500 mt-0.5">
-                              {formatDateTime(item.waktu_selesai || '')}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                          <div className="font-medium">
-                            {formatDuration(item.total_waktu || '0')}
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <input
-                            type="number"
-                            value={item.baik || ''}
-                            onChange={(e) =>
-                              onDataChange(
-                                originalIndex,
-                                'baik',
-                                e.target.value ? Number(e.target.value) : 0,
-                              )
-                            }
-                            className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="0"
-                          />
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <input
-                            type="number"
-                            value={item.rusak_sebagian || ''}
-                            onChange={(e) =>
-                              onDataChange(
-                                originalIndex,
-                                'rusak_sebagian',
-                                e.target.value ? Number(e.target.value) : 0,
-                              )
-                            }
-                            className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="0"
-                          />
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <input
-                            type="number"
-                            value={item.rusak_total || ''}
-                            onChange={(e) =>
-                              onDataChange(
-                                originalIndex,
-                                'rusak_total',
-                                e.target.value ? Number(e.target.value) : 0,
-                              )
-                            }
-                            className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="0"
-                          />
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <input
-                            type="number"
-                            value={item.pallet || ''}
-                            onChange={(e) =>
-                              onDataChange(
-                                originalIndex,
-                                'pallet',
-                                e.target.value ? Number(e.target.value) : 0,
-                              )
-                            }
-                            className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="0"
-                          />
-                        </td>
-                        <td className="px-3 py-2">
-                          <input
-                            type="text"
-                            value={item.note || ''}
-                            onChange={(e) =>
-                              onDataChange(
-                                originalIndex,
-                                'note',
-                                e.target.value,
-                              )
-                            }
-                            className="w-32 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Catatan"
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          return (
+                            <tr key={item.id} className="hover:bg-gray-50">
+                              <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                {item.kode}
+                              </td>
+                              <td className="px-3 py-2 text-xs text-gray-900">
+                                {item.deskripsi}
+                              </td>
+                              <td className="px-3 py-2 text-xs text-gray-900">
+                                <div className="whitespace-nowrap">
+                                  <div className="text-gray-700 font-medium">
+                                    {formatDateTime(item.waktu_mulai)}
+                                  </div>
+                                  <div className="text-gray-500 mt-0.5">
+                                    {formatDateTime(item.waktu_selesai || '')}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                <div className="font-medium">
+                                  {formatDuration(item.total_waktu || '0')}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <input
+                                  type="number"
+                                  value={item.baik || ''}
+                                  onChange={(e) =>
+                                    onDataChange(
+                                      originalIndex,
+                                      'baik',
+                                      e.target.value
+                                        ? Number(e.target.value)
+                                        : 0,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="0"
+                                />
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <input
+                                  type="number"
+                                  value={item.rusak_sebagian || ''}
+                                  onChange={(e) =>
+                                    onDataChange(
+                                      originalIndex,
+                                      'rusak_sebagian',
+                                      e.target.value
+                                        ? Number(e.target.value)
+                                        : 0,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="0"
+                                />
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <input
+                                  type="number"
+                                  value={item.rusak_total || ''}
+                                  onChange={(e) =>
+                                    onDataChange(
+                                      originalIndex,
+                                      'rusak_total',
+                                      e.target.value
+                                        ? Number(e.target.value)
+                                        : 0,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="0"
+                                />
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <input
+                                  type="number"
+                                  value={item.pallet || ''}
+                                  onChange={(e) =>
+                                    onDataChange(
+                                      originalIndex,
+                                      'pallet',
+                                      e.target.value
+                                        ? Number(e.target.value)
+                                        : 0,
+                                    )
+                                  }
+                                  className="w-20 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="0"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="text"
+                                  value={item.note || ''}
+                                  onChange={(e) =>
+                                    onDataChange(
+                                      originalIndex,
+                                      'note',
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="w-32 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="Catatan"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Waste Data */}
+              {finishWasteData.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-2">
+                    Data Waste
+                  </h4>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Waste
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Kendala
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total Qty
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {finishWasteData.map((item, index) => {
+                          const wasteOptions = getWasteOptions();
+                          const kendalaOptions = getKendalaOptions(
+                            item.id_waste,
+                          );
+
+                          return (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-3 py-2">
+                                <Select
+                                  options={wasteOptions}
+                                  value={
+                                    item.id_waste
+                                      ? wasteOptions.find(
+                                          (opt) =>
+                                            opt.value === String(item.id_waste),
+                                        )
+                                      : null
+                                  }
+                                  onChange={(option) => {
+                                    if (option) {
+                                      onWasteDataChange(
+                                        index,
+                                        'id_waste',
+                                        Number(option.value),
+                                      );
+                                    }
+                                  }}
+                                  styles={selectStyles}
+                                  placeholder="Pilih Waste"
+                                  isClearable={false}
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <Select
+                                  options={kendalaOptions}
+                                  value={
+                                    item.id_kendala
+                                      ? kendalaOptions.find(
+                                          (opt) =>
+                                            opt.value ===
+                                            String(item.id_kendala),
+                                        )
+                                      : null
+                                  }
+                                  onChange={(option) => {
+                                    if (option) {
+                                      onWasteDataChange(
+                                        index,
+                                        'id_kendala',
+                                        Number(option.value),
+                                      );
+                                    }
+                                  }}
+                                  styles={selectStyles}
+                                  placeholder="Pilih Kendala"
+                                  isDisabled={!item.id_waste}
+                                  isClearable={false}
+                                />
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <input
+                                  type="number"
+                                  value={item.total_qty || ''}
+                                  onChange={(e) =>
+                                    onWasteDataChange(
+                                      index,
+                                      'total_qty',
+                                      e.target.value
+                                        ? Number(e.target.value)
+                                        : 0,
+                                    )
+                                  }
+                                  className="w-24 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  placeholder="0"
+                                  min="0"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -259,7 +418,10 @@ const FinishLKHModal: React.FC<FinishLKHModalProps> = ({
           <button
             onClick={onSubmit}
             className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            disabled={loading || finishData.length === 0}
+            disabled={
+              loading ||
+              (finishData.length === 0 && finishWasteData.length === 0)
+            }
           >
             {loading ? 'Memproses...' : 'Selesaikan LKH'}
           </button>

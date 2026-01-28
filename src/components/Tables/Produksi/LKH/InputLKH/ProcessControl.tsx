@@ -1,6 +1,13 @@
 import React from 'react';
 import Select from 'react-select';
-import { ProcessData, KodeProduksi, LKHProses, Option } from './types';
+import {
+  ProcessData,
+  KodeProduksi,
+  LKHProses,
+  Option,
+  WasteData,
+  WasteProcessData,
+} from './types';
 import { FIXED_PROCESSES } from './constants';
 import { selectStyles } from './styles';
 
@@ -9,9 +16,12 @@ interface ProcessControlProps {
   selectedMesin: string;
   loading: boolean;
   hasActiveProcess: boolean;
+  isSortirProcess: boolean;
   kodeProduksiByProcess: { [key: string]: KodeProduksi[] };
+  wasteKendalaList: WasteData[];
   activeProcesses: { [key: string]: LKHProses };
   processDataList: { [key: string]: ProcessData };
+  wasteProcessData: WasteProcessData;
   onStartProcess: (processName: string) => void;
   onStopProcess: (processName: string) => void;
   onProcessDataChange: (
@@ -19,6 +29,11 @@ interface ProcessControlProps {
     field: keyof ProcessData,
     value: string | number,
   ) => void;
+  onWasteProcessDataChange: (
+    field: keyof WasteProcessData,
+    value: string | number,
+  ) => void;
+  onWasteSubmit: () => void;
   onFinish: () => void;
 }
 
@@ -27,16 +42,44 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
   selectedMesin,
   loading,
   hasActiveProcess,
+  isSortirProcess,
   kodeProduksiByProcess,
+  wasteKendalaList,
   activeProcesses,
   processDataList,
+  wasteProcessData,
   onStartProcess,
   onStopProcess,
   onProcessDataChange,
+  onWasteProcessDataChange,
+  onWasteSubmit,
   onFinish,
 }) => {
   const isProcessActive = (processName: string) => {
     return !!activeProcesses[processName];
+  };
+
+  // Get available waste options
+  const getWasteOptions = (): Option[] => {
+    return wasteKendalaList.map((waste) => ({
+      value: String(waste.id),
+      label: `${waste.kode} - ${waste.deskripsi}`,
+    }));
+  };
+
+  // Get kendala options based on selected waste
+  const getKendalaOptions = (): Option[] => {
+    if (!wasteProcessData.id_waste) return [];
+
+    const wasteId = parseInt(wasteProcessData.id_waste);
+    const selectedWaste = wasteKendalaList.find((w) => w.id === wasteId);
+
+    if (!selectedWaste) return [];
+
+    return selectedWaste.kendala.map((kendala) => ({
+      value: String(kendala.id),
+      label: `${kendala.kode} - ${kendala.deskripsi}`,
+    }));
   };
 
   if (!selectedTahapan || !selectedMesin) {
@@ -87,6 +130,130 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
 
       <div className="space-y-2">
         {FIXED_PROCESSES.map((process) => {
+          // Skip Waste if not SORTIR process
+          if (process.name === 'Waste' && !isSortirProcess) {
+            return null;
+          }
+
+          // Handle Waste process differently
+          if (process.name === 'Waste') {
+            const wasteOptions = getWasteOptions();
+            const kendalaOptions = getKendalaOptions();
+
+            return (
+              <div
+                key={process.name}
+                className="border rounded-lg p-2 border-gray-200 hover:border-gray-300"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-300" />
+                    <h3 className="font-semibold text-sm text-gray-800">
+                      {process.name}
+                    </h3>
+                  </div>
+                  <button
+                    onClick={onWasteSubmit}
+                    className="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    disabled={
+                      loading ||
+                      !wasteProcessData.id_waste ||
+                      !wasteProcessData.id_kendala ||
+                      wasteProcessData.total_qty <= 0
+                    }
+                  >
+                    Submit
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {/* First Row: Waste and Kendala */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* Waste */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Waste <span className="text-red-500">*</span>
+                      </label>
+                      <Select
+                        options={wasteOptions}
+                        value={
+                          wasteProcessData.id_waste
+                            ? wasteOptions.find(
+                                (opt) =>
+                                  opt.value === wasteProcessData.id_waste,
+                              )
+                            : null
+                        }
+                        onChange={(option) => {
+                          onWasteProcessDataChange(
+                            'id_waste',
+                            option ? option.value : '',
+                          );
+                          // Reset kendala when waste changes
+                          onWasteProcessDataChange('id_kendala', '');
+                        }}
+                        styles={selectStyles}
+                        placeholder="Pilih Waste"
+                        isClearable
+                        noOptionsMessage={() => 'Tidak ada data'}
+                      />
+                    </div>
+
+                    {/* Kendala */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        List Kendala <span className="text-red-500">*</span>
+                      </label>
+                      <Select
+                        options={kendalaOptions}
+                        value={
+                          wasteProcessData.id_kendala
+                            ? kendalaOptions.find(
+                                (opt) =>
+                                  opt.value === wasteProcessData.id_kendala,
+                              )
+                            : null
+                        }
+                        onChange={(option) =>
+                          onWasteProcessDataChange(
+                            'id_kendala',
+                            option ? option.value : '',
+                          )
+                        }
+                        styles={selectStyles}
+                        placeholder="Pilih Kendala"
+                        isDisabled={!wasteProcessData.id_waste}
+                        isClearable
+                        noOptionsMessage={() => 'Pilih waste terlebih dahulu'}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Second Row: Total Qty */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Total Qty <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={wasteProcessData.total_qty || ''}
+                      onChange={(e) =>
+                        onWasteProcessDataChange(
+                          'total_qty',
+                          e.target.value ? Number(e.target.value) : 0,
+                        )
+                      }
+                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // Regular processes
           const isActive = isProcessActive(process.name);
           const processData = processDataList[process.name] || {
             detail: '',

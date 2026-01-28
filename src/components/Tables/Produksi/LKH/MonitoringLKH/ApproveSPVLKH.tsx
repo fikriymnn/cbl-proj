@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
+import Select from 'react-select';
 
 interface Tahapan {
   id?: number;
@@ -33,6 +34,44 @@ interface ProduksiLKHProses {
   is_final_result: boolean;
 }
 
+interface Kendala {
+  id: number;
+  id_tahapan_produksi: number;
+  id_waste_kendala: number;
+  proses_produksi: string;
+  kode: string;
+  deskripsi: string;
+  status: 'new' | 'update' | 'delete';
+}
+
+interface WasteData {
+  id: number;
+  id_tahapan_produksi: number;
+  proses_produksi: string;
+  kode: string;
+  deskripsi: string;
+  status: 'new' | 'update' | 'delete';
+  kendala: Kendala[];
+}
+
+interface LKHWaste {
+  id: number;
+  id_jo: number;
+  id_tahapan: number;
+  id_mesin: number;
+  id_operator: number;
+  id_kendala: number;
+  kode_kendala: string;
+  deskripsi_kendala: string;
+  id_waste: number;
+  kode_waste: string;
+  deskripsi_waste: string;
+  total_qty: number;
+  id_produksi_lkh?: number;
+  id_produksi_lkh_tahapan?: number;
+  proses?: string;
+}
+
 interface ProduksiLKH {
   id: number;
   no_jo: string;
@@ -61,6 +100,7 @@ interface LKHTahapanData {
   tahapan: Tahapan;
   produksi_lkh: ProduksiLKH[];
   produksi_lkh_proses: ProduksiLKHProses[];
+  produksi_lkh_waste: LKHWaste[];
 }
 
 interface LKHResponse {
@@ -75,6 +115,30 @@ interface EditableProses {
   rusak_total: number;
   pallet: number;
 }
+
+interface EditableWaste {
+  id: number;
+  id_waste: number;
+  id_kendala: number;
+  total_qty: number;
+}
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+const selectStyles = {
+  control: (base: any) => ({
+    ...base,
+    minHeight: '32px',
+    fontSize: '0.75rem',
+  }),
+  menu: (base: any) => ({
+    ...base,
+    fontSize: '0.75rem',
+  }),
+};
 
 const ApproveSPVLKH: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -91,9 +155,16 @@ const ApproveSPVLKH: React.FC = () => {
 
   // State for editable data
   const [editableData, setEditableData] = useState<EditableProses[]>([]);
+  const [editableWasteData, setEditableWasteData] = useState<EditableWaste[]>(
+    [],
+  );
+
+  // State for waste kendala list
+  const [wasteKendalaList, setWasteKendalaList] = useState<WasteData[]>([]);
 
   useEffect(() => {
     fetchLKHData();
+    fetchWasteKendala();
   }, []);
 
   const fetchLKHData = async (): Promise<void> => {
@@ -120,6 +191,21 @@ const ApproveSPVLKH: React.FC = () => {
     }
   };
 
+  const fetchWasteKendala = async (): Promise<void> => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/produksi/wasteKendala`,
+        {
+          withCredentials: true,
+        },
+      );
+
+      setWasteKendalaList(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching waste kendala:', error);
+    }
+  };
+
   const openApprovalModal = (lkh: LKHTahapanData) => {
     setSelectedLKHForApproval(lkh);
 
@@ -133,6 +219,16 @@ const ApproveSPVLKH: React.FC = () => {
     }));
     setEditableData(initialEditableData);
 
+    // Initialize editable waste data from produksi_lkh_waste
+    const initialEditableWasteData =
+      lkh.produksi_lkh_waste?.map((waste) => ({
+        id: waste.id,
+        id_waste: waste.id_waste,
+        id_kendala: waste.id_kendala,
+        total_qty: waste.total_qty,
+      })) || [];
+    setEditableWasteData(initialEditableWasteData);
+
     setShowApprovalModal(true);
   };
 
@@ -140,6 +236,7 @@ const ApproveSPVLKH: React.FC = () => {
     setShowApprovalModal(false);
     setSelectedLKHForApproval(null);
     setEditableData([]);
+    setEditableWasteData([]);
   };
 
   const handleEditChange = (
@@ -152,6 +249,32 @@ const ApproveSPVLKH: React.FC = () => {
       prev.map((item) =>
         item.id === id ? { ...item, [field]: numValue } : item,
       ),
+    );
+  };
+
+  const handleWasteEditChange = (
+    id: number,
+    field: keyof EditableWaste,
+    value: string | number,
+  ) => {
+    setEditableWasteData((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+
+        if (field === 'id_waste') {
+          // Reset kendala when waste changes
+          return {
+            ...item,
+            id_waste: Number(value),
+            id_kendala: 0,
+          };
+        }
+
+        return {
+          ...item,
+          [field]: typeof value === 'string' ? Number(value) : value,
+        };
+      }),
     );
   };
 
@@ -171,11 +294,16 @@ const ApproveSPVLKH: React.FC = () => {
     try {
       setActionLoading((prev) => ({ ...prev, [id]: true }));
 
-      // Prepare the body with updated produksi_lkh_proses
-      const body = {
+      // Prepare the body with updated produksi_lkh_proses and produksi_lkh_waste
+      const body: any = {
         produksi_lkh_proses: editableData,
       };
 
+      // Only include waste data if it exists
+      if (editableWasteData.length > 0) {
+        body.produksi_lkh_waste = editableWasteData;
+      }
+      console.log('Approve Payload:', body);
       await axios.put(url, body, { withCredentials: true });
       alert('LKH approved successfully!');
       closeApprovalModal();
@@ -285,6 +413,28 @@ const ApproveSPVLKH: React.FC = () => {
           total_waktu: 0,
         },
       );
+  };
+
+  // Get available waste options
+  const getWasteOptions = (): Option[] => {
+    return wasteKendalaList.map((waste) => ({
+      value: String(waste.id),
+      label: `${waste.kode} - ${waste.deskripsi}`,
+    }));
+  };
+
+  // Get kendala options based on selected waste
+  const getKendalaOptions = (wasteId: number): Option[] => {
+    if (!wasteId) return [];
+
+    const selectedWaste = wasteKendalaList.find((w) => w.id === wasteId);
+
+    if (!selectedWaste) return [];
+
+    return selectedWaste.kendala.map((kendala) => ({
+      value: String(kendala.id),
+      label: `${kendala.kode} - ${kendala.deskripsi}`,
+    }));
   };
 
   return (
@@ -562,8 +712,8 @@ const ApproveSPVLKH: React.FC = () => {
                 </div>
               </div>
 
-              {/* Editable Table */}
-              <div className="mb-4">
+              {/* Editable Process Table */}
+              <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
                   Detail Proses (
                   {selectedLKHForApproval.produksi_lkh_proses?.length || 0}{' '}
@@ -597,6 +747,9 @@ const ApproveSPVLKH: React.FC = () => {
                         </th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Status
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Note
                         </th>
                       </tr>
                     </thead>
@@ -697,6 +850,11 @@ const ApproveSPVLKH: React.FC = () => {
                                   {proses.status}
                                 </span>
                               </td>
+                              <td className="px-3 py-2">
+                                <div className="max-w-xs text-xs text-gray-600 break-words">
+                                  {proses.note || '-'}
+                                </div>
+                              </td>
                             </tr>
                           );
                         },
@@ -705,6 +863,125 @@ const ApproveSPVLKH: React.FC = () => {
                   </table>
                 </div>
               </div>
+
+              {/* Editable Waste Table */}
+              {selectedLKHForApproval.produksi_lkh_waste &&
+                selectedLKHForApproval.produksi_lkh_waste.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                      Data Waste (
+                      {selectedLKHForApproval.produksi_lkh_waste?.length || 0}{' '}
+                      Items)
+                    </h3>
+
+                    <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                              Waste
+                            </th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                              Kendala
+                            </th>
+                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                              Total Qty
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {selectedLKHForApproval.produksi_lkh_waste.map(
+                            (waste) => {
+                              const editedWaste = editableWasteData.find(
+                                (e) => e.id === waste.id,
+                              );
+                              const wasteOptions = getWasteOptions();
+                              const kendalaOptions = getKendalaOptions(
+                                editedWaste?.id_waste || waste.id_waste,
+                              );
+
+                              return (
+                                <tr key={waste.id} className="hover:bg-gray-50">
+                                  <td className="px-3 py-2">
+                                    <Select
+                                      options={wasteOptions}
+                                      value={
+                                        editedWaste?.id_waste
+                                          ? wasteOptions.find(
+                                              (opt) =>
+                                                opt.value ===
+                                                String(editedWaste.id_waste),
+                                            )
+                                          : null
+                                      }
+                                      onChange={(option) => {
+                                        if (option) {
+                                          handleWasteEditChange(
+                                            waste.id,
+                                            'id_waste',
+                                            Number(option.value),
+                                          );
+                                        }
+                                      }}
+                                      styles={selectStyles}
+                                      placeholder="Pilih Waste"
+                                      isClearable={false}
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <Select
+                                      options={kendalaOptions}
+                                      value={
+                                        editedWaste?.id_kendala
+                                          ? kendalaOptions.find(
+                                              (opt) =>
+                                                opt.value ===
+                                                String(editedWaste.id_kendala),
+                                            )
+                                          : null
+                                      }
+                                      onChange={(option) => {
+                                        if (option) {
+                                          handleWasteEditChange(
+                                            waste.id,
+                                            'id_kendala',
+                                            Number(option.value),
+                                          );
+                                        }
+                                      }}
+                                      styles={selectStyles}
+                                      placeholder="Pilih Kendala"
+                                      isDisabled={
+                                        !editedWaste?.id_waste &&
+                                        !waste.id_waste
+                                      }
+                                      isClearable={false}
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2 whitespace-nowrap">
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      value={editedWaste?.total_qty || 0}
+                                      onChange={(e) =>
+                                        handleWasteEditChange(
+                                          waste.id,
+                                          'total_qty',
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="w-24 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    />
+                                  </td>
+                                </tr>
+                              );
+                            },
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
 
               {/* Total Summary - Only Final Results */}
               <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">

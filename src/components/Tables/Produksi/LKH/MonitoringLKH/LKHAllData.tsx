@@ -21,6 +21,19 @@ interface Mesin {
   updatedAt: string;
 }
 
+interface Operator {
+  id: number;
+  uuid: string;
+  nama: string;
+  no: string;
+  email: string;
+  role: string;
+  bagian: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface ProduksiLKHProses {
   id: number;
   id_produksi_lkh: number;
@@ -44,6 +57,31 @@ interface ProduksiLKHProses {
   is_final_result: boolean;
   tahapan?: Tahapan;
   mesin?: Mesin;
+}
+
+interface ProduksiLKHWaste {
+  id: number;
+  id_jo: number;
+  id_produksi_lkh: number;
+  id_produksi_lkh_tahapan: number;
+  id_tahapan: number;
+  id_mesin: number;
+  id_operator: number;
+  id_kendala: number;
+  id_waste: number;
+  kode_kendala: string;
+  kode_waste: string;
+  deskripsi_kendala: string;
+  deskripsi_waste: string;
+  total_qty: number;
+  proses: string;
+  note: string | null;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  tahapan?: Tahapan;
+  mesin?: Mesin;
+  operator?: Operator;
 }
 
 interface LKHAllDataItem {
@@ -71,6 +109,7 @@ interface LKHAllDataItem {
   createdAt: string;
   updatedAt: string;
   produksi_lkh_proses: ProduksiLKHProses[];
+  produksi_lkh_waste: ProduksiLKHWaste[];
   tahapan?: Tahapan;
 }
 
@@ -214,6 +253,11 @@ const LKHAllData: React.FC = () => {
     return timeByType;
   };
 
+  const calculateTotalWaste = (waste: ProduksiLKHWaste[]) => {
+    if (!waste || waste.length === 0) return 0;
+    return waste.reduce((acc, w) => acc + (w.total_qty || 0), 0);
+  };
+
   const getLatestTahapan = (proses: ProduksiLKHProses[]) => {
     if (!proses || proses.length === 0) return '-';
 
@@ -297,12 +341,15 @@ const LKHAllData: React.FC = () => {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   Hasil
                 </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  Waste
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-3 py-4 text-center">
+                  <td colSpan={8} className="px-3 py-4 text-center">
                     <div className="flex justify-center items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
@@ -311,7 +358,7 @@ const LKHAllData: React.FC = () => {
               ) : lkhAllData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -323,6 +370,9 @@ const LKHAllData: React.FC = () => {
                     lkh.produksi_lkh_proses,
                   );
                   const totalTime = calculateTotalTime(lkh.produksi_lkh_proses);
+                  const totalWaste = calculateTotalWaste(
+                    lkh.produksi_lkh_waste,
+                  );
                   const latestTahapan = getLatestTahapan(
                     lkh.produksi_lkh_proses,
                   );
@@ -392,6 +442,20 @@ const LKHAllData: React.FC = () => {
                           </span>
                         </div>
                       </td>
+                      <td className="px-3 py-2 text-xs whitespace-nowrap">
+                        <div className="flex flex-col gap-1">
+                          <span className="inline-flex items-center gap-1 bg-orange-50 text-orange-700 px-2 py-0.5 rounded font-medium">
+                            <span className="font-bold">🗑</span> Total:{' '}
+                            {formatNumber(totalWaste)}
+                          </span>
+                          {lkh.produksi_lkh_waste &&
+                            lkh.produksi_lkh_waste.length > 0 && (
+                              <span className="text-gray-500 text-xs">
+                                ({lkh.produksi_lkh_waste.length} records)
+                              </span>
+                            )}
+                        </div>
+                      </td>
                     </tr>
                   );
                 })
@@ -451,6 +515,7 @@ const LKHAllData: React.FC = () => {
           lkhAllData.map((lkh) => {
             const totalResults = calculateTotalResults(lkh.produksi_lkh_proses);
             const totalTime = calculateTotalTime(lkh.produksi_lkh_proses);
+            const totalWaste = calculateTotalWaste(lkh.produksi_lkh_waste);
             const latestTahapan = getLatestTahapan(lkh.produksi_lkh_proses);
             const latestMesin = getLatestMesin(lkh.produksi_lkh_proses);
 
@@ -567,6 +632,24 @@ const LKHAllData: React.FC = () => {
                         <span className="font-bold">+</span> TB:{' '}
                         {formatNumber(totalResults.tambah_bahan)}
                       </span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-gray-500 text-xs font-medium">
+                      Waste:
+                    </span>
+                    <div className="flex gap-2 mt-1 flex-wrap">
+                      <span className="bg-orange-50 text-orange-700 px-2 py-1 rounded text-xs inline-flex items-center gap-1 font-medium">
+                        <span className="font-bold">🗑</span> Total:{' '}
+                        {formatNumber(totalWaste)}
+                      </span>
+                      {lkh.produksi_lkh_waste &&
+                        lkh.produksi_lkh_waste.length > 0 && (
+                          <span className="text-gray-500 text-xs">
+                            ({lkh.produksi_lkh_waste.length} records)
+                          </span>
+                        )}
                     </div>
                   </div>
                 </div>

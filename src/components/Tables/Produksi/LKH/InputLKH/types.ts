@@ -90,6 +90,41 @@ export interface LKHProses {
   updatedAt: string;
 }
 
+export interface Kendala {
+  id: number;
+  id_tahapan_produksi: number;
+  id_waste_kendala: number;
+  proses_produksi: string;
+  kode: string;
+  deskripsi: string;
+  status: 'new' | 'update' | 'delete';
+}
+
+export interface WasteData {
+  id: number;
+  id_tahapan_produksi: number;
+  proses_produksi: string;
+  kode: string;
+  deskripsi: string;
+  status: 'new' | 'update' | 'delete';
+  kendala: Kendala[];
+}
+
+export interface LKHWaste {
+  id?: number;
+  id_jo: number;
+  id_tahapan: number;
+  id_mesin: number;
+  id_operator: number;
+  id_kendala: number;
+  kode_kendala: string;
+  deskripsi_kendala: string;
+  id_waste: number;
+  kode_waste: string;
+  deskripsi_waste: string;
+  total_qty: number;
+}
+
 export interface LKHResponse {
   id_produksi_lkh_tahapan: null;
   id: number;
@@ -111,6 +146,7 @@ export interface LKHResponse {
   createdAt: string;
   updatedAt: string;
   produksi_lkh_proses: LKHProses[];
+  produksi_lkh_waste?: LKHWaste[];
 }
 
 export interface Option {
@@ -140,4 +176,10 @@ export interface ProcessData {
   rusak_total: number;
   pallet: number;
   note: string;
+}
+
+export interface WasteProcessData {
+  id_waste: string;
+  id_kendala: string;
+  total_qty: number;
 }

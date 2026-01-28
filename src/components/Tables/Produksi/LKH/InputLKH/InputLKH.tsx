@@ -14,6 +14,9 @@ import {
   LKHProses,
   LKHResponse,
   MesinTahapanResponse,
+  WasteData,
+  WasteProcessData,
+  LKHWaste,
 } from './types';
 import { FIXED_PROCESSES } from './constants';
 
@@ -26,17 +29,20 @@ const InputLKH: React.FC = () => {
   const [selectedJO, setSelectedJO] = useState<JOData | null>(null);
   const [tahapanList, setTahapanList] = useState<TahapanData[]>([]);
   const [selectedTahapan, setSelectedTahapan] = useState<number | null>(null);
+  const [selectedTahapanName, setSelectedTahapanName] = useState<string>('');
   const [mesinOptions, setMesinOptions] = useState<Option[]>([]);
   const [selectedMesin, setSelectedMesin] = useState<string>('');
   const [kodeProduksiByProcess, setKodeProduksiByProcess] = useState<{
     [key: string]: KodeProduksi[];
   }>({});
+  const [wasteKendalaList, setWasteKendalaList] = useState<WasteData[]>([]);
   const [activeProcesses, setActiveProcesses] = useState<{
     [key: string]: LKHProses;
   }>({});
   const [userId, setUserId] = useState<number | null>(null);
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [finishData, setFinishData] = useState<LKHProses[]>([]);
+  const [finishWasteData, setFinishWasteData] = useState<LKHWaste[]>([]);
   const [idProduksiLkh, setIdProduksiLkh] = useState<number | null>(null);
   const [idProduksiLkhTahapan, setIdProduksiLkhTahapan] = useState<
     number | null
@@ -100,14 +106,12 @@ const InputLKH: React.FC = () => {
       pallet: 0,
       note: '',
     },
-    Waste: {
-      detail: '',
-      baik: 0,
-      rusak_sebagian: 0,
-      rusak_total: 0,
-      pallet: 0,
-      note: '',
-    },
+  });
+
+  const [wasteProcessData, setWasteProcessData] = useState<WasteProcessData>({
+    id_waste: '',
+    id_kendala: '',
+    total_qty: 0,
   });
 
   // Calculate QTY Druk based on jo_mounting data
@@ -209,15 +213,34 @@ const InputLKH: React.FC = () => {
       const kodeProduksiData: { [key: string]: KodeProduksi[] } = {};
 
       FIXED_PROCESSES.forEach((process) => {
-        kodeProduksiData[process.name] = allKodeProduksi.filter(
-          (kode: KodeProduksi) => kode.proses_produksi === process.name,
-        );
+        if (process.name !== 'Waste') {
+          kodeProduksiData[process.name] = allKodeProduksi.filter(
+            (kode: KodeProduksi) => kode.proses_produksi === process.name,
+          );
+        }
       });
 
       setKodeProduksiByProcess(kodeProduksiData);
     } catch (error) {
       console.error('Error fetching kode produksi:', error);
       toast.error('Gagal mengambil data kode produksi');
+    }
+  }, []);
+
+  // Fetch Waste Kendala List
+  const fetchWasteKendala = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE}/master/produksi/wasteKendala`,
+        {
+          withCredentials: true,
+        },
+      );
+
+      setWasteKendalaList(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching waste kendala:', error);
+      toast.error('Gagal mengambil data waste kendala');
     }
   }, []);
 
@@ -248,6 +271,7 @@ const InputLKH: React.FC = () => {
             lkh.produksi_lkh_proses.forEach((proses: LKHProses) => {
               if (!proses.waktu_selesai && proses.status === 'progress') {
                 for (const processName of FIXED_PROCESSES.map((p) => p.name)) {
+                  if (processName === 'Waste') continue;
                   const kodeProd = kodeProduksiByProcess[processName]?.find(
                     (k) => k.id === proses.id_kode_produksi,
                   );
@@ -271,6 +295,11 @@ const InputLKH: React.FC = () => {
   const hasActiveProcess = useCallback(() => {
     return Object.keys(activeProcesses).length > 0;
   }, [activeProcesses]);
+
+  // Check if current tahapan is SORTIR
+  const isSortirProcess = useCallback(() => {
+    return selectedTahapanName.toLowerCase().includes('sortir');
+  }, [selectedTahapanName]);
 
   // Handle JO Selection
   const handleJOSelect = useCallback(
@@ -299,6 +328,7 @@ const InputLKH: React.FC = () => {
 
       await fetchTahapan(jo.id);
       setSelectedTahapan(null);
+      setSelectedTahapanName('');
       setSelectedMesin('');
       setMesinOptions([]);
     },
@@ -309,16 +339,30 @@ const InputLKH: React.FC = () => {
     async (option: Option | null) => {
       if (!option) {
         setSelectedTahapan(null);
+        setSelectedTahapanName('');
         return;
       }
 
       const tahapanId = parseInt(option.value);
+      const tahapan = tahapanList.find((t) => t.tahapan.id === tahapanId);
+
       setSelectedTahapan(tahapanId);
+      setSelectedTahapanName(tahapan?.tahapan.nama_tahapan || '');
+
       await fetchMesinByTahapan(tahapanId);
       await fetchKodeProduksi(tahapanId);
+      await fetchWasteKendala();
+
       setSelectedMesin('');
+
+      // Reset waste data
+      setWasteProcessData({
+        id_waste: '',
+        id_kendala: '',
+        total_qty: 0,
+      });
     },
-    [fetchMesinByTahapan, fetchKodeProduksi],
+    [fetchMesinByTahapan, fetchKodeProduksi, fetchWasteKendala, tahapanList],
   );
 
   const handleMesinSelect = useCallback((option: Option | null) => {
@@ -428,6 +472,60 @@ const InputLKH: React.FC = () => {
     ],
   );
 
+  // Handle Waste Submit
+  const handleWasteSubmit = useCallback(async () => {
+    if (!wasteProcessData.id_waste || !wasteProcessData.id_kendala) {
+      toast.error('Mohon pilih waste dan kendala terlebih dahulu');
+      return;
+    }
+
+    if (wasteProcessData.total_qty <= 0) {
+      toast.error('Total qty harus lebih dari 0');
+      return;
+    }
+
+    if (!selectedJO || !selectedTahapan || !selectedMesin || !userId) {
+      toast.error('Mohon lengkapi semua data terlebih dahulu');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await axios.post(
+        `${API_BASE}/produksi/lkhWaste`,
+        {
+          id_jo: selectedJO.id,
+          id_tahapan: selectedTahapan,
+          id_mesin: parseInt(selectedMesin),
+          id_operator: userId,
+          id_kendala: parseInt(wasteProcessData.id_kendala),
+          id_waste: parseInt(wasteProcessData.id_waste),
+          total_qty: wasteProcessData.total_qty,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      toast.success('Data waste berhasil disimpan');
+
+      // Reset waste form
+      setWasteProcessData({
+        id_waste: '',
+        id_kendala: '',
+        total_qty: 0,
+      });
+    } catch (error: any) {
+      console.error('Error submitting waste:', error);
+      toast.error(
+        error.response?.data?.message || 'Gagal menyimpan data waste',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [wasteProcessData, selectedJO, selectedTahapan, selectedMesin, userId]);
+
   // Handle Process Stop
   const handleStopProcess = useCallback(
     async (processName: string) => {
@@ -501,6 +599,17 @@ const InputLKH: React.FC = () => {
     [],
   );
 
+  // Handle Waste Process Data Change
+  const handleWasteProcessDataChange = useCallback(
+    (field: keyof WasteProcessData, value: string | number) => {
+      setWasteProcessData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    },
+    [],
+  );
+
   // Fetch Done LKH Processes
   const fetchDoneLKHProcesses = useCallback(async () => {
     if (!selectedJO || !selectedTahapan || !userId) return;
@@ -517,6 +626,7 @@ const InputLKH: React.FC = () => {
       });
 
       const doneProcesses: LKHProses[] = [];
+      const wasteData: LKHWaste[] = [];
       let outerIdForFinish: number | null = null;
       let idProduksiLkhTahapanForFinish: number | null = null;
 
@@ -534,6 +644,12 @@ const InputLKH: React.FC = () => {
               }
             });
           }
+
+          if (lkh.produksi_lkh_waste && lkh.produksi_lkh_waste.length > 0) {
+            lkh.produksi_lkh_waste.forEach((waste: LKHWaste) => {
+              wasteData.push(waste);
+            });
+          }
         });
       }
 
@@ -543,6 +659,7 @@ const InputLKH: React.FC = () => {
       }
 
       setFinishData(doneProcesses);
+      setFinishWasteData(wasteData);
       setSendRequestToSpv(true);
       setShowFinishModal(true);
     } catch (error) {
@@ -568,6 +685,55 @@ const InputLKH: React.FC = () => {
     [],
   );
 
+  // Handle Finish Waste Data Change
+  const handleFinishWasteDataChange = useCallback(
+    (index: number, field: keyof LKHWaste, value: string | number) => {
+      setFinishWasteData((prev) =>
+        prev.map((item, i) => {
+          if (i !== index) return item;
+
+          // If changing waste, reset kendala
+          if (field === 'id_waste') {
+            const wasteId = Number(value);
+            const wasteItem = wasteKendalaList.find((w) => w.id === wasteId);
+
+            return {
+              ...item,
+              id_waste: wasteId,
+              kode_waste: wasteItem?.kode || '',
+              deskripsi_waste: wasteItem?.deskripsi || '',
+              id_kendala: 0,
+              kode_kendala: '',
+              deskripsi_kendala: '',
+            };
+          }
+
+          // If changing kendala
+          if (field === 'id_kendala') {
+            const kendalaId = Number(value);
+            const wasteItem = wasteKendalaList.find(
+              (w) => w.id === item.id_waste,
+            );
+            const kendala = wasteItem?.kendala.find((k) => k.id === kendalaId);
+
+            return {
+              ...item,
+              id_kendala: kendalaId,
+              kode_kendala: kendala?.kode || '',
+              deskripsi_kendala: kendala?.deskripsi || '',
+            };
+          }
+
+          return {
+            ...item,
+            [field]: value,
+          };
+        }),
+      );
+    },
+    [wasteKendalaList],
+  );
+
   // Handle Finish Submit
   const handleFinishSubmit = useCallback(async () => {
     if (!idProduksiLkh) {
@@ -580,7 +746,7 @@ const InputLKH: React.FC = () => {
       return;
     }
 
-    if (finishData.length === 0) {
+    if (finishData.length === 0 && finishWasteData.length === 0) {
       toast.error('Tidak ada data proses untuk diselesaikan');
       return;
     }
@@ -588,10 +754,13 @@ const InputLKH: React.FC = () => {
     try {
       setLoading(true);
 
-      const payload = {
+      const payload: any = {
         id_produksi_lkh_tahapan: idProduksiLkhTahapan,
         send_request_to_spv: sendRequestToSpv,
-        produksi_lkh_proses: finishData.map((item) => ({
+      };
+
+      if (finishData.length > 0) {
+        payload.produksi_lkh_proses = finishData.map((item) => ({
           id: item.id,
           id_produksi_lkh: item.id_produksi_lkh,
           id_produksi_lkh_tahapan: item.id_produksi_lkh_tahapan,
@@ -610,9 +779,26 @@ const InputLKH: React.FC = () => {
           updatedAt: new Date().toISOString(),
           waktu_mulai: item.waktu_mulai || '',
           waktu_selesai: item.waktu_selesai || '',
-        })),
-      };
+        }));
+      }
 
+      if (finishWasteData.length > 0) {
+        payload.produksi_lkh_waste = finishWasteData.map((item) => ({
+          id: item.id,
+          id_jo: item.id_jo,
+          id_tahapan: item.id_tahapan,
+          id_mesin: item.id_mesin,
+          id_operator: item.id_operator,
+          id_kendala: item.id_kendala,
+          kode_kendala: item.kode_kendala,
+          deskripsi_kendala: item.deskripsi_kendala,
+          id_waste: item.id_waste,
+          kode_waste: item.kode_waste,
+          deskripsi_waste: item.deskripsi_waste,
+          total_qty: item.total_qty || 0,
+        }));
+      }
+      console.log('Finish Payload:', idProduksiLkh, payload);
       await axios.put(
         `${API_BASE}/produksi/lkh/finish/${idProduksiLkh}`,
         payload,
@@ -624,14 +810,21 @@ const InputLKH: React.FC = () => {
       toast.success('Data LKH berhasil diselesaikan');
       setShowFinishModal(false);
       setFinishData([]);
+      setFinishWasteData([]);
       setSendRequestToSpv(true);
 
       // Reset form
       setSelectedJO(null);
       setSelectedTahapan(null);
+      setSelectedTahapanName('');
       setSelectedMesin('');
       setIdProduksiLkh(null);
       setIdProduksiLkhTahapan(null);
+      setWasteProcessData({
+        id_waste: '',
+        id_kendala: '',
+        total_qty: 0,
+      });
       setFormData({
         no_jo: '',
         no_io: '',
@@ -658,6 +851,7 @@ const InputLKH: React.FC = () => {
     idProduksiLkh,
     idProduksiLkhTahapan,
     finishData,
+    finishWasteData,
     sendRequestToSpv,
     formData.operator,
   ]);
@@ -731,12 +925,17 @@ const InputLKH: React.FC = () => {
               selectedMesin={selectedMesin}
               loading={loading}
               hasActiveProcess={hasActiveProcess()}
+              isSortirProcess={isSortirProcess()}
               kodeProduksiByProcess={kodeProduksiByProcess}
+              wasteKendalaList={wasteKendalaList}
               activeProcesses={activeProcesses}
               processDataList={processDataList}
+              wasteProcessData={wasteProcessData}
               onStartProcess={handleStartProcess}
               onStopProcess={handleStopProcess}
               onProcessDataChange={handleProcessDataChange}
+              onWasteProcessDataChange={handleWasteProcessDataChange}
+              onWasteSubmit={handleWasteSubmit}
               onFinish={() => {
                 if (hasActiveProcess()) {
                   toast.error(
@@ -756,13 +955,17 @@ const InputLKH: React.FC = () => {
         show={showFinishModal}
         loading={loading}
         finishData={finishData}
+        finishWasteData={finishWasteData}
+        wasteKendalaList={wasteKendalaList}
         onClose={() => {
           setShowFinishModal(false);
           setFinishData([]);
+          setFinishWasteData([]);
           setSendRequestToSpv(true);
         }}
         onSubmit={handleFinishSubmit}
         onDataChange={handleFinishDataChange}
+        onWasteDataChange={handleFinishWasteDataChange}
       />
 
       {/* Loading Overlay */}
