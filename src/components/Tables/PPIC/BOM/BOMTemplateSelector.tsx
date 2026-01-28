@@ -139,50 +139,85 @@ const BOMTemplateSelector: React.FC<BOMTemplateSelectorProps> = ({
       if (response.data?.data) {
         const fullBOMData = response.data.data;
 
-        // Prepare template data to copy (excluding ID-related fields and metadata)
+        // ✅ Prepare template data - ONLY copy item references, NOT quantities
         const templateData: Partial<BOMData> = {
-          bom_kertas: (fullBOMData.bom_kertas || []).map((item: any) => {
-            const { id, createdAt, updatedAt, id_bom, ...rest } = item;
-            return rest;
-          }),
-          bom_tinta: (fullBOMData.bom_tinta || []).map((item: any) => {
-            const { id, createdAt, updatedAt, id_bom, ...rest } = item;
-            return {
-              ...rest,
-              tinta_detail: (item.tinta_detail || []).map((detail: any) => {
-                const {
-                  id: detailId,
-                  createdAt: detailCreated,
-                  updatedAt: detailUpdated,
-                  id_bom_tinta,
-                  ...detailRest
-                } = detail;
-                return detailRest;
-              }),
-            };
-          }),
+          // BOM Kertas - only copy item IDs and names, quantities will be recalculated
+          bom_kertas: (fullBOMData.bom_kertas || []).map((item: any) => ({
+            id_kertas: item.id_kertas,
+            nama_kertas: item.nama_kertas,
+            tipe: item.tipe,
+            is_selected: item.is_selected,
+            qty_lembar_plano: 0, // ✅ Will be recalculated based on new mounting
+          })),
+
+          // BOM Tinta - copy configuration but reset quantities
+          bom_tinta: (fullBOMData.bom_tinta || []).map((item: any) => ({
+            warna_tinta: item.warna_tinta,
+            id_jenis_tinta: item.id_jenis_tinta,
+            id_jenis_kertas: item.id_jenis_kertas,
+            id_jenis_warna_tinta: item.id_jenis_warna_tinta,
+            jenis_mesin_cetak: item.jenis_mesin_cetak,
+            area_cetak: item.area_cetak,
+            qty_tinta: 0, // ✅ Will be recalculated
+            tinta_detail: (item.tinta_detail || []).map((detail: any) => ({
+              id_item_tinta: detail.id_item_tinta,
+              nama_item_tinta: detail.nama_item_tinta,
+              persentase_tinta: detail.persentase_tinta,
+              qty_tinta_detail: 0, // ✅ Will be recalculated
+            })),
+          })),
+
+          // BOM Corrugated - copy item and configuration
           bom_corrugated: (fullBOMData.bom_corrugated || []).map(
-            (item: any) => {
-              const { id, createdAt, updatedAt, id_bom, ...rest } = item;
-              return rest;
-            },
+            (item: any) => ({
+              id_corrugated: item.id_corrugated,
+              nama_corrugated: item.nama_corrugated,
+              isi_per_pack: item.isi_per_pack,
+              tipe: item.tipe,
+              is_selected: item.is_selected,
+              qty_corrugated: 0, // ✅ Will be recalculated
+            }),
           ),
-          bom_poliban: (fullBOMData.bom_poliban || []).map((item: any) => {
-            const { id, createdAt, updatedAt, id_bom, ...rest } = item;
-            return rest;
-          }),
-          bom_coating: (fullBOMData.bom_coating || []).map((item: any) => {
-            const { id, createdAt, updatedAt, id_bom, ...rest } = item;
-            return rest;
-          }),
-          bom_lem: (fullBOMData.bom_lem || []).map((item: any) => {
-            const { id, createdAt, updatedAt, id_bom, ...rest } = item;
-            return rest;
-          }),
-          lain_lain: (fullBOMData.lain_lain || []).map((item: any) => {
-            const { id, createdAt, updatedAt, id_bom, ...rest } = item;
-            return rest;
-          }),
+
+          // BOM Poliban - copy configuration
+          bom_poliban: (fullBOMData.bom_poliban || []).map((item: any) => ({
+            item_poliban: item.item_poliban,
+            isi_satu_ikat: item.isi_satu_ikat,
+            lembar_poliban: item.lembar_poliban,
+            tipe: item.tipe,
+            is_selected: item.is_selected,
+            qty_poliban: 0, // ✅ Will be recalculated
+          })),
+
+          // BOM Coating - copy configuration
+          bom_coating: (fullBOMData.bom_coating || []).map((item: any) => ({
+            id_coating: item.id_coating,
+            nama_coating: item.nama_coating,
+            tipe_coating: item.tipe_coating,
+            rumus_coating: item.rumus_coating,
+            tipe: item.tipe,
+            is_selected: item.is_selected,
+            qty_coating: 0, // ✅ Will be recalculated
+            uv_wb: 0, // ✅ Will be recalculated
+            varnish_doff: 0, // ✅ Will be recalculated
+          })),
+
+          // BOM Lem - copy configuration
+          bom_lem: (fullBOMData.bom_lem || []).map((item: any) => ({
+            id_lem: item.id_lem,
+            nama_lem: item.nama_lem,
+            rumus_lem: item.rumus_lem,
+            tipe: item.tipe,
+            is_selected: item.is_selected,
+            qty_konstanta: 0, // ✅ Will be recalculated
+            qty_lem: 0, // ✅ Will be recalculated
+          })),
+
+          // Lain-lain - copy item names only
+          lain_lain: (fullBOMData.lain_lain || []).map((item: any) => ({
+            nama_item: item.nama_item,
+            qty: 0, // ✅ User needs to input quantity manually
+          })),
         };
 
         onTemplateSelect(templateData);
@@ -381,8 +416,8 @@ const BOMTemplateSelector: React.FC<BOMTemplateSelectorProps> = ({
                 ✓ Template Applied
               </div>
               <div className="text-[10px] text-green-700">
-                Data has been copied to all tabs. You can now adjust the
-                quantities and details as needed.
+                Item configurations copied. Quantities will be automatically
+                calculated based on your current mounting and PO qty.
               </div>
             </div>
           </div>

@@ -219,7 +219,8 @@ const BOMCreate: React.FC = () => {
     return (
       status === 'draft' ||
       status === 'reject kabag ' ||
-      status === 'kembali dari bom ppic'
+      status === 'kembali dari bom ppic' ||
+      status === 'done'
     );
   };
 

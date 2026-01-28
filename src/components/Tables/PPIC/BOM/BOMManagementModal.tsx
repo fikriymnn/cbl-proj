@@ -388,19 +388,191 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
       setHasUnsavedChanges(true);
     }
   };
+  // ✅ Helper function to recalculate all quantities based on current mounting and po_qty
+  const recalculateAllQuantities = (bomData: BOMData): BOMData => {
+    const poQty = getEffectiveQty();
 
-  // Handle template selection
+    if (!selectedMounting || !poQty) {
+      return bomData;
+    }
+
+    const updated = { ...bomData };
+
+    // Recalculate BOM Kertas
+    if (updated.bom_kertas && updated.bom_kertas.length > 0) {
+      const ukuran_cetak_bagian_1 = selectedMounting.ukuran_cetak_bagian_1 || 0;
+      const ukuran_cetak_isi_1 = selectedMounting.ukuran_cetak_isi_1 || 0;
+
+      if (ukuran_cetak_bagian_1 > 0 && ukuran_cetak_isi_1 > 0) {
+        const calculatedQty = Math.ceil(
+          poQty / ukuran_cetak_bagian_1 / ukuran_cetak_isi_1,
+        );
+        updated.bom_kertas = updated.bom_kertas.map((item) => ({
+          ...item,
+          qty_lembar_plano: calculatedQty,
+        }));
+      }
+    }
+
+    // Recalculate BOM Corrugated
+    if (updated.bom_corrugated && updated.bom_corrugated.length > 0) {
+      updated.bom_corrugated = updated.bom_corrugated.map((item) => {
+        if (item.isi_per_pack > 0) {
+          return {
+            ...item,
+            qty_corrugated: Math.ceil(poQty / item.isi_per_pack),
+          };
+        }
+        return item;
+      });
+    }
+
+    // Recalculate BOM Poliban
+    if (updated.bom_poliban && updated.bom_poliban.length > 0) {
+      updated.bom_poliban = updated.bom_poliban.map((item) => {
+        if (item.isi_satu_ikat > 0 && item.lembar_poliban > 0) {
+          const calculatedQty =
+            poQty / item.isi_satu_ikat / item.lembar_poliban;
+          return {
+            ...item,
+            qty_poliban: Number(calculatedQty.toFixed(2)),
+          };
+        }
+        return item;
+      });
+    }
+
+    if (updated.bom_coating && updated.bom_coating.length > 0) {
+      const panjangCetak = selectedMounting.ukuran_cetak_panjang_1 || 0;
+      const lebarCetak = selectedMounting.ukuran_cetak_lebar_1 || 0;
+      const ukuranCetakIsi = selectedMounting.ukuran_cetak_isi_1 || 1;
+
+      console.log('🎨 Coating Recalculation - Mounting Data:', {
+        panjangCetak,
+        lebarCetak,
+        ukuranCetakIsi,
+        poQty,
+      });
+
+      if (panjangCetak > 0 && lebarCetak > 0 && ukuranCetakIsi > 0) {
+        const qtyDruk = poQty / ukuranCetakIsi;
+
+        updated.bom_coating = updated.bom_coating.map((item, index) => {
+          let qty = 0;
+          let uvWb = 0;
+          let varnishDoff = 0;
+
+          console.log(`🎨 Coating Item #${index}:`, {
+            nama: item.nama_coating,
+            rumus: item.rumus_coating,
+            tipe: item.tipe_coating,
+          });
+
+          if (item.rumus_coating === 'UV_WB') {
+            // Formula: (((panjang × lebar) / 1.000.000) × qty_druk) / 1.000
+            qty = (((panjangCetak * lebarCetak) / 1000000) * qtyDruk) / 1000;
+            uvWb = qty;
+
+            console.log(`  ✓ UV_WB calculated:`, {
+              formula: `(((${panjangCetak} × ${lebarCetak}) / 1000000) × ${qtyDruk.toFixed(
+                2,
+              )}) / 1000`,
+              qty: qty.toFixed(4),
+            });
+          } else if (item.rumus_coating === 'VARNISH_DOFF') {
+            // Formula: qty_druk / 3.500
+            qty = qtyDruk / 3500;
+            varnishDoff = qty;
+
+            console.log(`  ✓ VARNISH_DOFF calculated:`, {
+              formula: `${qtyDruk.toFixed(2)} / 3500`,
+              qty: qty.toFixed(4),
+            });
+          } else {
+            console.log(`  ⚠ Unknown rumus_coating: "${item.rumus_coating}"`);
+          }
+
+          return {
+            ...item,
+            qty_coating: qty,
+            uv_wb: uvWb,
+            varnish_doff: varnishDoff,
+          };
+        });
+
+        console.log('🎨 Coating Recalculation Complete:', updated.bom_coating);
+      } else {
+        console.warn('⚠ Coating: Missing mounting dimensions', {
+          panjangCetak,
+          lebarCetak,
+          ukuranCetakIsi,
+        });
+      }
+    }
+
+    // Recalculate BOM Lem
+    if (updated.bom_lem && updated.bom_lem.length > 0) {
+      const tinggi_io = selectedMounting.ukuran_jadi_tinggi || 0;
+
+      if (tinggi_io > 0) {
+        updated.bom_lem = updated.bom_lem.map((item) => {
+          const konstanta = tinggi_io / 100;
+          let qty_lem = 0;
+
+          switch (item.rumus_lem) {
+            case 'LOCK_BOTTOM':
+              qty_lem = (konstanta + 2) * 0.0001 * poQty;
+              break;
+            case 'LEM_SAMPING':
+              qty_lem = konstanta * 0.0001 * poQty;
+              break;
+            case 'FOUR_CORNER':
+              qty_lem = konstanta * 4 * 0.0001 * poQty;
+              break;
+            case 'SAMPING_LOCK_BOTTOM':
+              qty_lem = (konstanta + 2) * 0.0001 * poQty;
+              break;
+            case 'SIX_CORNER':
+              qty_lem = konstanta * 6 * 0.0001 * poQty;
+              break;
+            case 'UJUNG_LOCK_BOTTOM':
+              qty_lem = (konstanta + 2) * 0.0001 * poQty;
+              break;
+            default:
+              qty_lem = 0;
+          }
+
+          return {
+            ...item,
+            qty_konstanta: konstanta,
+            qty_lem: qty_lem,
+          };
+        });
+      }
+    }
+
+    // Note: BOM Tinta recalculation is handled by BOMTintaTab's useEffect
+    // which will trigger automatically when the data changes
+
+    return updated;
+  };
   const handleTemplateSelect = (templateData: Partial<BOMData>) => {
-    setBOMData((prev) => ({
-      ...prev,
-      ...templateData,
-    }));
+    // First, apply the template data
+    setBOMData((prev) => {
+      const updated = {
+        ...prev,
+        ...templateData,
+      };
+
+      // ✅ Immediately recalculate quantities for all components
+      return recalculateAllQuantities(updated);
+    });
+
     setHasUnsavedChanges(true);
     alert(
-      'Template data has been copied! Please review and adjust the quantities as needed.',
+      'Template configurations copied! Quantities have been automatically calculated based on your current mounting and PO qty.',
     );
   };
-
   const handleSaveBOM = async () => {
     try {
       setLoading(true);
