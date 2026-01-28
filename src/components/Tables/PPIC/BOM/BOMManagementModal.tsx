@@ -1,4 +1,4 @@
-// BOMManagementModal.tsx
+// BOMManagementModal.tsx (Updated with Template Selector)
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -10,14 +10,15 @@ import BOMPolibanTab from './Tabs/BOMPolibatTab';
 import BOMCoatingTab from './Tabs/BOMCoatingTab';
 import BOMLemTab from './Tabs/BOMLemTab';
 import BOMLainLainTab from './Tabs/BOMLainLainTab';
+import BOMTemplateSelector from './BOMTemplateSelector';
 
 interface BOMManagementModalProps {
-  soId?: number; // Made optional
-  ioId?: number; // Made optional
+  soId?: number;
+  ioId?: number;
   onClose: () => void;
   onSuccess: () => void;
-  ioID?: number; // Deprecated, keeping for backward compatibility
-  dataSource?: 'SO' | 'IO'; // New prop to specify data source
+  ioID?: number;
+  dataSource?: 'SO' | 'IO';
   qtyOverride?: number;
 }
 
@@ -35,7 +36,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   ioId,
   onClose,
   onSuccess,
-  ioID, // Deprecated
+  ioID,
   dataSource,
   qtyOverride,
 }) => {
@@ -43,7 +44,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [soData, setSOData] = useState<SOData | null>(null);
-  const [ioData, setIOData] = useState<any>(null); // Store IO data
+  const [ioData, setIOData] = useState<any>(null);
   const [selectedMounting, setSelectedMounting] = useState<any>(null);
   const [ioMountings, setIoMountings] = useState<any[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -72,10 +73,8 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     lain_lain: [],
   });
 
-  // Determine which ID to use (backward compatibility)
   const effectiveIOId = ioId || ioID;
 
-  // Fetch data based on source
   useEffect(() => {
     const fetchInitialData = async () => {
       if (dataSource === 'SO' && soId) {
@@ -87,7 +86,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     fetchInitialData();
   }, [soId, effectiveIOId, dataSource]);
 
-  // Check for existing BOM after data is loaded
   useEffect(() => {
     if (!bomFetched) {
       if (dataSource === 'SO' && soData && ioMountings.length > 0) {
@@ -98,7 +96,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     }
   }, [soData, ioData, ioMountings, bomFetched, dataSource]);
 
-  // Prevent page refresh/close when there are unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -113,7 +110,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     };
   }, [hasUnsavedChanges]);
 
-  // Fetch SO data by ID
   const fetchSOData = async () => {
     if (!soId) return;
 
@@ -128,7 +124,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         const fetchedSOData = response.data.data;
         setSOData(fetchedSOData);
 
-        // Initialize BOM data with SO information
         setBOMData((prev) => ({
           ...prev,
           id_io: fetchedSOData.id_io || 0,
@@ -147,7 +142,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     }
   };
 
-  // Fetch IO data when source is SO (to get mountings)
   const fetchIODataFromSO = async () => {
     if (!soData?.id_io && !effectiveIOId) return;
 
@@ -172,7 +166,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     }
   };
 
-  // Fetch IO data directly (when source is IO)
   const fetchIOData = async () => {
     if (!effectiveIOId) return;
 
@@ -190,13 +183,12 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         const mountings = fetchedIOData.io_mounting || [];
         setIoMountings(mountings);
 
-        // Initialize BOM data with IO information
         setBOMData((prev) => ({
           ...prev,
           id_io: fetchedIOData.id || 0,
-          id_so: null, // No SO when source is IO
+          id_so: null,
           no_io: fetchedIOData.no_io || '',
-          no_so: '', // No SO when source is IO
+          no_so: '',
           customer: fetchedIOData.customer || '',
           produk: fetchedIOData.produk || '',
         }));
@@ -208,24 +200,23 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
       setLoading(false);
     }
   };
+
   const getEffectiveQty = (): number => {
-    // If qtyOverride is provided (from BOMIOProof), use it with formula for IO source
     if (qtyOverride !== undefined && qtyOverride !== null) {
       if (dataSource === 'IO' && selectedMounting?.ukuran_cetak_isi_1) {
         const calculatedQty = qtyOverride * selectedMounting.ukuran_cetak_isi_1;
-        return Math.max(0, calculatedQty); // Ensure non-negative
+        return Math.max(0, calculatedQty);
       }
       return qtyOverride;
     }
 
-    // Otherwise use the default qty based on data source
     if (dataSource === 'SO') {
       return soData?.po_qty || 0;
     } else {
       return ioData?.po_qty || 0;
     }
   };
-  // Check for existing BOM from SO
+
   const checkExistingBOMFromSO = () => {
     if (soData?.bom?.id) {
       setIsEditMode(true);
@@ -236,10 +227,8 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     }
   };
 
-  // Check for existing BOM from IO
   const checkExistingBOMFromIO = () => {
     if (ioData?.bom && Array.isArray(ioData.bom) && ioData.bom.length > 0) {
-      // IO has BOM array, use the first one
       setIsEditMode(true);
       setBomFetched(true);
       fetchExistingBOMById(ioData.bom[0].id);
@@ -248,7 +237,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     }
   };
 
-  // Set default mounting
   const setDefaultMounting = () => {
     if (ioMountings.length > 0) {
       setSelectedMounting(ioMountings[0]);
@@ -260,7 +248,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     }
   };
 
-  // Fetch existing BOM by ID (when editing)
   const fetchExistingBOMById = async (bomId: number) => {
     try {
       setLoading(true);
@@ -319,7 +306,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
             : [],
         });
 
-        // Set the mounting if available
         if (existingBOM.id_io_mounting && ioMountings.length > 0) {
           const mounting = ioMountings.find(
             (m) => m.id === existingBOM.id_io_mounting,
@@ -343,7 +329,6 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     setBOMData((prev) => {
       const updated = { ...prev, ...newData };
 
-      // Validation logic remains the same...
       if (typeof updated.id_io !== 'number') updated.id_io = prev.id_io;
       if (typeof updated.id_so !== 'number') updated.id_so = prev.id_so;
       if (typeof updated.id_io_mounting !== 'number')
@@ -402,6 +387,18 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
       }));
       setHasUnsavedChanges(true);
     }
+  };
+
+  // Handle template selection
+  const handleTemplateSelect = (templateData: Partial<BOMData>) => {
+    setBOMData((prev) => ({
+      ...prev,
+      ...templateData,
+    }));
+    setHasUnsavedChanges(true);
+    alert(
+      'Template data has been copied! Please review and adjust the quantities as needed.',
+    );
   };
 
   const handleSaveBOM = async () => {
@@ -498,11 +495,9 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     { id: 'lain-lain', label: 'Komponen Lain-lain', icon: '📦' },
   ];
 
-  // Get current data based on source
   const currentData = dataSource === 'SO' ? soData : ioData;
   const poQty = getEffectiveQty();
 
-  // Show loading while fetching data
   if (!currentData) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -569,77 +564,93 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
           </button>
         </div>
 
-        {/* Info Section */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex-shrink-0 overflow-y-auto max-h-48">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
-            <div>
+        {/* Info Section - Compact */}
+        <div className="px-4 sm:px-6 py-2 border-b border-gray-200 flex-shrink-0 relative max-h-[300px] overflow-y-auto">
+          {/* Basic Info Grid - More Compact */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5 text-xs mb-3">
+            <div className="flex flex-col">
               <span className="text-gray-500">NO IO:</span>
-              <span className="ml-2 font-medium">{currentData.no_io}</span>
+              <span className=" font-medium text-black">
+                {currentData.no_io}
+              </span>
             </div>
             {dataSource === 'SO' && currentData.no_so && (
-              <div>
+              <div className="flex flex-col">
                 <span className="text-gray-500">NO SO:</span>
-                <span className="ml-2 font-medium">{currentData.no_so}</span>
+                <span className=" font-medium text-black">
+                  {currentData.no_so}
+                </span>
               </div>
             )}
-            <div>
+            <div className="flex flex-col">
               <span className="text-gray-500">Customer:</span>
-              <span className="ml-2 font-medium break-words">
+              <span className=" font-medium truncate block text-black">
                 {currentData.customer}
               </span>
             </div>
-            <div>
+            <div className="flex flex-col">
               <span className="text-gray-500">Produk:</span>
-              <span className="ml-2 font-medium break-words">
+              <span className=" font-medium truncate block text-black">
                 {currentData.produk}
               </span>
             </div>
             {bomData.no_bom && (
-              <div className="col-span-1 sm:col-span-2">
+              <div className="col-span-2">
                 <span className="text-gray-500">NO BOM:</span>
-                <span className="ml-2 font-medium">{bomData.no_bom}</span>
+                <span className=" font-medium">{bomData.no_bom}</span>
               </div>
             )}
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Template Selector - Only show in create mode - More Compact */}
+            {!isEditMode && (
+              <div className="mb-2 relative z-50">
+                <BOMTemplateSelector
+                  onTemplateSelect={handleTemplateSelect}
+                  disabled={loading}
+                />
+              </div>
+            )}
 
-          {/* Mounting Selector */}
-          {ioMountings.length > 0 && (
-            <div className="mt-3 sm:mt-4">
-              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                Pilih Mounting:
-              </label>
-              <select
-                value={selectedMounting?.id || ''}
-                onChange={(e) => handleMountingChange(e.target.value)}
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={loading}
-              >
-                <option value="">Pilih Mounting</option>
-                {ioMountings.map((mounting) => (
-                  <option key={mounting.id} value={mounting.id}>
-                    {mounting.nama_mounting}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+            {/* Mounting Selector - More Compact */}
+            {ioMountings.length > 0 && (
+              <div className="mb-2 relative z-10">
+                <label className="block text-xs font-medium text-gray-700 mb-1.5">
+                  Pilih Mounting:
+                </label>
+                <select
+                  value={selectedMounting?.id || ''}
+                  onChange={(e) => handleMountingChange(e.target.value)}
+                  className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={loading}
+                >
+                  <option value="">Pilih Mounting</option>
+                  {ioMountings.map((mounting) => (
+                    <option key={mounting.id} value={mounting.id}>
+                      {mounting.nama_mounting}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tabs */}
-        <div className="px-4 sm:px-6 pt-3 sm:pt-4 border-b border-gray-200 flex-shrink-0">
+        <div className="px-4 sm:px-6 pt-2 border-b border-gray-200 flex-shrink-0 relative">
           <div className="overflow-x-auto overflow-y-hidden -mb-px">
             <div className="flex space-x-1 min-w-max pb-px">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap ${
+                  className={`px-2.5 sm:px-3 py-1.5 text-xs font-medium rounded-t-lg transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  <span className="mr-1 sm:mr-2">{tab.icon}</span>
+                  <span className="mr-1">{tab.icon}</span>
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className="inline sm:hidden">
                     {tab.label.replace('Komponen ', '')}
@@ -701,7 +712,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                     handleBOMDataChange({ bom_coating: data })
                   }
                   po_qty={poQty}
-                  selectedMounting={selectedMounting} // Ganti id_kalkulasi dengan selectedMounting
+                  selectedMounting={selectedMounting}
                 />
               )}
               {activeTab === 'lem' && (
@@ -723,7 +734,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 flex justify-end space-x-2 sm:space-x-3 flex-shrink-0">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 flex justify-end space-x-2 sm:space-x-3 flex-shrink-0">
           <button
             onClick={handleClose}
             className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
@@ -743,4 +754,5 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
     </div>
   );
 };
+
 export default BOMManagementModal;
