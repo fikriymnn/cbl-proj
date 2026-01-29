@@ -238,6 +238,7 @@ export const ProductionDetailsSection: React.FC<
             Tanggal Kirim
           </label>
           <input
+            disabled
             type="date"
             value={formData.tgl_kirim || new Date().toISOString().split('T')[0]}
             onChange={(e) => onChange('tgl_kirim', e.target.value)}
