@@ -258,6 +258,15 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
                   <span className="font-semibold">Ukuran Cetak Isi:</span>{' '}
                   {selectedMounting.ukuran_cetak_isi_1}
                 </div>
+                <div>
+                  <span className="font-semibold">Coating Depan:</span>{' '}
+                  {selectedMounting.nama_coating_depan || '-'}
+                </div>
+                <div></div>
+                <div>
+                  <span className="font-semibold">Coating Belakang:</span>{' '}
+                  {selectedMounting.nama_coating_belakan || '-'}
+                </div>
               </div>
             </div>
           )}

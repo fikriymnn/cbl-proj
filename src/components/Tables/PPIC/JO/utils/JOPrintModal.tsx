@@ -569,7 +569,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 <td>${getValue(printData?.so?.no_po_customer)}</td>
               </tr>
               <tr>
-                <td class="info-label">Keterangan</td>
+                <td class="info-label">Status Produk</td>
                 <td class="info-colon">:</td>
                 <td>${getValue(printData?.so?.status_produk)}</td>
                 <td class="info-label">Stok FG</td>
