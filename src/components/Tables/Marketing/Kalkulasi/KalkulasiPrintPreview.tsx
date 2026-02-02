@@ -80,6 +80,21 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
     }
     return typeof value === 'string' ? parseFloat(value) : value;
   };
+
+  // Helper function to truncate text with ellipsis
+  const truncateText = (text: string, maxLength: number) => {
+    if (!text || text === '-') return text;
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength - 3) + '...';
+  };
+
+  // Helper function to escape HTML
+  const escapeHtml = (text: string) => {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
   const getActionUser = (status: string) => {
     return data?.kalkulasi_action_user?.find(
       (action: any) => action.status === status,
@@ -182,6 +197,13 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
             td {
               padding: 2px 4px;
               line-height: 1.3;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+            td.wrap-text {
+              white-space: normal;
+              word-wrap: break-word;
             }
             .text-sm {
               font-size: 14px;
@@ -285,18 +307,18 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                     <tr>
                       <td colspan="4" class="border bg-blue-300 text-center font-bold" style="padding: 1px 4px">
                         <h1 style="font-size: 12px; font-weight: bold; margin: 0">
-                          ${data.label}
+                          ${truncateText(getValue(data.label), 80)}
                         </h1>
                       </td>
                     </tr>
                     <tr>
                       <td class="border font-bold" style="width: 15%; padding: 1px 4px">Pemesan</td>
                       <td class="border bg-yellow-200 text-center font-bold" style="width: 35%; padding: 1px 4px">
-                        ${getValue(data.nama_customer)}
+                        ${truncateText(getValue(data.nama_customer), 30)}
                       </td>
                       <td class="border font-bold" style="width: 15%; padding: 1px 4px">Marketing</td>
                       <td class="border bg-yellow-200 font-bold" style="width: 35%; padding: 1px 4px">
-                        ${getValue(data.kode_marketing)}
+                        ${truncateText(getValue(data.kode_marketing), 30)}
                       </td>
                     </tr>
                     <tr>
@@ -323,11 +345,11 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                    <tr>
                     <td class="border font-bold" style="padding: 1px 4px">Spesifikasi</td>
                     <td class="border bg-yellow-200 text-center font-bold" style="padding: 1px 4px">
-                      ${getSpesifikasiString()}
+                      ${truncateText(getSpesifikasiString(), 30)}
                     </td>
                     <td class="border font-bold" style="padding: 1px 4px">Area</td>
                     <td class="border bg-yellow-200 font-bold" style="padding: 1px 4px">
-                      ${getValue(data.nama_area_pengiriman)}
+                      ${truncateText(getValue(data.nama_area_pengiriman), 30)}
                     </td>
                   </tr>
                     <tr>
@@ -336,8 +358,9 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         ${getValue(data.status_kalkulasi)}
                       </td>
                       <td class="border font-bold" style="padding: 1px 4px">No OKP</td>
-                      <td class="border bg-pink-300" style="padding: 1px 4px">${getValue(
-                        data.no_okp,
+                      <td class="border bg-pink-300" style="padding: 1px 4px">${truncateText(
+                        getValue(data.no_okp),
+                        25,
                       )}</td>
                     </tr>
                     <tr>
@@ -347,15 +370,16 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       </td>
                      <td class="border font-bold" style="padding: 1px 4px">No SO</td>
                       <td class="border bg-pink-300" style="padding: 1px 4px">
-                        ${getSONumbers()}
+                        ${truncateText(getSONumbers(), 25)}
                       </td>
                     </tr>
                     <tr>
                       <td class="border" style="padding: 1px 4px"></td>
                       <td class="border bg-yellow-200" style="padding: 1px 4px"></td>
                       <td class="border font-bold" style="padding: 1px 4px">No IO</td>
-                      <td class="border bg-pink-300" style="padding: 1px 4px">${getValue(
-                        data.no_io,
+                      <td class="border bg-pink-300" style="padding: 1px 4px">${truncateText(
+                        getValue(data.no_io),
+                        25,
                       )}</td>
                     </tr>
                   </tbody>
@@ -483,13 +507,13 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       <td class="border bg-green-300 font-bold" colspan="3" style="padding: 1px 4px">Bahan</td>
                       <td class="border bg-green-300 font-bold" colspan="2" style="padding: 1px 4px">Mesin</td>
                       <td class="border bg-yellow-200 font-bold text-center" style="padding: 1px 4px">
-                        ${getValue(data.jenis_mesin_cetak)}
+                        ${truncateText(getValue(data.jenis_mesin_cetak), 20)}
                       </td>
                     </tr>
                     <tr>
                       <td class="border font-bold" style="padding: 1px 3px">Kertas</td>
                       <td colspan="2" class="border bg-yellow-200" style="padding: 1px 3px">
-                        ${getValue(data.nama_kertas)}
+                        ${truncateText(getValue(data.nama_kertas), 35)}
                       </td>
                       <td class="border bg-green-300 font-bold" colspan="2" style="padding: 1px 3px">Plate</td>
                       <td class="border bg-yellow-200 text-right" style="padding: 1px 3px">
@@ -544,7 +568,10 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       <td class="border font-bold" style="padding: 1px 3px"></td>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Mesin Coating Depan</td>
                       <td colspan="2" class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_mesin_coating_depan)}
+                        ${truncateText(
+                          getValue(data.nama_mesin_coating_depan),
+                          20,
+                        )}
                       </td>
                     </tr>
                     <tr>
@@ -554,7 +581,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       </td>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Coating Depan</td>
                       <td colspan="2" class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_coating_depan)}
+                        ${truncateText(getValue(data.nama_coating_depan), 20)}
                       </td>
                     </tr>
                     <tr>
@@ -566,17 +593,23 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       </td>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Mesin Coating Belakang</td>
                       <td colspan="2" class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_mesin_coating_belakang)}
+                        ${truncateText(
+                          getValue(data.nama_mesin_coating_belakang),
+                          20,
+                        )}
                       </td>
                     </tr>
                     <tr>
                       <td class="border font-bold" style="padding: 1px 3px">Mesin Potong</td>
                       <td colspan="2" class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_mesin_potong)}
+                        ${truncateText(getValue(data.nama_mesin_potong), 35)}
                       </td>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Coating Belakang</td>
                       <td colspan="2" class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_coating_belakang)}
+                        ${truncateText(
+                          getValue(data.nama_coating_belakang),
+                          20,
+                        )}
                       </td>
                     </tr>
                     <tr>
@@ -608,21 +641,25 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                     <tr>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Pons:</td>
                       <td colspan="2" class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_jenis_pons)} ${getValue(
-                          data.nama_mesin_pons,
+                        ${truncateText(
+                          getValue(data.nama_jenis_pons) +
+                            ' ' +
+                            getValue(data.nama_mesin_pons),
+                          35,
                         )}
                       </td>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Lem</td>
                       <td class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_lem)}
+                        ${truncateText(getValue(data.nama_lem), 25)}
                       </td>
                     </tr>
                     <tr>
                       <td class="border" style="padding: 1px 3px">Ongkos pons</td>
                       <td class="border bg-yellow-200" style="padding: 1px 3px">
-                        ${getValue(data.ongkos_pons)}, ${getNumericValue(
-                          data.ongkos_pons_qty,
-                        )}
+                        ${truncateText(
+                          getValue(data.ongkos_pons),
+                          15,
+                        )}, ${getNumericValue(data.ongkos_pons_qty)}
                       </td>
                       <td class="border bg-gray-300" style="padding: 1px 3px; font-size: 12px">
                         ${formatCurrency(
@@ -631,7 +668,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                       </td>
                       <td class="border bg-green-300 font-bold" style="padding: 1px 3px">Mesin Finishing</td>
                       <td class="border bg-yellow-200 text-center" style="padding: 1px 3px">
-                        ${getValue(data.nama_mesin_finishing)}
+                        ${truncateText(getValue(data.nama_mesin_finishing), 25)}
                       </td>
                     </tr>
                     <tr>
@@ -656,15 +693,16 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                         )}</td>
                   <td class="border" style="padding: 1px 3px">Foil</td>
                   <td class="border bg-yellow-200 text-right" style="padding: 1px 3px">
-                    ${getValue(data.foil, '-')}
+                    ${truncateText(getValue(data.foil, '-'), 22)}
                   </td>
                 </tr>
                 <tr>
                   <td class="border" style="padding: 1px 3px">Lipat</td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getValue(data.lipat)},  ${getNumericValue(
-                      data.qty_lipat,
-                    )}  
+                    ${truncateText(
+                      getValue(data.lipat),
+                      12,
+                    )},  ${getNumericValue(data.qty_lipat)}  
                   </td>
                   <td class="border bg-gray-300" style="padding: 1px 3px">
                     ${formatCurrency(getNumericValue(data.harga_lipat))}
@@ -677,22 +715,23 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 <tr>
                   <td class="border" style="padding: 1px 3px">Mesin Lipat</td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getValue(data.nama_mesin_lipat, '-')}
+                    ${truncateText(getValue(data.nama_mesin_lipat, '-'), 18)}
                   </td>
                   <td class="border bg-gray-300" style="padding: 1px 3px; font-size: 12px">
                     
                   </td>
                   <td class="border" style="padding: 1px 3px">Spot Foil</td>
                   <td class="border bg-yellow-200 text-right" style="padding: 1px 3px">
-                    ${getValue(data.spot_foil, '-')}
+                    ${truncateText(getValue(data.spot_foil, '-'), 22)}
                   </td>
                 </tr>
                 <tr>
                   <td class="border" style="padding: 1px 3px">Potong jadi</td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getValue(data.potong_jadi)} ,  ${getNumericValue(
-                      data.qty_potong,
-                    )}
+                    ${truncateText(
+                      getValue(data.potong_jadi),
+                      12,
+                    )} ,  ${getNumericValue(data.qty_potong)}
                   </td>
                   <td class="border bg-gray-300" style="padding: 1px 3px">
                     ${formatCurrency(getNumericValue(data.harga_potong_jadi))}
@@ -746,7 +785,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td class="border" style="padding: 1px 3px"></td>
                   <td colspan="2" class="border" style="padding: 1px 3px"></td>
                   <td class="border bg-yellow-200" style="padding: 1px 3px; font-size: 12px">
-                    ${getValue(data.nama_packing)}
+                    ${truncateText(getValue(data.nama_packing), 18)}
                   </td>
                   <td class="border bg-gray-300 text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(getNumericValue(data.harga_packing))}
@@ -765,7 +804,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                     (item: any) => `
                 <tr>
                   <td colspan="3" class="border" style="padding: 1px 3px">
-                    ${item.nama_item}
+                    ${truncateText(item.nama_item || '-', 40)}
                   </td>
                   <td colspan="2" class="border" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(item.harga)}
@@ -893,16 +932,16 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                   <td class="border bg-yellow-100 font-bold" style="width: 20%; padding: 1px 3px">
                     Keterangan KERJA
                   </td>
-                  <td colspan="4" class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getValue(data.keterangan_kerja)}
+                  <td colspan="4" class="border bg-yellow-200 wrap-text" style="padding: 1px 3px; white-space: normal; word-wrap: break-word;">
+                    ${truncateText(getValue(data.keterangan_kerja), 300)}
                   </td>
                 </tr>
                 <tr>
                   <td class="border bg-yellow-100 font-bold" style="padding: 1px 3px">
                     Keterangan HARGA
                   </td>
-                  <td colspan="4" class="border bg-yellow-200" style="padding: 1px 3px">
-                    ${getValue(data.keterangan_harga)}
+                  <td colspan="4" class="border bg-yellow-200 wrap-text" style="padding: 1px 3px; white-space: normal; word-wrap: break-word;">
+                    ${truncateText(getValue(data.keterangan_harga), 300)}
                   </td>
                 </tr>
               </tbody>

@@ -377,12 +377,47 @@ const PressTab: React.FC<PressTabProps> = ({
     }
   };
 
-  // Calculate coating depan cost
+  // Update the helper function to check coating type with exact matching
+  const isSpecialCoating = (
+    coatingName: string,
+    type: 'VARNISH DOFF' | 'WATERBASE DOFF' | 'OPV',
+  ): boolean => {
+    const name = coatingName.toUpperCase().trim();
+    if (type === 'VARNISH DOFF') {
+      return name === 'VARNISH DOFF';
+    }
+    if (type === 'WATERBASE DOFF') {
+      return name === 'WATERBASE DOFF';
+    }
+    if (type === 'OPV') {
+      return name === 'OPV';
+    }
+    return false;
+  };
+
+  // Replace the calculateHargaCoatingDepan function
   const calculateHargaCoatingDepan = (): number => {
     if (!selectedCoatingDepan || !formData.total_kertas) {
       return 0;
     }
 
+    const coatingName = selectedCoatingDepan.nama_barang;
+    const totalWarna = Number(formData.jumlah_warna) || 1; // Prevent division by zero
+    const hargaCetak = calculateJumlahHargaCetak();
+
+    // Check if it's one of the special coatings (exact match)
+    if (
+      isSpecialCoating(coatingName, 'VARNISH DOFF') ||
+      isSpecialCoating(coatingName, 'WATERBASE DOFF')
+    ) {
+      // Formula: (Harga Cetak : Total Warna) x 1.5
+      return (hargaCetak / totalWarna) * 1.5;
+    } else if (isSpecialCoating(coatingName, 'OPV')) {
+      // Formula: Harga Cetak : Total Warna
+      return hargaCetak / totalWarna;
+    }
+
+    // For other coatings, use the existing formula
     const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
@@ -402,12 +437,29 @@ const PressTab: React.FC<PressTabProps> = ({
     return calculatedResult < batasHarga ? batasHarga : calculatedResult;
   };
 
-  // Calculate coating belakang cost
+  // Replace the calculateHargaCoatingBelakang function
   const calculateHargaCoatingBelakang = (): number => {
     if (!selectedCoatingBelakang || !formData.total_kertas) {
       return 0;
     }
 
+    const coatingName = selectedCoatingBelakang.nama_barang;
+    const totalWarna = Number(formData.jumlah_warna) || 1; // Prevent division by zero
+    const hargaCetak = calculateJumlahHargaCetak();
+
+    // Check if it's one of the special coatings (exact match)
+    if (
+      isSpecialCoating(coatingName, 'VARNISH DOFF') ||
+      isSpecialCoating(coatingName, 'WATERBASE DOFF')
+    ) {
+      // Formula: (Harga Cetak : Total Warna) x 1.5
+      return (hargaCetak / totalWarna) * 1.5;
+    } else if (isSpecialCoating(coatingName, 'OPV')) {
+      // Formula: Harga Cetak : Total Warna
+      return hargaCetak / totalWarna;
+    }
+
+    // For other coatings, use the existing formula
     const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
     const ukuranCetakBagian2 = Number(formData.ukuran_cetak_bagian_2) || 0;
@@ -427,9 +479,20 @@ const PressTab: React.FC<PressTabProps> = ({
     return calculatedResult < batasHarga ? batasHarga : calculatedResult;
   };
 
-  // Helper functions to check if batas_harga is being used
+  // Update the isUsingBatasHargaDepan function
   const isUsingBatasHargaDepan = (): boolean => {
     if (!selectedCoatingDepan || !formData.total_kertas) return false;
+
+    const coatingName = selectedCoatingDepan.nama_barang;
+
+    // Special coatings don't use batas_harga
+    if (
+      isSpecialCoating(coatingName, 'VARNISH DOFF') ||
+      isSpecialCoating(coatingName, 'WATERBASE DOFF') ||
+      isSpecialCoating(coatingName, 'OPV')
+    ) {
+      return false;
+    }
 
     const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
@@ -450,8 +513,20 @@ const PressTab: React.FC<PressTabProps> = ({
     return calculatedResult < batasHarga && batasHarga > 0;
   };
 
+  // Update the isUsingBatasHargaBelakang function
   const isUsingBatasHargaBelakang = (): boolean => {
     if (!selectedCoatingBelakang || !formData.total_kertas) return false;
+
+    const coatingName = selectedCoatingBelakang.nama_barang;
+
+    // Special coatings don't use batas_harga
+    if (
+      isSpecialCoating(coatingName, 'VARNISH DOFF') ||
+      isSpecialCoating(coatingName, 'WATERBASE DOFF') ||
+      isSpecialCoating(coatingName, 'OPV')
+    ) {
+      return false;
+    }
 
     const total_kertas = parseNumberWithSeparator(formData.total_kertas);
     const ukuranCetakBagian1 = Number(formData.ukuran_cetak_bagian_1) || 0;
@@ -1229,7 +1304,37 @@ const PressTab: React.FC<PressTabProps> = ({
                       <div>
                         <span className="text-gray-500">Formula:</span>
                         <div className="font-medium text-xs mt-1">
-                          {isUsingBatasHargaDepan() ? (
+                          {isSpecialCoating(
+                            selectedCoatingDepan.nama_barang,
+                            'VARNISH DOFF',
+                          ) ||
+                          isSpecialCoating(
+                            selectedCoatingDepan.nama_barang,
+                            'WATERBASE DOFF',
+                          ) ? (
+                            <span className="text-blue-600">
+                              (Harga Cetak{' '}
+                              {new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                              }).format(calculateJumlahHargaCetak())}{' '}
+                              : Total Warna {formData.jumlah_warna}) × 1.5
+                            </span>
+                          ) : isSpecialCoating(
+                              selectedCoatingDepan.nama_barang,
+                              'OPV',
+                            ) ? (
+                            <span className="text-blue-600">
+                              Harga Cetak{' '}
+                              {new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                              }).format(calculateJumlahHargaCetak())}{' '}
+                              : Total Warna {formData.jumlah_warna}
+                            </span>
+                          ) : isUsingBatasHargaDepan() ? (
                             <span className="text-orange-600">
                               Using minimum price (batas harga) because
                               calculated result is below minimum
@@ -1245,8 +1350,7 @@ const PressTab: React.FC<PressTabProps> = ({
                               formData.ukuran_cetak_lebar_1 || 0
                             } + ${formData.ukuran_cetak_lebar_2 || 0})) × ${
                               selectedCoatingDepan.harga
-                            }
-                         `
+                            }`
                           )}
                         </div>
                       </div>
@@ -1296,7 +1400,37 @@ const PressTab: React.FC<PressTabProps> = ({
                       <div>
                         <span className="text-gray-500">Formula:</span>
                         <div className="font-medium text-xs mt-1">
-                          {isUsingBatasHargaBelakang() ? (
+                          {isSpecialCoating(
+                            selectedCoatingBelakang.nama_barang,
+                            'VARNISH DOFF',
+                          ) ||
+                          isSpecialCoating(
+                            selectedCoatingBelakang.nama_barang,
+                            'WATERBASE DOFF',
+                          ) ? (
+                            <span className="text-blue-600">
+                              (Harga Cetak{' '}
+                              {new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                              }).format(calculateJumlahHargaCetak())}{' '}
+                              : Total Warna {formData.jumlah_warna}) × 1.5
+                            </span>
+                          ) : isSpecialCoating(
+                              selectedCoatingBelakang.nama_barang,
+                              'OPV',
+                            ) ? (
+                            <span className="text-blue-600">
+                              Harga Cetak{' '}
+                              {new Intl.NumberFormat('id-ID', {
+                                style: 'currency',
+                                currency: 'IDR',
+                                minimumFractionDigits: 0,
+                              }).format(calculateJumlahHargaCetak())}{' '}
+                              : Total Warna {formData.jumlah_warna}
+                            </span>
+                          ) : isUsingBatasHargaDepan() ? (
                             <span className="text-orange-600">
                               Using minimum price (batas harga) because
                               calculated result is below minimum
@@ -1310,11 +1444,9 @@ const PressTab: React.FC<PressTabProps> = ({
                               formData.ukuran_cetak_panjang_1 || 0
                             } + ${formData.ukuran_cetak_panjang_2 || 0}) × (${
                               formData.ukuran_cetak_lebar_1 || 0
-                            } + ${
-                              formData.ukuran_cetak_lebar_2 || 0
-                            })) × ${selectedCoatingBelakang.harga.toLocaleString(
-                              'id-ID',
-                            )}`
+                            } + ${formData.ukuran_cetak_lebar_2 || 0})) × ${
+                              selectedCoatingBelakang.harga
+                            }`
                           )}
                         </div>
                       </div>
