@@ -893,6 +893,7 @@ const BOMManagementModal: React.FC<BOMManagementModalProps> = ({
                   onChange={(data) => handleBOMDataChange({ bom_lem: data })}
                   po_qty={poQty}
                   tinggi_io={selectedMounting?.ukuran_jadi_tinggi || 0}
+                  selectedMounting={selectedMounting}
                 />
               )}
               {activeTab === 'lain-lain' && (

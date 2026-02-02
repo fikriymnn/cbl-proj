@@ -15,6 +15,11 @@ import {
   ProductionDetailsSection,
 } from './JOPPICFormSections';
 
+// Extend MountingData to include the JO mounting reference
+interface ExtendedMountingData extends MountingData {
+  _joMountingRef?: any;
+}
+
 interface JOPPICCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,7 +40,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [loadingMounting, setLoadingMounting] = useState(false);
   const [soData, setSOData] = useState<SOData[]>([]);
-  const [mountingData, setMountingData] = useState<MountingData[]>([]);
+  const [mountingData, setMountingData] = useState<ExtendedMountingData[]>([]);
   const [selectedMounting, setSelectedMounting] = useState<number | null>(null);
   const [jumlahJO, setJumlahJO] = useState<number>(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -414,7 +419,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
-  // ✅ MODIFIED: fetchJODetail
+  // ✅ MODIFIED: fetchJODetail with IO/JO mounting comparison
   const fetchJODetail = async (joId: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${joId}`;
     try {
@@ -445,7 +450,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           produk: joDetail.produk,
           status_kalkulasi: joDetail.status_kalkulasi,
           status_jo: joDetail.status_jo,
-          status_produk: joDetail.status_produk, // Add this if missing
+          status_produk: joDetail.status_produk,
           stok_fg: joDetail.stok_fg || 0,
           qty: joDetail.qty || 0,
           qty_druk: joDetail.qty_druk || 0,
@@ -460,72 +465,141 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             : new Date().toISOString().split('T')[0],
           standar_warna: joDetail.standar_warna || '',
           tipe_jo: joDetail.tipe_jo,
-          // ✅ ADD no_po_customer from SO object
           no_po_customer:
             joDetail.so?.no_po_customer || joDetail.no_po_customer || '',
           jo_mounting: joDetail.jo_mounting || [],
         });
 
-        // ✅ FETCH IO_MOUNTING TO GET TAHAPAN DATA
+        // ✅ FETCH IO_MOUNTING TO COMPARE AND MERGE
         if (joDetail.id_io) {
           const ioMountingData = await fetchIOMountingWithTahapan(
             joDetail.id_io,
           );
 
-          if (
-            ioMountingData.length > 0 &&
-            joDetail.jo_mounting &&
-            joDetail.jo_mounting.length > 0
-          ) {
-            // Merge tahapan from io_mounting into jo_mounting data
-            const mountingsWithTahapan = joDetail.jo_mounting.map((jm: any) => {
-              // Find corresponding io_mounting to get tahapan
-              const ioMounting = ioMountingData.find(
-                (io: any) => io.id === jm.id_io_mounting,
-              );
+          if (ioMountingData.length > 0) {
+            // Create a map of existing JO mountings by id_io_mounting
+            const joMountingMap = new Map();
+            if (joDetail.jo_mounting && joDetail.jo_mounting.length > 0) {
+              joDetail.jo_mounting.forEach((jm: any) => {
+                joMountingMap.set(jm.id_io_mounting, jm);
+              });
+            }
 
+            // Merge IO mounting with JO mounting data
+            const mergedMountings = ioMountingData.map((ioMounting: any) => {
+              const existingJoMounting = joMountingMap.get(ioMounting.id);
+
+              // Always use IO mounting data for display (except insheet values from JO)
               return {
-                id: jm.id_io_mounting,
+                // Core IDs
+                id: ioMounting.id,
                 id_io: joDetail.id_io,
-                nama_mounting: jm.nama_mounting || '',
-                id_kertas: jm.id_kertas,
-                nama_kertas: jm.nama_kertas,
-                gramature_kertas: jm.gramature_kertas,
-                panjang_plano: jm.panjang_kertas,
-                lebar_plano: jm.lebar_kertas,
-                ukuran_cetak_panjang_1: jm.ukuran_cetak_panjang_1,
-                ukuran_cetak_lebar_1: jm.ukuran_cetak_lebar_1,
-                ukuran_cetak_bagian_1: jm.ukuran_cetak_bagian_1,
-                ukuran_cetak_isi_1: jm.ukuran_cetak_isi_1,
-                ukuran_cetak_panjang_2: jm.ukuran_cetak_panjang_2 || 0,
-                ukuran_cetak_lebar_2: jm.ukuran_cetak_lebar_2 || 0,
-                ukuran_cetak_bagian_2: jm.ukuran_cetak_bagian_2 || 0,
-                ukuran_cetak_isi_2: jm.ukuran_cetak_isi_2 || 0,
-                warna_depan: ioMounting?.warna_depan || 0,
-                warna_belakang: ioMounting?.warna_belakang || 0,
-                nama_coating_depan: ioMounting?.nama_coating_depan || '',
-                nama_coating_belakang: ioMounting?.nama_coating_belakang || '',
-                jenis_kertas: ioMounting?.jenis_kertas || '',
-                jumlah_warna: ioMounting?.jumlah_warna || '',
-                format_data: ioMounting?.format_data || '',
-                nama_jenis_pons: ioMounting?.nama_jenis_pons || '',
-                nama_lem: ioMounting?.nama_lem || '',
-                // ✅ INCLUDE TAHAPAN FROM IO_MOUNTING
-                tahapan: ioMounting?.tahapan || [],
+                nama_mounting: ioMounting.nama_mounting || '',
+                barcode: ioMounting.barcode || '',
+                format_data: ioMounting.format_data || '',
+
+                // Ukuran Jadi
+                ukuran_jadi_panjang: ioMounting.ukuran_jadi_panjang || 0,
+                ukuran_jadi_lebar: ioMounting.ukuran_jadi_lebar || 0,
+                ukuran_jadi_tinggi: ioMounting.ukuran_jadi_tinggi || 0,
+                ukuran_jadi_terb_panjang:
+                  ioMounting.ukuran_jadi_terb_panjang || 0,
+                ukuran_jadi_terb_lebar: ioMounting.ukuran_jadi_terb_lebar || 0,
+
+                // Kertas
+                jenis_kertas: ioMounting.jenis_kertas || '',
+                gramature_kertas: ioMounting.gramature_kertas || 0,
+                lebar_plano: ioMounting.lebar_plano || 0,
+                panjang_plano: ioMounting.panjang_plano || 0,
+                id_kertas: ioMounting.id_kertas || 0,
+                nama_kertas: ioMounting.nama_kertas || '',
+
+                // Warna
+                jumlah_warna: ioMounting.jumlah_warna || 0,
+                warna_depan: ioMounting.warna_depan || 0,
+                warna_belakang: ioMounting.warna_belakang || 0,
+                keterangan_warna_depan: ioMounting.keterangan_warna_depan || '',
+                keterangan_warna_belakang:
+                  ioMounting.keterangan_warna_belakang || '',
+
+                // Coating
+                id_coating_depan: ioMounting.id_coating_depan || 0,
+                id_coating_belakang: ioMounting.id_coating_belakang || 0,
+                nama_coating_depan: ioMounting.nama_coating_depan || '',
+                nama_coating_belakang: ioMounting.nama_coating_belakang || '',
+                merk_coating_depan: ioMounting.merk_coating_depan || '',
+                merk_coating_belakang: ioMounting.merk_coating_belakang || '',
+
+                // Pons & Lem
+                id_jenis_pons: ioMounting.id_jenis_pons || 0,
+                nama_jenis_pons: ioMounting.nama_jenis_pons || '',
+                keterangan_jenis_pons: ioMounting.keterangan_jenis_pons || '',
+                id_lem: ioMounting.id_lem || 0,
+                nama_lem: ioMounting.nama_lem || '',
+                keterangan_lem: ioMounting.keterangan_lem || '',
+                merk_komp_lem: ioMounting.merk_komp_lem || '',
+                merk_serat_kertas: ioMounting.merk_serat_kertas || '',
+
+                // Layout
+                id_layout: ioMounting.id_layout || '',
+                lebar_layout: ioMounting.lebar_layout || 0,
+                panjang_layout: ioMounting.panjang_layout || 0,
+
+                // Ukuran Cetak 1
+                ukuran_cetak_panjang_1: ioMounting.ukuran_cetak_panjang_1 || 0,
+                ukuran_cetak_lebar_1: ioMounting.ukuran_cetak_lebar_1 || 0,
+                ukuran_cetak_bagian_1: ioMounting.ukuran_cetak_bagian_1 || 0,
+                ukuran_cetak_isi_1: ioMounting.ukuran_cetak_isi_1 || 0,
+
+                // Ukuran Cetak 2
+                ukuran_cetak_panjang_2: ioMounting.ukuran_cetak_panjang_2 || 0,
+                ukuran_cetak_lebar_2: ioMounting.ukuran_cetak_lebar_2 || 0,
+                ukuran_cetak_bagian_2: ioMounting.ukuran_cetak_bagian_2 || 0,
+                ukuran_cetak_isi_2: ioMounting.ukuran_cetak_isi_2 || 0,
+
+                // Pack
+                isi_dalam_1_pack: ioMounting.isi_dalam_1_pack || 0,
+                jenis_pack: ioMounting.jenis_pack || '',
+                keterangan_pack: ioMounting.keterangan_pack || '',
+
+                // Partisi
+                is_ukuran_partisi_sekat:
+                  ioMounting.is_ukuran_partisi_sekat || false,
+                lebar_partisi_1: ioMounting.lebar_partisi_1 || 0,
+                panjang_partisi_1: ioMounting.panjang_partisi_1 || 0,
+                lebar_partisi_2: ioMounting.lebar_partisi_2 || 0,
+                panjang_partisi_2: ioMounting.panjang_partisi_2 || 0,
+
+                // Misc
+                tambahan_insheet_druk: ioMounting.tambahan_insheet_druk || 0,
+                lampiran: ioMounting.lampiran || '',
+                untuk: ioMounting.untuk || '',
+                keterangan_revisi: ioMounting.keterangan_revisi || '',
+
+                // Metadata
+                is_active: ioMounting.is_active ?? true,
+                createdAt: ioMounting.createdAt || '',
+                updatedAt: ioMounting.updatedAt || '',
+
+                // Tahapan
+                tahapan: ioMounting.tahapan || [],
+
+                // Store JO mounting reference for later use (custom property)
+                _joMountingRef: existingJoMounting || null,
               };
             });
 
-            setMountingData(mountingsWithTahapan);
+            setMountingData(mergedMountings);
 
             // Find and set the selected mounting
-            const selectedJoMounting = joDetail.jo_mounting.find(
+            const selectedJoMounting = joDetail.jo_mounting?.find(
               (jm: any) => jm.is_selected,
             );
 
             if (selectedJoMounting) {
               setSelectedMounting(selectedJoMounting.id_io_mounting);
 
-              // ✅ USE DIRECT VALUES FROM API WITHOUT RECALCULATION
+              // ✅ USE INSHEET VALUES FROM JO MOUNTING (these are user-edited values)
               setInsheetValues({
                 jumlah_druk:
                   selectedJoMounting.jumlah_druk_cetak -
@@ -549,7 +623,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         }
 
         // ✅ AFTER ALL DATA IS LOADED, RELEASE THE FLAG
-        // Use a small timeout to ensure all state updates are complete
         setTimeout(() => {
           setIsInitialEditLoad(false);
         }, 100);
@@ -562,6 +635,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       setLoading(false);
     }
   };
+
   const resetForm = () => {
     setFormData({
       ...initialFormData,
@@ -777,6 +851,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       }
     }
   };
+
   const handleSubmit = async () => {
     if (!formData.id_so) {
       alert('Pilih SO terlebih dahulu');
@@ -790,91 +865,89 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const displayedJumlahDruk =
       insheetValues.jumlah_druk + insheetValues.total_insheet;
 
-    // Create jo_mounting data for ALL mountings
-    const joMountingData = mountingData.map((mounting) => {
-      const isSelected = mounting.id === selectedMounting;
+    // ✅ MODIFIED: Create jo_mounting data for ALL mountings (including new ones from IO)
+    const joMountingData = mountingData.map(
+      (mounting: ExtendedMountingData) => {
+        const isSelected = mounting.id === selectedMounting;
 
-      // Find the original jo_mounting record if in edit mode
-      const originalJOMount =
-        editMode && formData.jo_mounting
-          ? formData.jo_mounting.find(
-              (jm: any) => jm.id_io_mounting === mounting.id,
-            )
-          : null;
+        // Check if this mounting has an existing JO mounting reference
+        const joMountingRef = mounting._joMountingRef;
 
-      if (isSelected) {
-        return {
-          id: originalJOMount?.id,
-          id_jo: formData.id_jo,
-          id_io_mounting: mounting.id,
-          id_kertas: mounting.id_kertas,
-          nama_kertas: mounting.nama_kertas,
-          nama_mounting: mounting.nama_mounting,
-          gramature_kertas: mounting.gramature_kertas,
-          panjang_kertas: mounting.panjang_plano,
-          lebar_kertas: mounting.lebar_plano,
-          jumlah_kertas: insheetValues.jumlah_lp,
-          ukuran_cetak_panjang_1: mounting.ukuran_cetak_panjang_1,
-          ukuran_cetak_lebar_1: mounting.ukuran_cetak_lebar_1,
-          ukuran_cetak_bagian_1: mounting.ukuran_cetak_bagian_1,
-          ukuran_cetak_isi_1: mounting.ukuran_cetak_isi_1,
-          jumlah_cetak_1: 0,
-          tambahan_insheet_1: 0,
-          ukuran_cetak_panjang_2: mounting.ukuran_cetak_panjang_2 || 0,
-          ukuran_cetak_lebar_2: mounting.ukuran_cetak_lebar_2 || 0,
-          ukuran_cetak_bagian_2: mounting.ukuran_cetak_bagian_2 || 0,
-          ukuran_cetak_isi_2: mounting.ukuran_cetak_isi_2 || 0,
-          jumlah_cetak_2: 0,
-          tambahan_insheet_2: 0,
-          jumlah_druk_cetak: displayedJumlahDruk,
-          jumlah_insheet_cetak: insheetValues.jumlah_insheet_cetak,
-          jumlah_druk_pond: displayedJumlahDruk,
-          jumlah_insheet_pond: insheetValues.jumlah_insheet_pond,
-          jumlah_druk_finishing: displayedJumlahDruk,
-          jumlah_insheet_finishing: insheetValues.jumlah_insheet_finishing,
-          total_insheet: insheetValues.total_insheet,
-          is_selected: true,
-        };
-      } else {
-        return {
-          id: originalJOMount?.id,
-          id_jo: formData.id_jo,
-          id_io_mounting: mounting.id,
-          nama_mounting: mounting.nama_mounting,
-          id_kertas: mounting.id_kertas,
-          nama_kertas: mounting.nama_kertas,
-          gramature_kertas: mounting.gramature_kertas,
-          panjang_kertas: mounting.panjang_plano,
-          lebar_kertas: mounting.lebar_plano,
-          jumlah_kertas: 0,
-          ukuran_cetak_panjang_1: mounting.ukuran_cetak_panjang_1,
-          ukuran_cetak_lebar_1: mounting.ukuran_cetak_lebar_1,
-          ukuran_cetak_bagian_1: mounting.ukuran_cetak_bagian_1,
-          ukuran_cetak_isi_1: mounting.ukuran_cetak_isi_1,
-          jumlah_cetak_1: 0,
-          tambahan_insheet_1: 0,
-          ukuran_cetak_panjang_2: mounting.ukuran_cetak_panjang_2 || 0,
-          ukuran_cetak_lebar_2: mounting.ukuran_cetak_lebar_2 || 0,
-          ukuran_cetak_bagian_2: mounting.ukuran_cetak_bagian_2 || 0,
-          ukuran_cetak_isi_2: mounting.ukuran_cetak_isi_2 || 0,
-          jumlah_cetak_2: 0,
-          tambahan_insheet_2: 0,
-          jumlah_druk_cetak: 0,
-          jumlah_insheet_cetak: 0,
-          jumlah_druk_pond: 0,
-          jumlah_insheet_pond: 0,
-          jumlah_druk_finishing: 0,
-          jumlah_insheet_finishing: 0,
-          total_insheet: 0,
-          is_selected: false,
-        };
-      }
-    });
+        if (isSelected) {
+          return {
+            id: joMountingRef?.id || null, // null for new mountings
+            id_jo: formData.id_jo,
+            id_io_mounting: mounting.id,
+            id_kertas: mounting.id_kertas,
+            nama_kertas: mounting.nama_kertas,
+            nama_mounting: mounting.nama_mounting,
+            gramature_kertas: mounting.gramature_kertas,
+            panjang_kertas: mounting.panjang_plano,
+            lebar_kertas: mounting.lebar_plano,
+            jumlah_kertas: insheetValues.jumlah_lp,
+            ukuran_cetak_panjang_1: mounting.ukuran_cetak_panjang_1,
+            ukuran_cetak_lebar_1: mounting.ukuran_cetak_lebar_1,
+            ukuran_cetak_bagian_1: mounting.ukuran_cetak_bagian_1,
+            ukuran_cetak_isi_1: mounting.ukuran_cetak_isi_1,
+            jumlah_cetak_1: 0,
+            tambahan_insheet_1: 0,
+            ukuran_cetak_panjang_2: mounting.ukuran_cetak_panjang_2 || 0,
+            ukuran_cetak_lebar_2: mounting.ukuran_cetak_lebar_2 || 0,
+            ukuran_cetak_bagian_2: mounting.ukuran_cetak_bagian_2 || 0,
+            ukuran_cetak_isi_2: mounting.ukuran_cetak_isi_2 || 0,
+            jumlah_cetak_2: 0,
+            tambahan_insheet_2: 0,
+            jumlah_druk_cetak: displayedJumlahDruk,
+            jumlah_insheet_cetak: insheetValues.jumlah_insheet_cetak,
+            jumlah_druk_pond: displayedJumlahDruk,
+            jumlah_insheet_pond: insheetValues.jumlah_insheet_pond,
+            jumlah_druk_finishing: displayedJumlahDruk,
+            jumlah_insheet_finishing: insheetValues.jumlah_insheet_finishing,
+            total_insheet: insheetValues.total_insheet,
+            is_selected: true,
+          };
+        } else {
+          return {
+            id: joMountingRef?.id || null, // null for new mountings
+            id_jo: formData.id_jo,
+            id_io_mounting: mounting.id,
+            nama_mounting: mounting.nama_mounting,
+            id_kertas: mounting.id_kertas,
+            nama_kertas: mounting.nama_kertas,
+            gramature_kertas: mounting.gramature_kertas,
+            panjang_kertas: mounting.panjang_plano,
+            lebar_kertas: mounting.lebar_plano,
+            jumlah_kertas: 0,
+            ukuran_cetak_panjang_1: mounting.ukuran_cetak_panjang_1,
+            ukuran_cetak_lebar_1: mounting.ukuran_cetak_lebar_1,
+            ukuran_cetak_bagian_1: mounting.ukuran_cetak_bagian_1,
+            ukuran_cetak_isi_1: mounting.ukuran_cetak_isi_1,
+            jumlah_cetak_1: 0,
+            tambahan_insheet_1: 0,
+            ukuran_cetak_panjang_2: mounting.ukuran_cetak_panjang_2 || 0,
+            ukuran_cetak_lebar_2: mounting.ukuran_cetak_lebar_2 || 0,
+            ukuran_cetak_bagian_2: mounting.ukuran_cetak_bagian_2 || 0,
+            ukuran_cetak_isi_2: mounting.ukuran_cetak_isi_2 || 0,
+            jumlah_cetak_2: 0,
+            tambahan_insheet_2: 0,
+            jumlah_druk_cetak: 0,
+            jumlah_insheet_cetak: 0,
+            jumlah_druk_pond: 0,
+            jumlah_insheet_pond: 0,
+            jumlah_druk_finishing: 0,
+            jumlah_insheet_finishing: 0,
+            total_insheet: 0,
+            is_selected: false,
+          };
+        }
+      },
+    );
 
     const submitData = {
       ...formData,
       jo_mounting: joMountingData,
     };
+
     try {
       setLoading(true);
       console.log('Submitting JO data:', submitData);
@@ -911,7 +984,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       setLoading(false);
     }
   };
+
   if (!isOpen) return null;
+
   const handleClose = () => {
     if (hasUnsavedChanges) {
       const confirmClose = window.confirm(
@@ -926,9 +1001,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       onClose();
     }
   };
+
   const selectedMountingData = selectedMounting
     ? mountingData.find((m) => m.id === selectedMounting)
     : null;
+
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="flex items-center justify-center w-full h-full px-4 py-4">

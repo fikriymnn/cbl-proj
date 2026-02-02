@@ -54,21 +54,6 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
     return revisiKe > 0 ? revisiKe.toString() : 'No';
   };
 
-  const getBaseIONumber = (noIO: string): string => {
-    if (!noIO) return '-';
-    const parts = noIO.split('/');
-
-    if (parts.length >= 3) {
-      const basePart = parts[0];
-      const numberMatch = basePart.match(/IO-(\d+)/);
-      if (numberMatch) {
-        return numberMatch[1];
-      }
-    }
-
-    return noIO;
-  };
-
   const formatDateTime = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -113,8 +98,10 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
     );
     const marketingName = getMarketingName();
 
-    // Get ALL tahapan data (no limit)
-    const tahapan = mounting?.tahapan || [];
+    // Get ALL tahapan data (no limit) and sort by index field
+    const tahapan = mounting?.tahapan
+      ? [...mounting.tahapan].sort((a, b) => (a.index || 0) - (b.index || 0))
+      : [];
 
     // Generate tahapan rows dynamically (6 columns per row)
     const generateTahapanRows = () => {
@@ -125,16 +112,17 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
       const totalRows = Math.ceil(tahapan.length / columnsPerRow);
 
       for (let rowIndex = 0; rowIndex < totalRows; rowIndex++) {
-        // Process row (with numbering)
+        // Process row (with numbering using the index field)
         rows += '<tr>';
         for (let col = 0; col < columnsPerRow; col++) {
-          const index = rowIndex * columnsPerRow + col;
-          const stepNumber = index + 1;
-          if (index < tahapan.length) {
+          const arrayIndex = rowIndex * columnsPerRow + col;
+          if (arrayIndex < tahapan.length) {
+            const stepNumber = tahapan[arrayIndex].index || arrayIndex + 1;
             rows += `<td style="width: 16.66%">${stepNumber}.${getValue(
-              tahapan[index].nama_proses,
+              tahapan[arrayIndex].nama_proses,
             )}</td>`;
           } else {
+            const stepNumber = arrayIndex + 1;
             rows += `<td style="width: 16.66%">${stepNumber}.</td>`;
           }
         }
@@ -143,9 +131,9 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
         // Machine row
         rows += '<tr>';
         for (let col = 0; col < columnsPerRow; col++) {
-          const index = rowIndex * columnsPerRow + col;
-          if (index < tahapan.length) {
-            rows += `<td>${getValue(tahapan[index].nama_mesin)}</td>`;
+          const arrayIndex = rowIndex * columnsPerRow + col;
+          if (arrayIndex < tahapan.length) {
+            rows += `<td>${getValue(tahapan[arrayIndex].nama_mesin)}</td>`;
           } else {
             rows += '<td></td>';
           }

@@ -8,6 +8,7 @@ interface BOMLemTabProps {
   onChange: (data: BOMLem[]) => void;
   po_qty?: number;
   tinggi_io?: number;
+  selectedMounting?: any;
 }
 
 const BOMLemTab: React.FC<BOMLemTabProps> = ({
@@ -15,6 +16,7 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
   onChange,
   po_qty,
   tinggi_io,
+  selectedMounting,
 }) => {
   const [showModal, setShowModal] = useState(false);
 
@@ -221,6 +223,7 @@ const BOMLemTab: React.FC<BOMLemTabProps> = ({
           onSave={handleSaveFromModal}
           po_qty={po_qty}
           tinggi_io={tinggi_io}
+          selectedMounting={selectedMounting}
         />
       )}
     </div>

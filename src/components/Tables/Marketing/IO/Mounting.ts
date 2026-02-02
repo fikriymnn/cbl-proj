@@ -99,6 +99,7 @@ export interface MountingData extends MountingFormData {
   createdAt?: string;
   updatedAt?: string;
   id_io?: number;
+  index?: number;
   nama_coating_depan?: string;
   nama_coating_belakang?: string;
   nama_kertas?: string;

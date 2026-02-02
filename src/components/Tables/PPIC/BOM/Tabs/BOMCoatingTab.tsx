@@ -7,7 +7,7 @@ interface BOMCoatingTabProps {
   data: BOMCoating[];
   onChange: (data: BOMCoating[]) => void;
   po_qty?: number;
-  selectedMounting?: any; // Ganti id_kalkulasi dengan selectedMounting
+  selectedMounting?: any;
 }
 
 const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({

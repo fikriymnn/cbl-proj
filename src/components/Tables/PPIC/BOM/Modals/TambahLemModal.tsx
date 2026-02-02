@@ -15,6 +15,7 @@ interface TambahLemModalProps {
   }) => void;
   po_qty?: number;
   tinggi_io?: number;
+  selectedMounting?: any;
 }
 
 const TambahLemModal: React.FC<TambahLemModalProps> = ({
@@ -22,6 +23,7 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
   onSave,
   po_qty = 0,
   tinggi_io = 0,
+  selectedMounting,
 }) => {
   const [formData, setFormData] = useState({
     id_lem: '',
@@ -224,6 +226,10 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
                     {calculatedValues.qty_konstanta.toFixed(2)}
                   </span>{' '}
                   (Tinggi IO {tinggi_io} / 100)
+                </div>
+                <div>
+                  <span className="font-semibold">Nama LEM:</span>{' '}
+                  {selectedMounting.nama_lem}
                 </div>
               </div>
             </div>

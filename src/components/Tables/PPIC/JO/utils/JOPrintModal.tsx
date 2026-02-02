@@ -304,7 +304,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
         <style>
           @page {
             size: A4 portrait;
-            margin: 10mm;
+            margin: 8mm;
           }
           * {
             box-sizing: border-box;
@@ -313,8 +313,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            font-size: 8px;
-            line-height: 1.2;
+            font-size: 10px;
+            line-height: 1.3;
           }
           @media print {
             body {
@@ -329,8 +329,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 2px solid black;
           }
           
@@ -346,7 +346,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
           .header-left td {
             border: 1px solid black;
             padding: 4px 8px;
-            font-size: 8px;
+            font-size: 10px;
           }
           
           .header-left .label-cell {
@@ -373,13 +373,13 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
           }
           
           .company-name {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
             margin-bottom: 2px;
           }
           
           .job-order-text {
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
           }
           
@@ -396,7 +396,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
           }
           
           .form-code {
-            font-size: 7px;
+            font-size: 8px;
             font-weight: bold;
             margin-bottom: 3px;
             text-align: right;
@@ -409,23 +409,23 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 6px;
+            font-size: 7px;
             color: #999;
           }
           
           .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
-            font-size: 7px;
+            margin-bottom: 6px;
+            font-size: 10px;
           }
           .info-table td {
             border: 1px solid black;
-            padding: 2px 4px;
+            padding: 3px 5px;
             vertical-align: top;
           }
           .info-label {
-            width: 100px;
+            width: 120px;
             font-weight: bold;
           }
           .info-colon {
@@ -434,12 +434,12 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
           .warna-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
-            font-size: 7px;
+            margin-bottom: 6px;
+            font-size: 10px;
           }
           .warna-table td, .warna-table th {
             border: 1px solid black;
-            padding: 2px 4px;
+            padding: 3px 5px;
           }
           .warna-table th {
             background-color: #f0f0f0;
@@ -449,12 +449,12 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
           .process-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 7px;
-            margin-top: 8px;
+            font-size: 10px;
+            margin-top: 6px;
           }
           .process-table td, .process-table th {
             border: 1px solid black;
-            padding: 3px 5px;
+            padding: 4px 6px;
             text-align: center;
           }
           .process-table th {
@@ -462,26 +462,27 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             font-weight: bold;
           }
           .signature-section {
-            margin-top: 15px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
             text-align: center;
-            font-size: 7px;
+            font-size: 8px;
           }
           .signature-box {
+            flex: 1;
             border: 1px solid black;
-            padding: 5px;
-            min-height: 60px;
+            padding: 3px;
+            min-height: 45px;
           }
           .signature-title {
             font-weight: bold;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
           }
           .date-location {
             text-align: right;
-            margin: 10px 0;
-            font-size: 7px;
+            margin: 8px 0;
+            font-size: 9px;
           }
         </style>
       </head>
@@ -524,7 +525,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
         ${
           printData?.label
             ? `
-        <div style="text-align: center; font-size: 9px; font-weight: bold; margin-bottom: 10px; padding: 5px; background-color: #f0f0f0; border: 1px solid black;">
+        <div style="text-align: center; font-size: 11px; font-weight: bold; margin-bottom: 8px; padding: 4px; background-color: #f0f0f0; border: 1px solid black;">
           ${getValue(printData?.label, '')}
         </div>
         `
@@ -602,17 +603,15 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
 ${
   selectedMounting
     ? `
-<!-- UK & WARNA Section -->
+<!-- UK & WARNA and KERTAS Section - Merged with left headers -->
 <table class="warna-table">
-  <thead>
-    <tr>
-      <th colspan="6">UK & WARNA</th>
-    </tr>
-  </thead>
   <tbody>
     <tr>
-      <td class="info-label">Ukuran Jadi</td>
-      <td colspan="3">${
+      <td rowspan="2" style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 11px; border: 1px solid black; padding: 5px;">
+        UK & WARNA
+      </td>
+      <td class="info-label" style="font-size: 10px; width: 120px;">Ukuran Jadi</td>
+      <td style="font-size: 10px;">${
         selectedMounting.io_mounting?.ukuran_jadi_panjang ||
         selectedMounting.ukuran_cetak_panjang_1
       } X ${
@@ -623,19 +622,59 @@ ${
           ? ` X ${selectedMounting.io_mounting.ukuran_jadi_tinggi}`
           : ''
       } mm</td>
-      <td class="info-label">Ukuran Terbentang</td>
-      <td>${selectedMounting.io_mounting?.ukuran_jadi_terb_panjang || '-'} X ${
-        selectedMounting.io_mounting?.ukuran_jadi_terb_lebar || '-'
-      } mm</td>
+      <td class="info-label" style="font-size: 10px; width: 120px;">Ukuran Terbentang</td>
+      <td style="font-size: 10px;">${
+        selectedMounting.io_mounting?.ukuran_jadi_terb_panjang || '-'
+      } X ${selectedMounting.io_mounting?.ukuran_jadi_terb_lebar || '-'} mm</td>
     </tr>
     <tr>
-      <td class="info-label">Warna Depan</td>
-      <td colspan="3">${selectedMounting.io_mounting
-        ?.warna_depan}, ${selectedMounting.io_mounting?.keterangan_warna_depan} 
+      <td class="info-label" style="font-size: 10px;">Warna Depan</td>
+      <td style="font-size: 10px;">${selectedMounting.io_mounting
+        ?.warna_depan}, ${selectedMounting.io_mounting
+        ?.keterangan_warna_depan}</td>
+      <td class="info-label" style="font-size: 10px;">Warna Belakang</td>
+      <td style="font-size: 10px;">${selectedMounting.io_mounting
+        ?.warna_belakang}, ${selectedMounting.io_mounting
+        ?.keterangan_warna_belakang}</td>
+    </tr>
+    <tr>
+      <td rowspan="4" style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 11px; border: 1px solid black; padding: 5px;">
+        KERTAS
       </td>
-      <td class="info-label">Warna Belakang</td>
-      <td>${selectedMounting.io_mounting?.warna_belakang}, ${selectedMounting
-        .io_mounting?.keterangan_warna_belakang} </td>
+      <td class="info-label" style="font-size: 10px;">Jenis Kertas</td>
+      <td style="font-size: 10px;">${getValue(
+        selectedMounting.nama_kertas,
+      )}</td>
+      <td class="info-label" style="font-size: 10px;">Gramatur</td>
+      <td style="font-size: 10px;">${selectedMounting.gramature_kertas} gsm</td>
+    </tr>
+    <tr>
+      <td class="info-label" style="font-size: 10px;">Ukuran</td>
+      <td style="font-size: 10px;">${selectedMounting.panjang_kertas} x ${
+        selectedMounting.lebar_kertas
+      } mm</td>
+      <td class="info-label" style="font-size: 10px;">JML</td>
+      <td style="font-size: 10px;">${selectedMounting.jumlah_kertas.toLocaleString()} LP</td>
+    </tr>
+    <tr>
+      <td class="info-label" style="font-size: 10px;">UK Cetak (P×L)</td>
+      <td style="font-size: 10px;">${
+        selectedMounting.ukuran_cetak_panjang_1
+      } x ${selectedMounting.ukuran_cetak_lebar_1} mm</td>
+      <td class="info-label" style="font-size: 10px;">Bagian</td>
+      <td style="font-size: 10px;">${
+        selectedMounting.ukuran_cetak_bagian_1 || 2
+      }</td>
+    </tr>
+    <tr>
+      <td class="info-label" style="font-size: 10px;">UK Cetak (P×L)</td>
+      <td style="font-size: 10px;">${
+        selectedMounting.ukuran_cetak_panjang_2 || 0
+      } x ${selectedMounting.ukuran_cetak_lebar_2 || 0} mm</td>
+      <td class="info-label" style="font-size: 10px;">Isi</td>
+      <td style="font-size: 10px;">${
+        selectedMounting.ukuran_cetak_isi_1 || layout.isi
+      }</td>
     </tr>
   </tbody>
 </table>
@@ -646,59 +685,15 @@ ${
           ${
             selectedMounting
               ? `
-          <!-- KERTAS Section -->
-          <table class="warna-table">
-            <thead>
-              <tr>
-                <th colspan="8">KERTAS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="info-label">Jenis Kertas</td>
-                <td colspan="3">${getValue(selectedMounting.nama_kertas)}</td>
-                <td class="info-label">Gramatur</td>
-                <td colspan="3">${selectedMounting.gramature_kertas} gsm</td>
-              </tr>
-              <tr>
-                <td class="info-label">Ukuran</td>
-                <td colspan="3">${selectedMounting.panjang_kertas} x ${
-                  selectedMounting.lebar_kertas
-                } mm</td>
-                <td class="info-label">JML</td>
-                <td colspan="3">${selectedMounting.jumlah_kertas.toLocaleString()} LP</td>
-              </tr>
-              <tr>
-                <td class="info-label">UK Cetak (P×L)</td>
-                <td colspan="3">${selectedMounting.ukuran_cetak_panjang_1} x ${
-                  selectedMounting.ukuran_cetak_lebar_1
-                } mm</td>
-                <td class="info-label">Bagian</td>
-                <td>${selectedMounting.ukuran_cetak_bagian_1 || 2}</td>
-                <td class="info-label">Isi</td>
-                <td>${selectedMounting.ukuran_cetak_isi_1 || layout.isi}</td>
-              </tr>
-              <tr>
-                <td class="info-label">UK Cetak (P×L)</td>
-                <td colspan="3">${
-                  selectedMounting.ukuran_cetak_panjang_2 || 0
-                } x ${selectedMounting.ukuran_cetak_lebar_2 || 0} mm</td>
-                <td class="info-label">Bagian</td>
-                <td>0</td>
-                <td class="info-label">Isi</td>
-                <td>0</td>
-              </tr>
-            </tbody>
-          </table>
 
-<!-- KERTAS POTONG Section with Layout Diagram -->
-<table class="warna-table" style="page-break-inside: avoid; margin-top: 8px;">
+<!-- KERTAS POTONG Section with Layout Diagram - Made Smaller -->
+<table class="warna-table" style="page-break-inside: avoid; margin-top: 6px;">
   <tbody>
     <tr>
-      <td style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 9px; border: 1px solid black; padding: 5px;">
+      <td style="width: 80px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 10px; border: 1px solid black; padding: 4px;">
         KERTAS<br />POTONG
       </td>
-      <td style="width: 350px; padding: 10px; vertical-align: middle; text-align: center; border: 1px solid black; position: relative;">
+      <td style="width: 300px; padding: 8px; vertical-align: middle; text-align: center; border: 1px solid black; position: relative;">
        ${(() => {
          const panjangKertas = selectedMounting.panjang_kertas;
          const lebarKertas = selectedMounting.lebar_kertas;
@@ -734,8 +729,8 @@ ${
          const sisaHorizontal = topDimension - horizontalCount * horizontalCut;
          const sisaVertical = leftDimension - verticalCount * verticalCut;
 
-         const boxWidth = 240;
-         const boxHeight = 160;
+         const boxWidth = 180; // Reduced from 240
+         const boxHeight = 120; // Reduced from 160
 
          const totalPlanoArea = topDimension * leftDimension;
          const totalUsedArea =
@@ -743,24 +738,24 @@ ${
          const efficiency = ((totalUsedArea / totalPlanoArea) * 100).toFixed(1);
 
          return `
-    <div style="position: relative; display: inline-block; padding: 25px 15px 35px 60px;">
+    <div style="position: relative; display: inline-block; padding: 20px 12px 28px 50px;">
      ${
        selectedMounting.nama_mounting
-         ? `<div style="position: absolute; top: 8px; left: 8px; font-size: 12px; font-weight: bold; text-align: left; z-index: 5;">${selectedMounting.nama_mounting}</div>`
+         ? `<div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: bold; text-align: left; z-index: 5;">${selectedMounting.nama_mounting}</div>`
          : ''
      }
 <!-- Top dimension (longer one) - positioned at top right corner of rectangle -->
-      <div style="position: absolute; top: 15px; left: ${
-        60 + boxWidth - 30
+      <div style="position: absolute; top: 12px; left: ${
+        50 + boxWidth - 25
       }px;">
-        <div style="font-size: 8px; font-weight: bold;">
+        <div style="font-size: 9px; font-weight: bold;">
           ${topDimension}
         </div>
       </div>
 
       <!-- Left dimension (shorter one) - positioned at bottom left corner of rectangle -->
-      <div style="position: absolute; left: 38px; top: ${boxHeight + 3}px;">
-        <div style="font-size: 8px; font-weight: bold; white-space: nowrap;">
+      <div style="position: absolute; left: 32px; top: ${boxHeight + 3}px;">
+        <div style="font-size: 9px; font-weight: bold; white-space: nowrap;">
           ${leftDimension}
         </div>
       </div>
@@ -768,16 +763,16 @@ ${
       <!-- Main rectangle -->
       <div style="border: 2px solid black; background-color: white; display: inline-block; position: relative; width: ${boxWidth}px; height: ${boxHeight}px;">
         <!-- Top/Horizontal cut dimension (inside box, near top) -->
-        <div style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 8px; font-weight: bold; display: flex; align-items: center; gap: 8px; z-index: 10;">
+        <div style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 8px; font-weight: bold; display: flex; align-items: center; gap: 6px; z-index: 10;">
           <span>${horizontalCut}</span>
-          <span style="font-size: 14px;">→</span>
+          <span style="font-size: 12px;">→</span>
           <span>${horizontalCount}x</span>
         </div>
 
         <!-- Left/Vertical cut dimension (inside box, near left) -->
-        <div style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 3px; z-index: 10;">
+        <div style="position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 2px; z-index: 10;">
           <span>${verticalCut}</span>
-          <span style="font-size: 14px;">↓</span>
+          <span style="font-size: 12px;">↓</span>
           <span>${verticalCount}x</span>
         </div>
 
@@ -785,12 +780,12 @@ ${
         <div style="position: absolute; top: 0; left: 0; width: ${usedWidthPercent}%; height: ${usedHeightPercent}%; background-color: white; display: flex; justify-content: center; align-items: center;">
           ${
             selectedMounting.ukuran_cetak_bagian_1 > 1
-              ? `<div style="font-size: 10px; font-weight: bold;">1/${selectedMounting.ukuran_cetak_bagian_1} Bagian</div>`
+              ? `<div style="font-size: 9px; font-weight: bold;">1/${selectedMounting.ukuran_cetak_bagian_1} Bagian</div>`
               : ''
           }
           
           <!-- Isi inside white space at bottom right -->
-          <div style="position: absolute; bottom: 5px; right: 10px; font-size: 8px;">
+          <div style="position: absolute; bottom: 4px; right: 8px; font-size: 8px;">
             Isi: ${
               selectedMounting.ukuran_cetak_isi_1 ||
               horizontalCount *
@@ -818,7 +813,7 @@ ${
       </div>
 
       <!-- Bottom info (now inside the padding area) -->
-      <div style="position: absolute; bottom: 5px; left: 60px; right: 15px; font-size: 7px; display: flex; justify-content: space-between;">
+      <div style="position: absolute; bottom: 4px; left: 50px; right: 12px; font-size: 7px; display: flex; justify-content: space-between;">
         <div><strong>Sisa Potong:</strong> ${sisaHorizontal.toFixed(
           0,
         )} × ${sisaVertical.toFixed(0)} mm</div>
@@ -828,42 +823,42 @@ ${
   `;
        })()}
       </td>
-                <td style="padding: 5px; vertical-align: top; border: 1px solid black;">
+                <td style="padding: 4px; vertical-align: top; border: 1px solid black;">
                   <!-- Process table -->
-                  <table style="width: 100%; border-collapse: collapse; font-size: 7px; margin-bottom: 5px;">
+                  <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 4px;">
                     <thead>
                       <tr>
-                        <th style="border: 1px solid black; padding: 3px; background-color: #f0f0f0;">Proses</th>
-                        <th style="border: 1px solid black; padding: 3px; background-color: #f0f0f0;">Jml Druk</th>
-                        <th style="border: 1px solid black; padding: 3px; background-color: #f0f0f0;">Insheet</th>
-                        <th style="border: 1px solid black; padding: 3px; background-color: #f0f0f0;"></th>
+                        <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Proses</th>
+                        <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Jml Druk</th>
+                        <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Insheet</th>
+                        <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;"></th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td style="border: 1px solid black; padding: 3px;">Cetak</td>
-                        <td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_druk_cetak?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_insheet_cetak?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 3px;">druk</td>
+                        <td style="border: 1px solid black; padding: 2px;">Cetak</td>
+                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_cetak?.toLocaleString()}</td>
+                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_cetak?.toLocaleString()}</td>
+                        <td style="border: 1px solid black; padding: 2px;">druk</td>
                       </tr>
                       <tr>
-                        <td style="border: 1px solid black; padding: 3px;">Ponds</td>
-                        <td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_druk_pond?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_insheet_pond?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 3px;">druk</td>
+                        <td style="border: 1px solid black; padding: 2px;">Ponds</td>
+                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_pond?.toLocaleString()}</td>
+                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_pond?.toLocaleString()}</td>
+                        <td style="border: 1px solid black; padding: 2px;">druk</td>
                       </tr>
                       <tr>
-                        <td style="border: 1px solid black; padding: 3px;">Finishing</td>
-                        <td style="border:1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_druk_finishing?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 3px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 3px;">druk</td>
+                        <td style="border: 1px solid black; padding: 2px;">Finishing</td>
+                        <td style="border:1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_finishing?.toLocaleString()}</td>
+                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
+                        <td style="border: 1px solid black; padding: 2px;">druk</td>
                         </tr>
                     </tbody>
                   </table>
               <!-- Keterangan -->
-              <div style="border: 1px solid black; padding: 5px; font-size: 7px; margin-bottom: 5px;">
-                <div style="font-weight: bold; margin-bottom: 3px;">Keterangan Pengerjaan :</div>
-                <div style="min-height: 40px;">${getValue(
+              <div style="border: 1px solid black; padding: 4px; font-size: 9px; margin-bottom: 4px;">
+                <div style="font-weight: bold; margin-bottom: 2px;">Keterangan Pengerjaan :</div>
+                <div style="min-height: 35px;">${getValue(
                   printData?.keterangan_pengerjaan,
                 )}</div>
               </div>
@@ -910,7 +905,7 @@ ${
       </table>
 
       <!-- Delivery Info -->
-      <table class="info-table" style="margin-top: 10px;">
+      <table class="info-table" style="margin-top: 8px;">
         <tbody>
           <tr>
             <td class="info-label">Pengiriman Ke</td>
@@ -925,37 +920,53 @@ ${
         </tbody>
       </table>
 
-      <!-- Date and Signatures -->
-      <div class="date-location">
-        Bandung, ${formatDate(new Date().toISOString())}
+      <!-- Date and Signatures - Borderless Layout -->
+      <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex: 0 0 200px;">
+          <div style="font-size: 9px; margin-bottom: 3px;">Bandung,</div>
+          <div style="font-size: 9px;">Dibuat Oleh,</div>
+        </div>
+        <div style="flex: 1; text-align: center;">
+          <div style="font-size: 9px; margin-bottom: 3px;">${formatDate(
+            new Date().toISOString(),
+          )}</div>
+        </div>
       </div>
 
-      <div class="signature-section">
-        <div class="signature-box">
-          <div class="signature-title">(PPIC)</div>
+      <div style="margin-top: 12px; display: flex; justify-content: space-between; gap: 10px; font-size: 9px;">
+        <div style="flex: 1; text-align: center;">
+          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+          <div style="font-weight: normal; margin-bottom: 2px;">(PPIC)</div>
           <div>Tgl:</div>
         </div>
-        <div class="signature-box">
-          <div class="signature-title">(SPV PPIC)</div>
+        <div style="flex: 1; text-align: center;">
+          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+          <div style="font-weight: normal; margin-bottom: 2px;">(SPV PPIC)</div>
           <div>Tgl:</div>
         </div>
-        <div class="signature-box">
-          <div class="signature-title">(Prepress)</div>
+        <div style="flex: 1; text-align: center;">
+          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+          <div style="font-weight: normal; margin-bottom: 2px;">(Prepress)</div>
           <div>Tgl:</div>
         </div>
-        <div class="signature-box">
-          <div class="signature-title">(Pond)</div>
+        <div style="flex: 1; text-align: center;">
+          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+          <div style="font-weight: normal; margin-bottom: 2px;">(Printing)</div>
           <div>Tgl:</div>
         </div>
-        <div class="signature-box">
-          <div class="signature-title">(Printing)</div>
+        <div style="flex: 1; text-align: center;">
+          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+          <div style="font-weight: normal; margin-bottom: 2px;">(Ponds)</div>
           <div>Tgl:</div>
         </div>
-        <div class="signature-box">
-          <div class="signature-title">(Finishing)</div>
+        <div style="flex: 1; text-align: center;">
+          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+          <div style="font-weight: normal; margin-bottom: 2px;">(Finishing)</div>
           <div>Tgl:</div>
         </div>
       </div>
+
+      
     </body>
   </html>
 `;
