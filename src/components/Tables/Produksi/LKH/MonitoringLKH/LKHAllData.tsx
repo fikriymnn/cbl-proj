@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
 import LKHDetailPopup from './LKHDetailPopup';
 
@@ -32,6 +32,47 @@ interface Operator {
   status: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface UserApprove {
+  id: number;
+  uuid: string;
+  nama: string;
+  no: string;
+  email: string;
+  role: string;
+  bagian: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProduksiLKHTahapan {
+  id: number;
+  id_jo: number;
+  id_io: number;
+  id_so: number;
+  id_customer: number;
+  id_produk: number;
+  id_tahapan: number;
+  id_approve: number | null;
+  no_jo: string;
+  no_io: string;
+  no_so: string;
+  customer: string;
+  produk: string;
+  qty_jo: number;
+  qty_druk: number | null;
+  spesifikasi: string;
+  tgl_kirim: string;
+  tgl_approve: string | null;
+  status: string;
+  is_active: boolean;
+  index: number;
+  createdAt: string;
+  updatedAt: string;
+  tahapan?: Tahapan;
+  user_approve?: UserApprove;
 }
 
 interface ProduksiLKHProses {
@@ -86,15 +127,13 @@ interface ProduksiLKHWaste {
 
 interface LKHAllDataItem {
   id: number;
-  id_produksi_lkh_tahapan: number;
-  id_jo: number;
+  id_jo?: number;
   id_io: number;
   id_so: number;
-  id_tahapan: number;
-  id_mesin: number;
-  id_operator: number;
-  id_customer: number | null;
-  id_produk: number | null;
+  id_customer: number;
+  id_produk: number;
+  id_approve_jo?: number;
+  id_create_jo?: number;
   no_jo: string;
   no_io: string;
   no_so: string;
@@ -102,14 +141,30 @@ interface LKHAllDataItem {
   produk: string;
   qty: number;
   qty_druk: number | null;
+  qty_lp?: number;
+  po_qty?: number;
   spesifikasi: string;
   tgl_kirim: string;
+  tgl_pembuatan_jo?: string;
+  tgl_approve_jo?: string;
   status: string;
+  status_jo?: string;
+  status_proses?: string;
+  status_kalkulasi?: string;
+  tipe_jo?: string;
+  toleransi?: string;
+  standar_warna?: string;
+  label?: string;
+  keterangan_pengerjaan?: string;
+  alamat_pengiriman?: string;
+  note_reject?: string | null;
+  stok_fg?: number;
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
   produksi_lkh_proses: ProduksiLKHProses[];
   produksi_lkh_waste: ProduksiLKHWaste[];
+  produksi_lkh_tahapan?: ProduksiLKHTahapan[];
   tahapan?: Tahapan;
 }
 
@@ -134,6 +189,11 @@ const LKHAllData: React.FC = () => {
     fetchLKHData();
   }, [page, searchTerm, limit]);
 
+  useEffect(() => {
+    console.log('lkhAllData state updated:', lkhAllData);
+    console.log('lkhAllData length:', lkhAllData.length);
+  }, [lkhAllData]);
+
   const fetchLKHData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/produksi/listAllData`;
     try {
@@ -150,6 +210,8 @@ const LKHAllData: React.FC = () => {
       });
 
       console.log('Fetched LKH All data:', res.data);
+      console.log('Data array:', res.data.data);
+      console.log('Data array length:', res.data.data?.length);
 
       setLkhAllData(res.data.data || []);
 
@@ -195,6 +257,19 @@ const LKHAllData: React.FC = () => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
+
+  const formatDateOnly = (dateString: string): string => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
   };
@@ -218,27 +293,32 @@ const LKHAllData: React.FC = () => {
     return num.toLocaleString('id-ID');
   };
 
-  const calculateTotalResults = (proses: ProduksiLKHProses[]) => {
+  const calculateTotalResults = (proses: ProduksiLKHProses[] | undefined) => {
+    if (!proses || proses.length === 0) {
+      return { baik: 0, rusak_sebagian: 0, rusak_total: 0, tambah_bahan: 0 };
+    }
     return proses
       .filter((p) => p.is_final_result === true) // Only sum final results
       .reduce(
         (acc, p) => ({
-          baik: acc.baik + p.baik,
-          rusak_sebagian: acc.rusak_sebagian + p.rusak_sebagian,
-          rusak_total: acc.rusak_total + p.rusak_total,
+          baik: acc.baik + (p.baik || 0),
+          rusak_sebagian: acc.rusak_sebagian + (p.rusak_sebagian || 0),
+          rusak_total: acc.rusak_total + (p.rusak_total || 0),
           tambah_bahan: 0,
         }),
         { baik: 0, rusak_sebagian: 0, rusak_total: 0, tambah_bahan: 0 },
       );
   };
 
-  const calculateTotalTime = (proses: ProduksiLKHProses[]) => {
+  const calculateTotalTime = (proses: ProduksiLKHProses[] | undefined) => {
     const timeByType = {
       setting: 0,
       produksi: 0,
       kendala: 0,
       maintenance: 0,
     };
+
+    if (!proses || proses.length === 0) return timeByType;
 
     proses.forEach((p) => {
       const waktu = parseInt(p.total_waktu) || 0;
@@ -253,12 +333,12 @@ const LKHAllData: React.FC = () => {
     return timeByType;
   };
 
-  const calculateTotalWaste = (waste: ProduksiLKHWaste[]) => {
+  const calculateTotalWaste = (waste: ProduksiLKHWaste[] | undefined) => {
     if (!waste || waste.length === 0) return 0;
     return waste.reduce((acc, w) => acc + (w.total_qty || 0), 0);
   };
 
-  const getLatestTahapan = (proses: ProduksiLKHProses[]) => {
+  const getLatestTahapan = (proses: ProduksiLKHProses[] | undefined) => {
     if (!proses || proses.length === 0) return '-';
 
     const sortedProses = [...proses].sort(
@@ -269,7 +349,7 @@ const LKHAllData: React.FC = () => {
     return sortedProses[0]?.tahapan?.nama_tahapan || '-';
   };
 
-  const getLatestMesin = (proses: ProduksiLKHProses[]) => {
+  const getLatestMesin = (proses: ProduksiLKHProses[] | undefined) => {
     if (!proses || proses.length === 0) return '-';
 
     const sortedProses = [...proses].sort(
@@ -347,6 +427,12 @@ const LKHAllData: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
+              {(() => {
+                console.log('Rendering table body. Loading:', loading);
+                console.log('lkhAllData:', lkhAllData);
+                console.log('lkhAllData.length:', lkhAllData.length);
+                return null;
+              })()}
               {loading ? (
                 <tr>
                   <td colSpan={8} className="px-3 py-4 text-center">
@@ -400,7 +486,7 @@ const LKHAllData: React.FC = () => {
                       <td className="px-3 py-2 text-xs text-gray-900 whitespace-nowrap">
                         <div>Proses: {latestTahapan}</div>
                         <div className="text-gray-500">
-                          Tanggal Kirim: {formatDateTime(lkh.tgl_kirim)}
+                          Tanggal Kirim: {formatDateOnly(lkh.tgl_kirim)}
                         </div>
                         <div className="text-gray-500">
                           Mesin: {latestMesin}
@@ -587,7 +673,7 @@ const LKHAllData: React.FC = () => {
                       Tanggal Kirim:
                     </span>
                     <div className="text-gray-900 text-xs">
-                      {formatDateTime(lkh.tgl_kirim)}
+                      {formatDateOnly(lkh.tgl_kirim)}
                     </div>
                   </div>
 

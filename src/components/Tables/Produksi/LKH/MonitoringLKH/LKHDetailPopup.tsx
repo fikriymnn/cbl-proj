@@ -32,6 +32,47 @@ interface Operator {
   updatedAt: string;
 }
 
+interface UserApprove {
+  id: number;
+  uuid: string;
+  nama: string;
+  no: string;
+  email: string;
+  role: string;
+  bagian: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProduksiLKHTahapan {
+  id: number;
+  id_jo: number;
+  id_io: number;
+  id_so: number;
+  id_customer: number;
+  id_produk: number;
+  id_tahapan: number;
+  id_approve: number | null;
+  no_jo: string;
+  no_io: string;
+  no_so: string;
+  customer: string;
+  produk: string;
+  qty_jo: number;
+  qty_druk: number | null;
+  spesifikasi: string;
+  tgl_kirim: string;
+  tgl_approve: string | null;
+  status: string;
+  is_active: boolean;
+  index: number;
+  createdAt: string;
+  updatedAt: string;
+  tahapan?: Tahapan;
+  user_approve?: UserApprove;
+}
+
 interface ProduksiLKHProses {
   id: number;
   id_produksi_lkh: number;
@@ -85,15 +126,13 @@ interface ProduksiLKHWaste {
 
 interface LKHAllDataItem {
   id: number;
-  id_produksi_lkh_tahapan: number;
-  id_jo: number;
+  id_jo?: number;
   id_io: number;
   id_so: number;
-  id_tahapan: number;
-  id_mesin: number;
-  id_operator: number;
-  id_customer: number | null;
-  id_produk: number | null;
+  id_customer: number;
+  id_produk: number;
+  id_approve_jo?: number;
+  id_create_jo?: number;
   no_jo: string;
   no_io: string;
   no_so: string;
@@ -101,20 +140,43 @@ interface LKHAllDataItem {
   produk: string;
   qty: number;
   qty_druk: number | null;
+  qty_lp?: number;
+  po_qty?: number;
   spesifikasi: string;
   tgl_kirim: string;
+  tgl_pembuatan_jo?: string;
+  tgl_approve_jo?: string;
   status: string;
+  status_jo?: string;
+  status_proses?: string;
+  status_kalkulasi?: string;
+  tipe_jo?: string;
+  toleransi?: string;
+  standar_warna?: string;
+  label?: string;
+  keterangan_pengerjaan?: string;
+  alamat_pengiriman?: string;
+  note_reject?: string | null;
+  stok_fg?: number;
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
   produksi_lkh_proses: ProduksiLKHProses[];
   produksi_lkh_waste: ProduksiLKHWaste[];
+  produksi_lkh_tahapan?: ProduksiLKHTahapan[];
   tahapan?: Tahapan;
 }
 
 interface LKHDetailPopupProps {
   lkhData: LKHAllDataItem;
   onClose: () => void;
+}
+
+interface ApprovalLog {
+  userName: string;
+  tahapanName: string;
+  approvalDate: string;
+  index: number;
 }
 
 const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
@@ -146,7 +208,11 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
 
   const formatDateTime = (dateString: string): string => {
     if (!dateString) return '-';
+
     const date = new Date(dateString);
+
+    // Check if date is invalid
+    if (isNaN(date.getTime())) return '-';
 
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -168,6 +234,28 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
     return `${hours}:${minutes}:${seconds}`;
   };
 
+  const getApprovalLogs = (): ApprovalLog[] => {
+    if (
+      !lkhData.produksi_lkh_tahapan ||
+      lkhData.produksi_lkh_tahapan.length === 0
+    ) {
+      return [];
+    }
+
+    return (
+      lkhData.produksi_lkh_tahapan
+        .filter((tahapan) => tahapan.user_approve && tahapan.tahapan)
+        .map((tahapan) => ({
+          userName: tahapan.user_approve!.nama,
+          tahapanName: tahapan.tahapan!.nama_tahapan,
+          approvalDate: tahapan.tgl_approve || '-', // Changed to '-' for better display
+          index: tahapan.index,
+        }))
+        // Remove this filter or modify it to show all approvals
+        // .filter((log) => log.approvalDate !== '')
+        .sort((a, b) => a.index - b.index)
+    );
+  };
   // Group processes by tahapan and calculate totals
   const getTahapanSummary = () => {
     const tahapanMap = new Map<
@@ -250,6 +338,7 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
   };
 
   const tahapanSummary = getTahapanSummary();
+  const approvalLogs = getApprovalLogs();
 
   // Split tahapan into chunks of MAX_COLUMNS
   const chunkArray = <T,>(array: T[], size: number): T[][] => {
@@ -543,6 +632,56 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
           <div className="mb-6">
             <WasteTable wasteData={lkhData.produksi_lkh_waste || []} />
           </div>
+          {/* Approval Log Section */}
+          {approvalLogs.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-gray-700 bg-gradient-to-r from-purple-50 to-purple-100 px-4 py-2 rounded border-l-4 border-purple-600 mb-3 flex items-center gap-2">
+                <span>📋</span>
+                <span>Approval Log</span>
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full border-collapse border border-gray-300 text-xs">
+                  <thead className="bg-gradient-to-r from-purple-700 to-purple-600 text-white">
+                    <tr>
+                      <th className="border border-gray-300 px-4 py-2 text-left font-bold w-16">
+                        No
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left font-bold">
+                        Tahapan
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left font-bold">
+                        Approved By
+                      </th>
+                      <th className="border border-gray-300 px-4 py-2 text-left font-bold">
+                        Approval Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {approvalLogs.map((log, index) => (
+                      <tr key={index} className="hover:bg-purple-50">
+                        <td className="border border-gray-300 px-4 py-2 text-center font-medium">
+                          {index + 1}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {log.tahapanName}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {log.userName}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-2">
+                          {log.approvalDate === null ||
+                          log.approvalDate === undefined
+                            ? '-'
+                            : formatDateTime(log.approvalDate)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
