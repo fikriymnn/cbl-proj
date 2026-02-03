@@ -37,6 +37,7 @@ interface TahapanData {
   id: number;
   id_tahapan: number;
   status: string;
+  index: number;
   tahapan: {
     id: number;
     nama_tahapan: string;
@@ -130,7 +131,11 @@ const BukaLKH: React.FC = () => {
 
       console.log('Fetched Tahapan data:', res.data);
 
-      setTahapanData(res.data.data || []);
+      // Sort tahapan data by index field
+      const sortedTahapan = (res.data.data || []).sort(
+        (a, b) => a.index - b.index,
+      );
+      setTahapanData(sortedTahapan);
 
       // Initialize selected tahapan with only non-done status that user can select
       // Don't include already done status in selectedTahapan
@@ -156,9 +161,9 @@ const BukaLKH: React.FC = () => {
     setSelectedTahapan(new Set());
   };
 
-  const handleTahapanToggle = (tahapanId: number, index: number) => {
+  const handleTahapanToggle = (tahapanId: number, currentIndex: number) => {
     // Don't allow toggling if this tahapan is already done
-    const currentTahapan = tahapanData[index];
+    const currentTahapan = tahapanData[currentIndex];
     if (
       currentTahapan.status === 'done' ||
       currentTahapan.status === 'active'
@@ -171,7 +176,7 @@ const BukaLKH: React.FC = () => {
     if (newSelected.has(tahapanId)) {
       // Trying to uncheck - need to check if any subsequent tahapan is checked
       const hasSubsequentChecked = tahapanData
-        .slice(index + 1)
+        .slice(currentIndex + 1)
         .some((t) => newSelected.has(t.id));
 
       if (hasSubsequentChecked) {
@@ -185,7 +190,7 @@ const BukaLKH: React.FC = () => {
     } else {
       // Trying to check - need to check if all previous tahapan are checked or done
       const allPreviousCheckedOrDone = tahapanData
-        .slice(0, index)
+        .slice(0, currentIndex)
         .every(
           (t) =>
             newSelected.has(t.id) ||
@@ -193,7 +198,7 @@ const BukaLKH: React.FC = () => {
             t.status === 'active',
         );
 
-      if (!allPreviousCheckedOrDone && index > 0) {
+      if (!allPreviousCheckedOrDone && currentIndex > 0) {
         alert(
           'Tidak dapat check tahapan ini. Harap check tahapan sebelumnya terlebih dahulu.',
         );
@@ -613,16 +618,16 @@ const BukaLKH: React.FC = () => {
                     </p>
                   </div>
 
-                  {tahapanData.map((tahapan, index) => {
+                  {tahapanData.map((tahapan, arrayIndex) => {
                     const isDone = tahapan.status === 'done';
                     const isChecked = selectedTahapan.has(tahapan.id);
                     const isFirstUnchecked =
                       !isDone &&
                       !isChecked &&
-                      (index === 0 ||
-                        tahapanData[index - 1].status === 'done' ||
-                        tahapanData[index - 1].status === 'active' ||
-                        selectedTahapan.has(tahapanData[index - 1].id));
+                      (arrayIndex === 0 ||
+                        tahapanData[arrayIndex - 1].status === 'done' ||
+                        tahapanData[arrayIndex - 1].status === 'active' ||
+                        selectedTahapan.has(tahapanData[arrayIndex - 1].id));
 
                     return (
                       <div
@@ -649,7 +654,7 @@ const BukaLKH: React.FC = () => {
                               type="checkbox"
                               checked={isChecked}
                               onChange={() =>
-                                handleTahapanToggle(tahapan.id, index)
+                                handleTahapanToggle(tahapan.id, arrayIndex)
                               }
                               disabled={isDone}
                               className="mt-1 h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
@@ -663,7 +668,7 @@ const BukaLKH: React.FC = () => {
                                   isDone ? 'text-gray-600' : 'text-gray-900'
                                 }`}
                               >
-                                {index + 1}.{' '}
+                                {tahapan.index}.{' '}
                                 {tahapan.tahapan?.nama_tahapan || '-'}
                               </div>
                               {isChecked && !isDone && (
