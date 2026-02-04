@@ -16,7 +16,7 @@ interface TambahCoatingModalProps {
     tipe: string;
   }) => void;
   po_qty?: number;
-  selectedMounting?: any; // Data mounting dari IO
+  selectedMounting?: any;
 }
 
 const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
@@ -48,7 +48,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     if (selectedMounting && po_qty > 0 && formData.rumus_coating) {
       calculateQuantities();
     }
-  }, [po_qty, selectedMounting, formData.rumus_coating]);
+  }, [po_qty, selectedMounting, formData.rumus_coating, formData.nama_coating]);
 
   const fetchCoatingData = async () => {
     setLoading(true);
@@ -74,6 +74,18 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
 
   const calculateQuantities = () => {
     if (!selectedMounting || !formData.rumus_coating) return;
+
+    // ✅ Check if selected item is NON COATING based on nama_barang
+    const isNonCoating = formData.nama_coating
+      .toUpperCase()
+      .includes('NON COATING');
+
+    if (isNonCoating) {
+      setCalculatedQty(0);
+      setCalculatedUVWB(0);
+      setCalculatedVarnishDoff(0);
+      return;
+    }
 
     // Ambil data dari mounting yang dipilih
     const panjangCetak = selectedMounting.ukuran_cetak_panjang_1 || 0;
@@ -119,10 +131,17 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     );
 
     if (selectedCoating) {
+      // ✅ Check if selected item is NON COATING
+      const isNonCoating = selectedCoating.nama_barang
+        .toUpperCase()
+        .includes('NON COATING');
+
       setFormData({
         ...formData,
         id_coating: value.toString(),
         nama_coating: selectedCoating.nama_barang,
+        // If NON COATING, clear rumus selection so user doesn't need to select it
+        rumus_coating: isNonCoating ? '' : formData.rumus_coating,
       });
     } else {
       setFormData({
@@ -150,10 +169,10 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.rumus_coating) {
-      alert('Mohon pilih rumus coating');
-      return;
-    }
+    // ✅ Check if selected item is NON COATING
+    const isNonCoating = formData.nama_coating
+      .toUpperCase()
+      .includes('NON COATING');
 
     if (!formData.id_coating) {
       alert('Mohon pilih item coating');
@@ -162,6 +181,12 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
 
     if (!formData.tipe_coating) {
       alert('Mohon pilih tipe coating');
+      return;
+    }
+
+    // For NON COATING, rumus is not required
+    if (!isNonCoating && !formData.rumus_coating) {
+      alert('Mohon pilih rumus coating');
       return;
     }
 
@@ -178,7 +203,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
       qty_coating: calculatedQty,
       uv_wb: calculatedUVWB,
       varnish_doff: calculatedVarnishDoff,
-      rumus_coating: formData.rumus_coating,
+      rumus_coating: isNonCoating ? 'NON_COATING' : formData.rumus_coating,
       tipe: 'DRAFT',
     });
 
@@ -198,6 +223,15 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
   const getFormulaDisplay = () => {
     if (!selectedMounting || !formData.rumus_coating) return null;
 
+    // ✅ Check if selected item is NON COATING
+    const isNonCoating = formData.nama_coating
+      .toUpperCase()
+      .includes('NON COATING');
+
+    if (isNonCoating) {
+      return 'Tidak menggunakan coating = 0';
+    }
+
     const panjangCetak = selectedMounting.ukuran_cetak_panjang_1;
     const lebarCetak = selectedMounting.ukuran_cetak_lebar_1;
     const ukuranCetakIsi = selectedMounting.ukuran_cetak_isi_1 || 1;
@@ -210,6 +244,20 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     } else if (formData.rumus_coating === 'VARNISH_DOFF') {
       return `${qtyDruk} / 3.500 = ${calculatedQty.toFixed(4)} kg`;
     }
+  };
+
+  // ✅ Determine if form is valid for submission
+  const isFormValid = () => {
+    const isNonCoating = formData.nama_coating
+      .toUpperCase()
+      .includes('NON COATING');
+
+    if (isNonCoating) {
+      return formData.id_coating && formData.tipe_coating; // NON COATING needs item and tipe
+    }
+    return (
+      formData.rumus_coating && formData.id_coating && formData.tipe_coating
+    ); // Others need all three
   };
 
   return (
@@ -231,42 +279,54 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6">
           {/* Info Section dari Mounting */}
-          {po_qty > 0 && selectedMounting && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
-              <div className="font-semibold text-blue-800 mb-2">
-                Data Mounting: {selectedMounting.nama_mounting}
+          {po_qty > 0 &&
+            selectedMounting &&
+            !formData.nama_coating.toUpperCase().includes('NON COATING') && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
+                <div className="font-semibold text-blue-800 mb-2">
+                  Data Mounting: {selectedMounting.nama_mounting}
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-gray-700">
+                  <div>
+                    <span className="font-semibold">Qty PO:</span> {po_qty} pcs
+                  </div>
+                  <div>
+                    <span className="font-semibold">Qty Druk:</span>{' '}
+                    {(
+                      po_qty / (selectedMounting.ukuran_cetak_isi_1 || 1)
+                    ).toFixed(2)}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Panjang Cetak:</span>{' '}
+                    {selectedMounting.ukuran_cetak_panjang_1} mm
+                  </div>
+                  <div>
+                    <span className="font-semibold">Lebar Cetak:</span>{' '}
+                    {selectedMounting.ukuran_cetak_lebar_1} mm
+                  </div>
+                  <div>
+                    <span className="font-semibold">Ukuran Cetak Isi:</span>{' '}
+                    {selectedMounting.ukuran_cetak_isi_1}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Coating Depan:</span>{' '}
+                    {selectedMounting.nama_coating_depan || '-'}
+                  </div>
+                  <div></div>
+                  <div>
+                    <span className="font-semibold">Coating Belakang:</span>{' '}
+                    {selectedMounting.nama_coating_belakan || '-'}
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-gray-700">
-                <div>
-                  <span className="font-semibold">Qty PO:</span> {po_qty} pcs
-                </div>
-                <div>
-                  <span className="font-semibold">Qty Druk:</span>{' '}
-                  {(
-                    po_qty / (selectedMounting.ukuran_cetak_isi_1 || 1)
-                  ).toFixed(2)}
-                </div>
-                <div>
-                  <span className="font-semibold">Panjang Cetak:</span>{' '}
-                  {selectedMounting.ukuran_cetak_panjang_1} mm
-                </div>
-                <div>
-                  <span className="font-semibold">Lebar Cetak:</span>{' '}
-                  {selectedMounting.ukuran_cetak_lebar_1} mm
-                </div>
-                <div>
-                  <span className="font-semibold">Ukuran Cetak Isi:</span>{' '}
-                  {selectedMounting.ukuran_cetak_isi_1}
-                </div>
-                <div>
-                  <span className="font-semibold">Coating Depan:</span>{' '}
-                  {selectedMounting.nama_coating_depan || '-'}
-                </div>
-                <div></div>
-                <div>
-                  <span className="font-semibold">Coating Belakang:</span>{' '}
-                  {selectedMounting.nama_coating_belakan || '-'}
-                </div>
+            )}
+
+          {/* ✅ NON_COATING Info */}
+          {formData.nama_coating.toUpperCase().includes('NON COATING') && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm border border-gray-300">
+              <div className="text-gray-700">
+                <span className="font-semibold">ℹ️ NON COATING:</span> Produk
+                ini tidak menggunakan coating. Semua nilai akan diset ke 0.
               </div>
             </div>
           )}
@@ -276,37 +336,6 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
               ⚠️ Data mounting belum tersedia
             </div>
           )}
-
-          {/* Rumus yang dipakai */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rumus yang dipakai <span className="text-red-500">*</span>
-            </label>
-            <SearchableSelect
-              options={[{ value: '', label: 'Pilih Rumus' }, ...rumusOptions]}
-              value={formData.rumus_coating}
-              onChange={handleRumusChange}
-              placeholder="Pilih Rumus Perhitungan"
-              required
-            />
-          </div>
-
-          {/* Tipe Coating */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipe Coating <span className="text-red-500">*</span>
-            </label>
-            <SearchableSelect
-              options={[
-                { value: '', label: 'Pilih Tipe' },
-                ...tipeCoatingOptions,
-              ]}
-              value={formData.tipe_coating}
-              onChange={handleTipeCoatingChange}
-              placeholder="Pilih Tipe Coating"
-              required
-            />
-          </div>
 
           {/* Item Coating */}
           <div className="mb-4">
@@ -332,23 +361,65 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
             )}
           </div>
 
+          {/* Tipe Coating */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tipe Coating <span className="text-red-500">*</span>
+            </label>
+            <SearchableSelect
+              options={[
+                { value: '', label: 'Pilih Tipe' },
+                ...tipeCoatingOptions,
+              ]}
+              value={formData.tipe_coating}
+              onChange={handleTipeCoatingChange}
+              placeholder="Pilih Tipe Coating"
+              required
+            />
+          </div>
+
+          {/* ✅ Rumus - Only show if NOT NON COATING */}
+          {formData.id_coating &&
+            !formData.nama_coating.toUpperCase().includes('NON COATING') && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rumus yang dipakai <span className="text-red-500">*</span>
+                </label>
+                <SearchableSelect
+                  options={[
+                    { value: '', label: 'Pilih Rumus' },
+                    ...rumusOptions,
+                  ]}
+                  value={formData.rumus_coating}
+                  onChange={handleRumusChange}
+                  placeholder="Pilih Rumus Perhitungan"
+                  required
+                />
+              </div>
+            )}
+
           {/* Display selected formula */}
-          {selectedMounting && formData.rumus_coating && (
-            <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200 mb-4">
-              <div className="text-xs text-blue-600 mb-2 font-semibold">
-                Formula Terpilih:{' '}
-                {formData.rumus_coating === 'UV_WB'
-                  ? 'UV & WB'
-                  : 'Varnish Doff'}
+          {selectedMounting &&
+            (formData.nama_coating.toUpperCase().includes('NON COATING') ||
+              formData.rumus_coating) && (
+              <div className="mt-3 p-3 bg-blue-50 rounded border border-blue-200 mb-4">
+                <div className="text-xs text-blue-600 mb-2 font-semibold">
+                  Formula Terpilih:{' '}
+                  {formData.nama_coating.toUpperCase().includes('NON COATING')
+                    ? 'NON COATING'
+                    : formData.rumus_coating === 'UV_WB'
+                    ? 'UV & WB'
+                    : 'Varnish Doff'}
+                </div>
+                <div className="text-sm font-mono text-gray-800 p-2 rounded bg-white">
+                  {getFormulaDisplay()}
+                </div>
               </div>
-              <div className="text-sm font-mono text-gray-800 p-2 rounded bg-white">
-                {getFormulaDisplay()}
-              </div>
-            </div>
-          )}
+            )}
 
           {/* Calculated Result Preview */}
-          {formData.rumus_coating && calculatedQty > 0 && (
+          {(formData.nama_coating.toUpperCase().includes('NON COATING') ||
+            formData.rumus_coating) && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <h4 className="font-semibold text-green-800 mb-2">
                 Hasil Kalkulasi:
@@ -392,12 +463,7 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
             <button
               type="submit"
               className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={
-                !formData.rumus_coating ||
-                !formData.id_coating ||
-                !formData.tipe_coating ||
-                !selectedMounting
-              }
+              disabled={!isFormValid()}
             >
               Simpan
             </button>

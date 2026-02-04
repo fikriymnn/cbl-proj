@@ -36,7 +36,7 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [calculatedValues, setCalculatedValues] = useState({
     qty_konstanta: 0,
-    qty_lem: 0, // ✅ Single value
+    qty_lem: 0,
   });
 
   useEffect(() => {
@@ -45,9 +45,19 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
 
   // Calculate konstanta and qty_lem based on selected formula
   useEffect(() => {
+    // ✅ Check if selected item is NON LEM based on nama_barang
+    const isNonLem = formData.nama_lem.toUpperCase().includes('NON LEM');
+
+    if (isNonLem) {
+      setCalculatedValues({
+        qty_konstanta: 0,
+        qty_lem: 0,
+      });
+      return;
+    }
+
     if (tinggi_io > 0 && po_qty > 0 && formData.rumus_lem) {
       const konstanta = tinggi_io / 100;
-
       let qty_lem = 0;
 
       // Calculate based on selected formula
@@ -87,7 +97,7 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
         qty_lem: qty_lem,
       });
     }
-  }, [formData.rumus_lem, po_qty, tinggi_io]);
+  }, [formData.rumus_lem, formData.nama_lem, po_qty, tinggi_io]);
 
   const fetchLemData = async () => {
     setLoading(true);
@@ -117,10 +127,17 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
     );
 
     if (selectedLem) {
+      // ✅ Check if selected item is NON LEM
+      const isNonLem = selectedLem.nama_barang
+        .toUpperCase()
+        .includes('NON LEM');
+
       setFormData({
         ...formData,
         id_lem: value.toString(),
         nama_lem: selectedLem.nama_barang,
+        // If NON LEM, clear rumus selection so user doesn't need to select it
+        rumus_lem: isNonLem ? '' : formData.rumus_lem,
       });
     } else {
       setFormData({
@@ -141,8 +158,17 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.id_lem || !formData.rumus_lem) {
-      alert('Mohon lengkapi semua data');
+    // ✅ Check if selected item is NON LEM
+    const isNonLem = formData.nama_lem.toUpperCase().includes('NON LEM');
+
+    if (!formData.id_lem) {
+      alert('Mohon pilih item lem');
+      return;
+    }
+
+    // For NON LEM, rumus is not required
+    if (!isNonLem && !formData.rumus_lem) {
+      alert('Mohon pilih rumus perhitungan');
       return;
     }
 
@@ -151,7 +177,7 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
     onSave({
       id_lem: Number(formData.id_lem),
       nama_lem: formData.nama_lem,
-      rumus_lem: formData.rumus_lem,
+      rumus_lem: isNonLem ? 'NON_LEM' : formData.rumus_lem,
       qty_konstanta: calculatedValues.qty_konstanta,
       qty_lem: calculatedValues.qty_lem,
       tipe: 'DRAFT',
@@ -162,6 +188,13 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
 
   // Helper function to get formula display text
   const getFormulaDisplay = () => {
+    // ✅ Check if selected item is NON LEM
+    const isNonLem = formData.nama_lem.toUpperCase().includes('NON LEM');
+
+    if (isNonLem) {
+      return 'Tidak menggunakan lem = 0';
+    }
+
     const { qty_konstanta } = calculatedValues;
 
     switch (formData.rumus_lem) {
@@ -191,6 +224,16 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
     { value: 'UJUNG_LOCK_BOTTOM', label: 'Ujung + Lock Bottom' },
   ];
 
+  // ✅ Determine if form is valid for submission
+  const isFormValid = () => {
+    const isNonLem = formData.nama_lem.toUpperCase().includes('NON LEM');
+
+    if (isNonLem) {
+      return formData.id_lem !== ''; // NON LEM only needs item selected
+    }
+    return formData.id_lem && formData.rumus_lem; // Other items need both
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
@@ -210,27 +253,39 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6">
           {/* Info Section */}
-          {po_qty > 0 && tinggi_io > 0 && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
-              <div className="grid grid-cols-2 gap-2 text-gray-700">
-                <div>
-                  <span className="font-semibold">Qty SO:</span> {po_qty} pcs
+          {po_qty > 0 &&
+            tinggi_io > 0 &&
+            !formData.nama_lem.toUpperCase().includes('NON LEM') && (
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
+                <div className="grid grid-cols-2 gap-2 text-gray-700">
+                  <div>
+                    <span className="font-semibold">Qty SO:</span> {po_qty} pcs
+                  </div>
+                  <div>
+                    <span className="font-semibold">Tinggi IO:</span>{' '}
+                    {tinggi_io} mm
+                  </div>
+                  <div className="col-span-2">
+                    <span className="font-semibold">Konstanta Lem:</span>{' '}
+                    <span className="text-blue-600 font-bold">
+                      {calculatedValues.qty_konstanta.toFixed(2)}
+                    </span>{' '}
+                    (Tinggi IO {tinggi_io} / 100)
+                  </div>
+                  <div>
+                    <span className="font-semibold">Nama LEM:</span>{' '}
+                    {selectedMounting.nama_lem}
+                  </div>
                 </div>
-                <div>
-                  <span className="font-semibold">Tinggi IO:</span> {tinggi_io}{' '}
-                  mm
-                </div>
-                <div className="col-span-2">
-                  <span className="font-semibold">Konstanta Lem:</span>{' '}
-                  <span className="text-blue-600 font-bold">
-                    {calculatedValues.qty_konstanta.toFixed(2)}
-                  </span>{' '}
-                  (Tinggi IO {tinggi_io} / 100)
-                </div>
-                <div>
-                  <span className="font-semibold">Nama LEM:</span>{' '}
-                  {selectedMounting.nama_lem}
-                </div>
+              </div>
+            )}
+
+          {/* ✅ NON_LEM Info */}
+          {formData.nama_lem.toUpperCase().includes('NON LEM') && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm border border-gray-300">
+              <div className="text-gray-700">
+                <span className="font-semibold">ℹ️ NON LEM:</span> Produk ini
+                tidak menggunakan lem. Semua nilai akan diset ke 0.
               </div>
             </div>
           )}
@@ -238,7 +293,7 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
           {/* Item Lem */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Item Lem
+              Item Lem <span className="text-red-500">*</span>
             </label>
             {loading ? (
               <div className="text-sm text-gray-500">Loading data...</div>
@@ -259,39 +314,43 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
             )}
           </div>
 
-          {/* Data Kalkulasi Section */}
-          <div className="mb-4 bg-gray-50 rounded-lg ">
-            <h3 className="font-semibold text-gray-700 mb-3">
-              Data Kalkulasi:
-            </h3>
-
-            {/* Rumus yang dipakai */}
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rumus yang dipakai
-              </label>
-              <SearchableSelect
-                options={[{ value: '', label: 'Pilih Rumus' }, ...rumusOptions]}
-                value={formData.rumus_lem}
-                onChange={handleRumusChange}
-                placeholder="Pilih Rumus Perhitungan"
-                required
-              />
-            </div>
-
-            {/* Display selected formula */}
-            {formData.rumus_lem && (
-              <div className="mt-3 p-3 bg-white rounded border border-gray-200">
-                <div className="text-xs text-gray-600 mb-1">Formula:</div>
-                <div className="text-sm font-mono text-gray-800">
-                  {getFormulaDisplay()} = {calculatedValues.qty_lem.toFixed(4)}
-                </div>
+          {/* ✅ Rumus - Only show if NOT NON LEM */}
+          {formData.id_lem &&
+            !formData.nama_lem.toUpperCase().includes('NON LEM') && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rumus yang dipakai <span className="text-red-500">*</span>
+                </label>
+                <SearchableSelect
+                  options={[
+                    { value: '', label: 'Pilih Rumus' },
+                    ...rumusOptions,
+                  ]}
+                  value={formData.rumus_lem}
+                  onChange={handleRumusChange}
+                  placeholder="Pilih Rumus Perhitungan"
+                  required
+                />
               </div>
             )}
-          </div>
+
+          {/* Display selected formula */}
+          {(formData.nama_lem.toUpperCase().includes('NON LEM') ||
+            formData.rumus_lem) && (
+            <div className="mt-3 p-3 bg-white rounded border border-gray-200 mb-4">
+              <div className="text-xs text-gray-600 mb-1">Formula:</div>
+              <div className="text-sm font-mono text-gray-800">
+                {getFormulaDisplay()}
+                {!formData.nama_lem.toUpperCase().includes('NON LEM') &&
+                  formData.rumus_lem &&
+                  ` = ${calculatedValues.qty_lem.toFixed(4)}`}
+              </div>
+            </div>
+          )}
 
           {/* Calculated Results Preview */}
-          {formData.rumus_lem && (
+          {(formData.nama_lem.toUpperCase().includes('NON LEM') ||
+            formData.rumus_lem) && (
             <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
               <h4 className="font-semibold text-green-800 mb-2">
                 Hasil Kalkulasi:
@@ -305,12 +364,14 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
                 </div>
                 <div>
                   <span className="text-gray-600">
-                    Qty Lem (
-                    {
-                      rumusOptions.find((r) => r.value === formData.rumus_lem)
-                        ?.label
-                    }
-                    ):
+                    Qty Lem
+                    {!formData.nama_lem.toUpperCase().includes('NON LEM') &&
+                      formData.rumus_lem &&
+                      ` (
+                    ${rumusOptions.find((r) => r.value === formData.rumus_lem)
+                      ?.label}
+                    )`}
+                    :
                   </span>
                   <span className="ml-2 font-semibold text-green-700">
                     {calculatedValues.qty_lem.toFixed(4)}
@@ -331,8 +392,8 @@ const TambahLemModal: React.FC<TambahLemModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-              disabled={!formData.id_lem || !formData.rumus_lem}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!isFormValid()}
             >
               Simpan
             </button>
