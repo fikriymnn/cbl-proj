@@ -61,6 +61,15 @@ export interface CreateMenuDto {
   level: number;
 }
 
+export interface UpdateMenuDto {
+  name: string;
+  icon: string;
+  path: string | null;
+  parent_id: number | null;
+  order_index: number;
+  level: number;
+}
+
 export interface CreateRoleDto {
   name: string;
   description: string;

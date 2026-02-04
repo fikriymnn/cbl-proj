@@ -11,19 +11,10 @@ export interface MenuCategory {
   items: MenuItem[];
 }
 
-// Import your existing SVG files
-import Dashboard from '../images/icon/dashboard.svg';
-import QC from '../images/icon/qcc.svg';
-import MaintenanceIcon from '../images/icon/dashboard.svg';
-import HRIcon from '../images/icon/history2.svg';
-import PPICIcon from '../images/icon/qcc.svg';
-import ProductionIcon from '../images/icon/inspect.svg';
-import MasterDataIcon from '../images/icon/master.svg';
-
 export const menuCategories: MenuCategory[] = [
   {
     name: 'Dashboard',
-    icon: Dashboard,
+    icon: 'dashboard',
     items: [
       {
         name: 'Main Dashboard',
@@ -39,7 +30,7 @@ export const menuCategories: MenuCategory[] = [
   },
   {
     name: 'Security',
-    icon: Dashboard,
+    icon: 'dashboard',
     items: [
       {
         name: 'Monitoring',
@@ -51,7 +42,7 @@ export const menuCategories: MenuCategory[] = [
 
   {
     name: 'Maintenance',
-    icon: MaintenanceIcon,
+    icon: 'maintenance',
     items: [
       {
         name: 'Corrective (CM)',
@@ -212,7 +203,7 @@ export const menuCategories: MenuCategory[] = [
   },
   {
     name: 'Quality Control',
-    icon: QC,
+    icon: 'quality',
     items: [
       {
         name: 'Validate & Verify',
@@ -227,7 +218,7 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'Kalibrasi Alat Ukur',
         path: '/qc/kalibrasi',
-        icon: 'calibration',
+        icon: 'calendar',
       },
       {
         name: 'Kabag Approval',
@@ -298,7 +289,7 @@ export const menuCategories: MenuCategory[] = [
   },
   {
     name: 'MR',
-    icon: QC,
+    icon: 'quality',
     items: [
       {
         name: 'QMS',
@@ -322,7 +313,7 @@ export const menuCategories: MenuCategory[] = [
   },
   {
     name: 'Human Resources',
-    icon: HRIcon,
+    icon: 'hr',
     items: [
       {
         name: 'Personnel Management',
@@ -446,7 +437,7 @@ export const menuCategories: MenuCategory[] = [
   },
   {
     name: 'PPIC',
-    icon: PPICIcon,
+    icon: 'ppic',
     items: [
       {
         name: 'Production Schedule',
@@ -486,12 +477,12 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'BOM',
         path: '#',
-        icon: 'bom',
+        icon: 'document',
         children: [
           {
             name: 'Create BOM',
             path: '/ppic/bom/create',
-            icon: 'create',
+            icon: 'form',
           },
           {
             name: 'Approval',
@@ -503,24 +494,24 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'BOM PPIC',
         path: '#',
-        icon: 'bom',
+        icon: 'document',
         children: [
           {
             name: 'Create BOM PPIC',
             path: '/ppic/bom-ppic/create',
-            icon: 'create',
+            icon: 'form',
           },
         ],
       },
       {
         name: 'JO',
         path: '#',
-        icon: 'jo',
+        icon: 'document',
         children: [
           {
             name: 'Create JO',
             path: '/ppic/jo/create',
-            icon: 'create',
+            icon: 'form',
           },
           {
             name: 'Approval',
@@ -566,7 +557,7 @@ export const menuCategories: MenuCategory[] = [
   },
   {
     name: 'Production',
-    icon: ProductionIcon,
+    icon: 'production',
     items: [
       {
         name: 'Input LKH',
@@ -650,17 +641,17 @@ export const menuCategories: MenuCategory[] = [
   },
   {
     name: 'Marketing',
-    icon: ProductionIcon,
+    icon: 'production',
     items: [
       {
         name: 'Calculation',
         path: '#',
-        icon: 'calculation',
+        icon: 'analysis',
         children: [
           {
             name: 'Create',
             path: '/marketing/calculation/create',
-            icon: 'create',
+            icon: 'form',
           },
           {
             name: 'History',
@@ -689,12 +680,12 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'OKP',
         path: '#',
-        icon: 'okp',
+        icon: 'document',
         children: [
           {
             name: 'Create',
             path: '/marketing/okp/create',
-            icon: 'create',
+            icon: 'form',
           },
           {
             name: 'History',
@@ -706,17 +697,17 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'IO',
         path: '#',
-        icon: 'io',
+        icon: 'document',
         children: [
           {
             name: 'Create',
             path: '/marketing/io/create',
-            icon: 'create',
+            icon: 'form',
           },
           {
             name: 'NPD',
             path: '/marketing/io/npd',
-            icon: 'npd',
+            icon: 'document',
           },
           {
             name: 'History',
@@ -728,12 +719,12 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'SO',
         path: '#',
-        icon: 'so',
+        icon: 'document',
         children: [
           {
             name: 'Create',
             path: '/marketing/so/create',
-            icon: 'create',
+            icon: 'form',
           },
           {
             name: 'History',
@@ -745,17 +736,17 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'Perubahan Invoice',
         path: '#',
-        icon: 'so',
+        icon: 'document',
         children: [
           {
             name: 'Create',
             path: '/marketing/perubahan/create-perubahan',
-            icon: 'create',
+            icon: 'form',
           },
           {
             name: 'List',
             path: '/marketing/perubahan/list-perubahan',
-            icon: 'list',
+            icon: 'report',
           },
           {
             name: 'History',
@@ -768,65 +759,65 @@ export const menuCategories: MenuCategory[] = [
   },
   {
     name: 'Pre-Press',
-    icon: ProductionIcon,
+    icon: 'production',
     items: [
       {
         name: 'Pre Press',
         path: '/prepress',
-        icon: 'prepress',
+        icon: 'production',
       },
     ],
   },
   {
     name: 'Desain',
-    icon: ProductionIcon,
+    icon: 'production',
     items: [
       {
         name: 'Desain',
         path: '/desain',
-        icon: 'design',
+        icon: 'production',
       },
     ],
   },
   {
     name: 'Delivery Order',
-    icon: QC,
+    icon: 'quality',
     items: [
       { name: 'List DO', path: '/do/list-do', icon: 'capa' },
-      { name: 'Konfirmasi DO', path: '/do/konfirmasi-do', icon: 'design' },
+      { name: 'Konfirmasi DO', path: '/do/konfirmasi-do', icon: 'production' },
     ],
   },
   {
     name: 'Accounting',
-    icon: QC,
+    icon: 'quality',
     items: [
       {
         name: 'List Outstanding',
         path: '/accounting/list-outstanding',
-        icon: 'deposit',
+        icon: 'outstanding',
       },
       {
         name: 'List Request Invoice',
         path: '/accounting/list-request-invoice',
-        icon: 'deposit',
+        icon: 'document',
       },
       {
         name: 'List Approve Invoice',
         path: '/accounting/list-approval-invoice',
-        icon: 'deposit',
+        icon: 'approval',
       },
       {
         name: 'List Approve Perubahan',
         path: '/accounting/list-approval-perubahan',
-        icon: 'deposit',
+        icon: 'approval',
       },
       {
         name: 'List All Invoice',
         path: '/accounting/list-invoice',
-        icon: 'deposit',
+        icon: 'document',
       },
-      { name: 'List Retur', path: '/accounting/list-retur', icon: 'deposit' },
-      { name: 'Deposit', path: '/accounting/deposit', icon: 'deposit' },
+      { name: 'List Retur', path: '/accounting/list-retur', icon: 'report' },
+      { name: 'Deposit', path: '/accounting/deposit', icon: 'payroll' },
       {
         name: ' Approval',
         path: '#',
@@ -849,7 +840,7 @@ export const menuCategories: MenuCategory[] = [
 
   {
     name: 'Master Data',
-    icon: MasterDataIcon,
+    icon: 'settings',
     items: [
       {
         name: 'Maintenance',
@@ -864,7 +855,7 @@ export const menuCategories: MenuCategory[] = [
           {
             name: 'User',
             path: '/master/maintenance/user',
-            icon: 'user',
+            icon: 'employee',
           },
           {
             name: 'Role',
@@ -889,17 +880,17 @@ export const menuCategories: MenuCategory[] = [
           {
             name: 'PM1',
             path: '/master/maintenance/pm1',
-            icon: 'pm',
+            icon: 'preventive',
           },
           {
             name: 'PM2',
             path: '/master/maintenance/pm2',
-            icon: 'pm',
+            icon: 'preventive',
           },
           {
             name: 'PM3',
             path: '/master/maintenance/pm3',
-            icon: 'pm',
+            icon: 'preventive',
           },
           {
             name: 'KPI',
@@ -921,7 +912,7 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'Quality Control',
         path: '#',
-        icon: 'qc',
+        icon: 'quality',
         children: [
           {
             name: 'Defect',
@@ -941,7 +932,7 @@ export const menuCategories: MenuCategory[] = [
           {
             name: 'User',
             path: '/master/qc/user',
-            icon: 'user',
+            icon: 'employee',
           },
           {
             name: 'Outsourcing BJ',
@@ -951,7 +942,7 @@ export const menuCategories: MenuCategory[] = [
           {
             name: 'Kalibrasi',
             path: '/master/qc/kalibrasi',
-            icon: 'calibration',
+            icon: 'calendar',
           },
         ],
       },
@@ -973,17 +964,17 @@ export const menuCategories: MenuCategory[] = [
           {
             name: 'Setting',
             path: '/master/hr/setting',
-            icon: 'setting',
+            icon: 'settings',
           },
           {
             name: 'User',
             path: '/master/hr/user',
-            icon: 'user',
+            icon: 'employee',
           },
           {
             name: 'Kendaraan',
             path: '/master/hr/kendaraan',
-            icon: 'vehicle',
+            icon: 'stock',
           },
           {
             name: 'Department',
@@ -1020,7 +1011,7 @@ export const menuCategories: MenuCategory[] = [
           {
             name: 'Fleet Capacity',
             path: '/master/ppic/fleet-capacity',
-            icon: 'capacity',
+            icon: 'stock',
           },
         ],
       },
@@ -1037,7 +1028,7 @@ export const menuCategories: MenuCategory[] = [
           {
             name: 'Kriteria Kendala',
             path: '/master/produksi/kriteria-kendala',
-            icon: 'capacity',
+            icon: 'stock',
           },
           {
             name: 'Kode Produksi',
@@ -1049,42 +1040,42 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'Marketing',
         path: '#',
-        icon: 'marketing',
+        icon: 'production',
         children: [
           {
             name: 'Marketing',
             path: '/master/marketing/marketing',
-            icon: 'marketing',
+            icon: 'production',
           },
           {
             name: 'Customer',
             path: '/master/marketing/customer',
-            icon: 'customer',
+            icon: 'employee',
           },
           {
             name: 'Brand',
             path: '/master/marketing/brand',
-            icon: 'brand',
+            icon: 'grade',
           },
           {
             name: 'Delivery',
             path: '/master/marketing/delivery',
-            icon: 'delivery',
+            icon: 'stock',
           },
           {
             name: 'Product',
             path: '/master/marketing/product',
-            icon: 'product',
+            icon: 'production',
           },
           {
             name: 'Unit',
             path: '/master/marketing/unit',
-            icon: 'unit',
+            icon: 'analysis',
           },
           {
             name: 'Item',
             path: '/master/marketing/item',
-            icon: 'item',
+            icon: 'document',
           },
           {
             name: 'Machine Stage',
@@ -1094,7 +1085,7 @@ export const menuCategories: MenuCategory[] = [
           {
             name: 'Stage',
             path: '/master/marketing/stage',
-            icon: 'stage',
+            icon: 'schedule',
           },
           {
             name: 'Stage Machine',
@@ -1107,22 +1098,22 @@ export const menuCategories: MenuCategory[] = [
       {
         name: 'General',
         path: '#',
-        icon: 'general',
+        icon: 'settings',
         children: [
           {
             name: 'Access',
-            path: '/master/access',
+            path: '/master-data/general/access',
             icon: 'access',
           },
           {
             name: 'Menu',
-            path: '/master/menu',
-            icon: 'menu',
+            path: '/master-data/general/menu',
+            icon: 'document',
           },
           {
             name: 'User',
-            path: '/master/user',
-            icon: 'user',
+            path: '/master-data/general/user',
+            icon: 'employee',
           },
         ],
       },

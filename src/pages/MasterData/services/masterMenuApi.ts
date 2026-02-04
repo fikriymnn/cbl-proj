@@ -6,6 +6,7 @@ import {
   Role,
   RoleMenuResponse,
   CreateMenuDto,
+  UpdateMenuDto,
   CreateRoleDto,
   UpdatePermissionDto,
 } from '../types/masterMenu.types';
@@ -24,6 +25,13 @@ export const masterMenuApi = {
 
   createMenu: async (data: CreateMenuDto): Promise<MenuNode> => {
     const response = await axios.post(`${API_BASE}/master/menu`, data, {
+      withCredentials: true,
+    });
+    return response.data;
+  },
+
+  updateMenu: async (id: number, data: UpdateMenuDto): Promise<MenuNode> => {
+    const response = await axios.put(`${API_BASE}/master/menu/${id}`, data, {
       withCredentials: true,
     });
     return response.data;

@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-
-import UserOne from '../../images/user/user-01.png';
 import axios from 'axios';
 import Bel from '../../images/icon/bel.svg';
 
@@ -169,8 +167,9 @@ const DropdownUser = () => {
                     <div
                       onFocus={() => setNotif(true)}
                       onBlur={() => setNotif(false)}
-                      className={`absolute right-0 mt-10 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${notif === true ? 'block' : 'hidden'
-                        }`}
+                      className={`absolute right-0 mt-10 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
+                        notif === true ? 'block' : 'hidden'
+                      }`}
                     >
                       <div className="flex flex-col ">
                         <p className="text-xs font-bold text-primary p-2">
@@ -292,8 +291,9 @@ const DropdownUser = () => {
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? 'block' : 'hidden'
-          }`}
+        className={`absolute right-0 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
+          dropdownOpen === true ? 'block' : 'hidden'
+        }`}
       >
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
           <li>

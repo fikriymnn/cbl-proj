@@ -2745,7 +2745,7 @@ function App() {
 
         {/* General Master */}
         <Route
-          path="/master/access"
+          path="/master-data/general/access"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2756,7 +2756,7 @@ function App() {
           }
         />
         <Route
-          path="/master/menu"
+          path="/master-data/general/menu"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -2767,7 +2767,7 @@ function App() {
           }
         />
         <Route
-          path="/master/user"
+          path="/master-data/general/user"
           element={
             <>
               <PageTitle title="PT CBL" />

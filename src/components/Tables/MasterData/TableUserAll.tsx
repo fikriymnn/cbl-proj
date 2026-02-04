@@ -8,7 +8,6 @@ interface User {
   nama: string;
   email: string;
   role: string;
-  bagian: string;
   karyawan?: {
     biodata_karyawan: Array<{
       nik: string;
@@ -34,7 +33,6 @@ const TableUserAll = () => {
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-  const [bagianFilter, setBagianFilter] = useState('all');
 
   // Modal states
   const [showEdit, setShowEdit] = useState<boolean[]>([]);
@@ -107,17 +105,11 @@ const TableUserAll = () => {
       filtered = filtered.filter((user) => user.role === roleFilter);
     }
 
-    // Bagian filter
-    if (bagianFilter !== 'all') {
-      filtered = filtered.filter((user) => user.bagian === bagianFilter);
-    }
-
     setFilteredUsers(filtered);
-  }, [searchTerm, roleFilter, bagianFilter, users]);
+  }, [searchTerm, roleFilter, users]);
 
   // Get unique roles and bagian for filters
   const uniqueRoles = Array.from(new Set(users.map((user) => user.role)));
-  const uniqueBagian = Array.from(new Set(users.map((user) => user.bagian)));
 
   // Alert helper
   const showAlert = (type: 'success' | 'error' | 'info', message: string) => {
@@ -161,7 +153,6 @@ const TableUserAll = () => {
   const resetFilters = () => {
     setSearchTerm('');
     setRoleFilter('all');
-    setBagianFilter('all');
   };
 
   return (
@@ -207,22 +198,7 @@ const TableUserAll = () => {
                 ))}
               </select>
 
-              <select
-                value={bagianFilter}
-                onChange={(e) => setBagianFilter(e.target.value)}
-                className="w-full rounded-md border border-stroke bg-white px-4 py-2 text-sm focus:border-blue-500 focus:outline-none sm:w-40"
-              >
-                <option value="all">All Bagian</option>
-                {uniqueBagian.map((bagian) => (
-                  <option key={bagian} value={bagian}>
-                    {bagian}
-                  </option>
-                ))}
-              </select>
-
-              {(searchTerm ||
-                roleFilter !== 'all' ||
-                bagianFilter !== 'all') && (
+              {(searchTerm || roleFilter !== 'all') && (
                 <button
                   onClick={resetFilters}
                   className="rounded-md bg-gray-200 px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-300"
@@ -270,12 +246,8 @@ const TableUserAll = () => {
                       NIK
                     </p>
                   </div>
-                  <div className="col-span-2 p-2.5">
-                    <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
-                      Bagian
-                    </p>
-                  </div>
-                  <div className="col-span-2 p-2.5">
+
+                  <div className="col-span-4 p-2.5">
                     <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
                       Email
                     </p>
@@ -324,12 +296,8 @@ const TableUserAll = () => {
                           {user.karyawan?.biodata_karyawan[0]?.nik || '-'}
                         </p>
                       </div>
-                      <div className="col-span-2 p-2.5">
-                        <p className="text-center text-sm font-light text-slate-600 dark:text-white">
-                          {user.bagian}
-                        </p>
-                      </div>
-                      <div className="col-span-2 p-2.5">
+
+                      <div className="col-span-4 p-2.5">
                         <p className="text-center text-sm font-light text-neutral-500 dark:text-white">
                           {user.email}
                         </p>
@@ -429,22 +397,7 @@ const TableUserAll = () => {
                   ))}
                 </select>
 
-                <select
-                  value={bagianFilter}
-                  onChange={(e) => setBagianFilter(e.target.value)}
-                  className="w-full rounded-md border border-stroke bg-white px-4 py-2 text-sm"
-                >
-                  <option value="all">All Bagian</option>
-                  {uniqueBagian.map((bagian) => (
-                    <option key={bagian} value={bagian}>
-                      {bagian}
-                    </option>
-                  ))}
-                </select>
-
-                {(searchTerm ||
-                  roleFilter !== 'all' ||
-                  bagianFilter !== 'all') && (
+                {(searchTerm || roleFilter !== 'all') && (
                   <button
                     onClick={resetFilters}
                     className="rounded-md bg-gray-200 px-4 py-2 text-xs font-semibold text-gray-700"

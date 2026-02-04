@@ -288,26 +288,6 @@ function TableAbsensi() {
     { value: 'bulanan', label: 'Bulanan' },
   ];
 
-  // Group filtered data by bagian mesin
-  const groupedByMachine = filteredAbsen?.reduce((acc: any, data: any) => {
-    const bagianMesin =
-      data.bagian_mesin?.[0]?.nama_bagian_mesin || 'Tidak Ada Mesin';
-    if (!acc[bagianMesin]) {
-      acc[bagianMesin] = [];
-    }
-    acc[bagianMesin].push(data);
-    return acc;
-  }, {});
-
-  // Sort machine groups to put "Tidak Ada Mesin" at the bottom
-  const sortedMachineGroups = groupedByMachine
-    ? Object.keys(groupedByMachine).sort((a, b) => {
-        if (a === 'Tidak Ada Mesin') return 1;
-        if (b === 'Tidak Ada Mesin') return -1;
-        return a.localeCompare(b);
-      })
-    : [];
-
   // Custom styles for react-select
   const customSelectStyles = {
     control: (base: any) => ({
@@ -737,7 +717,7 @@ function TableAbsensi() {
           </div>
         </div>
 
-        {/* Absensi Table - Grouped by Machine */}
+        {/* Absensi Table - Flat List */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
           <div className="bg-gradient-to-r from-green-500 to-teal-600 p-3 sm:p-4">
             <h3 className="text-white text-base sm:text-lg md:text-xl font-bold flex items-center">
@@ -767,6 +747,9 @@ function TableAbsensi() {
                   </th>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600">
                     Nama
+                  </th>
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600">
+                    Bagian Mesin
                   </th>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600">
                     Dept/Divisi
@@ -800,646 +783,584 @@ function TableAbsensi() {
                 </tr>
               </thead>
               <tbody>
-                {sortedMachineGroups.map(
-                  (mesinName: string, mesinIndex: number) => {
-                    const mesinData = groupedByMachine[mesinName];
-                    let rowCounter = 0;
+                {filteredAbsen?.map((data: any, i: number) => {
+                  let tipe_lembur = null;
+                  let catatan_ketidaksesuaian = null;
 
-                    return (
-                      <React.Fragment key={mesinIndex}>
-                        {/* Machine Section Header */}
-                        <tr className="bg-gradient-to-r from-purple-100 to-purple-50 border-y-2 border-purple-300">
-                          <td
-                            colSpan={9}
-                            className="p-3 sm:p-4 text-left font-bold text-purple-900"
+                  if ((data.jam_lembur ?? 0) < (data.jam_lembur_spl ?? 0)) {
+                    tipe_lembur = 'kurang';
+                    catatan_ketidaksesuaian = 'Jam Lembur Kurang Dari SPL ';
+                  } else if (
+                    (data.jam_lembur ?? 0) > (data.jam_lembur_spl ?? 0)
+                  ) {
+                    tipe_lembur = 'lebih';
+                    catatan_ketidaksesuaian = 'Jam Lembur Lebih Dari SPL ';
+                  }
+
+                  const getRowBackground = () => {
+                    switch (data.status_absen) {
+                      case 'cuti khusus':
+                        return 'bg-orange-50';
+                      case 'sakit':
+                        return 'bg-green-50';
+                      case 'izin':
+                        return 'bg-blue-50';
+                      case 'Belum Masuk':
+                        return 'bg-red-200';
+                      case 'cuti tahunan':
+                        return 'bg-yellow-50';
+                      default:
+                        return '';
+                    }
+                  };
+
+                  const bagianMesin =
+                    data.bagian_mesin?.[0]?.nama_bagian_mesin || '-';
+
+                  return (
+                    <tr key={i} className={`border-b ${getRowBackground()}`}>
+                      <td className="p-2 sm:p-3 text-xs">{i + 1}</td>
+                      <td className="p-2 sm:p-3 text-xs font-medium">
+                        {data.name}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs text-green-600">
+                        {bagianMesin}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs">
+                        <div className="flex flex-col">
+                          <span className="max-w-[120px]">
+                            {data.nama_department}
+                          </span>
+                          <span className="text-blue-500 max-w-[120px]">
+                            {data.nama_divisi}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs">
+                        <div className="flex flex-col">
+                          <span>{data.hari}</span>
+                          <span>
+                            {data.tgl_masuk} -{' '}
+                            <span className="text-blue-400">{data.shift}</span>
+                          </span>
+                          {data.jenis_hari_masuk !== 'Biasa' &&
+                            data.jenis_hari_masuk != null && (
+                              <span className="text-blue-600 font-medium">
+                                Libur
+                              </span>
+                            )}
+                        </div>
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs">
+                        <div className="flex flex-col gap-0.5">
+                          <span>In: {data.jam_masuk || '~'}</span>
+                          <span>Out: {data.jam_keluar || '~'}</span>
+                        </div>
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs">
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className={`uppercase text-[10px] sm:text-xs font-semibold ${
+                              data.status_ketidaksesuaian == 'incoming'
+                                ? 'text-blue-500'
+                                : 'text-black'
+                            }`}
                           >
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm sm:text-base">
-                                {mesinName}
+                            {data.status_ketidaksesuaian == 'incoming'
+                              ? 'Sudah Diajukan'
+                              : data.status_ketidaksesuaian == null ||
+                                data.status_ketidaksesuaian == 0 ||
+                                (data.status_ketidaksesuaian == 'none' &&
+                                  data.status_lembur_spl == 'dengan SPL' &&
+                                  data.jam_lembur == data.jam_lembur_spl)
+                              ? ''
+                              : data.status_ketidaksesuaian == 'none' &&
+                                data.status_lembur_spl == 'dengan SPL' &&
+                                data.jam_lembur != data.jam_lembur_spl
+                              ? 'Belum Diajukan'
+                              : ''}
+                          </span>
+                          {(data.status_ketidaksesuaian == 'Sesuai spl' ||
+                            data.status_ketidaksesuaian == 'Sesuai absen') && (
+                            <span className="uppercase text-[10px] sm:text-xs font-semibold text-green-500">
+                              {data.status_ketidaksesuaian}
+                            </span>
+                          )}
+                          <span className="font-medium text-purple-600">
+                            {data.jam_lembur > 0
+                              ? `${data.jam_lembur} Jam`
+                              : '-'}
+                          </span>
+                          {data.jam_lembur_spl > 0 && (
+                            <span className="text-[10px] text-blue-500">
+                              SPL: {data.jam_lembur_spl} Jam
+                            </span>
+                          )}
+                          {data.status_lembur && (
+                            <span className="text-[10px] text-gray-500">
+                              {data.status_lembur}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs">
+                        <div className="flex flex-col gap-0.5">
+                          <span>{data.status_masuk}</span>
+                          <span>
+                            {data.menit_terlambat == null ||
+                            data.menit_terlambat == 0
+                              ? '~'
+                              : `${data.menit_terlambat} JAM`}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium">
+                            {data.status_absen}
+                          </span>
+                          {data.status_keluar &&
+                            data.status_keluar !== 'Belum Pulang' &&
+                            data.status_keluar !== 'Keluar' && (
+                              <span className="text-[10px] text-blue-500">
+                                {data.status_keluar}
                               </span>
-                              <span className="text-xs sm:text-sm bg-purple-200 px-2 py-1 rounded-full">
-                                {mesinData.length} Karyawan
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
+                            )}
+                        </div>
+                      </td>
+                      <td className="p-2 sm:p-3">
+                        <div className="flex flex-col gap-2">
+                          {data.status_lembur_spl == 'dengan SPL' &&
+                          (data.status_ketidaksesuaian == 'none' ||
+                            data.status_ketidaksesuaian == 'rejected') &&
+                          data.jam_lembur != data.jam_lembur_spl ? (
+                            <>
+                              <button
+                                onClick={() => openSPL(i)}
+                                className="w-full bg-yellow-600 hover:bg-yellow-700 text-white text-xs py-1.5 px-2 rounded-md transition-colors"
+                              >
+                                SPL
+                              </button>
+                              {showSPL[i] == true && (
+                                <ModalKosongan
+                                  isOpen={showSPL[i]}
+                                  onClose={() => closeSPL(i)}
+                                  judul={'Lapor Ketidaksesuaian SPL'}
+                                >
+                                  <>
+                                    <div className="bg-white">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Nama
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.name}
+                                          </label>
+                                        </div>
 
-                        {/* Employees in this machine */}
-                        {mesinData.map((data: any, i: any) => {
-                          rowCounter++;
-                          let tipe_lembur = null;
-                          let catatan_ketidaksesuaian = null;
-
-                          if (
-                            (data.jam_lembur ?? 0) < (data.jam_lembur_spl ?? 0)
-                          ) {
-                            tipe_lembur = 'kurang';
-                            catatan_ketidaksesuaian =
-                              'Jam Lembur Kurang Dari SPL ';
-                          } else if (
-                            (data.jam_lembur ?? 0) > (data.jam_lembur_spl ?? 0)
-                          ) {
-                            tipe_lembur = 'lebih';
-                            catatan_ketidaksesuaian =
-                              'Jam Lembur Lebih Dari SPL ';
-                          }
-                          const getRowBackground = () => {
-                            switch (data.status_absen) {
-                              case 'cuti khusus':
-                                return 'bg-orange-50';
-                              case 'sakit':
-                                return 'bg-green-50';
-                              case 'izin':
-                                return 'bg-blue-50';
-                              case 'Belum Masuk':
-                                return 'bg-red-200';
-                              case 'cuti tahunan':
-                                return 'bg-yellow-50';
-                              default:
-                                return '';
-                            }
-                          };
-
-                          const bagianMesin =
-                            data.bagian_mesin?.[0]?.nama_bagian_mesin || '';
-
-                          return (
-                            <tr
-                              key={i}
-                              className={`border-b ${getRowBackground()}`}
-                            >
-                              <td className="p-2 sm:p-3 text-xs">
-                                {rowCounter}
-                              </td>
-                              <td className="p-2 sm:p-3 text-xs font-medium">
-                                <div className="flex flex-col">
-                                  <span>{data.name}</span>
-                                  {bagianMesin && (
-                                    <span className="text-green-500 text-[10px] sm:text-[11px]">
-                                      - {bagianMesin}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="p-2 sm:p-3 text-xs">
-                                <div className="flex flex-col">
-                                  <span className="max-w-[120px]">
-                                    {data.nama_department}
-                                  </span>
-                                  <span className="text-blue-500 max-w-[120px]">
-                                    {data.nama_divisi}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="p-2 sm:p-3 text-xs">
-                                <div className="flex flex-col">
-                                  <span>{data.hari}</span>
-                                  <span>
-                                    {data.tgl_masuk} -{' '}
-                                    <span className="text-blue-400">
-                                      {data.shift}
-                                    </span>
-                                  </span>
-                                  {data.jenis_hari_masuk !== 'Biasa' &&
-                                    data.jenis_hari_masuk != null && (
-                                      <span className="text-blue-600 font-medium">
-                                        Libur
-                                      </span>
-                                    )}
-                                </div>
-                              </td>
-                              <td className="p-2 sm:p-3 text-xs">
-                                <div className="flex flex-col gap-0.5">
-                                  <span>In: {data.jam_masuk || '~'}</span>
-                                  <span>Out: {data.jam_keluar || '~'}</span>
-                                </div>
-                              </td>
-                              <td className="p-2 sm:p-3 text-xs">
-                                <div className="flex flex-col gap-0.5">
-                                  <span
-                                    className={`uppercase text-[10px] sm:text-xs font-semibold ${
-                                      data.status_ketidaksesuaian == 'incoming'
-                                        ? 'text-blue-500'
-                                        : 'text-black'
-                                    }`}
-                                  >
-                                    {data.status_ketidaksesuaian == 'incoming'
-                                      ? 'Sudah Diajukan'
-                                      : data.status_ketidaksesuaian == null ||
-                                        data.status_ketidaksesuaian == 0 ||
-                                        (data.status_ketidaksesuaian ==
-                                          'none' &&
-                                          data.status_lembur_spl ==
-                                            'dengan SPL' &&
-                                          data.jam_lembur ==
-                                            data.jam_lembur_spl)
-                                      ? ''
-                                      : data.status_ketidaksesuaian == 'none' &&
-                                        data.status_lembur_spl ==
-                                          'dengan SPL' &&
-                                        data.jam_lembur != data.jam_lembur_spl
-                                      ? 'Belum Diajukan'
-                                      : ''}
-                                  </span>
-                                  {(data.status_ketidaksesuaian ==
-                                    'Sesuai spl' ||
-                                    data.status_ketidaksesuaian ==
-                                      'Sesuai absen') && (
-                                    <span className="uppercase text-[10px] sm:text-xs font-semibold text-green-500">
-                                      {data.status_ketidaksesuaian}
-                                    </span>
-                                  )}
-                                  <span className="font-medium text-purple-600">
-                                    {data.jam_lembur > 0
-                                      ? `${data.jam_lembur} Jam`
-                                      : '-'}
-                                  </span>
-                                  {data.jam_lembur_spl > 0 && (
-                                    <span className="text-[10px] text-blue-500">
-                                      SPL: {data.jam_lembur_spl} Jam
-                                    </span>
-                                  )}
-                                  {data.status_lembur && (
-                                    <span className="text-[10px] text-gray-500">
-                                      {data.status_lembur}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="p-2 sm:p-3 text-xs">
-                                <div className="flex flex-col gap-0.5">
-                                  <span>{data.status_masuk}</span>
-                                  <span>
-                                    {data.menit_terlambat == null ||
-                                    data.menit_terlambat == 0
-                                      ? '~'
-                                      : `${data.menit_terlambat} JAM`}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="p-2 sm:p-3 text-xs">
-                                <div className="flex flex-col gap-1">
-                                  <span className="font-medium">
-                                    {data.status_absen}
-                                  </span>
-                                  {data.status_keluar &&
-                                    data.status_keluar !== 'Belum Pulang' &&
-                                    data.status_keluar !== 'Keluar' && (
-                                      <span className="text-[10px] text-blue-500">
-                                        {data.status_keluar}
-                                      </span>
-                                    )}
-                                </div>
-                              </td>
-                              <td className="p-2 sm:p-3">
-                                <div className="flex flex-col gap-2">
-                                  {data.status_lembur_spl == 'dengan SPL' &&
-                                  (data.status_ketidaksesuaian == 'none' ||
-                                    data.status_ketidaksesuaian ==
-                                      'rejected') &&
-                                  data.jam_lembur != data.jam_lembur_spl ? (
-                                    <>
-                                      <button
-                                        onClick={() => openSPL(i)}
-                                        className="w-full bg-yellow-600 hover:bg-yellow-700 text-white text-xs py-1.5 px-2 rounded-md transition-colors"
-                                      >
-                                        SPL
-                                      </button>
-                                      {showSPL[i] == true && (
-                                        <ModalKosongan
-                                          isOpen={showSPL[i]}
-                                          onClose={() => closeSPL(i)}
-                                          judul={'Lapor Ketidaksesuaian SPL'}
-                                        >
-                                          <>
-                                            <div className="bg-white">
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Nama
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {data.name}
-                                                  </label>
-                                                </div>
-
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Tipe Ketidaksesuaian
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm uppercase">
-                                                    {tipe_lembur}
-                                                  </label>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Selisih Jam
-                                                  </label>
-                                                  <div className="flex gap-1 justify-between w-full md:w-[50%]">
-                                                    <div className="flex flex-col">
-                                                      <label className="text-[#6c6b6b] text-sm">
-                                                        Jam Lembur SPL
-                                                      </label>
-                                                      <label className="text-[#6c6b6b] text-sm">
-                                                        Jam Lembur
-                                                      </label>
-                                                    </div>
-                                                    <div className="flex flex-col">
-                                                      <label className="text-[#6c6b6b] text-sm">
-                                                        : {data.jam_lembur_spl}{' '}
-                                                        Jam
-                                                      </label>
-                                                      <label className="text-[#6c6b6b] text-sm">
-                                                        : {data.jam_lembur} Jam
-                                                      </label>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Alasan Lembur
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {catatan_ketidaksesuaian}
-                                                  </label>
-                                                </div>
-                                              </div>
-
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
-                                                <div className="flex flex-col gap-3">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Tanggal
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {convertTimeStampToDate(
-                                                      data.waktu_masuk,
-                                                    )}
-                                                  </label>
-                                                </div>
-                                              </div>
-
-                                              <div className="flex w-full justify-end items-end px-7 py-4">
-                                                <div className="flex flex-col sm:flex-row gap-2 w-full px-4 pt-1">
-                                                  <button
-                                                    disabled={isLoading}
-                                                    onClick={() =>
-                                                      postLemburKurang(
-                                                        catatan_ketidaksesuaian,
-                                                        tipe_lembur,
-                                                        data.jam_lembur,
-                                                        i,
-                                                        data.id_pengajuan_lembur,
-                                                        1,
-                                                      )
-                                                    }
-                                                    className="bg-green-500 hover:bg-green-600 w-full sm:w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm transition-colors disabled:opacity-50"
-                                                  >
-                                                    SESUAI ABSEN
-                                                  </button>
-                                                  <button
-                                                    disabled={isLoading}
-                                                    onClick={() =>
-                                                      postLemburKurang(
-                                                        catatan_ketidaksesuaian,
-                                                        tipe_lembur,
-                                                        data.jam_lembur,
-                                                        i,
-                                                        data.id_pengajuan_lembur,
-                                                        0,
-                                                      )
-                                                    }
-                                                    className="bg-red-500 hover:bg-red-600 w-full sm:w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm transition-colors disabled:opacity-50"
-                                                  >
-                                                    SESUAI SPL
-                                                  </button>
-                                                </div>
-                                              </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Tipe Ketidaksesuaian
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm uppercase">
+                                            {tipe_lembur}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Selisih Jam
+                                          </label>
+                                          <div className="flex gap-1 justify-between w-full md:w-[50%]">
+                                            <div className="flex flex-col">
+                                              <label className="text-[#6c6b6b] text-sm">
+                                                Jam Lembur SPL
+                                              </label>
+                                              <label className="text-[#6c6b6b] text-sm">
+                                                Jam Lembur
+                                              </label>
                                             </div>
-                                          </>
-                                        </ModalKosongan>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
-
-                                  {data.status_masuk == 'Terlambat ' ? (
-                                    <>
-                                      <button
-                                        onClick={() => openAksi2(i)}
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 px-2 rounded-md transition-colors"
-                                      >
-                                        Izin
-                                      </button>
-                                      {showAksi2[i] == true && (
-                                        <ModalKosongan
-                                          isOpen={showAksi2[i]}
-                                          onClose={() => closeAksi2(i)}
-                                          judul={'Lapor Izin'}
-                                        >
-                                          <>
-                                            <div className="bg-white">
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Nama
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {data.name}
-                                                  </label>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Jam Masuk
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {data.jam_masuk}
-                                                  </label>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Tipe Izin
-                                                  </label>
-                                                  <select
-                                                    onChange={(e) =>
-                                                      settipeIzin(
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                    className="text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md"
-                                                  >
-                                                    <option selected disabled>
-                                                      Pilih Tipe Izin
-                                                    </option>
-                                                    <option value={'dinas'}>
-                                                      Dinas
-                                                    </option>
-                                                    <option value={'pribadi'}>
-                                                      Pribadi
-                                                    </option>
-                                                  </select>
-                                                </div>
-                                              </div>
-                                              <div className="flex flex-col gap-1 px-7 py-4">
-                                                <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                  Alasan
-                                                </label>
-                                                <textarea
-                                                  onChange={(e) =>
-                                                    setAlasanTerlambat(
-                                                      e.target.value,
-                                                    )
-                                                  }
-                                                  className="text-[#6c6b6b] h-16 text-sm border-2 border-stroke rounded-md p-2"
-                                                  placeholder="Masukkan alasan ..."
-                                                />
-                                              </div>
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
-                                                <div className="flex flex-col gap-3">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Tanggal
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {convertTimeStampToDate(
-                                                      data.tgl_masuk,
-                                                    )}
-                                                  </label>
-                                                </div>
-                                              </div>
-
-                                              <div className="flex w-full justify-end items-end px-7 py-4">
-                                                {tipeIzin == null ||
-                                                alasanTerlambat == null ||
-                                                alasanTerlambat.trim() ===
-                                                  '' ? (
-                                                  <></>
-                                                ) : (
-                                                  <>
-                                                    <button
-                                                      onClick={() => {
-                                                        postTerlambat(
-                                                          data.tgl_absen,
-                                                          data.userid,
-                                                          data.name,
-                                                          i,
-                                                          data.jam_masuk,
-                                                        );
-                                                      }}
-                                                      disabled={isLoading}
-                                                      className="flex px-4 py-2 justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors disabled:opacity-50"
-                                                    >
-                                                      AJUKAN
-                                                    </button>
-                                                  </>
-                                                )}
-                                              </div>
+                                            <div className="flex flex-col">
+                                              <label className="text-[#6c6b6b] text-sm">
+                                                : {data.jam_lembur_spl} Jam
+                                              </label>
+                                              <label className="text-[#6c6b6b] text-sm">
+                                                : {data.jam_lembur} Jam
+                                              </label>
                                             </div>
-                                          </>
-                                        </ModalKosongan>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Alasan Lembur
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {catatan_ketidaksesuaian}
+                                          </label>
+                                        </div>
+                                      </div>
 
-                                  {data.status_absen == 'Belum Masuk' ? (
-                                    <>
-                                      <button
-                                        onClick={() => openEdit(i)}
-                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5 px-2 rounded-md transition-colors"
-                                      >
-                                        Aksi
-                                      </button>
-                                      {showEdit[i] == true && (
-                                        <ModalKosongan
-                                          isOpen={showEdit[i]}
-                                          onClose={() => closeEdit(i)}
-                                          judul={'Lapor'}
-                                        >
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-3">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Tanggal
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {convertTimeStampToDate(
+                                              data.waktu_masuk,
+                                            )}
+                                          </label>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex w-full justify-end items-end px-7 py-4">
+                                        <div className="flex flex-col sm:flex-row gap-2 w-full px-4 pt-1">
+                                          <button
+                                            disabled={isLoading}
+                                            onClick={() =>
+                                              postLemburKurang(
+                                                catatan_ketidaksesuaian,
+                                                tipe_lembur,
+                                                data.jam_lembur,
+                                                i,
+                                                data.id_pengajuan_lembur,
+                                                1,
+                                              )
+                                            }
+                                            className="bg-green-500 hover:bg-green-600 w-full sm:w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm transition-colors disabled:opacity-50"
+                                          >
+                                            SESUAI ABSEN
+                                          </button>
+                                          <button
+                                            disabled={isLoading}
+                                            onClick={() =>
+                                              postLemburKurang(
+                                                catatan_ketidaksesuaian,
+                                                tipe_lembur,
+                                                data.jam_lembur,
+                                                i,
+                                                data.id_pengajuan_lembur,
+                                                0,
+                                              )
+                                            }
+                                            className="bg-red-500 hover:bg-red-600 w-full sm:w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm transition-colors disabled:opacity-50"
+                                          >
+                                            SESUAI SPL
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </>
+                                </ModalKosongan>
+                              )}
+                            </>
+                          ) : (
+                            <></>
+                          )}
+
+                          {data.status_masuk == 'Terlambat ' ? (
+                            <>
+                              <button
+                                onClick={() => openAksi2(i)}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 px-2 rounded-md transition-colors"
+                              >
+                                Izin
+                              </button>
+                              {showAksi2[i] == true && (
+                                <ModalKosongan
+                                  isOpen={showAksi2[i]}
+                                  onClose={() => closeAksi2(i)}
+                                  judul={'Lapor Izin'}
+                                >
+                                  <>
+                                    <div className="bg-white">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Nama
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.name}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Jam Masuk
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.jam_masuk}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Tipe Izin
+                                          </label>
+                                          <select
+                                            onChange={(e) =>
+                                              settipeIzin(e.target.value)
+                                            }
+                                            className="text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md"
+                                          >
+                                            <option selected disabled>
+                                              Pilih Tipe Izin
+                                            </option>
+                                            <option value={'dinas'}>
+                                              Dinas
+                                            </option>
+                                            <option value={'pribadi'}>
+                                              Pribadi
+                                            </option>
+                                          </select>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col gap-1 px-7 py-4">
+                                        <label className="text-[#6c6b6b] text-sm font-semibold">
+                                          Alasan
+                                        </label>
+                                        <textarea
+                                          onChange={(e) =>
+                                            setAlasanTerlambat(e.target.value)
+                                          }
+                                          className="text-[#6c6b6b] h-16 text-sm border-2 border-stroke rounded-md p-2"
+                                          placeholder="Masukkan alasan ..."
+                                        />
+                                      </div>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-3">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Tanggal
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {convertTimeStampToDate(
+                                              data.tgl_masuk,
+                                            )}
+                                          </label>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex w-full justify-end items-end px-7 py-4">
+                                        {tipeIzin == null ||
+                                        alasanTerlambat == null ||
+                                        alasanTerlambat.trim() === '' ? (
+                                          <></>
+                                        ) : (
                                           <>
-                                            <TabPengajuanLangsung data={data} />
+                                            <button
+                                              onClick={() => {
+                                                postTerlambat(
+                                                  data.tgl_absen,
+                                                  data.userid,
+                                                  data.name,
+                                                  i,
+                                                  data.jam_masuk,
+                                                );
+                                              }}
+                                              disabled={isLoading}
+                                              className="flex px-4 py-2 justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors disabled:opacity-50"
+                                            >
+                                              AJUKAN
+                                            </button>
                                           </>
-                                        </ModalKosongan>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
+                                        )}
+                                      </div>
+                                    </div>
+                                  </>
+                                </ModalKosongan>
+                              )}
+                            </>
+                          ) : (
+                            <></>
+                          )}
 
-                                  {data.status_keluar == 'Pulang Cepat' ? (
-                                    <>
-                                      <button
-                                        onClick={() => openEdit(i)}
-                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5 px-2 rounded-md transition-colors"
-                                      >
-                                        Pulang Cepat
-                                      </button>
-                                      {showEdit[i] == true && (
-                                        <ModalKosongan
-                                          isOpen={showEdit[i]}
-                                          onClose={() => closeEdit(i)}
-                                          judul={'Lapor Pulang Cepat'}
+                          {data.status_absen == 'Belum Masuk' ? (
+                            <>
+                              <button
+                                onClick={() => openEdit(i)}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5 px-2 rounded-md transition-colors"
+                              >
+                                Aksi
+                              </button>
+                              {showEdit[i] == true && (
+                                <ModalKosongan
+                                  isOpen={showEdit[i]}
+                                  onClose={() => closeEdit(i)}
+                                  judul={'Lapor'}
+                                >
+                                  <>
+                                    <TabPengajuanLangsung data={data} />
+                                  </>
+                                </ModalKosongan>
+                              )}
+                            </>
+                          ) : (
+                            <></>
+                          )}
+
+                          {data.status_keluar == 'Pulang Cepat' ? (
+                            <>
+                              <button
+                                onClick={() => openEdit(i)}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-1.5 px-2 rounded-md transition-colors"
+                              >
+                                Pulang Cepat
+                              </button>
+                              {showEdit[i] == true && (
+                                <ModalKosongan
+                                  isOpen={showEdit[i]}
+                                  onClose={() => closeEdit(i)}
+                                  judul={'Lapor Pulang Cepat'}
+                                >
+                                  <>
+                                    <div className="bg-white">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Nama
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.name}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Department
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.nama_department}
+                                          </label>
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Tanggal
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.tgl_masuk}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Jam Keluar
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.jam_keluar == null ||
+                                            data.jam_keluar == 0
+                                              ? '~'
+                                              : data.jam_keluar}
+                                          </label>
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Status Keluar
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm text-orange-600 font-semibold">
+                                            {data.status_keluar}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Shift
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.shift == null ||
+                                            data.shift == 0
+                                              ? '~'
+                                              : data.shift}
+                                          </label>
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Tipe Izin
+                                          </label>
+                                          <select
+                                            onChange={(e) =>
+                                              settipePulang(e.target.value)
+                                            }
+                                            className="text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md"
+                                          >
+                                            <option selected disabled>
+                                              Pilih Tipe Izin
+                                            </option>
+                                            <option value={'dinas'}>
+                                              Dinas
+                                            </option>
+                                            <option value={'pribadi'}>
+                                              Pribadi
+                                            </option>
+                                          </select>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Alasan Pulang Cepat
+                                          </label>
+                                          <textarea
+                                            onChange={(e) =>
+                                              setAlasanPulang(e.target.value)
+                                            }
+                                            className="text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md p-2"
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <div className="px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Keterangan
+                                          </label>
+                                          <p className="text-[#6c6b6b] text-sm">
+                                            Karyawan pulang lebih cepat dari
+                                            jadwal yang ditentukan. Apakah Anda
+                                            ingin mengajukan laporan pulang
+                                            cepat untuk karyawan ini?
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex w-full justify-end items-end gap-3 px-7 py-4">
+                                        <button
+                                          onClick={() => closeEdit(i)}
+                                          className="flex px-4 py-2 justify-center items-center bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md transition-colors"
                                         >
-                                          <>
-                                            <div className="bg-white">
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Nama
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {data.name}
-                                                  </label>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Department
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {data.nama_department}
-                                                  </label>
-                                                </div>
-                                              </div>
-
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Tanggal
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {data.tgl_masuk}
-                                                  </label>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Jam Keluar
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {data.jam_keluar == null ||
-                                                    data.jam_keluar == 0
-                                                      ? '~'
-                                                      : data.jam_keluar}
-                                                  </label>
-                                                </div>
-                                              </div>
-
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Status Keluar
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm text-orange-600 font-semibold">
-                                                    {data.status_keluar}
-                                                  </label>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Shift
-                                                  </label>
-                                                  <label className="text-[#6c6b6b] text-sm">
-                                                    {data.shift == null ||
-                                                    data.shift == 0
-                                                      ? '~'
-                                                      : data.shift}
-                                                  </label>
-                                                </div>
-                                              </div>
-
-                                              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 px-7 py-4">
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Tipe Izin
-                                                  </label>
-                                                  <select
-                                                    onChange={(e) =>
-                                                      settipePulang(
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                    className="text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md"
-                                                  >
-                                                    <option selected disabled>
-                                                      Pilih Tipe Izin
-                                                    </option>
-                                                    <option value={'dinas'}>
-                                                      Dinas
-                                                    </option>
-                                                    <option value={'pribadi'}>
-                                                      Pribadi
-                                                    </option>
-                                                  </select>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Alasan Pulang Cepat
-                                                  </label>
-                                                  <textarea
-                                                    onChange={(e) =>
-                                                      setAlasanPulang(
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                    className="text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md p-2"
-                                                  />
-                                                </div>
-                                              </div>
-
-                                              <div className="px-7 py-4">
-                                                <div className="flex flex-col gap-1">
-                                                  <label className="text-[#6c6b6b] text-sm font-semibold">
-                                                    Keterangan
-                                                  </label>
-                                                  <p className="text-[#6c6b6b] text-sm">
-                                                    Karyawan pulang lebih cepat
-                                                    dari jadwal yang ditentukan.
-                                                    Apakah Anda ingin mengajukan
-                                                    laporan pulang cepat untuk
-                                                    karyawan ini?
-                                                  </p>
-                                                </div>
-                                              </div>
-
-                                              <div className="flex w-full justify-end items-end gap-3 px-7 py-4">
-                                                <button
-                                                  onClick={() => closeEdit(i)}
-                                                  className="flex px-4 py-2 justify-center items-center bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-md transition-colors"
-                                                >
-                                                  BATAL
-                                                </button>
-                                                <button
-                                                  onClick={() => {
-                                                    postPulangCepat(
-                                                      data.tgl_absen,
-                                                      data.userid,
-                                                      data.name,
-                                                      data.jam_keluar,
-                                                    );
-                                                  }}
-                                                  disabled={isLoading}
-                                                  className="flex px-4 py-2 justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md disabled:opacity-50 transition-colors"
-                                                >
-                                                  {isLoading
-                                                    ? 'MEMPROSES...'
-                                                    : 'AJUKAN'}
-                                                </button>
-                                              </div>
-                                            </div>
-                                          </>
-                                        </ModalKosongan>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </React.Fragment>
-                    );
-                  },
-                )}
+                                          BATAL
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            postPulangCepat(
+                                              data.tgl_absen,
+                                              data.userid,
+                                              data.name,
+                                              data.jam_keluar,
+                                            );
+                                          }}
+                                          disabled={isLoading}
+                                          className="flex px-4 py-2 justify-center items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md disabled:opacity-50 transition-colors"
+                                        >
+                                          {isLoading
+                                            ? 'MEMPROSES...'
+                                            : 'AJUKAN'}
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </>
+                                </ModalKosongan>
+                              )}
+                            </>
+                          ) : (
+                            <></>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             {(!filteredAbsen || filteredAbsen.length === 0) && (

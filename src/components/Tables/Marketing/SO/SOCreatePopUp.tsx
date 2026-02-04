@@ -69,6 +69,12 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   const [selectedKalkulasiData, setSelectedKalkulasiData] =
     useState<KalkulasiData | null>(null);
 
+  // Store SO number options from API
+  const [soNumberData, setSoNumberData] = useState<{
+    no_so_tax_new: string;
+    no_so_non_tax_new: string;
+  } | null>(null);
+
   // Status Produk options
   const statusProdukOptions = [
     { value: 'OKP', label: 'OKP' },
@@ -93,30 +99,49 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       const res = await axios.get(url, {
         withCredentials: true,
       });
+      console.log('SO jumlah data response:', res.data);
 
-      const totalData = res.data.total_data || 0;
-      const nextNumber = totalData + 1;
+      // Store both SO number options
+      if (res.data.succes) {
+        const soData = {
+          no_so_tax_new: res.data.no_so_tax_new || '',
+          no_so_non_tax_new: res.data.no_so_non_tax_new || '',
+        };
+        setSoNumberData(soData);
 
-      // Format: SO-XXXXX/CBL/MMYY
-      const now = new Date();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const year = String(now.getFullYear()).slice(-2);
-      const formattedNumber = String(nextNumber).padStart(5, '0');
+        // Set initial SO number based on current PPN selection
+        const initialSONumber =
+          formData.ppn === 'yes'
+            ? soData.no_so_tax_new
+            : soData.no_so_non_tax_new;
 
-      const soNumber = `SO-${formattedNumber}/CBL/${month}${year}`;
-
-      setFormData((prev) => ({
-        ...prev,
-        no_so: soNumber,
-      }));
+        setFormData((prev) => ({
+          ...prev,
+          no_so: initialSONumber,
+        }));
+      }
     } catch (error) {
       console.error('Error generating SO number:', error);
-
       // Optionally show error message to user
     } finally {
       setLoadingSONumber(false);
     }
   };
+
+  // Update SO number when PPN changes
+  useEffect(() => {
+    if (soNumberData) {
+      const newSONumber =
+        formData.ppn === 'yes'
+          ? soNumberData.no_so_tax_new
+          : soNumberData.no_so_non_tax_new;
+
+      setFormData((prev) => ({
+        ...prev,
+        no_so: newSONumber,
+      }));
+    }
+  }, [formData.ppn, soNumberData]);
 
   // Fetch Kalkulasi data from API using axios
   const fetchKalkulasiData = async () => {
@@ -341,6 +366,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     });
     setSelectedKalkulasiData(null);
     setGudangOptions([]);
+    setSoNumberData(null);
   };
 
   if (!isOpen) return null;

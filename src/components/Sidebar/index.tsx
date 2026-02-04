@@ -1,4 +1,4 @@
-// Sidebar.tsx - Updated version
+// Sidebar.tsx - Updated with dynamic menu support
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
@@ -10,6 +10,10 @@ import {
   MenuCategory,
 } from '../../constant/menuConfig';
 import { filterCategoriesByPermissions } from '../../constant/menuPermissionFilter';
+import {
+  transformAPIMenuToCategories,
+  hasCustomMenu,
+} from '../../constant/menuTransformer';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -172,7 +176,7 @@ const Sidebar = ({
                 sidebarExpanded ? handleClick() : setSidebarExpanded(true);
               }}
             >
-              <img src={category.icon} alt="Icon" />
+              <IconComponent name={category.icon} size={20} />
               {category.name}
               <svg
                 className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
@@ -207,8 +211,27 @@ const Sidebar = ({
     );
   };
 
-  // Get filtered menu categories based on permissions only (from rbacConfig)
-  const getFilteredMenus = () => {
+  // Get filtered menu categories based on permissions or API menu data
+  const getFilteredMenus = (): MenuCategory[] => {
+    // Check if we should use custom menu from API
+    const useCustomMenu = localStorage.getItem('useCustomMenu') === 'true';
+    const userMenuData = localStorage.getItem('userMenu');
+
+    if (useCustomMenu && userMenuData) {
+      try {
+        const parsedMenu = JSON.parse(userMenuData);
+
+        // Check if the parsed menu has custom menu data
+        if (hasCustomMenu(parsedMenu)) {
+          // Transform API menu to MenuCategory format
+          return transformAPIMenuToCategories(parsedMenu);
+        }
+      } catch (error) {
+        console.error('Error parsing user menu from localStorage:', error);
+      }
+    }
+
+    // Fallback to rbacConfig-based filtering
     return filterCategoriesByPermissions(menuCategories, role, bagian);
   };
 

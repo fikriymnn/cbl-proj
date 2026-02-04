@@ -26,12 +26,18 @@ interface SelectOption {
   label: string;
 }
 
+interface Role {
+  id: number;
+  name: string;
+  description: string;
+  is_active: boolean;
+}
+
 interface FormData {
   email: string;
   nama: string;
-  bagian: string;
   no: string;
-  role: string;
+  id_role: number | null;
   password: string;
   confPassword: string;
   id_karyawan: number | null;
@@ -57,6 +63,8 @@ const ModalUser = ({
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [options, setOptions] = useState<SelectOption[]>([]);
   const [divisiOptions, setDivisiOptions] = useState<SelectOption[]>([]);
+  const [roleOptions, setRoleOptions] = useState<SelectOption[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<SelectOption | null>(
     null,
   );
@@ -67,9 +75,9 @@ const ModalUser = ({
   const [formData, setFormData] = useState<FormData>({
     email: data?.email || '',
     nama: data?.nama || '',
-    bagian: data?.bagian || '',
+
     no: data?.no || '',
-    role: data?.role || '',
+    id_role: data?.id_role || null,
     password: '',
     confPassword: '',
     id_karyawan: data?.karyawan?.biodata_karyawan[0]?.id_karyawan || null,
@@ -86,10 +94,15 @@ const ModalUser = ({
     })(),
   });
 
-  // Check if role requires divisi_bawahan
-  const requiresDivisi = ['section head', 'supervisor'].includes(
-    formData.role.toLowerCase(),
-  );
+  // Check if role requires divisi_bawahan based on role id
+  const requiresDivisi = (() => {
+    if (!formData.id_role) return false;
+    const selectedRole = roles.find((r) => r.id === formData.id_role);
+    if (!selectedRole) return false;
+    // Check if role name is 'section head' or 'supervisor' (case insensitive)
+    const roleName = selectedRole.name.toLowerCase();
+    return roleName.includes('section head') || roleName.includes('supervisor');
+  })();
 
   // Handle window resize
   const handleResize = useCallback(() => {
@@ -119,10 +132,11 @@ const ModalUser = ({
     }
   }, [formData.password, formData.confPassword, isEditMode]);
 
-  // Fetch employees and divisi on mount
+  // Fetch employees, divisi, and roles on mount
   useEffect(() => {
     getEmployees();
     getDivisi();
+    getRoles();
   }, []);
 
   // Fetch employees
@@ -191,6 +205,25 @@ const ModalUser = ({
     }
   };
 
+  // Fetch roles from new API
+  const getRoles = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/roles`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+      const rolesData = res.data.data || [];
+      setRoles(rolesData);
+
+      // Map to options for select dropdown
+      const mappedRoles = rolesData.map((role: Role) => ({
+        value: role.id,
+        label: role.name,
+      }));
+      setRoleOptions(mappedRoles);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
+  };
+
   // Handle form input changes
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -241,8 +274,7 @@ const ModalUser = ({
     }
 
     if (!formData.nama) errors.nama = 'Nama wajib diisi';
-    if (!formData.bagian) errors.bagian = 'Bagian wajib diisi';
-    if (!formData.role) errors.role = 'Role wajib diisi';
+    if (!formData.id_role) errors.id_role = 'Role wajib diisi';
 
     // Password validation only required for create mode
     if (!isEditMode) {
@@ -281,9 +313,8 @@ const ModalUser = ({
         {
           email: formData.email,
           nama: formData.nama,
-          bagian: formData.bagian,
           no: formData.no,
-          role: formData.role,
+          id_role: formData.id_role,
           password: formData.password || undefined,
           confPassword: formData.confPassword || undefined,
           id_karyawan: formData.id_karyawan,
@@ -308,33 +339,6 @@ const ModalUser = ({
       setIsLoading(false);
     }
   };
-
-  // Department options with new additions
-  const departmentOptions = [
-    { value: 'maintenance', label: 'Maintenance' },
-    { value: 'quality control', label: 'Quality Control' },
-    { value: 'hr', label: 'HR' },
-    { value: 'ppic', label: 'PPIC' },
-    { value: 'produksi', label: 'Produksi' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'delivery order', label: 'Delivery Order' },
-    { value: 'accounting', label: 'Accounting' },
-    { value: 'security', label: 'Security' },
-  ];
-
-  // Role options
-  const roleOptions = [
-    { value: 'section head', label: 'Section Head' },
-    { value: 'supervisor', label: 'Supervisor' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'senior technician', label: 'Senior Technician' },
-    { value: 'shift technician', label: 'Shift Technician' },
-    { value: 'junior technician', label: 'Junior Technician' },
-    { value: 'pre_press', label: 'Pre-Press' },
-    { value: 'payroll', label: 'Payroll' },
-    { value: 'inspector', label: 'Inspector' },
-    { value: 'security', label: 'Security' },
-  ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 p-4 backdrop-blur-sm md:p-8">
@@ -479,52 +483,21 @@ const ModalUser = ({
             />
           </div>
 
-          {/* Bagian */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-gray-700">
-              BAGIAN <span className="text-red-500">*</span>
-            </label>
-            <select
-              value={formData.bagian}
-              onChange={(e) => handleInputChange('bagian', e.target.value)}
-              className={`h-11 w-full appearance-none rounded-lg border-2 px-4 py-2 text-sm transition-colors focus:outline-none ${
-                formErrors.bagian
-                  ? 'border-red-500 focus:border-red-500'
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
-              } bg-white ${formData.bagian ? 'text-black' : 'text-gray-400'}`}
-              disabled={isLoading}
-            >
-              <option value="" disabled>
-                Pilih Bagian
-              </option>
-              {departmentOptions.map((opt) => (
-                <option
-                  key={opt.value}
-                  value={opt.value}
-                  className="text-black"
-                >
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-            {formErrors.bagian && (
-              <p className="text-xs text-red-600">{formErrors.bagian}</p>
-            )}
-          </div>
-
           {/* Role */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-gray-700">
               ROLE <span className="text-red-500">*</span>
             </label>
             <select
-              value={formData.role}
-              onChange={(e) => handleInputChange('role', e.target.value)}
+              value={formData.id_role || ''}
+              onChange={(e) =>
+                handleInputChange('id_role', Number(e.target.value))
+              }
               className={`h-11 w-full appearance-none rounded-lg border-2 px-4 py-2 text-sm transition-colors focus:outline-none ${
-                formErrors.role
+                formErrors.id_role
                   ? 'border-red-500 focus:border-red-500'
                   : 'border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
-              } bg-white ${formData.role ? 'text-black' : 'text-gray-400'}`}
+              } bg-white ${formData.id_role ? 'text-black' : 'text-gray-400'}`}
               disabled={isLoading}
             >
               <option value="" disabled>
@@ -540,8 +513,8 @@ const ModalUser = ({
                 </option>
               ))}
             </select>
-            {formErrors.role && (
-              <p className="text-xs text-red-600">{formErrors.role}</p>
+            {formErrors.id_role && (
+              <p className="text-xs text-red-600">{formErrors.id_role}</p>
             )}
           </div>
 

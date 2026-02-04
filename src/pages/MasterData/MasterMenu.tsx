@@ -5,7 +5,11 @@ import React, { useEffect, useState } from 'react';
 import Loading from '../../components/Loading';
 import ModalKosonganSmall from '../../components/Modals/ModalKosonganSmall';
 import { masterMenuApi } from './services/masterMenuApi';
-import { MenuNode, CreateMenuDto } from './types/masterMenu.types';
+import {
+  MenuNode,
+  CreateMenuDto,
+  UpdateMenuDto,
+} from './types/masterMenu.types';
 import { IconComponent } from '../../constant/icons';
 
 // Get all available icons from your icons file
@@ -74,6 +78,8 @@ function MasterMenu() {
   const [isLoading, setIsLoading] = useState(false);
   const [menus, setMenus] = useState<MenuNode[]>([]);
   const [showModalCreate, setShowModalCreate] = useState(false);
+  const [showModalEdit, setShowModalEdit] = useState(false);
+  const [editingMenu, setEditingMenu] = useState<MenuNode | null>(null);
   const [newMenu, setNewMenu] = useState<CreateMenuDto>({
     name: '',
     icon: '',
@@ -82,7 +88,18 @@ function MasterMenu() {
     order_index: 1,
     level: 1,
   });
+  const [editMenu, setEditMenu] = useState<UpdateMenuDto>({
+    name: '',
+    icon: '',
+    path: null,
+    parent_id: null,
+    order_index: 1,
+    level: 1,
+  });
   const [selectedParent, setSelectedParent] = useState<MenuNode | null>(null);
+  const [selectedEditParent, setSelectedEditParent] = useState<MenuNode | null>(
+    null,
+  );
 
   useEffect(() => {
     loadMenus();
@@ -193,7 +210,7 @@ function MasterMenu() {
     return `${parentFullPath}/${pathSegment}`;
   };
 
-  // Handle parent selection
+  // Handle parent selection for create
   const handleParentChange = (parentId: string) => {
     if (!parentId) {
       setSelectedParent(null);
@@ -219,7 +236,33 @@ function MasterMenu() {
     }
   };
 
-  // Handle menu name change
+  // Handle parent selection for edit
+  const handleEditParentChange = (parentId: string) => {
+    if (!parentId) {
+      setSelectedEditParent(null);
+      setEditMenu({
+        ...editMenu,
+        parent_id: null,
+        level: 1,
+        order_index: getNextOrderIndex(null),
+        path: editMenu.name ? buildAutoPath(null, editMenu.name) : null,
+      });
+    } else {
+      const parent = flatMenus.find((m) => m.id === Number(parentId));
+      setSelectedEditParent(parent || null);
+      setEditMenu({
+        ...editMenu,
+        parent_id: Number(parentId),
+        level: parent ? parent.level + 1 : 1,
+        order_index: getNextOrderIndex(Number(parentId)),
+        path: editMenu.name
+          ? buildAutoPath(Number(parentId), editMenu.name)
+          : null,
+      });
+    }
+  };
+
+  // Handle menu name change for create
   const handleNameChange = (name: string) => {
     const autoPath = newMenu.parent_id
       ? buildAutoPath(newMenu.parent_id, name)
@@ -227,6 +270,19 @@ function MasterMenu() {
 
     setNewMenu({
       ...newMenu,
+      name,
+      path: name ? autoPath : null,
+    });
+  };
+
+  // Handle menu name change for edit
+  const handleEditNameChange = (name: string) => {
+    const autoPath = editMenu.parent_id
+      ? buildAutoPath(editMenu.parent_id, name)
+      : buildAutoPath(null, name);
+
+    setEditMenu({
+      ...editMenu,
       name,
       path: name ? autoPath : null,
     });
@@ -258,6 +314,56 @@ function MasterMenu() {
     }
   };
 
+  const handleEditMenuClick = (menu: MenuNode) => {
+    setEditingMenu(menu);
+
+    // Find parent if exists
+    const parent = menu.parent_id
+      ? flatMenus.find((m) => m.id === menu.parent_id)
+      : null;
+
+    setSelectedEditParent(parent || null);
+
+    setEditMenu({
+      name: menu.name,
+      icon: menu.icon,
+      path: menu.path,
+      parent_id: menu.parent_id,
+      order_index: menu.order_index,
+      level: menu.level,
+    });
+
+    setShowModalEdit(true);
+  };
+
+  const handleUpdateMenu = async () => {
+    if (!editingMenu) return;
+
+    if (!editMenu.name.trim()) {
+      alert('Menu name is required');
+      return;
+    }
+
+    if (!editMenu.icon) {
+      alert('Please select an icon');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await masterMenuApi.updateMenu(editingMenu.id, editMenu);
+      resetEditForm();
+      setShowModalEdit(false);
+      await loadMenus();
+      alert('Menu updated successfully');
+    } catch (error) {
+      console.error('Error updating menu:', error);
+      alert('Failed to update menu');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setNewMenu({
       name: '',
@@ -268,6 +374,19 @@ function MasterMenu() {
       level: 1,
     });
     setSelectedParent(null);
+  };
+
+  const resetEditForm = () => {
+    setEditMenu({
+      name: '',
+      icon: '',
+      path: null,
+      parent_id: null,
+      order_index: 1,
+      level: 1,
+    });
+    setSelectedEditParent(null);
+    setEditingMenu(null);
   };
 
   const handleDeleteMenu = async (id: number, name: string) => {
@@ -342,25 +461,46 @@ function MasterMenu() {
             </span>
           </td>
           <td className="py-4 px-6 text-center">
-            <button
-              onClick={() => handleDeleteMenu(menu.id, menu.name)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition-colors"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => handleEditMenuClick(menu)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-              Delete
-            </button>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit
+              </button>
+              <button
+                onClick={() => handleDeleteMenu(menu.id, menu.name)}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Delete
+              </button>
+            </div>
           </td>
         </tr>
 
@@ -373,9 +513,9 @@ function MasterMenu() {
   const availableIcons = getAvailableIcons();
 
   // Get parent full path for display
-  const getParentDisplayPath = () => {
-    if (!selectedParent) return null;
-    return getFullPath(selectedParent.id, menus);
+  const getParentDisplayPath = (parent: MenuNode | null) => {
+    if (!parent) return null;
+    return getFullPath(parent.id, menus);
   };
 
   return (
@@ -517,7 +657,7 @@ function MasterMenu() {
                   <p className="text-xs text-blue-600 mt-1.5 font-medium">
                     Parent path:{' '}
                     <code className="bg-blue-50 px-2 py-0.5 rounded">
-                      {getParentDisplayPath()}
+                      {getParentDisplayPath(selectedParent)}
                     </code>
                   </p>
                 )}
@@ -661,7 +801,7 @@ function MasterMenu() {
                         Parent Path:
                       </span>
                       <code className="text-blue-900 bg-blue-100 px-1.5 py-0.5 rounded text-xs">
-                        {getParentDisplayPath()}
+                        {getParentDisplayPath(selectedParent)}
                       </code>
                     </div>
                   )}
@@ -751,6 +891,301 @@ function MasterMenu() {
                     </span>
                   ) : (
                     'Create Menu'
+                  )}
+                </button>
+              </div>
+            </div>
+          </ModalKosonganSmall>
+        )}
+
+        {/* Edit Menu Modal */}
+        {showModalEdit && editingMenu && (
+          <ModalKosonganSmall
+            isOpen={showModalEdit}
+            onClose={() => {
+              setShowModalEdit(false);
+              resetEditForm();
+            }}
+            judul={`Edit Menu: ${editingMenu.name}`}
+          >
+            <div className="flex flex-col gap-5 py-4 px-4 overflow-y-auto max-h-[70vh]">
+              {/* Menu Name */}
+              <div>
+                <label className="text-gray-700 text-sm font-semibold mb-2 block">
+                  Menu Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editMenu.name}
+                  onChange={(e) => handleEditNameChange(e.target.value)}
+                  className="w-full h-11 border-2 border-gray-300 rounded-lg px-4 focus:border-primary focus:outline-none transition-colors"
+                  placeholder="e.g., Preventive Maintenance"
+                />
+                <p className="text-xs text-gray-500 mt-1.5">
+                  Path will be regenerated automatically based on this name
+                </p>
+              </div>
+
+              {/* Parent Menu */}
+              <div>
+                <label className="text-gray-700 text-sm font-semibold mb-2 block">
+                  Parent Menu
+                </label>
+                <select
+                  value={editMenu.parent_id || ''}
+                  onChange={(e) => handleEditParentChange(e.target.value)}
+                  className="w-full h-11 border-2 border-gray-300 rounded-lg px-4 focus:border-primary focus:outline-none transition-colors"
+                >
+                  <option value="">None (Top Level Menu)</option>
+                  {flatMenus
+                    .filter((m) => m.id !== editingMenu.id)
+                    .map((menu) => (
+                      <option key={menu.id} value={menu.id}>
+                        {'  '.repeat(menu.level - 1)}
+                        {menu.name} (Level {menu.level})
+                      </option>
+                    ))}
+                </select>
+                {selectedEditParent && (
+                  <p className="text-xs text-blue-600 mt-1.5 font-medium">
+                    Parent path:{' '}
+                    <code className="bg-blue-50 px-2 py-0.5 rounded">
+                      {getParentDisplayPath(selectedEditParent)}
+                    </code>
+                  </p>
+                )}
+              </div>
+
+              {/* Icon Selection with Preview */}
+              <div>
+                <label className="text-gray-700 text-sm font-semibold mb-2 block">
+                  Icon <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={editMenu.icon}
+                    onChange={(e) =>
+                      setEditMenu({ ...editMenu, icon: e.target.value })
+                    }
+                    className="w-full h-11 border-2 border-gray-300 rounded-lg px-4 focus:border-primary focus:outline-none transition-colors appearance-none"
+                  >
+                    <option value="">Select an icon</option>
+                    {availableIcons.map((icon) => (
+                      <option key={icon} value={icon}>
+                        {icon}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                {editMenu.icon && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
+                    <IconComponent name={editMenu.icon} size={20} />
+                    <span>Selected: {editMenu.icon}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Auto-generated Path Display */}
+              <div>
+                <label className="text-gray-700 text-sm font-semibold mb-2 block">
+                  Generated Path
+                </label>
+                <div className="w-full min-h-11 border-2 border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 flex items-center">
+                  {editMenu.path ? (
+                    <code className="text-sm text-gray-700 font-mono">
+                      {editMenu.path}
+                    </code>
+                  ) : (
+                    <span className="text-gray-400 italic text-sm">
+                      Enter menu name to generate path
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Level and Order Display */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-gray-700 text-sm font-semibold mb-2 block">
+                    Level (Auto)
+                  </label>
+                  <div className="w-full h-11 border-2 border-gray-300 rounded-lg px-4 bg-gray-50 flex items-center justify-center">
+                    <span
+                      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold ${
+                        editMenu.level === 1
+                          ? 'bg-blue-100 text-blue-700'
+                          : editMenu.level === 2
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-purple-100 text-purple-700'
+                      }`}
+                    >
+                      {editMenu.level}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-gray-700 text-sm font-semibold mb-2 block">
+                    Order (Auto)
+                  </label>
+                  <div className="w-full h-11 border-2 border-gray-300 rounded-lg px-4 bg-gray-50 flex items-center justify-center">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 text-sm font-semibold">
+                      {editMenu.order_index}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Summary Box */}
+              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                <h4 className="font-semibold text-sm text-green-900 mb-3 flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Updated Summary
+                </h4>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-green-600 font-medium min-w-20">
+                      Name:
+                    </span>
+                    <span className="text-green-900">
+                      {editMenu.name || (
+                        <span className="italic text-green-400">(not set)</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-green-600 font-medium min-w-20">
+                      Parent:
+                    </span>
+                    <span className="text-green-900">
+                      {selectedEditParent?.name || 'None (Top Level)'}
+                    </span>
+                  </div>
+                  {selectedEditParent && (
+                    <div className="flex items-start gap-2 text-xs">
+                      <span className="text-green-600 font-medium min-w-20">
+                        Parent Path:
+                      </span>
+                      <code className="text-green-900 bg-green-100 px-1.5 py-0.5 rounded text-xs">
+                        {getParentDisplayPath(selectedEditParent)}
+                      </code>
+                    </div>
+                  )}
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-green-600 font-medium min-w-20">
+                      Icon:
+                    </span>
+                    <span className="text-green-900 flex items-center gap-1">
+                      {editMenu.icon ? (
+                        <>
+                          <IconComponent name={editMenu.icon} size={14} />
+                          {editMenu.icon}
+                        </>
+                      ) : (
+                        <span className="italic text-green-400">
+                          (not selected)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-green-600 font-medium min-w-20">
+                      Path:
+                    </span>
+                    <code className="text-green-900 bg-green-100 px-1.5 py-0.5 rounded text-xs">
+                      {editMenu.path || (
+                        <span className="italic text-green-400">
+                          (not generated)
+                        </span>
+                      )}
+                    </code>
+                  </div>
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-green-600 font-medium min-w-20">
+                      Level:
+                    </span>
+                    <span className="text-green-900 font-semibold">
+                      {editMenu.level}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-green-600 font-medium min-w-20">
+                      Order:
+                    </span>
+                    <span className="text-green-900 font-semibold">
+                      {editMenu.order_index}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-end pt-4 border-t-2 border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowModalEdit(false);
+                    resetEditForm();
+                  }}
+                  className="px-6 py-2.5 text-sm font-semibold rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateMenu}
+                  disabled={
+                    isLoading || !editMenu.name.trim() || !editMenu.icon
+                  }
+                  className="px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Updating...
+                    </span>
+                  ) : (
+                    'Update Menu'
                   )}
                 </button>
               </div>

@@ -16,7 +16,11 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Function to get first accessible route
-  const getFirstAccessibleRoute = (role: string, bagian: string): string => {
+  const getFirstAccessibleRoute = (
+    role: string,
+    bagian: string,
+    menu: any,
+  ): string => {
     const normalizedRole = role?.toLowerCase();
 
     // Super Admin and Developer get dashboard as default
@@ -24,6 +28,15 @@ const Login: React.FC = () => {
       return '/dashboard';
     }
 
+    // If menu data exists from API, find first accessible route from menu
+    if (menu && Array.isArray(menu) && menu.length > 0) {
+      const firstAccessiblePath = findFirstAccessiblePathFromMenu(menu);
+      if (firstAccessiblePath) {
+        return firstAccessiblePath;
+      }
+    }
+
+    // Fallback to permissions from rbacConfig
     const permissions = getPermissionsForRole(role, bagian);
 
     // Filter only accessible routes (excluding wildcard)
@@ -39,6 +52,25 @@ const Login: React.FC = () => {
     return accessibleRoutes[0].path;
   };
 
+  // Helper function to find first accessible path from menu data
+  const findFirstAccessiblePathFromMenu = (menuItems: any[]): string | null => {
+    for (const item of menuItems) {
+      // Check if item has viewable permission and a valid path
+      if (item.permissions?.can_view && item.path && item.path !== null) {
+        return item.path;
+      }
+
+      // Check children recursively
+      if (item.children && item.children.length > 0) {
+        const childPath = findFirstAccessiblePathFromMenu(item.children);
+        if (childPath) {
+          return childPath;
+        }
+      }
+    }
+    return null;
+  };
+
   async function submitLogin(e: any) {
     e.preventDefault();
     try {
@@ -51,16 +83,32 @@ const Login: React.FC = () => {
         },
       );
       console.log(response.data);
+
+      const { role, bagian, menu } = response.data;
+
+      // Store menu data in localStorage if it exists
+      if (menu !== null && Array.isArray(menu)) {
+        localStorage.setItem('userMenu', JSON.stringify(menu));
+        localStorage.setItem('useCustomMenu', 'true');
+      } else {
+        // If menu is null, use rbacConfig-based menu
+        localStorage.setItem('useCustomMenu', 'false');
+        localStorage.removeItem('userMenu');
+      }
+
+      // Store role and bagian for later use
+      localStorage.setItem('userRole', role);
+      localStorage.setItem('userBagian', bagian);
+
       setIsLoading(false);
 
-      const { role, bagian } = response.data;
-
-      // Get the first accessible route based on role and bagian
-      const firstAccessibleRoute = getFirstAccessibleRoute(role, bagian);
+      // Get the first accessible route based on role, bagian, and menu
+      const firstAccessibleRoute = getFirstAccessibleRoute(role, bagian, menu);
 
       // Navigate to the first accessible route
       navigate(firstAccessibleRoute);
     } catch (error: any) {
+      console.log(error);
       alert(error.response.data.msg);
       setIsLoading(false);
     }
