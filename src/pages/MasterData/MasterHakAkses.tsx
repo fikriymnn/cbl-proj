@@ -4,7 +4,6 @@ import DefaultLayout from '../../layout/DefaultLayout';
 import React, { useEffect, useState } from 'react';
 import Loading from '../../components/Loading';
 import ModalKosonganSmall from '../../components/Modals/ModalKosonganSmall';
-import ModalXL from '../../components/Tables/PPIC/JadwalProduksi/ModalXL';
 import { masterMenuApi } from './services/masterMenuApi';
 import {
   Role,
@@ -13,6 +12,7 @@ import {
   MenuWithPermissions,
 } from './types/masterMenu.types';
 import { IconComponent } from '../../constant/icons';
+import ModalFullScreen from './ModalFullScreen';
 
 function MasterHakAkses() {
   const [isLoading, setIsLoading] = useState(false);
@@ -150,163 +150,333 @@ function MasterHakAkses() {
     setMenusWithPermissions([]);
   };
 
+  // Helper to flatten menu hierarchy for display
+  const flattenMenus = (
+    menus: MenuWithPermissions[],
+    level: number = 0,
+    parentPermission?: MenuWithPermissions['permissions'],
+  ): Array<{ menu: MenuWithPermissions; level: number }> => {
+    let result: Array<{ menu: MenuWithPermissions; level: number }> = [];
+
+    menus.forEach((menu) => {
+      const shouldRenderChildren =
+        !parentPermission ||
+        (parentPermission.is_active && parentPermission.can_view);
+
+      if (level === 0 || shouldRenderChildren) {
+        result.push({ menu, level });
+
+        if (
+          menu.children &&
+          menu.children.length > 0 &&
+          menu.permissions &&
+          menu.permissions.is_active &&
+          menu.permissions.can_view
+        ) {
+          const childrenFlat = flattenMenus(
+            menu.children,
+            level + 1,
+            menu.permissions,
+          );
+          result = result.concat(childrenFlat);
+        }
+      }
+    });
+
+    return result;
+  };
+
+  // Split menus into 3 columns
+  const splitMenusIntoColumns = (menus: MenuWithPermissions[]) => {
+    const flatMenus = flattenMenus(menus);
+    const totalMenus = flatMenus.length;
+    const itemsPerColumn = Math.ceil(totalMenus / 3);
+
+    const column1 = flatMenus.slice(0, itemsPerColumn);
+    const column2 = flatMenus.slice(itemsPerColumn, itemsPerColumn * 2);
+    const column3 = flatMenus.slice(itemsPerColumn * 2);
+
+    return [column1, column2, column3];
+  };
+
   const renderPermissionRow = (
     menu: MenuWithPermissions,
-    level: number = 0,
+    level: number,
+    isCompact: boolean = true,
   ): React.ReactNode => {
     const permission = menu.permissions;
     const roleMenuId = menu.role_menu_id;
     const isUpdating = roleMenuId ? updatingPermissions.has(roleMenuId) : false;
 
     return (
-      <React.Fragment key={menu.id}>
+      <div
+        key={menu.id}
+        className={`grid grid-cols-[1.5fr_repeat(5,0.5fr)] gap-1 py-1.5 px-2 border-b border-gray-200 hover:bg-gray-50 transition-colors text-xs ${
+          isUpdating ? 'opacity-50' : ''
+        } ${!permission ? 'bg-red-50' : ''}`}
+      >
+        {/* Menu Name */}
         <div
-          className={`grid grid-cols-12 gap-4 py-4 px-4 border-b border-gray-200 hover:bg-gray-50 transition-colors ${
-            isUpdating ? 'opacity-50' : ''
-          } ${!permission ? 'bg-red-50' : ''}`}
+          className="flex items-center gap-1 min-w-0"
+          style={{ paddingLeft: `${level * 12}px` }}
         >
-          {/* Menu Name */}
-          <div
-            className="col-span-4 flex items-center gap-2"
-            style={{ paddingLeft: `${level * 24}px` }}
-          >
-            {level > 0 && <span className="text-gray-400 text-xs">{'└─'}</span>}
-            {menu.icon && <IconComponent name={menu.icon} size={18} />}
-            <div className="flex flex-col">
-              <span className="font-medium text-sm text-gray-900">
-                {menu.name}
-              </span>
-              {menu.path && (
-                <span className="text-xs text-gray-500 mt-0.5">
-                  {menu.path}
-                </span>
-              )}
-            </div>
-            <span
-              className={`ml-2 px-2 py-0.5 text-xs font-medium rounded-full ${
-                menu.level === 1
-                  ? 'bg-blue-100 text-blue-700'
-                  : menu.level === 2
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-purple-100 text-purple-700'
-              }`}
-            >
-              L{menu.level}
-            </span>
-            {!permission && (
-              <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">
-                No Permission Record
-              </span>
-            )}
-          </div>
-
-          {permission && roleMenuId ? (
-            <>
-              {/* Can View */}
-              <div className="col-span-2 flex items-center justify-center">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={permission.can_view}
-                    onChange={(e) =>
-                      handleUpdatePermission(
-                        roleMenuId,
-                        { can_view: e.target.checked },
-                        permission,
-                      )
-                    }
-                    disabled={isUpdating}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-
-              {/* Can Create */}
-              <div className="col-span-2 flex items-center justify-center">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={permission.can_create}
-                    onChange={(e) =>
-                      handleUpdatePermission(
-                        roleMenuId,
-                        { can_create: e.target.checked },
-                        permission,
-                      )
-                    }
-                    disabled={!permission.can_view || isUpdating}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-                </label>
-              </div>
-
-              {/* Can Edit */}
-              <div className="col-span-2 flex items-center justify-center">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={permission.can_edit}
-                    onChange={(e) =>
-                      handleUpdatePermission(
-                        roleMenuId,
-                        { can_edit: e.target.checked },
-                        permission,
-                      )
-                    }
-                    disabled={!permission.can_view || isUpdating}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-                </label>
-              </div>
-
-              {/* Can Delete */}
-              <div className="col-span-2 flex items-center justify-center">
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={permission.can_delete}
-                    onChange={(e) =>
-                      handleUpdatePermission(
-                        roleMenuId,
-                        { can_delete: e.target.checked },
-                        permission,
-                      )
-                    }
-                    disabled={!permission.can_view || isUpdating}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-                </label>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="col-span-2 flex items-center justify-center">
-                <span className="text-xs text-gray-400 italic">-</span>
-              </div>
-              <div className="col-span-2 flex items-center justify-center">
-                <span className="text-xs text-gray-400 italic">-</span>
-              </div>
-              <div className="col-span-2 flex items-center justify-center">
-                <span className="text-xs text-gray-400 italic">-</span>
-              </div>
-              <div className="col-span-2 flex items-center justify-center">
-                <span className="text-xs text-gray-400 italic">-</span>
-              </div>
-            </>
+          {level > 0 && (
+            <span className="text-gray-400 text-[10px]">{'└'}</span>
           )}
+          {menu.icon && <IconComponent name={menu.icon} size={12} />}
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="font-medium text-[11px] text-gray-900 truncate">
+              {menu.name}
+            </span>
+          </div>
+          <span
+            className={`px-1 py-0.5 text-[9px] font-medium rounded ${
+              menu.level === 1
+                ? 'bg-blue-100 text-blue-700'
+                : menu.level === 2
+                ? 'bg-green-100 text-green-700'
+                : 'bg-purple-100 text-purple-700'
+            }`}
+          >
+            L{menu.level}
+          </span>
         </div>
 
-        {/* Render children recursively */}
-        {menu.children &&
-          menu.children.length > 0 &&
-          menu.children.map((child) => renderPermissionRow(child, level + 1))}
-      </React.Fragment>
+        {permission && roleMenuId ? (
+          <>
+            {/* Is Active */}
+            <div className="flex items-center justify-center">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={permission.is_active}
+                  onChange={(e) =>
+                    handleUpdatePermission(
+                      roleMenuId,
+                      {
+                        is_active: e.target.checked,
+                        // If unchecking is_active, also uncheck can_view
+                        can_view: e.target.checked
+                          ? permission.can_view
+                          : false,
+                      },
+                      permission,
+                    )
+                  }
+                  disabled={isUpdating}
+                  className="sr-only peer"
+                />
+                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-purple-600"></div>
+              </label>
+            </div>
+
+            {/* Can View */}
+            <div className="flex items-center justify-center">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={permission.can_view}
+                  onChange={(e) =>
+                    handleUpdatePermission(
+                      roleMenuId,
+                      {
+                        can_view: e.target.checked,
+                        is_active: e.target.checked, // Auto-toggle is_active with can_view
+                      },
+                      permission,
+                    )
+                  }
+                  disabled={isUpdating}
+                  className="sr-only peer"
+                />
+                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-blue-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+              </label>
+            </div>
+
+            {/* Can Create */}
+            <div className="flex items-center justify-center">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={permission.can_create}
+                  onChange={(e) =>
+                    handleUpdatePermission(
+                      roleMenuId,
+                      { can_create: e.target.checked },
+                      permission,
+                    )
+                  }
+                  disabled={
+                    !permission.is_active || !permission.can_view || isUpdating
+                  }
+                  className="sr-only peer"
+                />
+                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-green-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+              </label>
+            </div>
+
+            {/* Can Edit */}
+            <div className="flex items-center justify-center">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={permission.can_edit}
+                  onChange={(e) =>
+                    handleUpdatePermission(
+                      roleMenuId,
+                      { can_edit: e.target.checked },
+                      permission,
+                    )
+                  }
+                  disabled={
+                    !permission.is_active || !permission.can_view || isUpdating
+                  }
+                  className="sr-only peer"
+                />
+                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-yellow-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+              </label>
+            </div>
+
+            {/* Can Delete */}
+            <div className="flex items-center justify-center">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={permission.can_delete}
+                  onChange={(e) =>
+                    handleUpdatePermission(
+                      roleMenuId,
+                      { can_delete: e.target.checked },
+                      permission,
+                    )
+                  }
+                  disabled={
+                    !permission.is_active || !permission.can_view || isUpdating
+                  }
+                  className="sr-only peer"
+                />
+                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-red-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+              </label>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-center">
+              <span className="text-[10px] text-gray-400">-</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-[10px] text-gray-400">-</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-[10px] text-gray-400">-</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-[10px] text-gray-400">-</span>
+            </div>
+            <div className="flex items-center justify-center">
+              <span className="text-[10px] text-gray-400">-</span>
+            </div>
+          </>
+        )}
+      </div>
     );
   };
+
+  const renderColumnHeader = () => (
+    <div className="grid grid-cols-[1.5fr_repeat(5,0.5fr)] gap-1 py-2 px-2 bg-gradient-to-r from-gray-50 to-gray-100 font-semibold text-[10px] border-b-2 border-gray-200 sticky top-0 z-10">
+      <div className="flex items-center gap-1">
+        <svg
+          className="w-3 h-3 text-gray-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+        Menu
+      </div>
+      <div className="text-center flex items-center justify-center">
+        <svg
+          className="w-3 h-3 text-purple-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div className="text-center flex items-center justify-center">
+        <svg
+          className="w-3 h-3 text-blue-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+      </div>
+      <div className="text-center flex items-center justify-center">
+        <svg
+          className="w-3 h-3 text-green-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+      </div>
+      <div className="text-center flex items-center justify-center">
+        <svg
+          className="w-3 h-3 text-yellow-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+          />
+        </svg>
+      </div>
+      <div className="text-center flex items-center justify-center">
+        <svg
+          className="w-3 h-3 text-red-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+          />
+        </svg>
+      </div>
+    </div>
+  );
 
   const countTotalMenus = (menus: MenuWithPermissions[]): number => {
     let count = menus.length;
@@ -657,149 +827,38 @@ function MasterHakAkses() {
           )}
         </div>
 
-        {/* Permissions Modal */}
+        {/* Permissions Modal - Full Screen with 3 Columns */}
         {showPermissionModal && selectedRole && (
-          <ModalXL
+          <ModalFullScreen
             isOpen={showPermissionModal}
             onClose={closePermissionModal}
-            judul={`Permission Management: ${selectedRole.name}`}
+            title={`Permission Management: ${selectedRole.name}`}
           >
-            <div className="bg-white pt-8">
-              {/* Info Banner */}
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
-                <div className="flex items-start">
-                  <svg
-                    className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <div>
-                    <h3 className="text-sm font-medium text-blue-800">
-                      Permission Settings
-                    </h3>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Configure what actions users with the{' '}
-                      <strong>{selectedRole.name}</strong> role can perform.
-                      Changes are saved automatically.
-                    </p>
-                    {menusWithPermissions.length > 0 && (
-                      <p className="text-xs text-blue-600 mt-2">
-                        Total Menus: {countTotalMenus(menusWithPermissions)} |
-                        Active Permissions:{' '}
-                        {countActivePermissions(menusWithPermissions)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-              {/* Header */}
-              <div className="grid grid-cols-12 gap-4 py-4 px-4 bg-gradient-to-r from-gray-50 to-gray-100 font-semibold text-sm border-b-2 border-gray-200 sticky top-0 z-10">
-                <div className="col-span-4 flex items-center gap-2">
-                  <svg
-                    className="w-4 h-4 text-gray-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                  Menu / Feature
-                </div>
-                <div className="col-span-2 text-center flex items-center justify-center gap-2">
-                  <svg
-                    className="w-4 h-4 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                  View
-                </div>
-                <div className="col-span-2 text-center flex items-center justify-center gap-2">
-                  <svg
-                    className="w-4 h-4 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Create
-                </div>
-                <div className="col-span-2 text-center flex items-center justify-center gap-2">
-                  <svg
-                    className="w-4 h-4 text-yellow-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
-                  </svg>
-                  Edit
-                </div>
-                <div className="col-span-2 text-center flex items-center justify-center gap-2">
-                  <svg
-                    className="w-4 h-4 text-red-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
-                  </svg>
-                  Delete
-                </div>
-              </div>
-
-              {/* Permissions List */}
-              <div className="max-h-[600px] overflow-y-auto">
+            <div className="h-full flex flex-col">
+              {/* 3 Column Layout */}
+              <div className="flex-1 overflow-hidden px-4 pb-4">
                 {isLoading ? (
-                  <div className="flex items-center justify-center py-16">
+                  <div className="flex items-center justify-center h-full">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                   </div>
                 ) : menusWithPermissions.length > 0 ? (
-                  menusWithPermissions.map((menu) =>
-                    renderPermissionRow(menu, 0),
-                  )
+                  <div className="grid grid-cols-3 gap-3 h-full">
+                    {splitMenusIntoColumns(menusWithPermissions).map(
+                      (column, colIndex) => (
+                        <div
+                          key={colIndex}
+                          className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden flex flex-col"
+                        >
+                          {renderColumnHeader()}
+                          <div className="flex-1 overflow-y-auto">
+                            {column.map(({ menu, level }) =>
+                              renderPermissionRow(menu, level),
+                            )}
+                          </div>
+                        </div>
+                      ),
+                    )}
+                  </div>
                 ) : (
                   <div className="text-center py-16">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
@@ -828,20 +887,21 @@ function MasterHakAkses() {
               </div>
 
               {/* Footer */}
-              <div className="border-t-2 border-gray-200 p-4 bg-gray-50 flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">Note:</span> Disabling "View"
-                  will automatically disable other permissions for that menu.
+              <div className="border-t-2 border-gray-200 p-3 bg-gray-50 flex justify-between items-center">
+                <div className="text-xs text-gray-600">
+                  <span className="font-medium">Note:</span> Clicking "View"
+                  automatically enables "Active". Unchecking "Active" disables
+                  "View" and hides children.
                 </div>
                 <button
                   onClick={closePermissionModal}
-                  className="px-6 py-2.5 text-sm font-semibold rounded-lg text-white bg-primary hover:bg-primary/90 transition-colors shadow-sm"
+                  className="px-5 py-2 text-sm font-semibold rounded-lg text-white bg-primary hover:bg-primary/90 transition-colors shadow-sm"
                 >
                   Done
                 </button>
               </div>
             </div>
-          </ModalXL>
+          </ModalFullScreen>
         )}
       </>
     </DefaultLayout>

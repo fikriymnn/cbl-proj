@@ -423,6 +423,16 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     data.kirim_semua ||
     data.ppic;
 
+  // Helper function to check if field should be editable
+  const isFieldEditable = (fieldName: string): boolean => {
+    if (!isEditMode) {
+      // When isEditMode is false (called from HistorySO), only status_produk is editable
+      return fieldName === 'status_produk' && isEditing;
+    }
+    // When isEditMode is true (called from SOMarketing), all fields are editable
+    return isEditing;
+  };
+
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -430,7 +440,11 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
           {/* Header */}
           <div className="flex justify-between items-center p-6 border-b">
             <h2 className="text-xl font-semibold">
-              {isEditing ? 'Edit Sales Order' : 'Detail Sales Order'}
+              {isEditing
+                ? isEditMode
+                  ? 'Edit Sales Order'
+                  : 'Update Status Produk'
+                : 'Detail Sales Order'}
             </h2>
             <button
               onClick={onClose}
@@ -443,23 +457,25 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
 
           {/* Action Buttons */}
           <div className="px-4 py-2 flex gap-2">
-            {isEditMode && !isEditing && (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Edit SO
-              </button>
-            )}
             {!isEditing && (
-              <button
-                type="button"
-                onClick={() => setIsFormOpen(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                Form Checklist Kelengkapan PO
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {isEditMode ? 'Edit SO' : 'Update Status Produk'}
+                </button>
+                {isEditMode && (
+                  <button
+                    type="button"
+                    onClick={() => setIsFormOpen(true)}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    Form Checklist Kelengkapan PO
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -501,7 +517,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   SO Cancel
                 </label>
-                {isEditing ? (
+                {isFieldEditable('so_cancel') ? (
                   <input
                     type="text"
                     value={editFormData.so_cancel || ''}
@@ -522,7 +538,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   No Booking
                 </label>
-                {isEditing ? (
+                {isFieldEditable('no_booking') ? (
                   <input
                     type="text"
                     value={editFormData.no_booking || ''}
@@ -543,7 +559,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Status Job Order
                 </label>
-                {isEditing ? (
+                {isFieldEditable('status_jo') ? (
                   <SearchableSelect
                     placeholder="Pilih Status JO"
                     value={editFormData.status_jo || ''}
@@ -564,7 +580,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Customer
                 </label>
-                {isEditing ? (
+                {isFieldEditable('customer') ? (
                   <input
                     type="text"
                     value={editFormData.customer || ''}
@@ -585,7 +601,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Produk
                 </label>
-                {isEditing ? (
+                {isFieldEditable('produk') ? (
                   <input
                     type="text"
                     value={editFormData.produk || ''}
@@ -601,12 +617,15 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 )}
               </div>
 
-              {/* Status Produk */}
+              {/* Status Produk - ALWAYS EDITABLE when isEditing is true */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Status Produk
+                  Status Produk{' '}
+                  {!isEditMode && isEditing && (
+                    <span className="text-blue-600">(Editable)</span>
+                  )}
                 </label>
-                {isEditing ? (
+                {isFieldEditable('status_produk') ? (
                   <SearchableSelect
                     placeholder="Pilih Status Produk"
                     value={editFormData.status_produk || ''}
@@ -627,7 +646,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Tanggal Acc Customer
                 </label>
-                {isEditing ? (
+                {isFieldEditable('tgl_acc_customer') ? (
                   <input
                     type="date"
                     value={formatDateForInput(
@@ -650,7 +669,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Tanggal PO Customer
                 </label>
-                {isEditing ? (
+                {isFieldEditable('tgl_po_customer') ? (
                   <input
                     type="date"
                     value={formatDateForInput(
@@ -673,7 +692,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   PO Qty
                 </label>
-                {isEditing ? (
+                {isFieldEditable('po_qty') ? (
                   <input
                     type="number"
                     value={editFormData.po_qty || 0}
@@ -697,7 +716,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Harga Jual
                 </label>
-                {isEditing ? (
+                {isFieldEditable('harga_jual') ? (
                   <input
                     type="number"
                     value={editFormData.harga_jual || 0}
@@ -731,7 +750,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   PPN
                 </label>
-                {isEditing ? (
+                {isFieldEditable('ppn') ? (
                   <select
                     value={editFormData.ppn || ''}
                     onChange={(e) =>
@@ -755,7 +774,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Profit
                 </label>
-                {isEditing ? (
+                {isFieldEditable('profit') ? (
                   <input
                     type="number"
                     value={editFormData.profit || 0}
@@ -779,7 +798,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Tanggal Pengiriman
                 </label>
-                {isEditing ? (
+                {isFieldEditable('tgl_pengiriman') ? (
                   <input
                     type="date"
                     value={formatDateForInput(
@@ -802,7 +821,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Nomor PO Customer
                 </label>
-                {isEditing ? (
+                {isFieldEditable('no_po_customer') ? (
                   <input
                     type="text"
                     value={editFormData.no_po_customer || ''}
@@ -823,7 +842,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Alamat Pengiriman
                 </label>
-                {isEditing ? (
+                {isFieldEditable('alamat_pengiriman') ? (
                   <SearchableSelect
                     placeholder="Pilih Alamat Gudang"
                     value={editFormData.alamat_pengiriman || ''}
@@ -844,7 +863,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Keterangan
                 </label>
-                {isEditing ? (
+                {isFieldEditable('keterangan') ? (
                   <input
                     type="text"
                     value={editFormData.keterangan || ''}
@@ -865,7 +884,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   Ada Standar Warna
                 </label>
-                {isEditing ? (
+                {isFieldEditable('ada_standar_warna') ? (
                   <div className="flex items-center space-x-4 pt-2">
                     <label className="flex items-center">
                       <input
@@ -906,12 +925,13 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                   </div>
                 )}
               </div>
+
               {/* IO Selesai */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
                   IO Selesai
                 </label>
-                {isEditing ? (
+                {isFieldEditable('is_io_selesai') ? (
                   <label className="flex items-center space-x-2 pt-2">
                     <input
                       type="checkbox"
