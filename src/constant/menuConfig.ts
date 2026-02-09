@@ -996,6 +996,11 @@ export const menuCategories: MenuCategory[] = [
             path: '/master/hr/payroll',
             icon: 'payroll',
           },
+          {
+            name: 'Izin Terlambat',
+            path: '/master/hr/izinterlambat',
+            icon: 'leave',
+          },
         ],
       },
       {

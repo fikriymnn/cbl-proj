@@ -3,54 +3,54 @@ import axios from 'axios';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import Loading from '../../../Loading';
 
-function IsiMasterCutiKhusus() {
+function MasterIzinTerlambatHRD() {
   const [isLoading, setIsLoading] = useState(false);
-  const [cutiKhusus, setCutiKhusus] = useState<any>();
+  const [masterTerlambat, setMasterTerlambat] = useState<any>();
 
-  // Modal states
+  // Add modal state
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState<any>([]);
   const [showDelete, setShowDelete] = useState<any>([]);
 
   // Form states
-  const [namaCuti, setNamaCuti] = useState('');
-  const [jumlahHari, setJumlahHari] = useState('');
-  const [namaCutiEdit, setNamaCutiEdit] = useState('');
-  const [jumlahHariEdit, setJumlahHariEdit] = useState('');
+  const [alasanTerlambat, setAlasanTerlambat] = useState('');
+  const [jumlahJam, setJumlahJam] = useState('');
+  const [alasanTerlambatEdit, setAlasanTerlambatEdit] = useState('');
+  const [jumlahJamEdit, setJumlahJamEdit] = useState('');
 
   useEffect(() => {
-    getCutiKhusus();
+    getMasterTerlambat();
   }, []);
 
-  const getCutiKhusus = async () => {
-    const url = `${import.meta.env.VITE_API_LINK}/master/hr/cutiKhusus`;
+  const getMasterTerlambat = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/terlambat`;
     try {
       setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      setCutiKhusus(res.data);
+      setMasterTerlambat(res.data);
     } catch (error: any) {
-      console.error('Error fetching cuti khusus:', error);
+      console.error('Error fetching master terlambat:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const resetAddForm = () => {
-    setNamaCuti('');
-    setJumlahHari('');
+    setAlasanTerlambat('');
+    setJumlahJam('');
   };
 
-  const postMasterCutiKhusus = async () => {
-    const url = `${import.meta.env.VITE_API_LINK}/master/hr/cutiKhusus`;
+  const postMasterTerlambat = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/terlambat`;
     try {
       setIsLoading(true);
       await axios.post(
         url,
         {
-          nama_cuti: namaCuti,
-          jumlah_hari: Number(jumlahHari),
+          alasan_terlambat: alasanTerlambat,
+          jumlah_jam: Number(jumlahJam),
         },
         {
           withCredentials: true,
@@ -58,48 +58,48 @@ function IsiMasterCutiKhusus() {
       );
       resetAddForm();
       closeModalAdd();
-      await getCutiKhusus();
+      await getMasterTerlambat();
     } catch (error: any) {
-      console.error('Error creating cuti khusus:', error);
+      console.error('Error creating master terlambat:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const editMasterCutiKhusus = async (id: number, index: number) => {
-    const url = `${import.meta.env.VITE_API_LINK}/master/hr/cutiKhusus/${id}`;
+  const editMasterTerlambat = async (id: number, index: number) => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/terlambat/${id}`;
     try {
       setIsLoading(true);
       await axios.put(
         url,
         {
-          nama_cuti: namaCutiEdit,
-          jumlah_hari: Number(jumlahHariEdit),
+          alasan_terlambat: alasanTerlambatEdit,
+          jumlah_jam: Number(jumlahJamEdit),
         },
         {
           withCredentials: true,
         },
       );
       closeEdit(index);
-      await getCutiKhusus();
+      await getMasterTerlambat();
     } catch (error: any) {
-      console.error('Error updating cuti khusus:', error);
+      console.error('Error updating master terlambat:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const deleteMasterCutiKhusus = async (id: number, index: number) => {
-    const url = `${import.meta.env.VITE_API_LINK}/master/hr/cutiKhusus/${id}`;
+  const deleteMasterTerlambat = async (id: number, index: number) => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/terlambat/${id}`;
     try {
       setIsLoading(true);
       await axios.delete(url, {
         withCredentials: true,
       });
       closeDelete(index);
-      await getCutiKhusus();
+      await getMasterTerlambat();
     } catch (error: any) {
-      console.error('Error deleting cuti khusus:', error);
+      console.error('Error deleting master terlambat:', error);
     } finally {
       setIsLoading(false);
     }
@@ -116,16 +116,16 @@ function IsiMasterCutiKhusus() {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = true;
     setShowEdit(onchangeVal);
-    setNamaCutiEdit(data.nama_cuti);
-    setJumlahHariEdit(data.jumlah_hari);
+    setAlasanTerlambatEdit(data.alasan_terlambat);
+    setJumlahJamEdit(data.jumlah_jam);
   };
 
   const closeEdit = (i: number) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = false;
     setShowEdit(onchangeVal);
-    setNamaCutiEdit('');
-    setJumlahHariEdit('');
+    setAlasanTerlambatEdit('');
+    setJumlahJamEdit('');
   };
 
   const openDelete = (i: number) => {
@@ -152,7 +152,7 @@ function IsiMasterCutiKhusus() {
               onClick={openModalAdd}
               className="bg-blue-600 hover:bg-blue-700 transition-colors rounded-sm text-white text-xs font-bold px-4 py-2"
             >
-              TAMBAH CUTI KHUSUS
+              TAMBAH IZIN TERLAMBAT
             </button>
           </div>
 
@@ -160,10 +160,10 @@ function IsiMasterCutiKhusus() {
           <div className="grid grid-cols-11 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF]">
             <label className="text-neutral-500 text-xs font-semibold">No</label>
             <label className="text-neutral-500 text-xs font-semibold col-span-4">
-              Nama Cuti
+              Alasan Terlambat
             </label>
             <label className="text-neutral-500 text-xs font-semibold col-span-2">
-              Jumlah Hari
+              Jumlah Jam
             </label>
             <label className="text-neutral-500 text-xs font-semibold col-span-4 text-center">
               Aksi
@@ -172,8 +172,8 @@ function IsiMasterCutiKhusus() {
 
           {/* Table Body */}
           <div className="divide-y-8 divide-[#D8EAFF]">
-            {cutiKhusus?.data?.length > 0 ? (
-              cutiKhusus.data.map((data: any, i: number) => (
+            {masterTerlambat?.data?.length > 0 ? (
+              masterTerlambat.data.map((data: any, i: number) => (
                 <div
                   key={data.id}
                   className="grid grid-cols-11 gap-4 px-3 items-center py-3"
@@ -182,10 +182,10 @@ function IsiMasterCutiKhusus() {
                     {i + 1}
                   </span>
                   <span className="text-neutral-700 text-xs font-medium col-span-4">
-                    {data.nama_cuti}
+                    {data.alasan_terlambat}
                   </span>
                   <span className="text-neutral-700 text-xs font-medium col-span-2">
-                    {data.jumlah_hari} hari
+                    {data.jumlah_jam} jam
                   </span>
                   <div className="col-span-4 flex gap-2 justify-center">
                     <button
@@ -207,45 +207,46 @@ function IsiMasterCutiKhusus() {
                     <ModalKosonganSmall
                       isOpen={showEdit[i]}
                       onClose={() => closeEdit(i)}
-                      judul="Edit Cuti Khusus"
+                      judul="Edit Izin Terlambat"
                     >
                       <div className="px-5 py-4">
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            editMasterCutiKhusus(data.id, i);
+                            editMasterTerlambat(data.id, i);
                           }}
                         >
                           <div className="space-y-4">
                             <div className="flex flex-col gap-2">
                               <label className="text-black text-xs font-bold">
-                                Nama Cuti
+                                Alasan Terlambat
                               </label>
                               <input
                                 required
-                                value={namaCutiEdit}
+                                value={alasanTerlambatEdit}
                                 onChange={(e) =>
-                                  setNamaCutiEdit(e.target.value)
+                                  setAlasanTerlambatEdit(e.target.value)
                                 }
                                 type="text"
                                 className="w-full h-10 px-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
-                                placeholder="Masukkan nama cuti"
+                                placeholder="Masukkan alasan terlambat"
                               />
                             </div>
                             <div className="flex flex-col gap-2">
                               <label className="text-black text-xs font-bold">
-                                Jumlah Hari
+                                Jumlah Jam
                               </label>
                               <input
                                 required
-                                value={jumlahHariEdit}
+                                value={jumlahJamEdit}
                                 onChange={(e) =>
-                                  setJumlahHariEdit(e.target.value)
+                                  setJumlahJamEdit(e.target.value)
                                 }
                                 type="number"
                                 min="0"
+                                step="0.5"
                                 className="w-full h-10 px-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
-                                placeholder="Masukkan jumlah hari"
+                                placeholder="Masukkan jumlah jam"
                               />
                             </div>
                             <div className="flex gap-2 pt-2">
@@ -275,7 +276,7 @@ function IsiMasterCutiKhusus() {
                     <ModalKosonganSmall
                       isOpen={showDelete[i]}
                       onClose={() => closeDelete(i)}
-                      judul="Hapus Cuti Khusus"
+                      judul="Hapus Izin Terlambat"
                     >
                       <div className="px-5 py-4">
                         <div className="space-y-4">
@@ -285,25 +286,25 @@ function IsiMasterCutiKhusus() {
                           <div className="bg-gray-50 p-4 rounded-md space-y-2">
                             <div className="flex justify-between">
                               <span className="text-gray-600 text-sm font-medium">
-                                Nama Cuti:
+                                Alasan Terlambat:
                               </span>
                               <span className="text-gray-900 text-sm font-bold">
-                                {data.nama_cuti}
+                                {data.alasan_terlambat}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span className="text-gray-600 text-sm font-medium">
-                                Jumlah Hari:
+                                Jumlah Jam:
                               </span>
                               <span className="text-gray-900 text-sm font-bold">
-                                {data.jumlah_hari} hari
+                                {data.jumlah_jam} jam
                               </span>
                             </div>
                           </div>
                           <div className="flex gap-2 pt-2">
                             <button
                               disabled={isLoading}
-                              onClick={() => deleteMasterCutiKhusus(data.id, i)}
+                              onClick={() => deleteMasterTerlambat(data.id, i)}
                               className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 transition-colors text-white text-xs font-bold px-6 py-3 rounded-md w-full"
                             >
                               YA, HAPUS
@@ -323,7 +324,7 @@ function IsiMasterCutiKhusus() {
               ))
             ) : (
               <div className="py-8 text-center text-gray-500 text-sm">
-                Tidak ada data cuti khusus
+                Tidak ada data izin terlambat
               </div>
             )}
           </div>
@@ -335,41 +336,42 @@ function IsiMasterCutiKhusus() {
         <ModalKosonganSmall
           isOpen={showAdd}
           onClose={closeModalAdd}
-          judul="Tambah Cuti Khusus"
+          judul="Tambah Izin Terlambat"
         >
           <div className="px-5 py-4">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                postMasterCutiKhusus();
+                postMasterTerlambat();
               }}
             >
               <div className="space-y-4">
                 <div className="flex flex-col gap-2">
                   <label className="text-black text-xs font-bold">
-                    Nama Cuti
+                    Alasan Terlambat
                   </label>
                   <input
                     required
-                    value={namaCuti}
-                    onChange={(e) => setNamaCuti(e.target.value)}
+                    value={alasanTerlambat}
+                    onChange={(e) => setAlasanTerlambat(e.target.value)}
                     type="text"
                     className="w-full h-10 px-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
-                    placeholder="Masukkan nama cuti"
+                    placeholder="Masukkan alasan terlambat"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
                   <label className="text-black text-xs font-bold">
-                    Jumlah Hari
+                    Jumlah Jam
                   </label>
                   <input
                     required
-                    value={jumlahHari}
-                    onChange={(e) => setJumlahHari(e.target.value)}
+                    value={jumlahJam}
+                    onChange={(e) => setJumlahJam(e.target.value)}
                     type="number"
                     min="0"
+                    step="0.5"
                     className="w-full h-10 px-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
-                    placeholder="Masukkan jumlah hari"
+                    placeholder="Masukkan jumlah jam"
                   />
                 </div>
                 <div className="flex gap-2 pt-2">
@@ -397,4 +399,4 @@ function IsiMasterCutiKhusus() {
   );
 }
 
-export default IsiMasterCutiKhusus;
+export default MasterIzinTerlambatHRD;
