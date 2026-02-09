@@ -7,6 +7,7 @@ function MasterSettingHRD() {
   const [isLoading, setIsLoading] = useState(false);
   const [cetakMesin, setCetakMesin] = useState<any>();
   const [okh, setokh] = useState<any>();
+  const [mt, setmt] = useState<any>();
   const [tlm, settlm] = useState<any>();
   const [tkm, settkm] = useState<any>();
   const [tpm, settpm] = useState<any>();
@@ -25,7 +26,7 @@ function MasterSettingHRD() {
       });
       setIsLoading(false);
       setCetakMesin(res.data);
-      console.log(res.data);
+      console.log('res.data:', res.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error);
@@ -40,10 +41,11 @@ function MasterSettingHRD() {
         url,
         {
           outstanding_karyawan_hari: okh,
+          maksimal_pengajuan_terlambat: mt,
           terhitung_lembur_menit: tlm,
           toleransi_kedatangan_menit: tkm,
           toleransi_pulang_menit: tpm,
-          minimal_pengajuan_cuti_hari: mpch, // Add new field to the PUT request
+          minimal_pengajuan_cuti_hari: mpch,
         },
         {
           withCredentials: true,
@@ -54,6 +56,7 @@ function MasterSettingHRD() {
       setIsLoading(false);
       setokh('');
       settlm('');
+      setmt('');
       settkm('');
       settpm('');
       setmpch(''); // Clear the new field
@@ -202,6 +205,24 @@ function MasterSettingHRD() {
                 <label className={unitStyle}>Hari</label>
               </div>
             </div>
+            <div className={`grid grid-cols-12 ${fieldStyle}`}>
+              <div className="col-span-5">
+                <label className={labelStyle}>
+                  Maksimal Pengajuan Terlambat
+                </label>
+              </div>
+              <div className="col-span-4">
+                <input
+                  type="text"
+                  readOnly
+                  value={cetakMesin?.maksimal_pengajuan_terlambat || ''}
+                  className={inputStyle}
+                />
+              </div>
+              <div className="col-span-3">
+                <label className={unitStyle}>Jam</label>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -289,7 +310,20 @@ function MasterSettingHRD() {
                 Hari
               </label>
             </div>
-
+            <div className="grid grid-cols-12 items-center gap-2">
+              <label className="text-gray-700 text-sm font-semibold col-span-5">
+                Maksimal Pengajuan Terlambat
+              </label>
+              <input
+                type="text"
+                onChange={(e) => setmt(e.target.value)}
+                defaultValue={cetakMesin?.maksimal_pengajuan_terlambat || ''}
+                className="text-gray-800 text-sm border border-gray-200 rounded-md px-3 py-2 col-span-5 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+              <label className="text-gray-600 text-sm font-medium col-span-2">
+                Jam
+              </label>
+            </div>
             <div className="flex justify-end pt-4">
               <button
                 onClick={() => putCetakMesin()}

@@ -1133,6 +1133,16 @@ export const menuCategories: MenuCategory[] = [
         path: '/user-menu/submission',
         icon: 'access',
       },
+      {
+        name: 'Izin Terlambat Atasan',
+        path: '/user-menu/izin-terlambat-atasan',
+        icon: 'access',
+      },
+      {
+        name: 'Izin Terlambat Bawahan',
+        path: '/user-menu/izin-terlambat-bawahan',
+        icon: 'access',
+      },
     ],
   },
 ];

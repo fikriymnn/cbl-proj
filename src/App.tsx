@@ -249,6 +249,8 @@ import AbsenPPICPage from './pages/PPIC/AbsenPPIC';
 import SecurityMonitoringPage from './pages/Security/SecurityMonitoringPage';
 import UserMenuPage from './pages/UserMenu/UserMenuPage';
 import MasterTerlambatHPage from './pages/HR/MasterDataHR/MasterTerlambat';
+import AtasanIzinTerlambatPage from './pages/UserMenu/AtasanIzinTerlambatPage';
+import BawahanIzinTerlambatPage from './pages/UserMenu/BawahanIzinTerlambatPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2824,6 +2826,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <UserMenuPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/user-menu/izin-terlambat-atasan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <AtasanIzinTerlambatPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/user-menu/izin-terlambat-bawahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BawahanIzinTerlambatPage />
               </ProtectedRoute>
             </>
           }
