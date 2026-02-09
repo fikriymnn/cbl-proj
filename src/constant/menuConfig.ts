@@ -1119,4 +1119,15 @@ export const menuCategories: MenuCategory[] = [
       },
     ],
   },
+  {
+    name: 'User Menu',
+    icon: 'settings',
+    items: [
+      {
+        name: 'Submission',
+        path: '/user-menu/submission',
+        icon: 'access',
+      },
+    ],
+  },
 ];

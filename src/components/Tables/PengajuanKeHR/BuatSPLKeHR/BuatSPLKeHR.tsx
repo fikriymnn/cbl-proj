@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import axios from 'axios';
+import convertTimeStampToDate from '../../../../utils/converDateTime';
+import convertTimeStampToDateTime from '../../../../utils/converDateTime';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 function BuatSPLKeHR() {
   const [options, setOptions] = useState([]);
@@ -46,11 +50,24 @@ function BuatSPLKeHR() {
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [selectedJobOrder, setSelectedJobOrder] = useState(null);
 
+  // Draft table states
+  const [draftLembur, setDraftLembur] = useState<any>();
+  const [draftPage, setDraftPage] = useState(1);
+
+  // Edit mode states
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   useEffect(() => {
     getMe();
-
     getjoReal();
   }, []);
+
+  useEffect(() => {
+    if (idPengaju) {
+      getDraftLembur();
+    }
+  }, [draftPage, idPengaju]);
 
   // Function to clear all form fields
   const clearForm = () => {
@@ -71,7 +88,10 @@ function BuatSPLKeHR() {
     setTimeError2('');
     setSelectedEmployees([]);
     setSelectedJobOrder(null);
+    setIsEditMode(false);
+    setEditingId(null);
   };
+
   async function getMe() {
     const url = `${import.meta.env.VITE_API_LINK}/me`;
     try {
@@ -160,7 +180,154 @@ function BuatSPLKeHR() {
     }
   }
 
+  async function getDraftLembur() {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanLembur`;
+    try {
+      const params: any = {
+        status: 'draft',
+        page: draftPage,
+        limit: 10,
+      };
+
+      const res = await axios.get(url, {
+        params,
+        withCredentials: true,
+      });
+      setDraftLembur(res.data);
+      console.log('Draft data:', res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
+  // Helper function to convert ISO 8601 UTC timestamp to datetime-local format
+  const formatDateTimeLocal = (timestamp: string | null) => {
+    if (!timestamp || timestamp === null) return '';
+
+    try {
+      // Parse the ISO 8601 UTC timestamp (e.g., "2026-02-09T10:00:00.000Z")
+      const date = new Date(timestamp);
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date:', timestamp);
+        return '';
+      }
+
+      // Format: YYYY-MM-DDTHH:mm (local time)
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch (error) {
+      console.error('Error formatting date:', timestamp, error);
+      return '';
+    }
+  };
+
+  const handleEdit = (data: any) => {
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Set edit mode
+    setIsEditMode(true);
+    setEditingId(data.id);
+
+    // Populate form with existing data - convert to datetime-local format
+    setTglDari(formatDateTimeLocal(data.dari));
+    setTglSampai(formatDateTimeLocal(data.sampai));
+
+    // Check if there's a second period
+    if (data.dari_2 && data.dari_2 !== '') {
+      setHasSecondPeriod(true);
+      setTglDari2(formatDateTimeLocal(data.dari_2));
+      setTglSampai2(formatDateTimeLocal(data.sampai_2));
+    } else {
+      setHasSecondPeriod(false);
+      setTglDari2('');
+      setTglSampai2('');
+    }
+
+    // Set job order if exists
+    if (data.jo_lembur && data.jo_lembur !== '') {
+      const selectedJO = options3.find(
+        (option: any) => option.value === data.jo_lembur,
+      );
+      setSelectedJobOrder(selectedJO || null);
+      setjoReal(data.jo_lembur);
+    }
+
+    // Set other fields
+    setAlasanLembur(data.alasan_lembur || '');
+    setTargetLembur(data.target_lembur || '');
+    setTipeLembur(data.tipe_lembur || '');
+    setJumlahMakan(data.jumlah_makan || '');
+
+    // Set employee data (read-only in edit mode)
+    if (data.karyawan) {
+      const employeeOption = options.find(
+        (option: any) => option.value === data.karyawan.userid,
+      );
+      if (employeeOption) {
+        setSelectedEmployees([employeeOption]);
+        setIdKaryawan([data.karyawan.userid]);
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    if (
+      window.confirm(
+        'Apakah Anda yakin ingin membatalkan perubahan? Data yang telah diisi akan hilang.',
+      )
+    ) {
+      clearForm();
+    }
+  };
+
+  const handleSendToUser = async (id: string) => {
+    if (
+      !window.confirm(
+        'Apakah Anda yakin ingin mengirim data lembur ini ke user?',
+      )
+    ) {
+      return;
+    }
+
+    setIsLoading(true);
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/hr/pengajuanLembur/send/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+
+      setIsLoading(false);
+      alert('Data lembur berhasil dikirim ke user!');
+
+      // Refresh draft table
+      getDraftLembur();
+    } catch (error) {
+      setIsLoading(false);
+      console.log(error);
+      alert('Terjadi kesalahan saat mengirim data');
+    }
+  };
+
   const handleChangePointDepatment = (selectedOptions: any) => {
+    // In edit mode, prevent changing employees
+    if (isEditMode) {
+      return;
+    }
+
     setSelectedEmployees(selectedOptions || []);
 
     if (!selectedOptions || selectedOptions.length === 0) {
@@ -270,6 +437,7 @@ function BuatSPLKeHR() {
 
     return totalHours;
   };
+
   const removeSecondPeriod = () => {
     setHasSecondPeriod(false);
     setTglDari2('');
@@ -384,12 +552,76 @@ function BuatSPLKeHR() {
       console.log(res);
       alert('Pengajuan lembur berhasil disubmit!');
 
-      // Clear form instead of reloading the page
+      // Clear form and refresh draft table
       clearForm();
+      getDraftLembur();
     } catch (error) {
       setIsLoading(false);
       console.log(error);
       alert('Terjadi kesalahan saat mengirim pengajuan');
+    }
+  };
+
+  const updateSPL = async () => {
+    if (!editingId) {
+      alert('ID pengajuan tidak ditemukan');
+      return;
+    }
+    if (!tglDari || !tglSampai) {
+      alert('Tanggal dan waktu periode pertama belum lengkap');
+      return;
+    }
+    if (hasSecondPeriod && (!tglDari2 || !tglSampai2)) {
+      alert('Tanggal dan waktu periode kedua belum lengkap');
+      return;
+    }
+    if (timeError || timeError2) {
+      alert('Perbaiki error waktu terlebih dahulu');
+      return;
+    }
+    if (!alasanLembur) {
+      alert('Alasan lembur belum diisi');
+      return;
+    }
+
+    setIsLoading(true);
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/hr/pengajuanLembur/${editingId}`;
+    try {
+      const totalHours = calculateTotalHours();
+
+      const requestData = {
+        dari: tglDari,
+        sampai: tglSampai,
+        dari_2: hasSecondPeriod ? tglDari2 : '',
+        sampai_2: hasSecondPeriod ? tglSampai2 : '',
+        jo_lembur: joReal,
+        lama_lembur: totalHours,
+        alasan_lembur: alasanLembur,
+        target_lembur: targetLembur,
+        isIstirahat: '',
+        tipe_lembur: tipeLembur,
+        jumlah_makan: jumlahMakan,
+      };
+
+      console.log('Update request data:', requestData);
+
+      const res = await axios.put(url, requestData, {
+        withCredentials: true,
+      });
+
+      setIsLoading(false);
+      console.log(res);
+      alert('Pengajuan lembur berhasil diupdate!');
+
+      // Clear form and refresh draft table
+      clearForm();
+      getDraftLembur();
+    } catch (error) {
+      setIsLoading(false);
+      console.log(error);
+      alert('Terjadi kesalahan saat mengupdate pengajuan');
     }
   };
 
@@ -404,7 +636,7 @@ function BuatSPLKeHR() {
         </div>
       )}
 
-      <div className="w-full mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+      <div className="w-full mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden mb-8">
         {/* Header Section */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-white">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
@@ -415,8 +647,15 @@ function BuatSPLKeHR() {
                 clipRule="evenodd"
               />
             </svg>
-            Pengajuan Surat Perintah Lembur (SPL)
+            {isEditMode
+              ? 'Edit Pengajuan Lembur'
+              : 'Pengajuan Surat Perintah Lembur (SPL)'}
           </h2>
+          {isEditMode && (
+            <p className="text-blue-100 text-sm mt-2">
+              Mode Edit - Karyawan tidak dapat diubah
+            </p>
+          )}
         </div>
 
         {/* Employee and Job Selection */}
@@ -435,7 +674,7 @@ function BuatSPLKeHR() {
                     clipRule="evenodd"
                   />
                 </svg>
-                Nama Karyawan
+                Nama Karyawan {isEditMode && '(Tidak dapat diubah)'}
               </label>
               <Select
                 isMulti
@@ -443,6 +682,7 @@ function BuatSPLKeHR() {
                 options={options}
                 value={selectedEmployees}
                 onChange={handleChangePointDepatment}
+                isDisabled={isEditMode}
                 className="relative z-[60] w-full appearance-none rounded-lg border-2 border-white/20 bg-white/10 backdrop-blur-sm py-3 px-4 outline-none transition-all duration-200 focus:border-white focus:bg-white/20 active:border-white text-white placeholder-orange-200"
                 menuPortalTarget={document.body}
                 styles={{
@@ -711,9 +951,25 @@ function BuatSPLKeHR() {
         </div>
 
         {/* Submit Button */}
-        <div className="flex w-full justify-end items-center px-8 py-6 bg-gray-50 border-t border-gray-200">
+        <div className="flex w-full justify-end items-center gap-4 px-8 py-6 bg-gray-50 border-t border-gray-200">
+          {isEditMode && (
+            <button
+              onClick={handleCancelEdit}
+              disabled={isLoading}
+              className="flex px-8 py-3 justify-center items-center gap-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-gray-600 hover:to-gray-700 disabled:from-gray-400 disabled:to-gray-500 shadow-lg hover:shadow-xl text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              BATAL
+            </button>
+          )}
           <button
-            onClick={postSPL}
+            onClick={isEditMode ? updateSPL : postSPL}
             disabled={
               isLoading || !!timeError || !!timeError2 || !idKaryawan.length
             }
@@ -726,9 +982,157 @@ function BuatSPLKeHR() {
                 clipRule="evenodd"
               />
             </svg>
-            {isLoading ? 'PROCESSING...' : 'AJUKAN LEMBUR'}
+            {isLoading
+              ? 'PROCESSING...'
+              : isEditMode
+              ? 'UPDATE LEMBUR'
+              : 'AJUKAN LEMBUR'}
           </button>
         </div>
+      </div>
+
+      {/* Draft Table Section */}
+      <div className="w-full mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+        {/* Draft Header */}
+        <div className="bg-gradient-to-r from-orange-600 to-red-600 px-8 py-6 text-white">
+          <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Draft Pengajuan Lembur
+          </h2>
+        </div>
+
+        {/* Draft Table */}
+        <div className="overflow-x-auto">
+          <div className="min-w-[700px]">
+            <div className="grid grid-cols-12 px-8 py-4 border-b-4 border-gray-200 gap-2 bg-gray-50">
+              <label className="text-neutral-700 text-sm font-bold">No</label>
+              <label className="text-neutral-700 text-sm font-bold col-span-3">
+                Tanggal
+              </label>
+              <label className="text-neutral-700 text-sm font-bold">Lama</label>
+              <label className="text-neutral-700 text-sm font-bold col-span-2">
+                Department
+              </label>
+              <label className="text-neutral-700 text-sm font-bold col-span-2">
+                Personnel
+              </label>
+              <label className="text-neutral-700 text-sm font-bold ">
+                Status
+              </label>
+              <label className="text-neutral-700 text-sm font-bold col-span-2 justify-start">
+                Action
+              </label>
+            </div>
+
+            {draftLembur?.data && draftLembur.data.length > 0 ? (
+              draftLembur.data.map((data: any, i: number) => (
+                <div
+                  key={data.id || i}
+                  className="grid grid-cols-12 border-b-4 border-gray-200 gap-2 items-center px-8 py-4 hover:bg-gray-50 transition-colors"
+                >
+                  <label className="text-neutral-600 text-sm font-semibold">
+                    {(draftPage - 1) * 10 + i + 1}
+                  </label>
+
+                  <div className="flex flex-col gap-1 col-span-3">
+                    <label className="text-neutral-600 text-xs">
+                      Dari: {convertTimeStampToDateTime(data.dari)}
+                    </label>
+                    <label className="text-neutral-600 text-xs">
+                      Sampai: {convertTimeStampToDateTime(data.sampai)}
+                    </label>
+                    {data.dari_2 && data.dari_2 !== '' && (
+                      <label className="text-neutral-600 text-xs">
+                        Dari (2): {convertTimeStampToDateTime(data.dari_2)}
+                      </label>
+                    )}
+                    {data.sampai_2 && data.sampai_2 !== '' && (
+                      <label className="text-neutral-600 text-xs">
+                        Sampai (2): {convertTimeStampToDateTime(data.sampai_2)}
+                      </label>
+                    )}
+                  </div>
+
+                  <label className="text-neutral-600 text-sm font-semibold">
+                    {data.lama_lembur} Jam
+                  </label>
+
+                  <label className="text-neutral-600 text-sm col-span-2">
+                    {data.karyawan_pengaju?.biodata_karyawan[0]?.department
+                      ?.nama_department || '-'}
+                  </label>
+
+                  <label className="text-neutral-600 text-sm col-span-2">
+                    {data.karyawan?.name || '-'}
+                  </label>
+
+                  <label className="text-orange-600 text-sm font-bold uppercase ">
+                    {data.status}
+                  </label>
+
+                  <div className="flex justify-start items-center gap-2 col-span-2">
+                    <button
+                      onClick={() => handleEdit(data)}
+                      disabled={isLoading}
+                      className="px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-2"
+                      title="Edit data"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleSendToUser(data.id)}
+                      disabled={isLoading}
+                      className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-2"
+                      title="Send to user"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                      </svg>
+                      Send
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="px-8 py-12 text-center">
+                <p className="text-gray-500 text-lg">
+                  Tidak ada data draft saat ini
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Pagination */}
+        {draftLembur?.total_page > 1 && (
+          <div className="flex items-center justify-center gap-2 px-8 py-6 bg-gray-50 border-t border-gray-200">
+            <Stack spacing={2}>
+              <Pagination
+                count={draftLembur?.total_page}
+                color="primary"
+                page={draftPage}
+                onChange={(e, page) => setDraftPage(page)}
+              />
+            </Stack>
+          </div>
+        )}
       </div>
     </main>
   );

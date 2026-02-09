@@ -247,6 +247,7 @@ import PerubahanTglKirimPage from './pages/PPIC/PerubahanTglKirimPage';
 import MasterMenu from './pages/MasterData/MasterMenu';
 import AbsenPPICPage from './pages/PPIC/AbsenPPIC';
 import SecurityMonitoringPage from './pages/Security/SecurityMonitoringPage';
+import UserMenuPage from './pages/UserMenu/UserMenuPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2806,7 +2807,18 @@ function App() {
             </>
           }
         />
-
+        {/* ============== User Menu ROUTES ============== */}
+        <Route
+          path="/user-menu/submission"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <UserMenuPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
         {/* ============== TEST/MISC ROUTES ============== */}
         <Route
           path="/cobain"
