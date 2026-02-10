@@ -22,6 +22,12 @@ function SecurityMonitoring() {
   const [selectedDivisi, setSelectedDivisi] = useState('');
   const [selectedBagianMesin, setSelectedBagianMesin] = useState<any>(null);
 
+  // Photo modal states
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState('');
+
   useEffect(() => {
     getDepartment();
     // Load today's data by default
@@ -102,6 +108,27 @@ function SecurityMonitoring() {
     setSelectedBagianMesin(null);
 
     getAbsen(formattedDate, formattedDate, '');
+  };
+
+  // Photo modal functions
+  const openPhotoModal = (employee: any) => {
+    setSelectedEmployee(employee);
+    setIsPhotoModalOpen(true);
+  };
+
+  const closePhotoModal = () => {
+    setIsPhotoModalOpen(false);
+    setSelectedEmployee(null);
+  };
+
+  const openFullscreen = (imageUrl: string) => {
+    setFullscreenImage(imageUrl);
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+    setFullscreenImage('');
   };
 
   // Filter absensi data
@@ -193,6 +220,205 @@ function SecurityMonitoring() {
     <>
       <main className="">
         {isLoading && <Loading />}
+
+        {/* Fullscreen Image Modal */}
+        {isFullscreen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 z-[60] overflow-auto"
+            onClick={closeFullscreen}
+          >
+            <div className="relative w-full h-full flex justify-center p-4">
+              <img
+                src={fullscreenImage}
+                alt="Fullscreen"
+                className="max-w-full h-auto block"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+                onClick={closeFullscreen}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Photo Modal */}
+        {isPhotoModalOpen && selectedEmployee && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white rounded-t-2xl">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <svg
+                    className="w-6 h-6"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Profil Karyawan
+                </h3>
+                <p className="text-blue-100 text-sm mt-1">
+                  {selectedEmployee.name}
+                </p>
+              </div>
+
+              {/* Modal Body */}
+              <div className="px-6 py-6">
+                <div className="space-y-6">
+                  {/* Photo Section */}
+                  <div className="flex flex-col items-center">
+                    {selectedEmployee.foto_karyawan ? (
+                      <div className="relative">
+                        <img
+                          src={`${import.meta.env.VITE_API_LINK}/images/${
+                            selectedEmployee.foto_karyawan
+                          }`}
+                          alt={selectedEmployee.name}
+                          className="w-48 h-48 object-cover rounded-lg border-4 border-blue-200 shadow-lg cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() =>
+                            openFullscreen(
+                              `${import.meta.env.VITE_API_LINK}/images/${
+                                selectedEmployee.foto_karyawan
+                              }`,
+                            )
+                          }
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              'https://via.placeholder.com/200x200?text=No+Photo';
+                          }}
+                        />
+                        <p className="text-xs text-gray-500 mt-2 text-center">
+                          Klik gambar untuk memperbesar
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="w-48 h-48 bg-gray-200 rounded-lg flex items-center justify-center border-4 border-gray-300">
+                        <div className="text-center">
+                          <svg
+                            className="w-16 h-16 mx-auto text-gray-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <p className="text-gray-500 text-sm mt-2">
+                            Tidak ada foto
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Employee Details */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Informasi Karyawan
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-600 font-medium">Nama:</p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.name || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">
+                          Tipe Karyawan:
+                        </p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.tipe_karyawan || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">Divisi:</p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.nama_divisi || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">Department:</p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.nama_department || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">
+                          Bagian Mesin:
+                        </p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.bagian_mesin?.[0]
+                            ?.nama_bagian_mesin || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">
+                          Tipe Penggajian:
+                        </p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.tipe_penggajian || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">
+                          Tanggal Absen:
+                        </p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.tgl_absen || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">Status:</p>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                            selectedEmployee.status_absen === 'Hadir'
+                              ? 'bg-green-100 text-green-800'
+                              : selectedEmployee.status_absen === 'Belum Masuk'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {selectedEmployee.status_absen || '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+                <button
+                  onClick={closePhotoModal}
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition-colors"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filter Section */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden mb-4">
@@ -465,7 +691,13 @@ function SecurityMonitoring() {
                               </td>
                               <td className="p-2 sm:p-3 text-xs font-medium">
                                 <div className="flex flex-col">
-                                  <span>{data.name}</span>
+                                  <button
+                                    onClick={() => openPhotoModal(data)}
+                                    className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline text-left"
+                                    title={`${data.name} - Klik untuk lihat foto`}
+                                  >
+                                    {data.name}
+                                  </button>
                                   {bagianMesin && (
                                     <span className="text-green-500 text-[10px] sm:text-[11px]">
                                       - {bagianMesin}
