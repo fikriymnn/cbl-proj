@@ -401,7 +401,7 @@ function MasterKaryawanIsi() {
             className="fixed inset-0 bg-black bg-opacity-90 z-[60] overflow-auto"
             onClick={closeFullscreen}
           >
-            <div className="relative w-full min-h-screen flex justify-center p-4">
+            <div className="relative w-full h-full flex justify-center p-4">
               <img
                 src={fullscreenImage}
                 alt="Fullscreen"
