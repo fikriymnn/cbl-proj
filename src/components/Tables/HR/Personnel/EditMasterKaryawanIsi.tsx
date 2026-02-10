@@ -11,6 +11,14 @@ import LengkapiMasterKaryawanIsi from './LengkapiMasterKaryawanIsi';
 function EditMasterKaryawanIsi() {
   const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
+
+  // Image states
+  const [fotoKaryawan, setFotoKaryawan] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState('');
+
   useEffect(() => {
     getDepartment();
     getBagian();
@@ -21,6 +29,16 @@ function EditMasterKaryawanIsi() {
     getMasterMesin();
     getKaryawan();
   }, []);
+
+  useEffect(() => {
+    // Clean up preview URL on unmount
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   const convertTimeStampToDate2 = (timestamp: any) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -29,6 +47,7 @@ function EditMasterKaryawanIsi() {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
+
   const [karyawan, setKaryawan] = useState<any>(null);
   const [bagianMesin, setBagianMesin] = useState([
     {
@@ -37,6 +56,7 @@ function EditMasterKaryawanIsi() {
       nama_bagian_mesin: '',
     },
   ]);
+
   async function getKaryawan() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan/${id}`;
     try {
@@ -71,14 +91,22 @@ function EditMasterKaryawanIsi() {
       setBagianMesin(
         res.data.data.biodata_karyawan[0]?.bagian_mesin_karyawan?.map(
           (item: any) => ({
-            id: item.id, // Map the ID from the API response
-            id_bagian_mesin: null, // Keep null as per your requirement
-            nama_bagian_mesin: item.nama_bagian_mesin, // Map the name from the API response
+            id: item.id,
+            id_bagian_mesin: null,
+            nama_bagian_mesin: item.nama_bagian_mesin,
           }),
         ),
       );
-
       setGaji(res.data.data.biodata_karyawan[0]?.gaji);
+
+      // Set existing photo if available
+      if (res.data.data.biodata_karyawan[0]?.foto_karyawan) {
+        const existingPhotoUrl = `${import.meta.env.VITE_API_LINK}/images/${
+          res.data.data.biodata_karyawan[0].foto_karyawan
+        }`;
+        setPreviewUrl(existingPhotoUrl);
+      }
+
       setKaryawan(res.data.data);
       setIsLoading(false);
     } catch (error: any) {
@@ -88,6 +116,7 @@ function EditMasterKaryawanIsi() {
   }
 
   const [namaBagianMesin, setNamaBagianMesin] = useState<any>();
+
   async function tambahBagian() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawanBagianMesin`;
     try {
@@ -135,6 +164,7 @@ function EditMasterKaryawanIsi() {
       }
     }
   }
+
   const [department, setDepartment] = useState<any>();
 
   async function getDepartment() {
@@ -172,19 +202,16 @@ function EditMasterKaryawanIsi() {
       console.log(error);
     }
   }
+
   const [jabatanMaster, setjabatanMaster] = useState<any>();
 
   async function getjabatanMaster() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/jabatan`;
     try {
       setIsLoading(true);
-      const res = await axios.get(
-        url,
-
-        {
-          withCredentials: true,
-        },
-      );
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
       setIsLoading(false);
       setjabatanMaster(res.data);
     } catch (error: any) {
@@ -192,19 +219,16 @@ function EditMasterKaryawanIsi() {
       console.log(error);
     }
   }
+
   const [karyawanStatus, setkaryawanStatus] = useState<any>();
 
   async function getkaryawanStatus() {
     const url = `${import.meta.env.VITE_API_LINK}/master/statusKaryawan`;
     try {
       setIsLoading(true);
-      const res = await axios.get(
-        url,
-
-        {
-          withCredentials: true,
-        },
-      );
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
       setIsLoading(false);
       setkaryawanStatus(res.data);
     } catch (error: any) {
@@ -212,20 +236,16 @@ function EditMasterKaryawanIsi() {
       console.log(error);
     }
   }
+
   const [divisi, setDivisi] = useState<any>();
 
   async function getDivisi() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi`;
     try {
       setIsLoading(true);
-      const res = await axios.get(
-        url,
-
-        {
-          withCredentials: true,
-        },
-      );
-
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
       setIsLoading(false);
       setDivisi(res.data);
     } catch (error: any) {
@@ -235,9 +255,9 @@ function EditMasterKaryawanIsi() {
   }
 
   const [bagian, setBagian] = useState<any>();
-
   const [mesinMaster, setMesinMaster] = useState<any[]>([]);
   const [options, setOptions] = useState<any[]>([]);
+
   const handleAddPoint = () => {
     setBagianMesin([
       ...bagianMesin,
@@ -248,17 +268,14 @@ function EditMasterKaryawanIsi() {
       },
     ]);
   };
+
   async function getBagian() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/bagian`;
     try {
       setIsLoading(true);
-      const res = await axios.get(
-        url,
-
-        {
-          withCredentials: true,
-        },
-      );
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
       setIsLoading(false);
       setBagian(res.data);
     } catch (error: any) {
@@ -268,17 +285,14 @@ function EditMasterKaryawanIsi() {
   }
 
   const [gradeMaster, setGradeMaster] = useState<any>();
+
   async function getGradeMaster() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/grade`;
     try {
       setIsLoading(true);
-      const res = await axios.get(
-        url,
-
-        {
-          withCredentials: true,
-        },
-      );
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
       setIsLoading(false);
       setGradeMaster(res.data);
     } catch (error: any) {
@@ -305,10 +319,119 @@ function EditMasterKaryawanIsi() {
   const [gaji, setGaji] = useState<any>(0);
   const [tipeKaryawan, seTipeKaryawan] = useState<any>();
 
+  // Image handling functions
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const validateAndSetFile = (file: File) => {
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Hanya file gambar yang diperbolehkan');
+      return;
+    }
+
+    // Check file size (1MB = 1024 * 1024 bytes)
+    const maxSize = 1024 * 1024; // 1MB
+    if (file.size > maxSize) {
+      alert('Ukuran file maksimal 1 MB');
+      return;
+    }
+
+    // Clean up previous preview URL if it's a blob URL
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    // Create new preview URL
+    const newPreviewUrl = URL.createObjectURL(file);
+    setPreviewUrl(newPreviewUrl);
+    setFotoKaryawan(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      validateAndSetFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      validateAndSetFile(e.target.files[0]);
+    }
+  };
+
+  const removeFile = () => {
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setFotoKaryawan(null);
+    setPreviewUrl(null);
+
+    const fileInput = document.getElementById(
+      'foto-upload',
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const openFullscreen = (imageUrl: string) => {
+    setFullscreenImage(imageUrl);
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+    setFullscreenImage('');
+  };
+
+  async function handleFileUpload(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      return (
+        response.data.fileName || response.data.filename || response.data.file
+      );
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      throw new Error('Gagal mengupload file');
+    }
+  }
+
   async function tambahKaryawan(iid: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan/${iid}`;
     try {
       setIsLoading(true);
+
+      // Upload foto if new file is selected
+      let fotoFileName = karyawan?.biodata_karyawan[0]?.foto_karyawan || null;
+      if (fotoKaryawan) {
+        fotoFileName = await handleFileUpload(fotoKaryawan);
+      }
+
       const res = await axios.put(
         url,
         {
@@ -329,6 +452,7 @@ function EditMasterKaryawanIsi() {
           level: level,
           sub_level: subLevel,
           gaji: gaji,
+          foto_karyawan: fotoFileName,
           kontrak_dari: null,
           kontrak_sampai: null,
         },
@@ -337,27 +461,30 @@ function EditMasterKaryawanIsi() {
         },
       );
       setIsLoading(false);
+      alert('Data berhasil disimpan!');
       window.location.reload();
     } catch (error: any) {
       setIsLoading(false);
       console.log(error);
+      alert('Terjadi kesalahan saat menyimpan data');
     }
   }
+
   const recalculateWaktuKeluar = (
     masukDate: string,
     waktuBulan: number,
     type: string | null,
   ) => {
-    if (!masukDate || !waktuBulan) return null; // If no input date or waktuBulan, return empty
+    if (!masukDate || !waktuBulan) return null;
     const date = new Date(masukDate);
 
     if (type === 'hari') {
-      date.setDate(date.getDate() + waktuBulan); // Add days if type is 'Hari'
+      date.setDate(date.getDate() + waktuBulan);
     } else {
-      date.setMonth(date.getMonth() + waktuBulan); // Add months otherwise
+      date.setMonth(date.getMonth() + waktuBulan);
     }
 
-    return date.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+    return date.toISOString().split('T')[0];
   };
 
   const handleStatusChange = (e: any) => {
@@ -368,7 +495,6 @@ function EditMasterKaryawanIsi() {
       (data: any) => data.id === parseInt(selectedId),
     );
     if (selectedStatus) {
-      // Use current or default tglMasuk if not set
       const defaultTglMasuk =
         tglMasuk || new Date().toISOString().split('T')[0];
       const recalculatedKeluar = recalculateWaktuKeluar(
@@ -396,6 +522,7 @@ function EditMasterKaryawanIsi() {
       setglKeluar(recalculatedKeluar);
     }
   };
+
   const handleChangePointDepartment = (selected: any, index: number) => {
     const updatedBagianMesin = [...bagianMesin];
     const { value } = selected;
@@ -415,16 +542,38 @@ function EditMasterKaryawanIsi() {
 
   const handleChangePointDepatment = (selected: any) => {
     const { value } = selected;
-    const filteredData = mesinMaster.find(
-      (item: any) => item.mesin == value,
-      // item.id.includes(parseInt(value));
-    );
+    const filteredData = mesinMaster.find((item: any) => item.mesin == value);
     setNamaBagianMesin(filteredData?.mesin);
   };
+
   return (
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
-      <div className="min-w-[700px]  bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12"></div>
+
+      {/* Fullscreen Image Modal */}
+      {isFullscreen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 z-50 overflow-auto"
+          onClick={closeFullscreen}
+        >
+          <div className="relative w-full min-h-screen flex justify-center p-4">
+            <img
+              src={fullscreenImage}
+              alt="Fullscreen"
+              className="max-w-full h-auto block"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+              onClick={closeFullscreen}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="min-w-[700px] bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12"></div>
       <div className="min-w-[700px] bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="flex w-full bg-gradient-to-r from-blue-50 to-blue-100 px-8 py-4 rounded-t-lg">
           <label className="text-[#0065de] text-lg font-bold tracking-wide">
@@ -435,6 +584,84 @@ function EditMasterKaryawanIsi() {
         <div className="w-full bg-white px-8 py-8 grid grid-cols-2 gap-8 rounded-b-lg">
           {/* Left Column */}
           <div className="flex flex-col gap-6">
+            {/* Photo Upload Section */}
+            <div className="flex flex-col gap-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Foto Karyawan
+              </label>
+
+              <div
+                className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                  dragActive
+                    ? 'border-blue-400 bg-blue-50'
+                    : fotoKaryawan || previewUrl
+                    ? 'border-green-400 bg-green-50'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <input
+                  type="file"
+                  id="foto-upload"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+
+                {previewUrl ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-center">
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => openFullscreen(previewUrl)}
+                      />
+                    </div>
+                    {fotoKaryawan && (
+                      <p className="text-sm font-medium text-gray-900">
+                        {fotoKaryawan.name}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      Klik gambar untuk memperbesar
+                    </p>
+                    <button
+                      type="button"
+                      onClick={removeFile}
+                      className="text-xs text-red-600 hover:text-red-700"
+                    >
+                      Hapus foto
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-center w-12 h-12 mx-auto bg-gray-100 rounded-full">
+                      <svg
+                        className="w-6 h-6 text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium text-blue-600">
+                        Klik untuk upload
+                      </span>{' '}
+                      atau drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      PNG, JPG, JPEG hingga 1MB
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* NIK and Gender Section */}
             <div className="space-y-4">
               <div className="flex items-start gap-8">

@@ -21,11 +21,16 @@ function MasterKaryawanIsi() {
   const [isLoading, setIsLoading] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
+  // Photo modal states
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState('');
+
   // Add sorting states
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
-  // Existing functions remain the same...
   async function getKaryawan() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
@@ -149,10 +154,29 @@ function MasterKaryawanIsi() {
     ),
   ];
 
-  // Add sorting function
+  // Photo modal functions
+  const openPhotoModal = (employee: any) => {
+    setSelectedEmployee(employee);
+    setIsPhotoModalOpen(true);
+  };
+
+  const closePhotoModal = () => {
+    setIsPhotoModalOpen(false);
+    setSelectedEmployee(null);
+  };
+
+  const openFullscreen = (imageUrl: string) => {
+    setFullscreenImage(imageUrl);
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+    setFullscreenImage('');
+  };
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
-      // If clicking the same field, cycle through: asc -> desc -> null
       if (sortDirection === 'asc') {
         setSortDirection('desc');
       } else if (sortDirection === 'desc') {
@@ -162,25 +186,21 @@ function MasterKaryawanIsi() {
         setSortDirection('asc');
       }
     } else {
-      // If clicking a different field, start with asc
       setSortField(field);
       setSortDirection('asc');
     }
   };
 
-  // Modified filteredAbsen to include sorting
   const filteredAbsen = karyawan?.data
     ?.filter((data: any) => {
       const biodata = data.biodata_karyawan[0];
 
-      // Search filter - only NIK and Name
       const searchLower = searchQuery.toLowerCase();
       const nameMatches = data.name.toLowerCase().includes(searchLower);
       const nikMatches =
         biodata?.nik?.toLowerCase().includes(searchLower) || false;
       const searchMatches = nameMatches || nikMatches;
 
-      // Status filter
       const status = biodata?.status_active || '';
       let statusMatches = true;
       if (statusFilter !== 'all') {
@@ -191,26 +211,22 @@ function MasterKaryawanIsi() {
         }
       }
 
-      // Divisi filter
       let divisiFilterMatches = true;
       if (divisiFilter !== 'all') {
         divisiFilterMatches = biodata?.divisi?.id == divisiFilter;
       }
 
-      // Department filter
       let departmentFilterMatches = true;
       if (departmentFilter !== 'all') {
         departmentFilterMatches = biodata?.department?.id == departmentFilter;
       }
 
-      // Tipe Penggajian filter
       let tipePenggajianMatches = true;
       if (tipePenggajianFilter !== 'all') {
         tipePenggajianMatches =
           biodata?.tipe_penggajian === tipePenggajianFilter;
       }
 
-      // Jenis Kelamin filter
       let jenisKelaminFilterMatches = true;
       if (jenisKelaminFilter !== 'all') {
         jenisKelaminFilterMatches =
@@ -227,7 +243,6 @@ function MasterKaryawanIsi() {
       );
     })
     ?.sort((a: any, b: any) => {
-      // Apply sorting if sortField and sortDirection are set
       if (!sortField || !sortDirection) return 0;
 
       let aValue: string | Date;
@@ -255,7 +270,6 @@ function MasterKaryawanIsi() {
       }
 
       if (sortField === 'tgl_masuk') {
-        // For dates, compare as Date objects
         const dateA = aValue as Date;
         const dateB = bValue as Date;
         if (sortDirection === 'asc') {
@@ -264,7 +278,6 @@ function MasterKaryawanIsi() {
           return dateB.getTime() - dateA.getTime();
         }
       } else {
-        // For strings, compare as strings
         const strA = (aValue as string).toLowerCase();
         const strB = (bValue as string).toLowerCase();
         if (sortDirection === 'asc') {
@@ -280,7 +293,6 @@ function MasterKaryawanIsi() {
     setOpenDropdown(openDropdown === userId ? null : userId);
   };
 
-  // Render sort icon component
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
       return (
@@ -327,7 +339,6 @@ function MasterKaryawanIsi() {
     );
   };
 
-  // Export to Excel function remains the same...
   const exportToExcel = () => {
     if (!filteredAbsen || filteredAbsen.length === 0) {
       alert('Tidak ada data untuk diekspor');
@@ -360,17 +371,17 @@ function MasterKaryawanIsi() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Karyawan');
 
     const columnWidths = [
-      { wch: 5 }, // No
-      { wch: 15 }, // NIK
-      { wch: 25 }, // Nama
-      { wch: 15 }, // Jenis Kelamin
-      { wch: 20 }, // Divisi
-      { wch: 20 }, // Department
-      { wch: 20 }, // Jabatan
-      { wch: 15 }, // Tipe Penggajian
-      { wch: 15 }, // Tanggal Masuk
-      { wch: 15 }, // Tanggal Keluar
-      { wch: 15 }, // Status
+      { wch: 5 },
+      { wch: 15 },
+      { wch: 25 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
     ];
     worksheet['!cols'] = columnWidths;
 
@@ -384,7 +395,226 @@ function MasterKaryawanIsi() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-full mx-auto">
-        {/* Header Section - remains the same */}
+        {/* Fullscreen Image Modal */}
+        {isFullscreen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 z-[60] overflow-auto"
+            onClick={closeFullscreen}
+          >
+            <div className="relative w-full min-h-screen flex justify-center p-4">
+              <img
+                src={fullscreenImage}
+                alt="Fullscreen"
+                className="max-w-full h-auto block"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+                onClick={closeFullscreen}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Photo Modal */}
+        {isPhotoModalOpen && selectedEmployee && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white rounded-t-2xl">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <svg
+                    className="w-6 h-6"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Profil Karyawan
+                </h3>
+                <p className="text-blue-100 text-sm mt-1">
+                  {selectedEmployee.name}
+                </p>
+              </div>
+
+              {/* Modal Body */}
+              <div className="px-6 py-6">
+                <div className="space-y-6">
+                  {/* Photo Section */}
+                  <div className="flex flex-col items-center">
+                    {selectedEmployee.biodata_karyawan[0]?.foto_karyawan ? (
+                      <div className="relative">
+                        <img
+                          src={`${import.meta.env.VITE_API_LINK}/images/${
+                            selectedEmployee.biodata_karyawan[0].foto_karyawan
+                          }`}
+                          alt={selectedEmployee.name}
+                          className="w-48 h-48 object-cover rounded-lg border-4 border-blue-200 shadow-lg cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() =>
+                            openFullscreen(
+                              `${import.meta.env.VITE_API_LINK}/images/${
+                                selectedEmployee.biodata_karyawan[0]
+                                  .foto_karyawan
+                              }`,
+                            )
+                          }
+                          onError={(e) => {
+                            e.currentTarget.src =
+                              'https://via.placeholder.com/200x200?text=No+Photo';
+                          }}
+                        />
+                        <p className="text-xs text-gray-500 mt-2 text-center">
+                          Klik gambar untuk memperbesar
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="w-48 h-48 bg-gray-200 rounded-lg flex items-center justify-center border-4 border-gray-300">
+                        <div className="text-center">
+                          <svg
+                            className="w-16 h-16 mx-auto text-gray-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          <p className="text-gray-500 text-sm mt-2">
+                            Tidak ada foto
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Employee Details */}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Informasi Karyawan
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-600 font-medium">NIK:</p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.biodata_karyawan[0]?.nik || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">
+                          Jenis Kelamin:
+                        </p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.biodata_karyawan[0]
+                            ?.jenis_kelamin || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">Divisi:</p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.biodata_karyawan[0]?.divisi
+                            ?.nama_divisi || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">Department:</p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.biodata_karyawan[0]?.department
+                            ?.nama_department || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">Jabatan:</p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.biodata_karyawan[0]?.jabatan
+                            ?.nama_jabatan || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">
+                          Tipe Penggajian:
+                        </p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.biodata_karyawan[0]
+                            ?.tipe_penggajian || '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">
+                          Tanggal Masuk:
+                        </p>
+                        <p className="text-gray-800">
+                          {selectedEmployee.biodata_karyawan[0]?.tgl_masuk
+                            ? convertTimeStampToDateOnly(
+                                selectedEmployee.biodata_karyawan[0].tgl_masuk,
+                              )
+                            : '-'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 font-medium">Status:</p>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                            selectedEmployee.biodata_karyawan[0]
+                              ?.status_active === 'active'
+                              ? 'bg-green-100 text-green-800'
+                              : selectedEmployee.biodata_karyawan[0]
+                                  ?.status_active === 'cut off'
+                              ? 'bg-orange-100 text-orange-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {selectedEmployee.biodata_karyawan[0]?.status
+                            ?.nama_status ||
+                            selectedEmployee.biodata_karyawan[0]
+                              ?.status_active ||
+                            '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+                <Link
+                  to={`/hr/personnel/employee/detail/${selectedEmployee.userid}`}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                  onClick={closePhotoModal}
+                >
+                  Lihat Detail Lengkap
+                </Link>
+                <button
+                  onClick={closePhotoModal}
+                  className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold rounded-lg transition-colors"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Header Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
@@ -417,7 +647,7 @@ function MasterKaryawanIsi() {
             </div>
           </div>
 
-          {/* Search Section - remains the same */}
+          {/* Search Section */}
           <div className="px-6 py-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -445,7 +675,7 @@ function MasterKaryawanIsi() {
             </div>
           </div>
 
-          {/* Filters Section - remains the same */}
+          {/* Filters Section */}
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
               {/* Status Filter */}
@@ -604,7 +834,7 @@ function MasterKaryawanIsi() {
           </div>
         </div>
 
-        {/* Table Section - Updated with sorting */}
+        {/* Table Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto flex flex-col min-h-screen">
             <table
@@ -669,7 +899,7 @@ function MasterKaryawanIsi() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200 ">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {karyawan != null &&
                   filteredAbsen?.map((data: any, i: any) => (
                     <tr
@@ -691,12 +921,13 @@ function MasterKaryawanIsi() {
                         </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
-                        <span
-                          className="text-xs font-medium text-gray-900 truncate block max-w-24"
-                          title={data.name}
+                        <button
+                          onClick={() => openPhotoModal(data)}
+                          className="text-xs font-medium text-blue-600 hover:text-blue-800 truncate block max-w-24 text-left hover:underline"
+                          title={`${data.name} - Klik untuk lihat foto`}
                         >
                           {data.name}
-                        </span>
+                        </button>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
                         <span className="text-xs text-gray-600">
