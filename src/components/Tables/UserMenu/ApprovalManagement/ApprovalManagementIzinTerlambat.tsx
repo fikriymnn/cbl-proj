@@ -40,7 +40,7 @@ interface ApiResponse {
   total_page: number;
 }
 
-function ApprovalIzinTerlambat() {
+function ApprovalManagementIzinTerlambat() {
   const [isLoading, setIsLoading] = useState(false);
   const [me, setMe] = useState<any>(null);
   const [requestList, setRequestList] = useState<ApiResponse | null>(null);
@@ -88,6 +88,7 @@ function ApprovalIzinTerlambat() {
       setIsLoading(true);
       const params: any = {
         page: currentPage,
+        status: 'request manajemen',
         limit: 10,
         id_department: me?.id_department, // Filter by department
       };
@@ -342,11 +343,11 @@ function ApprovalIzinTerlambat() {
           className="fixed inset-0 bg-black bg-opacity-90 z-99 overflow-auto"
           onClick={closeImageModal}
         >
-          <div className="relative w-full min-h-screen flex justify-center p-4">
+          <div className="relative w-full min-h-screen flex justify-center items-center p-4">
             <img
               src={selectedImage}
               alt="Bukti keterlambatan"
-              className="max-w-full h-auto block"
+              className="max-w-full max-h-[90vh] object-contain"
               onClick={(e) => e.stopPropagation()}
             />
             <button
@@ -395,12 +396,15 @@ function ApprovalIzinTerlambat() {
                       'request atasan'
                         ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
                         : selectedDetailRequest.status.toLowerCase() ===
+                          'request manajemen'
+                        ? 'bg-blue-100 text-blue-800 border-blue-300'
+                        : selectedDetailRequest.status.toLowerCase() ===
                           'approved'
                         ? 'bg-green-100 text-green-800 border-green-300'
                         : selectedDetailRequest.status.toLowerCase() ===
                           'rejected'
                         ? 'bg-red-100 text-red-800 border-red-300'
-                        : 'bg-blue-100 text-blue-800 border-blue-300'
+                        : 'bg-gray-100 text-gray-800 border-gray-300'
                     }`}
                   >
                     {getStatusIcon(selectedDetailRequest.status)}
@@ -594,7 +598,7 @@ function ApprovalIzinTerlambat() {
             {/* Modal Footer */}
             <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
               {selectedDetailRequest.status.toLowerCase() ===
-                'request atasan' && (
+                'request manajemen' && (
                 <>
                   <button
                     onClick={() => {
@@ -761,7 +765,7 @@ function ApprovalIzinTerlambat() {
                     } rounded-lg p-4`}
                   >
                     <label className="block text-gray-700 font-semibold mb-2">
-                      Catatan Atasan <span className="text-red-500">*</span>
+                      Catatan Manajemen <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={catatanAtasan}
@@ -838,11 +842,11 @@ function ApprovalIzinTerlambat() {
                 clipRule="evenodd"
               />
             </svg>
-            Persetujuan Izin Terlambat
+            Persetujuan Manajemen - Izin Terlambat
           </h2>
           <p className="text-orange-100 text-sm">
             Review dan setujui atau tolak pengajuan izin terlambat dari
-            department Anda
+            department Anda (Level Manajemen)
           </p>
         </div>
 
@@ -917,7 +921,7 @@ function ApprovalIzinTerlambat() {
                     >
                       Detail
                     </button>
-                    {data.status.toLowerCase() === 'request atasan' && (
+                    {data.status.toLowerCase() === 'request manajemen' && (
                       <div className="flex gap-1 w-full">
                         <button
                           onClick={() => handleApprove(data)}
@@ -982,4 +986,4 @@ function ApprovalIzinTerlambat() {
   );
 }
 
-export default ApprovalIzinTerlambat;
+export default ApprovalManagementIzinTerlambat;

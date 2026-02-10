@@ -635,12 +635,6 @@ function IzinTerlambatAtasan() {
                         {selectedRequest.karyawan?.name || '-'}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-gray-600">Badge Number:</p>
-                      <p className="font-semibold text-gray-800">
-                        {selectedRequest.karyawan?.badgenumber || '-'}
-                      </p>
-                    </div>
                   </div>
                 </div>
 

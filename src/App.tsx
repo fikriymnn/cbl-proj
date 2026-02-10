@@ -251,6 +251,7 @@ import UserMenuPage from './pages/UserMenu/UserMenuPage';
 import MasterTerlambatHPage from './pages/HR/MasterDataHR/MasterTerlambat';
 import AtasanIzinTerlambatPage from './pages/UserMenu/AtasanIzinTerlambatPage';
 import BawahanIzinTerlambatPage from './pages/UserMenu/BawahanIzinTerlambatPage';
+import ApprovalManagementPage from './pages/UserMenu/ApprovalManagementPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2820,6 +2821,17 @@ function App() {
         />
         {/* ============== User Menu ROUTES ============== */}
         <Route
+          path="/management-menu/approval-management"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ApprovalManagementPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/user-menu/submission"
           element={
             <>
@@ -2830,6 +2842,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/user-menu/izin-terlambat-atasan"
           element={

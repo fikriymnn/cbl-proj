@@ -1125,6 +1125,17 @@ export const menuCategories: MenuCategory[] = [
     ],
   },
   {
+    name: 'Management Menu',
+    icon: 'settings',
+    items: [
+      {
+        name: 'approval',
+        path: '/management-menu/approval-management',
+        icon: 'access',
+      },
+    ],
+  },
+  {
     name: 'User Menu',
     icon: 'settings',
     items: [
