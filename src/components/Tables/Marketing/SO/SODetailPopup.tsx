@@ -451,21 +451,28 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     data.kirim_semua ||
     data.ppic;
 
-  // Helper function to check if field should be editable
   const isFieldEditable = (fieldName: string): boolean => {
-    // PPN cannot be edited
-    if (fieldName === 'ppn') {
+    // When not in editing mode, nothing is editable
+    if (!isEditing) {
+      return false;
+    }
+
+    // PPN, no_so, tgl_input_po, and no_io are NEVER editable
+    const neverEditableFields = ['ppn', 'no_so', 'tgl_input_po', 'no_io'];
+    if (neverEditableFields.includes(fieldName)) {
       return false;
     }
 
     if (!isEditMode) {
-      // When isEditMode is false (called from HistorySO), only status_produk is editable
-      return fieldName === 'status_produk' && isEditing;
+      // When isEditMode is false (called from HistorySO)
+      // Only status_produk, no_po_customer, and po_qty are editable
+      return ['status_produk', 'no_po_customer', 'po_qty'].includes(fieldName);
     }
-    // When isEditMode is true (called from SOMarketing), all fields except PPN are editable
-    return isEditing;
-  };
 
+    // When isEditMode is true (called from SOMarketing)
+    // All fields except the never editable ones are editable
+    return true;
+  };
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

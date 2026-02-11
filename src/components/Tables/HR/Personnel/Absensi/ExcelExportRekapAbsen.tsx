@@ -25,81 +25,61 @@ const ExcelExportRekapAbsen = ({
   calculateTimeMetrics,
   convertTimeStampToDate,
 }: ExcelExportProps) => {
-  // Group attendance by month for violation counting
-  const groupAttendanceByMonth = (absensiData: any[]) => {
-    const grouped: { [key: string]: any[] } = {};
-
-    absensiData?.forEach((record: any) => {
-      if (record.tgl_absen) {
-        const monthKey = record.tgl_absen.substring(0, 7);
-        if (!grouped[monthKey]) {
-          grouped[monthKey] = [];
-        }
-        grouped[monthKey].push(record);
-      }
-    });
-
-    return grouped;
-  };
-
-  // Calculate violations (pelanggaran) per month
-  const calculateMonthlyViolations = (absensiData: any[]) => {
-    const attendanceByMonth = groupAttendanceByMonth(absensiData);
+  // Calculate violations (pelanggaran) - CUMULATIVE, NOT RESET EACH MONTH
+  const calculateCumulativeViolations = (absensiData: any[]) => {
     const violationsData: any[] = [];
+    let cumulativeViolationCount = 0; // This will NOT reset each month
 
-    const sortedMonths = Object.keys(attendanceByMonth).sort();
+    // Sort all records by date
+    const sortedRecords = [...absensiData].sort(
+      (a, b) =>
+        new Date(a.tgl_absen).getTime() - new Date(b.tgl_absen).getTime(),
+    );
 
-    sortedMonths.forEach((monthKey) => {
-      const monthRecords = attendanceByMonth[monthKey];
-      let monthlyViolationCount = 0;
+    sortedRecords.forEach((record: any) => {
+      const menitTerlambat = parseFloat(record.menit_terlambat || 0);
+      let violationType = '';
+      let violationFine = 0;
 
-      monthRecords.sort(
-        (a, b) =>
-          new Date(a.tgl_absen).getTime() - new Date(b.tgl_absen).getTime(),
-      );
+      if (menitTerlambat > 0) {
+        cumulativeViolationCount++; // Increment cumulative counter
 
-      monthRecords.forEach((record: any) => {
-        const menitTerlambat = parseFloat(record.menit_terlambat || 0);
-        let violationType = '';
-        let violationFine = 0;
+        if (menitTerlambat <= 0.5) {
+          violationType = '> 5 menit - 30 menit';
 
-        if (menitTerlambat > 0) {
-          monthlyViolationCount++;
-
-          if (menitTerlambat <= 0.5) {
-            violationType = '> 5 menit - 30 menit';
-
-            if (monthlyViolationCount === 1) {
-              violationFine = 5000;
-            } else if (monthlyViolationCount === 2) {
-              violationFine = 15000;
-            } else if (monthlyViolationCount === 3) {
-              violationFine = 25000;
-            } else {
-              violationFine = 30000;
-            }
+          if (cumulativeViolationCount === 1) {
+            violationFine = 5000;
+          } else if (cumulativeViolationCount === 2) {
+            violationFine = 15000;
+          } else if (cumulativeViolationCount === 3) {
+            violationFine = 25000;
           } else {
-            violationType = '> 30 menit';
+            violationFine = 30000;
+          }
+        } else {
+          violationType = '> 30 menit';
 
-            if (monthlyViolationCount === 1) {
-              violationFine = 35000;
-            } else if (monthlyViolationCount === 2) {
-              violationFine = 40000;
-            } else if (monthlyViolationCount === 3) {
-              violationFine = 45000;
-            } else {
-              violationFine = 50000;
-            }
+          if (cumulativeViolationCount === 1) {
+            violationFine = 35000;
+          } else if (cumulativeViolationCount === 2) {
+            violationFine = 40000;
+          } else if (cumulativeViolationCount === 3) {
+            violationFine = 45000;
+          } else {
+            violationFine = 50000;
           }
         }
+      }
 
-        violationsData.push({
-          ...record,
-          monthKey,
-          monthlyViolationCount: menitTerlambat > 0 ? monthlyViolationCount : 0,
-          violationType,
-          violationFine,
-        });
+      const monthKey = record.tgl_absen ? record.tgl_absen.substring(0, 7) : '';
+
+      violationsData.push({
+        ...record,
+        monthKey,
+        cumulativeViolationCount:
+          menitTerlambat > 0 ? cumulativeViolationCount : 0,
+        violationType,
+        violationFine,
       });
     });
 
@@ -159,7 +139,7 @@ const ExcelExportRekapAbsen = ({
       (employee: any, empIndex: number) => {
         const overtimeCalc = calculateOvertimeHours(employee.absensi);
         const timeMetrics = calculateTimeMetrics(employee.absensi);
-        const violationsData = calculateMonthlyViolations(employee.absensi);
+        const violationsData = calculateCumulativeViolations(employee.absensi); // CHANGED: Now cumulative
         const totalFine = calculateTotalFine(violationsData);
         const totalViolations = violationsData.filter(
           (v) => v.violationFine > 0,
@@ -182,6 +162,11 @@ const ExcelExportRekapAbsen = ({
       (a, b) => b.totalFine - a.totalFine,
     );
 
+    // Calculate total employees who were late (at least once)
+    const totalEmployeesLate = sortedEmployeeData.filter(
+      (empData) => empData.totalViolations > 0,
+    ).length;
+
     // Prepare summary data
     const summaryData: any[] = [];
     summaryData.push(['RINGKASAN TOTAL DENDA KARYAWAN']);
@@ -191,6 +176,10 @@ const ExcelExportRekapAbsen = ({
         dateTo,
       )}`,
     ]);
+    summaryData.push([]);
+    summaryData.push(['STATISTIK UMUM']);
+    summaryData.push(['Total Karyawan', allDataForExport.length]);
+    summaryData.push(['Total Karyawan yang Terlambat', totalEmployeesLate]);
     summaryData.push([]);
     summaryData.push([
       'No',
@@ -427,13 +416,13 @@ const ExcelExportRekapAbsen = ({
         'Status Lembur',
         'Status SPL',
         'Bulan',
-        'Jumlah Pelanggaran',
+        'Pelanggaran Ke-', // CHANGED: Now cumulative
         'Jenis Pelanggaran',
         'Denda (Rp)',
         'Keterangan',
       ]);
 
-      // Detail Attendance Rows with monthly violation reset
+      // Detail Attendance Rows with cumulative violation count
       violationsData.forEach((record: any, index: number) => {
         const keterangan = [];
         if (record.status_masuk) keterangan.push(record.status_masuk);
@@ -472,7 +461,9 @@ const ExcelExportRekapAbsen = ({
                 month: 'long',
               })
             : '-',
-          record.monthlyViolationCount > 0 ? record.monthlyViolationCount : '-',
+          record.cumulativeViolationCount > 0
+            ? record.cumulativeViolationCount
+            : '-', // CHANGED
           record.violationType || '-',
           record.violationFine > 0
             ? `Rp ${record.violationFine.toLocaleString('id-ID')}`
