@@ -404,15 +404,7 @@ function IzinTerlambatBawahan() {
       // Upload file first
       const fileName = await handleFileUpload(file);
 
-      // Format date to DD-MM-YYYY
-      const selectedDate = new Date(tanggal);
-      const formattedDate = `${String(selectedDate.getDate()).padStart(
-        2,
-        '0',
-      )}-${String(selectedDate.getMonth() + 1).padStart(
-        2,
-        '0',
-      )}-${selectedDate.getFullYear()}`;
+      const formattedDate = tanggal;
 
       const requestData = {
         id_karyawan: me?.id_karyawan,

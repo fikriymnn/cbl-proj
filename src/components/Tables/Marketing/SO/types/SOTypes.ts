@@ -12,6 +12,7 @@ export interface Gudang {
 }
 
 export interface Customer {
+  alamat_penagihan: any;
   id: number;
   nama_customer: string;
   alamat_kantor: string;
@@ -264,6 +265,7 @@ export interface SOData {
   so_perubahan_harga?: SOPerubahanHarga[];
   status_work: string;
   create_by: string;
+  alamat_penagihan: string;
   note: string;
   status_pemesanan: string;
   ppic: any;
@@ -339,6 +341,7 @@ export interface SOFormData {
   keterangan: string;
   ppn: string;
   profit: number;
+  alamat_penagihan: string;
   tgl_pengiriman: string;
   alamat_pengiriman: string;
   ada_standar_warna: string;

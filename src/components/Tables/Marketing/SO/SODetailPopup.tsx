@@ -44,6 +44,9 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
   const [gudangOptions, setGudangOptions] = useState<
     Array<{ value: string; label: string; data: Gudang }>
   >([]);
+  const [alamatPenagihanOptions, setAlamatPenagihanOptions] = useState<
+    Array<{ value: string; label: string; data: Gudang }>
+  >([]); // New state for alamat penagihan
   const [editFormData, setEditFormData] = useState<Partial<SOData>>({});
 
   const [formData, setFormData] = useState<KelengkapanPOFormData>({
@@ -65,6 +68,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     { value: 'Contoh Sample Customer', label: 'Contoh Sample Customer' },
     { value: 'Tidak Ada Acuan', label: 'Tidak Ada Acuan' },
     { value: 'Pantone/TC', label: 'Pantone/TC' },
+    { value: 'Print Digital', label: 'Print Digital' }, // NEW OPTION
   ];
 
   const artworkOptions = [
@@ -154,13 +158,16 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
             data: gudang,
           }));
           setGudangOptions(gudangOpts);
+          setAlamatPenagihanOptions(gudangOpts); // Same options for alamat penagihan
         } else {
           setGudangOptions([]);
+          setAlamatPenagihanOptions([]);
         }
       }
     } catch (error) {
       console.error('Error fetching gudang options:', error);
       setGudangOptions([]);
+      setAlamatPenagihanOptions([]);
     }
   };
 
@@ -269,6 +276,26 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
   const handleSubmitEdit = async () => {
     if (!data?.id) return;
 
+    // Validation for required fields when editing
+    if (isEditMode) {
+      if (!editFormData.status_produk) {
+        alert('Status Produk wajib diisi!');
+        return;
+      }
+      if (!editFormData.no_po_customer) {
+        alert('Nomor PO Customer wajib diisi!');
+        return;
+      }
+      if (!editFormData.po_qty || editFormData.po_qty === 0) {
+        alert('PO Qty wajib diisi!');
+        return;
+      }
+      if (!editFormData.tgl_pengiriman) {
+        alert('Tanggal Pengiriman wajib diisi!');
+        return;
+      }
+    }
+
     if (
       window.confirm('Apakah Anda yakin ingin menyimpan perubahan data SO ini?')
     ) {
@@ -290,6 +317,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
           id_io: data.id_io,
           id_kalkulasi: data.id_kalkulasi,
           status: data.status || 'draft',
+          ppn: data.ppn, // PPN cannot be edited - use original data
         };
 
         // Wrap the data in data_so object
@@ -425,11 +453,16 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
 
   // Helper function to check if field should be editable
   const isFieldEditable = (fieldName: string): boolean => {
+    // PPN cannot be edited
+    if (fieldName === 'ppn') {
+      return false;
+    }
+
     if (!isEditMode) {
       // When isEditMode is false (called from HistorySO), only status_produk is editable
       return fieldName === 'status_produk' && isEditing;
     }
-    // When isEditMode is true (called from SOMarketing), all fields are editable
+    // When isEditMode is true (called from SOMarketing), all fields except PPN are editable
     return isEditing;
   };
 
@@ -482,6 +515,25 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
           {/* Content */}
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* PPN - Always at top, Read-only when editing */}
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  PPN <span className="text-red-500">*</span>
+                  {isEditing && (
+                    <span className="text-gray-500 text-xs ml-2">
+                      (Tidak dapat diedit)
+                    </span>
+                  )}
+                </label>
+                <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                  {data.ppn === 'yes'
+                    ? 'Ya'
+                    : data.ppn === 'no'
+                    ? 'Tidak'
+                    : data.ppn || '-'}
+                </div>
+              </div>
+
               {/* Tanggal Input PO - Always Read-only */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -620,7 +672,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
               {/* Status Produk - ALWAYS EDITABLE when isEditing is true */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Status Produk{' '}
+                  Status Produk <span className="text-red-500">*</span>
                   {!isEditMode && isEditing && (
                     <span className="text-blue-600">(Editable)</span>
                   )}
@@ -690,7 +742,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
               {/* PO Qty */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  PO Qty
+                  PO Qty <span className="text-red-500">*</span>
                 </label>
                 {isFieldEditable('po_qty') ? (
                   <input
@@ -703,6 +755,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                       )
                     }
                     className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
                 ) : (
                   <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
@@ -745,30 +798,6 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 </div>
               </div>
 
-              {/* PPN */}
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                  PPN
-                </label>
-                {isFieldEditable('ppn') ? (
-                  <select
-                    value={editFormData.ppn || ''}
-                    onChange={(e) =>
-                      handleEditInputChange('ppn', e.target.value)
-                    }
-                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Pilih PPN</option>
-                    <option value="yes">Ya</option>
-                    <option value="no">Tidak</option>
-                  </select>
-                ) : (
-                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
-                    {data.ppn || '-'}
-                  </div>
-                )}
-              </div>
-
               {/* Profit */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
@@ -796,7 +825,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
               {/* Tanggal Pengiriman */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Tanggal Pengiriman
+                  Tanggal Pengiriman <span className="text-red-500">*</span>
                 </label>
                 {isFieldEditable('tgl_pengiriman') ? (
                   <input
@@ -808,6 +837,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                       handleEditInputChange('tgl_pengiriman', e.target.value)
                     }
                     className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
                 ) : (
                   <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
@@ -819,7 +849,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
               {/* Nomor PO Customer */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">
-                  Nomor PO Customer
+                  Nomor PO Customer <span className="text-red-500">*</span>
                 </label>
                 {isFieldEditable('no_po_customer') ? (
                   <input
@@ -829,6 +859,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                       handleEditInputChange('no_po_customer', e.target.value)
                     }
                     className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
                 ) : (
                   <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
@@ -854,6 +885,27 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 ) : (
                   <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
                     {data.alamat_pengiriman || '-'}
+                  </div>
+                )}
+              </div>
+
+              {/* Alamat Penagihan - NEW FIELD */}
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Alamat Penagihan
+                </label>
+                {isFieldEditable('alamat_penagihan') ? (
+                  <SearchableSelect
+                    placeholder="Pilih Alamat Penagihan"
+                    value={editFormData.alamat_penagihan || ''}
+                    onChange={(value) =>
+                      handleEditInputChange('alamat_penagihan', String(value))
+                    }
+                    options={alamatPenagihanOptions}
+                  />
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.alamat_penagihan || '-'}
                   </div>
                 )}
               </div>

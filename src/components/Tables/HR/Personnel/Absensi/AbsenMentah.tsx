@@ -44,8 +44,9 @@ function TableAbsenMentah() {
     getabsen(formattedDate, formattedDate);
   }, []);
 
-  const [dateFrom, setDateFrom] = useState<any>(null);
-  const [dateTo, setDateTo] = useState<any>(null);
+  // Initialize with today's date
+  const [dateFrom, setDateFrom] = useState<any>(formattedDate);
+  const [dateTo, setDateTo] = useState<any>(formattedDate);
 
   async function getabsen(dateFrom1: any, dateTo1: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/absensiInOut`;
@@ -101,12 +102,13 @@ function TableAbsenMentah() {
   const [typeCheckEdit, setTypeCheckEdit] = useState<any>(null);
 
   const [showEdit, setShowEdit] = useState<any>([]);
-  const openEdit = (i: any, date: any, hour: any) => {
+  const openEdit = (i: any, date: any, hour: any, checkType: string) => {
     const onchangeVal = [...showEdit];
     onchangeVal[i] = true; // Show popup for the selected index
-    setTypeCheckEdit(filteredAbsen[i].checkType === 'Masuk' ? 0 : 1);
+    // Set based on actual data from API
+    setTypeCheckEdit(checkType === 'Masuk' ? 0 : 1);
     setShowEdit(onchangeVal);
-    console.log(hour, date);
+    console.log(hour, date, checkType);
     setHoursNewEdit(hour);
     settglNewEdit(date);
   };
@@ -217,398 +219,446 @@ function TableAbsenMentah() {
   return (
     <>
       {!isMobile && (
-        <main className="overflow-x-scroll">
+        <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 ">
           {isLoading && <Loading />}
-          <div className="bg-white rounded-md shadow-md md:w-12/12 mb-5 border-2 border-stroke">
-            <div className="grid md:gap-4 gap-1 md:flex-row grid-cols-12 items-center px-4 py-4 md:mt-0 ">
-              <div className="flex flex-col gap-1 col-span-3">
-                <div className="flex flex-col">
-                  <p className="my-auto text-sm text-primary font-semibold ">
-                    Pilih Tanggal
-                  </p>
+
+          {/* Filter Controls Card */}
+          <div className="bg-white rounded-xl shadow-lg mb-6 border border-slate-200">
+            <div className="p-6">
+              <div className="grid grid-cols-12 gap-6 items-end">
+                {/* Date Range Selection */}
+                <div className="col-span-4">
+                  <h3 className="text-sm font-semibold text-slate-700 mb-3">
+                    Date Range
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm font-medium text-slate-600 w-20">
+                        From:
+                      </label>
+                      <input
+                        className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => {
+                          setDateFrom(e.target.value);
+                          console.log(e.target.value);
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm font-medium text-slate-600 w-20">
+                        To:
+                      </label>
+                      <input
+                        className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex gap-3 flex-col">
-                  <div className="flex md:justify-center items-center gap-2">
-                    <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
-                      Dari:
-                    </p>
-
-                    <input
-                      className="rounded-full bg-[#D8EAFF] px-2"
-                      type="date"
-                      onChange={(e) => {
-                        setDateFrom(e.target.value);
-                        console.log(e.target.value);
-                      }}
-                    ></input>
-                  </div>
-                  <div className="flex md:justify-center items-center gap-2">
-                    <p className=" my-auto text-sm text-primary font-semibold md:w-3/12 w-2/12">
-                      Sampai:
-                    </p>
-
-                    <input
-                      className="rounded-full bg-[#D8EAFF] px-2"
-                      type="date"
-                      onChange={(e) => setDateTo(e.target.value)}
-                    ></input>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-center my-5 col-span-2">
-                {dateFrom == null || dateTo == null ? (
-                  <>
-                    <button className="bg-red-600 text-white px-5 py-2 rounded-md my-auto ">
-                      Pilih Tanggal
+                {/* Action Buttons */}
+                <div className="col-span-3 flex flex-col gap-3">
+                  {dateFrom == null || dateTo == null ? (
+                    <button className="px-6 py-2.5 bg-red-500 text-white font-medium rounded-lg cursor-not-allowed opacity-60">
+                      Select Date First
                     </button>
-                  </>
-                ) : (
-                  <>
+                  ) : (
                     <button
                       onClick={() => {
                         getabsen(dateFrom, dateTo);
                       }}
-                      className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                      className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm"
                     >
-                      Tampilkan
+                      Show Results
                     </button>
-                  </>
-                )}
-              </div>
-              <div className="flex my-5 col-span-3">
-                <button
-                  onClick={() => {
-                    getabsen(formattedDate, formattedDate);
-                  }}
-                  className="bg-primary text-white px-5 py-2 rounded-md my-auto "
-                >
-                  Hari Ini
-                </button>
-              </div>
-              <div className="flex flex-col col-span-2">
-                <p className=" my-auto text-sm text-primary font-semibold   ">
-                  Cari Karyawan:
-                </p>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari Nama Karyawan"
-                  className="border p-2 rounded mb-4"
-                />
-              </div>
-              <div className="flex justify-end my-5 col-span-2 items-end">
-                <button
-                  onClick={() => openModalHistory()}
-                  className=" bg-blue-600 rounded-md text-white text-xs font-bold px-7 py-1"
-                >
-                  TAMBAH ABSEN MANUAL
-                </button>
-                {showHistory == true && (
-                  <>
-                    <ModalKosonganSmall
-                      isOpen={showHistory}
-                      onClose={() => closeModalHistory()}
-                      judul={'Tambah Absen Manual'}
-                    >
-                      <>
-                        <div className="flex flex-col gap-2 px-2 py-2">
-                          <div className="flex flex-col">
-                            <label className=" text-[#6c6b6b] text-sm font-semibold">
-                              Karyawan :
-                            </label>
-                            <Select
-                              placeholder="Cari..."
-                              options={options}
-                              onChange={(selectedId: any) => {
-                                handleChangePointDepatment(selectedId);
-                              }}
-                              className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-                            ></Select>
-                          </div>
-                          <div className="flex flex-col">
-                            <label className="text-neutral-500 text-sm font-semibold ">
-                              Tanggal
-                            </label>
-                            <input
-                              type="date"
-                              className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                              onChange={(e) => settglNew(e.target.value)}
-                            ></input>
-                          </div>
-                          <div className="flex flex-col">
-                            <label className="text-neutral-500 text-sm font-semibold ">
-                              Jam
-                            </label>
-                            <input
-                              type="time"
-                              className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                              onChange={(e) => setHoursNew(e.target.value)}
-                            ></input>
-                          </div>
-                          <div className="flex flex-col">
-                            <label className="text-neutral-500 text-sm font-semibold ">
-                              Tipe Check
-                            </label>
-                            <div className="flex gap-1">
-                              <input
-                                type="radio"
-                                className=" text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                value={0}
-                                name={`tipecheck-1`}
-                                onChange={(e) => setTypeCheck(e.target.value)}
+                  )}
+                  <button
+                    onClick={() => {
+                      setDateFrom(formattedDate);
+                      setDateTo(formattedDate);
+                      getabsen(formattedDate, formattedDate);
+                    }}
+                    className="px-6 py-2.5 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors shadow-sm"
+                  >
+                    Today's Data
+                  </button>
+                </div>
+
+                {/* Search Input */}
+                <div className="col-span-3">
+                  <label className="text-sm font-semibold text-slate-700 mb-2 block">
+                    Search Employee
+                  </label>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Type employee name..."
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                {/* Add Manual Button */}
+                <div className="col-span-2">
+                  <button
+                    onClick={() => openModalHistory()}
+                    className="w-full px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-colors shadow-sm"
+                  >
+                    + Add Manual
+                  </button>
+                  {showHistory == true && (
+                    <>
+                      <ModalKosonganSmall
+                        isOpen={showHistory}
+                        onClose={() => closeModalHistory()}
+                        judul={'Add Manual Attendance'}
+                      >
+                        <>
+                          <div className="flex flex-col gap-4 px-6 py-4">
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-semibold text-slate-700">
+                                Employee <span className="text-red-500">*</span>
+                              </label>
+                              <Select
+                                placeholder="Search and select employee..."
+                                options={options}
+                                onChange={(selectedId: any) => {
+                                  handleChangePointDepatment(selectedId);
+                                }}
+                                className="react-select-container"
+                                classNamePrefix="react-select"
                               />
-                              Masuk
-                              <input
-                                type="radio"
-                                className=" text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                value={1}
-                                name={`tipecheck-1`}
-                                onChange={(e) => setTypeCheck(e.target.value)}
-                              />
-                              Keluar
                             </div>
+
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-semibold text-slate-700">
+                                Date <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="date"
+                                className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                onChange={(e) => settglNew(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-semibold text-slate-700">
+                                Time <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="time"
+                                className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                onChange={(e) => setHoursNew(e.target.value)}
+                              />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-semibold text-slate-700">
+                                Check Type{' '}
+                                <span className="text-red-500">*</span>
+                              </label>
+                              <div className="flex gap-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                    value={0}
+                                    name="tipecheck-add"
+                                    checked={typeCheck === '0'}
+                                    onChange={(e) =>
+                                      setTypeCheck(e.target.value)
+                                    }
+                                  />
+                                  <span className="text-sm font-medium text-slate-700">
+                                    Check In
+                                  </span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                    value={1}
+                                    name="tipecheck-add"
+                                    checked={typeCheck === '1'}
+                                    onChange={(e) =>
+                                      setTypeCheck(e.target.value)
+                                    }
+                                  />
+                                  <span className="text-sm font-medium text-slate-700">
+                                    Check Out
+                                  </span>
+                                </label>
+                              </div>
+                            </div>
+
+                            <button
+                              disabled={isLoading}
+                              onClick={() => {
+                                postAbsen();
+                              }}
+                              className="mt-4 w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold rounded-lg transition-colors shadow-sm"
+                            >
+                              {isLoading ? 'Saving...' : 'Save Attendance'}
+                            </button>
                           </div>
-                          <button
-                            disabled={isLoading}
-                            onClick={() => {
-                              postAbsen();
-                            }}
-                            className="bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold"
-                          >
-                            SIMPAN
-                          </button>
-                        </div>
-                      </>
-                    </ModalKosonganSmall>
-                  </>
-                )}
+                        </>
+                      </ModalKosonganSmall>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-          <div className="min-w-[700px] bg-white rounded-xl">
-            <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                <div className="flex col-span-2 gap-2">
-                  <label className="text-neutral-500 text-sm font-semibold ">
-                    No.
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold ">
-                    Nama
-                  </label>
-                </div>
-
-                <label className="text-neutral-500 text-sm font-semibold col-span-4">
-                  Tanggal
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                  Tipe Check
-                </label>
+          {/* Data Table Card */}
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
+            {/* Table Header */}
+            <div className="bg-gradient-to-r from-slate-700 to-slate-600 px-8 py-4">
+              <div className="grid grid-cols-12 gap-4 text-white font-semibold text-sm">
+                <div className="col-span-1">No.</div>
+                <div className="col-span-3">Employee Name</div>
+                <div className="col-span-3">Check Date & Time</div>
+                <div className="col-span-2">Type</div>
+                <div className="col-span-3 text-center">Actions</div>
               </div>
-              <div className="w-2 h-full "></div>
-              {filteredAbsen
-                ?.slice() // Create a copy of the array to avoid mutating the original
-                .sort((a: any, b: any) => {
-                  // Parse dates for format like "11-2-2025 6:11:0"
-                  const [rawDateA, rawTimeA] = a.tglCheck.split(' ');
-                  const [dayA, monthA, yearA] = rawDateA.split('-');
-                  const timePartsA = rawTimeA
-                    .split(':')
-                    .map((part: any) => parseInt(part, 10));
+            </div>
 
-                  // Create date objects with proper format
-                  const dateA = new Date(
-                    parseInt(yearA, 10),
-                    parseInt(monthA, 10) - 1, // Month is 0-indexed in JS Date
-                    parseInt(dayA, 10),
-                    timePartsA[0] || 0, // Hours
-                    timePartsA[1] || 0, // Minutes
-                    timePartsA[2] || 0, // Seconds
-                  );
+            {/* Table Body */}
+            <div className="divide-y divide-slate-200">
+              {filteredAbsen && filteredAbsen.length > 0 ? (
+                filteredAbsen
+                  ?.slice()
+                  .sort((a: any, b: any) => {
+                    const [rawDateA, rawTimeA] = a.tglCheck.split(' ');
+                    const [dayA, monthA, yearA] = rawDateA.split('-');
+                    const timePartsA = rawTimeA
+                      .split(':')
+                      .map((part: any) => parseInt(part, 10));
 
-                  const [rawDateB, rawTimeB] = b.tglCheck.split(' ');
-                  const [dayB, monthB, yearB] = rawDateB.split('-');
-                  const timePartsB = rawTimeB
-                    .split(':')
-                    .map((part: any) => parseInt(part, 10));
+                    const dateA = new Date(
+                      parseInt(yearA, 10),
+                      parseInt(monthA, 10) - 1,
+                      parseInt(dayA, 10),
+                      timePartsA[0] || 0,
+                      timePartsA[1] || 0,
+                      timePartsA[2] || 0,
+                    );
 
-                  const dateB = new Date(
-                    parseInt(yearB, 10),
-                    parseInt(monthB, 10) - 1,
-                    parseInt(dayB, 10),
-                    timePartsB[0] || 0,
-                    timePartsB[1] || 0,
-                    timePartsB[2] || 0,
-                  );
+                    const [rawDateB, rawTimeB] = b.tglCheck.split(' ');
+                    const [dayB, monthB, yearB] = rawDateB.split('-');
+                    const timePartsB = rawTimeB
+                      .split(':')
+                      .map((part: any) => parseInt(part, 10));
 
-                  // Sort by latest first (descending order)
-                  return dateB.getTime() - dateA.getTime();
-                })
-                .map((data: any, i: any) => {
-                  const [rawDate, rawTime] = data.tglCheck.split(' '); // Split the date and time
-                  const [day2, month2, year2] = rawDate.split('-'); // Split the day, month, and year
-                  const formattedDate2 = `${year2}-${month2.padStart(
-                    2,
-                    '0',
-                  )}-${day2.padStart(2, '0')}`; // Format as YYYY-MM-DD
+                    const dateB = new Date(
+                      parseInt(yearB, 10),
+                      parseInt(monthB, 10) - 1,
+                      parseInt(dayB, 10),
+                      timePartsB[0] || 0,
+                      timePartsB[1] || 0,
+                      timePartsB[2] || 0,
+                    );
 
-                  // Split time into hours and minutes, and handle optional seconds
-                  const [hours, minutes] = rawTime.split(':');
-                  const formattedTime = `${hours.padStart(
-                    2,
-                    '0',
-                  )}:${minutes.padStart(2, '0')}`;
+                    return dateB.getTime() - dateA.getTime();
+                  })
+                  .map((data: any, i: any) => {
+                    const [rawDate, rawTime] = data.tglCheck.split(' ');
+                    const [day2, month2, year2] = rawDate.split('-');
+                    const formattedDate2 = `${year2}-${month2.padStart(
+                      2,
+                      '0',
+                    )}-${day2.padStart(2, '0')}`;
 
-                  const date = formattedDate2;
-                  const time = formattedTime;
+                    const [hours, minutes] = rawTime.split(':');
+                    const formattedTime = `${hours.padStart(
+                      2,
+                      '0',
+                    )}:${minutes.padStart(2, '0')}`;
 
-                  return (
-                    <>
+                    const date = formattedDate2;
+                    const time = formattedTime;
+
+                    return (
                       <div
                         key={i}
-                        className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 "
+                        className="grid grid-cols-12 gap-4 px-8 py-4 hover:bg-slate-50 transition-colors"
                       >
-                        <div className="flex col-span-2 gap-2">
-                          <label className="text-neutral-500 text-sm font-semibold ">
-                            {i + 1}
-                          </label>
-                          <label className="text-neutral-500 text-sm font-semibold ">
-                            {data.nama}
-                          </label>
+                        <div className="col-span-1 text-slate-600 font-medium">
+                          {i + 1}
+                        </div>
+                        <div className="col-span-3 text-slate-800 font-semibold">
+                          {data.nama}
+                        </div>
+                        <div className="col-span-3 text-slate-600">
+                          {data.tglCheck}
+                        </div>
+                        <div className="col-span-2">
+                          <span
+                            className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                              data.checkType === 'Masuk'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-amber-100 text-amber-700'
+                            }`}
+                          >
+                            {data.checkType}
+                          </span>
+                        </div>
+                        <div className="col-span-3 flex gap-2">
+                          <button
+                            onClick={() =>
+                              openEdit(i, date, time, data.checkType)
+                            }
+                            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() =>
+                              hapusAbsen(data.userid, data.checkTime)
+                            }
+                            className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            Delete
+                          </button>
                         </div>
 
-                        <label className="text-neutral-500 text-sm font-semibold col-span-4">
-                          {data.tglCheck}
-                        </label>
-
-                        <label className="text-neutral-500 text-sm font-semibold col-span-4">
-                          {data.checkType}
-                        </label>
-                        <button
-                          onClick={() => openEdit(i, date, time)}
-                          className="w-full bg-blue-600 text-white text-sm py-1 rounded-md"
-                        >
-                          Edit
-                        </button>
+                        {/* Edit Modal */}
                         {showEdit[i] == true && (
                           <ModalKosonganSmall
                             isOpen={showEdit[i]}
                             onClose={() => closeEdit(i)}
-                            judul={'Edit Absen Mentah'}
+                            judul={'Edit Attendance Record'}
                           >
                             <>
-                              <div
-                                key={i}
-                                className="flex flex-col px-4 py-4  gap-2"
-                              >
-                                <div className="flex flex-col">
-                                  <label className="text-neutral-500 text-sm font-semibold ">
-                                    Nama
+                              <div className="flex flex-col gap-4 px-6 py-4">
+                                <div className="flex flex-col gap-2">
+                                  <label className="text-sm font-semibold text-slate-700">
+                                    Employee Name
                                   </label>
                                   <input
                                     type="text"
-                                    className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                    className="px-4 py-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-600 cursor-not-allowed"
                                     value={data.nama}
                                     readOnly
-                                  ></input>
+                                  />
                                 </div>
-                                <div className="flex flex-col">
-                                  <label className="text-neutral-500 text-sm font-semibold ">
-                                    Check Time
+
+                                <div className="flex flex-col gap-2">
+                                  <label className="text-sm font-semibold text-slate-700">
+                                    Original Check Time
                                   </label>
                                   <input
                                     type="text"
-                                    className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                    className="px-4 py-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-600 cursor-not-allowed"
                                     value={data.checkTime}
                                     readOnly
-                                  ></input>
+                                  />
                                 </div>
-                                <div className="flex flex-col">
-                                  <label className="text-neutral-500 text-sm font-semibold ">
-                                    Tanggal
+
+                                <div className="flex flex-col gap-2">
+                                  <label className="text-sm font-semibold text-slate-700">
+                                    New Date{' '}
+                                    <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="date"
-                                    className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                    className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     defaultValue={tglNewEdit}
                                     onChange={(e) =>
                                       settglNewEdit(e.target.value)
                                     }
-                                  ></input>
+                                  />
                                 </div>
-                                <div className="flex flex-col">
-                                  <label className="text-neutral-500 text-sm font-semibold ">
-                                    Jam
+
+                                <div className="flex flex-col gap-2">
+                                  <label className="text-sm font-semibold text-slate-700">
+                                    New Time{' '}
+                                    <span className="text-red-500">*</span>
                                   </label>
                                   <input
                                     type="time"
-                                    className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                    className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     defaultValue={hoursNewEdit}
                                     onChange={(e) =>
                                       setHoursNewEdit(e.target.value)
                                     }
-                                  ></input>
+                                  />
                                 </div>
-                                <div className="flex flex-col">
-                                  <label className="text-neutral-500 text-sm font-semibold ">
-                                    Tipe Check
+
+                                <div className="flex flex-col gap-2">
+                                  <label className="text-sm font-semibold text-slate-700">
+                                    Check Type{' '}
+                                    <span className="text-red-500">*</span>
                                   </label>
-                                  <div className="flex gap-1">
-                                    <input
-                                      type="radio"
-                                      className=" text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                      value={0}
-                                      checked={typeCheckEdit === 0}
-                                      name={`tipecheck-${i}`}
-                                      onChange={(e) =>
-                                        setTypeCheckEdit(
-                                          parseInt(e.target.value),
-                                        )
-                                      }
-                                    />
-                                    Masuk
-                                    <input
-                                      type="radio"
-                                      className=" text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                      value={1}
-                                      checked={typeCheckEdit === 1}
-                                      name={`tipecheck-${i}`}
-                                      onChange={(e) =>
-                                        setTypeCheckEdit(
-                                          parseInt(e.target.value),
-                                        )
-                                      }
-                                    />
-                                    Keluar
+                                  <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                        value={0}
+                                        checked={typeCheckEdit === 0}
+                                        name={`tipecheck-${i}`}
+                                        onChange={(e) =>
+                                          setTypeCheckEdit(
+                                            parseInt(e.target.value),
+                                          )
+                                        }
+                                      />
+                                      <span className="text-sm font-medium text-slate-700">
+                                        Check In
+                                      </span>
+                                    </label>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                        value={1}
+                                        checked={typeCheckEdit === 1}
+                                        name={`tipecheck-${i}`}
+                                        onChange={(e) =>
+                                          setTypeCheckEdit(
+                                            parseInt(e.target.value),
+                                          )
+                                        }
+                                      />
+                                      <span className="text-sm font-medium text-slate-700">
+                                        Check Out
+                                      </span>
+                                    </label>
                                   </div>
                                 </div>
+
                                 <button
                                   disabled={isLoading}
                                   onClick={() => {
                                     putAbsen(data.userid, data.checkTime, i);
                                   }}
-                                  className="bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold"
+                                  className="mt-4 w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold rounded-lg transition-colors shadow-sm"
                                 >
-                                  SIMPAN
+                                  {isLoading
+                                    ? 'Updating...'
+                                    : 'Update Attendance'}
                                 </button>
                               </div>
                             </>
                           </ModalKosonganSmall>
                         )}
-                        <button
-                          onClick={() =>
-                            hapusAbsen(data.userid, data.checkTime)
-                          }
-                          className="w-full bg-red-600 text-white text-sm py-1 rounded-md"
-                        >
-                          Delete
-                        </button>
                       </div>
-                    </>
-                  );
-                })}
+                    );
+                  })
+              ) : (
+                <div className="px-8 py-12 text-center">
+                  <div className="text-slate-400 text-lg font-medium">
+                    No attendance records found
+                  </div>
+                  <p className="text-slate-500 text-sm mt-2">
+                    Try adjusting your search or date range
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </main>

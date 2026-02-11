@@ -14,6 +14,7 @@ interface SOCreatePopupProps {
   onClose: () => void;
   onSubmit: (data: SOFormData) => void;
   loading?: boolean;
+  mode?: 'create' | 'history'; // 'create' for SOMarketing, 'history' for HistorySO
 }
 
 const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
@@ -21,6 +22,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   onClose,
   onSubmit,
   loading = false,
+  mode = 'create', // Default to 'create' mode
 }) => {
   const [formData, setFormData] = useState<SOFormData>({
     tgl_input_po: new Date().toISOString().split('T')[0],
@@ -40,10 +42,11 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     total_harga: 0,
     no_po_customer: '',
     keterangan: '',
-    ppn: '',
+    ppn: 'yes', // Default to 'yes'
     profit: 0,
     tgl_pengiriman: '',
     alamat_pengiriman: '',
+    alamat_penagihan: '', // New field
     ada_standar_warna: 'Tidak',
     is_io_selesai: false,
   });
@@ -64,6 +67,9 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     [],
   );
   const [gudangOptions, setGudangOptions] = useState<GudangOption[]>([]);
+  const [alamatPenagihanOptions, setAlamatPenagihanOptions] = useState<
+    GudangOption[]
+  >([]); // New state for alamat penagihan
   const [kalkulasiLoading, setKalkulasiLoading] = useState(false);
   const [loadingSONumber, setLoadingSONumber] = useState(false);
   const [selectedKalkulasiData, setSelectedKalkulasiData] =
@@ -89,6 +95,17 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     { value: 'repeat', label: 'Repeat' },
     { value: 'repeat perubahan', label: 'Repeat Perubahan' },
   ];
+
+  // Helper function to check if field is editable based on mode
+  const isFieldEditable = (fieldName: string): boolean => {
+    if (mode === 'create') {
+      // In create mode from SOMarketing, all fields except PPN, no_so, and id_kalkulasi are editable
+      return !['ppn', 'no_so', 'id_kalkulasi'].includes(fieldName);
+    } else {
+      // In history mode, only status_produk, no_po_customer, and po_qty are editable
+      return ['status_produk', 'no_po_customer', 'po_qty'].includes(fieldName);
+    }
+  };
 
   // Generate SO Number
   const generateSONumber = async () => {
@@ -207,15 +224,15 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
 
   // Load Kalkulasi data and generate SO number when component mounts
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && mode === 'create') {
       fetchKalkulasiData();
       generateSONumber();
     }
-  }, [isOpen]);
+  }, [isOpen, mode]);
 
   const handleInputChange = (field: keyof SOFormData, value: any) => {
-    // Prevent manual changes to no_so
-    if (field === 'no_so') {
+    // Prevent changes to non-editable fields
+    if (!isFieldEditable(field)) {
       return;
     }
 
@@ -224,8 +241,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       [field]: value,
     }));
 
-    // Handle Kalkulasi selection
-    if (field === 'id_kalkulasi') {
+    // Handle Kalkulasi selection (only in create mode)
+    if (field === 'id_kalkulasi' && mode === 'create') {
       const selectedOption = kalkulasiOptions.find(
         (option) => option.value === value,
       );
@@ -257,12 +274,9 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               }),
             );
             setGudangOptions(gudangOpts);
+            setAlamatPenagihanOptions(gudangOpts); // Same options for alamat penagihan
 
-            // Auto fill alamat_pengiriman with first gudang (index 0)
-            const defaultGudang = kalkulasiData.customer.gudang[0];
-            const defaultAlamat = defaultGudang
-              ? defaultGudang.alamat_gudang
-              : '';
+            const defaultAlamat = kalkulasiData.customer.alamat_penagihan;
 
             setFormData((prev) => ({
               ...prev,
@@ -275,6 +289,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               produk: kalkulasiData.nama_produk || '',
               profit: profitValue,
               alamat_pengiriman: defaultAlamat,
+              alamat_penagihan: defaultAlamat, // Auto fill alamat penagihan
             }));
           }
         } else {
@@ -292,12 +307,15 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
             produk: kalkulasiData?.nama_produk || '',
             profit: kalkulasiData?.profit || 0,
             alamat_pengiriman: '',
+            alamat_penagihan: '',
           }));
           setGudangOptions([]);
+          setAlamatPenagihanOptions([]);
         }
       } else {
         setSelectedKalkulasiData(null);
         setGudangOptions([]);
+        setAlamatPenagihanOptions([]);
         // Reset fields when no Kalkulasi is selected
         setFormData((prev) => ({
           ...prev,
@@ -309,6 +327,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
           produk: '',
           profit: 0,
           alamat_pengiriman: '',
+          alamat_penagihan: '',
         }));
       }
       return;
@@ -334,6 +353,33 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation for required fields based on mode
+    if (mode === 'create') {
+      if (!formData.ppn) {
+        alert('PPN wajib diisi!');
+        return;
+      }
+      if (!formData.tgl_pengiriman) {
+        alert('Tanggal Pengiriman wajib diisi!');
+        return;
+      }
+    }
+
+    // Common validations for both modes
+    if (!formData.status_produk) {
+      alert('Status Produk wajib diisi!');
+      return;
+    }
+    if (!formData.no_po_customer) {
+      alert('Nomor PO Customer wajib diisi!');
+      return;
+    }
+    if (!formData.po_qty || formData.po_qty === 0) {
+      alert('PO Qty wajib diisi!');
+      return;
+    }
+
     onSubmit(formData);
     resetForm();
   };
@@ -357,15 +403,17 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       total_harga: 0,
       no_po_customer: '',
       keterangan: '',
-      ppn: '',
+      ppn: 'yes', // Reset to default 'yes'
       profit: 0,
       tgl_pengiriman: '',
       alamat_pengiriman: '',
+      alamat_penagihan: '',
       ada_standar_warna: 'Tidak',
       is_io_selesai: false,
     });
     setSelectedKalkulasiData(null);
     setGudangOptions([]);
+    setAlamatPenagihanOptions([]);
     setSoNumberData(null);
   };
 
@@ -376,7 +424,9 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold">Create Sales Order</h2>
+          <h2 className="text-xl font-semibold">
+            {mode === 'create' ? 'Create Sales Order' : 'Edit Sales Order'}
+          </h2>
 
           <button
             onClick={() => {
@@ -400,7 +450,27 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Row 1 */}
+            {/* Row 1 - PPN moved to top */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                PPN <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.ppn}
+                onChange={(e) => handleInputChange('ppn', e.target.value)}
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('ppn')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('ppn')}
+                required={mode === 'create'}
+              >
+                <option value="yes">Ya</option>
+                <option value="no">Tidak</option>
+              </select>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">
                 Tanggal Input PO
@@ -411,8 +481,13 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 onChange={(e) =>
                   handleInputChange('tgl_input_po', e.target.value)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('tgl_input_po')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('tgl_input_po')}
+                required={mode === 'create'}
               />
             </div>
 
@@ -429,6 +504,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               />
             </div>
 
+            {/* Row 2 */}
             <div>
               <label className="block text-sm font-medium mb-1">NOMOR IO</label>
               <SearchableSelect
@@ -436,6 +512,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 value={formData.id_kalkulasi}
                 onChange={(value) => handleInputChange('id_kalkulasi', value)}
                 options={kalkulasiOptions}
+                disabled={!isFieldEditable('id_kalkulasi')}
               />
             </div>
 
@@ -448,10 +525,10 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 value={formData.so_cancel}
                 onChange={(value) => handleInputChange('so_cancel', value)}
                 options={[]} // Add your options here
+                disabled={!isFieldEditable('so_cancel')}
               />
             </div>
 
-            {/* Row 2 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 No Booking
@@ -461,9 +538,11 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 value={formData.no_booking}
                 onChange={(value) => handleInputChange('no_booking', value)}
                 options={[]} // Add your options here
+                disabled={!isFieldEditable('no_booking')}
               />
             </div>
 
+            {/* Row 3 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Status Job Order
@@ -473,6 +552,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 value={formData.status_jo}
                 onChange={(value) => handleInputChange('status_jo', value)}
                 options={statusJOOptions}
+                disabled={!isFieldEditable('status_jo')}
               />
             </div>
 
@@ -483,12 +563,16 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 placeholder="Masukan Customer"
                 value={formData.customer}
                 onChange={(e) => handleInputChange('customer', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('customer')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('customer')}
+                required={mode === 'create'}
               />
             </div>
 
-            {/* Row 3 */}
             <div>
               <label className="block text-sm font-medium mb-1">Produk</label>
               <input
@@ -496,20 +580,27 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 placeholder="Masukan Produk"
                 value={formData.produk}
                 onChange={(e) => handleInputChange('produk', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('produk')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('produk')}
+                required={mode === 'create'}
               />
             </div>
 
+            {/* Row 4 */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                Status Produk
+                Status Produk <span className="text-red-500">*</span>
               </label>
               <SearchableSelect
                 placeholder="Pilih Status Produk"
                 value={formData.status_produk}
                 onChange={(value) => handleInputChange('status_produk', value)}
                 options={statusProdukOptions}
+                disabled={!isFieldEditable('status_produk')}
               />
             </div>
 
@@ -523,11 +614,15 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 onChange={(e) =>
                   handleInputChange('tgl_acc_customer', e.target.value)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('tgl_acc_customer')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('tgl_acc_customer')}
               />
             </div>
 
-            {/* Row 4 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Tanggal PO Customer
@@ -538,12 +633,20 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 onChange={(e) =>
                   handleInputChange('tgl_po_customer', e.target.value)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('tgl_po_customer')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('tgl_po_customer')}
               />
             </div>
 
+            {/* Row 5 */}
             <div>
-              <label className="block text-sm font-medium mb-1">PO Qty</label>
+              <label className="block text-sm font-medium mb-1">
+                PO Qty <span className="text-red-500">*</span>
+              </label>
               <input
                 type="number"
                 placeholder="Masukan PO Quantity"
@@ -551,7 +654,12 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 onChange={(e) =>
                   handleInputChange('po_qty', parseInt(e.target.value) || 0)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('po_qty')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('po_qty')}
                 required
               />
             </div>
@@ -566,11 +674,15 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 onChange={(e) =>
                   handleInputChange('keterangan', e.target.value)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('keterangan')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('keterangan')}
               />
             </div>
 
-            {/* Row 5 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Harga Jual
@@ -585,11 +697,17 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                     parseFloat(e.target.value) || 0,
                   )
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('harga_jual')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('harga_jual')}
+                required={mode === 'create'}
               />
             </div>
 
+            {/* Row 6 */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Total Harga
@@ -600,20 +718,6 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">PPN</label>
-              <select
-                value={formData.ppn}
-                onChange={(e) => handleInputChange('ppn', e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Pilih PPN</option>
-                <option value="yes">Ya</option>
-                <option value="no">Tidak</option>
-              </select>
-            </div>
-
-            {/* Row 6 */}
-            <div>
               <label className="block text-sm font-medium mb-1">Profit</label>
               <input
                 type="number"
@@ -622,13 +726,19 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 onChange={(e) =>
                   handleInputChange('profit', parseInt(e.target.value) || 0)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('profit')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('profit')}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                Tanggal Pengiriman
+                Tanggal Pengiriman{' '}
+                {mode === 'create' && <span className="text-red-500">*</span>}
               </label>
               <input
                 type="date"
@@ -636,13 +746,20 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 onChange={(e) =>
                   handleInputChange('tgl_pengiriman', e.target.value)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('tgl_pengiriman')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('tgl_pengiriman')}
+                required={mode === 'create'}
               />
             </div>
 
+            {/* Row 7 */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                Nomor PO Customer
+                Nomor PO Customer <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -651,11 +768,16 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 onChange={(e) =>
                   handleInputChange('no_po_customer', e.target.value)
                 }
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('no_po_customer')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('no_po_customer')}
+                required
               />
             </div>
 
-            {/* Row 7 */}
             <div className="col-span-2">
               <label className="block text-sm font-medium mb-1">
                 Alamat Pengiriman
@@ -667,10 +789,33 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                   handleInputChange('alamat_pengiriman', value)
                 }
                 options={gudangOptions}
+                disabled={!isFieldEditable('alamat_pengiriman')}
               />
             </div>
 
-            {/* Row 8 */}
+            {/* Row 8 - New Alamat Penagihan */}
+            <div className="col-span-2">
+              <label className="block text-sm font-medium mb-1">
+                Alamat Penagihan
+              </label>
+              <input
+                type="text"
+                placeholder="Masukan Alamat Penagihan"
+                value={formData.alamat_penagihan}
+                onChange={(e) =>
+                  handleInputChange('alamat_penagihan', e.target.value)
+                }
+                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !isFieldEditable('alamat_penagihan')
+                    ? 'bg-gray-100 cursor-not-allowed'
+                    : ''
+                }`}
+                disabled={!isFieldEditable('alamat_penagihan')}
+                required={mode === 'create'}
+              />
+            </div>
+
+            {/* Row 9 */}
             <div className="flex justify-between">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -687,6 +832,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                         handleInputChange('ada_standar_warna', e.target.value)
                       }
                       className="mr-2"
+                      disabled={!isFieldEditable('ada_standar_warna')}
                     />
                     Ya
                   </label>
@@ -700,6 +846,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                         handleInputChange('ada_standar_warna', e.target.value)
                       }
                       className="mr-2"
+                      disabled={!isFieldEditable('ada_standar_warna')}
                     />
                     Tidak
                   </label>
@@ -714,6 +861,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                       handleInputChange('is_io_selesai', e.target.checked)
                     }
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    disabled={!isFieldEditable('is_io_selesai')}
                   />
                   <span className="text-sm font-medium">IO Selesai</span>
                 </label>
@@ -739,7 +887,13 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
               disabled={loading || loadingSONumber}
             >
-              {loading ? 'Creating...' : 'Create SO'}
+              {loading
+                ? mode === 'create'
+                  ? 'Creating...'
+                  : 'Updating...'
+                : mode === 'create'
+                ? 'Create SO'
+                : 'Update SO'}
             </button>
           </div>
         </form>
