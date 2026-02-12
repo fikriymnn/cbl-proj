@@ -17,6 +17,8 @@ interface MountingFormPopupProps {
   existingMountings?: MountingData[];
   tahapan?: TahapanData[];
   isOpen: boolean;
+  no_io?: string;
+  produk?: string;
   onClose: () => void;
 }
 
@@ -25,6 +27,8 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
   mountingData,
   existingMountings = [],
   isOpen,
+  no_io,
+  produk,
   onClose,
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -406,7 +410,8 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-bold text-gray-800">
-            {mountingData ? 'Edit Mounting' : 'Create Mounting'}
+            {mountingData ? 'Edit Mounting' : 'Create Mounting'} |{' '}
+            {no_io || '-'} | {produk || '-'}
           </h2>
           <button
             onClick={onClose}

@@ -222,8 +222,8 @@ function IzinTerlambatBawahan() {
 
     // Calculate deadline (shift masuk - maksimal_pengajuan_terlambat hours)
     const deadline = new Date(shiftMasukTime);
-    deadline.setHours(
-      deadline.getHours() - (masterSetting.maksimal_pengajuan_terlambat || 0),
+    deadline.setMinutes(
+      deadline.getMinutes() - (masterSetting.maksimal_pengajuan_terlambat || 0),
     );
 
     // Check if current time is before deadline

@@ -1,0 +1,15 @@
+import PersonalAbsensi from '../../components/Tables/UserMenu/PersonalAbsensi';
+import DefaultLayout from '../../layout/DefaultLayout';
+
+const UserMenuAbsensi = () => {
+  return (
+    <DefaultLayout>
+      <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
+        User Menu &gt; Absensi
+      </p>
+      <PersonalAbsensi />
+    </DefaultLayout>
+  );
+};
+
+export default UserMenuAbsensi;

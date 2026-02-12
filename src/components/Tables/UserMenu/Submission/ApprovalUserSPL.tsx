@@ -9,6 +9,9 @@ function ApprovalUserSPL() {
   const [requestList, setRequestList] = useState<any>();
   const [currentPage, setCurrentPage] = useState(1);
   const [me, setMe] = useState<any>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'request user'>(
+    'all',
+  );
 
   // Modal states
   const [showModal, setShowModal] = useState(false);
@@ -43,7 +46,6 @@ function ApprovalUserSPL() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanLembur`;
     try {
       const params: any = {
-        status: 'request user',
         id_karyawan: me?.id_karyawan,
         page: currentPage,
         limit: 10,
@@ -59,6 +61,19 @@ function ApprovalUserSPL() {
       console.log(error);
     }
   }
+
+  // Filter data based on status
+  const getFilteredData = () => {
+    if (!requestList?.data) return [];
+
+    if (statusFilter === 'all') {
+      return requestList.data;
+    }
+
+    return requestList.data.filter(
+      (item: any) => item.status === 'request user',
+    );
+  };
 
   const handleApprove = (data: any) => {
     setSelectedRequest(data);
@@ -163,6 +178,8 @@ function ApprovalUserSPL() {
       return `${wholeHours} jam ${minutes} menit`;
     }
   };
+
+  const filteredData = getFilteredData();
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 ">
@@ -434,6 +451,41 @@ function ApprovalUserSPL() {
           </p>
         </div>
 
+        {/* Filter Section */}
+        <div className="px-8 py-4 bg-gray-50 border-b border-gray-200">
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-semibold text-gray-700">
+              Filter Status:
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setStatusFilter('all')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  statusFilter === 'all'
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                Semua Status
+              </button>
+              <button
+                onClick={() => setStatusFilter('request user')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  statusFilter === 'request user'
+                    ? 'bg-indigo-600 text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                Request User
+              </button>
+            </div>
+            <span className="text-sm text-gray-500 ml-auto">
+              Menampilkan {filteredData.length} dari{' '}
+              {requestList?.data?.length || 0} data
+            </span>
+          </div>
+        </div>
+
         {/* Table */}
         <div className="overflow-x-auto">
           <div className="min-w-[900px]">
@@ -459,8 +511,8 @@ function ApprovalUserSPL() {
               </label>
             </div>
 
-            {requestList?.data && requestList.data.length > 0 ? (
-              requestList.data.map((data: any, i: number) => (
+            {filteredData && filteredData.length > 0 ? (
+              filteredData.map((data: any, i: number) => (
                 <div
                   key={data.id || i}
                   className="grid grid-cols-12 border-b-4 border-gray-200 gap-2 items-center px-8 py-4 hover:bg-gray-50 transition-colors"
@@ -508,44 +560,60 @@ function ApprovalUserSPL() {
                   </label>
 
                   <div className="flex flex-col justify-start items-center gap-2 col-span-2">
-                    <button
-                      onClick={() => handleApprove(data)}
-                      disabled={isLoading}
-                      className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-1"
-                      title="Setujui pengajuan"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Setujui
-                    </button>
-                    <button
-                      onClick={() => handleReject(data)}
-                      disabled={isLoading}
-                      className="px-3 py-2 bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-1"
-                      title="Tolak pengajuan"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Tolak
-                    </button>
+                    {data.status !== 'request user' ? (
+                      <span className="text-gray-500 text-xs italic">
+                        (Action tidak tersedia)
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleApprove(data)}
+                          disabled={isLoading || data.status !== 'request user'}
+                          className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-1"
+                          title={
+                            data.status !== 'request user'
+                              ? 'Hanya dapat disetujui jika status "request user"'
+                              : 'Setujui pengajuan'
+                          }
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Setujui
+                        </button>
+                        <button
+                          onClick={() => handleReject(data)}
+                          disabled={isLoading || data.status !== 'request user'}
+                          className="px-3 py-2 bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-600 hover:to-rose-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-1"
+                          title={
+                            data.status !== 'request user'
+                              ? 'Hanya dapat ditolak jika status "request user"'
+                              : 'Tolak pengajuan'
+                          }
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                          Tolak
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))
@@ -565,10 +633,14 @@ function ApprovalUserSPL() {
                   />
                 </svg>
                 <p className="text-gray-500 text-lg font-medium">
-                  Tidak ada pengajuan lembur yang perlu disetujui
+                  {statusFilter === 'all'
+                    ? 'Tidak ada pengajuan lembur'
+                    : 'Tidak ada pengajuan lembur dengan status "request user"'}
                 </p>
                 <p className="text-gray-400 text-sm mt-2">
-                  Pengajuan baru akan muncul di sini
+                  {statusFilter === 'all'
+                    ? 'Pengajuan baru akan muncul di sini'
+                    : 'Coba ubah filter untuk melihat data lain'}
                 </p>
               </div>
             )}

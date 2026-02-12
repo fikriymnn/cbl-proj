@@ -220,7 +220,7 @@ function MasterSettingHRD() {
                 />
               </div>
               <div className="col-span-3">
-                <label className={unitStyle}>Jam</label>
+                <label className={unitStyle}>Menit</label>
               </div>
             </div>
           </div>
@@ -321,7 +321,7 @@ function MasterSettingHRD() {
                 className="text-gray-800 text-sm border border-gray-200 rounded-md px-3 py-2 col-span-5 focus:outline-none focus:ring-2 focus:ring-blue-300"
               />
               <label className="text-gray-600 text-sm font-medium col-span-2">
-                Jam
+                MENIT
               </label>
             </div>
             <div className="flex justify-end pt-4">

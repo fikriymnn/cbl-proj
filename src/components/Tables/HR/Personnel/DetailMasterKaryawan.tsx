@@ -53,6 +53,40 @@ function a11yProps(index: number) {
   };
 }
 
+// Helper function to calculate work duration
+function calculateMasaKerja(tanggalMasuk: string): string {
+  if (!tanggalMasuk) return '-';
+
+  const startDate = new Date(tanggalMasuk);
+  const today = new Date();
+
+  // Calculate difference in years, months, and days
+  let years = today.getFullYear() - startDate.getFullYear();
+  let months = today.getMonth() - startDate.getMonth();
+  let days = today.getDate() - startDate.getDate();
+
+  // Adjust for negative days
+  if (days < 0) {
+    months--;
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    days += prevMonth.getDate();
+  }
+
+  // Adjust for negative months
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  // Build the duration string
+  const parts = [];
+  if (years > 0) parts.push(`${years} tahun`);
+  if (months > 0) parts.push(`${months} bulan`);
+  if (days > 0) parts.push(`${days} hari`);
+
+  return parts.length > 0 ? parts.join(' ') : '0 hari';
+}
+
 export default function DetailMasterKaryawanIsi() {
   const { id } = useParams();
   const theme = createTheme({
@@ -546,6 +580,22 @@ export default function DetailMasterKaryawanIsi() {
                       htmlFor=""
                       className="text-black text-sm font-semibold"
                     >
+                      Masa Kerja
+                    </label>
+                    <label
+                      htmlFor=""
+                      className="text-[#636363] text-xl font-normal "
+                    >
+                      {calculateMasaKerja(
+                        karyawan?.data?.biodata_karyawan[0]?.tgl_masuk,
+                      )}
+                    </label>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label
+                      htmlFor=""
+                      className="text-black text-sm font-semibold"
+                    >
                       Status Karyawan
                     </label>
                     <label
@@ -600,11 +650,6 @@ export default function DetailMasterKaryawanIsi() {
                         : karyawan?.data?.biodata_karyawan[0]?.grade?.kategori}
                     </label>
                   </div>
-                  {/* <div className='flex flex-col gap-1'>
-
-                                        <label htmlFor="" className='text-black text-sm font-semibold'>Masa Kerja</label>
-                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>L</label>
-                                    </div> */}
                 </div>
               </div>
               <div className="bg-[#eeeeee] px-6 py-2">

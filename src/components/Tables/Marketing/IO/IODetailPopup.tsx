@@ -326,6 +326,8 @@ const IODetailPopup: React.FC<IODetailPopupProps> = ({
       {showMountingForm && (
         <MountingFormPopup
           ioId={ioId}
+          no_io={ioData?.no_io || ''}
+          produk={ioData?.produk || ''}
           mountingData={editingMounting}
           existingMountings={ioData?.io_mounting || []}
           isOpen={showMountingForm}

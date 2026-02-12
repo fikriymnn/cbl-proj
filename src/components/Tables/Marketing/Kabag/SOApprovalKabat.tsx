@@ -36,8 +36,6 @@ const SOApprovalKabag: React.FC = () => {
   // Action states
   const [isDetailPopupOpen, setIsDetailPopupOpen] = useState<boolean>(false);
   const [selectedSO, setSelectedSO] = useState<SOData | null>(null);
-  const [approveLoading, setApproveLoading] = useState<number | null>(null);
-  const [rejectLoading, setRejectLoading] = useState<number | null>(null);
 
   const handleSearch = (): void => {
     setSearchTerm(searchInput);
@@ -161,7 +159,6 @@ const SOApprovalKabag: React.FC = () => {
   const handleApprove = async (id: number) => {
     if (window.confirm('Apakah Anda yakin ingin Approve SO Ini?')) {
       try {
-        setApproveLoading(id);
         const url = `${
           import.meta.env.VITE_API_LINK
         }/marketing/so/approve/${id}`;
@@ -180,8 +177,6 @@ const SOApprovalKabag: React.FC = () => {
       } catch (error: any) {
         console.log(error);
         alert('Gagal approve SO. Silakan coba lagi.');
-      } finally {
-        setApproveLoading(null);
       }
     }
   };
@@ -189,7 +184,6 @@ const SOApprovalKabag: React.FC = () => {
   const handleReject = async (id: number) => {
     if (window.confirm('Apakah Anda yakin ingin Reject SO Ini?')) {
       try {
-        setRejectLoading(id);
         const url = `${
           import.meta.env.VITE_API_LINK
         }/marketing/so/reject/${id}`;
@@ -208,8 +202,6 @@ const SOApprovalKabag: React.FC = () => {
       } catch (error: any) {
         console.log(error);
         alert('Gagal reject SO. Silakan coba lagi.');
-      } finally {
-        setRejectLoading(null);
       }
     }
   };
@@ -383,11 +375,11 @@ const SOApprovalKabag: React.FC = () => {
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
-                      onClick={() => handleSort('status')}
+                      onClick={() => handleSort('status_jo')}
                       className="flex items-center hover:text-gray-700 focus:outline-none"
                     >
                       STATUS
-                      {getSortIcon('status')}
+                      {getSortIcon('status_jo')}
                     </button>
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -410,11 +402,11 @@ const SOApprovalKabag: React.FC = () => {
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
-                      onClick={() => handleSort('tgl_input_po')}
+                      onClick={() => handleSort('tgl_pengiriman')}
                       className="flex items-center hover:text-gray-700 focus:outline-none"
                     >
-                      TGL INPUT
-                      {getSortIcon('tgl_input_po')}
+                      TGL PENGIRIMAN
+                      {getSortIcon('tgl_pengiriman')}
                     </button>
                   </th>
                 </tr>
@@ -447,30 +439,8 @@ const SOApprovalKabag: React.FC = () => {
                             className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs transition-colors"
                             title="View Details"
                           >
-                            DETAIL
+                            ACTION
                           </button>
-                          {item.status === 'requested' && (
-                            <>
-                              <button
-                                onClick={() => handleApprove(item.id)}
-                                className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                                disabled={approveLoading === item.id}
-                              >
-                                {approveLoading === item.id
-                                  ? 'Loading...'
-                                  : 'APPROVE'}
-                              </button>
-                              <button
-                                onClick={() => handleReject(item.id)}
-                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                                disabled={rejectLoading === item.id}
-                              >
-                                {rejectLoading === item.id
-                                  ? 'Loading...'
-                                  : 'REJECT'}
-                              </button>
-                            </>
-                          )}
                         </div>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap flex flex-col gap-1 justify-center">
@@ -490,6 +460,15 @@ const SOApprovalKabag: React.FC = () => {
                           {item.label
                             ? item.label.substring(0, 20) +
                               (item.label.length > 20 ? '...' : '')
+                            : '-'}
+                        </span>
+                        <span
+                          className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                          title={item.status_produk}
+                        >
+                          {item.status_produk
+                            ? item.status_produk.substring(0, 20) +
+                              (item.status_produk.length > 20 ? '...' : '')
                             : '-'}
                         </span>
                       </td>
@@ -523,19 +502,19 @@ const SOApprovalKabag: React.FC = () => {
                       <td className="px-2 py-2 whitespace-nowrap">
                         <span
                           className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${
-                            item.status === 'draft'
+                            item.status_jo === 'draft'
                               ? 'bg-yellow-100 text-yellow-800'
-                              : item.status === 'pending'
+                              : item.status_jo === 'pending'
                               ? 'bg-orange-100 text-orange-800'
-                              : item.status === 'approved'
+                              : item.status_jo === 'approved'
                               ? 'bg-green-100 text-green-800'
-                              : item.status === 'rejected'
+                              : item.status_jo === 'rejected'
                               ? 'bg-red-100 text-red-800'
                               : 'bg-gray-100 text-gray-800'
                           }`}
-                          title={item.status}
+                          title={item.status_jo}
                         >
-                          {item.status}
+                          {item.status_jo}
                         </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
@@ -547,7 +526,7 @@ const SOApprovalKabag: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {formatDate(item.tgl_input_po)}
+                        {formatDate(item.tgl_pengiriman)}
                       </td>
                     </tr>
                   ))
@@ -593,7 +572,7 @@ const SOApprovalKabag: React.FC = () => {
         </div>
       </div>
 
-      {/* Detail Popup */}
+      {/* Detail Popup with Approve/Reject functionality */}
       <SODetailPopup
         isOpen={isDetailPopupOpen}
         onClose={() => {
@@ -601,6 +580,10 @@ const SOApprovalKabag: React.FC = () => {
           setSelectedSO(null);
         }}
         data={selectedSO}
+        showApproveReject={true}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onUpdate={fetchsoData}
       />
     </div>
   );

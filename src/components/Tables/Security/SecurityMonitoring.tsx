@@ -17,8 +17,6 @@ function SecurityMonitoring() {
 
   // Additional filters for absensi
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTipeKaryawan, setSelectedTipeKaryawan] = useState('');
-  const [selectedTipePenggajian, setSelectedTipePenggajian] = useState('');
   const [selectedDivisi, setSelectedDivisi] = useState('');
   const [selectedBagianMesin, setSelectedBagianMesin] = useState<any>(null);
 
@@ -102,8 +100,7 @@ function SecurityMonitoring() {
     setDateTo(formattedDate);
     setIdDepartment('');
     setSearchQuery('');
-    setSelectedTipeKaryawan('');
-    setSelectedTipePenggajian('');
+
     setSelectedDivisi('');
     setSelectedBagianMesin(null);
 
@@ -136,10 +133,6 @@ function SecurityMonitoring() {
     const bagianMesin = data.bagian_mesin?.[0]?.nama_bagian_mesin || '';
     return (
       data.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      (selectedTipeKaryawan === '' ||
-        data.tipe_karyawan === selectedTipeKaryawan) &&
-      (selectedTipePenggajian === '' ||
-        data.tipe_penggajian === selectedTipePenggajian) &&
       (selectedDivisi === '' || data.nama_divisi === selectedDivisi) &&
       (!selectedBagianMesin || bagianMesin === selectedBagianMesin.value)
     );
@@ -343,14 +336,7 @@ function SecurityMonitoring() {
                           {selectedEmployee.name || '-'}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-gray-600 font-medium">
-                          Tipe Karyawan:
-                        </p>
-                        <p className="text-gray-800">
-                          {selectedEmployee.tipe_karyawan || '-'}
-                        </p>
-                      </div>
+
                       <div>
                         <p className="text-gray-600 font-medium">Divisi:</p>
                         <p className="text-gray-800">
@@ -372,14 +358,7 @@ function SecurityMonitoring() {
                             ?.nama_bagian_mesin || '-'}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-gray-600 font-medium">
-                          Tipe Penggajian:
-                        </p>
-                        <p className="text-gray-800">
-                          {selectedEmployee.tipe_penggajian || '-'}
-                        </p>
-                      </div>
+
                       <div>
                         <p className="text-gray-600 font-medium">
                           Tanggal Absen:

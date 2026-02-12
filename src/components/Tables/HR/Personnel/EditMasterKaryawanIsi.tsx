@@ -39,6 +39,7 @@ function EditMasterKaryawanIsi() {
     };
   }, [previewUrl]);
 
+  // Helper function to convert timestamp to yyyy-mm-dd for input value
   const convertTimeStampToDate2 = (timestamp: any) => {
     if (!timestamp) return '';
     const date = new Date(timestamp);
@@ -46,6 +47,33 @@ function EditMasterKaryawanIsi() {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  };
+
+  // Helper function to format date for display (d / MonthName / yyyy)
+  const formatDateForDisplay = (dateString: string | null) => {
+    if (!dateString) return '-';
+
+    const monthNames = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${day} / ${month} / ${year}`;
   };
 
   const [karyawan, setKaryawan] = useState<any>(null);
@@ -72,6 +100,8 @@ function EditMasterKaryawanIsi() {
       setgrade(res.data.data.biodata_karyawan[0]?.grade?.id);
       sejabatan(res.data.data.biodata_karyawan[0]?.jabatan?.id);
       setIdStatusKaryawan(res.data.data.biodata_karyawan[0]?.status?.id);
+
+      // Store dates in yyyy-mm-dd format for payload
       setglMasuk(
         res.data.data.biodata_karyawan[0]?.tgl_masuk == null
           ? null
@@ -82,10 +112,11 @@ function EditMasterKaryawanIsi() {
       setglKeluar(
         res.data.data.biodata_karyawan[0]?.tgl_keluar == null
           ? null
-          : convertTimeStampToDate(
+          : convertTimeStampToDate2(
               res.data.data.biodata_karyawan[0]?.tgl_keluar,
             ),
       );
+
       sestatusPajak(res.data.data.biodata_karyawan[0]?.status_pajak);
       settipePenggajian(res.data.data.biodata_karyawan[0]?.tipe_penggajian);
       setBagianMesin(
@@ -432,6 +463,7 @@ function EditMasterKaryawanIsi() {
         fotoFileName = await handleFileUpload(fotoKaryawan);
       }
 
+      // Payload uses yyyy-mm-dd format (ISO format)
       const res = await axios.put(
         url,
         {
@@ -444,8 +476,8 @@ function EditMasterKaryawanIsi() {
           id_department: idDepartment,
           bagian_mesin: bagianMesin,
           id_grade: grade,
-          tgl_masuk: tglMasuk,
-          tgl_keluar: tglKeluar,
+          tgl_masuk: tglMasuk, // Already in yyyy-mm-dd format
+          tgl_keluar: tglKeluar, // Already in yyyy-mm-dd format
           tipe_penggajian: tipePenggajian,
           id_jabatan: jabatan,
           status_pajak: statusPajak,
@@ -484,6 +516,7 @@ function EditMasterKaryawanIsi() {
       date.setMonth(date.getMonth() + waktuBulan);
     }
 
+    // Return in yyyy-mm-dd format
     return date.toISOString().split('T')[0];
   };
 
@@ -508,7 +541,7 @@ function EditMasterKaryawanIsi() {
 
   const handleTglMasukChange = (e: any) => {
     const inputDate = e.target.value;
-    setglMasuk(inputDate);
+    setglMasuk(inputDate); // Store in yyyy-mm-dd format
 
     const selectedStatus = karyawanStatus.data.find(
       (data: any) => data.id === parseInt(idStatusKaryawan),
@@ -978,8 +1011,9 @@ function EditMasterKaryawanIsi() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Tanggal Keluar
                 </label>
+                {/* Display formatted date but keep internal value in yyyy-mm-dd */}
                 <div className="px-4 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-gray-700">
-                  {tglKeluar || '-'}
+                  {formatDateForDisplay(tglKeluar)}
                 </div>
               </div>
 
@@ -1228,7 +1262,7 @@ function EditMasterKaryawanIsi() {
           <button
             onClick={() => {
               tambahKaryawan(karyawan?.userid);
-              console.log(tglKeluar);
+              console.log('Tanggal Keluar (payload format):', tglKeluar);
             }}
             className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm"
           >

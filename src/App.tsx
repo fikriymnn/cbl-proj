@@ -252,6 +252,7 @@ import MasterTerlambatHPage from './pages/HR/MasterDataHR/MasterTerlambat';
 import AtasanIzinTerlambatPage from './pages/UserMenu/AtasanIzinTerlambatPage';
 import BawahanIzinTerlambatPage from './pages/UserMenu/BawahanIzinTerlambatPage';
 import ApprovalManagementPage from './pages/UserMenu/ApprovalManagementPage';
+import UserMenuAbsensi from './pages/UserMenu/UserMenuAbsensi';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2838,6 +2839,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <UserMenuPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/user-menu/absensi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <UserMenuAbsensi />
               </ProtectedRoute>
             </>
           }

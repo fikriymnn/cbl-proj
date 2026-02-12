@@ -10,6 +10,9 @@ interface SODetailPopupProps {
   data: SOData | null;
   isEditMode?: boolean; // New prop to control edit mode
   onUpdate?: () => void; // Callback after successful update
+  showApproveReject?: boolean; // New prop to show approve/reject buttons
+  onApprove?: (id: number) => Promise<void>; // Callback for approve action
+  onReject?: (id: number) => Promise<void>; // Callback for reject action
 }
 
 interface KelengkapanPOFormData {
@@ -30,6 +33,9 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
   data: initialData,
   isEditMode = false,
   onUpdate,
+  showApproveReject = false,
+  onApprove,
+  onReject,
 }) => {
   const [data, setData] = useState<SOData | null>(initialData);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -48,6 +54,10 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     Array<{ value: string; label: string; data: Gudang }>
   >([]); // New state for alamat penagihan
   const [editFormData, setEditFormData] = useState<Partial<SOData>>({});
+
+  // Approve/Reject loading states
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   const [formData, setFormData] = useState<KelengkapanPOFormData>({
     status_pemesanan: '',
@@ -422,6 +432,38 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     }
   };
 
+  // Handle approve action
+  const handleApproveClick = async () => {
+    if (!data?.id || !onApprove) return;
+
+    try {
+      setApproveLoading(true);
+      await onApprove(data.id);
+      // Close popup after successful approval
+      onClose();
+    } catch (error) {
+      console.error('Error in approve handler:', error);
+    } finally {
+      setApproveLoading(false);
+    }
+  };
+
+  // Handle reject action
+  const handleRejectClick = async () => {
+    if (!data?.id || !onReject) return;
+
+    try {
+      setRejectLoading(true);
+      await onReject(data.id);
+      // Close popup after successful rejection
+      onClose();
+    } catch (error) {
+      console.error('Error in reject handler:', error);
+    } finally {
+      setRejectLoading(false);
+    }
+  };
+
   if (!isOpen || !data) return null;
 
   const formatCurrency = (amount: number): string => {
@@ -473,6 +515,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     // All fields except the never editable ones are editable
     return true;
   };
+
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1438,7 +1481,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                 </div>
               )}
             {/* Action Buttons */}
-            <div className="flex justify-between mt-6 pt-4 border-t">
+            <div className="flex justify-between mt-6 pt-4 border-t gap-2">
               {isEditing ? (
                 <>
                   <button
@@ -1470,6 +1513,29 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                   Close
                 </button>
               )}
+              <div className="flex gap-4">
+                {/* Approve/Reject Buttons - Only show when showApproveReject is true */}
+                {showApproveReject && data.status === 'requested' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleApproveClick}
+                      disabled={approveLoading}
+                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                    >
+                      {approveLoading ? 'Processing...' : 'APPROVE'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRejectClick}
+                      disabled={rejectLoading}
+                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50"
+                    >
+                      {rejectLoading ? 'Processing...' : 'REJECT'}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>

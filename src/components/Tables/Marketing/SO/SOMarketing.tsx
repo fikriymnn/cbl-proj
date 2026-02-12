@@ -462,11 +462,11 @@ const SOMarketing: React.FC = () => {
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
-                      onClick={() => handleSort('status')}
+                      onClick={() => handleSort('status_jo')}
                       className="flex items-center hover:text-gray-700 focus:outline-none"
                     >
                       STATUS
-                      {getSortIcon('status')}
+                      {getSortIcon('status_jo')}
                     </button>
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -489,11 +489,11 @@ const SOMarketing: React.FC = () => {
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
-                      onClick={() => handleSort('tgl_input_po')}
+                      onClick={() => handleSort('tgl_pengiriman')}
                       className="flex items-center hover:text-gray-700 focus:outline-none"
                     >
-                      TGL INPUT
-                      {getSortIcon('tgl_input_po')}
+                      TGL PENGIRIMAN
+                      {getSortIcon('tgl_pengiriman')}
                     </button>
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -596,6 +596,15 @@ const SOMarketing: React.FC = () => {
                               (item.label.length > 20 ? '...' : '')
                             : '-'}
                         </span>
+                        <span
+                          className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                          title={item.status_produk}
+                        >
+                          {item.status_produk
+                            ? item.status_produk.substring(0, 20) +
+                              (item.status_produk.length > 20 ? '...' : '')
+                            : '-'}
+                        </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
                         <span
@@ -627,15 +636,15 @@ const SOMarketing: React.FC = () => {
                       <td className="px-2 py-2 whitespace-nowrap">
                         <span
                           className={`text-xs px-1.5 py-0.5 rounded font-medium uppercase ${
-                            item.status === 'draft'
+                            item.status_jo === 'draft'
                               ? 'bg-yellow-100 text-yellow-800'
-                              : item.status === 'approved'
+                              : item.status_jo === 'approved'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-gray-100 text-gray-800'
                           }`}
-                          title={item.status}
+                          title={item.status_jo}
                         >
-                          {item.status}
+                          {item.status_jo}
                         </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
@@ -647,7 +656,7 @@ const SOMarketing: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {formatDate(item.tgl_input_po)}
+                        {formatDate(item.tgl_pengiriman)}
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
                         <span

@@ -1145,6 +1145,11 @@ export const menuCategories: MenuCategory[] = [
         icon: 'access',
       },
       {
+        name: 'Absensi',
+        path: '/user-menu/absensi',
+        icon: 'access',
+      },
+      {
         name: 'Izin Terlambat Atasan',
         path: '/user-menu/izin-terlambat-atasan',
         icon: 'access',

@@ -829,11 +829,11 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 </tr>
                 <tr>
                   <td class="border bg-green-300" style="width: 20%; padding: 1px 3px">Biaya Produksi</td>
-                  <td class="border bg-gray-300 text-right" style="width: 30%; padding: 1px 3px; font-size: 12px">
+                  <td colspan="2"  class="border bg-gray-300 text-right" style="width: 30%; padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(getNumericValue(data.harga_produksi))}
                   </td>
                   <td class="border bg-green-300" style="width: 20%; padding: 1px 3px">Biaya Produksi per pc</td>
-                  <td colspan="2" class="border bg-gray-300 text-right" style="width: 30%; padding: 1px 3px; font-size: 12px">
+                  <td class="border bg-gray-300 text-right" style="width: 30%; padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(
                       getNumericValue(data.harga_produksi) /
                         getNumericValue(data.qty_kalkulasi),
@@ -903,8 +903,8 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                 </tr>
                 <tr>
                   <td class="border bg-green-300 font-bold" style="padding: 1px 3px">TOTAL</td>
-                  <td class="border" style="padding: 1px 3px"></td>
-                  <td class="border bg-red-400 font-bold text-right" style="padding: 1px 3px; font-size: 12px">
+             
+                  <td colspan="2" class="border bg-red-400 font-bold text-right" style="padding: 1px 3px; font-size: 12px">
                     ${formatCurrency(getNumericValue(data.total_harga))}
                   </td>
                   <td class="border bg-green-300 font-bold" style="padding: 1px 3px">TOTAL per pc</td>

@@ -223,10 +223,10 @@ function IzinTerlambatAtasan() {
     const shiftMasukTime = new Date(selectedDate);
     shiftMasukTime.setHours(hours, minutes, 0, 0);
 
-    // Calculate deadline (shift masuk - maksimal_pengajuan_terlambat hours)
+    // Calculate deadline (shift masuk - maksimal_pengajuan_terlambat minutes)
     const deadline = new Date(shiftMasukTime);
-    deadline.setHours(
-      deadline.getHours() - (masterSetting.maksimal_pengajuan_terlambat || 0),
+    deadline.setMinutes(
+      deadline.getMinutes() - (masterSetting.maksimal_pengajuan_terlambat || 0),
     );
 
     // Check if current time is before deadline
