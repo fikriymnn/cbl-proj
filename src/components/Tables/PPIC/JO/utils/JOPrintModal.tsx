@@ -779,7 +779,7 @@ ${
         <!-- Used area (white space) -->
         <div style="position: absolute; top: 0; left: 0; width: ${usedWidthPercent}%; height: ${usedHeightPercent}%; background-color: white; display: flex; justify-content: center; align-items: center;">
           ${
-            selectedMounting.ukuran_cetak_bagian_1 > 1
+            selectedMounting.ukuran_cetak_bagian_1 >= 1
               ? `<div style="font-size: 9px; font-weight: bold;">1/${selectedMounting.ukuran_cetak_bagian_1} Bagian</div>`
               : ''
           }
