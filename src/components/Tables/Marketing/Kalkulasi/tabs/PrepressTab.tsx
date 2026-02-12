@@ -433,17 +433,19 @@ const PrepressTab: React.FC<PrepressTabProps> = ({
         parseFloat(formData.finishing_insheet || '0') || 0;
       const totalInsheet = printInsheet + ponsInsheet + finishingInsheet;
 
-      const totalUkuranCetakIsi = ukuranCetakIsi1 + ukuranCetakIsi2;
+      const totalUkuranCetakIsiBagian1 = ukuranCetakIsi1 * ukuranCetakBagian1;
+      const totalUkuranCetakIsiBagian2 = ukuranCetakIsi2 * ukuranCetakBagian2;
       const totalUkuranCetakBagian = ukuranCetakBagian1 + ukuranCetakBagian2;
 
       if (
         qtyKalkulasi > 0 &&
-        totalUkuranCetakIsi > 0 &&
+        totalUkuranCetakIsiBagian1 > 0 &&
         totalUkuranCetakBagian > 0
       ) {
         const total_kertas =
-          (qtyKalkulasi / totalUkuranCetakIsi + totalInsheet) /
-          totalUkuranCetakBagian;
+          qtyKalkulasi /
+            (totalUkuranCetakIsiBagian1 + totalUkuranCetakIsiBagian2) +
+          totalInsheet / totalUkuranCetakBagian;
 
         const calculatedValue = Math.ceil(total_kertas);
         const formattedValue = formatNumber(calculatedValue);
