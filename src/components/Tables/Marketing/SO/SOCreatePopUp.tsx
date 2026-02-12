@@ -512,7 +512,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 value={formData.id_kalkulasi}
                 onChange={(value) => handleInputChange('id_kalkulasi', value)}
                 options={kalkulasiOptions}
-                disabled={!isFieldEditable('id_kalkulasi')}
+                disabled={isFieldEditable('id_kalkulasi')}
               />
             </div>
 
