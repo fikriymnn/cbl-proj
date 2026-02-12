@@ -458,7 +458,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
     }
 
     // PPN, no_so, tgl_input_po, and no_io are NEVER editable
-    const neverEditableFields = ['ppn', 'no_so', 'tgl_input_po', 'no_io'];
+    const neverEditableFields = ['ppn', 'no_so', 'tgl_input_po'];
     if (neverEditableFields.includes(fieldName)) {
       return false;
     }

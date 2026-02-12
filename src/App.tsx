@@ -2599,7 +2599,7 @@ function App() {
           }
         />
         <Route
-          path="/master/hr/izinterlambat"
+          path="/master/human-resources/izin-terlambat"
           element={
             <>
               <PageTitle title="PT CBL" />
