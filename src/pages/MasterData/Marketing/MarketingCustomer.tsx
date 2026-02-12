@@ -23,6 +23,7 @@ interface Customer {
   no_legalitas: string;
   toleransi_pengiriman: string;
   top_faktur: string;
+  alamat_penagihan: string;
   fax: string;
   is_active: boolean;
   gudang: Gudang[];
@@ -68,6 +69,7 @@ function MasterCustomer() {
   // Form states
   const [customerForm, setCustomerForm] = useState<Omit<Customer, 'id'>>({
     id_marketing: 0,
+    alamat_penagihan: '',
     id_harga_pengiriman: 0,
     nama_customer: '',
     email: '',
@@ -190,6 +192,7 @@ function MasterCustomer() {
       setEditingId(item.id);
       setCustomerForm({
         id_marketing: item.id_marketing || 0,
+        alamat_penagihan: item.alamat_penagihan || '',
         id_harga_pengiriman: item.id_harga_pengiriman || 0,
         nama_customer: item.nama_customer || '',
         email: item.email || '',
@@ -225,6 +228,7 @@ function MasterCustomer() {
 
   const resetForms = () => {
     setCustomerForm({
+      alamat_penagihan: '',
       id_marketing: 0,
       id_harga_pengiriman: 0,
       nama_customer: '',
@@ -728,7 +732,23 @@ function MasterCustomer() {
                     rows={3}
                   />
                 </div>
-
+                {/* Address */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Alamat Penagihan
+                  </label>
+                  <textarea
+                    value={customerForm.alamat_penagihan}
+                    onChange={(e) =>
+                      setCustomerForm((prev) => ({
+                        ...prev,
+                        alamat_penagihan: e.target.value,
+                      }))
+                    }
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    rows={3}
+                  />
+                </div>
                 {/* Updated: Gudang Section */}
                 <div>
                   <div className="flex justify-between items-center mb-2">
