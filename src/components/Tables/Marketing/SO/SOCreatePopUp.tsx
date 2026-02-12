@@ -2,19 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchableSelect';
-import {
-  SOFormData,
-  KalkulasiData,
-  APIResponse,
-  Gudang,
-} from './types/SOTypes';
+import { SOFormData, KalkulasiData, Gudang } from './types/SOTypes';
 
 interface SOCreatePopupProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: SOFormData) => void;
   loading?: boolean;
-  mode?: 'create' | 'history'; // 'create' for SOMarketing, 'history' for HistorySO
+  mode?: 'create' | 'edit' | 'history'; // 'create' for new SO, 'edit' for SOMarketing detail, 'history' for HistorySO
+  initialData?: SOFormData | null; // Add initialData prop for edit mode
 }
 
 const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
@@ -23,6 +19,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   onSubmit,
   loading = false,
   mode = 'create', // Default to 'create' mode
+  initialData = null,
 }) => {
   const [formData, setFormData] = useState<SOFormData>({
     tgl_input_po: new Date().toISOString().split('T')[0],
@@ -99,7 +96,10 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   // Helper function to check if field is editable based on mode
   const isFieldEditable = (fieldName: string): boolean => {
     if (mode === 'create') {
-      // In create mode from SOMarketing, all fields except PPN, no_so, and id_kalkulasi are editable
+      // In create mode from SOMarketing, all fields except no_so are editable
+      return fieldName !== 'no_so';
+    } else if (mode === 'edit') {
+      // In edit mode (SOMarketing detail button), ppn, no_so, and id_kalkulasi are NOT editable
       return !['ppn', 'no_so', 'id_kalkulasi'].includes(fieldName);
     } else {
       // In history mode, only status_produk, no_po_customer, and po_qty are editable
@@ -107,7 +107,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     }
   };
 
-  // Generate SO Number
+  // Generate SO Number - only called in create mode
   const generateSONumber = async () => {
     try {
       setLoadingSONumber(true);
@@ -145,9 +145,9 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     }
   };
 
-  // Update SO number when PPN changes
+  // Update SO number when PPN changes - only in create mode
   useEffect(() => {
-    if (soNumberData) {
+    if (mode === 'create' && soNumberData) {
       const newSONumber =
         formData.ppn === 'yes'
           ? soNumberData.no_so_tax_new
@@ -158,7 +158,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
         no_so: newSONumber,
       }));
     }
-  }, [formData.ppn, soNumberData]);
+  }, [formData.ppn, soNumberData, mode]);
 
   // Fetch Kalkulasi data from API using axios
   const fetchKalkulasiData = async () => {
@@ -224,9 +224,20 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
 
   // Load Kalkulasi data and generate SO number when component mounts
   useEffect(() => {
-    if (isOpen && mode === 'create') {
-      fetchKalkulasiData();
-      generateSONumber();
+    if (isOpen) {
+      if (mode === 'create') {
+        // Only fetch kalkulasi and generate SO number in create mode
+        fetchKalkulasiData();
+        generateSONumber();
+      } else if (mode === 'edit' && initialData) {
+        // In edit mode, populate form with initial data
+        setFormData(initialData);
+        // Optionally fetch kalkulasi data if needed for display
+        fetchKalkulasiData();
+      } else if (mode === 'history' && initialData) {
+        // In history mode, populate form with initial data
+        setFormData(initialData);
+      }
     }
   }, [isOpen, mode]);
 
@@ -512,7 +523,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                 value={formData.id_kalkulasi}
                 onChange={(value) => handleInputChange('id_kalkulasi', value)}
                 options={kalkulasiOptions}
-                disabled={isFieldEditable('id_kalkulasi')}
+                disabled={!isFieldEditable('id_kalkulasi')}
               />
             </div>
 
