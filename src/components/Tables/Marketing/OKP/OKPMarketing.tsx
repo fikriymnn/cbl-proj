@@ -4,6 +4,7 @@ import OKPModal from './OKPModal';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import OKPPrintModal from './OKPPrintModal';
+import OKPGantiKalkulasiModal from './OKPGantiKalkulasiModal';
 
 interface OKPItem {
   posisi_proses: string;
@@ -24,6 +25,7 @@ interface OKPItem {
   tahapan: string[];
   is_active: boolean;
   label?: string;
+  kalkulasi?: any;
 }
 
 interface ApiResponse<T> {
@@ -49,6 +51,14 @@ const OKPMarketing: React.FC = () => {
 
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [printOKPId, setPrintOKPId] = useState<number | undefined>();
+
+  // Ganti Kalkulasi Modal states
+  const [showGantiKalkulasiModal, setShowGantiKalkulasiModal] =
+    useState<boolean>(false);
+  const [gantiKalkulasiOKP, setGantiKalkulasiOKP] = useState<OKPItem | null>(
+    null,
+  );
+
   // Pagination states
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -141,6 +151,7 @@ const OKPMarketing: React.FC = () => {
       setSortDirection('asc');
     }
   };
+
   const handlePrintOKP = (okpId: number) => {
     setPrintOKPId(okpId);
     setShowPrintModal(true);
@@ -150,6 +161,22 @@ const OKPMarketing: React.FC = () => {
     setShowPrintModal(false);
     setPrintOKPId(undefined);
   };
+
+  const handleGantiKalkulasi = (item: OKPItem) => {
+    setGantiKalkulasiOKP(item);
+    setShowGantiKalkulasiModal(true);
+  };
+
+  const handleCloseGantiKalkulasiModal = () => {
+    setShowGantiKalkulasiModal(false);
+    setGantiKalkulasiOKP(null);
+  };
+
+  const handleGantiKalkulasiSuccess = () => {
+    fetchOKPData();
+    handleCloseGantiKalkulasiModal();
+  };
+
   const getSortIcon = (key: SortKey) => {
     if (sortKey !== key) {
       return (
@@ -511,6 +538,13 @@ const OKPMarketing: React.FC = () => {
                         >
                           Print
                         </button>
+                        <button
+                          onClick={() => handleGantiKalkulasi(item)}
+                          className="bg-orange-500 hover:bg-orange-600 text-white px-2 py-1 rounded text-xs transition-colors w-full"
+                          title="Ganti Kalkulasi"
+                        >
+                          Ganti Kal
+                        </button>
                       </div>
                     </td>
                     <td className="px-2 py-2">
@@ -712,6 +746,14 @@ const OKPMarketing: React.FC = () => {
       )}
       {showPrintModal && printOKPId && (
         <OKPPrintModal okpId={printOKPId} onClose={handleClosePrintModal} />
+      )}
+      {showGantiKalkulasiModal && gantiKalkulasiOKP && (
+        <OKPGantiKalkulasiModal
+          okpId={gantiKalkulasiOKP.id}
+          currentKalkulasi={gantiKalkulasiOKP.kalkulasi}
+          onClose={handleCloseGantiKalkulasiModal}
+          onSuccess={handleGantiKalkulasiSuccess}
+        />
       )}
     </div>
   );
