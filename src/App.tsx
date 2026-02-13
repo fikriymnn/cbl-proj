@@ -253,6 +253,7 @@ import AtasanIzinTerlambatPage from './pages/UserMenu/AtasanIzinTerlambatPage';
 import BawahanIzinTerlambatPage from './pages/UserMenu/BawahanIzinTerlambatPage';
 import ApprovalManagementPage from './pages/UserMenu/ApprovalManagementPage';
 import UserMenuAbsensi from './pages/UserMenu/UserMenuAbsensi';
+import WelcomePage from './pages/Dashboard/WelcomePage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -287,7 +288,7 @@ function App() {
           element={
             <>
               <PageTitle title="PT CBL" />
-              <ECommerce />
+              <WelcomePage />
             </>
           }
         />
@@ -300,7 +301,15 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/dashboard/maintenance-overview-dashboard"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ECommerce />
+            </>
+          }
+        />
         {/* Profile */}
         <Route
           path="/profile/setting"
