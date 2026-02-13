@@ -100,8 +100,7 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
 
   const handleQtyChange = (value: number) => {
     if (value > maxAllowed) {
-      setQtyKirim(maxAllowed);
-      setError(`Maximum quantity is ${maxAllowed.toLocaleString('id-ID')}`);
+      setQtyKirim(value);
     } else {
       setQtyKirim(value);
       setError('');
@@ -200,12 +199,8 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter quantity"
                 min="1"
-                max={maxAllowed}
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Maximum: {maxAllowed.toLocaleString('id-ID')}
-              </p>
             </div>
 
             <div className="flex items-center">
@@ -315,17 +310,6 @@ const ListJoSelesai: React.FC = () => {
     return text.length > maxLength
       ? `${text.substring(0, maxLength)}...`
       : text;
-  };
-
-  const formatDateTime = (dateString: string): string => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
   };
 
   const formatNumber = (num: number | null | undefined): string => {
