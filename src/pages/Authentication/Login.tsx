@@ -6,7 +6,6 @@ import axios from 'axios';
 
 import { useNavigate } from 'react-router-dom';
 import Loading from '../../components/Loading';
-import { getPermissionsForRole } from '../../constant/rbacConfig';
 
 const Login: React.FC = () => {
   const [Email, setEmail] = useState('');
@@ -14,62 +13,6 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
-
-  // Function to get first accessible route
-  const getFirstAccessibleRoute = (
-    role: string,
-    bagian: string,
-    menu: any,
-  ): string => {
-    const normalizedRole = role?.toLowerCase();
-
-    // Super Admin and Developer get dashboard as default
-    if (normalizedRole === 'super admin' || normalizedRole === 'developer') {
-      return '/dashboard';
-    }
-
-    // If menu data exists from API, find first accessible route from menu
-    if (menu && Array.isArray(menu) && menu.length > 0) {
-      const firstAccessiblePath = findFirstAccessiblePathFromMenu(menu);
-      if (firstAccessiblePath) {
-        return firstAccessiblePath;
-      }
-    }
-
-    // Fallback to permissions from rbacConfig
-    const permissions = getPermissionsForRole(role, bagian);
-
-    // Filter only accessible routes (excluding wildcard)
-    const accessibleRoutes = permissions.filter(
-      (p) => p.access === true && p.path !== '*',
-    );
-
-    if (accessibleRoutes.length === 0) {
-      return '/dashboard'; // Fallback to dashboard
-    }
-
-    // Return the first accessible route
-    return accessibleRoutes[0].path;
-  };
-
-  // Helper function to find first accessible path from menu data
-  const findFirstAccessiblePathFromMenu = (menuItems: any[]): string | null => {
-    for (const item of menuItems) {
-      // Check if item has viewable permission and a valid path
-      if (item.permissions?.can_view && item.path && item.path !== null) {
-        return item.path;
-      }
-
-      // Check children recursively
-      if (item.children && item.children.length > 0) {
-        const childPath = findFirstAccessiblePathFromMenu(item.children);
-        if (childPath) {
-          return childPath;
-        }
-      }
-    }
-    return null;
-  };
 
   async function submitLogin(e: any) {
     e.preventDefault();
@@ -102,11 +45,8 @@ const Login: React.FC = () => {
 
       setIsLoading(false);
 
-      // Get the first accessible route based on role, bagian, and menu
-      const firstAccessibleRoute = getFirstAccessibleRoute(role, bagian, menu);
-
-      // Navigate to the first accessible route
-      navigate(firstAccessibleRoute);
+      // Navigate to dashboard for all users
+      navigate('/dashboard');
     } catch (error: any) {
       console.log(error);
       alert(error.response.data.msg);
