@@ -233,7 +233,6 @@ import DepositPage from './pages/Accounting/DepositPage';
 import DepositApprovalPage from './pages/Accounting/DepositApprovalePage';
 import DepositApprovalHistoryPage from './pages/Accounting/DepositApprovalHistory';
 import ListOutstandingPage from './pages/Accounting/ListOutstandingPage';
-import ListInvoicePage from './pages/Accounting/ListInvoicePage';
 import ListApprovalInvoicePage from './pages/Accounting/ListInvoicePage';
 import ListInvoiceApprovePage from './pages/Accounting/ListInvoiceApprovePage';
 import ListAllInvoicePage from './pages/Accounting/ListAllInvoicePage';
@@ -254,6 +253,8 @@ import BawahanIzinTerlambatPage from './pages/UserMenu/BawahanIzinTerlambatPage'
 import ApprovalManagementPage from './pages/UserMenu/ApprovalManagementPage';
 import UserMenuAbsensi from './pages/UserMenu/UserMenuAbsensi';
 import WelcomePage from './pages/Dashboard/WelcomePage';
+import JOMonitoringPage from './pages/Monitoring/JOMonitoringPage';
+import SOMonitoringPage from './pages/Monitoring/SOMonitoringPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2882,6 +2883,29 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <BawahanIzinTerlambatPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        {/* ============== Monitoring ROUTES ============== */}
+        <Route
+          path="/monitoring/so-monitoring"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SOMonitoringPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/monitoring/jo-monitoring"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JOMonitoringPage />
               </ProtectedRoute>
             </>
           }
