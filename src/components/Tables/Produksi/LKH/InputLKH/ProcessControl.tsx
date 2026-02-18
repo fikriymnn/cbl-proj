@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Select from 'react-select';
 import {
   ProcessData,
@@ -10,6 +10,7 @@ import {
 } from './types';
 import { FIXED_PROCESSES } from './constants';
 import { selectStyles } from './styles';
+import WasteModal from './WasteModal';
 
 interface ProcessControlProps {
   selectedTahapan: number | null;
@@ -22,6 +23,8 @@ interface ProcessControlProps {
   activeProcesses: { [key: string]: LKHProses };
   processDataList: { [key: string]: ProcessData };
   wasteProcessData: WasteProcessData;
+  selectedJO: { id: number; no_jo: string } | null;
+  userId: number | null;
   onStartProcess: (processName: string) => void;
   onStopProcess: (processName: string) => void;
   onProcessDataChange: (
@@ -47,39 +50,18 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
   wasteKendalaList,
   activeProcesses,
   processDataList,
-  wasteProcessData,
+  selectedJO,
+  userId,
   onStartProcess,
   onStopProcess,
   onProcessDataChange,
-  onWasteProcessDataChange,
-  onWasteSubmit,
+
   onFinish,
 }) => {
+  const [showWasteModal, setShowWasteModal] = useState(false);
+
   const isProcessActive = (processName: string) => {
     return !!activeProcesses[processName];
-  };
-
-  // Get available waste options
-  const getWasteOptions = (): Option[] => {
-    return wasteKendalaList.map((waste) => ({
-      value: String(waste.id),
-      label: `${waste.kode} - ${waste.deskripsi}`,
-    }));
-  };
-
-  // Get kendala options based on selected waste
-  const getKendalaOptions = (): Option[] => {
-    if (!wasteProcessData.id_waste) return [];
-
-    const wasteId = parseInt(wasteProcessData.id_waste);
-    const selectedWaste = wasteKendalaList.find((w) => w.id === wasteId);
-
-    if (!selectedWaste) return [];
-
-    return selectedWaste.kendala.map((kendala) => ({
-      value: String(kendala.id),
-      label: `${kendala.kode} - ${kendala.deskripsi}`,
-    }));
   };
 
   if (!selectedTahapan || !selectedMesin) {
@@ -116,368 +98,286 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <div className="flex justify-between items-center mb-3 pb-2 border-b">
-        <h2 className="text-base font-semibold text-gray-800">
-          Kontrol Proses Produksi
-        </h2>
-        {hasActiveProcess && (
-          <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-            Proses Berjalan
-          </span>
-        )}
-      </div>
+    <>
+      <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="flex justify-between items-center mb-3 pb-2 border-b">
+          <h2 className="text-base font-semibold text-gray-800">
+            Kontrol Proses Produksi
+          </h2>
+          <div className="flex items-center gap-2">
+            {hasActiveProcess && (
+              <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                Proses Berjalan
+              </span>
+            )}
+            {/* Set Waste Button - only visible on SORTIR tahapan */}
+            {isSortirProcess && (
+              <button
+                onClick={() => setShowWasteModal(true)}
+                disabled={loading || !selectedJO}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                Set Waste
+              </button>
+            )}
+          </div>
+        </div>
 
-      <div className="space-y-2">
-        {FIXED_PROCESSES.map((process) => {
-          // Skip Waste if not SORTIR process
-          if (process.name === 'Waste' && !isSortirProcess) {
-            return null;
-          }
+        <div className="space-y-2">
+          {FIXED_PROCESSES.map((process) => {
+            // Skip Waste — now handled by modal
+            if (process.name === 'Waste') return null;
 
-          // Handle Waste process differently
-          if (process.name === 'Waste') {
-            const wasteOptions = getWasteOptions();
-            const kendalaOptions = getKendalaOptions();
+            const isActive = isProcessActive(process.name);
+            const processData = processDataList[process.name] || {
+              detail: '',
+              baik: 0,
+              rusak_sebagian: 0,
+              rusak_total: 0,
+              pallet: 0,
+              note: '',
+            };
+
+            const kodeProduksiOptions = (
+              kodeProduksiByProcess[process.name] || []
+            ).map((kode) => ({
+              value: String(kode.id),
+              label: `${kode.kode} - ${kode.deskripsi}`,
+            }));
 
             return (
               <div
                 key={process.name}
-                className="border rounded-lg p-2 border-gray-200 hover:border-gray-300"
+                className={`border rounded-lg p-2 transition-all ${
+                  isActive
+                    ? 'border-green-400 bg-green-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 rounded-full bg-gray-300" />
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
+                      }`}
+                    />
                     <h3 className="font-semibold text-sm text-gray-800">
                       {process.name}
                     </h3>
+                    {isActive && activeProcesses[process.name] && (
+                      <span className="text-xs text-gray-600">
+                        ({activeProcesses[process.name].kode} -{' '}
+                        {activeProcesses[process.name].deskripsi})
+                      </span>
+                    )}
                   </div>
-                  <button
-                    onClick={onWasteSubmit}
-                    className="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    disabled={
-                      loading ||
-                      !wasteProcessData.id_waste ||
-                      !wasteProcessData.id_kendala ||
-                      wasteProcessData.total_qty <= 0
-                    }
-                  >
-                    Submit
-                  </button>
+                  {isActive ? (
+                    <button
+                      onClick={() => onStopProcess(process.name)}
+                      className="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      disabled={loading}
+                    >
+                      Stop
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onStartProcess(process.name)}
+                      className="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      disabled={
+                        loading ||
+                        hasActiveProcess ||
+                        !selectedMesin ||
+                        !processData.detail
+                      }
+                    >
+                      Start
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  {/* First Row: Waste and Kendala */}
+                  {/* First Row: Detail and Keterangan */}
                   <div className="grid grid-cols-2 gap-2">
-                    {/* Waste */}
+                    {/* Detail */}
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">
-                        Waste <span className="text-red-500">*</span>
+                        Detail <span className="text-red-500">*</span>
                       </label>
                       <Select
-                        options={wasteOptions}
+                        options={kodeProduksiOptions}
                         value={
-                          wasteProcessData.id_waste
-                            ? wasteOptions.find(
-                                (opt) =>
-                                  opt.value === wasteProcessData.id_waste,
+                          processData.detail
+                            ? kodeProduksiOptions.find(
+                                (opt) => opt.value === processData.detail,
                               )
                             : null
                         }
-                        onChange={(option) => {
-                          onWasteProcessDataChange(
-                            'id_waste',
+                        onChange={(option) =>
+                          onProcessDataChange(
+                            process.name,
+                            'detail',
                             option ? option.value : '',
-                          );
-                          // Reset kendala when waste changes
-                          onWasteProcessDataChange('id_kendala', '');
-                        }}
+                          )
+                        }
                         styles={selectStyles}
-                        placeholder="Pilih Waste"
+                        placeholder="Pilih Detail"
+                        isDisabled={isActive}
                         isClearable
                         noOptionsMessage={() => 'Tidak ada data'}
                       />
                     </div>
 
-                    {/* Kendala */}
+                    {/* Keterangan */}
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">
-                        List Kendala <span className="text-red-500">*</span>
+                        Keterangan
                       </label>
-                      <Select
-                        options={kendalaOptions}
-                        value={
-                          wasteProcessData.id_kendala
-                            ? kendalaOptions.find(
-                                (opt) =>
-                                  opt.value === wasteProcessData.id_kendala,
-                              )
-                            : null
-                        }
-                        onChange={(option) =>
-                          onWasteProcessDataChange(
-                            'id_kendala',
-                            option ? option.value : '',
+                      <input
+                        type="text"
+                        value={processData.note}
+                        onChange={(e) =>
+                          onProcessDataChange(
+                            process.name,
+                            'note',
+                            e.target.value,
                           )
                         }
-                        styles={selectStyles}
-                        placeholder="Pilih Kendala"
-                        isDisabled={!wasteProcessData.id_waste}
-                        isClearable
-                        noOptionsMessage={() => 'Pilih waste terlebih dahulu'}
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!isActive}
+                        placeholder="Catatan"
                       />
                     </div>
                   </div>
 
-                  {/* Second Row: Total Qty */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Total Qty <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      value={wasteProcessData.total_qty || ''}
-                      onChange={(e) =>
-                        onWasteProcessDataChange(
-                          'total_qty',
-                          e.target.value ? Number(e.target.value) : 0,
-                        )
-                      }
-                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      placeholder="0"
-                      min="0"
-                    />
+                  {/* Second Row: Number Inputs */}
+                  <div className="grid grid-cols-4 gap-2">
+                    {/* Baik */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Baik
+                      </label>
+                      <input
+                        type="number"
+                        value={processData.baik || ''}
+                        onChange={(e) =>
+                          onProcessDataChange(
+                            process.name,
+                            'baik',
+                            e.target.value ? Number(e.target.value) : 0,
+                          )
+                        }
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!isActive}
+                        placeholder="0"
+                      />
+                    </div>
+
+                    {/* Rusak Sebagian */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Rusak Sebagian
+                      </label>
+                      <input
+                        type="number"
+                        value={processData.rusak_sebagian || ''}
+                        onChange={(e) =>
+                          onProcessDataChange(
+                            process.name,
+                            'rusak_sebagian',
+                            e.target.value ? Number(e.target.value) : 0,
+                          )
+                        }
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!isActive}
+                        placeholder="0"
+                      />
+                    </div>
+
+                    {/* Rusak Total */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Rusak Total
+                      </label>
+                      <input
+                        type="number"
+                        value={processData.rusak_total || ''}
+                        onChange={(e) =>
+                          onProcessDataChange(
+                            process.name,
+                            'rusak_total',
+                            e.target.value ? Number(e.target.value) : 0,
+                          )
+                        }
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!isActive}
+                        placeholder="0"
+                      />
+                    </div>
+
+                    {/* Pallet */}
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Pallet
+                      </label>
+                      <input
+                        type="number"
+                        value={processData.pallet || ''}
+                        onChange={(e) =>
+                          onProcessDataChange(
+                            process.name,
+                            'pallet',
+                            e.target.value ? Number(e.target.value) : 0,
+                          )
+                        }
+                        className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!isActive}
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             );
-          }
+          })}
+        </div>
 
-          // Regular processes
-          const isActive = isProcessActive(process.name);
-          const processData = processDataList[process.name] || {
-            detail: '',
-            baik: 0,
-            rusak_sebagian: 0,
-            rusak_total: 0,
-            pallet: 0,
-            note: '',
-          };
-
-          const kodeProduksiOptions = (
-            kodeProduksiByProcess[process.name] || []
-          ).map((kode) => ({
-            value: String(kode.id),
-            label: `${kode.kode} - ${kode.deskripsi}`,
-          }));
-
-          return (
-            <div
-              key={process.name}
-              className={`border rounded-lg p-2 transition-all ${
-                isActive
-                  ? 'border-green-400 bg-green-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      isActive ? 'bg-green-500 animate-pulse' : 'bg-gray-300'
-                    }`}
-                  />
-                  <h3 className="font-semibold text-sm text-gray-800">
-                    {process.name}
-                  </h3>
-                  {isActive && activeProcesses[process.name] && (
-                    <span className="text-xs text-gray-600">
-                      ({activeProcesses[process.name].kode} -{' '}
-                      {activeProcesses[process.name].deskripsi})
-                    </span>
-                  )}
-                </div>
-                {isActive ? (
-                  <button
-                    onClick={() => onStopProcess(process.name)}
-                    className="px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    disabled={loading}
-                  >
-                    Stop
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onStartProcess(process.name)}
-                    className="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    disabled={
-                      loading ||
-                      hasActiveProcess ||
-                      !selectedMesin ||
-                      !processData.detail
-                    }
-                  >
-                    Start
-                  </button>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                {/* First Row: Detail and Keterangan */}
-                <div className="grid grid-cols-2 gap-2">
-                  {/* Detail */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Detail <span className="text-red-500">*</span>
-                    </label>
-                    <Select
-                      options={kodeProduksiOptions}
-                      value={
-                        processData.detail
-                          ? kodeProduksiOptions.find(
-                              (opt) => opt.value === processData.detail,
-                            )
-                          : null
-                      }
-                      onChange={(option) =>
-                        onProcessDataChange(
-                          process.name,
-                          'detail',
-                          option ? option.value : '',
-                        )
-                      }
-                      styles={selectStyles}
-                      placeholder="Pilih Detail"
-                      isDisabled={isActive}
-                      isClearable
-                      noOptionsMessage={() => 'Tidak ada data'}
-                    />
-                  </div>
-
-                  {/* Keterangan */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Keterangan
-                    </label>
-                    <input
-                      type="text"
-                      value={processData.note}
-                      onChange={(e) =>
-                        onProcessDataChange(
-                          process.name,
-                          'note',
-                          e.target.value,
-                        )
-                      }
-                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      disabled={!isActive}
-                      placeholder="Catatan"
-                    />
-                  </div>
-                </div>
-
-                {/* Second Row: Number Inputs */}
-                <div className="grid grid-cols-4 gap-2">
-                  {/* Baik */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Baik
-                    </label>
-                    <input
-                      type="number"
-                      value={processData.baik || ''}
-                      onChange={(e) =>
-                        onProcessDataChange(
-                          process.name,
-                          'baik',
-                          e.target.value ? Number(e.target.value) : 0,
-                        )
-                      }
-                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      disabled={!isActive}
-                      placeholder="0"
-                    />
-                  </div>
-
-                  {/* Rusak Sebagian */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Rusak Sebagian
-                    </label>
-                    <input
-                      type="number"
-                      value={processData.rusak_sebagian || ''}
-                      onChange={(e) =>
-                        onProcessDataChange(
-                          process.name,
-                          'rusak_sebagian',
-                          e.target.value ? Number(e.target.value) : 0,
-                        )
-                      }
-                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      disabled={!isActive}
-                      placeholder="0"
-                    />
-                  </div>
-
-                  {/* Rusak Total */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Rusak Total
-                    </label>
-                    <input
-                      type="number"
-                      value={processData.rusak_total || ''}
-                      onChange={(e) =>
-                        onProcessDataChange(
-                          process.name,
-                          'rusak_total',
-                          e.target.value ? Number(e.target.value) : 0,
-                        )
-                      }
-                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      disabled={!isActive}
-                      placeholder="0"
-                    />
-                  </div>
-
-                  {/* Pallet */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">
-                      Pallet
-                    </label>
-                    <input
-                      type="number"
-                      value={processData.pallet || ''}
-                      onChange={(e) =>
-                        onProcessDataChange(
-                          process.name,
-                          'pallet',
-                          e.target.value ? Number(e.target.value) : 0,
-                        )
-                      }
-                      className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      disabled={!isActive}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {/* Action Buttons */}
+        <div className="flex justify-end space-x-2 mt-3 pt-3 border-t">
+          <button
+            onClick={onFinish}
+            className="px-4 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 focus:outline-none focus:ring-1 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            disabled={hasActiveProcess}
+          >
+            Finish
+          </button>
+        </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-end space-x-2 mt-3 pt-3 border-t">
-        <button
-          onClick={onFinish}
-          className="px-4 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 focus:outline-none focus:ring-1 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          disabled={hasActiveProcess}
-        >
-          Finish
-        </button>
-      </div>
-    </div>
+      {/* Waste Modal */}
+      <WasteModal
+        show={showWasteModal}
+        loading={loading}
+        selectedJO={selectedJO}
+        selectedTahapan={selectedTahapan}
+        selectedMesin={selectedMesin}
+        userId={userId}
+        wasteKendalaList={wasteKendalaList}
+        onClose={() => setShowWasteModal(false)}
+      />
+    </>
   );
 };
 

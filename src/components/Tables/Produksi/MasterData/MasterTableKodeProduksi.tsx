@@ -310,7 +310,7 @@ const MasterTableKodeProduksi: React.FC = () => {
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-success px-5 py-2.5 text-center font-medium text-white hover:bg-opacity-90"
               >
                 <FaPlus />
-                Set Waste Cetak
+                Set Waste
               </button>
               <button
                 onClick={() => setShowModal(true)}

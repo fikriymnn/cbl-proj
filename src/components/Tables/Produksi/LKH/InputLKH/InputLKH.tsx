@@ -140,7 +140,7 @@ const InputLKH: React.FC = () => {
     }
   }, []);
 
-  // Fetch JO List
+  // Fetch JO List — then restore persisted selection if any
   const fetchJOList = useCallback(async () => {
     setLoading(true);
     try {
@@ -306,6 +306,9 @@ const InputLKH: React.FC = () => {
     async (option: Option | null) => {
       if (!option) {
         setSelectedJO(null);
+        localStorage.removeItem('lkh_selected_jo_id');
+        localStorage.removeItem('lkh_selected_tahapan_id');
+        localStorage.removeItem('lkh_selected_mesin');
         return;
       }
 
@@ -325,6 +328,11 @@ const InputLKH: React.FC = () => {
         qty: jo.qty,
         qty_druk: calculatedQtyDruk,
       }));
+
+      // Persist JO selection
+      localStorage.setItem('lkh_selected_jo_id', String(jo.id));
+      localStorage.removeItem('lkh_selected_tahapan_id');
+      localStorage.removeItem('lkh_selected_mesin');
 
       await fetchTahapan(jo.id);
       setSelectedTahapan(null);
@@ -349,6 +357,10 @@ const InputLKH: React.FC = () => {
       setSelectedTahapan(tahapanId);
       setSelectedTahapanName(tahapan?.tahapan.nama_tahapan || '');
 
+      // Persist tahapan selection
+      localStorage.setItem('lkh_selected_tahapan_id', String(tahapanId));
+      localStorage.removeItem('lkh_selected_mesin');
+
       await fetchMesinByTahapan(tahapanId);
       await fetchKodeProduksi(tahapanId);
       await fetchWasteKendala();
@@ -366,7 +378,13 @@ const InputLKH: React.FC = () => {
   );
 
   const handleMesinSelect = useCallback((option: Option | null) => {
-    setSelectedMesin(option ? option.value : '');
+    const val = option ? option.value : '';
+    setSelectedMesin(val);
+    if (val) {
+      localStorage.setItem('lkh_selected_mesin', val);
+    } else {
+      localStorage.removeItem('lkh_selected_mesin');
+    }
   }, []);
 
   // Get kode produksi ID from detail dropdown
@@ -472,7 +490,7 @@ const InputLKH: React.FC = () => {
     ],
   );
 
-  // Handle Waste Submit
+  // Handle Waste Submit (kept for backward compat, now mainly used via WasteModal)
   const handleWasteSubmit = useCallback(async () => {
     if (!wasteProcessData.id_waste || !wasteProcessData.id_kendala) {
       toast.error('Mohon pilih waste dan kendala terlebih dahulu');
@@ -510,7 +528,6 @@ const InputLKH: React.FC = () => {
 
       toast.success('Data waste berhasil disimpan');
 
-      // Reset waste form
       setWasteProcessData({
         id_waste: '',
         id_kendala: '',
@@ -644,12 +661,16 @@ const InputLKH: React.FC = () => {
               }
             });
           }
+        });
+      }
 
-          if (lkh.produksi_lkh_waste && lkh.produksi_lkh_waste.length > 0) {
-            lkh.produksi_lkh_waste.forEach((waste: LKHWaste) => {
-              wasteData.push(waste);
-            });
-          }
+      // produksi_lkh_waste is returned at the top level of the response, not nested inside data items
+      if (
+        response.data.produksi_lkh_waste &&
+        response.data.produksi_lkh_waste.length > 0
+      ) {
+        response.data.produksi_lkh_waste.forEach((waste: LKHWaste) => {
+          wasteData.push(waste);
         });
       }
 
@@ -692,11 +713,9 @@ const InputLKH: React.FC = () => {
         prev.map((item, i) => {
           if (i !== index) return item;
 
-          // If changing waste, reset kendala
           if (field === 'id_waste') {
             const wasteId = Number(value);
             const wasteItem = wasteKendalaList.find((w) => w.id === wasteId);
-
             return {
               ...item,
               id_waste: wasteId,
@@ -708,14 +727,12 @@ const InputLKH: React.FC = () => {
             };
           }
 
-          // If changing kendala
           if (field === 'id_kendala') {
             const kendalaId = Number(value);
             const wasteItem = wasteKendalaList.find(
               (w) => w.id === item.id_waste,
             );
             const kendala = wasteItem?.kendala.find((k) => k.id === kendalaId);
-
             return {
               ...item,
               id_kendala: kendalaId,
@@ -798,7 +815,9 @@ const InputLKH: React.FC = () => {
           total_qty: item.total_qty || 0,
         }));
       }
+
       console.log('Finish Payload:', idProduksiLkh, payload);
+
       await axios.put(
         `${API_BASE}/produksi/lkh/finish/${idProduksiLkh}`,
         payload,
@@ -812,6 +831,11 @@ const InputLKH: React.FC = () => {
       setFinishData([]);
       setFinishWasteData([]);
       setSendRequestToSpv(true);
+
+      // Clear persisted selection on finish
+      localStorage.removeItem('lkh_selected_jo_id');
+      localStorage.removeItem('lkh_selected_tahapan_id');
+      localStorage.removeItem('lkh_selected_mesin');
 
       // Reset form
       setSelectedJO(null);
@@ -861,6 +885,82 @@ const InputLKH: React.FC = () => {
     fetchUserData();
     fetchJOList();
   }, [fetchUserData, fetchJOList]);
+
+  // Restore persisted JO / Tahapan / Mesin selection after joList loads
+  useEffect(() => {
+    if (joList.length === 0) return;
+
+    const savedJoId = localStorage.getItem('lkh_selected_jo_id');
+    const savedTahapanId = localStorage.getItem('lkh_selected_tahapan_id');
+    const savedMesin = localStorage.getItem('lkh_selected_mesin');
+
+    if (!savedJoId) return;
+
+    const jo = joList.find((j) => j.id === parseInt(savedJoId));
+    if (!jo) return;
+
+    // Restore JO
+    setSelectedJO(jo);
+    const calculatedQtyDruk = calculateQtyDruk(jo);
+    setFormData((prev) => ({
+      ...prev,
+      no_jo: jo.no_jo,
+      no_io: jo.no_io,
+      spek: jo.spesifikasi,
+      nama_customer: jo.customer,
+      produk: jo.produk,
+      qty: jo.qty,
+      qty_druk: calculatedQtyDruk,
+    }));
+
+    // Fetch tahapan for this JO, then restore tahapan + mesin
+    const restoreTahapanAndMesin = async () => {
+      try {
+        const tahapanRes = await axios.get(`${API_BASE}/produksi/lkhTahapan`, {
+          params: { status: 'active', id_jo: jo.id },
+          withCredentials: true,
+        });
+        const tahapanData: TahapanData[] = tahapanRes.data.data || [];
+        setTahapanList(tahapanData);
+
+        if (!savedTahapanId) return;
+
+        const tahapanId = parseInt(savedTahapanId);
+        const tahapan = tahapanData.find((t) => t.tahapan.id === tahapanId);
+        if (!tahapan) return;
+
+        setSelectedTahapan(tahapanId);
+        setSelectedTahapanName(tahapan.tahapan.nama_tahapan || '');
+
+        // Fetch mesin options for this tahapan
+        const mesinRes = await axios.get(`${API_BASE}/master/tahapanMesin`, {
+          params: { id_tahapan: tahapanId },
+          withCredentials: true,
+        });
+        const mesinOpts: Option[] = mesinRes.data.data.map(
+          (item: MesinTahapanResponse) => ({
+            value: String(item.id_mesin_tahapan),
+            label: item.mesin.nama_mesin,
+          }),
+        );
+        setMesinOptions(mesinOpts);
+
+        // Fetch kode produksi and waste kendala
+        await fetchKodeProduksi(tahapanId);
+        await fetchWasteKendala();
+
+        // Restore mesin
+        if (savedMesin && mesinOpts.some((o) => o.value === savedMesin)) {
+          setSelectedMesin(savedMesin);
+        }
+      } catch (err) {
+        console.error('Error restoring persisted selection:', err);
+      }
+    };
+
+    restoreTahapanAndMesin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [joList]);
 
   // Fetch active processes when dependencies change
   useEffect(() => {
@@ -931,6 +1031,8 @@ const InputLKH: React.FC = () => {
               activeProcesses={activeProcesses}
               processDataList={processDataList}
               wasteProcessData={wasteProcessData}
+              selectedJO={selectedJO} // ← NEW
+              userId={userId} // ← NEW
               onStartProcess={handleStartProcess}
               onStopProcess={handleStopProcess}
               onProcessDataChange={handleProcessDataChange}
