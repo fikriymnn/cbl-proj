@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import convertTimeStampToDateTime from '../../../../utils/converDateTime';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 
@@ -45,6 +44,7 @@ function ApprovalIzinTerlambat() {
   const [me, setMe] = useState<any>(null);
   const [requestList, setRequestList] = useState<ApiResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [hasNoDivisiBawahan, setHasNoDivisiBawahan] = useState(false);
 
   // Detail modal states
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -68,6 +68,18 @@ function ApprovalIzinTerlambat() {
 
   useEffect(() => {
     if (me) {
+      const isSuperAdminOrDev =
+        me.role === 'super admin' || me.role === 'developer';
+
+      if (
+        !isSuperAdminOrDev &&
+        (!me.divisi_bawahan || me.divisi_bawahan === '')
+      ) {
+        setHasNoDivisiBawahan(true);
+        return;
+      }
+
+      setHasNoDivisiBawahan(false);
       getRequestList();
     }
   }, [currentPage, me]);
@@ -83,14 +95,23 @@ function ApprovalIzinTerlambat() {
   }
 
   async function getRequestList() {
+    if (!me) return;
+
     const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanTerlambatUser`;
     try {
       setIsLoading(true);
+      const isSuperAdminOrDev =
+        me.role === 'super admin' || me.role === 'developer';
+
       const params: any = {
         page: currentPage,
         limit: 10,
-        id_department: me?.id_department, // Filter by department
       };
+
+      if (!isSuperAdminOrDev) {
+        params.id_department = me?.id_department;
+        params.divisi_bawahan = me?.divisi_bawahan;
+      }
 
       const res = await axios.get(url, {
         params,
@@ -160,8 +181,6 @@ function ApprovalIzinTerlambat() {
 
       setIsLoading(false);
       alert('Pengajuan izin terlambat berhasil disetujui!');
-
-      // Close modal and refresh list
       setShowModal(false);
       setSelectedRequest(null);
       setCatatanAtasan('');
@@ -202,8 +221,6 @@ function ApprovalIzinTerlambat() {
 
       setIsLoading(false);
       alert('Pengajuan izin terlambat berhasil ditolak!');
-
-      // Close modal and refresh list
       setShowModal(false);
       setSelectedRequest(null);
       setCatatanAtasan('');
@@ -324,8 +341,59 @@ function ApprovalIzinTerlambat() {
     }
   };
 
+  // Show notification if divisi_bawahan not set (for non super admin/developer)
+  if (hasNoDivisiBawahan) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-green-50 p-6">
+        <div className="w-full mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-600 to-yellow-600 px-8 py-6 text-white">
+            <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Persetujuan Izin Terlambat
+            </h2>
+          </div>
+          <div className="p-8 flex flex-col items-center justify-center py-16">
+            <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-8 max-w-md w-full text-center">
+              <div className="flex items-center justify-center mb-4">
+                <svg
+                  className="w-16 h-16 text-yellow-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                Akses Terbatas
+              </h3>
+              <p className="text-base text-gray-600 mb-2">
+                Divisi Bawahan belum di-set
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Silakan hubungi administrator untuk mengatur divisi bawahan pada
+                akun Anda agar dapat mengakses halaman ini.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-green-50 p-6">
+    <main className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-green-50 ">
       {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -363,7 +431,6 @@ function ApprovalIzinTerlambat() {
       {showDetailModal && selectedDetailRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
             <div className="bg-gradient-to-r from-orange-600 to-yellow-600 px-6 py-4 text-white rounded-t-2xl">
               <h3 className="text-xl font-bold flex items-center gap-2">
                 <svg
@@ -384,10 +451,8 @@ function ApprovalIzinTerlambat() {
               </p>
             </div>
 
-            {/* Modal Body */}
             <div className="px-6 py-6">
               <div className="space-y-4">
-                {/* Status Badge */}
                 <div className="flex items-center justify-between">
                   <div
                     className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 font-bold text-sm ${
@@ -411,7 +476,6 @@ function ApprovalIzinTerlambat() {
                   </div>
                 </div>
 
-                {/* Employee Info */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-700 mb-3">
                     Informasi Karyawan
@@ -426,7 +490,6 @@ function ApprovalIzinTerlambat() {
                   </div>
                 </div>
 
-                {/* Lateness Details */}
                 <div className="bg-orange-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-700 mb-3">
                     Detail Keterlambatan
@@ -469,7 +532,6 @@ function ApprovalIzinTerlambat() {
                   </div>
                 </div>
 
-                {/* Atasan Info */}
                 {selectedDetailRequest.karyawan_atasan && (
                   <div className="bg-blue-50 rounded-lg p-4">
                     <h4 className="font-semibold text-gray-700 mb-3">
@@ -493,7 +555,6 @@ function ApprovalIzinTerlambat() {
                   </div>
                 )}
 
-                {/* Approval/Rejection Note */}
                 {selectedDetailRequest.catatan_atasan && (
                   <div
                     className={`${
@@ -520,7 +581,6 @@ function ApprovalIzinTerlambat() {
                   </div>
                 )}
 
-                {/* File Evidence */}
                 {selectedDetailRequest.file && (
                   <div className="bg-gray-50 rounded-lg p-4">
                     <h4 className="font-semibold text-gray-700 mb-3">
@@ -551,7 +611,6 @@ function ApprovalIzinTerlambat() {
                   </div>
                 )}
 
-                {/* Timeline */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-700 mb-3">Timeline</h4>
                   <div className="space-y-2 text-sm">
@@ -591,7 +650,6 @@ function ApprovalIzinTerlambat() {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
               {selectedDetailRequest.status.toLowerCase() ===
                 'request atasan' && (
@@ -631,7 +689,6 @@ function ApprovalIzinTerlambat() {
       {showModal && selectedRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
             <div
               className={`px-6 py-4 ${
                 modalType === 'approve'
@@ -674,132 +731,124 @@ function ApprovalIzinTerlambat() {
               </h3>
             </div>
 
-            {/* Modal Body */}
             <div className="px-6 py-6">
-              {selectedRequest && (
-                <div className="space-y-4">
-                  {/* Employee Info */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-700 mb-3">
-                      Informasi Karyawan
-                    </h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-gray-600">Nama:</p>
-                        <p className="font-semibold text-gray-800">
-                          {selectedRequest.karyawan?.name || '-'}
-                        </p>
-                      </div>
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3">
+                    Informasi Karyawan
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-gray-600">Nama:</p>
+                      <p className="font-semibold text-gray-800">
+                        {selectedRequest.karyawan?.name || '-'}
+                      </p>
                     </div>
-                  </div>
-
-                  {/* Late Details */}
-                  <div className="bg-orange-50 rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-700 mb-3">
-                      Detail Keterlambatan
-                    </h4>
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <p className="text-gray-600">Tanggal:</p>
-                        <p className="font-semibold text-gray-800">
-                          {formatDate(selectedRequest.tanggal)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Shift:</p>
-                        <p className="font-semibold text-gray-800">
-                          Shift {selectedRequest.shift}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Alasan:</p>
-                        <p className="font-semibold text-gray-800">
-                          {selectedRequest.alasan_terlambat}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Durasi:</p>
-                        <p className="font-semibold text-gray-800">
-                          {selectedRequest.lama_terlambat} jam
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">Catatan Karyawan:</p>
-                        <p className="font-semibold text-gray-800">
-                          {selectedRequest.catatan || '-'}
-                        </p>
-                      </div>
-                      {selectedRequest.file && (
-                        <div>
-                          <p className="text-gray-600 mb-2">Bukti:</p>
-                          <img
-                            src={`${import.meta.env.VITE_API_LINK}/images/${
-                              selectedRequest.file
-                            }`}
-                            alt="Bukti"
-                            className="w-full h-48 object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() =>
-                              handleImageClick(
-                                `${import.meta.env.VITE_API_LINK}/images/${
-                                  selectedRequest.file
-                                }`,
-                              )
-                            }
-                          />
-                          <p className="text-xs text-gray-500 mt-1">
-                            Klik gambar untuk memperbesar
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Catatan Atasan Input */}
-                  <div
-                    className={`${
-                      modalType === 'approve' ? 'bg-green-50' : 'bg-red-50'
-                    } rounded-lg p-4`}
-                  >
-                    <label className="block text-gray-700 font-semibold mb-2">
-                      Catatan Atasan <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      value={catatanAtasan}
-                      onChange={(e) => setCatatanAtasan(e.target.value)}
-                      className="w-full min-h-[100px] resize-none border-2 border-gray-300 rounded-lg px-4 py-3 text-gray-800 font-medium focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
-                      placeholder={
-                        modalType === 'approve'
-                          ? 'Berikan catatan persetujuan...'
-                          : 'Jelaskan alasan penolakan...'
-                      }
-                    />
-                  </div>
-
-                  {/* Confirmation Message */}
-                  <div
-                    className={`${
-                      modalType === 'approve'
-                        ? 'bg-green-50 border-green-200'
-                        : 'bg-red-50 border-red-200'
-                    } border-2 rounded-lg p-4`}
-                  >
-                    <p
-                      className={`${
-                        modalType === 'approve'
-                          ? 'text-green-800'
-                          : 'text-red-800'
-                      } font-semibold`}
-                    >
-                      {modalType === 'approve'
-                        ? 'Apakah Anda yakin ingin menyetujui pengajuan izin terlambat ini?'
-                        : 'Apakah Anda yakin ingin menolak pengajuan izin terlambat ini?'}
-                    </p>
                   </div>
                 </div>
-              )}
+
+                <div className="bg-orange-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-700 mb-3">
+                    Detail Keterlambatan
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <p className="text-gray-600">Tanggal:</p>
+                      <p className="font-semibold text-gray-800">
+                        {formatDate(selectedRequest.tanggal)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Shift:</p>
+                      <p className="font-semibold text-gray-800">
+                        Shift {selectedRequest.shift}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Alasan:</p>
+                      <p className="font-semibold text-gray-800">
+                        {selectedRequest.alasan_terlambat}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Durasi:</p>
+                      <p className="font-semibold text-gray-800">
+                        {selectedRequest.lama_terlambat} jam
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Catatan Karyawan:</p>
+                      <p className="font-semibold text-gray-800">
+                        {selectedRequest.catatan || '-'}
+                      </p>
+                    </div>
+                    {selectedRequest.file && (
+                      <div>
+                        <p className="text-gray-600 mb-2">Bukti:</p>
+                        <img
+                          src={`${import.meta.env.VITE_API_LINK}/images/${
+                            selectedRequest.file
+                          }`}
+                          alt="Bukti"
+                          className="w-full h-48 object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() =>
+                            handleImageClick(
+                              `${import.meta.env.VITE_API_LINK}/images/${
+                                selectedRequest.file
+                              }`,
+                            )
+                          }
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Klik gambar untuk memperbesar
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div
+                  className={`${
+                    modalType === 'approve' ? 'bg-green-50' : 'bg-red-50'
+                  } rounded-lg p-4`}
+                >
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Catatan Atasan <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={catatanAtasan}
+                    onChange={(e) => setCatatanAtasan(e.target.value)}
+                    className="w-full min-h-[100px] resize-none border-2 border-gray-300 rounded-lg px-4 py-3 text-gray-800 font-medium focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
+                    placeholder={
+                      modalType === 'approve'
+                        ? 'Berikan catatan persetujuan...'
+                        : 'Jelaskan alasan penolakan...'
+                    }
+                  />
+                </div>
+
+                <div
+                  className={`${
+                    modalType === 'approve'
+                      ? 'bg-green-50 border-green-200'
+                      : 'bg-red-50 border-red-200'
+                  } border-2 rounded-lg p-4`}
+                >
+                  <p
+                    className={`${
+                      modalType === 'approve'
+                        ? 'text-green-800'
+                        : 'text-red-800'
+                    } font-semibold`}
+                  >
+                    {modalType === 'approve'
+                      ? 'Apakah Anda yakin ingin menyetujui pengajuan izin terlambat ini?'
+                      : 'Apakah Anda yakin ingin menolak pengajuan izin terlambat ini?'}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
               <button
                 onClick={closeModal}
@@ -828,7 +877,6 @@ function ApprovalIzinTerlambat() {
 
       {/* Main Content */}
       <div className="w-full mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-        {/* Header */}
         <div className="bg-gradient-to-r from-orange-600 to-yellow-600 px-8 py-6 text-white">
           <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
             <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
@@ -846,7 +894,6 @@ function ApprovalIzinTerlambat() {
           </p>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto">
           <div className="min-w-[1100px]">
             <div className="grid grid-cols-12 px-8 py-4 border-b-4 border-gray-200 gap-2 bg-gray-50">
@@ -964,7 +1011,6 @@ function ApprovalIzinTerlambat() {
           </div>
         </div>
 
-        {/* Pagination */}
         {requestList && requestList.total_page > 1 && (
           <div className="flex items-center justify-center gap-2 px-8 py-6 bg-gray-50 border-t border-gray-200">
             <Stack spacing={2}>

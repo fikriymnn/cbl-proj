@@ -2,21 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Bel from '../../images/icon/bel.svg';
-
 import { useNavigate } from 'react-router-dom';
-// import { useCookies } from 'react-cookie';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
-
   const [notif, setNotif] = useState(false);
-
   const [user, setUser] = useState<any>(null);
-
   const navigate = useNavigate();
+
   useEffect(() => {
     getUser();
   }, []);
@@ -25,63 +20,56 @@ const DropdownUser = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
         withCredentials: true,
-        // headers: {
-        //   Authorization: `Bearer ${cookies.access_token}`,
-        // },
       });
-
       setUser(res.data);
-      console.log(res.data);
     } catch (error: any) {
       console.log(error.response);
+      // Fallback: build a minimal user object from localStorage
+      const role = localStorage.getItem('userRole');
+      const bagian = localStorage.getItem('userBagian');
+      if (role) {
+        setUser({ nama: bagian || role, role, notifications: [] });
+      }
     }
   }
+
   async function logout(e: any) {
     e.preventDefault();
     try {
-      const response = await axios.delete(
-        `${import.meta.env.VITE_API_LINK}/logout`,
-        {
-          withCredentials: true,
-        },
-      );
-
-      alert('logout success');
-      navigate('/auth/login');
+      await axios.delete(`${import.meta.env.VITE_API_LINK}/logout`, {
+        withCredentials: true,
+      });
     } catch (error: any) {
-      alert(error.msg);
       console.log(error);
+    } finally {
+      // Always clear localStorage and redirect on logout
+      localStorage.removeItem('userMenu');
+      localStorage.removeItem('useCustomMenu');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userBagian');
+      navigate('/');
     }
   }
 
   async function readAllNotif() {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_LINK}/notification/readAll`,
-        {
-          withCredentials: true,
-        },
-      );
-
+      await axios.get(`${import.meta.env.VITE_API_LINK}/notification/readAll`, {
+        withCredentials: true,
+      });
       getUser();
     } catch (error: any) {
-      alert(error.msg);
       console.log(error);
     }
   }
 
   async function deleteAllNotif(userId: number) {
     try {
-      const response = await axios.delete(
+      await axios.delete(
         `${import.meta.env.VITE_API_LINK}/notification/deleteAll/${userId}`,
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
-
       getUser();
     } catch (error: any) {
-      alert(error.msg);
       console.log(error);
     }
   }
@@ -114,12 +102,11 @@ const DropdownUser = () => {
 
   function convertDatetimeToDate(datetime: any) {
     const dateObject = new Date(datetime);
-    const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
-    const month = (dateObject.getMonth() + 1).toString(); // Adjust for zero-based month
+    const day = dateObject.getDate().toString().padStart(2, '0');
+    const month = (dateObject.getMonth() + 1).toString();
     const year = dateObject.getFullYear();
     const monthName = getMonthName(month);
-
-    return `${year}/${monthName}/${day}  `; // Example format (YYYY-MM-DD)
+    return `${year}/${monthName}/${day}  `;
   }
 
   function getMonthName(monthString: string) {
@@ -137,111 +124,91 @@ const DropdownUser = () => {
       'November',
       'Desember',
     ];
-
     const monthNumber = parseInt(monthString);
-
-    if (monthNumber < 1 || monthNumber > 12) {
-      return 'Bulan tidak valid';
-    } else {
-      return months[monthNumber - 1];
-    }
+    if (monthNumber < 1 || monthNumber > 12) return 'Bulan tidak valid';
+    return months[monthNumber - 1];
   }
 
-  const unreadNotif = user?.notifications.filter(
+  const unreadNotif = user?.notifications?.filter(
     (item: any) => item.status === 'unread',
   );
+
+  // Display role: prefer API data, fall back to localStorage
+  const displayRole = user?.role || localStorage.getItem('userRole') || '';
+  const displayName =
+    user?.nama || localStorage.getItem('userBagian') || displayRole;
 
   return (
     <div className="relative">
       <div className="flex items-center gap-4">
-        <span className="block ">
+        <span className="block">
           <span className="block text-sm font-medium text-black dark:text-white">
             {user == null ? (
-              <>
-                <div className="w-full h-7 text-blue-700 text-xl font-semibold"></div>
-              </>
+              <div className="w-full h-7 text-blue-700 text-xl font-semibold animate-pulse bg-gray-200 rounded w-24" />
             ) : (
               <>
-                {notif == true && (
-                  <>
-                    <div
-                      onFocus={() => setNotif(true)}
-                      onBlur={() => setNotif(false)}
-                      className={`absolute right-0 mt-10 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
-                        notif === true ? 'block' : 'hidden'
-                      }`}
-                    >
-                      <div className="flex flex-col ">
-                        <p className="text-xs font-bold text-primary p-2">
-                          Notifikasi
-                        </p>
-                        {user?.notifications.length > 0 ? (
-                          <div className="flex flex-row justify-between">
-                            <button
-                              onClick={readAllNotif}
-                              className="text-xs font-bold text-primary p-2"
+                {notif && (
+                  <div
+                    onFocus={() => setNotif(true)}
+                    onBlur={() => setNotif(false)}
+                    className="absolute right-0 mt-10 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark z-50"
+                  >
+                    <div className="flex flex-col">
+                      <p className="text-xs font-bold text-primary p-2">
+                        Notifikasi
+                      </p>
+                      {user?.notifications?.length > 0 && (
+                        <div className="flex flex-row justify-between">
+                          <button
+                            onClick={readAllNotif}
+                            className="text-xs font-bold text-primary p-2"
+                          >
+                            Read All
+                          </button>
+                          <button
+                            onClick={() => deleteAllNotif(user?.id)}
+                            className="text-xs font-bold text-danger p-2"
+                          >
+                            Delete All
+                          </button>
+                        </div>
+                      )}
+                      {user?.notifications?.map((data: any, index: number) => {
+                        const date = convertDatetimeToDate(data.createdAt);
+                        return (
+                          <div
+                            key={index}
+                            className={
+                              data.status === 'unread'
+                                ? 'bg-blue-200 p-2'
+                                : 'border-t text-[#ACACAC] p-2'
+                            }
+                          >
+                            <p className="text-[9px] font-semibold">{date}</p>
+                            <p
+                              className={`text-xs font-bold ${
+                                data.status === 'unread' ? 'text-primary' : ''
+                              }`}
                             >
-                              Read All
-                            </button>
-                            <button
-                              onClick={() => deleteAllNotif(user?.id)}
-                              className="text-xs font-bold text-danger p-2"
-                            >
-                              delete All
-                            </button>
+                              {data.subject}
+                            </p>
                           </div>
-                        ) : null}
-
-                        {user?.notifications.map((data: any, index: number) => {
-                          const date = convertDatetimeToDate(data.createdAt);
-                          return (
-                            <>
-                              {data.status == 'unread' ? (
-                                <div className=" bg-blue-200 p-2">
-                                  <p className="text-[9px] text-[#ACACAC] font-semibold">
-                                    {date}
-                                  </p>
-                                  <p className="text-xs font-bold text-primary">
-                                    {data.subject}
-                                  </p>
-                                  {/* <div className="flex justify-between text-[9px] text-primary">
-                                  <p>Kode: JK1-AA05</p>
-                                  <p>Mesin: JK100</p>
-                                </div> */}
-                                </div>
-                              ) : (
-                                <div className=" border-t text-[#ACACAC] p-2">
-                                  <p className="text-[9px] font-semibold">
-                                    {date}
-                                  </p>
-                                  <p className="text-xs font-bold ">
-                                    {data.subject}
-                                  </p>
-                                  {/* <div className="flex justify-between text-[9px] ">
-                                      <p>Kode: JK1-AA05</p>
-                                      <p>Mesin: JK100</p>
-                                    </div> */}
-                                </div>
-                              )}
-                            </>
-                          );
-                        })}
-                      </div>
+                        );
+                      })}
                     </div>
-                  </>
+                  </div>
                 )}
-                <div className="flex gap-2">
-                  {unreadNotif?.length > 0 ? (
-                    <div className="absolute rounded-full h-3 w-3 bg-red-600 z-1"></div>
-                  ) : null}
 
+                <div className="flex gap-2 items-center">
+                  {unreadNotif?.length > 0 && (
+                    <div className="absolute rounded-full h-3 w-3 bg-red-600 z-10" />
+                  )}
                   <img
                     onClick={() => setNotif(!notif)}
                     src={Bel}
                     alt=""
-                    className="z-9"
+                    className="z-9 cursor-pointer"
                   />
-
                   <Link
                     ref={trigger}
                     onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -249,10 +216,10 @@ const DropdownUser = () => {
                     className="flex gap-2 justify-center items-center"
                   >
                     <p className="w-full h-7 text-blue-700 text-xl font-semibold">
-                      {user.nama}
+                      {displayName}
                     </p>
                     <svg
-                      className=" fill-current block"
+                      className="fill-current block"
                       width="12"
                       height="8"
                       viewBox="0 0 12 8"
@@ -274,25 +241,23 @@ const DropdownUser = () => {
 
           <span className="block text-xs">
             {user == null ? (
-              <>
-                <div className="w-full h-7 text-blue-700 text-xl font-semibold"></div>
-              </>
+              <div className="w-16 h-4 bg-gray-200 rounded animate-pulse" />
             ) : (
-              <p className="w-full h-7 text-blue-700 text- font-normal">
-                {user.role}
+              <p className="w-full h-7 text-blue-700 font-normal">
+                {displayRole}
               </p>
             )}
           </span>
         </span>
       </div>
 
-      {/* <!-- Dropdown Start --> */}
+      {/* Dropdown Start */}
       <div
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
         className={`absolute right-0 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
-          dropdownOpen === true ? 'block' : 'hidden'
+          dropdownOpen ? 'block' : 'hidden'
         }`}
       >
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
@@ -323,28 +288,7 @@ const DropdownUser = () => {
           </li>
           <li>
             <Link
-              to="#"
-              className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
-            >
-              <svg
-                className="fill-current"
-                width="22"
-                height="22"
-                viewBox="0 0 22 22"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M17.6687 1.44374C17.1187 0.893744 16.4312 0.618744 15.675 0.618744H7.42498C6.25623 0.618744 5.25935 1.58124 5.25935 2.78437V4.12499H4.29685C3.88435 4.12499 3.50623 4.46874 3.50623 4.91562C3.50623 5.36249 3.84998 5.70624 4.29685 5.70624H5.25935V10.2781H4.29685C3.88435 10.2781 3.50623 10.6219 3.50623 11.0687C3.50623 11.4812 3.84998 11.8594 4.29685 11.8594H5.25935V16.4312H4.29685C3.88435 16.4312 3.50623 16.775 3.50623 17.2219C3.50623 17.6687 3.84998 18.0125 4.29685 18.0125H5.25935V19.25C5.25935 20.4187 6.22185 21.4156 7.42498 21.4156H15.675C17.2218 21.4156 18.4937 20.1437 18.5281 18.5969V3.47187C18.4937 2.68124 18.2187 1.95937 17.6687 1.44374ZM16.9469 18.5625C16.9469 19.2844 16.3625 19.8344 15.6406 19.8344H7.3906C7.04685 19.8344 6.77185 19.5594 6.77185 19.2156V17.875H8.6281C9.0406 17.875 9.41873 17.5312 9.41873 17.0844C9.41873 16.6375 9.07498 16.2937 8.6281 16.2937H6.77185V11.7906H8.6281C9.0406 11.7906 9.41873 11.4469 9.41873 11C9.41873 10.5875 9.07498 10.2094 8.6281 10.2094H6.77185V5.63749H8.6281C9.0406 5.63749 9.41873 5.29374 9.41873 4.84687C9.41873 4.39999 9.07498 4.05624 8.6281 4.05624H6.77185V2.74999C6.77185 2.40624 7.04685 2.13124 7.3906 2.13124H15.6406C15.9844 2.13124 16.2937 2.26874 16.5687 2.50937C16.8094 2.74999 16.9469 3.09374 16.9469 3.43749V18.5625Z"
-                  fill=""
-                />
-              </svg>
-              My Contacts
-            </Link>
-          </li>
-          <li>
-            <Link
-              to="/profil_setting"
+              to="/profile/setting"
               className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
             >
               <svg
@@ -392,7 +336,6 @@ const DropdownUser = () => {
           Log Out
         </button>
       </div>
-      {/* <!-- Dropdown End --> */}
     </div>
   );
 };

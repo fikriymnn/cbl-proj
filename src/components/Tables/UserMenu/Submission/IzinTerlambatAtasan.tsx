@@ -540,7 +540,7 @@ function IzinTerlambatAtasan() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 ">
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex items-center gap-4">
@@ -793,7 +793,7 @@ function IzinTerlambatAtasan() {
         </div>
       )}
 
-      <div className="w-full max-w-4xl mx-auto space-y-6">
+      <div className="w-full  mx-auto space-y-6">
         {/* FORM SECTION */}
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
           {/* Header */}

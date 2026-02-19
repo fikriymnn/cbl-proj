@@ -270,7 +270,8 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       (sum, product) => sum + product.diskon_produk,
       0,
     );
-    const balanceDue = subTotal - dp;
+    // FIX: Balance due = subTotal + totalPajak - dp
+    const balanceDue = subTotal + totalPajak - dp;
 
     return {
       subTotal,
@@ -371,9 +372,10 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
-              {/* Left Column - Form Information */}
-              <div className="space-y-3">
+            // FIX: left column 30%, right column 70%
+            <div className="flex gap-4">
+              {/* Left Column - 30% */}
+              <div className="w-[30%] shrink-0 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -517,8 +519,8 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 </div>
               </div>
 
-              {/* Right Column - Products Table and Summary */}
-              <div className="space-y-3 flex flex-col">
+              {/* Right Column - 70% */}
+              <div className="flex-1 space-y-3 flex flex-col min-w-0">
                 {/* Products Table */}
                 <div className="bg-white border border-gray-200 rounded overflow-hidden flex-1 flex flex-col">
                   <div className="overflow-auto flex-1 max-h-[calc(95vh-250px)]">
