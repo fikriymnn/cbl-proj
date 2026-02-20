@@ -49,6 +49,11 @@ const HistoryKalkulasi: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchInput, setSearchInput] = useState<string>('');
 
+  const [showRenameModal, setShowRenameModal] = useState<boolean>(false);
+  const [renameProductId, setRenameProductId] = useState<number | null>(null);
+  const [renameProductName, setRenameProductName] = useState<string>('');
+  const [renameLoading, setRenameLoading] = useState<boolean>(false);
+
   useEffect(() => {
     fetchKalkulasiData();
   }, [page, limit, searchTerm]);
@@ -322,7 +327,48 @@ const HistoryKalkulasi: React.FC = () => {
       return 0;
     });
   };
+  const handleRenameClick = (id: number, currentName: string): void => {
+    setRenameProductId(id);
+    setRenameProductName(currentName);
+    setShowRenameModal(true);
+  };
 
+  const handleCloseRenameModal = (): void => {
+    setShowRenameModal(false);
+    setRenameProductId(null);
+    setRenameProductName('');
+  };
+
+  const handleRenameSubmit = async (): Promise<void> => {
+    if (!renameProductId || !renameProductName.trim()) {
+      alert('Nama produk tidak boleh kosong');
+      return;
+    }
+
+    try {
+      setRenameLoading(true);
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/marketing/kalkulasi/updateProduk/${renameProductId}`;
+      await axios.put(
+        url,
+        { nama_produk: renameProductName.trim() },
+        { withCredentials: true },
+      );
+      alert('Nama produk berhasil diubah!');
+      handleCloseRenameModal();
+      fetchKalkulasiData();
+    } catch (error: any) {
+      console.error('Error updating product name:', error);
+      alert(
+        `Gagal mengubah nama produk: ${
+          error?.response?.data?.message || error.message
+        }`,
+      );
+    } finally {
+      setRenameLoading(false);
+    }
+  };
   const sortedData = sortData(data);
 
   if (loading) {
@@ -526,6 +572,16 @@ const HistoryKalkulasi: React.FC = () => {
                         >
                           Print
                         </button>
+                        <button
+                          onClick={() =>
+                            handleRenameClick(item.id, item.nama_produk)
+                          }
+                          disabled={detailLoading}
+                          className="bg-orange-500 hover:bg-orange-600 text-white px-2 py-0.5 rounded text-[9px] disabled:opacity-50 transition-colors"
+                          title="Ganti Nama Produk"
+                        >
+                          Ganti Nama
+                        </button>
                       </div>
                     </td>
                     <td className="px-2 py-1.5 text-left">
@@ -672,7 +728,45 @@ const HistoryKalkulasi: React.FC = () => {
           </Stack>
         </div>
       </div>
-
+      {showRenameModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Ganti Nama Produk
+            </h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nama Produk Baru
+              </label>
+              <input
+                type="text"
+                value={renameProductName}
+                onChange={(e) => setRenameProductName(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleRenameSubmit()}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                placeholder="Masukkan nama produk baru..."
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleCloseRenameModal}
+                disabled={renameLoading}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleRenameSubmit}
+                disabled={renameLoading || !renameProductName.trim()}
+                className="px-4 py-2 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-md transition-colors disabled:opacity-50"
+              >
+                {renameLoading ? 'Menyimpan...' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Detail Modal */}
       {showDetailModal && selectedDetailData && (
         <KalkulasiDetailModal

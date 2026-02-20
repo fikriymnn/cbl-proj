@@ -90,14 +90,23 @@ function calcDeliveryProgress(row: any) {
   return {
     shipped,
     total,
-    pct: isOver ? 100 : pct,
+    pct,
     rawPct: Math.round((shipped / total) * 100),
     status,
     isOver,
   };
 }
 
-// Count how many tahapan have proses detail (for badge indicator)
+// Get the latest completed tahapan name
+function getLatestTahapan(tahapan: any[]): string | null {
+  if (!tahapan || tahapan.length === 0) return null;
+  const done = [...tahapan]
+    .filter((t) => t.produksi_lkh_proses?.length > 0)
+    .sort((a, b) => b.index - a.index);
+  if (done.length === 0) return null;
+  return done[0].tahapan?.nama_tahapan ?? null;
+}
+
 function countWithDetail(tahapan: any[]) {
   if (!tahapan) return 0;
   return tahapan.filter((t) => t.produksi_lkh_proses?.length > 0).length;
@@ -153,6 +162,27 @@ function ProgressBar({ pct, isOver }: { pct: number; isOver?: boolean }) {
     </div>
   );
 }
+
+// Qty difference display: shows diff with color based on status
+function QtyDiffLabel({ shipped, total }: { shipped: number; total: number }) {
+  const diff = shipped - total;
+  if (diff > 0) {
+    return (
+      <span className="text-xs font-bold text-purple-600">
+        +{fmtQty(diff)} over
+      </span>
+    );
+  }
+  if (diff === 0) {
+    return <span className="text-xs font-bold text-green-600">Sesuai</span>;
+  }
+  return (
+    <span className="text-xs font-bold text-red-500">
+      -{fmtQty(Math.abs(diff))} kurang
+    </span>
+  );
+}
+
 // ─── Tahapan Detail Modal ─────────────────────────────────────────────────────
 
 function TahapanDetailModal({
@@ -169,7 +199,6 @@ function TahapanDetailModal({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-        {/* Header */}
         <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 text-white rounded-t-2xl flex justify-between items-start flex-shrink-0">
           <div>
             <h3 className="text-lg font-bold flex items-center gap-2">
@@ -203,7 +232,6 @@ function TahapanDetailModal({
           </button>
         </div>
 
-        {/* Body */}
         <div className="overflow-y-auto p-5 space-y-3">
           {tahapan.length === 0 ? (
             <p className="text-center text-gray-400 py-10">
@@ -213,7 +241,6 @@ function TahapanDetailModal({
             tahapan.map((t) => {
               const proses: any[] = t.produksi_lkh_proses ?? [];
               const hasDetail = proses.length > 0;
-
               return (
                 <div
                   key={t.id}
@@ -223,10 +250,8 @@ function TahapanDetailModal({
                       : 'border-gray-200 bg-gray-50'
                   }`}
                 >
-                  {/* Tahapan header row */}
                   <div className="flex items-center justify-between px-4 py-2.5">
                     <div className="flex items-center gap-3">
-                      {/* Step number */}
                       <span
                         className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0 ${
                           hasDetail
@@ -263,8 +288,6 @@ function TahapanDetailModal({
                       )}
                     </div>
                   </div>
-
-                  {/* Proses detail cards */}
                   {hasDetail && (
                     <div className="border-t border-green-200 px-4 py-3 space-y-2">
                       {proses.map((p: any, pi: number) => (
@@ -272,7 +295,6 @@ function TahapanDetailModal({
                           key={p.id ?? pi}
                           className="bg-white rounded-lg border border-green-200 px-4 py-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs"
                         >
-                          {/* Proses */}
                           <div>
                             <p className="text-gray-400 font-medium mb-0.5">
                               Proses
@@ -281,7 +303,6 @@ function TahapanDetailModal({
                               {p.proses || p.deskripsi || '-'}
                             </p>
                           </div>
-                          {/* Mesin */}
                           <div>
                             <p className="text-gray-400 font-medium mb-0.5">
                               Mesin
@@ -293,35 +314,9 @@ function TahapanDetailModal({
                                   : 'bg-gray-100 text-gray-500'
                               }`}
                             >
-                              {p.mesin ? (
-                                <>
-                                  <svg
-                                    className="w-3 h-3"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                                    />
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                  </svg>
-                                  {p.mesin.nama_mesin}
-                                </>
-                              ) : (
-                                '-'
-                              )}
+                              {p.mesin ? p.mesin.nama_mesin : '-'}
                             </span>
                           </div>
-                          {/* Operator */}
                           <div>
                             <p className="text-gray-400 font-medium mb-0.5">
                               Operator
@@ -333,27 +328,9 @@ function TahapanDetailModal({
                                   : 'bg-gray-100 text-gray-500'
                               }`}
                             >
-                              {p.operator ? (
-                                <>
-                                  <svg
-                                    className="w-3 h-3"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                  >
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                  {p.operator.nama}
-                                </>
-                              ) : (
-                                '-'
-                              )}
+                              {p.operator ? p.operator.nama : '-'}
                             </span>
                           </div>
-                          {/* Waktu Mulai */}
                           <div>
                             <p className="text-gray-400 font-medium mb-0.5">
                               Waktu Mulai
@@ -385,7 +362,6 @@ function TahapanDetailModal({
           )}
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-between items-center flex-shrink-0">
           <span className="text-xs text-gray-500">
             {countWithDetail(tahapan)} dari {tahapan.length} tahapan sudah
@@ -426,9 +402,6 @@ function SOMonitoring() {
   const [showRekap, setShowRekap] = useState(false);
   const [showRekapBulan, setShowRekapBulan] = useState(false);
 
-  // Expandable rows
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-
   useEffect(() => {
     fetchSO(
       firstOfMonth(),
@@ -460,7 +433,6 @@ function SOMonitoring() {
         withCredentials: true,
       });
       const list: any[] = Array.isArray(res.data?.data) ? res.data.data : [];
-      console.log('Fetched SO data:', res);
       setSoData(list);
       setDataRekap(res.data?.data_rekap ?? null);
       setDataRekapPerBulan(
@@ -506,14 +478,6 @@ function SOMonitoring() {
       STATUS_PO_OPTIONS[0].value,
       null,
     );
-  };
-
-  const toggleRow = (id: number) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
   };
 
   const filtered = soData.filter((d) => {
@@ -725,6 +689,7 @@ function SOMonitoring() {
                 </button>
               </div>
               <div className="p-6 space-y-4">
+                {/* SO Info */}
                 <div className="bg-gray-50 rounded-xl p-4">
                   <h4 className="text-sm font-semibold text-gray-700 mb-3">
                     Informasi SO
@@ -775,6 +740,123 @@ function SOMonitoring() {
                     ))}
                   </div>
                 </div>
+
+                {/* Delivery Progress */}
+                {(() => {
+                  const dp = calcDeliveryProgress(detailRow);
+                  if (!dp) return null;
+                  return (
+                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                      <h4 className="text-xs font-semibold text-blue-700 mb-2">
+                        Progress Pengiriman
+                      </h4>
+                      <ProgressBar pct={dp.pct} isOver={dp.isOver} />
+                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                          <p className="text-gray-400">Terkirim</p>
+                          <p className="font-bold text-green-600">
+                            {fmtQty(dp.shipped)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">PO Qty</p>
+                          <p className="font-bold text-gray-700">
+                            {fmtQty(dp.total)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400">Status</p>
+                          <StatusBadge status={dp.status} />
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <QtyDiffLabel shipped={dp.shipped} total={dp.total} />
+                      </div>
+                      {dp.isOver && (
+                        <div className="mt-2 text-xs text-purple-600 font-semibold bg-purple-50 rounded px-2 py-1">
+                          Over qty: {fmtQty(dp.shipped - dp.total)} Pcs
+                        </div>
+                      )}
+                      {!dp.isOver && dp.shipped < dp.total && (
+                        <div className="mt-2 text-xs text-orange-600 bg-orange-50 rounded px-2 py-1">
+                          Kurang: {fmtQty(dp.total - dp.shipped)} Pcs
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Delivery Order info */}
+                {detailRow.delivery_order_group && (
+                  <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                    <h4 className="text-xs font-semibold text-green-700 mb-3 flex items-center gap-1.5">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      Delivery Order
+                    </h4>
+                    <div className="grid grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <p className="text-gray-400 mb-0.5">No DO</p>
+                        <p className="font-bold text-gray-800">
+                          {detailRow.delivery_order_group.no_do}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-0.5">Tgl DO</p>
+                        <p className="font-bold text-gray-800">
+                          {fmtDate(detailRow.delivery_order_group.tgl_do)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-0.5">Total Qty DO</p>
+                        <p className="font-bold text-green-600">
+                          {fmtQty(detailRow.delivery_order_group.total_qty)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tahapan quick list */}
+                {detailRow.produksi_lkh_tahapan?.length > 0 && (
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <h4 className="text-xs font-semibold text-gray-700 mb-2">
+                      Tahapan Produksi
+                    </h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[...(detailRow.produksi_lkh_tahapan ?? [])]
+                        .sort((a: any, b: any) => a.index - b.index)
+                        .map((t: any) => {
+                          const done = t.produksi_lkh_proses?.length > 0;
+                          return (
+                            <span
+                              key={t.id}
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border ${
+                                done
+                                  ? 'bg-green-100 text-green-700 border-green-300'
+                                  : 'bg-white text-gray-400 border-gray-300'
+                              }`}
+                            >
+                              {t.index}. {t.tahapan?.nama_tahapan}{' '}
+                              {done ? '✓' : ''}
+                            </span>
+                          );
+                        })}
+                    </div>
+                  </div>
+                )}
+
                 {detailRow.alamat_pengiriman && (
                   <div className="bg-blue-50 rounded-xl p-4">
                     <h4 className="text-sm font-semibold text-blue-700 mb-1">
@@ -1038,17 +1120,13 @@ function SOMonitoring() {
                   {[
                     'No',
                     'Tgl Kirim',
-                    'Tgl Input SO',
-                    'No SO',
-                    'No JO',
-                    'No IO',
+                    'Nomor',
                     'Customer',
                     'Produk',
                     'PO Qty',
                     'Total Harga',
                     'Progress',
-                    'Status Proses',
-                    'Status Work',
+                    'Tahapan Terakhir',
                     'Aksi',
                   ].map((h) => (
                     <th
@@ -1064,7 +1142,7 @@ function SOMonitoring() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={14}
+                      colSpan={10}
                       className="p-8 text-center text-gray-500 text-sm"
                     >
                       Tidak ada data SO
@@ -1072,219 +1150,140 @@ function SOMonitoring() {
                   </tr>
                 ) : (
                   filtered.map((row: any, i: number) => {
-                    const progress = calcDeliveryProgress(
-                      row.produksi_lkh_tahapan,
-                    );
-                    const isExpanded = expandedRows.has(row.id);
+                    const dp = calcDeliveryProgress(row);
                     const hasTahapan =
                       (row.produksi_lkh_tahapan?.length ?? 0) > 0;
                     const detailCount = countWithDetail(
                       row.produksi_lkh_tahapan ?? [],
                     );
+                    const latestTahapan = getLatestTahapan(
+                      row.produksi_lkh_tahapan ?? [],
+                    );
                     const rowBg =
                       row.status_proses === 'done' ? 'bg-green-50' : '';
-                    const dp = calcDeliveryProgress(row);
+
                     return (
-                      <React.Fragment key={row.id}>
-                        <tr
-                          className={`border-b hover:bg-blue-50 transition-colors ${rowBg}`}
-                        >
-                          <td className="p-2 sm:p-3 text-xs text-gray-500">
-                            {i + 1}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
-                            {fmtDate(row.tgl_pengiriman)}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
-                            {fmtDate(row.tgl_pembuatan_so)}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs">
-                            <button
-                              onClick={() => setDetailRow(row)}
-                              className="text-blue-600 hover:text-blue-800 hover:underline font-semibold whitespace-nowrap"
-                            >
-                              {row.no_so || '-'}
-                            </button>
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs whitespace-nowrap font-medium text-indigo-600">
+                      <tr
+                        key={row.id}
+                        className={`border-b hover:bg-blue-50 transition-colors ${rowBg}`}
+                      >
+                        <td className="p-2 sm:p-3 text-xs text-gray-500">
+                          {i + 1}
+                        </td>
+                        <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
+                          {fmtDate(row.tgl_pengiriman)}
+                        </td>
+
+                        <td className="p-2 sm:p-3 text-xs flex flex-col gap-2">
+                          <span
+                            onClick={() => setDetailRow(row)}
+                            className="text-blue-600 hover:text-blue-800 hover:underline font-semibold whitespace-nowrap cursor-pointer"
+                          >
+                            {row.no_so || '-'}
+                          </span>
+                          <span className="text-xs whitespace-nowrap font-medium text-indigo-600">
                             {row.job_order?.no_jo || '-'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs whitespace-nowrap text-gray-600">
+                          </span>
+                          <span className="text-xs whitespace-nowrap text-gray-600">
                             {row.no_io || '-'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs max-w-[130px]">
-                            <span
-                              className="block truncate font-medium"
-                              title={row.customer}
-                            >
-                              {row.customer || '-'}
-                            </span>
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs max-w-[180px]">
-                            <span className="block truncate" title={row.produk}>
-                              {row.produk || '-'}
-                            </span>
-                            <span className="text-gray-400 text-[10px]">
-                              {row.label}
-                            </span>
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs text-right font-medium">
-                            {fmtQty(row.po_qty)}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
-                            {fmtRp(row.total_harga)}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs min-w-[120px]">
-                            {dp ? (
-                              <div className="space-y-1">
-                                <ProgressBar pct={dp.pct} isOver={dp.isOver} />
-                                <div className="flex items-center gap-1 flex-col">
-                                  <StatusBadge status={dp.status} />
-                                  <span className="text-[9px] text-gray-400">
-                                    {fmtQty(dp.shipped)}/{fmtQty(dp.total)}
-                                  </span>
-                                </div>
+                          </span>
+                        </td>
+
+                        <td className="p-2 sm:p-3 text-xs max-w-[130px]">
+                          <span
+                            className="block truncate font-medium"
+                            title={row.customer}
+                          >
+                            {row.customer || '-'}
+                          </span>
+                        </td>
+                        <td className="p-2 sm:p-3 text-xs max-w-[180px]">
+                          <span className="block" title={row.produk}>
+                            {row.produk || '-'}
+                          </span>
+                          <span className="text-blue-400 text-[10px]">
+                            {row.label}
+                          </span>
+                        </td>
+                        <td className="p-2 sm:p-3 text-xs text-right font-medium">
+                          {fmtQty(row.po_qty)}
+                        </td>
+                        <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
+                          {fmtRp(row.total_harga)}
+                        </td>
+
+                        {/* Progress column */}
+                        <td className="p-2 sm:p-3 text-xs min-w-[140px]">
+                          {dp ? (
+                            <div className="space-y-1">
+                              <ProgressBar pct={dp.pct} isOver={dp.isOver} />
+                              <div className="flex items-center gap-1 flex-col items-start">
+                                <StatusBadge status={dp.status} />
+                                <QtyDiffLabel
+                                  shipped={dp.shipped}
+                                  total={dp.total}
+                                />
                               </div>
-                            ) : (
-                              <span className="text-gray-300 text-[10px]">
-                                —
-                              </span>
-                            )}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs">
-                            <StatusBadge status={row.status_proses} />
-                          </td>
-
-                          <td className="p-2 sm:p-3 text-xs">
-                            <StatusBadge status={row.status_work} />
-                          </td>
-
-                          {/* Aksi column: expand chevron + tahapan detail button */}
-                          <td className="p-2 sm:p-3 text-xs">
-                            <div className="flex items-center gap-1.5">
-                              {/* Expand toggle */}
-                              {hasTahapan && (
-                                <button
-                                  onClick={() => toggleRow(row.id)}
-                                  title="Lihat ringkasan tahapan"
-                                  className={`p-1 rounded transition-colors ${
-                                    isExpanded
-                                      ? 'text-blue-600 bg-blue-100'
-                                      : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50'
-                                  }`}
-                                >
-                                  <svg
-                                    className={`w-4 h-4 transition-transform ${
-                                      isExpanded ? 'rotate-180' : ''
-                                    }`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 9l-7 7-7-7"
-                                    />
-                                  </svg>
-                                </button>
-                              )}
-
-                              {/* Tahapan detail button */}
-                              {hasTahapan && (
-                                <button
-                                  onClick={() => setTahapanRow(row)}
-                                  title={`Lihat detail tahapan (${detailCount} sudah diproses)`}
-                                  className="relative p-1 rounded text-violet-500 hover:text-violet-700 hover:bg-violet-50 transition-colors"
-                                >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                                    />
-                                  </svg>
-                                  {/* Badge showing how many have detail data */}
-                                  {detailCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-                                      {detailCount}
-                                    </span>
-                                  )}
-                                </button>
-                              )}
                             </div>
-                          </td>
-                        </tr>
+                          ) : (
+                            <span className="text-gray-300 text-[10px]">—</span>
+                          )}
+                        </td>
 
-                        {/* Expandable quick-view row */}
-                        {isExpanded && hasTahapan && (
-                          <tr className="bg-indigo-50 border-b">
-                            <td colSpan={14} className="px-6 py-3">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-[10px] font-semibold text-indigo-600 mr-1">
-                                  Tahapan:
+                        {/* Latest tahapan (replaces status proses) */}
+                        <td className="p-2 sm:p-3 text-xs max-w-[140px]">
+                          {latestTahapan ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-100 text-violet-700 border border-violet-200">
+                              <svg
+                                className="w-2.5 h-2.5 flex-shrink-0"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              {latestTahapan}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-[10px] italic">
+                              Belum ada
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Aksi: only tahapan detail button */}
+                        <td className="p-2 sm:p-3 text-xs">
+                          {hasTahapan && (
+                            <button
+                              onClick={() => setTahapanRow(row)}
+                              title={`Lihat detail tahapan (${detailCount} sudah diproses)`}
+                              className="relative p-1.5 rounded text-violet-500 hover:text-violet-700 hover:bg-violet-50 transition-colors"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                                />
+                              </svg>
+                              {detailCount > 0 && (
+                                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                                  {detailCount}
                                 </span>
-                                {[...(row.produksi_lkh_tahapan ?? [])]
-                                  .sort((a: any, b: any) => a.index - b.index)
-                                  .map((t: any) => {
-                                    const done =
-                                      t.produksi_lkh_proses?.length > 0;
-                                    const hasProses = done;
-                                    return (
-                                      <span
-                                        key={t.id}
-                                        title={
-                                          hasProses
-                                            ? `${t.tahapan?.nama_tahapan}: ${
-                                                t.produksi_lkh_proses[0]
-                                                  ?.proses ?? ''
-                                              } — ${
-                                                t.produksi_lkh_proses[0]?.mesin
-                                                  ?.nama_mesin ?? ''
-                                              }`
-                                            : `${t.tahapan?.nama_tahapan}: belum diproses`
-                                        }
-                                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border cursor-default ${
-                                          done
-                                            ? 'bg-green-100 text-green-700 border-green-300'
-                                            : 'bg-white text-gray-400 border-gray-300'
-                                        }`}
-                                      >
-                                        {done && (
-                                          <svg
-                                            className="w-2.5 h-2.5"
-                                            fill="currentColor"
-                                            viewBox="0 0 20 20"
-                                          >
-                                            <path
-                                              fillRule="evenodd"
-                                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                              clipRule="evenodd"
-                                            />
-                                          </svg>
-                                        )}
-                                        {t.index}. {t.tahapan?.nama_tahapan}
-                                      </span>
-                                    );
-                                  })}
-                                <button
-                                  onClick={() => setTahapanRow(row)}
-                                  className="ml-2 text-[10px] text-violet-600 hover:text-violet-800 font-semibold underline"
-                                >
-                                  Lihat detail →
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
+                              )}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
                     );
                   })
                 )}

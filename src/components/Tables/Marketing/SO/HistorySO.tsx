@@ -31,7 +31,7 @@ const HistorySO: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
-
+  const [doneWorkLoading, setDoneWorkLoading] = useState<number | null>(null);
   // Filter states
   const [kalkulasiOptions, setKalkulasiOptions] = useState<
     Array<{
@@ -242,7 +242,38 @@ const HistorySO: React.FC = () => {
 
     return sorted;
   };
+  const handleDoneWork = async (id: number) => {
+    if (
+      window.confirm('Apakah Anda yakin ingin menyelesaikan pekerjaan SO ini?')
+    ) {
+      try {
+        setDoneWorkLoading(id);
+        const url = `${
+          import.meta.env.VITE_API_LINK
+        }/marketing/so/doneWork/${id}`;
+        const res = await axios.put(
+          url,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
 
+        if (res.data.succes) {
+          alert('Pekerjaan SO berhasil diselesaikan!');
+          fetchsoData();
+        }
+      } catch (error: any) {
+        console.error('Error completing SO work:', error);
+        alert(
+          error.response?.data?.message ||
+            'Gagal menyelesaikan pekerjaan SO. Silakan coba lagi.',
+        );
+      } finally {
+        setDoneWorkLoading(null);
+      }
+    }
+  };
   const sortedData = getSortedData();
 
   const handleViewDetail = (item: SOData) => {
@@ -488,6 +519,15 @@ const HistorySO: React.FC = () => {
                                 title="Cancel SO"
                               >
                                 CANCEL
+                              </button>
+                              <button
+                                onClick={() => handleDoneWork(item.id)}
+                                className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+                                disabled={doneWorkLoading === item.id}
+                              >
+                                {doneWorkLoading === item.id
+                                  ? 'Processing...'
+                                  : 'DONE WORK'}
                               </button>
                               {(() => {
                                 const perubahanStatus =

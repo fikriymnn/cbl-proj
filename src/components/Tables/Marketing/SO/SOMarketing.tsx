@@ -556,7 +556,7 @@ const SOMarketing: React.FC = () => {
                                 : 'REQUEST'}
                             </button>
                           )}
-                          {item.status === 'history' ||
+                          {/* {item.status === 'history' ||
                             (item.status_work !== 'done' && (
                               <button
                                 onClick={() => handleDoneWork(item.id)}
@@ -567,7 +567,7 @@ const SOMarketing: React.FC = () => {
                                   ? 'Processing...'
                                   : 'DONE WORK'}
                               </button>
-                            ))}
+                            ))} */}
                           <button
                             onClick={() => handlePrint(item)}
                             className="bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded text-xs transition-colors"

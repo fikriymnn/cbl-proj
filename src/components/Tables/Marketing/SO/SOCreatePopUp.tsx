@@ -160,7 +160,6 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     }
   }, [formData.ppn, soNumberData, mode]);
 
-  // Fetch Kalkulasi data from API using axios
   const fetchKalkulasiData = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
     setKalkulasiLoading(true);
@@ -173,44 +172,13 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       });
       console.log('Fetched Kalkulasi data:', response.data);
       if (response.data.succes && response.data.data) {
-        // Group by id_io and filter based on status_kalkulasi
-        const groupedByIdIO = response.data.data.reduce(
-          (acc: Record<string, KalkulasiData[]>, item: KalkulasiData) => {
-            const idIO = item.id_io?.toString() || '';
-            if (!acc[idIO]) {
-              acc[idIO] = [];
-            }
-            acc[idIO].push(item);
-            return acc;
-          },
-          {} as Record<string, KalkulasiData[]>,
-        );
-
-        // Filter: if multiple items with same id_io, show only 'baru', otherwise show available
-        const filteredData: KalkulasiData[] = [];
-        Object.keys(groupedByIdIO).forEach((idIO) => {
-          const items = groupedByIdIO[idIO];
-          if (items.length > 1) {
-            // Multiple items with same id_io
-            const baruItem = items.find(
-              (item: KalkulasiData) =>
-                item.status_kalkulasi?.toLowerCase() === 'baru',
-            );
-            if (baruItem) {
-              filteredData.push(baruItem);
-            } else {
-              // No 'baru' exists, use the first available
-              filteredData.push(items[0]);
-            }
-          } else {
-            // Only one item with this id_io
-            filteredData.push(items[0]);
-          }
-        });
-
-        const options = filteredData.map((item: KalkulasiData) => ({
+        const options = response.data.data.map((item: KalkulasiData) => ({
           value: item.id.toString(),
-          label: `${item.no_io} - ${item.nama_customer}, ${item.nama_produk}`,
+          label: `${item.no_io} - ${item.nama_customer}, ${
+            item.nama_produk
+          } | Kode: ${item.kode_kalkulasi || '-'} | Status: ${
+            item.status_kalkulasi || '-'
+          }`,
           data: item,
         }));
         setKalkulasiOptions(options);

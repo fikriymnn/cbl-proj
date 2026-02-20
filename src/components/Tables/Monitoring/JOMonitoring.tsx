@@ -68,7 +68,6 @@ function fmtQty(val: number | null | undefined) {
   return val.toLocaleString('id-ID');
 }
 
-// Days remaining until delivery
 function sisaWaktu(tglPengiriman: string | null | undefined): {
   label: string;
   color: string;
@@ -94,7 +93,6 @@ function sisaWaktu(tglPengiriman: string | null | undefined): {
   return { label: `${diff} hari lagi`, color: 'text-gray-500' };
 }
 
-// Delivery progress based on delivery_order_group.total_qty vs po_qty
 function calcDeliveryProgress(row: any) {
   const shipped = row.delivery_order_group?.total_qty ?? 0;
   const total = row.po_qty ?? 0;
@@ -114,12 +112,21 @@ function calcDeliveryProgress(row: any) {
   return { shipped, total, pct, rawPct, status, isOver };
 }
 
-// Tahapan progress for production stages
 function calcTahapanProgress(tahapan: any[]) {
   if (!tahapan || tahapan.length === 0) return null;
   const done = tahapan.filter((t) => t.produksi_lkh_proses?.length > 0).length;
   const pct = Math.round((done / tahapan.length) * 100);
   return { done, total: tahapan.length, pct };
+}
+
+// Get the latest completed tahapan name
+function getLatestTahapan(tahapan: any[]): string | null {
+  if (!tahapan || tahapan.length === 0) return null;
+  const done = [...tahapan]
+    .filter((t) => t.produksi_lkh_proses?.length > 0)
+    .sort((a, b) => b.index - a.index);
+  if (done.length === 0) return null;
+  return done[0].tahapan?.nama_tahapan ?? null;
 }
 
 function countWithDetail(tahapan: any[]) {
@@ -185,6 +192,26 @@ function DeliveryProgressBar({
         {isOver ? '>100%' : `${pct}%`}
       </span>
     </div>
+  );
+}
+
+// Qty difference display: shows diff with color based on status
+function QtyDiffLabel({ shipped, total }: { shipped: number; total: number }) {
+  const diff = shipped - total;
+  if (diff > 0) {
+    return (
+      <span className="text-xs font-bold text-purple-600">
+        +{fmtQty(diff)} over
+      </span>
+    );
+  }
+  if (diff === 0) {
+    return <span className="text-xs font-bold text-green-600">Sesuai</span>;
+  }
+  return (
+    <span className="text-xs font-bold text-red-500">
+      -{fmtQty(Math.abs(diff))} kurang
+    </span>
   );
 }
 
@@ -381,7 +408,6 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
-        {/* Header */}
         <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-6 py-4 text-white rounded-t-2xl flex justify-between items-start flex-shrink-0">
           <div>
             <h3 className="text-lg font-bold">Detail JO</h3>
@@ -436,7 +462,6 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
 
           {/* Progress section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Delivery progress */}
             {dp && (
               <div className="bg-blue-50 rounded-xl p-4">
                 <h4 className="text-xs font-semibold text-blue-700 mb-2">
@@ -461,6 +486,9 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
                     <StatusBadge status={dp.status} />
                   </div>
                 </div>
+                <div className="mt-2">
+                  <QtyDiffLabel shipped={dp.shipped} total={dp.total} />
+                </div>
                 {dp.isOver && (
                   <div className="mt-2 text-xs text-purple-600 font-semibold bg-purple-50 rounded px-2 py-1">
                     Over qty: {fmtQty(dp.shipped - dp.total)} Pcs
@@ -474,7 +502,6 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
               </div>
             )}
 
-            {/* Tahapan progress */}
             {tahapanProg && (
               <div className="bg-violet-50 rounded-xl p-4">
                 <h4 className="text-xs font-semibold text-violet-700 mb-2">
@@ -689,9 +716,6 @@ function JOMonitoring() {
   const [detailRow, setDetailRow] = useState<any>(null);
   const [tahapanRow, setTahapanRow] = useState<any>(null);
 
-  // Expandable rows
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-
   useEffect(() => {
     fetchJO(
       firstOfMonth(),
@@ -709,7 +733,6 @@ function JOMonitoring() {
     status: string,
     customerId: any,
   ) {
-    // 🔧 Update endpoint if JO has a separate API
     const url = `${import.meta.env.VITE_API_LINK}/marketing/soMonitoring`;
     try {
       setIsLoading(true);
@@ -725,7 +748,6 @@ function JOMonitoring() {
       });
       const list: any[] = Array.isArray(res.data?.data) ? res.data.data : [];
       setJoData(list);
-
       const seen = new Map<any, any>();
       list.forEach((d: any) => {
         if (d.id_customer && d.customer && !seen.has(d.id_customer))
@@ -764,14 +786,6 @@ function JOMonitoring() {
       STATUS_PO_OPTIONS[0].value,
       null,
     );
-  };
-
-  const toggleRow = (id: number) => {
-    setExpandedRows((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
   };
 
   const filtered = joData.filter((d) => {
@@ -956,18 +970,15 @@ function JOMonitoring() {
                 <tr>
                   {[
                     'No',
-                    'Tgl Input SO',
-                    'No SO',
-                    'No JO',
-                    'No IO',
+                    'Nomor',
                     'Customer',
                     'Produk',
                     'Qty',
                     'Progress Kirim',
                     'Tgl Kirim',
                     'Sisa Waktu',
-                    'Status Proses',
-                    'Lokasi JO',
+                    'Tahapan Terakhir',
+                    'Mounting',
                     'Status Kirim',
                     'Aksi',
                   ].map((h) => (
@@ -998,15 +1009,16 @@ function JOMonitoring() {
                       row.produksi_lkh_tahapan,
                     );
                     const sisa = sisaWaktu(row.tgl_pengiriman);
-                    const isExpanded = expandedRows.has(row.id);
                     const hasTahapan =
                       (row.produksi_lkh_tahapan?.length ?? 0) > 0;
                     const detailCount = countWithDetail(
                       row.produksi_lkh_tahapan ?? [],
                     );
+                    const latestTahapan = getLatestTahapan(
+                      row.produksi_lkh_tahapan ?? [],
+                    );
                     const do_group = row.delivery_order_group;
 
-                    // Row highlight
                     const rowBg = dp?.isOver
                       ? 'bg-purple-50'
                       : dp?.status === 'selesai'
@@ -1016,258 +1028,179 @@ function JOMonitoring() {
                       : '';
 
                     return (
-                      <React.Fragment key={row.id}>
-                        <tr
-                          className={`border-b hover:bg-blue-50 transition-colors ${rowBg}`}
-                        >
-                          <td className="p-2 sm:p-3 text-xs text-gray-500">
-                            {i + 1}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
-                            {fmtDate(row.tgl_pembuatan_so)}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs whitespace-nowrap text-blue-600 font-medium">
-                            {row.no_so || '-'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs">
-                            <button
-                              onClick={() => setDetailRow(row)}
-                              className="text-violet-600 hover:text-violet-800 hover:underline font-bold whitespace-nowrap"
-                            >
-                              {jo?.no_jo || '-'}
-                            </button>
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs whitespace-nowrap text-gray-500">
-                            {row.no_io || '-'}
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs max-w-[130px]">
-                            <span
-                              className="block truncate font-medium"
-                              title={row.customer}
-                            >
-                              {row.customer || '-'}
-                            </span>
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs max-w-[180px]">
-                            <span className="block truncate" title={row.produk}>
-                              {row.produk || '-'}
-                            </span>
-                            <span className="text-gray-400 text-[10px]">
-                              {row.label}
-                            </span>
-                          </td>
-                          <td className="p-2 sm:p-3 text-xs text-right font-medium">
-                            {fmtQty(row.po_qty)}
-                          </td>
+                      <tr
+                        key={row.id}
+                        className={`border-b hover:bg-blue-50 transition-colors ${rowBg}`}
+                      >
+                        <td className="p-2 sm:p-3 text-xs text-gray-500">
+                          {i + 1}
+                        </td>
 
-                          {/* Progress Kirim */}
-                          <td className="p-2 sm:p-3 text-xs min-w-[130px]">
-                            {dp ? (
-                              <div className="space-y-1">
-                                <DeliveryProgressBar
-                                  pct={dp.pct}
-                                  isOver={dp.isOver}
-                                />
-                                <div className="flex items-center gap-1">
-                                  <span className="text-[9px] text-gray-400">
-                                    {fmtQty(dp.shipped)} / {fmtQty(dp.total)}
-                                  </span>
-                                </div>
-                              </div>
+                        <td className="p-2 sm:p-3 text-xs flex flex-col gap-2">
+                          <span
+                            onClick={() => setDetailRow(row)}
+                            className="text-violet-600 hover:text-violet-800 hover:underline font-bold whitespace-nowrap"
+                          >
+                            {jo?.no_jo || '-'}
+                          </span>
+                          <span className=" text-xs whitespace-nowrap text-blue-600 font-medium">
+                            {row.no_so || '-'}
+                          </span>
+                          <span className=" text-xs whitespace-nowrap text-gray-500">
+                            {row.no_io || '-'}
+                          </span>
+                        </td>
+
+                        <td className="p-2 sm:p-3 text-xs max-w-[130px]">
+                          <span
+                            className="block  font-medium"
+                            title={row.customer}
+                          >
+                            {row.customer || '-'}
+                          </span>
+                        </td>
+                        <td className="p-2 sm:p-3 text-xs max-w-[180px]">
+                          <span className="block " title={row.produk}>
+                            {row.produk || '-'}
+                          </span>
+                          <span className="text-blue-400 text-[10px]">
+                            {row.label}
+                          </span>
+                        </td>
+                        <td className="p-2 sm:p-3 text-xs text-right font-medium">
+                          {fmtQty(row.po_qty)}
+                        </td>
+
+                        {/* Progress Kirim */}
+                        <td className="p-2 sm:p-3 text-xs min-w-[140px]">
+                          {dp ? (
+                            <div className="space-y-1">
+                              <DeliveryProgressBar
+                                pct={dp.pct}
+                                isOver={dp.isOver}
+                              />
+                              <QtyDiffLabel
+                                shipped={dp.shipped}
+                                total={dp.total}
+                              />
+                            </div>
+                          ) : (
+                            <div className="space-y-1">
+                              <DeliveryProgressBar pct={0} />
+                              <span className="text-xs font-bold text-red-500">
+                                -{fmtQty(row.po_qty)} kurang
+                              </span>
+                            </div>
+                          )}
+                        </td>
+
+                        <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
+                          {fmtDate(row.tgl_pengiriman)}
+                        </td>
+
+                        <td
+                          className={`p-2 sm:p-3 text-xs whitespace-nowrap ${sisa.color}`}
+                        >
+                          {sisa.label}
+                        </td>
+
+                        {/* Tahapan Terakhir (replaces Status Proses) */}
+                        <td className="p-2 sm:p-3 text-xs max-w-[140px]">
+                          <div className="space-y-1">
+                            {latestTahapan ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-100 text-violet-700 border border-violet-200">
+                                <svg
+                                  className="w-2.5 h-2.5 flex-shrink-0"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                {latestTahapan}
+                              </span>
                             ) : (
-                              <div className="space-y-1">
-                                <DeliveryProgressBar pct={0} />
+                              <span className="text-gray-400 text-[10px] italic">
+                                Belum ada
+                              </span>
+                            )}
+                            {/* Mini production progress bar below tahapan label */}
+                            {tahapanProg && (
+                              <div className="flex items-center gap-1">
+                                <div className="w-12 bg-gray-200 rounded-full h-1">
+                                  <div
+                                    className="bg-violet-400 h-1 rounded-full"
+                                    style={{ width: `${tahapanProg.pct}%` }}
+                                  />
+                                </div>
                                 <span className="text-[9px] text-gray-400">
-                                  0 / {fmtQty(row.po_qty)}
+                                  {tahapanProg.pct}%
                                 </span>
                               </div>
                             )}
-                          </td>
+                          </div>
+                        </td>
 
-                          <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
-                            {fmtDate(row.tgl_pengiriman)}
-                          </td>
-
-                          {/* Sisa Waktu */}
-                          <td
-                            className={`p-2 sm:p-3 text-xs whitespace-nowrap ${sisa.color}`}
-                          >
-                            {sisa.label}
-                          </td>
-
-                          {/* Status Proses */}
-                          <td className="p-2 sm:p-3 text-xs">
-                            <div className="space-y-1">
-                              <StatusBadge status={row.status_proses} />
-                              {tahapanProg && (
-                                <div className="flex items-center gap-1">
-                                  <div className="w-12 bg-gray-200 rounded-full h-1">
-                                    <div
-                                      className="bg-violet-400 h-1 rounded-full"
-                                      style={{ width: `${tahapanProg.pct}%` }}
-                                    />
-                                  </div>
-                                  <span className="text-[9px] text-gray-400">
-                                    {tahapanProg.pct}%
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-
-                          {/* Lokasi JO — from mounting names */}
-                          <td className="p-2 sm:p-3 text-xs">
-                            {jo?.jo_mounting?.length > 0 ? (
-                              <div className="flex flex-wrap gap-1">
-                                {jo.jo_mounting.map((m: any, mi: number) => (
-                                  <span
-                                    key={mi}
-                                    className="bg-indigo-100 text-indigo-700 text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                                  >
-                                    {m.nama_mounting ?? `M${mi + 1}`}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : (
-                              '-'
-                            )}
-                          </td>
-
-                          {/* Status Kirim */}
-                          <td className="p-2 sm:p-3 text-xs">
-                            {dp ? (
-                              <StatusBadge status={dp.status} />
-                            ) : (
-                              <StatusBadge status="belum kirim" />
-                            )}
-                          </td>
-
-                          {/* Aksi */}
-                          <td className="p-2 sm:p-3 text-xs">
-                            <div className="flex items-center gap-1">
-                              {hasTahapan && (
-                                <button
-                                  onClick={() => toggleRow(row.id)}
-                                  title="Ringkasan tahapan"
-                                  className={`p-1 rounded transition-colors ${
-                                    isExpanded
-                                      ? 'text-blue-600 bg-blue-100'
-                                      : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50'
-                                  }`}
+                        {/* Lokasi JO */}
+                        <td className="p-2 sm:p-3 text-xs">
+                          {jo?.jo_mounting?.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {jo.jo_mounting.map((m: any, mi: number) => (
+                                <span
+                                  key={mi}
+                                  className="bg-indigo-100 text-indigo-700 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                                 >
-                                  <svg
-                                    className={`w-4 h-4 transition-transform ${
-                                      isExpanded ? 'rotate-180' : ''
-                                    }`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 9l-7 7-7-7"
-                                    />
-                                  </svg>
-                                </button>
-                              )}
-                              {hasTahapan && (
-                                <button
-                                  onClick={() => setTahapanRow(row)}
-                                  title={`Detail tahapan (${detailCount} diproses)`}
-                                  className="relative p-1 rounded text-violet-500 hover:text-violet-700 hover:bg-violet-50 transition-colors"
-                                >
-                                  <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                                    />
-                                  </svg>
-                                  {detailCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-                                      {detailCount}
-                                    </span>
-                                  )}
-                                </button>
-                              )}
+                                  {m.nama_mounting ?? `M${mi + 1}`}
+                                </span>
+                              ))}
                             </div>
-                          </td>
-                        </tr>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
 
-                        {/* Expandable DO + tahapan row */}
-                        {isExpanded && (
-                          <tr className="bg-indigo-50 border-b">
-                            <td colSpan={15} className="px-6 py-3">
-                              <div className="flex flex-col gap-2">
-                                {/* DO info inline */}
-                                {do_group && (
-                                  <div className="flex items-center gap-4 text-[10px] text-gray-600 bg-green-100 rounded-lg px-3 py-1.5">
-                                    <span className="font-semibold text-green-700">
-                                      DO:
-                                    </span>
-                                    <span>{do_group.no_do}</span>
-                                    <span>Tgl: {fmtDate(do_group.tgl_do)}</span>
-                                    <span className="font-semibold text-green-700">
-                                      Qty: {fmtQty(do_group.total_qty)}
-                                    </span>
-                                  </div>
-                                )}
-                                {/* Tahapan chips */}
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <span className="text-[10px] font-semibold text-indigo-600">
-                                    Tahapan:
-                                  </span>
-                                  {[...(row.produksi_lkh_tahapan ?? [])]
-                                    .sort((a: any, b: any) => a.index - b.index)
-                                    .map((t: any) => {
-                                      const done =
-                                        t.produksi_lkh_proses?.length > 0;
-                                      return (
-                                        <span
-                                          key={t.id}
-                                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-                                            done
-                                              ? 'bg-green-100 text-green-700 border-green-300'
-                                              : 'bg-white text-gray-400 border-gray-300'
-                                          }`}
-                                        >
-                                          {done && (
-                                            <svg
-                                              className="w-2.5 h-2.5"
-                                              fill="currentColor"
-                                              viewBox="0 0 20 20"
-                                            >
-                                              <path
-                                                fillRule="evenodd"
-                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                clipRule="evenodd"
-                                              />
-                                            </svg>
-                                          )}
-                                          {t.index}. {t.tahapan?.nama_tahapan}
-                                        </span>
-                                      );
-                                    })}
-                                  <button
-                                    onClick={() => setTahapanRow(row)}
-                                    className="ml-1 text-[10px] text-violet-600 hover:text-violet-800 font-semibold underline"
-                                  >
-                                    Detail →
-                                  </button>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
+                        {/* Status Kirim */}
+                        <td className="p-2 sm:p-3 text-xs">
+                          {dp ? (
+                            <StatusBadge status={dp.status} />
+                          ) : (
+                            <StatusBadge status="belum kirim" />
+                          )}
+                        </td>
+
+                        {/* Aksi: only tahapan detail button */}
+                        <td className="p-2 sm:p-3 text-xs">
+                          {hasTahapan && (
+                            <button
+                              onClick={() => setTahapanRow(row)}
+                              title={`Detail tahapan (${detailCount} diproses)`}
+                              className="relative p-1.5 rounded text-violet-500 hover:text-violet-700 hover:bg-violet-50 transition-colors"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                                />
+                              </svg>
+                              {detailCount > 0 && (
+                                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                                  {detailCount}
+                                </span>
+                              )}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
                     );
                   })
                 )}
