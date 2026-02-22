@@ -246,8 +246,7 @@ const BOMPPICCreate: React.FC = () => {
   };
 
   // Request BOM PPIC function
-  const handleRequestBOMPPIC = async (id: number, item: BOMPPICItem) => {
-    // Check if actions are disabled
+  const handleRequestBOMPPIC = async (item: BOMPPICItem) => {
     if (areActionsDisabled(item)) {
       alert(
         'Cannot request BOM PPIC when status is "Kembali ke BOM". Please update the BOM first.',
@@ -257,16 +256,16 @@ const BOMPPICCreate: React.FC = () => {
 
     if (window.confirm('Apakah Anda yakin ingin Request BOM PPIC ini?')) {
       try {
+        const bomPpicId = item.bom_ppic?.[0]?.id;
+        if (!bomPpicId) {
+          alert('BOM PPIC not found. Please create BOM PPIC first.');
+          return;
+        }
+
         const url = `${
           import.meta.env.VITE_API_LINK
-        }/ppic/bomPpic/request/${id}`;
-        await axios.put(
-          url,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
+        }/ppic/bomPpic/request/${bomPpicId}`;
+        await axios.put(url, {}, { withCredentials: true });
         fetchBOMData();
         alert('BOM PPIC berhasil di-request!');
       } catch (error: any) {
@@ -277,8 +276,7 @@ const BOMPPICCreate: React.FC = () => {
   };
 
   // Back to BOM function
-  const handleBackToBOM = async (id: number, item: BOMPPICItem) => {
-    // Check if actions are disabled
+  const handleBackToBOM = async (item: BOMPPICItem) => {
     if (areActionsDisabled(item)) {
       alert(
         'Cannot perform this action when status is "Kembali ke BOM". Please update the BOM first.',
@@ -288,16 +286,16 @@ const BOMPPICCreate: React.FC = () => {
 
     if (window.confirm('Apakah Anda yakin ingin mengembalikan ke BOM?')) {
       try {
+        const bomPpicId = item.bom_ppic?.[0]?.id;
+        if (!bomPpicId) {
+          alert('BOM PPIC not found.');
+          return;
+        }
+
         const url = `${
           import.meta.env.VITE_API_LINK
-        }/ppic/bomPpic/backToBom/${id}`;
-        await axios.put(
-          url,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
+        }/ppic/bomPpic/backToBom/${bomPpicId}`;
+        await axios.put(url, {}, { withCredentials: true });
         fetchBOMData();
         alert('Berhasil dikembalikan ke BOM!');
       } catch (error: any) {
@@ -548,7 +546,7 @@ const BOMPPICCreate: React.FC = () => {
                         {/* Request BOM PPIC Button */}
                         {hasBOMPPIC(item) && (
                           <button
-                            onClick={() => handleRequestBOMPPIC(item.id, item)}
+                            onClick={() => handleRequestBOMPPIC(item)}
                             className={`bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs transition-colors ${
                               areActionsDisabled(item)
                                 ? 'opacity-50 cursor-not-allowed'
@@ -567,7 +565,7 @@ const BOMPPICCreate: React.FC = () => {
 
                         {/* Back to BOM Button */}
                         <button
-                          onClick={() => handleBackToBOM(item.id, item)}
+                          onClick={() => handleBackToBOM(item)}
                           className={`bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors ${
                             areActionsDisabled(item)
                               ? 'opacity-50 cursor-not-allowed'
