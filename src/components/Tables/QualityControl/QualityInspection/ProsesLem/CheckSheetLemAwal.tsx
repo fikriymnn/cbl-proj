@@ -287,8 +287,8 @@ function CheckSheetLemAwal() {
     setCetakMesinAwal(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
-  const jam = convertDateToTime(cetakMesinAwal?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.createdAt);
+  const jam = convertDateToTime(cetakMesinAwal?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_lem_awal[0].waktu_check,

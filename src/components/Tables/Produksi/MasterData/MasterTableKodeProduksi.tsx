@@ -889,8 +889,9 @@ const MasterTableKodeProduksi: React.FC = () => {
                         label: dept.nama_department,
                       }))}
                       value={departments
-                        .filter((dept) =>
-                          formData.target_department.includes(dept.id),
+                        .filter(
+                          (dept) =>
+                            formData.target_department?.includes(dept.id),
                         )
                         .map((dept) => ({
                           value: dept.id,

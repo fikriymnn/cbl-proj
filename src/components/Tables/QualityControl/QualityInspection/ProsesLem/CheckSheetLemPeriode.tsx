@@ -525,13 +525,13 @@ function CheckSheetLemPeriode() {
     );
     return matchedWaste?.waste || [];
   };
-  const tanggal = convertTimeStampToDateOnly(LemMesinPeriode?.tanggal);
-  const jam = convertDateToTime(LemMesinPeriode?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(LemMesinPeriode?.createdAt);
+  const jam = convertDateToTime(LemMesinPeriode?.createdAt);
 
   const tanggalHistory = convertTimeStampToDateOnly(
-    LemMesinPeriodeHistory?.tanggal,
+    LemMesinPeriodeHistory?.createdAt,
   );
-  const jamHistory = convertDateToTime(LemMesinPeriodeHistory?.tanggal);
+  const jamHistory = convertDateToTime(LemMesinPeriodeHistory?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     LemMesinPeriode?.inspeksi_lem_awal[0].waktu_check,

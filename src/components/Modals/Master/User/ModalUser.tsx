@@ -94,16 +94,6 @@ const ModalUser = ({
     })(),
   });
 
-  // Check if role requires divisi_bawahan based on role id
-  const requiresDivisi = (() => {
-    if (!formData.id_role) return false;
-    const selectedRole = roles.find((r) => r.id === formData.id_role);
-    if (!selectedRole) return false;
-    // Check if role name is 'section head' or 'supervisor' (case insensitive)
-    const roleName = selectedRole.name.toLowerCase();
-    return roleName.includes('section head') || roleName.includes('supervisor');
-  })();
-
   // Handle window resize
   const handleResize = useCallback(() => {
     setIsMobile(window.innerWidth < 768);
@@ -318,7 +308,7 @@ const ModalUser = ({
           password: formData.password || undefined,
           confPassword: formData.confPassword || undefined,
           id_karyawan: formData.id_karyawan,
-          divisi_bawahan: requiresDivisi ? formData.divisi_bawahan : undefined,
+          divisi_bawahan: formData.divisi_bawahan,
         },
         { withCredentials: true },
       );
@@ -518,52 +508,49 @@ const ModalUser = ({
             )}
           </div>
 
-          {/* Divisi Bawahan - Only show for Section Head and Supervisor */}
-          {requiresDivisi && (
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-700">
-                DIVISI BAWAHAN <span className="text-red-500">*</span>
-              </label>
-              <Select
-                isMulti
-                placeholder="Pilih divisi bawahan..."
-                options={divisiOptions}
-                value={selectedDivisi}
-                onChange={(selected) => handleDivisiChange(selected)}
-                className="text-sm"
-                isDisabled={isLoading}
-                noOptionsMessage={() => 'Tidak ada data'}
-                styles={{
-                  control: (base, state) => ({
-                    ...base,
-                    minHeight: '44px',
-                    borderWidth: '2px',
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700">
+              DIVISI BAWAHAN <span className="text-red-500">*</span>
+            </label>
+            <Select
+              isMulti
+              placeholder="Pilih divisi bawahan..."
+              options={divisiOptions}
+              value={selectedDivisi}
+              onChange={(selected) => handleDivisiChange(selected)}
+              className="text-sm"
+              isDisabled={isLoading}
+              noOptionsMessage={() => 'Tidak ada data'}
+              styles={{
+                control: (base, state) => ({
+                  ...base,
+                  minHeight: '44px',
+                  borderWidth: '2px',
+                  borderColor: formErrors.divisi_bawahan
+                    ? '#ef4444'
+                    : state.isFocused
+                    ? '#3B82F6'
+                    : '#D1D5DB',
+                  boxShadow: state.isFocused
+                    ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
+                    : 'none',
+                  '&:hover': {
                     borderColor: formErrors.divisi_bawahan
                       ? '#ef4444'
-                      : state.isFocused
-                      ? '#3B82F6'
-                      : '#D1D5DB',
-                    boxShadow: state.isFocused
-                      ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                      : 'none',
-                    '&:hover': {
-                      borderColor: formErrors.divisi_bawahan
-                        ? '#ef4444'
-                        : '#3B82F6',
-                    },
-                  }),
-                }}
-              />
-              {formErrors.divisi_bawahan && (
-                <p className="text-xs text-red-600">
-                  {formErrors.divisi_bawahan}
-                </p>
-              )}
-              <p className="text-xs text-gray-500">
-                Pilih divisi yang berada di bawah tanggung jawab user ini
+                      : '#3B82F6',
+                  },
+                }),
+              }}
+            />
+            {formErrors.divisi_bawahan && (
+              <p className="text-xs text-red-600">
+                {formErrors.divisi_bawahan}
               </p>
-            </div>
-          )}
+            )}
+            <p className="text-xs text-gray-500">
+              Pilih divisi yang berada di bawah tanggung jawab user ini
+            </p>
+          </div>
 
           {/* Password Section */}
           <div className="rounded-lg border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 p-5">

@@ -278,13 +278,13 @@ function CheckSheetPondAwal() {
   const [showPending, setShowPending] = useState(false);
   const openModalPending = () => setShowPending(true);
   const closeModalPending = () => setShowPending(false);
-  const tanggal = convertTimeStampToDateOnly(pondMesinAwal?.tanggal);
-  const jam = convertDateToTime(pondMesinAwal?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(pondMesinAwal?.createdAt);
+  const jam = convertDateToTime(pondMesinAwal?.createdAt);
 
   const tanggalHistory = convertTimeStampToDateOnly(
-    pondMesinAwalHistory?.tanggal,
+    pondMesinAwalHistory?.createdAt,
   );
-  const jamHistory = convertDateToTime(pondMesinAwalHistory?.tanggal);
+  const jamHistory = convertDateToTime(pondMesinAwalHistory?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     pondMesinAwal?.inspeksi_pond_awal[0].waktu_check,
