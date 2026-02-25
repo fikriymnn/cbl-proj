@@ -170,10 +170,10 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
         <meta charset="UTF-8">
         <title>DO-${printData?.no_do || 'Delivery Order'}</title>
         <style>
-          @page {
-            size: 241mm 140mm;
-            margin: 6mm 4mm 6mm 4mm;
-          }
+        @page {
+  size: A4 portrait;
+  margin: 15mm 15mm 15mm 15mm;
+}
           * {
             box-sizing: border-box;
             margin: 0;
@@ -182,11 +182,11 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           body {
             margin: 0;
             padding: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 11px;
-            line-height: 1.3;
+            font-family: "Times New Roman", serif;
+  font-size: 12pt;
+  line-height: 1.5;
             color: #000;
-            width: 233mm;
+          width: 100%;
             background: white;
           }
           @media print {
@@ -205,10 +205,10 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
               display: none !important;
             }
           }
-          .container {
-            padding: 0;
-            width: 100%;
-          }
+         .container {
+  width: 100%;
+  margin: 0 auto;
+}
           .header-section {
             display: flex;
             justify-content: space-between;
@@ -235,8 +235,8 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             gap: 2px;
           }
           .company-name {
-            font-size: 11px;
-            font-weight: bold;
+           font-size: 14pt;
+  font-weight: bold;
             margin-bottom: 3px;
             line-height: 1.2;
           }
@@ -244,7 +244,8 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             flex-direction: column;
             gap: 2px;
-            font-size: 10px;
+          font-size: 16pt;
+  font-weight: bold;
           }
           .header-right {
             flex: 0 0 52%;
@@ -283,18 +284,18 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             letter-spacing: 0.5px;
           }
           .doc-subtitle {
-            font-size: 10px;
+            font-size: 11pt;
           }
           .items-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 10px;
-            font-size: 10px;
+             font-size: 11pt;
           }
           .items-table th,
           .items-table td {
-            border: 1.5px solid #000;
-            padding: 5px 6px;
+            border: 1px solid #000;
+  padding: 8px 6px;
             text-align: left;
           }
           .items-table th {
@@ -341,7 +342,7 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             text-align: right;
           }
           .signature-section {
-            margin-top: 25px;
+           margin-top: 60px;
             display: flex;
             justify-content: space-between;
           }
@@ -380,6 +381,15 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           strong {
             font-weight: bold;
           }
+            html, body {
+  height: 100%;
+}
+
+@media print {
+  body {
+    zoom: 100%;
+  }
+}
         </style>
       </head>
       <body>
