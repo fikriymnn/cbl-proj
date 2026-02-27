@@ -73,10 +73,17 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
   onClose,
 }) => {
   const [showDiskon, setShowDiskon] = useState<boolean>(true);
+  const [showDpp, setShowDpp] = useState<boolean>(false);
   const [logoBase64, setLogoBase64] = useState<string>('');
 
+  // Sync showDpp with invoiceData.is_show_dpp when data loads
   useEffect(() => {
-    // Convert logo to base64 for better print quality
+    if (invoiceData) {
+      setShowDpp(invoiceData.is_show_dpp);
+    }
+  }, [invoiceData]);
+
+  useEffect(() => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
@@ -86,17 +93,15 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(img, 0, 0);
-        const dataURL = canvas.toDataURL('image/png');
-        setLogoBase64(dataURL);
+        setLogoBase64(canvas.toDataURL('image/png'));
       }
     };
     img.src = Logo;
   }, []);
 
   const getValue = (value: any, defaultValue: string = '-') => {
-    if (value === null || value === undefined || value === '') {
+    if (value === null || value === undefined || value === '')
       return defaultValue;
-    }
     return value;
   };
 
@@ -118,9 +123,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
       'November',
       'Desember',
     ];
-    const month = monthNames[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
+    return `${day} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
   };
 
   const formatCurrency = (num: number | null | undefined): string => {
@@ -187,9 +190,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
       return '';
     };
 
-    if (num < 1000) {
-      return convertGroup(num);
-    }
+    if (num < 1000) return convertGroup(num);
     if (num < 1000000) {
       const thousand = Math.floor(num / 1000);
       const rest = num % 1000;
@@ -208,16 +209,13 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
           const thousandText =
             thousand === 1 ? 'Seribu' : convertGroup(thousand) + ' Ribu';
           result += ' ' + thousandText;
-          if (remainder > 0) {
-            result += ' ' + convertGroup(remainder);
-          }
+          if (remainder > 0) result += ' ' + convertGroup(remainder);
         } else {
           result += ' ' + convertGroup(rest);
         }
       }
       return result;
     }
-
     return 'Angka terlalu besar';
   };
 
@@ -246,7 +244,29 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 <style>
 @page {
   size: 241mm ${paperHeight};
-  margin: 0;
+  margin: 0 12mm 0 12mm; /* top right bottom left */
+}
+
+@media print {
+  @page {
+    size: 241mm ${paperHeight};
+    margin: 0 12mm 0 12mm;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
 }
 
 html, body {
@@ -255,16 +275,16 @@ html, body {
 }
 
 body {
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  line-height: 1.25;
+  font-family: "Times New Roman", serif;
+  font-size: 11pt;
+  line-height: 1.35;
   color: #000;
 }
 
-/* SAFE PRINT AREA (avoid tractor holes) */
 .content {
-  width: 217mm;
-  margin: 6mm auto;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 /* HEADER */
@@ -282,16 +302,20 @@ body {
 }
 
 .logo {
-  width: 65px;
+  width: 80px;
+  height: auto;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .company-name {
   font-weight: bold;
-  font-size: 13px;
+  font-size: 13pt;
 }
 
 .date {
   font-weight: bold;
+  font-size: 11pt;
 }
 
 /* DETAIL ROW */
@@ -301,30 +325,31 @@ body {
   margin-bottom: 6px;
 }
 
-.left-detail {
-  width: 50%;
-}
+.left-detail { width: 50%; }
 
 .detail-row {
   display: flex;
   margin-bottom: 2px;
+  font-size: 11pt;
 }
 
 .detail-label {
-  width: 110px;
+  width: 125px;
   font-weight: bold;
 }
 
 .customer-box {
   width: 48%;
   border: 2px solid #000;
-  padding: 6px;
+  padding: 5px;
   text-align: center;
+  font-size: 11pt;
 }
 
 .customer-name {
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  font-size: 12pt;
 }
 
 /* TABLE */
@@ -337,7 +362,7 @@ table {
 th, td {
   border: 2px solid #000;
   padding: 3px 4px;
-  font-size: 11px;
+  font-size: 11pt;
 }
 
 th {
@@ -360,23 +385,24 @@ th {
 .terbilang {
   width: 48%;
   font-weight: bold;
+  font-size: 11pt;
 }
 
-.totals {
-  width: 48%;
-}
+.totals { width: 48%; }
 
 .total-row {
   display: flex;
   justify-content: space-between;
   margin-bottom: 2px;
+  font-size: 11pt;
 }
 
 .grand {
   border-top: 2px solid #000;
   border-bottom: 3px double #000;
-  padding: 4px 0;
+  padding: 3px 0;
   font-weight: bold;
+  font-size: 12pt;
 }
 
 /* FOOTER */
@@ -386,10 +412,12 @@ th {
   border-top: 2px solid #000;
   margin-top: 10px;
   padding-top: 6px;
+  font-size: 11pt;
 }
 
 .signature {
   text-align: center;
+  font-size: 11pt;
 }
 
 .signature-line {
@@ -399,7 +427,6 @@ th {
   margin-left: auto;
   margin-right: auto;
 }
-
 </style>
 </head>
 
@@ -482,6 +509,16 @@ ${invoiceData.invoice_produk
       <div>Subtotal</div>
       <div>${formatCurrency(invoiceData.sub_total)}</div>
     </div>
+    ${
+      showDpp
+        ? `
+    <div class="total-row">
+      <div>DPP</div>
+      <div>${formatCurrency(invoiceData.dpp)}</div>
+    </div>
+    `
+        : ''
+    }
     <div class="total-row">
       <div>PPN</div>
       <div>${formatCurrency(invoiceData.ppn)}</div>
@@ -519,23 +556,19 @@ ${invoiceData.invoice_produk
       printWindow.document.close();
       printWindow.onload = () => {
         printWindow.print();
-        printWindow.onafterprint = () => {
-          printWindow.close();
-        };
+        printWindow.onafterprint = () => printWindow.close();
       };
     }
   };
 
   if (!isOpen || !invoiceData) return null;
 
-  // Calculate paper height for preview
   const itemCount = invoiceData.invoice_produk?.length || 0;
   const previewHeight = itemCount > 3 ? '560mm' : '280mm';
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black bg-opacity-75">
       <div className="flex flex-col h-full">
-        {/* Header with buttons */}
         <div className="bg-gray-800 text-white p-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold">
             Print Preview - {invoiceData.no_invoice}
@@ -546,7 +579,6 @@ ${invoiceData.invoice_produk
             )}
           </h2>
           <div className="flex gap-2 items-center">
-            {/* Show Diskon Toggle */}
             <label className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded-lg cursor-pointer">
               <input
                 type="checkbox"
@@ -555,6 +587,15 @@ ${invoiceData.invoice_produk
                 className="w-4 h-4 cursor-pointer"
               />
               <span className="text-sm">Show Discount</span>
+            </label>
+            <label className="flex items-center gap-2 bg-gray-700 px-4 py-2 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showDpp}
+                onChange={(e) => setShowDpp(e.target.checked)}
+                className="w-4 h-4 cursor-pointer"
+              />
+              <span className="text-sm">Show DPP</span>
             </label>
             <button
               onClick={handlePrint}
@@ -571,15 +612,13 @@ ${invoiceData.invoice_produk
           </div>
         </div>
 
-        {/* Scrollable preview area */}
         <div className="flex-1 overflow-auto bg-gray-600 p-8">
           <div
             className="bg-white shadow-2xl mx-auto"
             style={{ width: '241mm', minHeight: previewHeight }}
           >
-            {/* PDF Preview using iframe */}
             <iframe
-              key={showDiskon ? 'with-diskon' : 'without-diskon'}
+              key={`${showDiskon}-${showDpp}`}
               srcDoc={getPrintContent()}
               className="w-full"
               style={{
@@ -592,7 +631,6 @@ ${invoiceData.invoice_produk
           </div>
         </div>
 
-        {/* Footer info */}
         <div className="bg-gray-800 text-white p-3 text-center text-sm">
           <p>
             Optimized for DOT MATRIX continuous form paper (241mm x{' '}

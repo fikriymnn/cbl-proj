@@ -255,37 +255,13 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             text-align: center;
             padding-left: 8px;
           }
-          .date-location {
-            font-size: 10px;
-            margin-bottom: 8px;
-            font-weight: bold;
-          }
-          .recipient-label {
-            font-size: 10px;
-            margin-bottom: 3px;
-          }
-          .recipient-name {
-            font-size: 12px;
-            font-weight: bold;
-            margin-bottom: 5px;
-          }
-          .recipient-address {
-            font-size: 10px;
-            line-height: 1.4;
-          }
-          .doc-title-section {
-            text-align: center;
-            margin: 12px 0 10px 0;
-          }
-          .doc-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 3px;
-            letter-spacing: 0.5px;
-          }
-          .doc-subtitle {
-            font-size: 11pt;
-          }
+           .date-location { font-size: 11pt; font-weight: bold; margin-bottom: 4px; }
+      .recipient-label { font-size: 11pt; margin-bottom: 1px; }
+      .recipient-name { font-size: 12pt; font-weight: bold; margin-bottom: 2px; }
+      .recipient-address { font-size: 11pt; line-height: 1.3; }
+           .doc-title-section { text-align: center; margin: 5px 0 5px 0; }
+      .doc-title { font-size: 13pt; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 1px; }
+      .doc-subtitle { font-size: 11pt; }
           .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -324,60 +300,44 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
           .white-space-pre {
             white-space: pre-line;
           }
-          .footer-info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            font-size: 10px;
-            margin-bottom: 12px;
-          }
-          .footer-info-left {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-          }
-          .footer-info-right {
-            font-size: 12px;
-            font-weight: bold;
-            text-align: right;
-          }
-          .signature-section {
-           margin-top: 60px;
-            display: flex;
-            justify-content: space-between;
-          }
-          .signature-box {
-            text-align: center;
-            width: 45%;
-          }
-          .signature-title {
-            font-weight: bold;
-            margin-bottom: 50px;
-            font-size: 10px;
-          }
-          .signature-name {
-            font-size: 10px;
-            font-weight: bold;
-            border-top: 1px solid #000;
-            padding-top: 3px;
-            display: inline-block;
-            min-width: 150px;
-          }
-          .no-jo-red {
-            color: #CC0000;
-            font-weight: bold;
-            font-size: 11px;
-          }
-          .product-name {
-            font-size: 10px;
-            font-weight: bold;
-            line-height: 1.3;
-          }
-          .po-number {
-            font-size: 9px;
-            color: #333;
-            margin-top: 2px;
-          }
+        /* FOOTER INFO */
+      .footer-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        font-size: 11pt;
+        margin-bottom: 6px;
+      }
+      .footer-info-left { display: flex; flex-direction: column; gap: 2px; }
+      .footer-info-right { font-size: 12pt; font-weight: bold; text-align: right; }
+
+      /* SIGNATURES */
+      .signature-section { margin-top: 28px; display: flex; justify-content: space-between; }
+      .signature-box { text-align: center; width: 45%; }
+      .signature-title { font-weight: bold; font-size: 11pt; margin-bottom: 32px; }
+      .signature-name {
+        font-size: 11pt;
+        font-weight: bold;
+        border-top: 1px solid #000;
+        padding-top: 3px;
+        display: inline-block;
+        min-width: 130px;
+      }
+      strong { font-weight: bold; }
+           /* TABLE */
+      .items-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: 11pt; }
+      .items-table th,
+      .items-table td { border: 1px solid #000; padding: 4px 5px; text-align: left; }
+      .items-table th { font-weight: bold; text-align: center; font-size: 11pt; line-height: 1.3; }
+      .items-table td { vertical-align: top; line-height: 1.3; }
+      .no-border-left { border-left: none; }
+      .no-border-right { border-right: none; }
+      .text-center { text-align: center; }
+      .white-space-pre { white-space: pre-line; }
+
+      .product-name { font-size: 11pt; font-weight: bold; line-height: 1.3; }
+      .po-number { font-size: 10pt; color: #333; margin-top: 1px; }
+      .no-jo-red { color: #CC0000; font-weight: bold; font-size: 11pt; }
           strong {
             font-weight: bold;
           }
@@ -488,10 +448,10 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
 
           <!-- Signatures -->
           <div class="signature-section">
-            <div class="signature-box">
-              <div class="signature-title">Hormat Kami,</div>
-              <div class="signature-name">(PT. CBL)</div>
-            </div>
+         <div class="signature-box">
+          <div class="signature-title">Hormat Kami,</div>
+          <div class="signature-name">(PT. Cahaya Berlian Lestari)</div>
+        </div>
             <div class="signature-box">
               <div class="signature-title">Yang Menerima,</div>
               <div class="signature-name">(${customerName})</div>
