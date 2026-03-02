@@ -8,11 +8,11 @@ interface InvoiceProduk {
   kode_produk: string;
   unit: string;
   qty: number;
-  harga: number;
-  diskon_produk: number;
-  total: number;
-  dpp: number;
-  pajak: number;
+  harga: number | string;
+  diskon_produk: number | string;
+  total: number | string;
+  dpp: number | string;
+  pajak: number | string;
 }
 
 interface UserCreate {
@@ -35,13 +35,13 @@ interface InvoiceData {
   tgl_kirim: string;
   tgl_jatuh_tempo: string;
   waktu_jatuh_tempo: string;
-  sub_total: number;
-  diskon: number;
-  dpp: number;
-  ppn: number;
-  total: number;
-  dp: number;
-  balance_due: number | null;
+  sub_total: number | string;
+  diskon: number | string;
+  dpp: number | string;
+  ppn: number | string;
+  total: number | string;
+  dp: number | string;
+  balance_due: number | string | null;
   is_show_dpp: boolean;
   note: string;
   status: string;
@@ -76,7 +76,6 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
   const [showDpp, setShowDpp] = useState<boolean>(false);
   const [logoBase64, setLogoBase64] = useState<string>('');
 
-  // Sync showDpp with invoiceData.is_show_dpp when data loads
   useEffect(() => {
     if (invoiceData) {
       setShowDpp(invoiceData.is_show_dpp);
@@ -98,6 +97,13 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
     };
     img.src = Logo;
   }, []);
+
+  // Helper: safely convert string or number to number
+  const toNum = (value: number | string | null | undefined): number => {
+    if (value === null || value === undefined || value === '') return 0;
+    const parsed = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(parsed) ? 0 : parsed;
+  };
 
   const getValue = (value: any, defaultValue: string = '-') => {
     if (value === null || value === undefined || value === '')
@@ -126,9 +132,9 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
     return `${day} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  const formatCurrency = (num: number | null | undefined): string => {
-    if (num === null || num === undefined) return 'Rp. 0';
-    return `Rp. ${num.toLocaleString('id-ID')}`;
+  const formatCurrency = (num: number | string | null | undefined): string => {
+    const value = toNum(num);
+    return `Rp. ${value.toLocaleString('id-ID')}`;
   };
 
   const convertToWords = (num: number): string => {
@@ -222,10 +228,11 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
   const getPrintContent = () => {
     if (!invoiceData) return '';
 
+    // Use toNum() so string values from API are handled correctly
     const finalTotal =
       invoiceData.balance_due !== null
-        ? invoiceData.balance_due
-        : invoiceData.total;
+        ? toNum(invoiceData.balance_due)
+        : toNum(invoiceData.total);
 
     const logoSrc = logoBase64 || Logo;
     const itemCount = invoiceData.invoice_produk?.length || 0;
@@ -244,7 +251,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 <style>
 @page {
   size: 241mm ${paperHeight};
-  margin: 0 12mm 0 12mm; /* top right bottom left */
+  margin: 0 12mm 0 12mm;
 }
 
 @media print {
@@ -269,10 +276,7 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
   }
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-}
+html, body { margin: 0; padding: 0; }
 
 body {
   font-family: "Times New Roman", serif;
@@ -281,13 +285,8 @@ body {
   color: #000;
 }
 
-.content {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
+.content { width: 100%; margin: 0; padding: 0; }
 
-/* HEADER */
 .header {
   display: flex;
   justify-content: space-between;
@@ -296,47 +295,15 @@ body {
   margin-bottom: 6px;
 }
 
-.company {
-  display: flex;
-  gap: 10px;
-}
+.company { display: flex; gap: 10px; }
+.logo { width: 80px; height: auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; }
+.company-name { font-weight: bold; font-size: 13pt; }
+.date { font-weight: bold; font-size: 11pt; }
 
-.logo {
-  width: 80px;
-  height: auto;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-}
-
-.company-name {
-  font-weight: bold;
-  font-size: 13pt;
-}
-
-.date {
-  font-weight: bold;
-  font-size: 11pt;
-}
-
-/* DETAIL ROW */
-.detail-section {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
+.detail-section { display: flex; justify-content: space-between; margin-bottom: 6px; }
 .left-detail { width: 50%; }
-
-.detail-row {
-  display: flex;
-  margin-bottom: 2px;
-  font-size: 11pt;
-}
-
-.detail-label {
-  width: 125px;
-  font-weight: bold;
-}
+.detail-row { display: flex; margin-bottom: 2px; font-size: 11pt; }
+.detail-label { width: 125px; font-weight: bold; }
 
 .customer-box {
   width: 48%;
@@ -345,35 +312,14 @@ body {
   text-align: center;
   font-size: 11pt;
 }
+.customer-name { font-weight: bold; margin-bottom: 3px; font-size: 12pt; }
 
-.customer-name {
-  font-weight: bold;
-  margin-bottom: 3px;
-  font-size: 12pt;
-}
-
-/* TABLE */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 6px;
-}
-
-th, td {
-  border: 2px solid #000;
-  padding: 3px 4px;
-  font-size: 11pt;
-}
-
-th {
-  text-align: center;
-  font-weight: bold;
-}
-
+table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+th, td { border: 2px solid #000; padding: 3px 4px; font-size: 11pt; }
+th { text-align: center; font-weight: bold; }
 .text-center { text-align: center; }
 .text-right { text-align: right; }
 
-/* TOTAL SECTION */
 .total-section {
   display: flex;
   justify-content: space-between;
@@ -382,21 +328,9 @@ th {
   padding-top: 4px;
 }
 
-.terbilang {
-  width: 48%;
-  font-weight: bold;
-  font-size: 11pt;
-}
-
+.terbilang { width: 48%; font-weight: bold; font-size: 11pt; }
 .totals { width: 48%; }
-
-.total-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 2px;
-  font-size: 11pt;
-}
-
+.total-row { display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 11pt; }
 .grand {
   border-top: 2px solid #000;
   border-bottom: 3px double #000;
@@ -405,7 +339,6 @@ th {
   font-size: 12pt;
 }
 
-/* FOOTER */
 .footer {
   display: flex;
   justify-content: space-between;
@@ -415,11 +348,7 @@ th {
   font-size: 11pt;
 }
 
-.signature {
-  text-align: center;
-  font-size: 11pt;
-}
-
+.signature { text-align: center; font-size: 11pt; }
 .signature-line {
   margin-top: 40px;
   border-top: 2px solid #000;
@@ -442,9 +371,7 @@ th {
       <div>Telp: (022) 6033823</div>
     </div>
   </div>
-  <div class="date">
-    Bandung, ${formatDate(invoiceData.tgl_faktur)}
-  </div>
+  <div class="date">Bandung, ${formatDate(invoiceData.tgl_faktur)}</div>
 </div>
 
 <div class="detail-section">
@@ -532,7 +459,7 @@ ${invoiceData.invoice_produk
 
 <div class="footer">
   <div>
-    <strong>Transfer Ke Rek: PT. CAHAYA BERLIAN LESTARIs</strong><br/>
+    <strong>Transfer Ke Rek: PT. CAHAYA BERLIAN LESTARI</strong><br/>
     BCA 517.116.988.8<br/>
     MANDIRI 132.00.2216816.6
   </div>

@@ -898,13 +898,14 @@ function IzinTerlambatBawahan() {
                   <option value="">Pilih Alasan</option>
                   {masterTerlambat.map((item) => (
                     <option key={item.id} value={item.id}>
-                      {item.alasan_terlambat} ({item.jumlah_jam} jam)
+                      {item.alasan_terlambat}
+                      {/* ({item.jumlah_jam} jam) */}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Lama Terlambat (Read-only) */}
+              {/* Lama Terlambat (Read-only)
               {lamaTerlambat > 0 && (
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                   <p className="text-purple-700 font-medium">
@@ -914,7 +915,7 @@ function IzinTerlambatBawahan() {
                     </span>
                   </p>
                 </div>
-              )}
+              )} */}
 
               {/* Catatan */}
               <div className="flex flex-col gap-2">
