@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Logo from '../../../images/logo/CBL Logo 3.png';
 import axios from 'axios';
+import convertTimeStampToDate from '../../../utils/convertDate';
 
 interface DOPrintData {
   id: number;
@@ -45,6 +46,8 @@ interface DOPrintData {
     id: number;
     produk: string;
     jumlah_qty: number;
+    no_po_customer: string;
+    no_jo: string;
     pack_1: number;
     pack_2: number;
     pack_3: number;
@@ -213,15 +216,16 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 2px;
             padding-bottom: 8px;
-            border-bottom: 2px solid #000;
+           
           }
           .header-left {
             display: flex;
             align-items: flex-start;
             gap: 8px;
             flex: 0 0 48%;
+            font-size: 16px
           }
           .logo {
             width: 65px;
@@ -233,9 +237,10 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             flex-direction: column;
             gap: 2px;
+             font-size: 16px
           }
           .company-name {
-           font-size: 14pt;
+            font-size: 16px
   font-weight: bold;
             margin-bottom: 3px;
             line-height: 1.2;
@@ -244,7 +249,7 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             display: flex;
             flex-direction: column;
             gap: 2px;
-          font-size: 16pt;
+           font-size: 16px
   font-weight: bold;
           }
           .header-right {
@@ -369,13 +374,13 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
               </div>
             </div>
             <div class="header-right">
-              <div class="date-location">Bandung, ${formatDate(
-                printData?.tgl_do || new Date().toISOString(),
+              <div class="date-location">Bandung, ${convertTimeStampToDate(
+                printData?.tgl_do || ` `,
               )}</div>
-              <div class="recipient-label">Kepada Yth :</div>
-              <div class="recipient-name">${customerName}</div>
+              <div class="recipient-label"></div>
+              <div class="recipient-name">Kepada Yth : ${customerName}</div>
               <div class="recipient-address">
-                ${getValue(printData?.alamat)}<br/>
+                ${getValue(printData?.alamat)},
                 ${getValue(printData?.kota)}
               </div>
             </div>
@@ -410,11 +415,11 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
                     <td class="no-border-right">
                       <div class="product-name">${getValue(item.produk)}</div>
                       <div class="po-number">PO: ${getValue(
-                        printData?.no_po_customer,
+                        item?.no_po_customer,
                       )}</div>
                     </td>
                     <td class="text-center no-jo-red no-border-left">${removeJOPrefix(
-                      printData?.no_jo || '',
+                      item?.no_jo || '',
                     )}</td>
                     <td class="white-space-pre">${getItemKeterangan(item)}</td>
                   </tr>
