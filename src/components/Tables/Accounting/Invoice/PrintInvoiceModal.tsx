@@ -532,7 +532,7 @@ ${invoiceData.invoice_produk
 
 <div class="footer">
   <div>
-    <strong>Transfer Ke Rek:</strong><br/>
+    <strong>Transfer Ke Rek: PT. CAHAYA BERLIAN LESTARIs</strong><br/>
     BCA 517.116.988.8<br/>
     MANDIRI 132.00.2216816.6
   </div>
