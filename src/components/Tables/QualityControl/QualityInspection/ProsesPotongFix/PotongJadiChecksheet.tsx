@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import ptcbl from '../../../../../images/ptcbl.png';
+import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
+import { tabClasses } from '@mui/material';
 function PotongJadiChecksheet() {
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
@@ -63,7 +65,7 @@ function PotongJadiChecksheet() {
       console.log(error);
     }
   }
-
+  const tanggal = convertTimeStampToDateOnly(incoming?.createdAt);
   // async function stopTask(id: any, start: any) {
   //     if (!start) {
   //         // Check if start time is available
@@ -459,7 +461,7 @@ function PotongJadiChecksheet() {
                     <div className="grid grid-rows-6 gap-1">
                       <div className="flex">
                         <span className="font-semibold w-24">Tanggal</span>
-                        <span>: {incoming?.tanggal}</span>
+                        <span>: {tanggal}</span>
                       </div>
                       <div className="flex">
                         <span className="font-semibold w-24">No. JO</span>
@@ -554,13 +556,13 @@ function PotongJadiChecksheet() {
                       <td className="border border-black p-2">1</td>
                       <td className="border border-black p-2">Register</td>
                       <td className="border border-black p-2">
-                        {incoming?.inspeksi_potong_result[0].standar}
+                        {incoming?.inspeksi_potong_result[0]?.standar}
                       </td>
                       <td className="border border-black p-2">
-                        {incoming?.inspeksi_potong_result[0].hasil_check}
+                        {incoming?.inspeksi_potong_result[0]?.hasil_check}
                       </td>
                       <td className="border border-black p-2">
-                        {incoming?.inspeksi_potong_result[0].keterangan}
+                        {incoming?.inspeksi_potong_result[0]?.keterangan}
                       </td>
                     </tr>
 
@@ -707,7 +709,7 @@ function PotongJadiChecksheet() {
               </div>
               <div className="grid grid-rows-6 gap-1 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.tanggal}
+                  : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.no_jo}

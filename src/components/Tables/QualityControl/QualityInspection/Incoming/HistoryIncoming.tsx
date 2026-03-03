@@ -93,6 +93,7 @@ function HistoryIncoming() {
   );
   const [isOpen, setIsOpen] = useState(false);
 
+  const tanggal = convertTimeStampToDateOnly(incoming?.createdAt);
   const openPreview = () => {
     setIsOpen(true);
   };
@@ -690,9 +691,7 @@ function HistoryIncoming() {
                         <td className="border border-black p-2 w-1/3">
                           <div className="grid grid-cols-3 gap-2">
                             <div className="font-semibold">TANGGAL</div>
-                            <div className="col-span-2">
-                              : {incoming?.tanggal}
-                            </div>
+                            <div className="col-span-2">: {tanggal}</div>
 
                             <div className="font-semibold">NO. LOT</div>
                             <div className="col-span-2">
@@ -1416,7 +1415,7 @@ function HistoryIncoming() {
               </div>
               <div className="flex flex-col gap-4 col-span-3 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.tanggal}
+                  : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.no_lot}

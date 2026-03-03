@@ -778,7 +778,7 @@ function CheckSheetHasilRabut() {
                               <span className="font-semibold w-32">
                                 Tanggal:
                               </span>
-                              <span>{new Date().toLocaleDateString()}</span>
+                              <span>{tanggal}</span>
                             </div>
                             <div className="flex">
                               <span className="font-semibold w-32">

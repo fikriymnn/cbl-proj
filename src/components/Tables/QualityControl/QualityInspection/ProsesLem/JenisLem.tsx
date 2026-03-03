@@ -45,7 +45,7 @@ function JenisLemMesin() {
       console.log(error);
     }
   }
-  const tanggal = convertTimeStampToDateOnly(cetakMesin?.data.tanggal);
+  const tanggal = convertTimeStampToDateOnly(cetakMesin?.data.createdAt);
   const [isOpen, setIsOpen] = useState(false);
   const openPreview = () => {
     setIsOpen(true);

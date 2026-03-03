@@ -289,7 +289,10 @@ const JOPPICCreate: React.FC = () => {
     return 0;
   });
   const isProductAccepted = (statusProduk: string): boolean => {
-    return statusProduk?.toLowerCase() === 'acc';
+    return (
+      statusProduk?.toLowerCase() === 'acc' ||
+      statusProduk?.toLowerCase() === 'ppos'
+    );
   };
 
   const getRowClassName = (item: JOData): string => {

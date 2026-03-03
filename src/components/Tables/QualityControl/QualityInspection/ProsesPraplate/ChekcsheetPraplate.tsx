@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import ptcbl from '../../../../../images/ptcbl.png';
+import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 function ChecksheetPraplate() {
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
@@ -184,7 +185,7 @@ function ChecksheetPraplate() {
   const [merk, setMerk] = useState<any>();
   const [ctt, setCtt] = useState<any>();
   const [isOpen, setIsOpen] = useState(false);
-
+  const tanggal = convertTimeStampToDateOnly(incoming?.createdAt);
   const openPreview = () => {
     setIsOpen(true);
   };
@@ -409,7 +410,7 @@ function ChecksheetPraplate() {
                     <tbody>
                       <tr>
                         <td className="font-semibold p-2 w-1/4">Tanggal</td>
-                        <td className="p-2">: {incoming?.tanggal}</td>
+                        <td className="p-2">: {tanggal}</td>
                         <td className="font-semibold p-2 w-1/4">Jam</td>
                         <td className="p-2">: {incoming?.jam}</td>
                       </tr>
@@ -640,7 +641,7 @@ function ChecksheetPraplate() {
             </div>
             <div className="grid grid-rows-6 gap-1 col-span-2 px-10 py-4">
               <label className="text-neutral-500 text-sm font-semibold">
-                : {incoming?.tanggal}
+                : {tanggal}
               </label>
               <label className="text-neutral-500 text-sm font-semibold">
                 : {incoming?.no_jo}

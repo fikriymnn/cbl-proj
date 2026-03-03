@@ -53,7 +53,7 @@ function JenisCoatingMesin() {
       console.log(error.data.msg);
     }
   }
-  const tanggal = convertTimeStampToDateOnly(coatingMesin?.data.tanggal);
+  const tanggal = convertTimeStampToDateOnly(coatingMesin?.data.createdAt);
   const [isOpen, setIsOpen] = useState(false);
   const openPreview = () => {
     setIsOpen(true);

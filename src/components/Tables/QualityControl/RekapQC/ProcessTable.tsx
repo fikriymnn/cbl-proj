@@ -238,12 +238,7 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
       return '-';
     }
 
-    if (
-      key.includes('tanggal') ||
-      key.includes('date') ||
-      key === 'createdAt' ||
-      key === 'updatedAt'
-    ) {
+    if (key.includes('date') || key === 'createdAt' || key === 'updatedAt') {
       return formatDate(value);
     }
 
@@ -628,12 +623,12 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
 
                             {hasData && latestRecord && (
                               <div className="border-t border-green-200 mt-1 pt-1 text-xs text-gray-600">
-                                {latestRecord.tanggal && (
+                                {latestRecord.createdAt && (
                                   <div className="mb-1">
                                     <span className="font-medium">
                                       Tanggal:
                                     </span>{' '}
-                                    {formatDate(latestRecord.tanggal)}
+                                    {formatDate(latestRecord.createdAt)}
                                   </div>
                                 )}
                                 {/* Display latest inspector if available */}

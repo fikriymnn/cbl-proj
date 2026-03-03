@@ -53,7 +53,7 @@ function JenisPondMesin() {
     }
   }
 
-  const tanggal = convertTimeStampToDateOnly(pondMesin?.data.tanggal);
+  const tanggal = convertTimeStampToDateOnly(pondMesin?.data.createdAt);
   const [isOpen, setIsOpen] = useState(false);
   const openPreview = () => {
     setIsOpen(true);

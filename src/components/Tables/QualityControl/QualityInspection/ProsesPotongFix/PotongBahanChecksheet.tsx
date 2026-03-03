@@ -206,7 +206,7 @@ function PotongBahanChecksheet() {
   const [sample3Value, setSample3Value] = useState<any>();
   const [result3, setResult3] = useState<any>();
   const [isOpen, setIsOpen] = useState(false);
-
+  const tanggal = convertTimeStampToDateOnly(incoming?.createdAt);
   const openPreview = () => {
     setIsOpen(true);
   };
@@ -431,7 +431,7 @@ function PotongBahanChecksheet() {
                     <div className="grid grid-rows-6 gap-1">
                       <div className="flex">
                         <span className="font-semibold w-24">Tanggal</span>
-                        <span>: {incoming?.tanggal}</span>
+                        <span>: {tanggal}</span>
                       </div>
                       <div className="flex">
                         <span className="font-semibold w-24">No. JO</span>
@@ -715,7 +715,7 @@ function PotongBahanChecksheet() {
               </div>
               <div className="grid grid-rows-6 gap-1 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.tanggal}
+                  : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.no_jo}

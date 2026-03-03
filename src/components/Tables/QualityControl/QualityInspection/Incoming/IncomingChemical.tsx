@@ -4,6 +4,7 @@ import axios from 'axios';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import Loading from '../../../../Loading';
 import ptcbl from '../../../../../images/ptcbl.png';
+import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 function IncomingChemical() {
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
@@ -58,7 +59,7 @@ function IncomingChemical() {
   }
 
   const [isLoading, setIsLoading] = useState(false);
-
+  const tanggal = convertTimeStampToDateOnly(incoming?.createdAt);
   async function startTask(id: any) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -441,9 +442,7 @@ function IncomingChemical() {
                         <tbody>
                           <tr>
                             <td className="w-1/2 py-1">Tanggal</td>
-                            <td className="w-1/2 py-1">
-                              : {incoming?.tanggal}
-                            </td>
+                            <td className="w-1/2 py-1">: {tanggal}</td>
                           </tr>
                           <tr>
                             <td className="py-1">No. LOT</td>
@@ -677,7 +676,7 @@ function IncomingChemical() {
               </div>
               <div className="grid grid-rows-6 gap-1 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.tanggal}
+                  : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   {incoming?.status == 'incoming' ? (
