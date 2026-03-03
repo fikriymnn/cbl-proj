@@ -316,7 +316,9 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                 <div class="info-item">
                   <span class="info-label">No JO</span>
                   <span class="info-colon">:</span>
-                  <span class="info-value"></span>
+                  <span class="info-value">${getValue(
+                    printData.job_order?.no_jo,
+                  )}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Tanggal Pengiriman</span>
@@ -465,7 +467,9 @@ const SOMarketingPrintModal: React.FC<SOMarketingPrintModalProps> = ({
                 <div class="info-item">
                   <span class="info-label">No JO</span>
                   <span class="info-colon">:</span>
-                  <span class="info-value"></span>
+                 <span class="info-value">${getValue(
+                   printData.job_order?.no_jo,
+                 )}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">Tanggal Pengiriman</span>
