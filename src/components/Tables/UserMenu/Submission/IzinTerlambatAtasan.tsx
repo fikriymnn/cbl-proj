@@ -658,12 +658,12 @@ function IzinTerlambatAtasan() {
                           {selectedRequest.alasan_terlambat || '-'}
                         </p>
                       </div>
-                      <div>
+                      {/* <div>
                         <p className="text-gray-600">Durasi:</p>
                         <p className="font-semibold text-gray-800">
                           {selectedRequest.lama_terlambat} jam
                         </p>
-                      </div>
+                      </div> */}
                     </div>
                     <div>
                       <p className="text-gray-600">Catatan:</p>
@@ -1119,9 +1119,9 @@ function IzinTerlambatAtasan() {
                 <label className="text-neutral-700 text-sm font-bold col-span-2">
                   Alasan
                 </label>
-                <label className="text-neutral-700 text-sm font-bold">
+                {/* <label className="text-neutral-700 text-sm font-bold">
                   Durasi
-                </label>
+                </label> */}
                 <label className="text-neutral-700 text-sm font-bold">
                   Shift
                 </label>
@@ -1156,9 +1156,9 @@ function IzinTerlambatAtasan() {
                       {data.alasan_terlambat || '-'}
                     </label>
 
-                    <label className="text-neutral-800 text-sm font-semibold">
+                    {/* <label className="text-neutral-800 text-sm font-semibold">
                       {data.lama_terlambat} jam
-                    </label>
+                    </label> */}
 
                     <label className="text-neutral-800 text-sm font-semibold">
                       Shift {data.shift}

@@ -721,12 +721,12 @@ function ApprovalManagementIzinTerlambat() {
                           {selectedRequest.alasan_terlambat}
                         </p>
                       </div>
-                      <div>
+                      {/* <div>
                         <p className="text-gray-600">Durasi:</p>
                         <p className="font-semibold text-gray-800">
                           {selectedRequest.lama_terlambat} jam
                         </p>
-                      </div>
+                      </div> */}
                       <div>
                         <p className="text-gray-600">Catatan Karyawan:</p>
                         <p className="font-semibold text-gray-800">
@@ -858,7 +858,7 @@ function ApprovalManagementIzinTerlambat() {
               <label className="text-neutral-700 text-sm font-bold col-span-2">
                 Nama
               </label>
-              <label className="text-neutral-700 text-sm font-bold">
+              <label className="text-neutral-700 text-sm font-bold  col-span-2">
                 Tanggal
               </label>
               <label className="text-neutral-700 text-sm font-bold">
@@ -867,9 +867,9 @@ function ApprovalManagementIzinTerlambat() {
               <label className="text-neutral-700 text-sm font-bold col-span-2">
                 Alasan
               </label>
-              <label className="text-neutral-700 text-sm font-bold">
+              {/* <label className="text-neutral-700 text-sm font-bold">
                 Durasi
-              </label>
+              </label> */}
               <label className="text-neutral-700 text-sm font-bold col-span-2">
                 Status
               </label>
@@ -894,7 +894,7 @@ function ApprovalManagementIzinTerlambat() {
                     </label>
                   </div>
 
-                  <label className="text-neutral-600 text-sm">
+                  <label className="text-neutral-600 text-sm  col-span-2">
                     {formatDate(data.tanggal)}
                   </label>
 
@@ -902,13 +902,13 @@ function ApprovalManagementIzinTerlambat() {
                     Shift {data.shift}
                   </label>
 
-                  <label className="text-neutral-600 text-sm col-span-2 truncate">
+                  <label className="text-neutral-600 text-sm col-span-2 ">
                     {data.alasan_terlambat}
                   </label>
 
-                  <label className="text-neutral-800 text-sm font-semibold">
+                  {/* <label className="text-neutral-800 text-sm font-semibold">
                     {data.lama_terlambat} jam
-                  </label>
+                  </label> */}
 
                   <div className="col-span-2">
                     {getStatusBadge(data.status)}
