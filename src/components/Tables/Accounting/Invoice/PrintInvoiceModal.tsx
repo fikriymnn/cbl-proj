@@ -251,18 +251,19 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 <style>
 @page {
   size: 241mm ${paperHeight};
-  margin: 0 12mm 0 12mm;
+  margin: 0mm !important;
 }
 
 @media print {
   @page {
     size: 241mm ${paperHeight};
-    margin: 0 12mm 0 12mm;
+    margin: 0mm !important;
   }
 
   html, body {
     margin: 0 !important;
     padding: 0 !important;
+    width: 241mm !important;
   }
 
   body {
@@ -272,8 +273,19 @@ const PrintInvoiceModal: React.FC<PrintInvoiceModalProps> = ({
 
   .content {
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 6mm 12mm !important;
+    box-sizing: border-box !important;
+    width: 241mm !important;
   }
+}
+
+html, body { margin: 0; padding: 0; width: 241mm; }
+
+.content { 
+  width: 241mm; 
+  margin: 0; 
+  padding: 6mm 12mm; 
+  box-sizing: border-box; 
 }
 
 html, body { margin: 0; padding: 0; }
@@ -285,7 +297,7 @@ body {
   color: #000;
 }
 
-.content { width: 100%; margin: 0; padding: 0; }
+.content { width: 100%; margin: 0; padding: 8mm 12mm; box-sizing: border-box; }
 
 .header {
   display: flex;
@@ -307,7 +319,7 @@ body {
 
 .customer-box {
   width: 48%;
-  border: 2px solid #000;
+  
   padding: 5px;
   text-align: center;
   font-size: 11pt;
@@ -323,8 +335,8 @@ th { text-align: center; font-weight: bold; }
 .total-section {
   display: flex;
   justify-content: space-between;
-  border-top: 2px solid #000;
-  margin-top: 6px;
+ 
+  margin-top: 4px;
   padding-top: 4px;
 }
 
@@ -342,7 +354,7 @@ th { text-align: center; font-weight: bold; }
 .footer {
   display: flex;
   justify-content: space-between;
-  border-top: 2px solid #000;
+
   margin-top: 10px;
   padding-top: 6px;
   font-size: 11pt;
@@ -350,7 +362,7 @@ th { text-align: center; font-weight: bold; }
 
 .signature { text-align: center; font-size: 11pt; }
 .signature-line {
-  margin-top: 40px;
+  margin-top: 50px;
   border-top: 2px solid #000;
   width: 160px;
   margin-left: auto;
@@ -414,7 +426,7 @@ ${invoiceData.invoice_produk
   .map(
     (item) => `
 <tr>
-<td class="text-center">${item.qty}</td>
+<td class="text-center">${Number(item.qty).toLocaleString('id-ID')}</td>
 <td class="text-center">${item.unit}</td>
 <td>${item.nama_produk}</td>
 <td class="text-right">${formatCurrency(item.harga)}</td>
@@ -482,8 +494,10 @@ ${invoiceData.invoice_produk
       printWindow.document.write(getPrintContent());
       printWindow.document.close();
       printWindow.onload = () => {
-        printWindow.print();
-        printWindow.onafterprint = () => printWindow.close();
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.onafterprint = () => printWindow.close();
+        }, 500);
       };
     }
   };

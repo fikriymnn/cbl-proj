@@ -184,12 +184,15 @@ const ListApprovingInvoice: React.FC = () => {
     const day = String(date.getDate()).padStart(2, '0');
     return `${day}/${month}/${year}`;
   };
-
-  const formatCurrency = (num: number | null | undefined): string => {
-    if (num === null || num === undefined) return 'Rp 0';
-    return `Rp ${num.toLocaleString('id-ID')}`;
+  const toNum = (value: number | string | null | undefined): number => {
+    if (value === null || value === undefined || value === '') return 0;
+    const parsed = typeof value === 'string' ? parseFloat(value) : value;
+    return isNaN(parsed) ? 0 : parsed;
   };
-
+  const formatCurrency = (num: number | string | null | undefined): string => {
+    const value = toNum(num);
+    return `Rp. ${value.toLocaleString('id-ID')}`;
+  };
   const getStatusBadge = (status: string) => {
     const statusColors: { [key: string]: string } = {
       draft: 'bg-gray-100 text-gray-800',
