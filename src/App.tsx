@@ -254,6 +254,7 @@ import UserMenuAbsensi from './pages/UserMenu/UserMenuAbsensi';
 import WelcomePage from './pages/Dashboard/WelcomePage';
 import JOMonitoringPage from './pages/Monitoring/JOMonitoringPage';
 import SOMonitoringPage from './pages/Monitoring/SOMonitoringPage';
+import LabelPage from './pages/Print/LabelPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2355,6 +2356,57 @@ function App() {
           }
         />
 
+        {/* ============== PENGAJUAN ROUTES ============== */}
+
+        <Route
+          path="/pengajuan"
+          element={
+            <P>
+              <PengajuanAllDept />
+            </P>
+          }
+        />
+        <Route
+          path="/pengajuan/buat-pengajuan"
+          element={
+            <P>
+              <PengajuanJabatanAllDept />
+            </P>
+          }
+        />
+        <Route
+          path="/pengajuan/buat-pengajuan-jabatan"
+          element={
+            <P>
+              <HistoryMtc />
+            </P>
+          }
+        />
+        <Route
+          path="/pengajuan/history-pengajuan"
+          element={
+            <P>
+              <PengajuanAllDeptHistory />
+            </P>
+          }
+        />
+        <Route
+          path="/pengajuan/history-pengajuan-jabatan"
+          element={
+            <P>
+              <PengajuanJabatanAllDeptHistory />
+            </P>
+          }
+        />
+        {/* ============== PRINT ROUTES ============== */}
+        <Route
+          path="/print/label"
+          element={
+            <P>
+              <LabelPage />
+            </P>
+          }
+        />
         {/* ============== HISTORY ROUTES ============== */}
         <Route
           path="/history"
