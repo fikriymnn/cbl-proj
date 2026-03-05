@@ -2370,7 +2370,7 @@ function App() {
           path="/pengajuan/buat-pengajuan"
           element={
             <P>
-              <PengajuanJabatanAllDept />
+              <PengajuanAllDept />
             </P>
           }
         />
@@ -2378,7 +2378,7 @@ function App() {
           path="/pengajuan/buat-pengajuan-jabatan"
           element={
             <P>
-              <HistoryMtc />
+              <PengajuanJabatanAllDept />
             </P>
           }
         />
@@ -2398,6 +2398,7 @@ function App() {
             </P>
           }
         />
+
         {/* ============== PRINT ROUTES ============== */}
         <Route
           path="/print/label"
