@@ -131,7 +131,7 @@ interface PrintLabelFormData {
   customer: string;
   produk: string;
   qty_po: number | string;
-  qty_label: number | string;
+  qty_label: string; // FIX: always string so it can be fully cleared
   keterangan_qty_label: string;
   tanggal_produksi: string;
   operator: string;
@@ -162,15 +162,14 @@ const buildPrintHTML = (
       }`
     : '';
 
-  // Safe date formatter — falls back to raw string if not a valid date
   const formatTanggal = (val: string) => {
     if (!val) return '';
     const d = new Date(val);
     return isNaN(d.getTime()) ? val : d.toLocaleDateString('id-ID');
   };
   const formatNoJO = (val: string) => val.replace(/^JO-/i, '');
-  // A4 landscape: 210mm tall - 16mm margins - 2×4mm cellspacing gaps = 186mm / 3 rows = 62mm each
-  // Header is ~16mm, leaving ~46mm for data rows
+
+  // FIX 1: Increased cellspacing from 4 to 8 for more space between cards
   const LABEL_H = '62mm';
   const HEADER_H = '16mm';
   const PAGE_H = '186mm';
@@ -180,12 +179,12 @@ const buildPrintHTML = (
     const dataAreaMm = 44;
     const unitMm = dataAreaMm / rowCount;
     const rowH = `${unitMm.toFixed(2)}mm`;
-    const qtyRowH = rowH; // same as all other rows
+    const qtyRowH = rowH;
 
     return `
     <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; height:${LABEL_H}; max-height:${LABEL_H}; overflow:hidden;">
 
-      <!-- HEADER: logo left, text center, single full-width bottom border -->
+      <!-- HEADER -->
       <div style="height:${HEADER_H}; max-height:${HEADER_H}; overflow:hidden; display:flex; align-items:stretch; border-bottom:1.5px solid #111;">
         <div style="width:42px; flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:2mm;">
           <img src="${logoDataUri}" width="32" height="32" style="display:block;object-fit:contain;" alt=""/>
@@ -222,7 +221,6 @@ const buildPrintHTML = (
           <div style="flex:1;font-weight:bold">: ${data.produk || ''}</div>
         </div>
 
-        <!-- QTY PO: double height to fit big number -->
         <div style="display:flex;align-items:center;height:${qtyRowH};overflow:hidden;">
           <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY PO</div>
           <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
@@ -255,14 +253,10 @@ const buildPrintHTML = (
           <div style="flex:1;font-weight:bold;">: ${data.operator || ''}</div>
         </div>
 
-       
-
       </div>
     </td>`;
   };
 
-  // Always render exactly 6 slots per page (3 rows × 2 cols)
-  // Empty slots = borderless spacer so cards always occupy fixed 1/6 of page height
   const pages: string[] = [];
   for (let p = 0; p * 6 < copies; p++) {
     const pageRows: string[] = [];
@@ -279,8 +273,9 @@ const buildPrintHTML = (
           : `<td style="width:50%;height:${LABEL_H};background:white;border:none;padding:0;"></td>`;
       pageRows.push(`<tr style="height:${LABEL_H};">${left}${right}</tr>`);
     }
+    // FIX 1: cellspacing increased from 4 → 8 for more gap between cards
     pages.push(`
-      <table width="100%" cellspacing="4" cellpadding="0" style="border-collapse:separate; border:none; table-layout:fixed; height:${PAGE_H}; page-break-after:always;">
+      <table width="100%" cellspacing="10" cellpadding="0" style="border-collapse:separate; border:none; table-layout:fixed; height:${PAGE_H}; page-break-after:always;">
         ${pageRows.join('')}
       </table>
     `);
@@ -311,7 +306,10 @@ const PrintLabel: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [joList, setJoList] = useState<JOData[]>([]);
   const [selectedJO, setSelectedJO] = useState<JOData | null>(null);
-  const [copies, setCopies] = useState(6);
+
+  // FIX 2: copies is now a string so it can be fully cleared while typing
+  const [copiesStr, setCopiesStr] = useState<string>('6');
+
   const [logoBase64, setLogoBase64] = useState<string>('');
 
   const [formData, setFormData] = useState<PrintLabelFormData>({
@@ -320,14 +318,13 @@ const PrintLabel: React.FC = () => {
     customer: '',
     produk: '',
     qty_po: '',
-    qty_label: '',
+    qty_label: '', // FIX 2: start as empty string
     keterangan_qty_label: '',
     tanggal_produksi: new Date().toISOString().split('T')[0],
     operator: '',
     tanda_retur: '',
   });
 
-  // Convert logo to base64 using canvas — same method as JOPrintModal
   useEffect(() => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -338,8 +335,7 @@ const PrintLabel: React.FC = () => {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(img, 0, 0);
-        const dataURL = canvas.toDataURL('image/png');
-        setLogoBase64(dataURL);
+        setLogoBase64(canvas.toDataURL('image/png'));
       }
     };
     img.onerror = () => setLogoBase64(LogoSrc);
@@ -382,7 +378,7 @@ const PrintLabel: React.FC = () => {
     no_io: jo.no_io,
     customer: jo.customer,
     produk: jo.produk,
-    qty: jo.qty,
+    qty: jo.po_qty,
     tgl_kirim: jo.tgl_kirim,
     tipe_jo: jo.tipe_jo,
   }));
@@ -410,7 +406,7 @@ const PrintLabel: React.FC = () => {
         no_io: jo.no_io,
         customer: jo.customer,
         produk: jo.produk,
-        qty_po: jo.qty,
+        qty_po: jo.po_qty,
       }));
     },
     [joList],
@@ -423,23 +419,48 @@ const PrintLabel: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // FIX 3: use iframe-based print instead of window.open so focus stays on parent window
   const handlePrint = () => {
     if (!formData.no_jo) {
       toast.error('Pilih Nomor JO terlebih dahulu');
       return;
     }
-    const html = buildPrintHTML(formData, copies, logoBase64 || LogoSrc);
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.onload = () => {
-        printWindow.print();
-        printWindow.onafterprint = () => printWindow.close();
-      };
-    } else {
-      toast.error('Popup diblokir. Izinkan popup untuk mencetak.');
+
+    const copiesNum = Math.max(1, parseInt(copiesStr) || 1);
+    const html = buildPrintHTML(formData, copiesNum, logoBase64 || LogoSrc);
+
+    // Create a hidden iframe, write the HTML into it, print, then remove it.
+    // This keeps focus on the parent page so all form inputs remain editable.
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText =
+      'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
+    document.body.appendChild(iframe);
+
+    const iDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iDoc) {
+      toast.error('Gagal membuka iframe print.');
+      document.body.removeChild(iframe);
+      return;
     }
+
+    iDoc.open();
+    iDoc.write(html);
+    iDoc.close();
+
+    // Wait for iframe content (including images) to load before printing
+    iframe.onload = () => {
+      try {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } finally {
+        // Remove iframe after a short delay to let the print dialog settle
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          // Re-focus the main window so inputs are immediately usable
+          window.focus();
+        }, 1000);
+      }
+    };
   };
 
   const readonlyInput =
@@ -531,6 +552,7 @@ const PrintLabel: React.FC = () => {
           </div>
           <div>
             <FL>Qty Label</FL>
+            {/* FIX 2: value is a plain string, onChange stores raw string → can be fully cleared */}
             <input
               type="number"
               value={formData.qty_label}
@@ -586,14 +608,22 @@ const PrintLabel: React.FC = () => {
           </div>
           <div>
             <FL>Jumlah Copies</FL>
+            {/* FIX 2: stored as string so first digit can be deleted freely */}
             <input
               type="number"
-              value={copies}
+              value={copiesStr}
               min={1}
               max={100}
-              onChange={(e) =>
-                setCopies(Math.max(1, parseInt(e.target.value) || 1))
-              }
+              onChange={(e) => setCopiesStr(e.target.value)}
+              onBlur={(e) => {
+                // Clamp & normalise on blur so an empty/invalid value snaps back to 1
+                const parsed = parseInt(e.target.value);
+                setCopiesStr(
+                  String(
+                    isNaN(parsed) || parsed < 1 ? 1 : Math.min(parsed, 100),
+                  ),
+                );
+              }}
               className={manualInput}
             />
           </div>

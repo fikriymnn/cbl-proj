@@ -1,4 +1,5 @@
 export interface JOData {
+  po_qty: any;
   spesifikasi: string;
   status_proses: string;
   status: any;
