@@ -97,7 +97,6 @@ function calcDeliveryProgress(row: any) {
   };
 }
 
-// Get the latest completed tahapan name
 function getLatestTahapan(tahapan: any[]): string | null {
   if (!tahapan || tahapan.length === 0) return null;
   const done = [...tahapan]
@@ -163,19 +162,16 @@ function ProgressBar({ pct, isOver }: { pct: number; isOver?: boolean }) {
   );
 }
 
-// Qty difference display: shows diff with color based on status
 function QtyDiffLabel({ shipped, total }: { shipped: number; total: number }) {
   const diff = shipped - total;
-  if (diff > 0) {
+  if (diff > 0)
     return (
       <span className="text-xs font-bold text-purple-600">
         +{fmtQty(diff)} over
       </span>
     );
-  }
-  if (diff === 0) {
+  if (diff === 0)
     return <span className="text-xs font-bold text-green-600">Sesuai</span>;
-  }
   return (
     <span className="text-xs font-bold text-red-500">
       -{fmtQty(Math.abs(diff))} kurang
@@ -393,8 +389,10 @@ function SOMonitoring() {
   const [sortBy, setSortBy] = useState<any>(SORT_BY_OPTIONS[0]);
   const [statusPo, setStatusPo] = useState<any>(STATUS_PO_OPTIONS[0]);
   const [idCustomer, setIdCustomer] = useState<any>(null);
+  const [idMarketing, setIdMarketing] = useState<any>(null); // ← NEW
   const [searchQuery, setSearchQuery] = useState('');
   const [customerOptions, setCustomerOptions] = useState<any[]>([]);
+  const [marketingOptions, setMarketingOptions] = useState<any[]>([]); // ← NEW
 
   // Modals
   const [detailRow, setDetailRow] = useState<any>(null);
@@ -409,8 +407,27 @@ function SOMonitoring() {
       SORT_BY_OPTIONS[0].value,
       STATUS_PO_OPTIONS[0].value,
       null,
+      null,
     );
+    fetchMarketingList(); // ← NEW
   }, []);
+
+  // ← NEW: fetch marketing list from /master/marketing
+  async function fetchMarketingList() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/marketing`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+      const list: any[] = Array.isArray(res.data?.data) ? res.data.data : [];
+      setMarketingOptions(
+        list.map((m) => ({
+          value: m.id,
+          label: `${m.kode} - ${m.data_karyawan?.name || 'Unknown'}`,
+        })),
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   async function fetchSO(
     start: string,
@@ -418,6 +435,7 @@ function SOMonitoring() {
     sort: string,
     status: string,
     customerId: any,
+    marketingId: any, // ← NEW param
   ) {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/soMonitoring`;
     try {
@@ -429,9 +447,11 @@ function SOMonitoring() {
           sort_by: sort,
           status_po: status,
           id_customer: customerId || undefined,
+          id_marketing: marketingId || undefined, // ← NEW param
         },
         withCredentials: true,
       });
+      console.log('SO Monitoring Response:', res.data);
       const list: any[] = Array.isArray(res.data?.data) ? res.data.data : [];
       setSoData(list);
       setDataRekap(res.data?.data_rekap ?? null);
@@ -460,7 +480,8 @@ function SOMonitoring() {
       sortBy?.value,
       statusPo?.value,
       idCustomer?.value ?? null,
-    );
+      idMarketing?.value ?? null,
+    ); // ← pass marketing
 
   const handleReset = () => {
     const start = firstOfMonth();
@@ -470,12 +491,14 @@ function SOMonitoring() {
     setSortBy(SORT_BY_OPTIONS[0]);
     setStatusPo(STATUS_PO_OPTIONS[0]);
     setIdCustomer(null);
+    setIdMarketing(null); // ← reset marketing
     setSearchQuery('');
     fetchSO(
       start,
       end,
       SORT_BY_OPTIONS[0].value,
       STATUS_PO_OPTIONS[0].value,
+      null,
       null,
     );
   };
@@ -498,7 +521,6 @@ function SOMonitoring() {
       <main>
         {isLoading && <Loading />}
 
-        {/* ── Tahapan Detail Modal ── */}
         {tahapanRow && (
           <TahapanDetailModal
             row={tahapanRow}
@@ -689,7 +711,6 @@ function SOMonitoring() {
                 </button>
               </div>
               <div className="p-6 space-y-4">
-                {/* SO Info */}
                 <div className="bg-gray-50 rounded-xl p-4">
                   <h4 className="text-sm font-semibold text-gray-700 mb-3">
                     Informasi SO
@@ -741,7 +762,6 @@ function SOMonitoring() {
                   </div>
                 </div>
 
-                {/* Delivery Progress */}
                 {(() => {
                   const dp = calcDeliveryProgress(detailRow);
                   if (!dp) return null;
@@ -786,7 +806,6 @@ function SOMonitoring() {
                   );
                 })()}
 
-                {/* Delivery Order info */}
                 {detailRow.delivery_order_group && (
                   <div className="bg-green-50 rounded-xl p-4 border border-green-200">
                     <h4 className="text-xs font-semibold text-green-700 mb-3 flex items-center gap-1.5">
@@ -828,7 +847,6 @@ function SOMonitoring() {
                   </div>
                 )}
 
-                {/* Tahapan quick list */}
                 {detailRow.produksi_lkh_tahapan?.length > 0 && (
                   <div className="bg-gray-50 rounded-xl p-4">
                     <h4 className="text-xs font-semibold text-gray-700 mb-2">
@@ -968,6 +986,25 @@ function SOMonitoring() {
                   menuPosition="fixed"
                 />
               </div>
+
+              {/* ── NEW: Marketing filter ── */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs sm:text-sm text-gray-600 font-medium">
+                  Marketing:
+                </label>
+                <Select
+                  options={marketingOptions}
+                  value={idMarketing}
+                  onChange={(sel) => setIdMarketing(sel)}
+                  isClearable
+                  placeholder="Semua Marketing"
+                  styles={customSelectStyles}
+                  className="text-xs sm:text-sm"
+                  menuPortalTarget={document.body}
+                  menuPosition="fixed"
+                />
+              </div>
+
               <div className="flex flex-col gap-2">
                 <label className="text-xs sm:text-sm text-gray-600 font-medium">
                   Cari:
@@ -1173,7 +1210,6 @@ function SOMonitoring() {
                         <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
                           {fmtDate(row.tgl_pengiriman)}
                         </td>
-
                         <td className="p-2 sm:p-3 text-xs flex flex-col gap-2">
                           <span
                             onClick={() => setDetailRow(row)}
@@ -1188,14 +1224,19 @@ function SOMonitoring() {
                             {row.no_io || '-'}
                           </span>
                         </td>
-
-                        <td className="p-2 sm:p-3 text-xs max-w-[130px]">
-                          <span
-                            className="block truncate font-medium"
+                        <td className="p-2 sm:p-3 text-xs max-w-[130px] ">
+                          <div
+                            className="block  font-medium"
                             title={row.customer}
                           >
                             {row.customer || '-'}
-                          </span>
+                          </div>
+                          <div
+                            className="block  font-medium text-blue-500"
+                            title={row.kalkulasi?.nama_marketing || '-'}
+                          >
+                            Marketing : {row.kalkulasi?.nama_marketing || '-'}
+                          </div>
                         </td>
                         <td className="p-2 sm:p-3 text-xs max-w-[180px]">
                           <span className="block" title={row.produk}>
@@ -1211,8 +1252,6 @@ function SOMonitoring() {
                         <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
                           {fmtRp(row.total_harga)}
                         </td>
-
-                        {/* Progress column */}
                         <td className="p-2 sm:p-3 text-xs min-w-[140px]">
                           {dp ? (
                             <div className="space-y-1">
@@ -1229,8 +1268,6 @@ function SOMonitoring() {
                             <span className="text-gray-300 text-[10px]">—</span>
                           )}
                         </td>
-
-                        {/* Latest tahapan (replaces status proses) */}
                         <td className="p-2 sm:p-3 text-xs max-w-[140px]">
                           {latestTahapan ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-100 text-violet-700 border border-violet-200">
@@ -1253,8 +1290,6 @@ function SOMonitoring() {
                             </span>
                           )}
                         </td>
-
-                        {/* Aksi: only tahapan detail button */}
                         <td className="p-2 sm:p-3 text-xs">
                           {hasTahapan && (
                             <button
