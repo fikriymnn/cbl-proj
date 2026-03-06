@@ -255,6 +255,7 @@ import WelcomePage from './pages/Dashboard/WelcomePage';
 import JOMonitoringPage from './pages/Monitoring/JOMonitoringPage';
 import SOMonitoringPage from './pages/Monitoring/SOMonitoringPage';
 import LabelPage from './pages/Print/LabelPage';
+import LaporanDOPage from './pages/DO/LaporanDOPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1782,7 +1783,14 @@ function App() {
             </P>
           }
         />
-
+        <Route
+          path="/delivery-order/laporan-pengiriman-do"
+          element={
+            <P>
+              <LaporanDOPage />
+            </P>
+          }
+        />
         {/* ============== ACCOUNTING ROUTES ============== */}
         <Route
           path="/accounting/list-outstanding"
