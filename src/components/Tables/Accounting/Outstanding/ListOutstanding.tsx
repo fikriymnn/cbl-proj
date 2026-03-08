@@ -4,6 +4,8 @@ import { Pagination, Stack } from '@mui/material';
 import CreateInvoiceModal from './CreateInvoiceModal';
 
 interface DOItem {
+  no_do: string;
+  so: any;
   id: number;
   id_do_group: number | null;
   id_io: number;
@@ -32,6 +34,8 @@ interface DOItem {
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
+  delivery_order: DeliveryOrder[];
+  detail_customer: DetailCustomer;
 }
 
 interface DOResponse {
@@ -71,17 +75,7 @@ interface DetailCustomer {
   top_faktur: string;
 }
 
-interface DOGroupData {
-  id: number;
-  id_customer: number;
-  no_do: string;
-  tgl_do: string;
-  alamat: string;
-  customer: string;
-  delivery_order: DeliveryOrder[];
-  so: SO;
-  detail_customer: DetailCustomer;
-}
+type StatusFilter = 'done' | 'progress';
 
 const ListOutstanding: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -97,11 +91,11 @@ const ListOutstanding: React.FC = () => {
   );
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedDOGroups, setSelectedDOGroups] = useState<number[]>([]);
-  const [doGroupsData, setDoGroupsData] = useState<DOGroupData[]>([]); // NEW
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('progress');
 
   useEffect(() => {
     fetchDOData();
-  }, [page, searchTerm, limit]);
+  }, [page, searchTerm, limit, statusFilter]);
 
   const fetchDOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/deliveryOrderGroup`;
@@ -113,7 +107,7 @@ const ListOutstanding: React.FC = () => {
           page: page,
           limit: limit,
           search: searchTerm,
-          status_proses: 'done',
+          status: statusFilter,
         },
         withCredentials: true,
       });
@@ -130,6 +124,15 @@ const ListOutstanding: React.FC = () => {
     }
   };
 
+  const handleStatusFilterChange = (newStatus: StatusFilter): void => {
+    setStatusFilter(newStatus);
+    setPage(1);
+    setSelectedItems([]);
+    setSelectedDOItems([]);
+    setSelectedCustomerId(null);
+    setSelectedDOGroups([]);
+  };
+
   const handleLimitChange = (newLimit: number): void => {
     setLimit(newLimit);
     setPage(1);
@@ -141,14 +144,12 @@ const ListOutstanding: React.FC = () => {
     );
 
     if (isSelected) {
-      // Unselect item
       const newSelected = selectedItems.filter(
         (selected) => selected.id !== item.id,
       );
       setSelectedItems(newSelected);
       setSelectedDOItems(newSelected);
 
-      // Remove from selectedDOGroups
       if (item.id_do_group) {
         setSelectedDOGroups((prev) =>
           prev.filter((id) => id !== item.id_do_group),
@@ -159,9 +160,7 @@ const ListOutstanding: React.FC = () => {
         setSelectedCustomerId(null);
       }
     } else {
-      // Select item - check customer constraint
       if (selectedCustomerId === null) {
-        // First selection
         setSelectedCustomerId(item.id_customer);
         setSelectedItems([item]);
         setSelectedDOItems([item]);
@@ -169,7 +168,6 @@ const ListOutstanding: React.FC = () => {
           setSelectedDOGroups([item.id_do_group]);
         }
       } else if (selectedCustomerId === item.id_customer) {
-        // Same customer - allow selection
         const newSelected = [...selectedItems, item];
         setSelectedItems(newSelected);
         setSelectedDOItems(newSelected);
@@ -177,7 +175,6 @@ const ListOutstanding: React.FC = () => {
           setSelectedDOGroups([...selectedDOGroups, item.id_do_group]);
         }
       } else {
-        // Different customer - show warning
         alert(
           `You can only select items from the same customer. Currently selected customer ID: ${selectedCustomerId}`,
         );
@@ -198,14 +195,13 @@ const ListOutstanding: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+
   const handleInvoiceCreated = () => {
-    // Reset selections
     setSelectedItems([]);
     setSelectedDOItems([]);
     setSelectedCustomerId(null);
     setSelectedDOGroups([]);
     setIsModalOpen(false);
-    // Refresh data
     fetchDOData();
   };
 
@@ -235,6 +231,7 @@ const ListOutstanding: React.FC = () => {
       done: 'bg-green-100 text-green-800',
       pending: 'bg-yellow-100 text-yellow-800',
       progress: 'bg-blue-100 text-blue-800',
+      invoiced: 'bg-purple-100 text-purple-800',
     };
 
     return (
@@ -248,10 +245,36 @@ const ListOutstanding: React.FC = () => {
     );
   };
 
+  const isInvoicedFilter = statusFilter === 'done';
+
   return (
     <div className="">
       {/* Header Section */}
       <div className="mb-4 sm:mb-6">
+        {/* Status Filter Tabs */}
+        <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => handleStatusFilterChange('progress')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              statusFilter === 'progress'
+                ? 'bg-white text-green-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Progress
+          </button>
+          <button
+            onClick={() => handleStatusFilterChange('done')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              statusFilter === 'done'
+                ? 'bg-white text-purple-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Done
+          </button>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -280,8 +303,8 @@ const ListOutstanding: React.FC = () => {
             </svg>
           </div>
 
-          {/* Create Invoice Button */}
-          {selectedItems.length > 0 && (
+          {/* Create Invoice Button — hidden on Invoiced tab */}
+          {!isInvoicedFilter && selectedItems.length > 0 && (
             <button
               onClick={handleCreateInvoice}
               disabled={loading}
@@ -311,6 +334,14 @@ const ListOutstanding: React.FC = () => {
             {selectedCustomerId}
           </div>
         )}
+
+        {isInvoicedFilter && (
+          <div className="bg-gray-50 text-gray-500 px-4 py-2 rounded-lg text-sm border border-gray-200">
+            Items with{' '}
+            <span className="font-medium text-purple-700">Invoiced</span> status
+            cannot be used to create an Invoice.
+          </div>
+        )}
       </div>
 
       {/* Desktop Table */}
@@ -319,15 +350,20 @@ const ListOutstanding: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                {/* Hide checkbox column on Invoiced tab */}
+                {!isInvoicedFilter && (
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                      checked={false}
+                      disabled
+                    />
+                  </th>
+                )}
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-                    checked={false}
-                    disabled
-                  />
+                  No DO
                 </th>
-
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   No IO
                 </th>
@@ -357,7 +393,10 @@ const ListOutstanding: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-3 py-4 text-center">
+                  <td
+                    colSpan={isInvoicedFilter ? 8 : 9}
+                    className="px-3 py-4 text-center"
+                  >
                     <div className="flex justify-center items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
@@ -366,7 +405,7 @@ const ListOutstanding: React.FC = () => {
               ) : doData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={isInvoicedFilter ? 8 : 9}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -380,6 +419,7 @@ const ListOutstanding: React.FC = () => {
                   const isDisabled =
                     selectedCustomerId !== null &&
                     selectedCustomerId !== item.id_customer;
+
                   return (
                     <tr
                       key={item.id}
@@ -387,16 +427,20 @@ const ListOutstanding: React.FC = () => {
                         isDisabled ? 'opacity-50' : ''
                       }`}
                     >
-                      <td className="px-3 py-2 whitespace-nowrap text-xs">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleCheckboxChange(item)}
-                          disabled={isDisabled}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
-                        />
+                      {!isInvoicedFilter && (
+                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleCheckboxChange(item)}
+                            disabled={isDisabled}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
+                          />
+                        </td>
+                      )}
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                        {item.no_do || '-'}
                       </td>
-
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                         {item.no_io || '-'}
                       </td>
@@ -413,10 +457,10 @@ const ListOutstanding: React.FC = () => {
                         {truncateText(item.produk, 90)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {formatNumber(item.po_qty)}
+                        {formatNumber(item.so.po_qty)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {formatDate(item.tgl_pengiriman)}
+                        {formatDate(item.so.tgl_pengiriman)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs">
                         {getStatusBadge(item.status)}
@@ -428,6 +472,7 @@ const ListOutstanding: React.FC = () => {
             </tbody>
           </table>
         </div>
+
         {/* Pagination */}
         <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4 px-4">
           <div className="flex items-center gap-2">
@@ -455,9 +500,7 @@ const ListOutstanding: React.FC = () => {
                 count={totalPages}
                 color="primary"
                 page={page}
-                onChange={(e, i) => {
-                  setPage(i);
-                }}
+                onChange={(e, i) => setPage(i)}
                 size="small"
               />
             </Stack>
@@ -493,13 +536,16 @@ const ListOutstanding: React.FC = () => {
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-start gap-3 flex-1">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleCheckboxChange(item)}
-                      disabled={isDisabled}
-                      className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
-                    />
+                    {/* Hide checkbox on Invoiced tab */}
+                    {!isInvoicedFilter && (
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleCheckboxChange(item)}
+                        disabled={isDisabled}
+                        className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
+                      />
+                    )}
                     <div className="flex-1">
                       <div className="font-semibold text-sm text-gray-900">
                         {item.no_jo || '-'}
@@ -551,7 +597,7 @@ const ListOutstanding: React.FC = () => {
                         PO Qty:
                       </span>
                       <div className="text-gray-900 text-xs">
-                        {formatNumber(item.po_qty)}
+                        {formatNumber(item.so.po_qty)}
                       </div>
                     </div>
                     <div>
@@ -602,9 +648,7 @@ const ListOutstanding: React.FC = () => {
               count={totalPages}
               color="primary"
               page={page}
-              onChange={(e, i) => {
-                setPage(i);
-              }}
+              onChange={(e, i) => setPage(i)}
               size="small"
             />
           </Stack>
@@ -617,7 +661,7 @@ const ListOutstanding: React.FC = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           selectedDOGroups={selectedDOGroups}
-          selectedDOItems={selectedItems} // Pass the full selected items
+          selectedDOItems={selectedItems}
           customerId={selectedCustomerId!}
           onInvoiceCreated={handleInvoiceCreated}
         />

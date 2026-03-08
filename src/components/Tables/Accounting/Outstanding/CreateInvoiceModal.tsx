@@ -140,7 +140,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         .join(', ');
       setNoDO(allDONumbers || firstItem.no_do || '');
 
-      setTglKirim(formatDateForInput(firstItem.tgl_pengiriman || ''));
+      setTglKirim(formatDateForInput(firstItem.so.tgl_pengiriman || ''));
       setPelanggan(firstItem.customer || '');
       setAlamat(
         firstItem.detail_customer?.alamat_kantor || firstItem.alamat || '',
@@ -166,7 +166,8 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
           if (!order.id_produk) return;
 
           const qty = order.jumlah_qty || 0;
-          const harga = item.so?.harga_jual || 0;
+          // FIX: use harga_jual from the SO inside each delivery_order item
+          const harga = order.so?.harga_jual || 0;
           const diskonProduk = 0;
 
           const totalBeforeDiscount = qty * harga;
@@ -530,9 +531,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                           <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
                             No
                           </th>
-                          <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
-                            Kode
-                          </th>
+
                           <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
                             Nama Barang
                           </th>
@@ -572,11 +571,9 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                               <td className="px-2 py-1.5 text-xs text-gray-900">
                                 {index + 1}
                               </td>
-                              <td className="px-2 py-1.5 text-xs text-gray-900">
-                                {product.kode_produk}
-                              </td>
+
                               <td
-                                className="px-2 py-1.5 text-xs text-gray-900 max-w-[120px] truncate"
+                                className="px-2 py-1.5 text-xs text-gray-900 max-w-[120px] "
                                 title={product.nama_produk}
                               >
                                 {product.nama_produk}

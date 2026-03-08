@@ -224,7 +224,7 @@ const buildPrintHTML = (
         <div style="display:flex;align-items:center;height:${qtyRowH};overflow:hidden;">
           <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY PO</div>
           <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-weight:bold;">${qtyPoFormatted}</span>
+            <span style="font-weight:bold;">: ${qtyPoFormatted}</span>
             <span style="font-size:23px;font-weight:900;line-height:1;">${
               data.tanda_retur || ''
             }</span>

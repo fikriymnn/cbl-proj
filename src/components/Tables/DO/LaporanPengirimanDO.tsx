@@ -104,9 +104,13 @@ const LaporanPengirimanDO: React.FC = () => {
   );
   const [endDate, setEndDate] = useState<string>(toInputDate(today));
 
+  // --- Search states ---
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
   useEffect(() => {
     fetchReportData();
-  }, [page, limit]);
+  }, [page, limit, searchTerm]);
 
   const fetchReportData = async (): Promise<void> => {
     try {
@@ -114,7 +118,13 @@ const LaporanPengirimanDO: React.FC = () => {
       const res: AxiosResponse<ReportDOResponse> = await axios.get(
         `${import.meta.env.VITE_API_LINK}/reportDeliveryOrder`,
         {
-          params: { start_date: startDate, end_date: endDate, page, limit },
+          params: {
+            start_date: startDate,
+            end_date: endDate,
+            page,
+            limit,
+            search: searchTerm,
+          },
           withCredentials: true,
         },
       );
@@ -129,8 +139,24 @@ const LaporanPengirimanDO: React.FC = () => {
   };
 
   const handleSearch = () => {
+    setSearchTerm(searchInput);
     setPage(1);
-    fetchReportData();
+    // If searchTerm hasn't changed, manually trigger fetch
+    if (searchInput === searchTerm) {
+      fetchReportData();
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const handleLimitChange = (newLimit: number) => {
@@ -181,6 +207,35 @@ const LaporanPengirimanDO: React.FC = () => {
     );
   };
 
+  const getDOStatusBadge = (status: string) => {
+    const map: Record<string, { cls: string; label: string }> = {
+      done: {
+        cls: 'bg-green-100 text-green-700 border border-green-300',
+        label: 'Selesai',
+      },
+      pending: {
+        cls: 'bg-gray-100 text-gray-600 border border-gray-300',
+        label: 'Pending',
+      },
+      progress: {
+        cls: 'bg-blue-100 text-blue-700 border border-blue-300',
+        label: 'Progress',
+      },
+    };
+    const key = status?.toLowerCase() ?? '';
+    const cfg = map[key] || {
+      cls: 'bg-gray-100 text-gray-600 border border-gray-300',
+      label: status,
+    };
+    return (
+      <span
+        className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap ${cfg.cls}`}
+      >
+        {cfg.label}
+      </span>
+    );
+  };
+
   const getProgressBadge = (progress: number) => {
     const color = progress > 100 ? 'bg-purple-500' : 'bg-blue-500';
     return (
@@ -206,10 +261,139 @@ const LaporanPengirimanDO: React.FC = () => {
   };
 
   const sisaPO = (item: ReportDOItem) => item.po_qty - item.total_jumlah_qty;
-
-  // Get first DO group's no_so and no_jo for expanded header
   const getFirstDOG = (item: ReportDOItem) =>
     item.delivery_order_groups[0] ?? null;
+
+  // Build pack/isi summary string, skip zero values
+  const buildQtyDetail = (do_row: DeliveryOrder): string => {
+    const parts: string[] = [];
+    if (do_row.pack_1 && do_row.isi_1)
+      parts.push(`${fmt(do_row.pack_1)} × ${fmt(do_row.isi_1)}`);
+    if (do_row.pack_2 && do_row.isi_2)
+      parts.push(`${fmt(do_row.pack_2)} × ${fmt(do_row.isi_2)}`);
+    if (do_row.pack_3 && do_row.isi_3)
+      parts.push(`${fmt(do_row.pack_3)} × ${fmt(do_row.isi_3)}`);
+    return parts.length > 0 ? parts.join(' + ') : '-';
+  };
+
+  // --- Expanded Detail Section ---
+  const ExpandedDetail = ({ item }: { item: ReportDOItem }) => (
+    <div className="bg-blue-50/40 px-6 py-4 border-b border-gray-200">
+      {/* Sub table */}
+      <div className="overflow-x-auto rounded border border-gray-200 shadow-sm">
+        <table className="w-full text-xs">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-3 py-2 text-left font-semibold text-gray-600 border-b border-gray-200 w-8">
+                No
+              </th>
+              <th className="px-3 py-2 text-left font-semibold text-gray-600 border-b border-gray-200">
+                No. DO
+              </th>
+              <th className="px-3 py-2 text-left font-semibold text-gray-600 border-b border-gray-200">
+                Tgl DO
+              </th>
+              <th className="px-3 py-2 text-left font-semibold text-gray-600 border-b border-gray-200">
+                No. JO
+              </th>
+              <th className="px-3 py-2 text-left font-semibold text-gray-600 border-b border-gray-200">
+                No. IO
+              </th>
+              <th className="px-3 py-2 text-left font-semibold text-gray-600 border-b border-gray-200">
+                Kota Tujuan
+              </th>
+              <th className="px-3 py-2 text-right font-semibold text-gray-600 border-b border-gray-200">
+                Rincian Qty
+              </th>
+              <th className="px-3 py-2 text-right font-semibold text-gray-600 border-b border-gray-200">
+                Total Kirim
+              </th>
+              <th className="px-3 py-2 text-center font-semibold text-gray-600 border-b border-gray-200">
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-100">
+            {item.delivery_order_groups.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="px-4 py-4 text-center text-gray-500">
+                  Tidak ada data DO
+                </td>
+              </tr>
+            ) : (
+              item.delivery_order_groups.map((dog_row, idx) => {
+                const matched = item.delivery_orders.find(
+                  (d) => d.id_do_group === dog_row.id,
+                );
+                return (
+                  <tr
+                    key={dog_row.id}
+                    className="hover:bg-blue-50/40 transition-colors"
+                  >
+                    <td className="px-3 py-2 text-gray-500 text-center">
+                      {idx + 1}
+                    </td>
+                    <td className="px-3 py-2 font-medium text-gray-800 whitespace-nowrap">
+                      {dog_row.no_do || '-'}
+                    </td>
+                    <td className="px-3 py-2 text-gray-700 whitespace-nowrap">
+                      {formatDate(dog_row.tgl_do)}
+                    </td>
+                    <td className="px-3 py-2 text-gray-700 whitespace-nowrap">
+                      {dog_row.no_jo || matched?.no_jo || '-'}
+                    </td>
+                    <td className="px-3 py-2 text-gray-700 whitespace-nowrap">
+                      {dog_row.no_io || matched?.no_io || '-'}
+                    </td>
+                    <td className="px-3 py-2 text-gray-700 whitespace-nowrap">
+                      {dog_row.kota || '-'}
+                    </td>
+                    <td className="px-3 py-2 text-right text-gray-600 whitespace-nowrap">
+                      {matched ? buildQtyDetail(matched) : '-'}
+                    </td>
+                    <td className="px-3 py-2 text-right font-semibold text-gray-800 whitespace-nowrap">
+                      {fmt(matched?.jumlah_qty ?? null)}
+                    </td>
+                    <td className="px-3 py-2 text-center">
+                      {getDOStatusBadge(dog_row.status)}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+          {/* Footer total */}
+          {item.delivery_order_groups.length > 1 && (
+            <tfoot className="bg-gray-50">
+              <tr>
+                <td
+                  colSpan={7}
+                  className="px-3 py-2 text-right text-xs font-semibold text-gray-600 border-t border-gray-200"
+                >
+                  Total Keseluruhan:
+                </td>
+                <td className="px-3 py-2 text-right text-xs font-bold text-gray-800 border-t border-gray-200 whitespace-nowrap">
+                  {fmt(item.total_jumlah_qty)}
+                </td>
+                <td className="border-t border-gray-200" />
+              </tr>
+            </tfoot>
+          )}
+        </table>
+      </div>
+
+      {/* Note if exists on any DO group */}
+      {item.delivery_order_groups.some((d) => d.note) && (
+        <div className="mt-3 text-xs text-gray-500 italic">
+          <span className="font-medium not-italic text-gray-600">Catatan:</span>{' '}
+          {item.delivery_order_groups
+            .filter((d) => d.note)
+            .map((d) => d.note)
+            .join('; ')}
+        </div>
+      )}
+    </div>
+  );
 
   const PaginationBar = () => (
     <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-4 pb-4 px-4">
@@ -245,8 +429,9 @@ const LaporanPengirimanDO: React.FC = () => {
 
   return (
     <div>
-      {/* Filter */}
-      <div className="mb-4 flex flex-col sm:flex-row gap-3 items-end">
+      {/* Filter & Search Section */}
+      <div className="mb-4 flex flex-col sm:flex-row gap-3 items-end flex-wrap">
+        {/* Date filters */}
         <div className="flex flex-col gap-1">
           <label className="text-xs text-gray-600 font-medium">
             Start Date
@@ -273,6 +458,50 @@ const LaporanPengirimanDO: React.FC = () => {
         >
           Cari
         </button>
+
+        {/* Search input */}
+        <div className="flex flex-col gap-1 flex-1 min-w-[220px]">
+          <label className="text-xs text-gray-600 font-medium">Search</label>
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Cari NO SO, NO PO, Customer, Produk..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+              />
+              <svg
+                className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              Search
+            </button>
+            {searchTerm && (
+              <button
+                onClick={handleClearSearch}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-red-600 rounded-lg text-sm font-medium transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Desktop Table */}
@@ -281,56 +510,43 @@ const LaporanPengirimanDO: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 text-xs">
             <thead className="bg-gray-50">
               <tr>
-                {/* Act */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap w-16">
                   Act
                 </th>
-                {/* Tgl Kirim Cust */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Tgl Kirim
                   <br />
-                  Cust
-                  <span className="ml-1 opacity-40">↑↓</span>
+                  Cust<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* NO PO */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   NO PO<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* Tanggal PO */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Tanggal PO<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* SO / JO / IO combined */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   NO SO / JO / IO<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* Pemesan */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Pemesan<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* Produk */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Produk<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* Qty PO */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Qty PO<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* Barang Kirim */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Barang
                   <br />
                   Kirim<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* Sisa PO */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Sisa PO<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* Status */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Status<span className="ml-1 opacity-40">↑↓</span>
                 </th>
-                {/* Progress */}
                 <th className="px-2 py-2 text-left font-medium text-gray-500 uppercase whitespace-nowrap">
                   Progress<span className="ml-1 opacity-40">↑↓</span>
                 </th>
@@ -348,7 +564,9 @@ const LaporanPengirimanDO: React.FC = () => {
               ) : reportData.length === 0 ? (
                 <tr>
                   <td colSpan={12} className="py-6 text-center text-gray-500">
-                    No data available
+                    {searchTerm
+                      ? 'Tidak ada data yang sesuai dengan pencarian'
+                      : 'No data available'}
                   </td>
                 </tr>
               ) : (
@@ -365,41 +583,27 @@ const LaporanPengirimanDO: React.FC = () => {
                           isExpanded ? 'bg-blue-50' : ''
                         }`}
                       >
-                        {/* Act */}
                         <td className="px-2 py-2 whitespace-nowrap">
-                          <div className="flex gap-1 items-center">
-                            <button
-                              onClick={() => toggleRow(item.id_so)}
-                              className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold transition-colors text-sm leading-none ${
-                                isExpanded
-                                  ? 'bg-red-500 hover:bg-red-600'
-                                  : 'bg-green-500 hover:bg-green-600'
-                              }`}
-                            >
-                              {isExpanded ? '−' : '+'}
-                            </button>
-                            <button className="w-6 h-6 rounded-md bg-orange-400 hover:bg-orange-500 flex items-center justify-center text-white font-bold text-xs">
-                              i
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => toggleRow(item.id_so)}
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-bold transition-colors text-sm leading-none ${
+                              isExpanded
+                                ? 'bg-red-500 hover:bg-red-600'
+                                : 'bg-green-500 hover:bg-green-600'
+                            }`}
+                          >
+                            {isExpanded ? '−' : '+'}
+                          </button>
                         </td>
-
-                        {/* Tgl Kirim Cust */}
                         <td className="px-2 py-2 whitespace-nowrap text-gray-900">
                           {formatDate(item.tgl_pengiriman)}
                         </td>
-
-                        {/* NO PO */}
                         <td className="px-2 py-2 whitespace-nowrap text-gray-900">
                           {item.no_po_customer || '-'}
                         </td>
-
-                        {/* Tanggal PO */}
                         <td className="px-2 py-2 whitespace-nowrap text-gray-900">
                           {formatDate(item.so?.tgl_input_po)}
                         </td>
-
-                        {/* NO SO / JO / IO stacked */}
                         <td className="px-2 py-2 whitespace-nowrap text-gray-900">
                           <div>{item.no_so || '-'}</div>
                           <div className="text-gray-500">
@@ -409,117 +613,35 @@ const LaporanPengirimanDO: React.FC = () => {
                             {dog?.no_io || '-'}
                           </div>
                         </td>
-
-                        {/* Pemesan */}
                         <td className="px-2 py-2 whitespace-nowrap text-gray-900">
                           {item.customer || '-'}
                         </td>
-
-                        {/* Produk */}
                         <td className="px-2 py-2 text-gray-900 max-w-[200px]">
                           <div className="whitespace-normal leading-tight">
                             {item.produk || '-'}
                           </div>
                         </td>
-
-                        {/* Qty PO */}
                         <td className="px-2 py-2 whitespace-nowrap text-gray-900 text-right">
                           {fmt(item.po_qty)}
                         </td>
-
-                        {/* Barang Kirim */}
                         <td className="px-2 py-2 whitespace-nowrap text-gray-900 text-right">
                           {fmt(item.total_jumlah_qty)}
                         </td>
-
-                        {/* Sisa PO */}
                         <td className="px-2 py-2 whitespace-nowrap text-gray-900 text-right">
                           {fmt(sisaPO(item))}
                         </td>
-
-                        {/* Status */}
                         <td className="px-2 py-2 whitespace-nowrap">
                           {getStatusBadge(status)}
                         </td>
-
-                        {/* Progress */}
                         <td className="px-2 py-2 whitespace-nowrap">
                           {getProgressBadge(progress)}
                         </td>
                       </tr>
 
-                      {/* Expanded sub-table — exactly like image 2 */}
                       {isExpanded && (
                         <tr>
-                          <td
-                            colSpan={12}
-                            className="bg-gray-50 px-6 py-4 border-b border-gray-200"
-                          >
-                            {/* Header line */}
-                            <p className="text-sm font-semibold text-gray-700 mb-3 text-center">
-                              JO: {dog?.no_jo || '-'}&nbsp;–&nbsp;SO:{' '}
-                              {item.no_so || '-'}&nbsp;–&nbsp;Tgl Kirim:{' '}
-                              {formatDate(item.tgl_pengiriman)}
-                            </p>
-
-                            {/* Sub table */}
-                            <table className="w-full text-xs border border-gray-200 rounded overflow-hidden">
-                              <thead className="bg-gray-100">
-                                <tr>
-                                  <th className="px-4 py-2 text-left font-medium text-gray-600 border-b border-gray-200 w-12">
-                                    No
-                                  </th>
-                                  <th className="px-4 py-2 text-left font-medium text-gray-600 border-b border-gray-200">
-                                    No.DO
-                                  </th>
-                                  <th className="px-4 py-2 text-left font-medium text-gray-600 border-b border-gray-200">
-                                    Tgl DO
-                                  </th>
-                                  <th className="px-4 py-2 text-left font-medium text-gray-600 border-b border-gray-200">
-                                    Kirim
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody className="bg-white">
-                                {item.delivery_order_groups.length === 0 ? (
-                                  <tr>
-                                    <td
-                                      colSpan={4}
-                                      className="px-4 py-3 text-center text-gray-500"
-                                    >
-                                      Tidak ada data DO
-                                    </td>
-                                  </tr>
-                                ) : (
-                                  item.delivery_order_groups.map(
-                                    (dog_row, idx) => {
-                                      const matched = item.delivery_orders.find(
-                                        (d) => d.id_do_group === dog_row.id,
-                                      );
-                                      return (
-                                        <tr
-                                          key={dog_row.id}
-                                          className="border-b border-gray-100 last:border-0"
-                                        >
-                                          <td className="px-4 py-2 text-gray-700">
-                                            {idx + 1}
-                                          </td>
-                                          <td className="px-4 py-2 text-gray-700">
-                                            {dog_row.no_do}
-                                          </td>
-                                          <td className="px-4 py-2 text-gray-700">
-                                            {formatDate(dog_row.tgl_do)}
-                                          </td>
-                                          <td className="px-4 py-2 text-gray-700">
-                                            {fmt(matched?.jumlah_qty ?? null)}
-                                          </td>
-                                        </tr>
-                                      );
-                                    },
-                                  )
-                                )}
-                              </tbody>
-                            </table>
+                          <td colSpan={12} className="p-0">
+                            <ExpandedDetail item={item} />
                           </td>
                         </tr>
                       )}
@@ -541,7 +663,9 @@ const LaporanPengirimanDO: React.FC = () => {
           </div>
         ) : reportData.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-            No data available
+            {searchTerm
+              ? 'Tidak ada data yang sesuai dengan pencarian'
+              : 'No data available'}
           </div>
         ) : (
           reportData.map((item) => {
@@ -633,50 +757,7 @@ const LaporanPengirimanDO: React.FC = () => {
 
                 {isExpanded && (
                   <div className="mt-3 pt-3 border-t border-gray-100">
-                    <p className="text-xs font-semibold text-gray-700 mb-2 text-center">
-                      JO: {dog?.no_jo || '-'} – SO: {item.no_so || '-'} – Tgl
-                      Kirim: {formatDate(item.tgl_pengiriman)}
-                    </p>
-                    <table className="w-full text-xs border border-gray-200 rounded overflow-hidden">
-                      <thead className="bg-gray-100">
-                        <tr>
-                          <th className="px-2 py-1.5 text-left font-medium text-gray-600">
-                            No
-                          </th>
-                          <th className="px-2 py-1.5 text-left font-medium text-gray-600">
-                            No.DO
-                          </th>
-                          <th className="px-2 py-1.5 text-left font-medium text-gray-600">
-                            Tgl DO
-                          </th>
-                          <th className="px-2 py-1.5 text-left font-medium text-gray-600">
-                            Kirim
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {item.delivery_order_groups.map((dog_row, idx) => {
-                          const matched = item.delivery_orders.find(
-                            (d) => d.id_do_group === dog_row.id,
-                          );
-                          return (
-                            <tr
-                              key={dog_row.id}
-                              className="border-t border-gray-100"
-                            >
-                              <td className="px-2 py-1.5">{idx + 1}</td>
-                              <td className="px-2 py-1.5">{dog_row.no_do}</td>
-                              <td className="px-2 py-1.5">
-                                {formatDate(dog_row.tgl_do)}
-                              </td>
-                              <td className="px-2 py-1.5">
-                                {fmt(matched?.jumlah_qty ?? null)}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                    <ExpandedDetail item={item} />
                   </div>
                 )}
               </div>

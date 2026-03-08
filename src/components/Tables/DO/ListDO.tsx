@@ -41,6 +41,8 @@ interface DOResponse {
   total_page?: number;
 }
 
+type StatusFilter = 'progress' | 'done';
+
 const ListDO: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [doData, setDoData] = useState<DOItem[]>([]);
@@ -53,13 +55,16 @@ const ListDO: React.FC = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
     null,
   );
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('progress');
 
   useEffect(() => {
     fetchDOData();
-  }, [page, searchTerm, limit]);
+  }, [page, searchTerm, limit, statusFilter]);
+
   useEffect(() => {
     fetchMenuData();
   }, []);
+
   const fetchDOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/deliveryOrder`;
     try {
@@ -70,6 +75,7 @@ const ListDO: React.FC = () => {
           page: page,
           limit: limit,
           search: searchTerm,
+          status: statusFilter === 'progress' ? 'progress ' : 'done',
         },
         withCredentials: true,
       });
@@ -85,6 +91,7 @@ const ListDO: React.FC = () => {
       setLoading(false);
     }
   };
+
   const fetchMenuData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/master/menu`;
     try {
@@ -103,18 +110,28 @@ const ListDO: React.FC = () => {
     }
   };
 
+  const handleStatusFilterChange = (newStatus: StatusFilter): void => {
+    setStatusFilter(newStatus);
+    setPage(1);
+    // Clear selections when switching tabs
+    setSelectedItems([]);
+    setSelectedCustomerId(null);
+  };
+
   const handleLimitChange = (newLimit: number): void => {
     setLimit(newLimit);
     setPage(1);
   };
 
   const handleCheckboxChange = (item: DOItem) => {
+    // Prevent selection of 'done' items
+    if (item.status === 'done') return;
+
     const isSelected = selectedItems.some(
       (selected) => selected.id === item.id,
     );
 
     if (isSelected) {
-      // Unselect item
       const newSelected = selectedItems.filter(
         (selected) => selected.id !== item.id,
       );
@@ -123,16 +140,12 @@ const ListDO: React.FC = () => {
         setSelectedCustomerId(null);
       }
     } else {
-      // Select item - check customer constraint
       if (selectedCustomerId === null) {
-        // First selection
         setSelectedCustomerId(item.id_customer);
         setSelectedItems([item]);
       } else if (selectedCustomerId === item.id_customer) {
-        // Same customer - allow selection
         setSelectedItems([...selectedItems, item]);
       } else {
-        // Different customer - show warning
         alert(
           `You can only select items from the same customer. Currently selected customer ID: ${selectedCustomerId}`,
         );
@@ -197,10 +210,36 @@ const ListDO: React.FC = () => {
     );
   };
 
+  const isDoneFilter = statusFilter === 'done';
+
   return (
     <div className="">
       {/* Header Section */}
       <div className="mb-4 sm:mb-6">
+        {/* Status Filter Tabs */}
+        <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
+          <button
+            onClick={() => handleStatusFilterChange('progress')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              statusFilter === 'progress'
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Progress
+          </button>
+          <button
+            onClick={() => handleStatusFilterChange('done')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              statusFilter === 'done'
+                ? 'bg-white text-green-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Done
+          </button>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
           {/* Search */}
           <div className="relative flex-1">
@@ -229,20 +268,29 @@ const ListDO: React.FC = () => {
             </svg>
           </div>
 
-          {/* Create DO Button */}
-          <button
-            onClick={handleCreateDO}
-            disabled={selectedItems.length === 0}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-sm"
-          >
-            Create DO ({selectedItems.length})
-          </button>
+          {/* Create DO Button — hidden on Done tab */}
+          {!isDoneFilter && (
+            <button
+              onClick={handleCreateDO}
+              disabled={selectedItems.length === 0}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap text-sm"
+            >
+              Create DO ({selectedItems.length})
+            </button>
+          )}
         </div>
 
         {selectedItems.length > 0 && (
           <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm">
             {selectedItems.length} item(s) selected from Customer ID:{' '}
             {selectedCustomerId}
+          </div>
+        )}
+
+        {isDoneFilter && (
+          <div className="bg-gray-50 text-gray-500 px-4 py-2 rounded-lg text-sm border border-gray-200">
+            Items with <span className="font-medium text-green-700">Done</span>{' '}
+            status cannot be used to create a DO.
           </div>
         )}
       </div>
@@ -253,14 +301,17 @@ const ListDO: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-                    checked={false}
-                    disabled
-                  />
-                </th>
+                {/* Hide checkbox column on Done tab */}
+                {!isDoneFilter && (
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                      checked={false}
+                      disabled
+                    />
+                  </th>
+                )}
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   No JO
                 </th>
@@ -293,7 +344,10 @@ const ListDO: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-3 py-4 text-center">
+                  <td
+                    colSpan={isDoneFilter ? 9 : 10}
+                    className="px-3 py-4 text-center"
+                  >
                     <div className="flex justify-center items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
@@ -302,7 +356,7 @@ const ListDO: React.FC = () => {
               ) : doData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={isDoneFilter ? 9 : 10}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -316,6 +370,7 @@ const ListDO: React.FC = () => {
                   const isDisabled =
                     selectedCustomerId !== null &&
                     selectedCustomerId !== item.id_customer;
+
                   return (
                     <tr
                       key={item.id}
@@ -323,15 +378,17 @@ const ListDO: React.FC = () => {
                         isDisabled ? 'opacity-50' : ''
                       }`}
                     >
-                      <td className="px-3 py-2 whitespace-nowrap text-xs">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleCheckboxChange(item)}
-                          disabled={isDisabled}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
-                        />
-                      </td>
+                      {!isDoneFilter && (
+                        <td className="px-3 py-2 whitespace-nowrap text-xs">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleCheckboxChange(item)}
+                            disabled={isDisabled}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
+                          />
+                        </td>
+                      )}
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
                         {item.no_jo || '-'}
                       </td>
@@ -366,6 +423,7 @@ const ListDO: React.FC = () => {
             </tbody>
           </table>
         </div>
+
         {/* Pagination */}
         <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4 px-4">
           <div className="flex items-center gap-2">
@@ -393,9 +451,7 @@ const ListDO: React.FC = () => {
                 count={totalPages}
                 color="primary"
                 page={page}
-                onChange={(e, i) => {
-                  setPage(i);
-                }}
+                onChange={(e, i) => setPage(i)}
                 size="small"
               />
             </Stack>
@@ -431,13 +487,16 @@ const ListDO: React.FC = () => {
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-start gap-3 flex-1">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleCheckboxChange(item)}
-                      disabled={isDisabled}
-                      className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
-                    />
+                    {/* Hide checkbox on Done tab */}
+                    {!isDoneFilter && (
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleCheckboxChange(item)}
+                        disabled={isDisabled}
+                        className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded disabled:cursor-not-allowed"
+                      />
+                    )}
                     <div className="flex-1">
                       <div className="font-semibold text-sm text-gray-900">
                         {item.no_jo || '-'}
@@ -540,9 +599,7 @@ const ListDO: React.FC = () => {
               count={totalPages}
               color="primary"
               page={page}
-              onChange={(e, i) => {
-                setPage(i);
-              }}
+              onChange={(e, i) => setPage(i)}
               size="small"
             />
           </Stack>
@@ -560,4 +617,5 @@ const ListDO: React.FC = () => {
     </div>
   );
 };
+
 export default ListDO;
