@@ -107,7 +107,7 @@ const ListOutstanding: React.FC = () => {
           page: page,
           limit: limit,
           search: searchTerm,
-          status: statusFilter,
+          // status: statusFilter,
         },
         withCredentials: true,
       });
