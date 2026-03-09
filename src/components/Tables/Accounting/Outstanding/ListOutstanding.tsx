@@ -75,7 +75,7 @@ interface DetailCustomer {
   top_faktur: string;
 }
 
-type StatusFilter = 'done' | 'progress';
+type StatusFilter = boolean; // true = already invoiced | false = not yet invoiced
 
 const ListOutstanding: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -91,7 +91,7 @@ const ListOutstanding: React.FC = () => {
   );
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedDOGroups, setSelectedDOGroups] = useState<number[]>([]);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('progress');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(false);
 
   useEffect(() => {
     fetchDOData();
@@ -107,7 +107,8 @@ const ListOutstanding: React.FC = () => {
           page: page,
           limit: limit,
           search: searchTerm,
-          // status: statusFilter,
+          status: 'done',
+          is_created_invoice: statusFilter,
         },
         withCredentials: true,
       });
@@ -245,7 +246,9 @@ const ListOutstanding: React.FC = () => {
     );
   };
 
-  const isInvoicedFilter = statusFilter === 'done';
+  // 'progress' tab = is_created_invoice: false → allow creating invoices
+  // 'done' tab     = is_created_invoice: true  → invoice already created, hide checkbox & button
+  const isInvoiceCreated = statusFilter;
 
   return (
     <div className="">
@@ -254,24 +257,24 @@ const ListOutstanding: React.FC = () => {
         {/* Status Filter Tabs */}
         <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
           <button
-            onClick={() => handleStatusFilterChange('progress')}
+            onClick={() => handleStatusFilterChange(false)}
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              statusFilter === 'progress'
+              statusFilter === false
+                ? 'bg-white text-blue-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Not Invoiced
+          </button>
+          <button
+            onClick={() => handleStatusFilterChange(true)}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+              statusFilter === true
                 ? 'bg-white text-green-600 shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            Progress
-          </button>
-          <button
-            onClick={() => handleStatusFilterChange('done')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-              statusFilter === 'done'
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Done
+            Invoiced
           </button>
         </div>
 
@@ -303,8 +306,8 @@ const ListOutstanding: React.FC = () => {
             </svg>
           </div>
 
-          {/* Create Invoice Button — hidden on Invoiced tab */}
-          {!isInvoicedFilter && selectedItems.length > 0 && (
+          {/* Create Invoice Button — only shown on "Not Invoiced" tab with items selected */}
+          {!isInvoiceCreated && selectedItems.length > 0 && (
             <button
               onClick={handleCreateInvoice}
               disabled={loading}
@@ -335,11 +338,12 @@ const ListOutstanding: React.FC = () => {
           </div>
         )}
 
-        {isInvoicedFilter && (
+        {isInvoiceCreated && (
           <div className="bg-gray-50 text-gray-500 px-4 py-2 rounded-lg text-sm border border-gray-200">
-            Items with{' '}
-            <span className="font-medium text-purple-700">Invoiced</span> status
-            cannot be used to create an Invoice.
+            Items in the{' '}
+            <span className="font-medium text-green-700">Invoiced</span> tab
+            have already been invoiced and cannot be used to create a new
+            Invoice.
           </div>
         )}
       </div>
@@ -351,7 +355,7 @@ const ListOutstanding: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 {/* Hide checkbox column on Invoiced tab */}
-                {!isInvoicedFilter && (
+                {!isInvoiceCreated && (
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                     <input
                       type="checkbox"
@@ -385,16 +389,13 @@ const ListOutstanding: React.FC = () => {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   Tgl Pengiriman
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                  Status
-                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
                   <td
-                    colSpan={isInvoicedFilter ? 8 : 9}
+                    colSpan={isInvoiceCreated ? 9 : 10}
                     className="px-3 py-4 text-center"
                   >
                     <div className="flex justify-center items-center">
@@ -405,7 +406,7 @@ const ListOutstanding: React.FC = () => {
               ) : doData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={isInvoicedFilter ? 8 : 9}
+                    colSpan={isInvoiceCreated ? 9 : 10}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -427,7 +428,7 @@ const ListOutstanding: React.FC = () => {
                         isDisabled ? 'opacity-50' : ''
                       }`}
                     >
-                      {!isInvoicedFilter && (
+                      {!isInvoiceCreated && (
                         <td className="px-3 py-2 whitespace-nowrap text-xs">
                           <input
                             type="checkbox"
@@ -461,9 +462,6 @@ const ListOutstanding: React.FC = () => {
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                         {formatDate(item.so.tgl_pengiriman)}
-                      </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-xs">
-                        {getStatusBadge(item.status)}
                       </td>
                     </tr>
                   );
@@ -537,7 +535,7 @@ const ListOutstanding: React.FC = () => {
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-start gap-3 flex-1">
                     {/* Hide checkbox on Invoiced tab */}
-                    {!isInvoicedFilter && (
+                    {!isInvoiceCreated && (
                       <input
                         type="checkbox"
                         checked={isSelected}

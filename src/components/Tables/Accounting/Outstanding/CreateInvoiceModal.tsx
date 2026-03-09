@@ -46,6 +46,11 @@ interface InvoiceProduct {
   no_do?: string;
 }
 
+interface DeliveryOrderGroupItem {
+  id: number;
+  no_do: string;
+}
+
 interface CreateInvoiceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -161,12 +166,10 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 
     items.forEach((item: any) => {
       if (item.delivery_order && Array.isArray(item.delivery_order)) {
-        // Process each delivery order separately
         item.delivery_order.forEach((order: any) => {
           if (!order.id_produk) return;
 
           const qty = order.jumlah_qty || 0;
-          // FIX: use harga_jual from the SO inside each delivery_order item
           const harga = order.so?.harga_jual || 0;
           const diskonProduk = 0;
 
@@ -193,7 +196,6 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
           products.push(product);
         });
       } else {
-        // Process single item
         if (item.id_produk) {
           const qty = item.jumlah_qty || item.po_qty || 0;
           const harga = item.so?.harga_jual || 0;
@@ -271,7 +273,6 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       (sum, product) => sum + product.diskon_produk,
       0,
     );
-    // FIX: Balance due = subTotal + totalPajak - dp
     const balanceDue = subTotal + totalPajak - dp;
 
     return {
@@ -281,6 +282,16 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       totalPajak,
       balanceDue,
     };
+  };
+
+  // Build delivery_order_group from the selected DO items
+  const buildDeliveryOrderGroup = (): DeliveryOrderGroupItem[] => {
+    return selectedDOItems
+      .filter((item: any) => item.id && item.no_do)
+      .map((item: any) => ({
+        id: item.id,
+        no_do: item.no_do,
+      }));
   };
 
   const handleSubmit = async () => {
@@ -308,6 +319,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         note: catatan,
         is_show_dpp: isShowDPP,
         invoice_produk: invoiceProducts,
+        delivery_order_group: buildDeliveryOrderGroup(),
       };
       console.log('Submitting invoice payload:', payload);
 
@@ -373,7 +385,6 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           ) : (
-            // FIX: left column 30%, right column 70%
             <div className="flex gap-4">
               {/* Left Column - 30% */}
               <div className="w-[30%] shrink-0 space-y-3">
@@ -531,7 +542,6 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                           <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
                             No
                           </th>
-
                           <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
                             Nama Barang
                           </th>
@@ -571,9 +581,8 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                               <td className="px-2 py-1.5 text-xs text-gray-900">
                                 {index + 1}
                               </td>
-
                               <td
-                                className="px-2 py-1.5 text-xs text-gray-900 max-w-[120px] "
+                                className="px-2 py-1.5 text-xs text-gray-900 max-w-[120px]"
                                 title={product.nama_produk}
                               >
                                 {product.nama_produk}
