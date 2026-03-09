@@ -131,7 +131,7 @@ interface PrintLabelFormData {
   customer: string;
   produk: string;
   qty_po: number | string;
-  qty_label: string; // FIX: always string so it can be fully cleared
+  qty_label: string;
   keterangan_qty_label: string;
   tanggal_produksi: string;
   operator: string;
@@ -169,12 +169,12 @@ const buildPrintHTML = (
   };
   const formatNoJO = (val: string) => val.replace(/^JO-/i, '');
 
-  // FIX 1: Increased cellspacing from 4 to 8 for more space between cards
   const LABEL_H = '62mm';
   const HEADER_H = '16mm';
   const PAGE_H = '186mm';
 
-  const singleLabel = () => {
+  // copyIndex is 1-based (1, 2, 3 … copies)
+  const singleLabel = (copyIndex: number) => {
     const rowCount = data.tanda_retur ? 8 : 7;
     const dataAreaMm = 44;
     const unitMm = dataAreaMm / rowCount;
@@ -250,7 +250,12 @@ const buildPrintHTML = (
 
         <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
           <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">OPERATOR</div>
-          <div style="flex:1;font-weight:bold;">: ${data.operator || ''}</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
+              data.operator || ''
+            } - ${copyIndex}</span>
+            
+          </div>
         </div>
 
       </div>
@@ -261,19 +266,18 @@ const buildPrintHTML = (
   for (let p = 0; p * 6 < copies; p++) {
     const pageRows: string[] = [];
     for (let r = 0; r < 3; r++) {
-      const li = p * 6 + r * 2;
-      const ri = li + 1;
+      const li = p * 6 + r * 2; // absolute 0-based index of left card
+      const ri = li + 1; // absolute 0-based index of right card
       const left =
         li < copies
-          ? singleLabel()
+          ? singleLabel(li + 1) // pass 1-based copy number
           : `<td style="width:50%;height:${LABEL_H};background:white;border:none;padding:0;"></td>`;
       const right =
         ri < copies
-          ? singleLabel()
+          ? singleLabel(ri + 1) // pass 1-based copy number
           : `<td style="width:50%;height:${LABEL_H};background:white;border:none;padding:0;"></td>`;
       pageRows.push(`<tr style="height:${LABEL_H};">${left}${right}</tr>`);
     }
-    // FIX 1: cellspacing increased from 4 → 8 for more gap between cards
     pages.push(`
       <table width="100%" cellspacing="10" cellpadding="0" style="border-collapse:separate; border:none; table-layout:fixed; height:${PAGE_H}; page-break-after:always;">
         ${pageRows.join('')}
@@ -307,7 +311,6 @@ const PrintLabel: React.FC = () => {
   const [joList, setJoList] = useState<JOData[]>([]);
   const [selectedJO, setSelectedJO] = useState<JOData | null>(null);
 
-  // FIX 2: copies is now a string so it can be fully cleared while typing
   const [copiesStr, setCopiesStr] = useState<string>('6');
 
   const [logoBase64, setLogoBase64] = useState<string>('');
@@ -318,7 +321,7 @@ const PrintLabel: React.FC = () => {
     customer: '',
     produk: '',
     qty_po: '',
-    qty_label: '', // FIX 2: start as empty string
+    qty_label: '',
     keterangan_qty_label: '',
     tanggal_produksi: new Date().toISOString().split('T')[0],
     operator: '',
@@ -419,7 +422,6 @@ const PrintLabel: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // FIX 3: use iframe-based print instead of window.open so focus stays on parent window
   const handlePrint = () => {
     if (!formData.no_jo) {
       toast.error('Pilih Nomor JO terlebih dahulu');
@@ -429,8 +431,6 @@ const PrintLabel: React.FC = () => {
     const copiesNum = Math.max(1, parseInt(copiesStr) || 1);
     const html = buildPrintHTML(formData, copiesNum, logoBase64 || LogoSrc);
 
-    // Create a hidden iframe, write the HTML into it, print, then remove it.
-    // This keeps focus on the parent page so all form inputs remain editable.
     const iframe = document.createElement('iframe');
     iframe.style.cssText =
       'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
@@ -447,16 +447,13 @@ const PrintLabel: React.FC = () => {
     iDoc.write(html);
     iDoc.close();
 
-    // Wait for iframe content (including images) to load before printing
     iframe.onload = () => {
       try {
         iframe.contentWindow?.focus();
         iframe.contentWindow?.print();
       } finally {
-        // Remove iframe after a short delay to let the print dialog settle
         setTimeout(() => {
           document.body.removeChild(iframe);
-          // Re-focus the main window so inputs are immediately usable
           window.focus();
         }, 1000);
       }
@@ -552,7 +549,6 @@ const PrintLabel: React.FC = () => {
           </div>
           <div>
             <FL>Qty Label</FL>
-            {/* FIX 2: value is a plain string, onChange stores raw string → can be fully cleared */}
             <input
               type="number"
               value={formData.qty_label}
@@ -608,7 +604,6 @@ const PrintLabel: React.FC = () => {
           </div>
           <div>
             <FL>Jumlah Copies</FL>
-            {/* FIX 2: stored as string so first digit can be deleted freely */}
             <input
               type="number"
               value={copiesStr}
@@ -616,7 +611,6 @@ const PrintLabel: React.FC = () => {
               max={100}
               onChange={(e) => setCopiesStr(e.target.value)}
               onBlur={(e) => {
-                // Clamp & normalise on blur so an empty/invalid value snaps back to 1
                 const parsed = parseInt(e.target.value);
                 setCopiesStr(
                   String(

@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
-
+import * as XLSX from 'xlsx-js-style';
 // --- Interfaces ---
 
 interface SOData {
@@ -128,6 +128,7 @@ const LaporanPengirimanDO: React.FC = () => {
           withCredentials: true,
         },
       );
+      console.log('Fetched report DO data:', res.data);
       setReportData(res.data.data || []);
       setTotalPages(res.data.total_page || 1);
     } catch (error) {
@@ -137,7 +138,376 @@ const LaporanPengirimanDO: React.FC = () => {
       setLoading(false);
     }
   };
+  const fetchAllDataForExport = async (): Promise<ReportDOItem[]> => {
+    const res: AxiosResponse<ReportDOResponse> = await axios.get(
+      `${import.meta.env.VITE_API_LINK}/reportDeliveryOrder`,
+      {
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+          search: searchTerm,
+          // no page, no limit
+        },
+        withCredentials: true,
+      },
+    );
+    return res.data.data || [];
+  };
+  const exportToExcel = async () => {
+    try {
+      setLoading(true);
 
+      const allData = await fetchAllDataForExport();
+
+      if (!allData || allData.length === 0) {
+        alert('No data to export');
+        setLoading(false);
+        return;
+      }
+
+      // ── Style helpers ──────────────────────────────────────────
+
+      const borderThin = {
+        top: { style: 'thin', color: { rgb: 'BBBBBB' } },
+        bottom: { style: 'thin', color: { rgb: 'BBBBBB' } },
+        left: { style: 'thin', color: { rgb: 'BBBBBB' } },
+        right: { style: 'thin', color: { rgb: 'BBBBBB' } },
+      };
+
+      const borderMedium = {
+        top: { style: 'medium', color: { rgb: '2563EB' } },
+        bottom: { style: 'medium', color: { rgb: '2563EB' } },
+        left: { style: 'medium', color: { rgb: '2563EB' } },
+        right: { style: 'medium', color: { rgb: '2563EB' } },
+      };
+
+      const styleMainHeader = {
+        font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10, name: 'Arial' },
+        fill: { fgColor: { rgb: '1D4ED8' } }, // dark blue
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: borderMedium,
+      };
+
+      const styleMainRow = (even: boolean) => ({
+        font: { sz: 10, name: 'Arial' },
+        fill: { fgColor: { rgb: even ? 'EFF6FF' : 'FFFFFF' } }, // alternate light blue / white
+        alignment: { vertical: 'center', wrapText: true },
+        border: borderThin,
+      });
+
+      const styleMainRowRight = (even: boolean) => ({
+        ...styleMainRow(even),
+        alignment: { horizontal: 'right', vertical: 'center' },
+      });
+
+      const styleChildHeader = {
+        font: { bold: true, color: { rgb: '1E3A5F' }, sz: 9, name: 'Arial' },
+        fill: { fgColor: { rgb: 'BFDBFE' } }, // light blue
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: borderThin,
+      };
+
+      const styleChildRow = (even: boolean) => ({
+        font: { sz: 9, name: 'Arial', color: { rgb: '374151' } },
+        fill: { fgColor: { rgb: even ? 'F0F9FF' : 'F8FAFC' } },
+        alignment: { vertical: 'center', wrapText: true },
+        border: borderThin,
+      });
+
+      const styleChildRowRight = (even: boolean) => ({
+        ...styleChildRow(even),
+        alignment: { horizontal: 'right', vertical: 'center' },
+      });
+
+      const styleChildFooter = {
+        font: { bold: true, sz: 9, name: 'Arial', color: { rgb: '1D4ED8' } },
+        fill: { fgColor: { rgb: 'DBEAFE' } },
+        alignment: { horizontal: 'right', vertical: 'center' },
+        border: borderThin,
+      };
+
+      const styleSpacer = {
+        fill: { fgColor: { rgb: 'F1F5F9' } },
+        border: { bottom: { style: 'thin', color: { rgb: 'E2E8F0' } } },
+      };
+
+      // ── Column definitions ─────────────────────────────────────
+
+      // Main table columns
+      const MAIN_COLS = [
+        { key: 'no', label: 'No', width: 5 },
+        { key: 'tgl_kirim', label: 'Tgl Kirim', width: 13 },
+        { key: 'no_po', label: 'NO PO Customer', width: 18 },
+        { key: 'tgl_po', label: 'Tanggal PO', width: 13 },
+        { key: 'no_so', label: 'NO SO', width: 14 },
+        { key: 'no_jo', label: 'NO JO', width: 14 },
+        { key: 'no_io', label: 'NO IO', width: 14 },
+        { key: 'customer', label: 'Customer', width: 22 },
+        { key: 'produk', label: 'Produk', width: 28 },
+        { key: 'qty_po', label: 'Qty PO', width: 12 },
+        { key: 'brg_kirim', label: 'Barang Kirim', width: 13 },
+        { key: 'sisa_po', label: 'Sisa PO', width: 12 },
+        { key: 'status', label: 'Status', width: 13 },
+        { key: 'progress', label: 'Progress (%)', width: 13 },
+      ];
+
+      // Child (DO detail) columns — same column count so widths align
+      const CHILD_COLS = [
+        { label: '', width: 5 }, // No (indent spacer)
+        { label: 'No', width: 5 },
+        { label: 'No. DO', width: 16 },
+        { label: 'Tgl DO', width: 13 },
+        { label: 'No. JO', width: 14 },
+        { label: 'No. IO', width: 14 },
+        { label: 'Kota Tujuan', width: 14 },
+        { label: 'Alamat', width: 24 },
+        { label: 'Rincian Qty', width: 24 },
+        { label: '', width: 12 }, // spacer
+        { label: 'Total Kirim', width: 13 },
+        { label: 'Catatan', width: 20 },
+        { label: 'Status DO', width: 13 },
+        { label: '', width: 13 }, // spacer
+      ];
+
+      const TOTAL_COLS = MAIN_COLS.length; // 14
+
+      // ── Build worksheet data ───────────────────────────────────
+
+      type CellData = { v: string | number; s: object; t?: string };
+      const ws_data: CellData[][] = [];
+
+      // Helper: push a full row of cells (pad / trim to TOTAL_COLS)
+      const pushRow = (cells: CellData[]) => {
+        while (cells.length < TOTAL_COLS) cells.push({ v: '', s: {} });
+        ws_data.push(cells.slice(0, TOTAL_COLS));
+      };
+
+      // ── Title row ──────────────────────────────────────────────
+      pushRow([
+        {
+          v: 'LAPORAN PENGIRIMAN DELIVERY ORDER',
+          s: {
+            font: {
+              bold: true,
+              sz: 14,
+              name: 'Arial',
+              color: { rgb: '1D4ED8' },
+            },
+            alignment: { horizontal: 'left', vertical: 'center' },
+          },
+        },
+        ...Array(TOTAL_COLS - 1).fill({ v: '', s: {} }),
+      ]);
+
+      // Date range info
+      pushRow([
+        {
+          v: `Periode: ${startDate} s/d ${endDate}`,
+          s: {
+            font: { sz: 10, name: 'Arial', italic: true },
+            alignment: { horizontal: 'left' },
+          },
+        },
+        ...Array(TOTAL_COLS - 1).fill({ v: '', s: {} }),
+      ]);
+
+      // Empty spacer row
+      pushRow(Array(TOTAL_COLS).fill({ v: '', s: styleSpacer }));
+
+      // ── Main header row ────────────────────────────────────────
+      pushRow(MAIN_COLS.map((c) => ({ v: c.label, s: styleMainHeader })));
+
+      // ── Data rows ─────────────────────────────────────────────
+      allData.forEach((item, idx) => {
+        const even = idx % 2 === 0;
+        const dog = item.delivery_order_groups[0] ?? null;
+        const progress = calcProgress(item);
+        const status = calcStatus(item);
+        const mStyle = styleMainRow(even);
+        const mStyleR = styleMainRowRight(even);
+
+        // ── Main row ────────────────────────────────────────────
+        pushRow([
+          {
+            v: idx + 1,
+            s: {
+              ...mStyle,
+              alignment: { horizontal: 'center', vertical: 'center' },
+            },
+          },
+          { v: formatDate(item.tgl_pengiriman), s: mStyle },
+          { v: item.no_po_customer || '-', s: mStyle },
+          { v: formatDate(item.so?.tgl_input_po), s: mStyle },
+          { v: item.no_so || '-', s: mStyle },
+          { v: dog?.no_jo || '-', s: mStyle },
+          { v: dog?.no_io || '-', s: mStyle },
+          { v: item.customer || '-', s: mStyle },
+          { v: item.produk || '-', s: mStyle },
+          { v: item.po_qty ?? 0, s: { ...mStyleR, t: 'n' } },
+          { v: item.total_jumlah_qty ?? 0, s: { ...mStyleR, t: 'n' } },
+          { v: sisaPO(item), s: { ...mStyleR, t: 'n' } },
+          {
+            v: status,
+            s: {
+              ...mStyle,
+              alignment: { horizontal: 'center', vertical: 'center' },
+            },
+          },
+          {
+            v: `${progress}%`,
+            s: {
+              ...mStyle,
+              alignment: { horizontal: 'center', vertical: 'center' },
+            },
+          },
+        ]);
+
+        // ── Child header row ─────────────────────────────────────
+        pushRow(
+          CHILD_COLS.map((c) => ({
+            v: c.label,
+            s: c.label
+              ? styleChildHeader
+              : { fill: { fgColor: { rgb: 'DBEAFE' } } },
+          })),
+        );
+
+        // ── Child detail rows ────────────────────────────────────
+        if (item.delivery_order_groups.length === 0) {
+          pushRow([
+            { v: '', s: {} },
+            {
+              v: 'Tidak ada data DO',
+              s: {
+                font: {
+                  italic: true,
+                  sz: 9,
+                  color: { rgb: '9CA3AF' },
+                  name: 'Arial',
+                },
+                alignment: { horizontal: 'center' },
+                border: borderThin,
+              },
+            },
+            ...Array(TOTAL_COLS - 2).fill({ v: '', s: { border: borderThin } }),
+          ]);
+        } else {
+          item.delivery_order_groups.forEach((dog_row, ci) => {
+            const cEven = ci % 2 === 0;
+            const matched = item.delivery_orders.find(
+              (d) => d.id_do_group === dog_row.id,
+            );
+            const cStyle = styleChildRow(cEven);
+            const cStyleR = styleChildRowRight(cEven);
+
+            pushRow([
+              { v: '', s: { fill: { fgColor: { rgb: 'EFF6FF' } } } }, // indent
+              {
+                v: ci + 1,
+                s: {
+                  ...cStyle,
+                  alignment: { horizontal: 'center', vertical: 'center' },
+                },
+              },
+              { v: dog_row.no_do || '-', s: cStyle },
+              { v: formatDate(dog_row.tgl_do), s: cStyle },
+              { v: dog_row.no_jo || matched?.no_jo || '-', s: cStyle },
+              { v: dog_row.no_io || matched?.no_io || '-', s: cStyle },
+              { v: dog_row.kota || '-', s: cStyle },
+              { v: dog_row.alamat || '-', s: cStyle },
+              { v: matched ? buildQtyDetail(matched) : '-', s: cStyle },
+              { v: '', s: cStyle },
+              { v: matched?.jumlah_qty ?? 0, s: { ...cStyleR, t: 'n' } },
+              { v: dog_row.note || '-', s: cStyle },
+              {
+                v: dog_row.status || '-',
+                s: {
+                  ...cStyle,
+                  alignment: { horizontal: 'center', vertical: 'center' },
+                },
+              },
+              { v: '', s: cStyle },
+            ]);
+          });
+
+          // Child footer: total row (only if >1 DO)
+          if (item.delivery_order_groups.length > 1) {
+            pushRow([
+              { v: '', s: {} },
+              ...Array(9).fill({ v: '', s: styleChildFooter }),
+              {
+                v: item.total_jumlah_qty ?? 0,
+                s: {
+                  ...styleChildFooter,
+                  t: 'n',
+                  alignment: { horizontal: 'right', vertical: 'center' },
+                },
+              },
+              {
+                v: 'Total Keseluruhan',
+                s: {
+                  ...styleChildFooter,
+                  alignment: { horizontal: 'left', vertical: 'center' },
+                },
+              },
+              { v: '', s: styleChildFooter },
+              { v: '', s: styleChildFooter },
+            ]);
+          }
+        }
+
+        // Spacer between records
+        pushRow(Array(TOTAL_COLS).fill({ v: '', s: styleSpacer }));
+      });
+
+      // ── Build workbook ─────────────────────────────────────────
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(
+        ws_data.map((row) => row.map((cell) => cell.v)),
+      );
+
+      // Apply styles cell by cell
+      ws_data.forEach((row, r) => {
+        row.forEach((cell, c) => {
+          const addr = XLSX.utils.encode_cell({ r, c });
+          if (!ws[addr]) ws[addr] = { v: cell.v };
+          ws[addr].s = cell.s;
+          if ((cell as any).t) ws[addr].t = (cell as any).t;
+        });
+      });
+
+      // Merge title cell across all columns
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: TOTAL_COLS - 1 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: TOTAL_COLS - 1 } },
+      ];
+
+      // Column widths (use main col widths)
+      ws['!cols'] = MAIN_COLS.map((c) => ({ wch: c.width }));
+
+      // Row heights
+      const rowHeights: { [key: number]: { hpt: number } } = {};
+      rowHeights[0] = { hpt: 28 }; // title
+      ws['!rows'] = ws_data.map((_, i) => rowHeights[i] ?? { hpt: 18 });
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Laporan Pengiriman DO');
+
+      // ── Export file ────────────────────────────────────────────
+      const currentDate = new Date().toISOString().split('T')[0];
+      let filename = 'Laporan_Pengiriman_DO';
+      if (startDate && endDate) filename += `_${startDate}_to_${endDate}`;
+      else if (startDate) filename += `_from_${startDate}`;
+      else if (endDate) filename += `_until_${endDate}`;
+      filename += `_exported_${currentDate}.xlsx`;
+
+      XLSX.writeFile(wb, filename);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleSearch = () => {
     setSearchTerm(searchInput);
     setPage(1);
@@ -452,12 +822,6 @@ const LaporanPengirimanDO: React.FC = () => {
             className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        <button
-          onClick={handleSearch}
-          className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
-        >
-          Cari
-        </button>
 
         {/* Search input */}
         <div className="flex flex-col gap-1 flex-1 min-w-[220px]">
@@ -500,6 +864,25 @@ const LaporanPengirimanDO: React.FC = () => {
                 Clear
               </button>
             )}
+            <button
+              onClick={exportToExcel}
+              className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Export Excel
+            </button>
           </div>
         </div>
       </div>

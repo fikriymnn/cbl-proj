@@ -67,7 +67,8 @@
     "socket.io-client": "^4.7.5",
     "sort-by": "^0.0.2",
     "uuid": "^13.0.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-js-style": "^1.2.0"
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",
