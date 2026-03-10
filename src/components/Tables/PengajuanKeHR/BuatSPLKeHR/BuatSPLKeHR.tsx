@@ -53,6 +53,9 @@ function BuatSPLKeHR() {
   // Draft table states
   const [draftLembur, setDraftLembur] = useState<any>();
   const [draftPage, setDraftPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<'draft' | 'request user'>(
+    'draft',
+  );
 
   // Edit mode states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -67,7 +70,7 @@ function BuatSPLKeHR() {
     if (idPengaju) {
       getDraftLembur();
     }
-  }, [draftPage, idPengaju]);
+  }, [draftPage, idPengaju, statusFilter]);
 
   // Function to clear all form fields
   const clearForm = () => {
@@ -184,7 +187,7 @@ function BuatSPLKeHR() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanLembur`;
     try {
       const params: any = {
-        status: 'draft',
+        status: statusFilter,
         page: draftPage,
         limit: 10,
       };
@@ -995,16 +998,49 @@ function BuatSPLKeHR() {
       <div className="w-full mx-auto bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
         {/* Draft Header */}
         <div className="bg-gradient-to-r from-orange-600 to-red-600 px-8 py-6 text-white">
-          <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
-            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Draft Pengajuan Lembur
-          </h2>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <h2 className="text-2xl font-bold flex items-center gap-3">
+              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {statusFilter === 'draft' ? 'Draft' : 'Request User'} Pengajuan
+              Lembur
+            </h2>
+
+            {/* Status Filter Toggle */}
+            <div className="flex items-center gap-1 bg-white/20 rounded-xl p-1">
+              <button
+                onClick={() => {
+                  setStatusFilter('draft');
+                  setDraftPage(1);
+                }}
+                className={`px-5 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
+                  statusFilter === 'draft'
+                    ? 'bg-white text-orange-600 shadow-md'
+                    : 'text-white hover:bg-white/20'
+                }`}
+              >
+                Draft
+              </button>
+              <button
+                onClick={() => {
+                  setStatusFilter('request user');
+                  setDraftPage(1);
+                }}
+                className={`px-5 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
+                  statusFilter === 'request user'
+                    ? 'bg-white text-orange-600 shadow-md'
+                    : 'text-white hover:bg-white/20'
+                }`}
+              >
+                Request User
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Draft Table */}
@@ -1072,48 +1108,78 @@ function BuatSPLKeHR() {
                     {data.karyawan?.name || '-'}
                   </label>
 
-                  <label className="text-orange-600 text-sm font-bold uppercase ">
+                  <label
+                    className={`text-sm font-bold uppercase ${
+                      data.status === 'draft'
+                        ? 'text-orange-600'
+                        : 'text-blue-600'
+                    }`}
+                  >
                     {data.status}
                   </label>
 
                   <div className="flex justify-start items-center gap-2 col-span-2">
-                    <button
-                      onClick={() => handleEdit(data)}
-                      disabled={isLoading}
-                      className="px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-2"
-                      title="Edit data"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                    {/* Edit button: only shown for draft status */}
+                    {data.status === 'draft' && (
+                      <button
+                        onClick={() => handleEdit(data)}
+                        disabled={isLoading}
+                        className="px-3 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-2"
+                        title="Edit data"
                       >
-                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                      </svg>
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleSendToUser(data.id)}
-                      disabled={isLoading}
-                      className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-2"
-                      title="Send to user"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                        Edit
+                      </button>
+                    )}
+                    {/* Send button: only shown for draft status */}
+                    {data.status === 'draft' && (
+                      <button
+                        onClick={() => handleSendToUser(data.id)}
+                        disabled={isLoading}
+                        className="px-3 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 text-white text-xs font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed flex items-center gap-2"
+                        title="Send to user"
                       >
-                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                      </svg>
-                      Send
-                    </button>
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                        </svg>
+                        Send
+                      </button>
+                    )}
+                    {/* Read-only badge for request user status */}
+                    {data.status !== 'draft' && (
+                      <span className="px-3 py-2 bg-gray-100 text-gray-500 text-xs font-semibold rounded-lg flex items-center gap-1 border border-gray-200">
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Read Only
+                      </span>
+                    )}
                   </div>
                 </div>
               ))
             ) : (
               <div className="px-8 py-12 text-center">
                 <p className="text-gray-500 text-lg">
-                  Tidak ada data draft saat ini
+                  Tidak ada data{' '}
+                  {statusFilter === 'draft' ? 'draft' : 'request user'} saat ini
                 </p>
               </div>
             )}

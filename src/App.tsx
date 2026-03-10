@@ -2314,7 +2314,7 @@ function App() {
           }
         />
         <Route
-          path="/user-menu/submission"
+          path="/user-menu/spl-surat-perintah-lembur"
           element={
             <P>
               <UserMenuPage />
@@ -2330,7 +2330,7 @@ function App() {
           }
         />
         <Route
-          path="/user-menu/izin-terlambat-atasan"
+          path="/user-menu/datang-terlambat-atasan"
           element={
             <P>
               <AtasanIzinTerlambatPage />
@@ -2338,7 +2338,7 @@ function App() {
           }
         />
         <Route
-          path="/user-menu/izin-terlambat-bawahan"
+          path="/user-menu/datang-terlambat-bawahan"
           element={
             <P>
               <BawahanIzinTerlambatPage />

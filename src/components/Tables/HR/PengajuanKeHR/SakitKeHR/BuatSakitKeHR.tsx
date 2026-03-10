@@ -43,7 +43,6 @@ function BuatSakitKeHR() {
       });
 
       setUserList(res.data.data);
-      //console
       setOptions(
         res.data.data.map((item: any) => {
           const latestBagianMesin =
@@ -74,6 +73,107 @@ function BuatSakitKeHR() {
   const [tglSampai, setTglSampai] = useState<any>();
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
 
+  // File upload states
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState('');
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const validateAndSetFile = (selectedFile: File) => {
+    if (!selectedFile.type.startsWith('image/')) {
+      alert('Hanya file gambar yang diperbolehkan');
+      return;
+    }
+    const maxSize = 1024 * 1024; // 1MB
+    if (selectedFile.size > maxSize) {
+      alert('Ukuran file maksimal 1 MB');
+      return;
+    }
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    const newPreviewUrl = URL.createObjectURL(selectedFile);
+    setPreviewUrl(newPreviewUrl);
+    setFile(selectedFile);
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      validateAndSetFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      validateAndSetFile(e.target.files[0]);
+    }
+  };
+
+  const removeFile = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setFile(null);
+    setPreviewUrl(null);
+    const fileInput = document.getElementById(
+      'file-upload-sakit',
+    ) as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const openFullscreen = (imageUrl: string) => {
+    setFullscreenImage(imageUrl);
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+    setFullscreenImage('');
+  };
+
+  async function handleFileUpload(uploadFile: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: { 'Content-Type': 'multipart/form-data' },
+        },
+      );
+      return (
+        response.data.fileName || response.data.filename || response.data.file
+      );
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      throw new Error('Gagal mengupload file');
+    }
+  }
+
   // Function to clear the form
   const clearForm = () => {
     setIdKaryawan(null);
@@ -82,8 +182,8 @@ function BuatSakitKeHR() {
     setSelectedEmployee(null);
     setDaysDifference(null);
     setShowError(false);
+    removeFile();
 
-    // Clear date input values
     const dateInputs = document.querySelectorAll('input[type="date"]');
     dateInputs.forEach((input: any) => {
       input.value = '';
@@ -99,10 +199,18 @@ function BuatSakitKeHR() {
       alert('Tanggal Sampai Belum Diisi');
       return;
     }
+    if (!file) {
+      alert('Surat sakit / bukti foto belum diupload');
+      return;
+    }
 
     const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanSakit`;
     try {
       setIsLoading(true);
+
+      // Upload file first
+      const fileName = await handleFileUpload(file);
+
       const res = await axios.post(
         url,
         {
@@ -111,6 +219,7 @@ function BuatSakitKeHR() {
           dari: tglDari,
           sampai: tglSampai,
           jumlah_hari: daysDifference,
+          lampiran: fileName,
         },
         {
           withCredentials: true,
@@ -118,7 +227,6 @@ function BuatSakitKeHR() {
       );
       setIsLoading(false);
 
-      // Show success alert and clear form instead of reloading
       alert('Pengajuan Sakit Berhasil');
       clearForm();
     } catch (error: any) {
@@ -166,6 +274,29 @@ function BuatSakitKeHR() {
               <span className="text-lg font-semibold text-gray-700">
                 Loading...
               </span>
+            </div>
+          </div>
+        )}
+
+        {/* Fullscreen Image Modal */}
+        {isFullscreen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-90 z-[99] overflow-auto"
+            onClick={closeFullscreen}
+          >
+            <div className="relative w-full min-h-screen flex justify-center p-4">
+              <img
+                src={fullscreenImage}
+                alt="Fullscreen"
+                className="max-w-full h-auto block"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+                onClick={closeFullscreen}
+              >
+                ×
+              </button>
             </div>
           </div>
         )}
@@ -283,11 +414,64 @@ function BuatSakitKeHR() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-center w-full">
-                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  {/* Drag & Drop Upload Area */}
+                  <div
+                    className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                      dragActive
+                        ? 'border-blue-400 bg-blue-100'
+                        : file
+                        ? 'border-green-400 bg-green-50'
+                        : 'border-blue-300 bg-blue-50 hover:bg-blue-100'
+                    }`}
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={handleDrop}
+                  >
+                    <input
+                      type="file"
+                      id="file-upload-sakit"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+
+                    {file ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full">
+                          <svg
+                            className="w-6 h-6 text-green-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFile();
+                          }}
+                          className="text-xs text-red-600 hover:text-red-700 relative z-10"
+                        >
+                          Hapus file
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
                         <svg
-                          className="w-10 h-10 mb-3 text-blue-400"
+                          className="w-10 h-10 mb-3 text-blue-400 mx-auto"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -299,18 +483,41 @@ function BuatSakitKeHR() {
                             d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                           />
                         </svg>
-                        <p className="mb-2 text-sm text-blue-600">
+                        <p className="text-sm text-blue-600">
                           <span className="font-semibold">
-                            Jelaskan alasan pengajuan sakit Anda...
-                          </span>
+                            Klik untuk upload
+                          </span>{' '}
+                          atau drag and drop
                         </p>
                         <p className="text-xs text-blue-500">
-                          Lampirkan surat dokter jika ada
+                          PNG, JPG, JPEG hingga 1MB
+                        </p>
+                        <p className="text-xs text-red-500">
+                          * Lampiran foto wajib diupload
                         </p>
                       </div>
-                      <input name="lampiran" type="file" className="hidden" />
-                    </label>
+                    )}
                   </div>
+
+                  {/* Image Preview */}
+                  {previewUrl && (
+                    <div className="mt-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Preview Gambar
+                      </label>
+                      <div className="relative bg-white rounded-lg p-3 border border-blue-200">
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
+                          className="w-full h-40 object-contain rounded-lg border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => openFullscreen(previewUrl)}
+                        />
+                        <p className="text-xs text-gray-500 mt-2 text-center">
+                          Klik gambar untuk memperbesar
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -320,7 +527,9 @@ function BuatSakitKeHR() {
               {!showError ? (
                 <button
                   onClick={() => postSakit()}
-                  disabled={isLoading || !idKaryawan || !tglDari || !tglSampai}
+                  disabled={
+                    isLoading || !idKaryawan || !tglDari || !tglSampai || !file
+                  }
                   className="px-8 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg transition-all duration-200"
                 >
                   AJUKAN

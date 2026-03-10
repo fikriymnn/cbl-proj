@@ -22,6 +22,20 @@ function DiprosesSakitHR() {
   const [endDate, setEndDate] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState<any>([]);
 
+  // Fullscreen image state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState('');
+
+  const openFullscreen = (imageUrl: string) => {
+    setFullscreenImage(imageUrl);
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+    setFullscreenImage('');
+  };
+
   useEffect(() => {
     getSakit();
     getMasterUser();
@@ -32,14 +46,12 @@ function DiprosesSakitHR() {
     try {
       setIsLoading(true);
 
-      // Build params object
       const params: any = {
         status_tiket: 'history',
         page: page,
         limit: 10,
       };
 
-      // Add filters if they exist
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
       if (idKaryawan.length > 0) params.id_karyawan = idKaryawan.join(',');
@@ -87,20 +99,17 @@ function DiprosesSakitHR() {
   }
 
   const handleChangePointKaryawan = (selectedOptions: any) => {
-    // Extract selected IDs
     const selectedIds = selectedOptions.map((option: any) => option.value);
-    // Find the corresponding user data in userList
     const filteredData = userList.filter((item: any) =>
       selectedIds.includes(item.userid),
     );
     console.log('Selected Users:', filteredData);
-    // Store the selected user IDs in an array
     setIdKaryawan(filteredData.map((user: any) => user.userid));
     setSelectedEmployees(selectedOptions);
   };
 
   const handleApplyFilters = () => {
-    setPage(1); // Reset to first page when filters are applied
+    setPage(1);
     getSakit();
   };
 
@@ -110,20 +119,16 @@ function DiprosesSakitHR() {
     setIdKaryawan([]);
     setSelectedEmployees([]);
     setPage(1);
-    // Trigger API call with reset filters
     setTimeout(() => getSakit(), 100);
   };
 
-  // Add a new function specifically for export data fetching
   async function getLKHForExport() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanSakit`;
     try {
-      // Build params object without page and limit
       const params: any = {
         status_tiket: 'history',
       };
 
-      // Add filters if they exist
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
 
@@ -139,13 +144,10 @@ function DiprosesSakitHR() {
     }
   }
 
-  // Modify the export function to use the new data fetching function
   const exportToExcel = async () => {
     try {
-      // Show loading state
       setIsLoading(true);
 
-      // Fetch all data without pagination
       const exportData = await getLKHForExport();
 
       if (!exportData?.data || exportData.data.length === 0) {
@@ -154,7 +156,6 @@ function DiprosesSakitHR() {
         return;
       }
 
-      // Prepare data for Excel
       const excelData = exportData.data.map((item: any, index: number) => ({
         No: index + 1,
         'Nama Personnel': item.karyawan?.name || '',
@@ -170,11 +171,9 @@ function DiprosesSakitHR() {
         'Respon HR': item.catatan_hr,
       }));
 
-      // Create workbook and worksheet
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet(excelData);
 
-      // Auto-size columns
       const colWidths =
         excelData.length > 0
           ? Object.keys(excelData[0]).map((key) => ({
@@ -221,6 +220,7 @@ function DiprosesSakitHR() {
     onchangeVal[i] = false;
     setShowModal(onchangeVal);
   };
+
   async function hapusCuti(id: any, dari: any, sampai: any, name: any) {
     if (
       window.confirm(
@@ -247,8 +247,32 @@ function DiprosesSakitHR() {
       }
     }
   }
+
   return (
     <>
+      {/* Fullscreen Image Modal */}
+      {isFullscreen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-90 z-[99] overflow-auto"
+          onClick={closeFullscreen}
+        >
+          <div className="relative w-full min-h-screen flex justify-center p-4">
+            <img
+              src={fullscreenImage}
+              alt="Fullscreen"
+              className="max-w-full h-auto block"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+              onClick={closeFullscreen}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="overflow-x-scroll">
         {isLoading && <Loading />}
         <div className="min-w-[700px] bg-white rounded-xl">
@@ -344,9 +368,7 @@ function DiprosesSakitHR() {
                         ...base,
                         minHeight: '42px',
                         borderColor: '#d1d5db',
-                        '&:hover': {
-                          borderColor: '#3b82f6',
-                        },
+                        '&:hover': { borderColor: '#3b82f6' },
                         '&:focus-within': {
                           borderColor: '#3b82f6',
                           boxShadow: '0 0 0 2px rgba(59, 130, 246, 0.1)',
@@ -481,22 +503,19 @@ function DiprosesSakitHR() {
                       DETAIL
                     </button>
                     {data.status != 'rejected' && (
-                      <>
-                        {' '}
-                        <button
-                          onClick={() =>
-                            hapusCuti(
-                              data.id,
-                              dateOnly(data.dari),
-                              dateOnly(data.sampai),
-                              data.karyawan?.name,
-                            )
-                          }
-                          className="uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-red-400 border bg-red-600 border-red-600 justify-center"
-                        >
-                          Batalkan
-                        </button>
-                      </>
+                      <button
+                        onClick={() =>
+                          hapusCuti(
+                            data.id,
+                            dateOnly(data.dari),
+                            dateOnly(data.sampai),
+                            data.karyawan?.name,
+                          )
+                        }
+                        className="uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-red-400 border bg-red-600 border-red-600 justify-center"
+                      >
+                        Batalkan
+                      </button>
                     )}
                     {showModal[i] == true && (
                       <ModalKosongan
@@ -642,6 +661,39 @@ function DiprosesSakitHR() {
                               </div>
                             </div>
                           </div>
+
+                          {/* Lampiran / Surat Sakit Image */}
+                          {data.lampiran && (
+                            <div className="px-4 py-2">
+                              <label className="text-black text-xs font-bold">
+                                SURAT SAKIT / LAMPIRAN
+                              </label>
+                              <div className="mt-2 bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                <div className="flex items-center justify-center">
+                                  <img
+                                    src={`${
+                                      import.meta.env.VITE_API_LINK
+                                    }/images/${data.lampiran}`}
+                                    alt="Surat Sakit"
+                                    className="max-h-48 object-contain rounded border border-gray-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() =>
+                                      openFullscreen(
+                                        `${
+                                          import.meta.env.VITE_API_LINK
+                                        }/images/${data.lampiran}`,
+                                      )
+                                    }
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2 text-center">
+                                  Klik gambar untuk memperbesar
+                                </p>
+                              </div>
+                            </div>
+                          )}
 
                           <div className="grid grid-cols-2 gap-2 px-4 py-2"></div>
                           <div className="flex flex-col w-full px-4">

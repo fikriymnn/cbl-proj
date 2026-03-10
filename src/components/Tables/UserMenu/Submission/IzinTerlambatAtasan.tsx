@@ -23,6 +23,7 @@ interface MasterShift {
 }
 
 interface HistoryData {
+  tanggal_masuk: string;
   id: number;
   id_karyawan: number;
   id_atasan: number | null;
@@ -65,6 +66,7 @@ function IzinTerlambatAtasan() {
   const [tanggal, setTanggal] = useState('');
   const [alasanTerlambat, setAlasanTerlambat] = useState('');
   const [lamaTerlambat, setLamaTerlambat] = useState<number>(0);
+  const [tanggalMasuk, setTanggalMasuk] = useState('');
   const [shift, setShift] = useState('');
   const [catatan, setCatatan] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -116,6 +118,16 @@ function IzinTerlambatAtasan() {
       getHistoryList();
     }
   }, [currentPage, me, statusFilter]);
+
+  // Sync tanggal_masuk date portion when tanggal changes
+  useEffect(() => {
+    if (tanggal) {
+      setTanggalMasuk((prev) => {
+        const existingTime = prev ? prev.split('T')[1] : '';
+        return existingTime ? `${tanggal}T${existingTime}` : `${tanggal}T`;
+      });
+    }
+  }, [tanggal]);
 
   async function getMe() {
     const url = `${import.meta.env.VITE_API_LINK}/me`;
@@ -262,6 +274,19 @@ function IzinTerlambatAtasan() {
 
   const { today, tomorrow } = getTodayAndTomorrow();
 
+  const handleTanggalChange = (value: string) => {
+    setTanggal(value);
+    // Sync date portion of tanggal_masuk, preserve existing time if any
+    setTanggalMasuk((prev) => {
+      const existingTime = prev && prev.includes('T') ? prev.split('T')[1] : '';
+      return existingTime
+        ? `${value}T${existingTime}`
+        : prev
+        ? `${value}T`
+        : '';
+    });
+  };
+
   const handleAlasanChange = (alasanId: string) => {
     const selected = masterTerlambat.find(
       (item) => item.id.toString() === alasanId,
@@ -383,6 +408,14 @@ function IzinTerlambatAtasan() {
       alert('Alasan terlambat harus dipilih');
       return;
     }
+    if (
+      !tanggalMasuk ||
+      !tanggalMasuk.includes('T') ||
+      tanggalMasuk.endsWith('T')
+    ) {
+      alert('Tanggal & jam masuk harus diisi');
+      return;
+    }
     if (!shift) {
       alert('Shift harus dipilih');
       return;
@@ -415,6 +448,7 @@ function IzinTerlambatAtasan() {
         tanggal: formattedDate,
         alasan_terlambat: alasanTerlambat,
         lama_terlambat: lamaTerlambat,
+        tanggal_masuk: tanggalMasuk,
         shift: shift,
         catatan: catatan,
         file: fileName,
@@ -434,6 +468,7 @@ function IzinTerlambatAtasan() {
       setTanggal('');
       setAlasanTerlambat('');
       setLamaTerlambat(0);
+      setTanggalMasuk('');
       setShift('');
       setCatatan('');
       removeFile();
@@ -639,9 +674,11 @@ function IzinTerlambatAtasan() {
                   <div className="space-y-2 text-sm">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <p className="text-gray-600">Tanggal:</p>
+                        <p className="text-gray-600">
+                          Tanggal & Jam Kedatangan:
+                        </p>
                         <p className="font-semibold text-gray-800">
-                          {formatDate(selectedRequest.tanggal)}
+                          {formatDateTime(selectedRequest.tanggal_masuk)}
                         </p>
                       </div>
                       <div>
@@ -658,12 +695,6 @@ function IzinTerlambatAtasan() {
                           {selectedRequest.alasan_terlambat || '-'}
                         </p>
                       </div>
-                      {/* <div>
-                        <p className="text-gray-600">Durasi:</p>
-                        <p className="font-semibold text-gray-800">
-                          {selectedRequest.lama_terlambat} jam
-                        </p>
-                      </div> */}
                     </div>
                     <div>
                       <p className="text-gray-600">Catatan:</p>
@@ -837,7 +868,7 @@ function IzinTerlambatAtasan() {
                   value={tanggal}
                   min={today}
                   max={tomorrow}
-                  onChange={(e) => setTanggal(e.target.value)}
+                  onChange={(e) => handleTanggalChange(e.target.value)}
                   className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-gray-800 font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
                 />
                 {dateError && (
@@ -903,23 +934,41 @@ function IzinTerlambatAtasan() {
                   {masterTerlambat.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.alasan_terlambat}
-                      {/* ({item.jumlah_jam} jam) */}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Lama Terlambat (Read-only)
-              {lamaTerlambat > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-blue-700 font-medium">
-                    Durasi Keterlambatan:{' '}
-                    <span className="font-bold text-lg">
-                      {lamaTerlambat} jam
-                    </span>
-                  </p>
-                </div>
-              )} */}
+              {/* Tanggal Masuk */}
+              <div className="flex flex-col gap-2">
+                <label className="text-gray-700 text-sm font-semibold flex items-center gap-2">
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Tanggal &amp; Jam Kedatangan{' '}
+                  <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={tanggalMasuk}
+                  min={tanggal ? `${tanggal}T00:00` : undefined}
+                  max={tanggal ? `${tanggal}T23:59` : undefined}
+                  onChange={(e) => setTanggalMasuk(e.target.value)}
+                  className="w-full rounded-lg border-2 border-gray-300 px-4 py-3 text-gray-800 font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                />
+                <p className="text-xs text-gray-500">
+                  Tanggal otomatis mengikuti field Tanggal di atas. Pilih jam
+                  masuk Anda.
+                </p>
+              </div>
 
               {/* Catatan */}
               <div className="flex flex-col gap-2">
@@ -1114,14 +1163,11 @@ function IzinTerlambatAtasan() {
               <div className="grid grid-cols-12 px-8 py-4 border-b-4 border-gray-200 gap-2 bg-gray-50">
                 <label className="text-neutral-700 text-sm font-bold">No</label>
                 <label className="text-neutral-700 text-sm font-bold col-span-2">
-                  Tanggal
+                  Tanggal &amp; Jam Kedatangan
                 </label>
                 <label className="text-neutral-700 text-sm font-bold col-span-2">
                   Alasan
                 </label>
-                {/* <label className="text-neutral-700 text-sm font-bold">
-                  Durasi
-                </label> */}
                 <label className="text-neutral-700 text-sm font-bold">
                   Shift
                 </label>
@@ -1148,17 +1194,13 @@ function IzinTerlambatAtasan() {
 
                     <div className="flex flex-col col-span-2">
                       <label className="text-neutral-800 text-sm font-semibold">
-                        {formatDate(data.tanggal)}
+                        {formatDateTime(data.tanggal_masuk)}
                       </label>
                     </div>
 
                     <label className="text-neutral-600 text-sm col-span-2">
                       {data.alasan_terlambat || '-'}
                     </label>
-
-                    {/* <label className="text-neutral-800 text-sm font-semibold">
-                      {data.lama_terlambat} jam
-                    </label> */}
 
                     <label className="text-neutral-800 text-sm font-semibold">
                       Shift {data.shift}

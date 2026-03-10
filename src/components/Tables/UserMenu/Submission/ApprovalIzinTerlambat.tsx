@@ -4,6 +4,7 @@ import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 
 interface PengajuanTerlambat {
+  tanggal_masuk: string;
   id: number;
   id_karyawan: number;
   id_atasan: number | null;
@@ -497,9 +498,11 @@ function ApprovalIzinTerlambat() {
                   <div className="space-y-2 text-sm">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <p className="text-gray-600">Tanggal:</p>
+                        <p className="text-gray-600">
+                          Tanggal & Jam Kedatangan:
+                        </p>
                         <p className="font-semibold text-gray-800">
-                          {formatDate(selectedDetailRequest.tanggal)}
+                          {formatDateTime(selectedDetailRequest.tanggal_masuk)}
                         </p>
                       </div>
                       <div>
@@ -753,9 +756,9 @@ function ApprovalIzinTerlambat() {
                   </h4>
                   <div className="space-y-2 text-sm">
                     <div>
-                      <p className="text-gray-600">Tanggal:</p>
+                      <p className="text-gray-600">Tanggal & Jam Kedatangan:</p>
                       <p className="font-semibold text-gray-800">
-                        {formatDate(selectedRequest.tanggal)}
+                        {formatDateTime(selectedRequest.tanggal_masuk)}
                       </p>
                     </div>
                     <div>
@@ -902,7 +905,7 @@ function ApprovalIzinTerlambat() {
                 Nama
               </label>
               <label className="text-neutral-700 text-sm font-bold col-span-2">
-                Tanggal
+                Tanggal &amp; Jam Kedatangan
               </label>
               <label className="text-neutral-700 text-sm font-bold">
                 Shift
@@ -938,7 +941,7 @@ function ApprovalIzinTerlambat() {
                   </div>
 
                   <label className="text-neutral-600 text-sm col-span-2">
-                    {formatDate(data.tanggal)}
+                    {formatDateTime(data.tanggal_masuk)}
                   </label>
 
                   <label className="text-neutral-800 text-sm font-semibold">
