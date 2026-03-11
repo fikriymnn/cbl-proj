@@ -397,9 +397,9 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
             <thead>
               <tr>
                 <th style="width: 13%;">Jumlah<br/>Qty</th>
-                <th style="width: 42%;" class="no-border-right">Nama Barang</th>
-                <th style="width: 12%;" class="no-border-left"></th>
-                <th style="width: 33%;">Keterangan</th>
+                <th style="width: 51%;" class="no-border-right">Nama Barang</th>
+                <th style="width: 17%;" class="no-border-left"></th>
+                <th style="width: 23%;">Keterangan</th>
               </tr>
             </thead>
             <tbody>
@@ -418,9 +418,9 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
                         item?.no_po_customer,
                       )}</div>
                     </td>
-                    <td class="text-center no-jo-red no-border-left">${removeJOPrefix(
-                      item?.no_jo || '',
-                    )}</td>
+                    <td class="text-center no-jo-red no-border-left">${
+                      item?.no_jo || ''
+                    }</td>
                     <td class="white-space-pre">${getItemKeterangan(item)}</td>
                   </tr>
                 `,
