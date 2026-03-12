@@ -182,17 +182,15 @@ const LKHAllData: React.FC = () => {
   const [showDetailPopup, setShowDetailPopup] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
-  const [searchTerm, setSearchTerm] = useState<string>('');
   const [limit, setLimit] = useState<number>(10);
+
+  // Separate input value from the actual search term used in API
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     fetchLKHData();
   }, [page, searchTerm, limit]);
-
-  useEffect(() => {
-    console.log('lkhAllData state updated:', lkhAllData);
-    console.log('lkhAllData length:', lkhAllData.length);
-  }, [lkhAllData]);
 
   const fetchLKHData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/produksi/listAllData`;
@@ -209,11 +207,11 @@ const LKHAllData: React.FC = () => {
         withCredentials: true,
       });
 
-      console.log('Fetched LKH All data:', res.data);
-      console.log('Data array:', res.data.data);
-      console.log('Data array length:', res.data.data?.length);
+      const responseData = Array.isArray(res.data.data)
+        ? res.data.data
+        : (res.data as any)?.rows || (res.data as any)?.result || [];
 
-      setLkhAllData(res.data.data || []);
+      setLkhAllData(responseData);
 
       if (res.data.total_page) {
         setTotalPages(res.data.total_page);
@@ -226,6 +224,24 @@ const LKHAllData: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Trigger search: commit input to searchTerm and reset to page 1
+  const handleSearch = () => {
+    setPage(1);
+    setSearchTerm(searchInput);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
   };
 
   const handleLimitChange = (newLimit: number): void => {
@@ -250,44 +266,26 @@ const LKHAllData: React.FC = () => {
       : text;
   };
 
-  const formatDateTime = (dateString: string): string => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-  };
-
   const formatDateOnly = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-
     return `${year}-${month}-${day}`;
   };
 
   const formatDuration = (totalSeconds: number): string => {
     if (isNaN(totalSeconds) || totalSeconds < 0) return '00:00:00';
-
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const secs = totalSeconds % 60;
-
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(
       2,
       '0',
     )}:${String(secs).padStart(2, '0')}`;
   };
 
-  // Format number with thousand separator (dot)
   const formatNumber = (num: number | null | undefined): string => {
     if (num === null || num === undefined) return '-';
     return num.toLocaleString('id-ID');
@@ -298,7 +296,7 @@ const LKHAllData: React.FC = () => {
       return { baik: 0, rusak_sebagian: 0, rusak_total: 0, tambah_bahan: 0 };
     }
     return proses
-      .filter((p) => p.is_final_result === true) // Only sum final results
+      .filter((p) => p.is_final_result === true)
       .reduce(
         (acc, p) => ({
           baik: acc.baik + (p.baik || 0),
@@ -311,25 +309,16 @@ const LKHAllData: React.FC = () => {
   };
 
   const calculateTotalTime = (proses: ProduksiLKHProses[] | undefined) => {
-    const timeByType = {
-      setting: 0,
-      produksi: 0,
-      kendala: 0,
-      maintenance: 0,
-    };
-
+    const timeByType = { setting: 0, produksi: 0, kendala: 0, maintenance: 0 };
     if (!proses || proses.length === 0) return timeByType;
-
     proses.forEach((p) => {
       const waktu = parseInt(p.total_waktu) || 0;
       const prosesType = p.proses?.toLowerCase() || '';
-
       if (prosesType === 'setting') timeByType.setting += waktu;
       else if (prosesType === 'produksi') timeByType.produksi += waktu;
       else if (prosesType === 'kendala') timeByType.kendala += waktu;
       else if (prosesType === 'maintenance') timeByType.maintenance += waktu;
     });
-
     return timeByType;
   };
 
@@ -340,23 +329,19 @@ const LKHAllData: React.FC = () => {
 
   const getLatestTahapan = (proses: ProduksiLKHProses[] | undefined) => {
     if (!proses || proses.length === 0) return '-';
-
     const sortedProses = [...proses].sort(
       (a, b) =>
         new Date(b.waktu_mulai).getTime() - new Date(a.waktu_mulai).getTime(),
     );
-
     return sortedProses[0]?.tahapan?.nama_tahapan || '-';
   };
 
   const getLatestMesin = (proses: ProduksiLKHProses[] | undefined) => {
     if (!proses || proses.length === 0) return '-';
-
     const sortedProses = [...proses].sort(
       (a, b) =>
         new Date(b.waktu_mulai).getTime() - new Date(a.waktu_mulai).getTime(),
     );
-
     return sortedProses[0]?.mesin?.nama_mesin || '-';
   };
 
@@ -365,31 +350,70 @@ const LKHAllData: React.FC = () => {
       {/* Header Section */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col gap-2 sm:gap-3 mb-3 sm:mb-4">
-          {/* Search */}
-          <div className="relative w-full">
-            <input
-              type="text"
-              placeholder="Search by JO, Customer, or Product..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-            />
-            <svg
-              className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          {/* Search with Button */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="Search by JO, Customer, or Product..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="pl-9 pr-8 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               />
-            </svg>
+              <svg
+                className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              {searchInput && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg flex items-center gap-2 whitespace-nowrap"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              Search
+            </button>
           </div>
         </div>
       </div>
@@ -427,12 +451,6 @@ const LKHAllData: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {(() => {
-                console.log('Rendering table body. Loading:', loading);
-                console.log('lkhAllData:', lkhAllData);
-                console.log('lkhAllData.length:', lkhAllData.length);
-                return null;
-              })()}
               {loading ? (
                 <tr>
                   <td colSpan={8} className="px-3 py-4 text-center">
@@ -570,20 +588,15 @@ const LKHAllData: React.FC = () => {
               ))}
             </div>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Stack spacing={2}>
-              <Pagination
-                count={totalPages}
-                color="primary"
-                page={page}
-                onChange={(e, i) => {
-                  setPage(i);
-                }}
-                size="small"
-              />
-            </Stack>
-          </div>
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              color="primary"
+              page={page}
+              onChange={(e, i) => setPage(i)}
+              size="small"
+            />
+          </Stack>
         </div>
       </div>
 
@@ -631,7 +644,6 @@ const LKHAllData: React.FC = () => {
                     </span>
                     <div className="text-gray-900 text-xs">{lkh.produk}</div>
                   </div>
-
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <span className="text-gray-500 text-xs font-medium">
@@ -648,7 +660,6 @@ const LKHAllData: React.FC = () => {
                       <div className="text-gray-900 text-xs">{latestMesin}</div>
                     </div>
                   </div>
-
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <span className="text-gray-500 text-xs font-medium">
@@ -667,7 +678,6 @@ const LKHAllData: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
                   <div>
                     <span className="text-gray-500 text-xs font-medium">
                       Tanggal Kirim:
@@ -676,7 +686,6 @@ const LKHAllData: React.FC = () => {
                       {formatDateOnly(lkh.tgl_kirim)}
                     </div>
                   </div>
-
                   <div>
                     <span className="text-gray-500 text-xs font-medium">
                       Waktu:
@@ -696,7 +705,6 @@ const LKHAllData: React.FC = () => {
                       </div>
                     </div>
                   </div>
-
                   <div>
                     <span className="text-gray-500 text-xs font-medium">
                       Hasil:
@@ -720,7 +728,6 @@ const LKHAllData: React.FC = () => {
                       </span>
                     </div>
                   </div>
-
                   <div>
                     <span className="text-gray-500 text-xs font-medium">
                       Waste:
@@ -764,15 +771,12 @@ const LKHAllData: React.FC = () => {
               ))}
             </div>
           </div>
-
           <Stack spacing={2}>
             <Pagination
               count={totalPages}
               color="primary"
               page={page}
-              onChange={(e, i) => {
-                setPage(i);
-              }}
+              onChange={(e, i) => setPage(i)}
               size="small"
             />
           </Stack>

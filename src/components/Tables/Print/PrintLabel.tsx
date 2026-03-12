@@ -143,6 +143,7 @@ const buildPrintHTML = (
   data: PrintLabelFormData,
   copies: number,
   logoDataUri: string,
+  angkaDari: number = 1,
 ): string => {
   const now = new Date();
   const dateStr = `${String(now.getDate()).padStart(2, '0')}/${String(
@@ -167,13 +168,11 @@ const buildPrintHTML = (
     const d = new Date(val);
     return isNaN(d.getTime()) ? val : d.toLocaleDateString('id-ID');
   };
-  const formatNoJO = (val: string) => val.replace(/^JO-/i, '');
 
   const LABEL_H = '62mm';
   const HEADER_H = '16mm';
   const PAGE_H = '186mm';
 
-  // copyIndex is 1-based (1, 2, 3 … copies)
   const singleLabel = (copyIndex: number) => {
     const rowCount = data.tanda_retur ? 8 : 7;
     const dataAreaMm = 44;
@@ -254,7 +253,6 @@ const buildPrintHTML = (
             <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
               data.operator || ''
             } - ${copyIndex}</span>
-            
           </div>
         </div>
 
@@ -266,15 +264,15 @@ const buildPrintHTML = (
   for (let p = 0; p * 6 < copies; p++) {
     const pageRows: string[] = [];
     for (let r = 0; r < 3; r++) {
-      const li = p * 6 + r * 2; // absolute 0-based index of left card
-      const ri = li + 1; // absolute 0-based index of right card
+      const li = p * 6 + r * 2;
+      const ri = li + 1;
       const left =
         li < copies
-          ? singleLabel(li + 1) // pass 1-based copy number
+          ? singleLabel(angkaDari + li)
           : `<td style="width:50%;height:${LABEL_H};background:white;border:none;padding:0;"></td>`;
       const right =
         ri < copies
-          ? singleLabel(ri + 1) // pass 1-based copy number
+          ? singleLabel(angkaDari + ri)
           : `<td style="width:50%;height:${LABEL_H};background:white;border:none;padding:0;"></td>`;
       pageRows.push(`<tr style="height:${LABEL_H};">${left}${right}</tr>`);
     }
@@ -312,6 +310,7 @@ const PrintLabel: React.FC = () => {
   const [selectedJO, setSelectedJO] = useState<JOData | null>(null);
 
   const [copiesStr, setCopiesStr] = useState<string>('6');
+  const [angkaDariStr, setAngkaDariStr] = useState<string>('1');
 
   const [logoBase64, setLogoBase64] = useState<string>('');
 
@@ -429,7 +428,13 @@ const PrintLabel: React.FC = () => {
     }
 
     const copiesNum = Math.max(1, parseInt(copiesStr) || 1);
-    const html = buildPrintHTML(formData, copiesNum, logoBase64 || LogoSrc);
+    const angkaDari = Math.max(1, parseInt(angkaDariStr) || 1);
+    const html = buildPrintHTML(
+      formData,
+      copiesNum,
+      logoBase64 || LogoSrc,
+      angkaDari,
+    );
 
     const iframe = document.createElement('iframe');
     iframe.style.cssText =
@@ -621,7 +626,23 @@ const PrintLabel: React.FC = () => {
               className={manualInput}
             />
           </div>
-          <div />
+          <div>
+            <FL>Angka Dari</FL>
+            <input
+              type="number"
+              value={angkaDariStr}
+              min={1}
+              onChange={(e) => setAngkaDariStr(e.target.value)}
+              onBlur={(e) => {
+                const parsed = parseInt(e.target.value);
+                setAngkaDariStr(
+                  String(isNaN(parsed) || parsed < 1 ? 1 : parsed),
+                );
+              }}
+              className={manualInput}
+              placeholder="Mulai dari angka..."
+            />
+          </div>
         </div>
 
         {/* Print Button */}

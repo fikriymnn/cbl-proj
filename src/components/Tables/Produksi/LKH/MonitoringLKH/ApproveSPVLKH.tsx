@@ -32,6 +32,8 @@ interface ProduksiLKHProses {
   note: string;
   id_kode_produksi: number;
   is_final_result: boolean;
+  proses?: string;
+  operator?: Operator;
 }
 
 interface Kendala {
@@ -143,6 +145,8 @@ const selectStyles = {
 const ApproveSPVLKH: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [lkhData, setLkhData] = useState<LKHTahapanData[]>([]);
+  const [divisiBawahan, setDivisiBawahan] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string>('');
 
   const [actionLoading, setActionLoading] = useState<{
     [key: number]: boolean;
@@ -163,11 +167,44 @@ const ApproveSPVLKH: React.FC = () => {
   const [wasteKendalaList, setWasteKendalaList] = useState<WasteData[]>([]);
 
   useEffect(() => {
-    fetchLKHData();
+    getMe();
     fetchWasteKendala();
   }, []);
 
-  const fetchLKHData = async (): Promise<void> => {
+  const getMe = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+
+      const role = res.data.role;
+      const userDivisiBawahan = res.data.divisi_bawahan;
+
+      setUserRole(role);
+
+      const isSuperAdminOrDev = role === 'super admin' || role === 'developer';
+
+      if (isSuperAdminOrDev) {
+        fetchLKHData(null);
+        return;
+      }
+
+      if (!userDivisiBawahan || userDivisiBawahan === '') {
+        setLkhData([]);
+        setLoading(false);
+        return;
+      }
+
+      setDivisiBawahan(userDivisiBawahan);
+      fetchLKHData(userDivisiBawahan);
+    } catch (error) {
+      console.error('Error fetching me:', error);
+      setLoading(false);
+    }
+  };
+
+  const fetchLKHData = async (
+    divisiBawahanParam: string | null,
+  ): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/produksi/lkhTahapan`;
     try {
       setLoading(true);
@@ -175,13 +212,16 @@ const ApproveSPVLKH: React.FC = () => {
         status: 'request to spv',
       };
 
+      if (divisiBawahanParam !== null && divisiBawahanParam !== '') {
+        params.divisi_bawahan = divisiBawahanParam;
+      }
+
       const res: AxiosResponse<LKHResponse> = await axios.get(url, {
         params,
         withCredentials: true,
       });
 
       setLkhData(res.data.data || []);
-
       console.log('Fetched LKH Tahapan data:', res.data);
     } catch (error) {
       console.error('Error fetching LKH data:', error);
@@ -209,7 +249,6 @@ const ApproveSPVLKH: React.FC = () => {
   const openApprovalModal = (lkh: LKHTahapanData) => {
     setSelectedLKHForApproval(lkh);
 
-    // Initialize editable data from produksi_lkh_proses
     const initialEditableData = lkh.produksi_lkh_proses.map((proses) => ({
       id: proses.id,
       baik: proses.baik,
@@ -219,7 +258,6 @@ const ApproveSPVLKH: React.FC = () => {
     }));
     setEditableData(initialEditableData);
 
-    // Initialize editable waste data from produksi_lkh_waste
     const initialEditableWasteData =
       lkh.produksi_lkh_waste?.map((waste) => ({
         id: waste.id,
@@ -262,7 +300,6 @@ const ApproveSPVLKH: React.FC = () => {
         if (item.id !== id) return item;
 
         if (field === 'id_waste') {
-          // Reset kendala when waste changes
           return {
             ...item,
             id_waste: Number(value),
@@ -294,20 +331,19 @@ const ApproveSPVLKH: React.FC = () => {
     try {
       setActionLoading((prev) => ({ ...prev, [id]: true }));
 
-      // Prepare the body with updated produksi_lkh_proses and produksi_lkh_waste
       const body: any = {
         produksi_lkh_proses: editableData,
       };
 
-      // Only include waste data if it exists
       if (editableWasteData.length > 0) {
         body.produksi_lkh_waste = editableWasteData;
       }
+
       console.log('Approve Payload:', body);
       await axios.put(url, body, { withCredentials: true });
       alert('LKH approved successfully!');
       closeApprovalModal();
-      fetchLKHData();
+      fetchLKHData(divisiBawahan);
     } catch (error) {
       console.error('Error approving LKH:', error);
       alert('Failed to approve LKH. Please try again.');
@@ -364,7 +400,6 @@ const ApproveSPVLKH: React.FC = () => {
     }
   };
 
-  // Calculate totals from produksi_lkh_proses array (only is_final_result: true)
   const calculateTotals = (prosesList: ProduksiLKHProses[]) => {
     return prosesList
       .filter((proses) => proses.is_final_result === true)
@@ -387,7 +422,6 @@ const ApproveSPVLKH: React.FC = () => {
       );
   };
 
-  // Calculate totals from editable data (only is_final_result: true)
   const calculateEditableTotals = () => {
     if (!selectedLKHForApproval) return null;
 
@@ -415,7 +449,6 @@ const ApproveSPVLKH: React.FC = () => {
       );
   };
 
-  // Get available waste options
   const getWasteOptions = (): Option[] => {
     return wasteKendalaList.map((waste) => ({
       value: String(waste.id),
@@ -423,18 +456,27 @@ const ApproveSPVLKH: React.FC = () => {
     }));
   };
 
-  // Get kendala options based on selected waste
   const getKendalaOptions = (wasteId: number): Option[] => {
     if (!wasteId) return [];
-
     const selectedWaste = wasteKendalaList.find((w) => w.id === wasteId);
-
     if (!selectedWaste) return [];
-
     return selectedWaste.kendala.map((kendala) => ({
       value: String(kendala.id),
       label: `${kendala.kode} - ${kendala.deskripsi}`,
     }));
+  };
+
+  // ─── Helper: get unique operators from produksi_lkh_proses ───────────────
+  const getUniqueOperators = (prosesList: ProduksiLKHProses[]): Operator[] => {
+    const seen = new Set<number>();
+    const operators: Operator[] = [];
+    for (const proses of prosesList) {
+      if (proses.operator && !seen.has(proses.operator.id)) {
+        seen.add(proses.operator.id);
+        operators.push(proses.operator);
+      }
+    }
+    return operators;
   };
 
   return (
@@ -712,6 +754,57 @@ const ApproveSPVLKH: React.FC = () => {
                 </div>
               </div>
 
+              {/* ─── Operator Info Section ──────────────────────────────────── */}
+              {(() => {
+                const operators = getUniqueOperators(
+                  selectedLKHForApproval.produksi_lkh_proses,
+                );
+                if (operators.length === 0) return null;
+                return (
+                  <div className="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                    <h4 className="text-sm font-semibold text-indigo-800 mb-2 flex items-center gap-1.5">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 20h5v-2a4 4 0 00-5-5M9 20H4v-2a4 4 0 015-5m6-4a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                      Operator ({operators.length})
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {operators.map((op) => (
+                        <div
+                          key={op.id}
+                          className="flex items-center gap-2 bg-white border border-indigo-200 rounded-lg px-3 py-2 shadow-sm"
+                        >
+                          {/* Avatar */}
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                            {op.nama
+                              .split(' ')
+                              .slice(0, 2)
+                              .map((n) => n[0])
+                              .join('')}
+                          </div>
+                          {/* Info */}
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-semibold text-gray-800 truncate">
+                              {op.nama}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Editable Process Table */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">
@@ -729,6 +822,9 @@ const ApproveSPVLKH: React.FC = () => {
                         </th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Deskripsi
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                          Operator
                         </th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Waktu
@@ -773,7 +869,28 @@ const ApproveSPVLKH: React.FC = () => {
                                 )}
                               </td>
                               <td className="px-3 py-2 text-xs text-gray-900">
-                                {proses.deskripsi}
+                                <div>{proses.deskripsi}</div>
+                                {proses.proses && (
+                                  <div className="text-gray-400 text-[10px] mt-0.5">
+                                    {proses.proses}
+                                  </div>
+                                )}
+                              </td>
+                              {/* ── Operator Cell ── */}
+                              <td className="px-3 py-2">
+                                {proses.operator ? (
+                                  <div className="flex items-center gap-1.5 min-w-[120px]">
+                                    <div className="flex flex-col">
+                                      <span className="text-xs font-medium text-gray-800 leading-tight">
+                                        {proses.operator.nama}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-gray-400">
+                                    -
+                                  </span>
+                                )}
                               </td>
                               <td className="px-3 py-2 text-xs text-gray-600">
                                 <div>{formatDateTime(proses.waktu_mulai)}</div>
@@ -983,7 +1100,7 @@ const ApproveSPVLKH: React.FC = () => {
                   </div>
                 )}
 
-              {/* Total Summary - Only Final Results */}
+              {/* Total Summary */}
               <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-sm font-semibold text-gray-900">
@@ -1044,6 +1161,7 @@ const ApproveSPVLKH: React.FC = () => {
                 </div>
               </div>
             </div>
+
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
               <button
@@ -1088,4 +1206,5 @@ const ApproveSPVLKH: React.FC = () => {
     </div>
   );
 };
+
 export default ApproveSPVLKH;

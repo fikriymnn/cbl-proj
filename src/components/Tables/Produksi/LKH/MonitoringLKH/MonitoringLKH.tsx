@@ -1,8 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
-
-type SortDirection = 'asc' | 'desc';
 
 interface MesinTahapan {
   id?: number;
@@ -21,7 +19,6 @@ interface Operator {
   nama: string;
   email: string;
   role: string;
-  // add other operator fields if needed
 }
 
 interface ProduksiLKH {
@@ -31,7 +28,6 @@ interface ProduksiLKH {
   no_so: string;
   customer: string;
   produk: string;
-  // add other fields if needed
 }
 
 interface LKHData {
@@ -56,8 +52,8 @@ interface LKHData {
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
-  operator?: Operator; // nested operator object
-  produksi_lkh?: ProduksiLKH; // nested produksi_lkh object
+  operator?: Operator;
+  produksi_lkh?: ProduksiLKH;
 }
 
 interface LKHResponse {
@@ -71,7 +67,11 @@ const MonitoringLKH: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
 
+  const [searchInput, setSearchInput] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchJO, setSearchJO] = useState<string>('');
+  const [searchJOInput, setSearchJOInput] = useState<string>('');
+
   const [selectedMesin, setSelectedMesin] = useState<number | null>(null);
   const [selectedTahapan, setSelectedTahapan] = useState<number | null>(null);
 
@@ -92,7 +92,7 @@ const MonitoringLKH: React.FC = () => {
 
   useEffect(() => {
     fetchLKHData();
-  }, [page, searchTerm, selectedMesin, selectedTahapan]);
+  }, [page, searchTerm, searchJO, selectedMesin, selectedTahapan]);
 
   const fetchMesinList = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/master/mesinTahapan`;
@@ -100,7 +100,6 @@ const MonitoringLKH: React.FC = () => {
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-
       setMesinList(res.data.data || []);
     } catch (error) {
       console.error('Error fetching mesin list:', error);
@@ -123,23 +122,29 @@ const MonitoringLKH: React.FC = () => {
     const url = `${import.meta.env.VITE_API_LINK}/produksi/lkhProses`;
     try {
       setLoading(true);
-      const params: any = {
-        page: page,
-        limit: 10,
-      };
-
-      if (searchTerm) params.search = searchTerm;
-      if (selectedMesin) params.id_mesin = selectedMesin;
-      if (selectedTahapan) params.id_tahapan = selectedTahapan;
-
       const res: AxiosResponse<LKHResponse> = await axios.get(url, {
-        params,
+        params: {
+          page: page,
+          limit: 10,
+          search: searchTerm,
+          no_jo: searchJO,
+          ...(selectedMesin && { id_mesin: selectedMesin }),
+          ...(selectedTahapan && { id_tahapan: selectedTahapan }),
+        },
         withCredentials: true,
       });
 
-      setLkhData(res.data.data || []);
-      setTotalPages(res.data.total_page || 0);
-      console.log('Fetched LKH data:', res.data);
+      const responseData = Array.isArray(res.data.data)
+        ? res.data.data
+        : (res.data as any)?.rows || (res.data as any)?.result || [];
+
+      setLkhData(responseData);
+      setTotalPages(
+        res.data.total_page ||
+          (res.data as any).totalPage ||
+          (res.data as any).totalPages ||
+          0,
+      );
     } catch (error) {
       console.error('Error fetching LKH data:', error);
       setLkhData([]);
@@ -148,11 +153,31 @@ const MonitoringLKH: React.FC = () => {
     }
   };
 
+  // Commits BOTH search inputs at once, resets to page 1
+  const handleSearch = () => {
+    setPage(1);
+    setSearchTerm(searchInput);
+    setSearchJO(searchJOInput);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    setSearchTerm('');
+    setSearchJOInput('');
+    setSearchJO('');
+    setPage(1);
+  };
+
   const handleApprove = async (id: number): Promise<void> => {
     const confirmed = window.confirm(
       'Are you sure you want to approve this LKH?',
     );
-
     if (!confirmed) return;
 
     const url = `${
@@ -170,24 +195,21 @@ const MonitoringLKH: React.FC = () => {
       setActionLoading((prev) => ({ ...prev, [id]: false }));
     }
   };
+
   const formatDuration = (totalSeconds: number | string): string => {
     const seconds =
       typeof totalSeconds === 'string' ? parseInt(totalSeconds) : totalSeconds;
-
     if (isNaN(seconds) || seconds < 0) return '-';
-
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-
     const parts: string[] = [];
-
     if (hours > 0) parts.push(`${hours} Jam`);
     if (minutes > 0) parts.push(`${minutes} Menit`);
     if (secs > 0 || parts.length === 0) parts.push(`${secs} Detik`);
-
     return parts.join(' ');
   };
+
   const truncateText = (text: string, maxLength: number) => {
     if (!text) return '-';
     return text.length > maxLength
@@ -212,14 +234,12 @@ const MonitoringLKH: React.FC = () => {
       'November',
       'December',
     ];
-
     const day = date.getDate();
     const month = months[date.getMonth()];
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
-
     return `${day} ${month} ${year} ${hours}:${minutes}:${seconds}`;
   };
 
@@ -257,31 +277,101 @@ const MonitoringLKH: React.FC = () => {
       {/* Header Section */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col gap-2 sm:gap-3 mb-3 sm:mb-4">
-          {/* Search */}
-          <div className="relative w-full">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(1);
-              }}
-              className="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
-            />
-            <svg
-              className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          {/* Unified Search Bar */}
+          <div className="flex rounded-lg border border-gray-300 overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white transition-shadow duration-150">
+            {/* General Search */}
+            <div className="relative flex-1 min-w-0">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search general..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="pl-9 pr-7 py-2.5 text-sm w-full focus:outline-none bg-transparent placeholder-gray-400"
               />
-            </svg>
+              {searchInput && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px bg-gray-200 self-stretch my-2" />
+
+            {/* JO Search */}
+            <div className="relative flex-1 min-w-0">
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <input
+                type="text"
+                placeholder="No JO..."
+                value={searchJOInput}
+                onChange={(e) => setSearchJOInput(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="pl-9 pr-3 py-2.5 text-sm w-full focus:outline-none bg-transparent placeholder-gray-400"
+              />
+            </div>
+
+            {/* Search Button */}
+            <button
+              onClick={handleSearch}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-colors duration-150 border-l border-blue-700"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              Search
+            </button>
           </div>
 
           {/* Filters Row */}
@@ -413,9 +503,6 @@ const MonitoringLKH: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {/* <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  Action
-                </th> */}
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   No JO
                 </th>
@@ -463,17 +550,6 @@ const MonitoringLKH: React.FC = () => {
               ) : (
                 lkhData.map((lkh) => (
                   <tr key={lkh.id} className="hover:bg-gray-50">
-                    {/* <td className="px-3 py-2 whitespace-nowrap text-xs">
-                      {lkh.status === 'request to spv' && (
-                        <button
-                          onClick={() => handleApprove(lkh.id)}
-                          disabled={actionLoading[lkh.id]}
-                          className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {actionLoading[lkh.id] ? 'Loading...' : 'Approve'}
-                        </button>
-                      )}
-                    </td> */}
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
                       {lkh.produksi_lkh?.no_jo || '-'}
                     </td>
@@ -492,7 +568,6 @@ const MonitoringLKH: React.FC = () => {
                         )}
                         {truncateText(lkh.deskripsi, 25)}
                       </div>
-
                       {lkh.note && (
                         <div
                           className="text-gray-500 text-xs truncate mt-0.5"
@@ -544,18 +619,13 @@ const MonitoringLKH: React.FC = () => {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
         <div className="w-full flex justify-center py-4">
           <Stack spacing={2}>
             <Pagination
               count={totalPages}
               color="primary"
               page={page}
-              onChange={(e, i) => {
-                setPage(i);
-                console.log(i);
-              }}
+              onChange={(e, i) => setPage(i)}
               size="small"
             />
           </Stack>
@@ -591,17 +661,7 @@ const MonitoringLKH: React.FC = () => {
                     {lkh.status}
                   </span>
                 </div>
-                {/* {lkh.status === 'request to spv' && (
-                  <button
-                    onClick={() => handleApprove(lkh.id)}
-                    disabled={actionLoading[lkh.id]}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                  >
-                    {actionLoading[lkh.id] ? 'Loading...' : 'Approve'}
-                  </button>
-                )} */}
               </div>
-
               <div className="space-y-2 text-sm">
                 <div>
                   <span className="text-gray-500 text-xs">Operator:</span>
@@ -609,19 +669,16 @@ const MonitoringLKH: React.FC = () => {
                     {lkh.operator?.nama || '-'}
                   </div>
                 </div>
-
                 <div>
                   <span className="text-gray-500 text-xs">Nama Produk:</span>
                   <div className="text-gray-900">
                     {lkh.produksi_lkh?.produk || '-'}
                   </div>
                 </div>
-
                 <div>
                   <span className="text-gray-500 text-xs">Deskripsi:</span>
                   <div className="text-gray-900">{lkh.deskripsi || '-'}</div>
                 </div>
-
                 <div className="grid grid-cols-1 gap-2 text-xs">
                   <div>
                     <span className="text-gray-500">Mulai:</span>
@@ -636,14 +693,12 @@ const MonitoringLKH: React.FC = () => {
                     </div>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-gray-500">Durasi:</span>
                   <span className="text-gray-900 font-medium">
                     {formatDuration(lkh.total_waktu)}
                   </span>
                 </div>
-
                 <div>
                   <span className="text-gray-500 text-xs">Produksi:</span>
                   <div className="flex gap-2 mt-1 flex-wrap">
@@ -661,7 +716,6 @@ const MonitoringLKH: React.FC = () => {
                     </span>
                   </div>
                 </div>
-
                 {lkh.note && (
                   <div>
                     <span className="text-gray-500 text-xs">Note:</span>
@@ -672,18 +726,13 @@ const MonitoringLKH: React.FC = () => {
             </div>
           ))
         )}
-
-        {/* Mobile Pagination */}
         <div className="w-full flex justify-center py-4">
           <Stack spacing={2}>
             <Pagination
               count={totalPages}
               color="primary"
               page={page}
-              onChange={(e, i) => {
-                setPage(i);
-                console.log(i);
-              }}
+              onChange={(e, i) => setPage(i)}
               size="small"
             />
           </Stack>
