@@ -613,15 +613,10 @@ const PrintLabel: React.FC = () => {
               type="number"
               value={copiesStr}
               min={1}
-              max={100}
               onChange={(e) => setCopiesStr(e.target.value)}
               onBlur={(e) => {
                 const parsed = parseInt(e.target.value);
-                setCopiesStr(
-                  String(
-                    isNaN(parsed) || parsed < 1 ? 1 : Math.min(parsed, 100),
-                  ),
-                );
+                setCopiesStr(String(isNaN(parsed) || parsed < 1 ? 1 : parsed));
               }}
               className={manualInput}
             />
