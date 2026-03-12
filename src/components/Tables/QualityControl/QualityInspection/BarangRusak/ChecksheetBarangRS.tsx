@@ -587,36 +587,53 @@ function ChecksheetBarangRS() {
   const [kendalaByJo, setkendalaByJo] = useState<any>([]);
   const [selectedMesinJO, setselectedMesinJO] = useState<any>(null);
   const [selectedOperatorJO, setselectedOperatorJO] = useState<any>(null);
+  // async function getKendalaByJO(noJO: any) {
+  //   const url = `${
+  //     import.meta.env.VITE_API_LINK_P1
+  //   }/api/get-kendala-by-jo/${noJO}`;
+
+  //   try {
+  //     setIsLoading(true);
+  //     const res = await axios.get(url);
+  //     setIsLoading(false);
+  //     setkendalaByJo(res.data.data);
+  //     console.log('kendala by jo', res.data.data);
+  //   } catch (error: any) {
+  //     setIsLoading(false);
+  //     console.log(error);
+  //   }
+  // }
   async function getKendalaByJO(noJO: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/get-kendala-by-jo/${noJO}`;
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/kendalaByJo`;
 
     try {
       setIsLoading(true);
-      const res = await axios.get(url);
+      const res = await axios.get(url, {
+        params: { no_jo: noJO },
+        withCredentials: true,
+      });
+      console.log('kendala by jo', res.data.data);
       setIsLoading(false);
       setkendalaByJo(res.data.data);
-      console.log('kendala by jo', res.data.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error);
     }
   }
-
   const [mesinByJo, setmesinByJo] = useState<any>([]);
 
   async function getmesinByJo(noJO: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/get-mesin-by-jo/${noJO}`;
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/mesinByJo`;
 
     try {
       setIsLoading(true);
-      const res = await axios.get(url);
+      const res = await axios.get(url, {
+        params: { no_jo: noJO },
+        withCredentials: true,
+      });
+      console.log('Mesin by jo', res.data.data);
       setIsLoading(false);
       setmesinByJo(res.data.data);
-      console.log('Mesin by jo', res.data.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error);
