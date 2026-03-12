@@ -81,7 +81,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   // Status Produk options
   const statusProdukOptions = [
     { value: 'OKP', label: 'OKP' },
-    { value: 'PROFF', label: 'PROFF' },
+    { value: 'PROOF', label: 'PROOF' },
     { value: 'ACC', label: 'ACC' },
     { value: 'PPOS', label: 'PPOS' },
   ];

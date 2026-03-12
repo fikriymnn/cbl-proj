@@ -103,7 +103,7 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
 
   const statusProdukOptions = [
     { value: 'OKP', label: 'OKP' },
-    { value: 'PROFF', label: 'PROFF' },
+    { value: 'PROOF', label: 'PROFF' },
     { value: 'ACC', label: 'ACC' },
   ];
 

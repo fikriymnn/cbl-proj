@@ -258,10 +258,13 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     try {
       setLoading(true);
       const res: AxiosResponse = await axios.get(url, {
-        params: { is_jo_done: false },
+        params: {
+          is_jo_done: false,
+
+          ...(tipeJO === 'JO PROOF' && { status_produk: 'proof' }),
+        },
         withCredentials: true,
       });
-      console.log('SO data response:', res.data);
       setSOData(res.data.data || []);
     } catch (error) {
       console.error('Error fetching SO data:', error);
@@ -276,7 +279,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const nextNumber = String(jumlahJO + 1).padStart(5, '0');
-    const joNumber = `JO-${nextNumber}/${month}/${year}`;
+    // ADD suffix:
+    const suffix = tipeJO === 'JO PROOF' ? '-P' : '';
+    const joNumber = `JO-${nextNumber}/${month}/${year}${suffix}`;
 
     setFormData((prev) => ({
       ...prev,
@@ -299,7 +304,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const year = now.getFullYear();
       const nextNumber = String(totalData + 1).padStart(5, '0');
-      const joNumber = `JO-${nextNumber}/${month}/${year}`;
+      const suffix = tipeJO === 'JO PROOF' ? '-P' : '';
+      const joNumber = `JO-${nextNumber}/${month}/${year}${suffix}`;
 
       setFormData((prev) => ({
         ...prev,
@@ -313,7 +319,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const now = new Date();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const year = now.getFullYear();
-      const joNumber = `JO-00001/${month}/${year}`;
+      const suffix = tipeJO === 'JO PROOF' ? '-P' : '';
+      const joNumber = `JO-00001/${month}/${year}${suffix}`;
 
       setFormData((prev) => ({
         ...prev,

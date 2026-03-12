@@ -256,6 +256,7 @@ import JOMonitoringPage from './pages/Monitoring/JOMonitoringPage';
 import SOMonitoringPage from './pages/Monitoring/SOMonitoringPage';
 import LabelPage from './pages/Print/LabelPage';
 import LaporanDOPage from './pages/DO/LaporanDOPage';
+import ApprovalStandarWarnaPage from './pages/QualityControl/ApprovalStandarWarnaPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1128,6 +1129,14 @@ function App() {
           }
         />
         <Route
+          path="/quality-control/approval-standar-warna"
+          element={
+            <P>
+              <ApprovalStandarWarnaPage />
+            </P>
+          }
+        />
+        <Route
           path="/qc/submission"
           element={
             <P>
@@ -1421,6 +1430,7 @@ function App() {
             </P>
           }
         />
+
         <Route
           path="/ppic/perubahan-tanggal-kirim"
           element={

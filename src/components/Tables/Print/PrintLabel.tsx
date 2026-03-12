@@ -203,7 +203,7 @@ const buildPrintHTML = (
           <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NO JO</div>
           <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;">
             <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
-              formatNoJO(data.no_jo) || ''
+              data.no_jo || ''
             }</span>
             <span style="font-size:9.5px;color:#555;font-weight:normal;white-space:nowrap;margin-left:4px;">${dateStr}</span>
           </div>

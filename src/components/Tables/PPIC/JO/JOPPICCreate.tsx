@@ -291,7 +291,8 @@ const JOPPICCreate: React.FC = () => {
   const isProductAccepted = (statusProduk: string): boolean => {
     return (
       statusProduk?.toLowerCase() === 'acc' ||
-      statusProduk?.toLowerCase() === 'ppos'
+      statusProduk?.toLowerCase() === 'ppos' ||
+      statusProduk?.toLowerCase() === 'proof'
     );
   };
 

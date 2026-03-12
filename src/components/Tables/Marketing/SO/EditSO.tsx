@@ -39,9 +39,10 @@ const EditSO: React.FC<EditSOProps> = ({
     profit: 0,
     tgl_pengiriman: '',
     alamat_pengiriman: '',
+    alamat_penagihan: '',
     ada_standar_warna: 'Tidak',
     is_io_selesai: false,
-    note_cancel: '', // Add this field
+    note_cancel: '',
   });
 
   const [kalkulasiOptions, setKalkulasiOptions] = useState<
@@ -69,7 +70,7 @@ const EditSO: React.FC<EditSOProps> = ({
 
   const statusProdukOptions = [
     { value: 'OKP', label: 'OKP' },
-    { value: 'PROFF', label: 'PROFF' },
+    { value: 'PROOF', label: 'PROOF' },
     { value: 'ACC', label: 'ACC' },
   ];
 
@@ -202,6 +203,7 @@ const EditSO: React.FC<EditSOProps> = ({
         profit: soData.profit || 0,
         tgl_pengiriman: soData.tgl_pengiriman || '',
         alamat_pengiriman: soData.alamat_pengiriman || '',
+        alamat_penagihan: soData.alamat_penagihan || '',
         ada_standar_warna: soData.ada_standar_warna || 'Tidak',
         is_io_selesai: soData.is_io_selesai || false,
         note_cancel: '',
