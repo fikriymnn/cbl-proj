@@ -45,7 +45,7 @@ function HistorySPLkeHR() {
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      console.log('res me', res.data);
       const dept = res?.data.karyawan.biodata_karyawan[0]?.id_department;
       const userRole = res?.data.role;
       const userDivisiBawahan = res?.data.divisi_bawahan;
@@ -76,13 +76,13 @@ function HistorySPLkeHR() {
         id_department: idDept,
       };
 
-      if (
-        userDivisiBawahan !== null &&
-        userDivisiBawahan !== undefined &&
-        userDivisiBawahan !== ''
-      ) {
-        params.divisi_bawahan = userDivisiBawahan;
-      }
+      // if (
+      //   userDivisiBawahan !== null &&
+      //   userDivisiBawahan !== undefined &&
+      //   userDivisiBawahan !== ''
+      // ) {
+      //   params.divisi_bawahan = userDivisiBawahan;
+      // }
 
       // Add filters if they exist
       if (startDate) params.start_date = startDate;
