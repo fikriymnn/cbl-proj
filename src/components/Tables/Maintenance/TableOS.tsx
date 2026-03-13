@@ -1072,9 +1072,12 @@ function TableOS() {
                               </div>
                             </div>
                             <div className="flex flex-col md:gap-5 gap-1 ">
-                              <div className="my-auto">
+                              <div className="my-auto flex flex-col gap-2">
                                 <p className="text-xs font-light">
                                   {data.no_jo}
+                                </p>
+                                <p className="text-xs font-light text-green-500">
+                                  {data.nama_produk}
                                 </p>
                               </div>
                             </div>
@@ -2004,9 +2007,18 @@ function TableOS() {
                               {data.operator}
                             </p>
                           </div>
-                          <div>
-                            <p className="text-xs font-bold">No.Jo</p>
-                            <p className="text-xs font-medium">{data.no_jo}</p>
+                          <div className="flex flex-col">
+                            <div>
+                              <p className="text-xs font-bold">No.Jo</p>
+                              <p className="text-xs font-medium">
+                                {data.no_jo}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-medium">
+                                {data.nama_produk}
+                              </p>
+                            </div>
                           </div>
                           <div>
                             <p className="text-xs font-bold">Breakdown Time</p>

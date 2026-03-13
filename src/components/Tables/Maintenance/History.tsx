@@ -984,11 +984,21 @@ function HistoryOS2() {
                           >
                             {i + 1}
                           </div>
-                          <div className="grid  grid-cols-6 w-full  ">
+                          <div className="grid  grid-cols-7 w-full  ">
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto ">
                                 <p className="text-sm font-light break-all">
                                   {data.kode_ticket}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col md:gap-5 gap-1 ">
+                              <div className="my-auto flex flex-col gap-2">
+                                <p className="text-sm font-light">
+                                  {data.no_jo}
+                                </p>
+                                <p className="text-sm font-light text-green-500">
+                                  {data.nama_produk}
                                 </p>
                               </div>
                             </div>
@@ -1419,6 +1429,10 @@ function HistoryOS2() {
                 <p className="text-xs font-bold ">Action</p>
                 <img src={Polygon6} alt="" />
               </div>
+              <div className="flex gap-2 ">
+                <p className="text-xs font-bold ">No.Jo</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
               <div className="flex gap-[1px] justify-center items-center">
                 <p className="text-xs font-bold ">Nama Mesin</p>
                 <img src={Polygon6} alt="" />
@@ -1550,7 +1564,16 @@ function HistoryOS2() {
                           <img src={Arrow} alt="" className="mx-1" />
                         </button>
                       </div>
-
+                      <div className="flex flex-col">
+                        <div>
+                          <p className="text-xs font-medium">{data.no_jo}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium">
+                            {data.nama_produk}
+                          </p>
+                        </div>
+                      </div>
                       <div className="flex gap-2">
                         <p className="text-xs font-medium "> {data.mesin}</p>
                       </div>

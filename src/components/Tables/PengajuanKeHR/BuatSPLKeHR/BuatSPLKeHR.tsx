@@ -105,14 +105,12 @@ function BuatSPLKeHR() {
       setMe(res.data);
       setIdPengaju(res.data.id_karyawan);
 
-      // Get role and divisi_bawahan from response
-      const role = res.data.role;
       const divisiBawahan = res.data.divisi_bawahan;
 
       // Pass both department and divisi_bawahan to getMasterUser
       getMasterUser(
         res?.data.karyawan.biodata_karyawan[0]?.id_department,
-        role,
+
         divisiBawahan,
       );
 
@@ -122,7 +120,7 @@ function BuatSPLKeHR() {
     }
   }
 
-  async function getMasterUser(id: any, role: string, divisiBawahan: any) {
+  async function getMasterUser(id: any, divisiBawahan: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
 
     // Build params object
@@ -130,11 +128,8 @@ function BuatSPLKeHR() {
       is_active: true,
       id_department: id,
     };
-    const isSupervisorOrSectionHead =
-      role?.toLowerCase().includes('supervisor') ||
-      role?.toLowerCase().includes('section head');
+
     if (
-      isSupervisorOrSectionHead &&
       divisiBawahan !== null &&
       divisiBawahan !== undefined &&
       divisiBawahan !== ''
