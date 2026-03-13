@@ -110,13 +110,13 @@ function HistorySPLkeHR() {
         id_department: idDept,
       };
 
-      if (
-        userDivisiBawahan !== null &&
-        userDivisiBawahan !== undefined &&
-        userDivisiBawahan !== ''
-      ) {
-        params.divisi_bawahan = userDivisiBawahan;
-      }
+      // if (
+      //   userDivisiBawahan !== null &&
+      //   userDivisiBawahan !== undefined &&
+      //   userDivisiBawahan !== ''
+      // ) {
+      //   params.divisi_bawahan = userDivisiBawahan;
+      // }
 
       const res = await axios.get(url, {
         params,

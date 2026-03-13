@@ -129,13 +129,13 @@ function BuatSPLKeHR() {
       id_department: id,
     };
 
-    if (
-      divisiBawahan !== null &&
-      divisiBawahan !== undefined &&
-      divisiBawahan !== ''
-    ) {
-      params.divisi_bawahan = divisiBawahan;
-    }
+    // if (
+    //   divisiBawahan !== null &&
+    //   divisiBawahan !== undefined &&
+    //   divisiBawahan !== ''
+    // ) {
+    //   params.divisi_bawahan = divisiBawahan;
+    // }
 
     try {
       const res = await axios.get(url, {
