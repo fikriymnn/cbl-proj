@@ -22,11 +22,22 @@ function HistorySPLkeHR() {
   const [endDate, setEndDate] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState<any>([]);
 
+  // Department, role, divisi_bawahan states
+  const [idDepartment, setIdDepartment] = useState<any>(null);
+  const [role, setRole] = useState<string>('');
+  const [divisiBawahan, setDivisiBawahan] = useState<any>(null);
+
+  const [idPengaju, setIdPengaju] = useState<any>();
+
   useEffect(() => {
     getMe();
   }, [page]);
 
-  const [idPengaju, setIdPengaju] = useState<any>();
+  useEffect(() => {
+    if (idDepartment) {
+      getMasterUser(idDepartment, divisiBawahan);
+    }
+  }, [page]);
 
   async function getMe() {
     const url = `${import.meta.env.VITE_API_LINK}/me`;
@@ -35,26 +46,43 @@ function HistorySPLkeHR() {
         withCredentials: true,
       });
 
-      setIdPengaju(res?.data.karyawan.biodata_karyawan[0]?.id_department);
-      getIzin(res?.data.karyawan.biodata_karyawan[0]?.id_department);
-      getMasterUser(res?.data.karyawan.biodata_karyawan[0]?.id_department);
+      const dept = res?.data.karyawan.biodata_karyawan[0]?.id_department;
+      const userRole = res?.data.role;
+      const userDivisiBawahan = res?.data.divisi_bawahan;
+
+      setIdPengaju(dept);
+      setIdDepartment(dept);
+      setRole(userRole);
+      setDivisiBawahan(userDivisiBawahan);
+
+      getIzin(dept, userDivisiBawahan);
+      getMasterUser(dept, userDivisiBawahan);
+
       console.log('getme', res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
-  async function getIzin(idDept: any) {
+
+  async function getIzin(idDept: any, userDivisiBawahan?: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanLembur`;
     try {
       setIsLoading(true);
 
-      // Build params object
       const params: any = {
         status_tiket: 'history',
         page: page,
         limit: 10,
-        id_department: idDept, // Use the department ID from getMe
+        id_department: idDept,
       };
+
+      if (
+        userDivisiBawahan !== null &&
+        userDivisiBawahan !== undefined &&
+        userDivisiBawahan !== ''
+      ) {
+        params.divisi_bawahan = userDivisiBawahan;
+      }
 
       // Add filters if they exist
       if (startDate) params.start_date = startDate;
@@ -74,23 +102,28 @@ function HistorySPLkeHR() {
     }
   }
 
-  useEffect(() => {
-    getMasterUser(idPengaju);
-  }, [page]);
-
-  async function getMasterUser(idDept: any) {
+  async function getMasterUser(idDept: any, userDivisiBawahan?: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
+      const params: any = {
+        is_active: true,
+        id_department: idDept,
+      };
+
+      if (
+        userDivisiBawahan !== null &&
+        userDivisiBawahan !== undefined &&
+        userDivisiBawahan !== ''
+      ) {
+        params.divisi_bawahan = userDivisiBawahan;
+      }
+
       const res = await axios.get(url, {
-        params: {
-          is_active: true,
-          id_department: idDept, // Use the department ID from getMe
-        },
+        params,
         withCredentials: true,
       });
 
       setUserList(res.data.data);
-      //console
       setOptions(
         res.data.data.map((item: any) => {
           const latestBagianMesin =
@@ -109,21 +142,18 @@ function HistorySPLkeHR() {
   }
 
   const handleChangePointKaryawan = (selectedOptions: any) => {
-    // Extract selected IDs
     const selectedIds = selectedOptions.map((option: any) => option.value);
-    // Find the corresponding user data in userList
     const filteredData = userList.filter((item: any) =>
       selectedIds.includes(item.userid),
     );
     console.log('Selected Users:', filteredData);
-    // Store the selected user IDs in an array
     setIdKaryawan(filteredData.map((user: any) => user.userid));
     setSelectedEmployees(selectedOptions);
   };
 
   const handleApplyFilters = () => {
-    setPage(1); // Reset to first page when filters are applied
-    getIzin(idPengaju);
+    setPage(1);
+    getIzin(idDepartment, divisiBawahan);
   };
 
   const handleResetFilters = () => {
@@ -132,8 +162,7 @@ function HistorySPLkeHR() {
     setIdKaryawan([]);
     setSelectedEmployees([]);
     setPage(1);
-    // Trigger API call with reset filters
-    setTimeout(() => getIzin(idPengaju), 100);
+    setTimeout(() => getIzin(idDepartment, divisiBawahan), 100);
   };
 
   const exportToExcel = () => {
@@ -142,7 +171,6 @@ function HistorySPLkeHR() {
       return;
     }
 
-    // Prepare data for Excel
     const excelData = lembur.data.map((item: any, index: number) => ({
       No: index + 1,
       'Nama Personnel': item.karyawan?.name || '',
@@ -165,11 +193,9 @@ function HistorySPLkeHR() {
       'Catatan HR': item.catatan_hr || '',
     }));
 
-    // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(excelData);
 
-    // Auto-size columns
     const colWidths =
       excelData.length > 0
         ? Object.keys(excelData[0]).map((key) => ({
@@ -422,7 +448,6 @@ function HistorySPLkeHR() {
                     <label className="text-neutral-500 text-sm font-semibold ">
                       Sampai :{convertTimeStampToDateTime(data.sampai)}
                     </label>
-                    {/* Display dari_2 and sampai_2 if they exist */}
                     {data.dari_2 && data.dari_2 !== '' && (
                       <label className="text-neutral-500 text-sm font-semibold ">
                         Dari (2) : {convertTimeStampToDateTime(data.dari_2)}
@@ -598,7 +623,6 @@ function HistorySPLkeHR() {
                                 {convertTimeStampToDateTime(data.sampai)}
                               </label>
                             </div>
-                            {/* Display dari_2 and sampai_2 in modal if they exist */}
                             {data.dari_2 && data.dari_2 !== '' && (
                               <div className="flex flex-col ">
                                 <label

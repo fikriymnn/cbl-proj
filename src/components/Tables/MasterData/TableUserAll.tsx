@@ -3,6 +3,17 @@ import { useEffect, useState, useCallback } from 'react';
 import ModalUser from '../../Modals/Master/User/ModalUser';
 import ModalConfDelete from '../../Modals/Master/User/ModalConfDelete';
 
+interface Divisi {
+  id: number;
+  nama_divisi: string;
+}
+
+interface Tahapan {
+  id: number;
+  kode_tahapan: string;
+  nama_tahapan: string;
+}
+
 interface User {
   uuid: number;
   nama: string;
@@ -13,6 +24,8 @@ interface User {
       nik: string;
     }>;
   };
+  divisi_bawahan?: number[] | string;
+  tahapan_bawahan?: number[] | string;
 }
 
 interface AlertState {
@@ -21,32 +34,109 @@ interface AlertState {
   message: string;
 }
 
+// Badge component for displaying list items compactly
+const TagBadge = ({
+  label,
+  color,
+}: {
+  label: string;
+  color: 'blue' | 'purple';
+}) => (
+  <span
+    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+      color === 'blue'
+        ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-200'
+        : 'bg-purple-50 text-purple-700 ring-1 ring-purple-200'
+    }`}
+  >
+    {label}
+  </span>
+);
+
+// Component to render a collapsed tag list with "+N more" overflow
+const TagList = ({
+  ids,
+  map,
+  color,
+  maxVisible = 2,
+}: {
+  ids: number[];
+  map: Record<number, string>;
+  color: 'blue' | 'purple';
+  maxVisible?: number;
+}) => {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!ids || ids.length === 0) {
+    return <span className="text-xs text-gray-400">-</span>;
+  }
+
+  const visible = expanded ? ids : ids.slice(0, maxVisible);
+  const overflow = ids.length - maxVisible;
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {visible.map((id) => (
+        <TagBadge key={id} label={map[id] || `ID: ${id}`} color={color} />
+      ))}
+      {!expanded && overflow > 0 && (
+        <button
+          onClick={() => setExpanded(true)}
+          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+            color === 'blue'
+              ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+              : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+          }`}
+        >
+          +{overflow} more
+        </button>
+      )}
+      {expanded && overflow > 0 && (
+        <button
+          onClick={() => setExpanded(false)}
+          className="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-200"
+        >
+          show less
+        </button>
+      )}
+    </div>
+  );
+};
+
+const parseIds = (value: number[] | string | undefined): number[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return [];
+  }
+};
+
 const TableUserAll = () => {
-  // Responsive state
   const [isMobile, setIsMobile] = useState(false);
 
-  // Data states
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Filter states
+  // Master data maps for display
+  const [divisiMap, setDivisiMap] = useState<Record<number, string>>({});
+  const [tahapanMap, setTahapanMap] = useState<Record<number, string>>({});
+
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  // Modal states
   const [showEdit, setShowEdit] = useState<boolean[]>([]);
   const [showDelete, setShowDelete] = useState<boolean[]>([]);
   const [showModalTambah, setShowModalTambah] = useState(false);
 
-  // Alert state
   const [alert, setAlert] = useState<AlertState>({
     show: false,
     type: 'info',
     message: '',
   });
 
-  // Handle window resize
   const handleResize = useCallback(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);
@@ -57,17 +147,47 @@ const TableUserAll = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [handleResize]);
 
-  // Fetch users
+  // Fetch master data for display maps
+  const getDivisiMap = useCallback(async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/hr/divisi`,
+        { withCredentials: true },
+      );
+      const map: Record<number, string> = {};
+      res.data.data?.forEach((d: Divisi) => {
+        map[d.id] = d.nama_divisi;
+      });
+      setDivisiMap(map);
+    } catch (error) {
+      console.error('Error fetching divisi map:', error);
+    }
+  }, []);
+
+  const getTahapanMap = useCallback(async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/tahapan`,
+        { withCredentials: true },
+      );
+      const map: Record<number, string> = {};
+      res.data.data?.forEach((t: Tahapan) => {
+        map[t.id] = `${t.kode_tahapan} - ${t.nama_tahapan}`;
+      });
+      setTahapanMap(map);
+    } catch (error) {
+      console.error('Error fetching tahapan map:', error);
+    }
+  }, []);
+
   const getUsers = useCallback(async () => {
     setLoading(true);
     const url = `${import.meta.env.VITE_API_LINK}/users`;
-
     try {
       const res = await axios.get(url, {
         params: { status: 'aktif' },
         withCredentials: true,
       });
-      console.log('Fetched users:', res.data);
       setUsers(res.data);
       setFilteredUsers(res.data);
       setShowEdit(new Array(res.data.length).fill(false));
@@ -82,13 +202,12 @@ const TableUserAll = () => {
 
   useEffect(() => {
     getUsers();
-  }, [getUsers]);
+    getDivisiMap();
+    getTahapanMap();
+  }, [getUsers, getDivisiMap, getTahapanMap]);
 
-  // Filter users based on search and filters
   useEffect(() => {
     let filtered = [...users];
-
-    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(
         (user) =>
@@ -99,27 +218,22 @@ const TableUserAll = () => {
             .includes(searchTerm.toLowerCase()),
       );
     }
-
-    // Role filter
     if (roleFilter !== 'all') {
       filtered = filtered.filter((user) => user.role === roleFilter);
     }
-
     setFilteredUsers(filtered);
   }, [searchTerm, roleFilter, users]);
 
-  // Get unique roles and bagian for filters
   const uniqueRoles = Array.from(new Set(users.map((user) => user.role)));
 
-  // Alert helper
   const showAlert = (type: 'success' | 'error' | 'info', message: string) => {
     setAlert({ show: true, type, message });
-    setTimeout(() => {
-      setAlert({ show: false, type: 'info', message: '' });
-    }, 3000);
+    setTimeout(
+      () => setAlert({ show: false, type: 'info', message: '' }),
+      3000,
+    );
   };
 
-  // Modal handlers
   const openEdit = (index: number) => {
     const newShowEdit = [...showEdit];
     newShowEdit[index] = true;
@@ -149,7 +263,6 @@ const TableUserAll = () => {
     showAlert('success', message);
   };
 
-  // Reset filters
   const resetFilters = () => {
     setSearchTerm('');
     setRoleFilter('all');
@@ -182,7 +295,6 @@ const TableUserAll = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full rounded-md border border-stroke bg-[#E9F3FF] px-4 py-2 text-sm focus:border-blue-500 focus:outline-none sm:w-64"
           />
-
           {!isMobile && (
             <>
               <select
@@ -197,7 +309,6 @@ const TableUserAll = () => {
                   </option>
                 ))}
               </select>
-
               {(searchTerm || roleFilter !== 'all') && (
                 <button
                   onClick={resetFilters}
@@ -209,7 +320,6 @@ const TableUserAll = () => {
             </>
           )}
         </div>
-
         <button
           onClick={() => setShowModalTambah(true)}
           className="rounded-md bg-blue-600 px-6 py-2 text-xs font-bold text-white hover:bg-blue-700"
@@ -230,31 +340,40 @@ const TableUserAll = () => {
             <div className="flex flex-col">
               {/* Table Header */}
               <div className="border-b border-stroke dark:border-strokedark">
-                <div className="grid grid-cols-12 gap-2 px-10">
+                <div className="grid grid-cols-12 gap-2 px-6">
                   <div className="col-span-1 p-2.5">
                     <p className="text-sm font-semibold text-slate-600 dark:text-white">
                       No
                     </p>
                   </div>
-                  <div className="col-span-2 p-2.5">
+                  <div className="col-span-1 p-2.5">
                     <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
                       Nama
                     </p>
                   </div>
-                  <div className="col-span-2 p-2.5">
+                  <div className="col-span-1 p-2.5">
                     <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
                       NIK
                     </p>
                   </div>
-
-                  <div className="col-span-4 p-2.5">
+                  <div className="col-span-2 p-2.5">
                     <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
                       Email
                     </p>
                   </div>
-                  <div className="col-span-2 p-2.5">
+                  <div className="col-span-1 p-2.5">
                     <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
                       Role
+                    </p>
+                  </div>
+                  <div className="col-span-3 p-2.5">
+                    <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
+                      Divisi Bawahan
+                    </p>
+                  </div>
+                  <div className="col-span-2 p-2.5">
+                    <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
+                      Tahapan Bawahan
                     </p>
                   </div>
                   <div className="col-span-1 p-2.5">
@@ -280,37 +399,58 @@ const TableUserAll = () => {
                         : ''
                     }`}
                   >
-                    <div className="grid grid-cols-12 gap-2 px-10">
+                    <div className="grid grid-cols-12 items-start gap-2 px-6">
                       <div className="col-span-1 p-2.5">
                         <p className="text-sm font-light text-neutral-500 dark:text-white">
                           {index + 1}
                         </p>
                       </div>
-                      <div className="col-span-2 p-2.5">
+                      <div className="col-span-1 p-2.5">
                         <p className="text-center text-sm font-light text-neutral-500 dark:text-white">
                           {user.nama}
                         </p>
                       </div>
-                      <div className="col-span-2 p-2.5">
+                      <div className="col-span-1 p-2.5">
                         <p className="text-center text-sm font-light text-neutral-500 dark:text-white">
                           {user.karyawan?.biodata_karyawan[0]?.nik || '-'}
                         </p>
                       </div>
-
-                      <div className="col-span-4 p-2.5">
+                      <div className="col-span-2 p-2.5">
                         <p className="text-center text-sm font-light text-neutral-500 dark:text-white">
                           {user.email}
                         </p>
                       </div>
-                      <div className="col-span-2 p-2.5">
+                      <div className="col-span-1 p-2.5">
                         <p className="text-center text-sm font-light text-neutral-500">
                           {user.role}
                         </p>
                       </div>
+
+                      {/* Divisi Bawahan */}
+                      <div className="col-span-3 p-2.5">
+                        <TagList
+                          ids={parseIds(user.divisi_bawahan)}
+                          map={divisiMap}
+                          color="blue"
+                          maxVisible={2}
+                        />
+                      </div>
+
+                      {/* Tahapan Bawahan */}
+                      <div className="col-span-2 p-2.5">
+                        <TagList
+                          ids={parseIds(user.tahapan_bawahan)}
+                          map={tahapanMap}
+                          color="purple"
+                          maxVisible={2}
+                        />
+                      </div>
+
+                      {/* Actions */}
                       <div className="col-span-1 flex flex-col gap-2 py-2">
                         <button
                           onClick={() => openEdit(index)}
-                          className="group flex items-center justify-center  rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/30 transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:shadow-blue-500/40"
+                          className="group flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/30 transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:shadow-blue-500/40"
                         >
                           <svg
                             className="h-3.5 w-3.5 transition-transform group-hover:scale-110"
@@ -329,7 +469,7 @@ const TableUserAll = () => {
                         </button>
                         <button
                           onClick={() => openDelete(index)}
-                          className="group flex items-center justify-center  rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-500/30 transition-all hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-500/40"
+                          className="group flex items-center justify-center rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-4 py-2 text-xs font-bold text-white shadow-md shadow-red-500/30 transition-all hover:from-red-700 hover:to-red-800 hover:shadow-lg hover:shadow-red-500/40"
                         >
                           <svg
                             className="h-3.5 w-3.5 transition-transform group-hover:scale-110"
@@ -349,7 +489,6 @@ const TableUserAll = () => {
                       </div>
                     </div>
 
-                    {/* Modals */}
                     {showEdit[index] && (
                       <ModalUser
                         children={undefined}
@@ -396,7 +535,6 @@ const TableUserAll = () => {
                     </option>
                   ))}
                 </select>
-
                 {(searchTerm || roleFilter !== 'all') && (
                   <button
                     onClick={resetFilters}
@@ -407,53 +545,60 @@ const TableUserAll = () => {
                 )}
               </div>
 
-              {/* Mobile Header */}
-              <div className="border-b border-stroke dark:border-strokedark">
-                <div className="grid grid-cols-8 gap-2 px-4">
-                  <div className="col-span-2 p-2.5">
-                    <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
-                      Nama
-                    </p>
-                  </div>
-                  <div className="col-span-3 p-2.5">
-                    <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
-                      Email
-                    </p>
-                  </div>
-                  <div className="col-span-3 p-2.5">
-                    <p className="text-center text-sm font-semibold text-slate-600 dark:text-white">
-                      Role
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Body */}
               {filteredUsers.length === 0 ? (
                 <div className="py-10 text-center">
                   <p className="text-sm text-gray-500">No users found</p>
                 </div>
               ) : (
                 filteredUsers.map((user, index) => (
-                  <div key={user.uuid}>
-                    <div className="grid grid-cols-8 gap-2 px-4">
-                      <div className="col-span-2 p-2.5">
-                        <p className="line-clamp-1 text-center text-sm font-light text-neutral-500 dark:text-white">
+                  <div
+                    key={user.uuid}
+                    className="border-b border-stroke px-4 py-3 dark:border-strokedark"
+                  >
+                    {/* User info */}
+                    <div className="mb-2 flex items-start justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-neutral-700 dark:text-white">
                           {user.nama}
                         </p>
-                      </div>
-                      <div className="col-span-3 p-2.5">
-                        <p className="line-clamp-1 text-center text-sm font-light text-neutral-500 dark:text-white">
-                          {user.email}
+                        <p className="text-xs text-neutral-500">{user.email}</p>
+                        <p className="text-xs text-neutral-400">
+                          {user.karyawan?.biodata_karyawan[0]?.nik || '-'}
                         </p>
                       </div>
-                      <div className="col-span-3 p-2.5">
-                        <p className="line-clamp-1 text-center text-sm font-light text-neutral-500">
-                          {user.role}
-                        </p>
-                      </div>
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-blue-200">
+                        {user.role}
+                      </span>
                     </div>
-                    <div className="flex items-start gap-2 border-b border-stroke p-2.5 dark:border-strokedark">
+
+                    {/* Divisi Bawahan */}
+                    <div className="mb-1">
+                      <p className="mb-1 text-xs font-semibold text-gray-500">
+                        Divisi Bawahan:
+                      </p>
+                      <TagList
+                        ids={parseIds(user.divisi_bawahan)}
+                        map={divisiMap}
+                        color="blue"
+                        maxVisible={2}
+                      />
+                    </div>
+
+                    {/* Tahapan Bawahan */}
+                    <div className="mb-3">
+                      <p className="mb-1 text-xs font-semibold text-gray-500">
+                        Tahapan Bawahan:
+                      </p>
+                      <TagList
+                        ids={parseIds(user.tahapan_bawahan)}
+                        map={tahapanMap}
+                        color="purple"
+                        maxVisible={2}
+                      />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => openEdit(index)}
                         className="group flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/30 transition-all hover:from-blue-700 hover:to-blue-800"

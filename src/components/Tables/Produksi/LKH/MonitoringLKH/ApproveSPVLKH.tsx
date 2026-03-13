@@ -145,7 +145,7 @@ const selectStyles = {
 const ApproveSPVLKH: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [lkhData, setLkhData] = useState<LKHTahapanData[]>([]);
-  const [divisiBawahan, setDivisiBawahan] = useState<string | null>(null);
+  const [tahapanBawahan, setTahapanBawahan] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('');
 
   const [actionLoading, setActionLoading] = useState<{
@@ -175,27 +175,19 @@ const ApproveSPVLKH: React.FC = () => {
     const url = `${import.meta.env.VITE_API_LINK}/me`;
     try {
       const res = await axios.get(url, { withCredentials: true });
-
       const role = res.data.role;
-      const userDivisiBawahan = res.data.divisi_bawahan;
+      const userTahapanBawahan = res.data.tahapan_bawahan;
 
       setUserRole(role);
 
-      const isSuperAdminOrDev = role === 'super admin' || role === 'developer';
-
-      if (isSuperAdminOrDev) {
-        fetchLKHData(null);
-        return;
-      }
-
-      if (!userDivisiBawahan || userDivisiBawahan === '') {
+      if (!userTahapanBawahan || userTahapanBawahan === '') {
         setLkhData([]);
         setLoading(false);
         return;
       }
 
-      setDivisiBawahan(userDivisiBawahan);
-      fetchLKHData(userDivisiBawahan);
+      setTahapanBawahan(userTahapanBawahan);
+      fetchLKHData(userTahapanBawahan);
     } catch (error) {
       console.error('Error fetching me:', error);
       setLoading(false);
@@ -203,7 +195,7 @@ const ApproveSPVLKH: React.FC = () => {
   };
 
   const fetchLKHData = async (
-    divisiBawahanParam: string | null,
+    tahapanBawahanParam: string | null,
   ): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/produksi/lkhTahapan`;
     try {
@@ -212,8 +204,8 @@ const ApproveSPVLKH: React.FC = () => {
         status: 'request to spv',
       };
 
-      if (divisiBawahanParam !== null && divisiBawahanParam !== '') {
-        params.divisi_bawahan = divisiBawahanParam;
+      if (tahapanBawahanParam !== null && tahapanBawahanParam !== '') {
+        params.tahapan_bawahan = tahapanBawahanParam;
       }
 
       const res: AxiosResponse<LKHResponse> = await axios.get(url, {
@@ -343,7 +335,7 @@ const ApproveSPVLKH: React.FC = () => {
       await axios.put(url, body, { withCredentials: true });
       alert('LKH approved successfully!');
       closeApprovalModal();
-      fetchLKHData(divisiBawahan);
+      fetchLKHData(tahapanBawahan);
     } catch (error) {
       console.error('Error approving LKH:', error);
       alert('Failed to approve LKH. Please try again.');
@@ -425,8 +417,13 @@ const ApproveSPVLKH: React.FC = () => {
   const calculateEditableTotals = () => {
     if (!selectedLKHForApproval) return null;
 
-    return selectedLKHForApproval.produksi_lkh_proses
-      .filter((proses) => proses.is_final_result === true)
+    const totalWaktu = selectedLKHForApproval.produksi_lkh_proses.reduce(
+      (acc, proses) => acc + (parseInt(proses.total_waktu) || 0),
+      0,
+    );
+
+    const finalResultTotals = selectedLKHForApproval.produksi_lkh_proses
+      .filter((proses) => Boolean(proses.is_final_result))
       .reduce(
         (acc, proses) => {
           const editedData = editableData.find((e) => e.id === proses.id);
@@ -436,17 +433,12 @@ const ApproveSPVLKH: React.FC = () => {
             acc.rusak_total += editedData.rusak_total || 0;
             acc.pallet += editedData.pallet || 0;
           }
-          acc.total_waktu += parseInt(proses.total_waktu) || 0;
           return acc;
         },
-        {
-          baik: 0,
-          rusak_sebagian: 0,
-          rusak_total: 0,
-          pallet: 0,
-          total_waktu: 0,
-        },
+        { baik: 0, rusak_sebagian: 0, rusak_total: 0, pallet: 0 },
       );
+
+    return { ...finalResultTotals, total_waktu: totalWaktu };
   };
 
   const getWasteOptions = (): Option[] => {
@@ -466,7 +458,6 @@ const ApproveSPVLKH: React.FC = () => {
     }));
   };
 
-  // ─── Helper: get unique operators from produksi_lkh_proses ───────────────
   const getUniqueOperators = (prosesList: ProduksiLKHProses[]): Operator[] => {
     const seen = new Set<number>();
     const operators: Operator[] = [];
@@ -754,7 +745,7 @@ const ApproveSPVLKH: React.FC = () => {
                 </div>
               </div>
 
-              {/* ─── Operator Info Section ──────────────────────────────────── */}
+              {/* Operator Info Section */}
               {(() => {
                 const operators = getUniqueOperators(
                   selectedLKHForApproval.produksi_lkh_proses,
@@ -784,7 +775,6 @@ const ApproveSPVLKH: React.FC = () => {
                           key={op.id}
                           className="flex items-center gap-2 bg-white border border-indigo-200 rounded-lg px-3 py-2 shadow-sm"
                         >
-                          {/* Avatar */}
                           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
                             {op.nama
                               .split(' ')
@@ -792,7 +782,6 @@ const ApproveSPVLKH: React.FC = () => {
                               .map((n) => n[0])
                               .join('')}
                           </div>
-                          {/* Info */}
                           <div className="flex flex-col min-w-0">
                             <span className="text-xs font-semibold text-gray-800 truncate">
                               {op.nama}
@@ -876,7 +865,6 @@ const ApproveSPVLKH: React.FC = () => {
                                   </div>
                                 )}
                               </td>
-                              {/* ── Operator Cell ── */}
                               <td className="px-3 py-2">
                                 {proses.operator ? (
                                   <div className="flex items-center gap-1.5 min-w-[120px]">

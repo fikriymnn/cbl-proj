@@ -8,7 +8,6 @@ interface ModalUserProps {
   isOpen: boolean;
   onClose: () => void;
   onFinish: () => void;
-  // Optional props for edit mode
   id?: number;
   data?: any;
 }
@@ -33,6 +32,12 @@ interface Role {
   is_active: boolean;
 }
 
+interface Tahapan {
+  id: number;
+  kode_tahapan: string;
+  nama_tahapan: string;
+}
+
 interface FormData {
   email: string;
   nama: string;
@@ -42,6 +47,7 @@ interface FormData {
   confPassword: string;
   id_karyawan: number | null;
   divisi_bawahan: number[];
+  tahapan_bawahan: number[];
 }
 
 const ModalUser = ({
@@ -54,28 +60,27 @@ const ModalUser = ({
 }: ModalUserProps) => {
   if (!isOpen) return null;
 
-  // Determine mode based on presence of id
   const isEditMode = !!id && !!data;
 
-  // States
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [options, setOptions] = useState<SelectOption[]>([]);
   const [divisiOptions, setDivisiOptions] = useState<SelectOption[]>([]);
+  const [tahapanOptions, setTahapanOptions] = useState<SelectOption[]>([]);
   const [roleOptions, setRoleOptions] = useState<SelectOption[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedEmployee, setSelectedEmployee] = useState<SelectOption | null>(
     null,
   );
   const [selectedDivisi, setSelectedDivisi] = useState<SelectOption[]>([]);
+  const [selectedTahapan, setSelectedTahapan] = useState<SelectOption[]>([]);
   const [passwordError, setPasswordError] = useState('');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState<FormData>({
     email: data?.email || '',
     nama: data?.nama || '',
-
     no: data?.no || '',
     id_role: data?.id_role || null,
     password: '',
@@ -92,9 +97,19 @@ const ModalUser = ({
       }
       return data.divisi_bawahan || [];
     })(),
+    tahapan_bawahan: (() => {
+      if (!data?.tahapan_bawahan) return [];
+      if (typeof data.tahapan_bawahan === 'string') {
+        try {
+          return JSON.parse(data.tahapan_bawahan);
+        } catch {
+          return [];
+        }
+      }
+      return data.tahapan_bawahan || [];
+    })(),
   });
 
-  // Handle window resize
   const handleResize = useCallback(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);
@@ -105,7 +120,6 @@ const ModalUser = ({
     return () => window.removeEventListener('resize', handleResize);
   }, [handleResize]);
 
-  // Validate passwords
   useEffect(() => {
     if (formData.password && formData.confPassword) {
       if (formData.password !== formData.confPassword) {
@@ -122,43 +136,35 @@ const ModalUser = ({
     }
   }, [formData.password, formData.confPassword, isEditMode]);
 
-  // Fetch employees, divisi, and roles on mount
   useEffect(() => {
     getEmployees();
     getDivisi();
+    getTahapan();
     getRoles();
   }, []);
 
-  // Fetch employees
   const getEmployees = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
       const res = await axios.get(url, { withCredentials: true });
       setEmployees(res.data.data);
-
       const mappedOptions = res.data.data.map((item: Employee) => ({
         value: item.biodata_karyawan[0]?.id_karyawan,
         label: `${item.biodata_karyawan[0]?.nik} - ${item.name}`,
       }));
-
       setOptions(mappedOptions);
-
-      // Auto-select employee if exists in data (edit mode)
       if (data?.karyawan?.biodata_karyawan[0]?.id_karyawan) {
         const defaultSelected = mappedOptions.find(
           (option: SelectOption) =>
             option.value === data.karyawan.biodata_karyawan[0].id_karyawan,
         );
-        if (defaultSelected) {
-          setSelectedEmployee(defaultSelected);
-        }
+        if (defaultSelected) setSelectedEmployee(defaultSelected);
       }
     } catch (error) {
       console.error('Error fetching employees:', error);
     }
   };
 
-  // Fetch divisi
   const getDivisi = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi`;
     try {
@@ -168,21 +174,17 @@ const ModalUser = ({
         label: data.nama_divisi,
       }));
       setDivisiOptions(mappedDivisi || []);
-
-      // Auto-select existing divisi_bawahan (edit mode)
       if (data?.divisi_bawahan) {
         let parsedDivisi = [];
         if (typeof data.divisi_bawahan === 'string') {
           try {
             parsedDivisi = JSON.parse(data.divisi_bawahan);
-          } catch (e) {
-            console.error('Error parsing divisi_bawahan:', e);
+          } catch {
             parsedDivisi = [];
           }
         } else if (Array.isArray(data.divisi_bawahan)) {
           parsedDivisi = data.divisi_bawahan;
         }
-
         if (parsedDivisi.length > 0) {
           const defaultSelected = mappedDivisi.filter((option: SelectOption) =>
             parsedDivisi.includes(option.value),
@@ -195,15 +197,46 @@ const ModalUser = ({
     }
   };
 
-  // Fetch roles from new API
+  const getTahapan = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/tahapan`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+      const mappedTahapan = res.data.data?.map((item: Tahapan) => ({
+        value: item.id,
+        label: `${item.kode_tahapan} - ${item.nama_tahapan}`,
+      }));
+      setTahapanOptions(mappedTahapan || []);
+
+      // Auto-select existing tahapan_bawahan (edit mode)
+      if (data?.tahapan_bawahan) {
+        let parsedTahapan = [];
+        if (typeof data.tahapan_bawahan === 'string') {
+          try {
+            parsedTahapan = JSON.parse(data.tahapan_bawahan);
+          } catch {
+            parsedTahapan = [];
+          }
+        } else if (Array.isArray(data.tahapan_bawahan)) {
+          parsedTahapan = data.tahapan_bawahan;
+        }
+        if (parsedTahapan.length > 0) {
+          const defaultSelected = mappedTahapan.filter((option: SelectOption) =>
+            parsedTahapan.includes(option.value),
+          );
+          setSelectedTahapan(defaultSelected);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching tahapan:', error);
+    }
+  };
+
   const getRoles = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/master/roles`;
     try {
       const res = await axios.get(url, { withCredentials: true });
       const rolesData = res.data.data || [];
       setRoles(rolesData);
-
-      // Map to options for select dropdown
       const mappedRoles = rolesData.map((role: Role) => ({
         value: role.id,
         label: role.name,
@@ -214,10 +247,8 @@ const ModalUser = ({
     }
   };
 
-  // Handle form input changes
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error for this field when user starts typing
     if (formErrors[field]) {
       setFormErrors((prev) => {
         const newErrors = { ...prev };
@@ -227,18 +258,16 @@ const ModalUser = ({
     }
   };
 
-  // Handle employee selection
   const handleEmployeeChange = (selected: SelectOption | null) => {
     setSelectedEmployee(selected);
     if (selected) {
-      const selectedEmployee = employees.find(
+      const selectedEmp = employees.find(
         (emp) => emp.biodata_karyawan[0]?.id_karyawan === selected.value,
       );
-
-      if (selectedEmployee) {
+      if (selectedEmp) {
         handleInputChange(
           'id_karyawan',
-          selectedEmployee.biodata_karyawan[0]?.id_karyawan,
+          selectedEmp.biodata_karyawan[0]?.id_karyawan,
         );
       }
     } else {
@@ -246,45 +275,45 @@ const ModalUser = ({
     }
   };
 
-  // Handle divisi bawahan selection
   const handleDivisiChange = (selected: readonly SelectOption[]) => {
     setSelectedDivisi([...selected]);
-    const divisiIds = selected ? selected.map((opt) => opt.value) : [];
-    handleInputChange('divisi_bawahan', divisiIds);
+    handleInputChange(
+      'divisi_bawahan',
+      selected ? selected.map((opt) => opt.value) : [],
+    );
   };
 
-  // Validate form
+  const handleTahapanChange = (selected: readonly SelectOption[]) => {
+    setSelectedTahapan([...selected]);
+    handleInputChange(
+      'tahapan_bawahan',
+      selected ? selected.map((opt) => opt.value) : [],
+    );
+  };
+
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-
     if (!formData.email) {
       errors.email = 'Email wajib diisi';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Format email tidak valid';
     }
-
     if (!formData.nama) errors.nama = 'Nama wajib diisi';
     if (!formData.id_role) errors.id_role = 'Role wajib diisi';
-
-    // Password validation only required for create mode
     if (!isEditMode) {
       if (!formData.password) errors.password = 'Password wajib diisi';
       if (!formData.confPassword)
         errors.confPassword = 'Konfirmasi password wajib diisi';
     }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Submit form
   const submitForm = async () => {
-    // Validate form
     if (!validateForm()) {
       alert('Mohon lengkapi semua field yang wajib diisi');
       return;
     }
-
     if (passwordError) {
       alert(passwordError);
       return;
@@ -293,7 +322,6 @@ const ModalUser = ({
     const url = isEditMode
       ? `${import.meta.env.VITE_API_LINK}/users/${id}`
       : `${import.meta.env.VITE_API_LINK}/users`;
-
     const method = isEditMode ? 'put' : 'post';
 
     try {
@@ -309,10 +337,10 @@ const ModalUser = ({
           confPassword: formData.confPassword || undefined,
           id_karyawan: formData.id_karyawan,
           divisi_bawahan: formData.divisi_bawahan,
+          tahapan_bawahan: formData.tahapan_bawahan,
         },
         { withCredentials: true },
       );
-
       alert(
         res.data.msg ||
           (isEditMode ? 'User berhasil diupdate' : 'User berhasil ditambahkan'),
@@ -329,6 +357,21 @@ const ModalUser = ({
       setIsLoading(false);
     }
   };
+
+  const selectStyles = (hasError?: boolean) => ({
+    control: (base: any, state: any) => ({
+      ...base,
+      minHeight: '44px',
+      borderWidth: '2px',
+      borderColor: hasError
+        ? '#ef4444'
+        : state.isFocused
+        ? '#3B82F6'
+        : '#D1D5DB',
+      boxShadow: state.isFocused ? '0 0 0 3px rgba(59, 130, 246, 0.1)' : 'none',
+      '&:hover': { borderColor: hasError ? '#ef4444' : '#3B82F6' },
+    }),
+  });
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 p-4 backdrop-blur-sm md:p-8">
@@ -349,11 +392,9 @@ const ModalUser = ({
               strokeLinejoin="round"
             />
           </svg>
-
           <h2 className="flex-1 text-base font-bold text-blue-700">
             {isEditMode ? 'Edit Data User' : 'Tambah User Baru'}
           </h2>
-
           <button
             type="button"
             onClick={onClose}
@@ -380,7 +421,7 @@ const ModalUser = ({
 
         {/* Form Content */}
         <div className="space-y-4 px-6 py-6">
-          {/* Username/Email */}
+          {/* Email */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-gray-700">
               USERNAME / EMAIL <span className="text-red-500">*</span>
@@ -438,20 +479,7 @@ const ModalUser = ({
               isDisabled={isLoading}
               isClearable
               noOptionsMessage={() => 'Tidak ada data'}
-              styles={{
-                control: (base, state) => ({
-                  ...base,
-                  minHeight: '44px',
-                  borderWidth: '2px',
-                  borderColor: state.isFocused ? '#3B82F6' : '#D1D5DB',
-                  boxShadow: state.isFocused
-                    ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                    : 'none',
-                  '&:hover': {
-                    borderColor: '#3B82F6',
-                  },
-                }),
-              }}
+              styles={selectStyles()}
             />
             <p className="text-xs text-gray-500">
               Pilih karyawan jika user terhubung dengan data karyawan
@@ -508,6 +536,7 @@ const ModalUser = ({
             )}
           </div>
 
+          {/* Divisi Bawahan */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-gray-700">
               DIVISI BAWAHAN <span className="text-red-500">*</span>
@@ -517,30 +546,11 @@ const ModalUser = ({
               placeholder="Pilih divisi bawahan..."
               options={divisiOptions}
               value={selectedDivisi}
-              onChange={(selected) => handleDivisiChange(selected)}
+              onChange={handleDivisiChange}
               className="text-sm"
               isDisabled={isLoading}
               noOptionsMessage={() => 'Tidak ada data'}
-              styles={{
-                control: (base, state) => ({
-                  ...base,
-                  minHeight: '44px',
-                  borderWidth: '2px',
-                  borderColor: formErrors.divisi_bawahan
-                    ? '#ef4444'
-                    : state.isFocused
-                    ? '#3B82F6'
-                    : '#D1D5DB',
-                  boxShadow: state.isFocused
-                    ? '0 0 0 3px rgba(59, 130, 246, 0.1)'
-                    : 'none',
-                  '&:hover': {
-                    borderColor: formErrors.divisi_bawahan
-                      ? '#ef4444'
-                      : '#3B82F6',
-                  },
-                }),
-              }}
+              styles={selectStyles(!!formErrors.divisi_bawahan)}
             />
             {formErrors.divisi_bawahan && (
               <p className="text-xs text-red-600">
@@ -549,6 +559,32 @@ const ModalUser = ({
             )}
             <p className="text-xs text-gray-500">
               Pilih divisi yang berada di bawah tanggung jawab user ini
+            </p>
+          </div>
+
+          {/* Tahapan Bawahan */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-gray-700">
+              TAHAPAN BAWAHAN <span className="text-red-500">*</span>
+            </label>
+            <Select
+              isMulti
+              placeholder="Pilih tahapan bawahan..."
+              options={tahapanOptions}
+              value={selectedTahapan}
+              onChange={handleTahapanChange}
+              className="text-sm"
+              isDisabled={isLoading}
+              noOptionsMessage={() => 'Tidak ada data'}
+              styles={selectStyles(!!formErrors.tahapan_bawahan)}
+            />
+            {formErrors.tahapan_bawahan && (
+              <p className="text-xs text-red-600">
+                {formErrors.tahapan_bawahan}
+              </p>
+            )}
+            <p className="text-xs text-gray-500">
+              Pilih tahapan yang berada di bawah tanggung jawab user ini
             </p>
           </div>
 
@@ -574,7 +610,6 @@ const ModalUser = ({
               </p>
             </div>
 
-            {/* Password */}
             <div className="mb-4 space-y-2">
               <label className="text-xs font-semibold text-gray-700">
                 PASSWORD {!isEditMode && 'BARU'}
@@ -596,7 +631,6 @@ const ModalUser = ({
               )}
             </div>
 
-            {/* Confirm Password */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-gray-700">
@@ -631,7 +665,6 @@ const ModalUser = ({
               )}
             </div>
 
-            {/* Password Strength Indicator */}
             {formData.password && (
               <div className="mt-3 space-y-1">
                 <div className="flex gap-1">
@@ -753,4 +786,5 @@ const ModalUser = ({
     </div>
   );
 };
+
 export default ModalUser;
