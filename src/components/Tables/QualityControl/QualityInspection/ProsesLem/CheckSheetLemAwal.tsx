@@ -104,8 +104,8 @@ function CheckSheetLemAwal() {
 
   async function getMasterKode() {
     const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=11`;
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating?proses=9`;
 
     try {
       const res = await axios.get(url);

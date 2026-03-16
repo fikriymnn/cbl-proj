@@ -31,8 +31,8 @@ function CheckSheetPondAwal() {
 
   async function getMasterKode() {
     const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=7`;
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating?proses=6`;
 
     try {
       const res = await axios.get(url);

@@ -89,7 +89,9 @@ function CheckSheetCoatingPeriode() {
   const [isFailed, setIsFailed] = useState(false);
   const [masterWaste, setMasterWaste] = useState<any>();
   async function fetchMasterWaste() {
-    const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+    const url2 = `${
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteKendalaFormating`;
 
     try {
       setIsLoading(true);
@@ -104,8 +106,8 @@ function CheckSheetCoatingPeriode() {
   }
   async function getMasterKode() {
     const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=5`;
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating?proses=5`;
 
     try {
       setIsLoading(true);

@@ -55,7 +55,9 @@ function RekapWasteQC() {
     }
   }
   async function getWasteMaster() {
-    const url = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteKendalaFormating`;
     try {
       setIsLoading(true);
       const res = await axios.get(url, {});

@@ -161,11 +161,11 @@ function CheckSheetCetakAwal() {
 
   async function getMasterKode() {
     const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=3`;
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating?proses=3`;
     const url2 = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=4`;
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating?proses=4`;
     try {
       const res = await axios.get(url);
       const res2 = await axios.get(url);

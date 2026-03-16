@@ -512,8 +512,8 @@ function CheckSheetHasilRabut() {
 
   async function getMasterDefect() {
     const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true`;
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating`;
 
     try {
       setIsLoading(true);
@@ -535,7 +535,9 @@ function CheckSheetHasilRabut() {
     }
   }
   async function fetchMasterWaste() {
-    const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+    const url2 = `${
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteKendalaFormating`;
 
     try {
       setIsLoading(true);
@@ -553,13 +555,14 @@ function CheckSheetHasilRabut() {
   const [selectedOperatorJO, setselectedOperatorJO] = useState<any>(null);
   const [mesinByJo, setmesinByJo] = useState<any>([]);
   async function getKendalaByJO(noJO: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/get-kendala-by-jo/${noJO}`;
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/kendalaByJo`;
 
     try {
       setIsLoading(true);
-      const res = await axios.get(url);
+      const res = await axios.get(url, {
+        params: { no_jo: noJO },
+        withCredentials: true,
+      });
       setIsLoading(false);
       setkendalaByJo(res.data.data);
       console.log('kendala by jo', res.data.data);
@@ -569,13 +572,14 @@ function CheckSheetHasilRabut() {
     }
   }
   async function getmesinByJo(noJO: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/get-mesin-by-jo/${noJO}`;
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/mesinByJo`;
 
     try {
       setIsLoading(true);
-      const res = await axios.get(url);
+      const res = await axios.get(url, {
+        withCredentials: true,
+        params: { no_jo: noJO },
+      });
       setIsLoading(false);
       setmesinByJo(res.data.data);
       console.log('Mesin by jo', res.data.data);

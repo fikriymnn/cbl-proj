@@ -75,7 +75,9 @@ function CheckSheetLemPeriode() {
   }, []);
   const [masterWaste, setMasterWaste] = useState<any>();
   async function fetchMasterWaste() {
-    const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+    const url2 = `${
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteKendalaFormating`;
 
     try {
       setIsLoading(true);
@@ -91,8 +93,8 @@ function CheckSheetLemPeriode() {
   const [isFailed, setIsFailed] = useState(false);
   async function getMasterKode() {
     const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=11`;
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating?proses=9`;
 
     try {
       setIsLoading(true);
