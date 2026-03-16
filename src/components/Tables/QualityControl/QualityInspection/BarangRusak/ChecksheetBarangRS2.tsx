@@ -24,8 +24,9 @@ function CheckSheetBarangRS2() {
   }, []);
 
   async function getCetakMesinAwal() {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangrusak/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangrusak/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
@@ -40,8 +41,9 @@ function CheckSheetBarangRS2() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangrusak/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangrusak/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -66,9 +68,29 @@ function CheckSheetBarangRS2() {
 
   const [options, setOptions] = useState([]);
 
+  // async function getMasterDefect() {
+  //   const url = `${import.meta.env.VITE_API_LINK_P1
+  //     }/api/list-kendala?criteria=true`;
+  //   try {
+  //     const res = await axios.get(url);
+
+  //     setDefectMaster(res.data);
+  //     setOptions(
+  //       res.data.map((item: any) => ({
+  //         value: item.i_id,
+  //         label: item.e_kode_produksi + ' - ' + item.nama_kendala,
+  //       }))
+  //     );
+  //     console.log(res.data);
+  //   } catch (error: any) {
+  //     console.log(error);
+  //   }
+  // }
+
   async function getMasterDefect() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating`;
     try {
       const res = await axios.get(url);
 
@@ -77,7 +99,7 @@ function CheckSheetBarangRS2() {
         res.data.map((item: any) => ({
           value: item.i_id,
           label: item.e_kode_produksi + ' - ' + item.nama_kendala,
-        }))
+        })),
       );
       console.log(res.data);
     } catch (error: any) {
@@ -90,8 +112,9 @@ function CheckSheetBarangRS2() {
   const [asalTemuan, setAsalTemuan] = useState<any>();
 
   async function tambahDefect(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusak/createDefect/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusak/createDefect/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -126,7 +149,6 @@ function CheckSheetBarangRS2() {
     setKode(filteredData?.e_kode_produksi);
     setMasalah(filteredData?.nama_kendala);
     setAsalTemuan(filteredData?.kategori_kendala);
-
   };
 
   const handleChangePoint = (e: any, i: number) => {
@@ -143,8 +165,9 @@ function CheckSheetBarangRS2() {
     setting_awal: any,
     druk_awal: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusak/save/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusak/save/${id}`;
     try {
       // setIsLoading(true);
       const res = await axios.put(
@@ -165,7 +188,12 @@ function CheckSheetBarangRS2() {
       console.log(error);
     }
   }
-  async function simpanBarangRusak(id: number, startTime: any, catatan: any, barangBagus: any) {
+  async function simpanBarangRusak(
+    id: number,
+    startTime: any,
+    catatan: any,
+    barangBagus: any,
+  ) {
     if (barangBagus == null) {
       // Check if start time is available
       alert('Barang Baik Aktual Belum Diisi');
@@ -176,8 +204,9 @@ function CheckSheetBarangRS2() {
       alert('Catatan Belum Diisi Lengkap');
       return; // Exit function if no start time
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangrusak/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangrusak/done/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -430,7 +459,9 @@ function CheckSheetBarangRS2() {
                                   </p>
                                   <input
                                     name="setting_awal"
-                                    value={formatInteger(parseInt(data?.setting_awal))}
+                                    value={formatInteger(
+                                      parseInt(data?.setting_awal),
+                                    )}
                                     disabled
                                     type="number"
                                     className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
@@ -442,7 +473,9 @@ function CheckSheetBarangRS2() {
                                   </p>
                                   <input
                                     name="druk_awal"
-                                    value={formatInteger(parseInt(data?.druk_awal))}
+                                    value={formatInteger(
+                                      parseInt(data?.druk_awal),
+                                    )}
                                     disabled
                                     type="number"
                                     className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
@@ -453,7 +486,9 @@ function CheckSheetBarangRS2() {
                                     SUB TOTAL
                                   </p>
                                   <input
-                                    value={formatInteger(parseInt(data?.sub_total))}
+                                    value={formatInteger(
+                                      parseInt(data?.sub_total),
+                                    )}
                                     type="number"
                                     disabled
                                     className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
@@ -615,7 +650,7 @@ function CheckSheetBarangRS2() {
           </div>
 
           {cetakMesinAwal?.waktu_sortir != null &&
-            cetakMesinAwal?.status == 'incoming' ? (
+          cetakMesinAwal?.status == 'incoming' ? (
             <>
               <button
                 // disabled={isLoading}
@@ -639,17 +674,14 @@ function CheckSheetBarangRS2() {
                       </label>
 
                       <Select
-                        placeholder='Cari...'
+                        placeholder="Cari..."
                         options={options}
                         onChange={(selectedId) => {
-
-                          handleChangePointDepatment(selectedId)
+                          handleChangePointDepatment(selectedId);
                         }}
                         className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
-                      >
-
-                      </Select>
+                      ></Select>
                       <button
                         disabled={isLoading}
                         onClick={() => {
@@ -722,14 +754,14 @@ function CheckSheetBarangRS2() {
               </label>
               {cetakMesinAwal?.status == 'incoming' ? (
                 <input
-                  type='number'
+                  type="number"
                   onChange={(e) => setbbAktual(e.target.value)}
                   className="w-[20%] h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
                 ></input>
               ) : (
                 <>
                   <input
-                    type='number'
+                    type="number"
                     readOnly
                     defaultValue={cetakMesinAwal?.barang_baik_aktual}
                     className="w-[20%] h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
@@ -766,7 +798,7 @@ function CheckSheetBarangRS2() {
                           cetakMesinAwal?.id,
                           cetakMesinAwal?.waktu_sortir,
                           catatan,
-                          bbAktual
+                          bbAktual,
                         )
                       }
                       className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"

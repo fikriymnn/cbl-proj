@@ -98,14 +98,52 @@ function ChecksheetBarangRS() {
   const [wasteSelectCode, setwasteSelectCode] = useState<any>([]);
   const [tujuanDepartment, settujuanDepartment] = useState<any>([]);
 
+  // async function getMasterDefect() {
+  //   const url = `${
+  //     import.meta.env.VITE_API_LINK_P1
+  //   }/api/list-kendala?criteria=true`;
+
+  //   try {
+  //     setIsLoading(true);
+  //     const res = await axios.get(url);
+  //     setDefectMaster(res.data); // Save raw data for filtering
+  //     setOptions(
+  //       res.data.map((item: any) => ({
+  //         value: item.e_kode_produksi,
+  //         label: `${item.e_kode_produksi} - ${item.nama_kendala}`,
+  //       })),
+  //     );
+  //     setIsLoading(false);
+  //     //console.log('master defect', res.data);
+  //   } catch (error: any) {
+  //     setIsLoading(false);
+  //     console.log(error.data.msg);
+  //   }
+  // }
+
+  // async function fetchMasterWaste() {
+  //   const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+
+  //   try {
+  //     setIsLoading(true);
+  //     const res = await axios.get(url2);
+  //     setIsLoading(false);
+  //     setMasterWaste(res.data.waste); // Save raw data for filtering
+  //     console.log('Master Waste Data:', res.data.waste);
+  //   } catch (error: any) {
+  //     setIsLoading(false);
+  //     console.error('Error fetching master waste:', error);
+  //   }
+  // }
+
   async function getMasterDefect() {
     const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true`;
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteAllKendalaFormating`;
 
     try {
       setIsLoading(true);
-      const res = await axios.get(url);
+      const res = await axios.get(url, { withCredentials: true });
       setDefectMaster(res.data); // Save raw data for filtering
       setOptions(
         res.data.map((item: any) => ({
@@ -114,7 +152,7 @@ function ChecksheetBarangRS() {
         })),
       );
       setIsLoading(false);
-      //console.log('master defect', res.data);
+      console.log('master defect', res.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error.data.msg);
@@ -122,11 +160,13 @@ function ChecksheetBarangRS() {
   }
 
   async function fetchMasterWaste() {
-    const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+    const url2 = `${
+      import.meta.env.VITE_API_LINK
+    }/master/produksi/wasteKendalaFormating`;
 
     try {
       setIsLoading(true);
-      const res = await axios.get(url2);
+      const res = await axios.get(url2, { withCredentials: true });
       setIsLoading(false);
       setMasterWaste(res.data.waste); // Save raw data for filtering
       console.log('Master Waste Data:', res.data.waste);
