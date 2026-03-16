@@ -345,7 +345,7 @@ const KalkulasiPrintModal: React.FC<KalkulasiPrintModalProps> = ({
                    <tr>
                     <td class="border font-bold" style="padding: 1px 4px">Spesifikasi</td>
                     <td class="border bg-yellow-200 text-center font-bold" style="padding: 1px 4px">
-                      ${truncateText(getSpesifikasiString(), 30)}
+                      ${getValue(data.spesifikasi)}
                     </td>
                     <td class="border font-bold" style="padding: 1px 4px">Area</td>
                     <td class="border bg-yellow-200 font-bold" style="padding: 1px 4px">
