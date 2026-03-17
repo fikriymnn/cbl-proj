@@ -99,7 +99,7 @@ function CheckSheetCetakPeriode() {
       setMasterKodeCetak(res);
       setMasterKodeCetak2(res2);
       setIsFailed(false);
-      console.log(res);
+      console.log('proses 3', res);
     } catch (error: any) {
       setIsLoading(false);
       setIsFailed(true);

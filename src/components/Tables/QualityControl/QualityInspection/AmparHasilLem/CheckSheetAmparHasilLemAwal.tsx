@@ -123,7 +123,7 @@ function CheckSheetHasilRabut() {
     }
   }
   async function getmesinByJo(noJO: any) {
-    const url = `${import.meta.env.VITE_API_LINK_P1}/produksi/mesinByJo`;
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/mesinByJo`;
 
     try {
       setIsLoading(true);
