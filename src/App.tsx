@@ -257,6 +257,8 @@ import SOMonitoringPage from './pages/Monitoring/SOMonitoringPage';
 import LabelPage from './pages/Print/LabelPage';
 import LaporanDOPage from './pages/DO/LaporanDOPage';
 import ApprovalStandarWarnaPage from './pages/QualityControl/ApprovalStandarWarnaPage';
+import PenerimaanBarangJadiPage from './pages/GudangFG/PenerimaanBarangJadiPage';
+import GudangFGPage from './pages/GudangFG/GudangFGPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2416,7 +2418,31 @@ function App() {
             </P>
           }
         />
-
+        {/* ============== Gudang FG ROUTES ============== */}
+        <Route
+          path="/gudang-fg/penerimaan-barang-jadi"
+          element={
+            <P>
+              <PenerimaanBarangJadiPage />
+            </P>
+          }
+        />
+        <Route
+          path="/gudang-fg/gudang-fg"
+          element={
+            <P>
+              <GudangFGPage />
+            </P>
+          }
+        />
+        <Route
+          path="/gudang-fg/mutasi-barang"
+          element={
+            <P>
+              <PenerimaanBarangJadiPage />
+            </P>
+          }
+        />
         {/* ============== PRINT ROUTES ============== */}
         <Route
           path="/print/label"
