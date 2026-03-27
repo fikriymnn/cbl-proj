@@ -259,6 +259,7 @@ import LaporanDOPage from './pages/DO/LaporanDOPage';
 import ApprovalStandarWarnaPage from './pages/QualityControl/ApprovalStandarWarnaPage';
 import PenerimaanBarangJadiPage from './pages/GudangFG/PenerimaanBarangJadiPage';
 import GudangFGPage from './pages/GudangFG/GudangFGPage';
+import MutasiBarangPage from './pages/GudangFG/MutasiBarangPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2439,7 +2440,7 @@ function App() {
           path="/gudang-fg/mutasi-barang"
           element={
             <P>
-              <PenerimaanBarangJadiPage />
+              <MutasiBarangPage />
             </P>
           }
         />
