@@ -302,6 +302,7 @@ const IncomingBarangJadi: React.FC = () => {
           withCredentials: true,
         },
       );
+      console.log('API response:', res.data);
       setData(Array.isArray(res.data?.data) ? res.data.data : []);
       setTotalPages(res.data?.total_page || 1);
     } catch (err) {
@@ -483,7 +484,7 @@ const IncomingBarangJadi: React.FC = () => {
                         {row.no_io || '-'}
                       </td>
                       <td className="p-2 sm:p-3 text-xs max-w-[200px]">
-                        <span className="block truncate" title={row.produk}>
+                        <span className="block " title={row.produk}>
                           {row.produk || '-'}
                         </span>
                         <span className="text-[10px] text-gray-400">
@@ -509,7 +510,7 @@ const IncomingBarangJadi: React.FC = () => {
                         {fmtDate(row.createdAt)}
                       </td>
                       <td className="p-2 sm:p-3 text-xs">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center flex-col gap-2">
                           <button
                             onClick={() =>
                               setActionModal({ row, type: 'approve' })

@@ -402,6 +402,7 @@ const ListJoSelesai: React.FC = () => {
                     <td className="px-3 py-2 whitespace-nowrap text-xs">
                       {(item.status_proses == 'progress' ||
                         item.status_proses == 'reject qc' ||
+                        item.status_proses == 'reject fg' ||
                         item.status_proses == 'done') &&
                       (item.is_jo_done == false || item.is_jo_done == null) ? (
                         <>

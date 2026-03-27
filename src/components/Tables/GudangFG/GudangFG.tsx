@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import Loading from '../../Loading';
 import { Pagination, Stack } from '@mui/material';
@@ -62,49 +62,380 @@ function fmtQty(val: number | null | undefined) {
   return val.toLocaleString('id-ID');
 }
 
-// ─── Send DO Modal ────────────────────────────────────────────────────────────
+// ─── Async Searchable Select ──────────────────────────────────────────────────
 
-function SendDoModal({
-  selected,
-  onClose,
-  onConfirm,
-}: {
-  selected: DataBarang[];
-  onClose: () => void;
-  onConfirm: (type: 'single' | 'group', payload: SendDoItem[]) => void;
-}) {
-  const isSingle = selected.length === 1;
-  const [type, setType] = useState<'single' | 'group'>(
-    isSingle ? 'single' : 'group',
-  );
-  const [quantities, setQuantities] = useState<Record<number, string>>(() => {
-    const init: Record<number, string> = {};
-    selected.forEach((r) => {
-      init[r.id] = String(r.jumlah_qty_sisa ?? 0);
-    });
-    return init;
-  });
-  const [mainJoId, setMainJoId] = useState<number | null>(
-    selected[0]?.id ?? null,
+const SELECT_LIMIT = 8;
+
+interface AsyncSearchSelectProps {
+  selectedIds: number[];
+  lockedIoId?: number | null;
+  /** If provided, items whose id_io !== lockedIoId will be shown but disabled */
+  showAllButLockIo?: boolean;
+  onAdd: (barang: DataBarang) => void;
+  placeholder?: string;
+}
+
+function AsyncSearchSelect({
+  selectedIds,
+  lockedIoId,
+  showAllButLockIo = false,
+  onAdd,
+  placeholder,
+}: AsyncSearchSelectProps) {
+  const [search, setSearch] = useState('');
+  const [candidates, setCandidates] = useState<DataBarang[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const fetchCandidates = useCallback(
+    async (searchVal: string, pageVal: number) => {
+      try {
+        setLoading(true);
+        const res: AxiosResponse<GudangResponse> = await axios.get(
+          `${import.meta.env.VITE_API_LINK}/fg/gudangFinishGoodByIo`,
+          {
+            params: {
+              page: pageVal,
+              limit: SELECT_LIMIT,
+              search: searchVal || undefined,
+              // Only pass id_io filter when NOT in showAllButLockIo mode
+              id_io:
+                !showAllButLockIo && lockedIoId != null
+                  ? lockedIoId
+                  : undefined,
+            },
+            withCredentials: true,
+          },
+        );
+
+        const allBarang: DataBarang[] = (res.data?.data ?? []).flatMap(
+          (g) => g.data_barang ?? [],
+        );
+
+        // Filter already-selected IDs client-side
+        setCandidates(allBarang.filter((b) => !selectedIds.includes(b.id)));
+        setTotalPages(res.data?.total_page ?? 1);
+      } catch (err) {
+        console.error(err);
+        setCandidates([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [lockedIoId, selectedIds, showAllButLockIo],
   );
 
-  function handleConfirm() {
-    const payload: SendDoItem[] = selected.map((r) => ({
-      id: r.id,
-      jumlah_kirim: Number(quantities[r.id]) || 0,
-      ...(type === 'group' ? { is_main_jo: r.id === mainJoId } : {}),
-    }));
-    onConfirm(type, payload);
+  useEffect(() => {
+    fetchCandidates(search, page);
+    // eslint-disable-next-line
+  }, [lockedIoId, showAllButLockIo]);
+
+  useEffect(() => {
+    setCandidates((prev) => prev.filter((b) => !selectedIds.includes(b.id)));
+  }, [selectedIds]);
+
+  function handleSearchInput(val: string) {
+    setSearch(val);
+    setPage(1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchCandidates(val, 1);
+    }, 400);
+  }
+
+  function handlePageChange(newPage: number) {
+    setPage(newPage);
+    fetchCandidates(search, newPage);
+  }
+
+  function handleAdd(b: DataBarang) {
+    onAdd(b);
+    setCandidates((prev) => prev.filter((x) => x.id !== b.id));
   }
 
   return (
+    <div className="flex flex-col gap-2 h-full">
+      {/* Search input */}
+      <div className="relative flex-shrink-0">
+        <input
+          ref={inputRef}
+          type="text"
+          value={search}
+          onChange={(e) => handleSearchInput(e.target.value)}
+          placeholder={placeholder ?? 'Cari No JO, IO, produk, customer...'}
+          className="w-full pl-8 pr-8 py-2 text-xs border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400 bg-blue-50"
+        />
+        <svg
+          className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        {search && (
+          <button
+            onClick={() => handleSearchInput('')}
+            className="absolute right-2.5 top-2 w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600"
+          >
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              className="w-3.5 h-3.5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {/* Results list */}
+      <div className="rounded-xl border border-gray-200 overflow-hidden flex flex-col flex-1">
+        {loading ? (
+          <div className="divide-y divide-gray-100">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 px-3 py-2.5 animate-pulse"
+              >
+                <div className="flex-1 space-y-1.5">
+                  <div className="flex gap-2">
+                    <div className="h-4 w-16 bg-gray-200 rounded" />
+                    <div className="h-4 w-20 bg-gray-200 rounded" />
+                  </div>
+                  <div className="h-3 w-36 bg-gray-200 rounded" />
+                  <div className="h-3 w-24 bg-gray-100 rounded" />
+                </div>
+                <div className="h-8 w-12 bg-gray-200 rounded" />
+              </div>
+            ))}
+          </div>
+        ) : candidates.length === 0 ? (
+          <div className="py-6 text-center text-xs text-gray-400 flex-1 flex items-center justify-center">
+            {search
+              ? 'Tidak ada hasil untuk pencarian ini'
+              : 'Tidak ada data tersedia'}
+          </div>
+        ) : (
+          <div
+            className="divide-y divide-gray-100 overflow-y-auto flex-1"
+            style={{ maxHeight: '340px' }}
+          >
+            {candidates.map((b) => {
+              const outOfStock = (b.jumlah_qty_sisa ?? 0) <= 0;
+              // In showAllButLockIo mode, items with different IO are shown but disabled
+              const wrongIo =
+                showAllButLockIo &&
+                lockedIoId != null &&
+                b.id_io !== lockedIoId;
+              const isDisabled = outOfStock || wrongIo;
+
+              return (
+                <div
+                  key={b.id}
+                  className={`flex items-center justify-between gap-3 px-3 py-2.5 transition-colors ${
+                    isDisabled
+                      ? 'bg-gray-50 opacity-50 cursor-not-allowed'
+                      : 'hover:bg-violet-50 cursor-pointer'
+                  }`}
+                  onClick={() => !isDisabled && handleAdd(b)}
+                  title={
+                    outOfStock
+                      ? 'Stok habis'
+                      : wrongIo
+                      ? `Hanya IO ${
+                          candidates.find((x) => x.id_io === lockedIoId)
+                            ?.no_io ?? ''
+                        } yang dapat dipilih dalam grup ini`
+                      : 'Klik untuk menambahkan'
+                  }
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-bold text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded">
+                        {b.no_io}
+                      </span>
+                      <span className="text-[10px] font-semibold text-indigo-600">
+                        {b.no_jo}
+                      </span>
+                      {outOfStock && (
+                        <span className="text-[10px] font-bold text-red-500 bg-red-100 px-1.5 py-0.5 rounded">
+                          Stok Habis
+                        </span>
+                      )}
+                      {wrongIo && (
+                        <span className="text-[10px] font-bold text-orange-500 bg-orange-100 px-1.5 py-0.5 rounded">
+                          IO Berbeda
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs font-medium text-gray-800 mt-0.5 truncate">
+                      {b.produk || '-'}
+                    </p>
+                    <p className="text-[10px] text-gray-400">{b.customer}</p>
+                  </div>
+                  <div className="flex-shrink-0 text-right">
+                    <p className="text-xs font-bold text-indigo-700">
+                      {fmtQty(b.jumlah_qty_sisa)}
+                    </p>
+                    <p className="text-[10px] text-gray-400">sisa</p>
+                  </div>
+                  {!isDisabled && (
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-violet-100 hover:bg-violet-200 flex items-center justify-center transition-colors">
+                      <svg
+                        className="w-3.5 h-3.5 text-violet-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Pagination footer */}
+        {!loading && (candidates.length > 0 || totalPages > 1) && (
+          <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-t border-gray-100 flex-shrink-0">
+            <span className="text-[10px] text-gray-400">
+              Hal {page}/{totalPages}
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                disabled={page <= 1 || loading}
+                onClick={() => handlePageChange(page - 1)}
+                className="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(
+                  (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1,
+                )
+                .reduce<(number | '...')[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1)
+                    acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === '...' ? (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="text-[10px] text-gray-400 px-0.5"
+                    >
+                      …
+                    </span>
+                  ) : (
+                    <button
+                      key={p}
+                      onClick={() => handlePageChange(p as number)}
+                      className={`w-6 h-6 flex items-center justify-center rounded text-[10px] font-semibold transition-colors ${
+                        page === p
+                          ? 'bg-violet-600 text-white'
+                          : 'text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ),
+                )}
+              <button
+                disabled={page >= totalPages || loading}
+                onClick={() => handlePageChange(page + 1)}
+                className="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Type Selector Modal ──────────────────────────────────────────────────────
+
+function DoTypeSelectorModal({
+  onSelect,
+  onClose,
+}: {
+  onSelect: (type: 'single' | 'group') => void;
+  onClose: () => void;
+}) {
+  return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
-        <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 text-white rounded-t-2xl flex justify-between items-start flex-shrink-0">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+        <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 text-white flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-bold flex items-center gap-2">
+            <h3 className="text-base font-bold">Send Delivery Order</h3>
+            <p className="text-violet-200 text-xs mt-0.5">
+              Pilih tipe pengiriman
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-violet-200 text-2xl font-bold leading-none"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-5 space-y-3">
+          <button
+            onClick={() => onSelect('single')}
+            className="w-full flex items-start gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-violet-400 hover:bg-violet-50 transition-all group text-left"
+          >
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-violet-100 group-hover:bg-violet-200 flex items-center justify-center transition-colors">
               <svg
-                className="w-5 h-5"
+                className="w-5 h-5 text-violet-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -113,117 +444,281 @@ function SendDoModal({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              Send Delivery Order
+            </div>
+            <div>
+              <p className="font-bold text-gray-800 text-sm">Single DO</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Kirim satu atau beberapa DO secara independen, bebas memilih
+                dari semua data
+              </p>
+            </div>
+          </button>
+          <button
+            onClick={() => onSelect('group')}
+            className="w-full flex items-start gap-4 p-4 rounded-xl border-2 border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all group text-left"
+          >
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-100 group-hover:bg-indigo-200 flex items-center justify-center transition-colors">
+              <svg
+                className="w-5 h-5 text-indigo-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p className="font-bold text-gray-800 text-sm">Group DO</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Gabungkan beberapa JO dalam satu IO yang sama, tentukan satu
+                indukan
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Selected Item Card ───────────────────────────────────────────────────────
+
+function SelectedItemCard({
+  barang,
+  quantity,
+  isMain,
+  showMainToggle,
+  onRemove,
+  onQtyChange,
+  onSetMain,
+}: {
+  barang: DataBarang;
+  quantity: string;
+  isMain?: boolean;
+  showMainToggle?: boolean;
+  onRemove: () => void;
+  onQtyChange: (v: string) => void;
+  onSetMain?: () => void;
+}) {
+  return (
+    <div
+      className={`rounded-xl border-2 p-3 space-y-2 transition-all ${
+        isMain ? 'border-violet-400 bg-violet-50' : 'border-gray-200 bg-white'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] font-bold text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded">
+              {barang.no_io}
+            </span>
+            <span className="text-[10px] font-semibold text-indigo-600">
+              {barang.no_jo}
+            </span>
+            {isMain && (
+              <span className="text-[10px] font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">
+                ★ Indukan
+              </span>
+            )}
+          </div>
+          <p className="text-xs font-semibold text-gray-800 mt-1 truncate">
+            {barang.produk || '-'}
+          </p>
+          <p className="text-[10px] text-gray-500">
+            {barang.customer} — Sisa:{' '}
+            <span className="font-bold text-indigo-700">
+              {fmtQty(barang.jumlah_qty_sisa)}
+            </span>
+          </p>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {showMainToggle && !isMain && (
+            <button
+              onClick={onSetMain}
+              className="text-[10px] px-2 py-1 rounded-full border border-gray-300 text-gray-500 hover:border-violet-400 hover:text-violet-600 transition-colors"
+            >
+              Set Indukan
+            </button>
+          )}
+          <button
+            onClick={onRemove}
+            className="w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 flex items-center justify-center transition-colors"
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <label className="text-[10px] font-medium text-gray-500 whitespace-nowrap">
+          Jumlah Kirim:
+        </label>
+        <input
+          type="number"
+          min={1}
+          max={barang.jumlah_qty_sisa ?? undefined}
+          value={quantity}
+          onChange={(e) => onQtyChange(e.target.value)}
+          className="flex-1 rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-400"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─── Single DO Modal ──────────────────────────────────────────────────────────
+
+function SingleDoModal({
+  onClose,
+  onConfirm,
+}: {
+  onClose: () => void;
+  onConfirm: (payload: SendDoItem[]) => void;
+}) {
+  const [selected, setSelected] = useState<DataBarang[]>([]);
+  const [quantities, setQuantities] = useState<Record<number, string>>({});
+
+  const selectedIds = selected.map((b) => b.id);
+
+  function addItem(barang: DataBarang) {
+    setSelected((p) => [...p, barang]);
+    setQuantities((p) => ({
+      ...p,
+      [barang.id]: String(barang.jumlah_qty_sisa ?? 0),
+    }));
+  }
+
+  function removeItem(id: number) {
+    setSelected((p) => p.filter((b) => b.id !== id));
+    setQuantities((p) => {
+      const n = { ...p };
+      delete n[id];
+      return n;
+    });
+  }
+
+  function handleConfirm() {
+    const payload: SendDoItem[] = selected.map((r) => ({
+      id: r.id,
+      jumlah_kirim: Number(quantities[r.id]) || 0,
+    }));
+    onConfirm(payload);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full min-w-7xl max-h-[92vh] flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-5 py-4 text-white rounded-t-2xl flex justify-between items-start flex-shrink-0">
+          <div>
+            <h3 className="text-base font-bold flex items-center gap-2">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Single DO
             </h3>
-            <p className="text-violet-200 text-sm mt-0.5">
-              {selected.length} item dipilih
+            <p className="text-violet-200 text-xs mt-0.5">
+              Pilih data bebas dari semua IO
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:text-violet-200 text-2xl font-bold leading-none ml-4"
+            className="text-white hover:text-violet-200 text-2xl font-bold leading-none"
           >
             ×
           </button>
         </div>
 
-        <div className="overflow-y-auto p-5 space-y-4">
-          {/* Type selector — only if multiple selected */}
-          {!isSingle && (
-            <div className="flex gap-3">
-              {(['single', 'group'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setType(t)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
-                    type === t
-                      ? 'border-violet-500 bg-violet-50 text-violet-700'
-                      : 'border-gray-200 bg-white text-gray-500 hover:border-violet-300'
-                  }`}
+        {/* Two-column body */}
+        <div className="flex-1 overflow-hidden flex min-h-0">
+          {/* LEFT — search & list */}
+          <div className="w-1/3 border-r border-gray-100 flex flex-col p-4 gap-3 min-h-0">
+            <p className="text-xs font-semibold text-gray-600 flex-shrink-0">
+              Tambah Data
+            </p>
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+              <AsyncSearchSelect selectedIds={selectedIds} onAdd={addItem} />
+            </div>
+          </div>
+
+          {/* RIGHT — selected items */}
+          <div className="w-2/3 flex flex-col p-4 gap-3 min-h-0">
+            <p className="text-xs font-semibold text-gray-600 flex-shrink-0">
+              Data Dipilih{' '}
+              <span className="text-violet-600 font-bold">
+                ({selected.length})
+              </span>
+            </p>
+
+            {selected.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center border-2 border-dashed border-gray-200 rounded-xl py-8">
+                <svg
+                  className="w-10 h-10 text-gray-300 mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  {t === 'single' ? 'Single DO' : 'Group DO'}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {type === 'group' && !isSingle && (
-            <div className="bg-indigo-50 rounded-xl p-3 text-xs text-indigo-700 border border-indigo-200">
-              <strong>Group DO:</strong> Pilih satu item sebagai indukan
-              (is_main_jo = true).
-            </div>
-          )}
-
-          {/* Items */}
-          <div className="space-y-3">
-            {selected.map((row) => (
-              <div
-                key={row.id}
-                className={`rounded-xl border-2 p-4 space-y-3 transition-all ${
-                  type === 'group' && row.id === mainJoId
-                    ? 'border-violet-400 bg-violet-50'
-                    : 'border-gray-200 bg-gray-50'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800 truncate">
-                      {row.produk || '-'}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {row.no_jo} — {row.customer}
-                    </p>
-                    <div className="flex gap-4 mt-1 text-xs">
-                      <span className="text-gray-400">
-                        Sisa Stok:{' '}
-                        <span className="font-semibold text-gray-700">
-                          {fmtQty(row.jumlah_qty_sisa)}
-                        </span>
-                      </span>
-                      <span className="text-gray-400">
-                        No IO:{' '}
-                        <span className="font-semibold text-gray-700">
-                          {row.no_io}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-                  {type === 'group' && !isSingle && (
-                    <button
-                      onClick={() => setMainJoId(row.id)}
-                      className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all ${
-                        row.id === mainJoId
-                          ? 'bg-violet-500 text-white border-violet-500'
-                          : 'bg-white text-gray-500 border-gray-300 hover:border-violet-400'
-                      }`}
-                    >
-                      {row.id === mainJoId ? '★ Indukan' : 'Set Indukan'}
-                    </button>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-gray-600">
-                    Jumlah Kirim:
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={row.jumlah_qty_sisa ?? undefined}
-                    value={quantities[row.id] ?? ''}
-                    onChange={(e) =>
-                      setQuantities((p) => ({ ...p, [row.id]: e.target.value }))
-                    }
-                    className="w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
-                </div>
+                </svg>
+                <p className="text-xs text-gray-400">
+                  Belum ada data dipilih.
+                  <br />
+                  Cari dan pilih data di sebelah kiri.
+                </p>
               </div>
-            ))}
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                {selected.map((b) => (
+                  <SelectedItemCard
+                    key={b.id}
+                    barang={b}
+                    quantity={quantities[b.id] ?? ''}
+                    onRemove={() => removeItem(b.id)}
+                    onQtyChange={(v) =>
+                      setQuantities((p) => ({ ...p, [b.id]: v }))
+                    }
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
+        {/* Footer */}
         <div className="px-5 pb-5 pt-3 border-t border-gray-100 flex gap-3 justify-end flex-shrink-0">
           <button
             onClick={onClose}
@@ -233,9 +728,229 @@ function SendDoModal({
           </button>
           <button
             onClick={handleConfirm}
-            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg text-sm transition-colors"
+            disabled={selected.length === 0}
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
           >
-            Kirim DO
+            Kirim DO ({selected.length})
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Group DO Modal ───────────────────────────────────────────────────────────
+
+function GroupDoModal({
+  allData,
+  onClose,
+  onConfirm,
+}: {
+  allData: GudangItem[];
+  onClose: () => void;
+  onConfirm: (payload: SendDoItem[]) => void;
+}) {
+  const [selected, setSelected] = useState<DataBarang[]>([]);
+  const [quantities, setQuantities] = useState<Record<number, string>>({});
+  const [mainJoId, setMainJoId] = useState<number | null>(null);
+
+  // Derive locked IO from first selected item
+  const lockedIoId = selected.length > 0 ? selected[0].id_io : null;
+  const selectedIds = selected.map((b) => b.id);
+
+  const lockedGroup =
+    lockedIoId != null ? allData.find((g) => g.id_io === lockedIoId) : null;
+
+  function addItem(barang: DataBarang) {
+    setSelected((p) => [...p, barang]);
+    setQuantities((p) => ({
+      ...p,
+      [barang.id]: String(barang.jumlah_qty_sisa ?? 0),
+    }));
+    if (selected.length === 0) {
+      setMainJoId(barang.id);
+    }
+  }
+
+  function removeItem(id: number) {
+    setSelected((p) => {
+      const next = p.filter((b) => b.id !== id);
+      if (mainJoId === id) setMainJoId(next[0]?.id ?? null);
+      return next;
+    });
+    setQuantities((p) => {
+      const n = { ...p };
+      delete n[id];
+      return n;
+    });
+  }
+
+  function handleConfirm() {
+    const payload: SendDoItem[] = selected.map((r) => ({
+      id: r.id,
+      jumlah_kirim: Number(quantities[r.id]) || 0,
+      is_main_jo: r.id === mainJoId,
+    }));
+    onConfirm(payload);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full min-w-7xl max-h-[92vh] flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-5 py-4 text-white rounded-t-2xl flex justify-between items-start flex-shrink-0">
+          <div>
+            <h3 className="text-base font-bold flex items-center gap-2">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              Group DO
+            </h3>
+            <p className="text-indigo-200 text-xs mt-0.5">
+              {lockedGroup ? (
+                <>
+                  IO terkunci:{' '}
+                  <span className="font-bold text-white">
+                    {lockedGroup.no_io}
+                  </span>{' '}
+                  — {lockedGroup.produk}
+                </>
+              ) : (
+                'Pilih item pertama untuk menentukan IO grup'
+              )}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-indigo-200 text-2xl font-bold leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Two-column body */}
+        <div className="flex-1 overflow-hidden flex min-h-0">
+          {/* LEFT — search & list */}
+          <div className="w-1/3 border-r border-gray-100 flex flex-col p-4 gap-3 min-h-0">
+            <div className="flex-shrink-0 space-y-2">
+              <p className="text-xs font-semibold text-gray-600">Tambah Data</p>
+              {/* Lock notice */}
+              {lockedIoId != null && (
+                <div className="flex items-center gap-2 text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg px-3 py-2">
+                  <svg
+                    className="w-3.5 h-3.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                  <span>
+                    IO <strong>{lockedGroup?.no_io}</strong> terkunci.{' '}
+                    <span className="text-orange-600">
+                      IO berbeda tidak bisa dipilih.
+                    </span>
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+              {/* Always search all data; showAllButLockIo disables wrong-IO items */}
+              <AsyncSearchSelect
+                selectedIds={selectedIds}
+                lockedIoId={lockedIoId}
+                showAllButLockIo={lockedIoId != null}
+                onAdd={addItem}
+                placeholder="Cari No JO, IO, produk, customer..."
+              />
+            </div>
+          </div>
+
+          {/* RIGHT — selected items */}
+          <div className="w-2/3 flex flex-col p-4 gap-3 min-h-0">
+            <p className="text-xs font-semibold text-gray-600 flex-shrink-0">
+              Data Dipilih{' '}
+              <span className="text-indigo-600 font-bold">
+                ({selected.length})
+              </span>
+              {selected.length > 0 && (
+                <span className="text-[10px] text-gray-400 ml-2">
+                  — Pilih satu sebagai indukan
+                </span>
+              )}
+            </p>
+
+            {selected.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center border-2 border-dashed border-indigo-200 rounded-xl py-8">
+                <svg
+                  className="w-10 h-10 text-indigo-200 mb-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <p className="text-xs text-gray-400">
+                  Pilih item pertama.
+                  <br />
+                  IO dari item pertama akan mengunci pilihan grup.
+                </p>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                {selected.map((b) => (
+                  <SelectedItemCard
+                    key={b.id}
+                    barang={b}
+                    quantity={quantities[b.id] ?? ''}
+                    isMain={b.id === mainJoId}
+                    showMainToggle={true}
+                    onRemove={() => removeItem(b.id)}
+                    onQtyChange={(v) =>
+                      setQuantities((p) => ({ ...p, [b.id]: v }))
+                    }
+                    onSetMain={() => setMainJoId(b.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 pb-5 pt-3 border-t border-gray-100 flex gap-3 justify-end flex-shrink-0">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg text-sm transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={selected.length === 0}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
+          >
+            Kirim Group DO ({selected.length})
           </button>
         </div>
       </div>
@@ -245,13 +960,13 @@ function SendDoModal({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+type DoModalState = 'none' | 'type-select' | 'single' | 'group';
+
 const GudangFG: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<GudangItem[]>([]);
-  const [selectedBarang, setSelectedBarang] = useState<DataBarang[]>([]);
-  const [showSendDo, setShowSendDo] = useState(false);
+  const [doModal, setDoModal] = useState<DoModalState>('none');
 
-  // Pagination & search — same pattern as Deposit
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -296,31 +1011,6 @@ const GudangFG: React.FC = () => {
     }, 400);
   }
 
-  // Flatten all data_barang for selection tracking
-  function getAllBarang(): DataBarang[] {
-    return data.flatMap((g) => g.data_barang ?? []);
-  }
-
-  function toggleBarang(barang: DataBarang) {
-    setSelectedBarang((prev) => {
-      const exists = prev.find((b) => b.id === barang.id);
-      return exists
-        ? prev.filter((b) => b.id !== barang.id)
-        : [...prev, barang];
-    });
-  }
-
-  function toggleSelectAll() {
-    const all = getAllBarang();
-    if (selectedBarang.length === all.length) {
-      setSelectedBarang([]);
-    } else {
-      setSelectedBarang(all);
-    }
-  }
-
-  const isSelected = (id: number) => selectedBarang.some((b) => b.id === id);
-
   const handleSendDo = async (
     type: 'single' | 'group',
     payload: SendDoItem[],
@@ -336,8 +1026,7 @@ const GudangFG: React.FC = () => {
         { data_barang: payload },
         { withCredentials: true },
       );
-      setShowSendDo(false);
-      setSelectedBarang([]);
+      setDoModal('none');
       fetchData();
     } catch (err) {
       console.error(err);
@@ -346,18 +1035,28 @@ const GudangFG: React.FC = () => {
     }
   };
 
-  const allBarang = getAllBarang();
-
   return (
     <>
       <main>
         {isLoading && <Loading />}
 
-        {showSendDo && selectedBarang.length > 0 && (
-          <SendDoModal
-            selected={selectedBarang}
-            onClose={() => setShowSendDo(false)}
-            onConfirm={handleSendDo}
+        {doModal === 'type-select' && (
+          <DoTypeSelectorModal
+            onSelect={(type) => setDoModal(type)}
+            onClose={() => setDoModal('none')}
+          />
+        )}
+        {doModal === 'single' && (
+          <SingleDoModal
+            onClose={() => setDoModal('none')}
+            onConfirm={(payload) => handleSendDo('single', payload)}
+          />
+        )}
+        {doModal === 'group' && (
+          <GroupDoModal
+            allData={data}
+            onClose={() => setDoModal('none')}
+            onConfirm={(payload) => handleSendDo('group', payload)}
           />
         )}
 
@@ -381,7 +1080,7 @@ const GudangFG: React.FC = () => {
               Gudang Finish Good
             </h2>
           </div>
-          <div className="p-3 sm:p-4">
+          <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="relative w-full sm:w-96">
               <input
                 type="text"
@@ -403,6 +1102,25 @@ const GudangFG: React.FC = () => {
                 />
               </svg>
             </div>
+            <button
+              onClick={() => setDoModal('type-select')}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg shadow transition-all"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
+              </svg>
+              Send DO
+            </button>
           </div>
         </div>
 
@@ -425,49 +1143,15 @@ const GudangFG: React.FC = () => {
               </svg>
               Data Gudang FG
             </h3>
-            <div className="flex items-center gap-2 flex-wrap">
-              {selectedBarang.length > 0 && (
-                <button
-                  onClick={() => setShowSendDo(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 text-white text-xs font-semibold rounded-lg transition-all border border-white border-opacity-40"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
-                  Send DO ({selectedBarang.length})
-                </button>
-              )}
-              <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold">
-                {data.length} Record
-              </span>
-            </div>
+            <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold">
+              {data.length} Record
+            </span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-xs sm:text-sm min-w-[1000px]">
+            <table className="w-full text-xs sm:text-sm min-w-[960px]">
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>
-                  <th className="p-2 sm:p-3 text-left">
-                    <input
-                      type="checkbox"
-                      checked={
-                        allBarang.length > 0 &&
-                        selectedBarang.length === allBarang.length
-                      }
-                      onChange={toggleSelectAll}
-                      className="rounded accent-violet-600"
-                    />
-                  </th>
                   {[
                     'No',
                     'No IO',
@@ -493,7 +1177,7 @@ const GudangFG: React.FC = () => {
                 {data.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={11}
+                      colSpan={10}
                       className="p-8 text-center text-gray-500 text-sm"
                     >
                       Tidak ada data gudang FG
@@ -502,15 +1186,14 @@ const GudangFG: React.FC = () => {
                 ) : (
                   data.map((group, gi) => (
                     <React.Fragment key={`${group.id_io}-${group.id_produk}`}>
-                      {/* Group header row */}
                       <tr className="bg-violet-50 border-b border-violet-100">
-                        <td colSpan={11} className="p-2 px-4">
+                        <td colSpan={10} className="p-2 px-4">
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-3">
                               <span className="text-xs font-bold text-violet-700">
                                 {group.no_io}
                               </span>
-                              <span className="text-xs text-gray-600 font-medium truncate max-w-xs">
+                              <span className="text-xs text-gray-600 font-medium max-w-xs">
                                 {group.produk}
                               </span>
                               <span className="text-[10px] text-gray-500">
@@ -540,9 +1223,7 @@ const GudangFG: React.FC = () => {
                           </div>
                         </td>
                       </tr>
-                      {/* Detail rows */}
                       {(group.data_barang ?? []).map((barang, bi) => {
-                        const sel = isSelected(barang.id);
                         const rowIdx =
                           data
                             .slice(0, gi)
@@ -555,24 +1236,8 @@ const GudangFG: React.FC = () => {
                         return (
                           <tr
                             key={barang.id}
-                            className={`border-b transition-colors cursor-pointer ${
-                              sel
-                                ? 'bg-violet-50 hover:bg-violet-100'
-                                : 'hover:bg-blue-50'
-                            }`}
-                            onClick={() => toggleBarang(barang)}
+                            className="border-b hover:bg-blue-50 transition-colors"
                           >
-                            <td
-                              className="p-2 sm:p-3 pl-8"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={sel}
-                                onChange={() => toggleBarang(barang)}
-                                className="rounded accent-violet-600"
-                              />
-                            </td>
                             <td className="p-2 sm:p-3 text-xs text-gray-400 pl-8">
                               {rowIdx}
                             </td>
@@ -580,10 +1245,7 @@ const GudangFG: React.FC = () => {
                               {barang.no_io || '-'}
                             </td>
                             <td className="p-2 sm:p-3 text-xs max-w-[180px]">
-                              <span
-                                className="block truncate"
-                                title={barang.produk}
-                              >
+                              <span className="block" title={barang.produk}>
                                 {barang.produk || '-'}
                               </span>
                             </td>
@@ -618,7 +1280,7 @@ const GudangFG: React.FC = () => {
             </table>
           </div>
 
-          {/* Pagination — same pattern as Deposit */}
+          {/* Pagination */}
           <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-4 pb-4 px-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Rows per page:</span>

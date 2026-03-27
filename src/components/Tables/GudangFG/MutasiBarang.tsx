@@ -158,6 +158,7 @@ const MutasiBarang: React.FC = () => {
           withCredentials: true,
         },
       );
+      console.log('API response:', res.data);
       setData(Array.isArray(res.data?.data) ? res.data.data : []);
       setTotalPages(res.data?.total_page || 1);
     } catch (err) {
@@ -208,34 +209,6 @@ const MutasiBarang: React.FC = () => {
           </div>
 
           <div className="p-3 sm:p-4 space-y-4">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
-                <p className="text-xs text-blue-500 font-medium mb-1">
-                  Total Transaksi
-                </p>
-                <p className="text-xl font-bold text-blue-700">
-                  {fmtQty(totalTransaksi)}
-                </p>
-              </div>
-              <div className="bg-green-50 rounded-xl p-3 border border-green-100">
-                <p className="text-xs text-green-500 font-medium mb-1">
-                  Total Masuk
-                </p>
-                <p className="text-xl font-bold text-green-700">
-                  {fmtQty(totalMasuk)}
-                </p>
-              </div>
-              <div className="bg-red-50 rounded-xl p-3 border border-red-100">
-                <p className="text-xs text-red-500 font-medium mb-1">
-                  Total Keluar
-                </p>
-                <p className="text-xl font-bold text-red-700">
-                  {fmtQty(totalKeluar)}
-                </p>
-              </div>
-            </div>
-
             {/* Search */}
             <div className="relative w-full sm:w-96">
               <input
@@ -336,7 +309,7 @@ const MutasiBarang: React.FC = () => {
                               <span className="text-xs font-bold text-violet-700">
                                 {group.no_jo}
                               </span>
-                              <span className="text-xs text-gray-600 font-medium truncate max-w-xs">
+                              <span className="text-xs text-gray-600 font-medium  max-w-xs">
                                 {group.produk}
                               </span>
                               <span className="text-[10px] text-gray-500">
@@ -396,10 +369,7 @@ const MutasiBarang: React.FC = () => {
                               {mutasi.no_io || '-'}
                             </td>
                             <td className="p-2 sm:p-3 text-xs max-w-[200px]">
-                              <span
-                                className="block truncate"
-                                title={mutasi.produk}
-                              >
+                              <span className="block " title={mutasi.produk}>
                                 {mutasi.produk || '-'}
                               </span>
                             </td>
