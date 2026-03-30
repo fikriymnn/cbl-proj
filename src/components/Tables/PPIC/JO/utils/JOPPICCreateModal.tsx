@@ -296,7 +296,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         withCredentials: true,
       });
       console.log('Jumlah JO response:', res.data);
-      const totalData = res.data.total_data ?? 0;
+      const totalData =
+        tipeJO === 'JO PROOF'
+          ? res.data.total_data_proof ?? 0
+          : res.data.total_data ?? 0;
       setJumlahJO(totalData);
 
       // Generate JO number immediately after setting jumlahJO
