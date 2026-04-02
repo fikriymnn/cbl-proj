@@ -260,6 +260,7 @@ import ApprovalStandarWarnaPage from './pages/QualityControl/ApprovalStandarWarn
 import PenerimaanBarangJadiPage from './pages/GudangFG/PenerimaanBarangJadiPage';
 import GudangFGPage from './pages/GudangFG/GudangFGPage';
 import MutasiBarangPage from './pages/GudangFG/MutasiBarangPage';
+import ApproveStandarWarnaPageMarketing from './pages/Marketing/ApproveStandarWarnaPageMarketing';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1731,6 +1732,14 @@ function App() {
           element={
             <P>
               <HistorySOPage />
+            </P>
+          }
+        />
+        <Route
+          path="/marketing/approve-standar-warna"
+          element={
+            <P>
+              <ApproveStandarWarnaPageMarketing />
             </P>
           }
         />

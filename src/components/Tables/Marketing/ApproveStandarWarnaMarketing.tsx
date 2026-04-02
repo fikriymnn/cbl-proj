@@ -1,10 +1,10 @@
-// ApprovalStandarWarna.tsx
+// ApproveStandarWarnaMarketing.tsx
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 
-type StatusFilter = 'progress' | 'approved' | 'rejected';
+type StatusFilter = 'request marketing' | 'approved' | 'rejected';
 
 interface StandarWarnaData {
   id: number;
@@ -38,7 +38,55 @@ interface APIResponse<T> {
   total_page?: number;
 }
 
-const ApprovalStandarWarna: React.FC = () => {
+// Reject Modal Component
+const RejectModal: React.FC<{
+  onConfirm: (note: string) => void;
+  onCancel: () => void;
+}> = ({ onConfirm, onCancel }) => {
+  const [note, setNote] = useState('');
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+          Tolak Standar Warna
+        </h3>
+        <p className="text-sm text-gray-600 mb-3">
+          Berikan alasan penolakan (wajib diisi):
+        </p>
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Masukkan alasan penolakan..."
+          rows={4}
+          className="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 resize-none"
+        />
+        <div className="flex justify-end gap-2 mt-4">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={() => {
+              if (!note.trim()) {
+                alert('Alasan penolakan wajib diisi!');
+                return;
+              }
+              onConfirm(note.trim());
+            }}
+            className="px-4 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+          >
+            Tolak
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ApproveStandarWarnaMarketing: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<StandarWarnaData[]>([]);
 
@@ -50,7 +98,12 @@ const ApprovalStandarWarna: React.FC = () => {
   const [searchInput, setSearchInput] = useState<string>('');
 
   // Status filter
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('progress');
+  const [statusFilter, setStatusFilter] =
+    useState<StatusFilter>('request marketing');
+
+  // Reject modal state
+  const [showRejectModal, setShowRejectModal] = useState<boolean>(false);
+  const [rejectTargetId, setRejectTargetId] = useState<number | null>(null);
 
   const handleSearch = (): void => {
     setSearchTerm(searchInput);
@@ -80,7 +133,10 @@ const ApprovalStandarWarna: React.FC = () => {
   };
 
   const fetchData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/ppic/pembuatanStandarWarna`;
+    // Marketing uses a separate endpoint to only retrieve data forwarded to them
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/marketing/pembuatanStandarWarna`;
     try {
       setLoading(true);
       const res: AxiosResponse<APIResponse<StandarWarnaData[]>> =
@@ -100,7 +156,7 @@ const ApprovalStandarWarna: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error fetching standar warna data:', error);
+      console.error('Error fetching standar warna marketing data:', error);
       setData([]);
     } finally {
       setLoading(false);
@@ -129,25 +185,54 @@ const ApprovalStandarWarna: React.FC = () => {
     }
   };
 
-  // Send to Marketing (Next)
-  const nextToMarketing = async (id: number): Promise<void> => {
+  const approveData = async (id: number): Promise<void> => {
     if (
-      window.confirm(
-        'Apakah Anda yakin ingin meneruskan Standar Warna ini ke Marketing untuk disetujui?',
-      )
+      window.confirm('Apakah Anda yakin ingin menyetujui Standar Warna ini?')
     ) {
       try {
         const url = `${
           import.meta.env.VITE_API_LINK
-        }/ppic/pembuatanStandarWarna/next/${id}`;
+        }/marketing/pembuatanStandarWarna/approve/${id}`;
         await axios.put(url, {}, { withCredentials: true });
         fetchData();
-        alert('Standar Warna berhasil diteruskan ke Marketing!');
+        alert('Standar Warna berhasil disetujui!');
       } catch (error: any) {
         console.error(error);
-        alert('Gagal meneruskan Standar Warna. Silakan coba lagi.');
+        alert('Gagal menyetujui Standar Warna. Silakan coba lagi.');
       }
     }
+  };
+
+  const rejectData = async (id: number, note: string): Promise<void> => {
+    try {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/marketing/pembuatanStandarWarna/reject/${id}`;
+      await axios.put(url, { note }, { withCredentials: true });
+      fetchData();
+      alert('Standar Warna berhasil ditolak!');
+    } catch (error: any) {
+      console.error(error);
+      alert('Gagal menolak Standar Warna. Silakan coba lagi.');
+    }
+  };
+
+  const handleRejectClick = (id: number): void => {
+    setRejectTargetId(id);
+    setShowRejectModal(true);
+  };
+
+  const handleRejectConfirm = async (note: string): Promise<void> => {
+    if (rejectTargetId !== null) {
+      setShowRejectModal(false);
+      await rejectData(rejectTargetId, note);
+      setRejectTargetId(null);
+    }
+  };
+
+  const handleRejectCancel = (): void => {
+    setShowRejectModal(false);
+    setRejectTargetId(null);
   };
 
   useEffect(() => {
@@ -162,7 +247,7 @@ const ApprovalStandarWarna: React.FC = () => {
   }[] = [
     {
       label: 'Progress',
-      value: 'progress',
+      value: 'request marketing',
       color:
         'bg-gray-100 text-gray-700 hover:bg-orange-50 hover:text-orange-700',
       activeColor: 'bg-orange-500 text-white',
@@ -183,6 +268,14 @@ const ApprovalStandarWarna: React.FC = () => {
 
   return (
     <div className="">
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <RejectModal
+          onConfirm={handleRejectConfirm}
+          onCancel={handleRejectCancel}
+        />
+      )}
+
       {/* Status Filter + Search Bar */}
       <div className="mb-4 space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -290,7 +383,7 @@ const ApprovalStandarWarna: React.FC = () => {
                   >
                     {searchTerm
                       ? 'Tidak ada data yang cocok dengan pencarian'
-                      : 'Tidak ada data Standar Warna'}
+                      : 'Tidak ada data Standar Warna untuk Marketing'}
                   </td>
                 </tr>
               ) : (
@@ -304,17 +397,26 @@ const ApprovalStandarWarna: React.FC = () => {
                       {(page - 1) * limit + index + 1}
                     </td>
 
-                    {/* ACTION — only NEXT button, visible when status is progress */}
+                    {/* ACTION — Approve & Reject for Marketing */}
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
-                        {item.status?.toLowerCase() === 'progress' ? (
-                          <button
-                            onClick={() => nextToMarketing(item.id)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                            title="Teruskan ke Marketing"
-                          >
-                            NEXT →
-                          </button>
+                        {item.status?.toLowerCase() === 'request_marketing' ? (
+                          <>
+                            <button
+                              onClick={() => approveData(item.id)}
+                              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                              title="Approve Standar Warna"
+                            >
+                              APPROVE
+                            </button>
+                            <button
+                              onClick={() => handleRejectClick(item.id)}
+                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                              title="Reject Standar Warna"
+                            >
+                              REJECT
+                            </button>
+                          </>
                         ) : (
                           <span className="text-xs text-gray-400 italic px-2 py-1">
                             {item.status?.toLowerCase() === 'approved'
@@ -487,4 +589,4 @@ const ApprovalStandarWarna: React.FC = () => {
   );
 };
 
-export default ApprovalStandarWarna;
+export default ApproveStandarWarnaMarketing;
