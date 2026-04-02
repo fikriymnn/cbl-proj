@@ -23,6 +23,11 @@ interface DOPrintData {
   id_supir: number;
   id_kenek: number;
 
+  // SO data
+  so?: {
+    no_po_customer: string;
+  };
+
   // Vehicle and driver info
   kendaraan?: {
     nomor_kendaraan: string;
@@ -165,6 +170,8 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
     const customerName = printData?.customer || printData?.pelanggan || '-';
     const totalPack = calculateTotalPack();
     const logoSrc = logoBase64 || Logo;
+    // ✅ Use so.no_po_customer as the source of truth for PO number
+    const noPOCustomer = getValue(printData?.so?.no_po_customer);
 
     return `
     <!DOCTYPE html>
@@ -414,9 +421,7 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
                     } PCS</strong></td>
                     <td class="no-border-right">
                       <div class="product-name">${getValue(item.produk)}</div>
-                      <div class="po-number">PO: ${getValue(
-                        item?.no_po_customer,
-                      )}</div>
+                      <div class="po-number">PO: ${noPOCustomer}</div>
                     </td>
                     <td class="text-center no-jo-red no-border-left">${
                       item?.no_jo || ''
