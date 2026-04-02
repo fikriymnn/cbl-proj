@@ -134,9 +134,7 @@ const ApproveStandarWarnaMarketing: React.FC = () => {
 
   const fetchData = async (): Promise<void> => {
     // Marketing uses a separate endpoint to only retrieve data forwarded to them
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/marketing/pembuatanStandarWarna`;
+    const url = `${import.meta.env.VITE_API_LINK}/ppic/pembuatanStandarWarna`;
     try {
       setLoading(true);
       const res: AxiosResponse<APIResponse<StandarWarnaData[]>> =
@@ -192,7 +190,7 @@ const ApproveStandarWarnaMarketing: React.FC = () => {
       try {
         const url = `${
           import.meta.env.VITE_API_LINK
-        }/marketing/pembuatanStandarWarna/approve/${id}`;
+        }/ppic/pembuatanStandarWarna/approve/${id}`;
         await axios.put(url, {}, { withCredentials: true });
         fetchData();
         alert('Standar Warna berhasil disetujui!');
@@ -207,7 +205,7 @@ const ApproveStandarWarnaMarketing: React.FC = () => {
     try {
       const url = `${
         import.meta.env.VITE_API_LINK
-      }/marketing/pembuatanStandarWarna/reject/${id}`;
+      }/ppic/pembuatanStandarWarna/reject/${id}`;
       await axios.put(url, { note }, { withCredentials: true });
       fetchData();
       alert('Standar Warna berhasil ditolak!');
@@ -400,7 +398,7 @@ const ApproveStandarWarnaMarketing: React.FC = () => {
                     {/* ACTION — Approve & Reject for Marketing */}
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                       <div className="flex flex-col gap-1">
-                        {item.status?.toLowerCase() === 'request_marketing' ? (
+                        {item.status?.toLowerCase() === 'request marketing' ? (
                           <>
                             <button
                               onClick={() => approveData(item.id)}
