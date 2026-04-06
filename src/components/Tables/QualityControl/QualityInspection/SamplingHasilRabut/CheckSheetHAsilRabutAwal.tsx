@@ -1305,6 +1305,10 @@ function CheckSheetHasilRabut() {
                               <td>: {RabutMesin?.data?.no_jo}</td>
                             </tr>
                             <tr>
+                              <td className="font-semibold w-32">Bagian</td>
+                              <td>: {RabutMesin?.data?.bagian}</td>
+                            </tr>
+                            <tr>
                               <td className="font-semibold w-32">No. IO</td>
                               <td>: {RabutMesin?.data?.no_io}</td>
                             </tr>
@@ -1682,6 +1686,9 @@ function CheckSheetHasilRabut() {
                 Tanggal
               </label>
               <label className="text-neutral-500 text-sm font-semibold">
+                Bagian
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold">
                 No. JO
               </label>
               <label className="text-neutral-500 text-sm font-semibold">
@@ -1698,6 +1705,9 @@ function CheckSheetHasilRabut() {
             <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
               <label className="text-neutral-500 text-sm font-semibold">
                 : {tanggal}
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold">
+                : {RabutMesin?.data?.bagian}
               </label>
               <label className="text-neutral-500 text-sm font-semibold">
                 : {RabutMesin?.data?.no_jo}

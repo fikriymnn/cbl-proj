@@ -65,7 +65,7 @@ function ChecksheetBarangRS() {
       getHistoryRabutMesin(res.data.data.no_jo);
       setIsLoading(false);
       setRabutMesin(res.data);
-      console.log(res.data);
+      console.log('rs data', res.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error.data.msg);
@@ -1703,6 +1703,12 @@ function ChecksheetBarangRS() {
                     Tanggal
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
+                    Cabutan Operator
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    Penandaan Operator
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
                     No. JO
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
@@ -1724,6 +1730,12 @@ function ChecksheetBarangRS() {
                 <div className="flex flex-col gap-2 ">
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {tanggal}
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {RabutMesin?.cabutanOperator}
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {RabutMesin?.penandaanOperator}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {RabutMesin?.data?.no_jo}

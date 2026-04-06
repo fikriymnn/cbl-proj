@@ -464,6 +464,10 @@ function PotongJadiChecksheet() {
                         <span>: {tanggal}</span>
                       </div>
                       <div className="flex">
+                        <span className="font-semibold w-24">Bagian</span>
+                        <span>: {incoming?.bagian}</span>
+                      </div>
+                      <div className="flex">
                         <span className="font-semibold w-24">No. JO</span>
                         <span>: {incoming?.no_jo}</span>
                       </div>
@@ -692,6 +696,9 @@ function PotongJadiChecksheet() {
                   Tanggal
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
+                  Bagian
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
                   No. JO
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -710,6 +717,9 @@ function PotongJadiChecksheet() {
               <div className="grid grid-rows-6 gap-1 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {tanggal}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {incoming?.bagian}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.no_jo}

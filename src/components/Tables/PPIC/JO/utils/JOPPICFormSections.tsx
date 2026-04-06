@@ -7,61 +7,96 @@ import TahapanPopup from './TahapanPopup';
 interface BasicInfoSectionProps {
   formData: any;
   soData: any[];
+  // NEW: IO proof list + handler
+  ioProofData?: any[];
   onSOChange: (soId: number) => void;
+  onIOChange?: (ioId: number) => void;
   loadingMounting: boolean;
   editMode?: boolean;
+  // NEW: true when creating JO PROOF from IO
+  isIOProofMode?: boolean;
 }
 
 export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   formData,
   soData,
+  ioProofData = [],
   onSOChange,
+  onIOChange,
   loadingMounting,
   editMode = false,
+  isIOProofMode = false,
 }) => {
   return (
     <div className="space-y-3">
       <h3 className="text-base font-semibold text-gray-700 border-b pb-2">
         Informasi Dasar
+        {/* NEW: source badge */}
+        {isIOProofMode && (
+          <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-teal-100 text-teal-700 rounded-full">
+            IO Proof
+          </span>
+        )}
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* Nomor SO */}
-        <div>
-          {editMode ? (
-            <div className="flex flex-col">
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Nomor SO <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.no_so}
-                disabled
-                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col">
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Nomor SO <span className="text-red-500">*</span>
-              </label>
-              <SearchableSelect
-                options={[
-                  { value: 0, label: 'Pilih SO' },
-                  ...soData.map((so) => ({
-                    value: so.id,
-                    label: `${so.no_so} - ${so.customer} - ${so.produk}`,
-                  })),
-                ]}
-                value={formData.id_so || 0}
-                onChange={(value) => onSOChange(Number(value))}
-                placeholder="Pilih SO"
-                disabled={loadingMounting}
-                required
-              />
-            </div>
-          )}
-        </div>
+        {/* ── SO or IO selector depending on mode ─────────────────────────── */}
+        {isIOProofMode ? (
+          /* IO PROOF MODE — show IO dropdown */
+          <div className="md:col-span-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Nomor IO <span className="text-red-500">*</span>
+            </label>
+            <SearchableSelect
+              options={[
+                { value: 0, label: 'Pilih IO' },
+                ...ioProofData.map((io) => ({
+                  value: io.id,
+                  label: `${io.no_io} - ${io.customer} - ${io.produk}`,
+                })),
+              ]}
+              value={formData.id_io || 0}
+              onChange={(value) => onIOChange && onIOChange(Number(value))}
+              placeholder="Pilih IO"
+              disabled={loadingMounting}
+              required
+            />
+          </div>
+        ) : editMode ? (
+          /* EDIT MODE — show read-only SO */
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Nomor SO <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.no_so}
+              disabled
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
+            />
+          </div>
+        ) : (
+          /* CREATE MODE (SO) — show SO dropdown */
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Nomor SO <span className="text-red-500">*</span>
+            </label>
+            <SearchableSelect
+              options={[
+                { value: 0, label: 'Pilih SO' },
+                ...soData.map((so) => ({
+                  value: so.id,
+                  label: `${so.no_so} - ${so.customer} - ${so.produk}`,
+                })),
+              ]}
+              value={formData.id_so || 0}
+              onChange={(value) => onSOChange(Number(value))}
+              placeholder="Pilih SO"
+              disabled={loadingMounting}
+              required
+            />
+          </div>
+        )}
 
         {/* Nomor JO (Auto) */}
         <div>
@@ -76,7 +111,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           />
         </div>
 
-        {/* Nomor IO (Auto from SO) */}
+        {/* Nomor IO (Auto from SO / selected IO) */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Nomor IO
@@ -88,32 +123,40 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
           />
         </div>
-        {/* Nomor IO (Auto from SO) */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            Nomor PO
-          </label>
-          <input
-            type="text"
-            value={formData.no_po_customer}
-            disabled
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
-          />
-        </div>
-        {/* Nomor IO (Auto from SO) */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            Tanggal PO
-          </label>
-          <input
-            type="text"
-            value={
-              formData.tgl_po_customer || new Date().toISOString().split('T')[0]
-            }
-            disabled
-            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
-          />
-        </div>
+
+        {/* Nomor PO — hidden for IO proof (no SO / PO) */}
+        {!isIOProofMode && (
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Nomor PO
+            </label>
+            <input
+              type="text"
+              value={formData.no_po_customer}
+              disabled
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
+            />
+          </div>
+        )}
+
+        {/* Tanggal PO — hidden for IO proof */}
+        {!isIOProofMode && (
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">
+              Tanggal PO
+            </label>
+            <input
+              type="text"
+              value={
+                formData.tgl_po_customer ||
+                new Date().toISOString().split('T')[0]
+              }
+              disabled
+              className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
+            />
+          </div>
+        )}
+
         {/* Customer */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -127,7 +170,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
           />
         </div>
 
-        {/* Produk - spans 2 columns for better readability */}
+        {/* Produk */}
         <div className="md:col-span-2">
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Produk
@@ -139,6 +182,29 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md bg-gray-100"
           />
         </div>
+
+        {/* NEW: info banner for IO proof */}
+        {isIOProofMode && (
+          <div className="md:col-span-2 flex items-start gap-2 bg-teal-50 border border-teal-200 rounded-md px-3 py-2">
+            <svg
+              className="w-4 h-4 text-teal-600 mt-0.5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p className="text-xs text-teal-700">
+              JO Proof dari IO tidak memerlukan Sales Order. Data PO dan status
+              SO tidak akan diisi.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -160,7 +226,7 @@ export const ProductionDetailsSection: React.FC<
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* PO QTY - Read only (from SO) */}
+        {/* PO QTY */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             PO QTY
@@ -173,7 +239,7 @@ export const ProductionDetailsSection: React.FC<
           />
         </div>
 
-        {/* Stock FG - Editable */}
+        {/* Stock FG */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Stock FG
@@ -187,7 +253,7 @@ export const ProductionDetailsSection: React.FC<
           />
         </div>
 
-        {/* Quantity - Editable (calculated but can be overridden) */}
+        {/* Quantity */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Quantity <span className="text-xs text-gray-500">(Editable)</span>
@@ -205,7 +271,7 @@ export const ProductionDetailsSection: React.FC<
           </p>
         </div>
 
-        {/* Status Kalkulasi - Editable */}
+        {/* Status Kalkulasi */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Status Kalkulasi
@@ -219,7 +285,7 @@ export const ProductionDetailsSection: React.FC<
           />
         </div>
 
-        {/* Toleransi - Read only (from Customer) */}
+        {/* Toleransi */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Toleransi
@@ -232,7 +298,7 @@ export const ProductionDetailsSection: React.FC<
           />
         </div>
 
-        {/* Tanggal Kirim - Editable */}
+        {/* Tanggal Kirim */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Tanggal Kirim
@@ -245,7 +311,8 @@ export const ProductionDetailsSection: React.FC<
             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-        {/* Alamat Pengiriman - Right column */}
+
+        {/* Alamat Pengiriman */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Alamat Pengiriman
@@ -258,7 +325,8 @@ export const ProductionDetailsSection: React.FC<
             rows={2}
           />
         </div>
-        {/* Spesifikasi - Right column */}
+
+        {/* Spesifikasi */}
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">
             Spesifikasi
@@ -275,9 +343,9 @@ export const ProductionDetailsSection: React.FC<
           </p>
         </div>
 
-        {/* Keterangan Pengerjaan - Left column */}
+        {/* Keterangan Pengerjaan */}
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-gray-700 mb-1 ">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             Keterangan Pengerjaan
           </label>
           <textarea
@@ -295,7 +363,7 @@ export const ProductionDetailsSection: React.FC<
 
 interface MountingSectionProps {
   mountingData: MountingData[];
-  selectedMounting: number | null; // Changed to single selection
+  selectedMounting: number | null;
   onMountingSelect: (mountingId: number) => void;
   loadingMounting: boolean;
   insheetValues: {
@@ -306,16 +374,6 @@ interface MountingSectionProps {
     total_insheet: number;
     jumlah_lp: number;
   };
-  tahapan?: Array<{
-    id: number;
-    nama_proses: string;
-    nama_mesin: string;
-    nama_drying_time: string;
-    value_drying_time: number;
-    nama_setting_kapasitas: string;
-    value_setting_kapasitas: number;
-    index: number;
-  }>;
 }
 
 export const MountingSection: React.FC<MountingSectionProps> = ({
@@ -332,13 +390,14 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
   }>({ tahapan: [], mountingName: '' });
 
   const handleShowTahapan = (mounting: MountingData, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent mounting selection toggle
+    e.stopPropagation();
     setSelectedTahapanData({
       tahapan: mounting.tahapan || [],
       mountingName: mounting.nama_mounting,
     });
     setShowTahapanPopup(true);
   };
+
   if (loadingMounting) {
     return (
       <div className="space-y-4">
@@ -360,7 +419,7 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
           Mounting Data
         </h3>
         <div className="text-center py-8 text-gray-500">
-          Pilih SO terlebih dahulu untuk melihat mounting data
+          Pilih SO / IO terlebih dahulu untuk melihat mounting data
         </div>
       </div>
     );
@@ -382,6 +441,7 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
           const ukuranCetakIsi = mounting.ukuran_cetak_isi_1 || 1;
           const displayedJumlahDruk =
             insheetValues.jumlah_druk + insheetValues.total_insheet;
+
           return (
             <div
               key={mounting.id}
@@ -395,7 +455,6 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    {/* Radio button instead of checkbox */}
                     <input
                       type="radio"
                       checked={isSelected}
@@ -433,7 +492,7 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                     </button>
                   </div>
 
-                  {/* Main Info Grid */}
+                  {/* Main info grid */}
                   <div className="ml-8 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
                     <div>
                       <span className="text-gray-600">Jenis Kertas:</span>
@@ -461,7 +520,7 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                     </div>
                   </div>
 
-                  {/* Bagian dan Isi Info */}
+                  {/* Bagian & Isi */}
                   <div className="ml-8 mb-3 p-3 bg-white rounded border border-gray-200">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div>
@@ -492,7 +551,7 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                     </div>
                   </div>
 
-                  {/* Show calculation if selected - UPDATED JUMLAH DRUK */}
+                  {/* Selected calculation */}
                   {isSelected && (
                     <div className="ml-8 mt-3 p-3 bg-green-50 rounded border border-green-200">
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
@@ -518,7 +577,7 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                     </div>
                   )}
 
-                  {/* Additional Info */}
+                  {/* Additional info */}
                   <div className="ml-8 mt-3 grid grid-cols-2 md:grid-cols-3 gap-3 text-xs text-gray-600">
                     <div>
                       <span>Coating Depan: </span>
@@ -597,11 +656,8 @@ export const InsheetCalculationSection: React.FC<
 }) => {
   const isi = mounting.ukuran_cetak_isi_1 || 1;
   const bagian = mounting.ukuran_cetak_bagian_1 || 1;
-
-  // Calculate RAW Jumlah Druk from Qty
   const calculatedRawJumlahDruk = Math.ceil(qty / isi);
 
-  // Find matching ketentuan BASED ON RAW DRUK
   const getKetentuanInsheet = (rawDruk: number): any => {
     const ketentuan = ketentuanInsheetData.find((k) => {
       const batasBawah = parseInt(k.batas_bawah);
@@ -609,24 +665,18 @@ export const InsheetCalculationSection: React.FC<
         k.batas_atas === '-' ? Infinity : parseInt(k.batas_atas);
       return rawDruk >= batasBawah && rawDruk <= batasAtas;
     });
-
     return (
       ketentuan || { nilai: 0, is_persentase: false, persentase_insheet: 0 }
     );
   };
 
   const ketentuanInsheet = getKetentuanInsheet(calculatedRawJumlahDruk);
-
-  // Calculate expected total insheet based on ketentuan
   const expectedTotalInsheet = ketentuanInsheet.is_persentase
     ? Math.ceil((calculatedRawJumlahDruk * ketentuanInsheet.nilai) / 100)
     : ketentuanInsheet.nilai;
 
-  // Calculate DISPLAYED Jumlah Druk (RAW Jumlah Druk + Total Insheet)
   const displayedJumlahDruk =
     insheetValues.jumlah_druk + insheetValues.total_insheet;
-
-  // Calculate Jumlah LP
   const calculatedJumlahLP = Math.ceil(
     (insheetValues.jumlah_druk + insheetValues.total_insheet) / bagian,
   );
@@ -637,7 +687,7 @@ export const InsheetCalculationSection: React.FC<
         Perhitungan Insheet - {mounting.nama_mounting}
       </h3>
 
-      {/* Formula Explanation - UPDATED */}
+      {/* Formula explanation */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="text-sm space-y-2">
           <div className="font-semibold text-blue-900 mb-2">
@@ -662,10 +712,9 @@ export const InsheetCalculationSection: React.FC<
                 <br />
                 {ketentuanInsheet.is_persentase ? (
                   <>
-                    = RAW Druk × {ketentuanInsheet.nilai}%
-                    <br />= {calculatedRawJumlahDruk.toLocaleString()} ×{' '}
-                    {ketentuanInsheet.nilai}%
-                    <br />={' '}
+                    = RAW Druk × {ketentuanInsheet.nilai}%<br />={' '}
+                    {calculatedRawJumlahDruk.toLocaleString()} ×{' '}
+                    {ketentuanInsheet.nilai}%<br />={' '}
                     <span className="font-bold text-orange-700">
                       {expectedTotalInsheet.toLocaleString()}
                     </span>
@@ -716,7 +765,7 @@ export const InsheetCalculationSection: React.FC<
         </div>
       </div>
 
-      {/* Current Values Display - UPDATED JUMLAH DRUK */}
+      {/* Current values */}
       <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
           <div>
@@ -746,9 +795,7 @@ export const InsheetCalculationSection: React.FC<
         </div>
       </div>
 
-      {/* Rest of the component remains the same... */}
-
-      {/* Editable Total Insheet */}
+      {/* Editable total insheet */}
       <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
         <label className="block text-sm font-semibold text-gray-700 mb-2">
           Edit Total Insheet{' '}
@@ -771,7 +818,7 @@ export const InsheetCalculationSection: React.FC<
         </p>
       </div>
 
-      {/* Process Distribution Table */}
+      {/* Process distribution table */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm border border-gray-300">
           <thead className="bg-gray-100">
@@ -793,18 +840,16 @@ export const InsheetCalculationSection: React.FC<
               if (
                 normalizedProses === 'PONDS' ||
                 normalizedProses === 'PONDING'
-              ) {
+              )
                 normalizedProses = 'POND';
-              }
 
               let value = 0;
-              if (normalizedProses === 'CETAK') {
+              if (normalizedProses === 'CETAK')
                 value = insheetValues.jumlah_insheet_cetak;
-              } else if (normalizedProses === 'POND') {
+              else if (normalizedProses === 'POND')
                 value = insheetValues.jumlah_insheet_pond;
-              } else if (normalizedProses === 'FINISHING') {
+              else if (normalizedProses === 'FINISHING')
                 value = insheetValues.jumlah_insheet_finishing;
-              }
 
               return (
                 <tr key={proses.id} className="hover:bg-gray-50">
@@ -832,7 +877,7 @@ export const InsheetCalculationSection: React.FC<
         </table>
       </div>
 
-      {/* Mounting Details Reference */}
+      {/* Mounting reference */}
       <div className="bg-white border border-gray-300 rounded-lg p-4">
         <h4 className="font-semibold text-gray-700 mb-3">Referensi Mounting</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">

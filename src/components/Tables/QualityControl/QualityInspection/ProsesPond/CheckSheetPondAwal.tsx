@@ -342,6 +342,9 @@ function CheckSheetPondAwal() {
                               Tanggal
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
+                              Bagian
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
                               Jumlah Druk
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
@@ -360,6 +363,9 @@ function CheckSheetPondAwal() {
                           <div className="flex flex-col gap-2 col-span-2  py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {tanggalHistory}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.bagian}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               :{' '}
@@ -597,6 +603,9 @@ function CheckSheetPondAwal() {
                   Tanggal
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
+                  Bagian
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
                   Jumlah Druk / Mata
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -615,6 +624,9 @@ function CheckSheetPondAwal() {
               <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {tanggal}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {pondMesinAwal?.bagian}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {formatInteger(parseInt(pondMesinAwal?.jumlah_druk))} /{' '}

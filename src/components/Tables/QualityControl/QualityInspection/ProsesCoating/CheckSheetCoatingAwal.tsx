@@ -351,6 +351,9 @@ function CheckSheetCoatingAwal() {
                               Tanggal
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
+                              Bagian
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
                               Jumlah Druk
                             </label>
 
@@ -367,6 +370,9 @@ function CheckSheetCoatingAwal() {
                           <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {tanggalHistory}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingMesinAwalHistory?.bagian}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               :{' '}
@@ -606,6 +612,9 @@ function CheckSheetCoatingAwal() {
                   Tanggal
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
+                  Bagian
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
                   Jumlah Druk
                 </label>
 
@@ -622,6 +631,9 @@ function CheckSheetCoatingAwal() {
               <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {tanggal}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {coatingMesinAwal?.bagian}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {formatInteger(parseInt(coatingMesinAwal?.jumlah_druk))} /{' '}

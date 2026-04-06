@@ -638,6 +638,9 @@ function CheckSheetCoatingPeriode() {
                               Tanggal
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
+                              Bagian
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
                               Jumlah Druk
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
@@ -656,6 +659,9 @@ function CheckSheetCoatingPeriode() {
                           <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {tanggalHistory}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.bagian}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               :{' '}

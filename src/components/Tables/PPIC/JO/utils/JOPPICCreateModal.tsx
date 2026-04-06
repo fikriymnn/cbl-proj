@@ -20,6 +20,21 @@ interface ExtendedMountingData extends MountingData {
   _joMountingRef?: any;
 }
 
+// NEW: IO data shape returned by /marketing/ioSendProofJo
+interface IOProofData {
+  id: number;
+  no_io: string;
+  id_io: number;
+  customer: string;
+  produk: string;
+  id_customer: number;
+  id_produk: number;
+  tgl_pengiriman?: string;
+  alamat_pengiriman?: string;
+  ada_standar_warna?: string;
+  status_produk?: string;
+}
+
 interface JOPPICCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,6 +42,8 @@ interface JOPPICCreateModalProps {
   tipeJO: JOTipeOption;
   editMode?: boolean;
   editJOId?: number | null;
+  // NEW: 'SO' | 'IO' — only relevant when tipeJO === 'JO PROOF'
+  proofSourceType?: 'SO' | 'IO';
 }
 
 const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
@@ -36,22 +53,27 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   tipeJO,
   editMode = false,
   editJOId = null,
+  proofSourceType = 'SO',
 }) => {
   const [loading, setLoading] = useState(false);
   const [loadingMounting, setLoadingMounting] = useState(false);
   const [soData, setSOData] = useState<SOData[]>([]);
+  // NEW: IO proof list
+  const [ioProofData, setIOProofData] = useState<IOProofData[]>([]);
   const [mountingData, setMountingData] = useState<ExtendedMountingData[]>([]);
   const [selectedMounting, setSelectedMounting] = useState<number | null>(null);
   const [jumlahJO, setJumlahJO] = useState<number>(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // ADD THIS NEW STATE
   const [isManualInsheetEdit, setIsManualInsheetEdit] = useState(false);
 
-  // ✅ ADD THESE NEW STATES FOR EDIT MODE CONTROL
   const [isInitialEditLoad, setIsInitialEditLoad] = useState(false);
   const [originalQty, setOriginalQty] = useState<number>(0);
   const [hasQtyBeenEdited, setHasQtyBeenEdited] = useState(false);
+
+  // Determine if this modal is in "IO proof" mode
+  const isIOProofMode =
+    tipeJO === 'JO PROOF' && proofSourceType === 'IO' && !editMode;
 
   const initialFormData: Partial<JOFormData> = {
     id_io: 0,
@@ -102,12 +124,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     jumlah_lp: 0,
   });
 
-  // ✅ MODIFIED: Auto-calculate qty when stok_fg or po_qty changes
+  // ── Auto-calculate qty ────────────────────────────────────────────────────
   useEffect(() => {
-    // Skip entirely in edit mode during initial load or if qty hasn't been edited
     if (editMode && (!hasQtyBeenEdited || isInitialEditLoad)) return;
-
-    // Skip in create mode during initial load
     if (!editMode && isInitialEditLoad) return;
 
     const calculatedQty = Math.max(
@@ -115,25 +134,16 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       (formData.po_qty || 0) - (formData.stok_fg || 0),
     );
     if (calculatedQty !== formData.qty) {
-      setFormData((prev) => ({
-        ...prev,
-        qty: calculatedQty,
-      }));
+      setFormData((prev) => ({ ...prev, qty: calculatedQty }));
     }
   }, [formData.po_qty, formData.stok_fg]);
 
-  // ✅ MODIFIED: Auto-calculate insheet
+  // ── Auto-calculate insheet ────────────────────────────────────────────────
   useEffect(() => {
-    // Skip entirely in edit mode during initial load or if qty hasn't been edited
     if (editMode && (!hasQtyBeenEdited || isInitialEditLoad)) return;
-
-    // Skip in create mode during initial load
     if (!editMode && isInitialEditLoad) return;
-
-    // Skip if manually editing insheet
     if (isManualInsheetEdit) return;
 
-    // Only auto-calculate if we have the necessary data
     if (selectedMounting && formData.qty) {
       const mounting = mountingData.find((m) => m.id === selectedMounting);
       if (mounting) {
@@ -144,22 +154,19 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
   useEffect(() => {
     if (isManualInsheetEdit) {
-      const timer = setTimeout(() => {
-        setIsManualInsheetEdit(false);
-      }, 100);
+      const timer = setTimeout(() => setIsManualInsheetEdit(false), 100);
       return () => clearTimeout(timer);
     }
   }, [isManualInsheetEdit]);
 
   useEffect(() => {
-    if (formData.id_so || selectedMounting) {
+    if (formData.id_so || formData.id_io || selectedMounting) {
       setHasUnsavedChanges(true);
     }
-  }, [formData.id_so, selectedMounting]);
+  }, [formData.id_so, formData.id_io, selectedMounting]);
 
   useEffect(() => {
     if (!isOpen) return;
-
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
         e.preventDefault();
@@ -167,21 +174,16 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         return '';
       }
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isOpen, hasUnsavedChanges]);
 
+  // ── calculateInsheetFromQty ───────────────────────────────────────────────
   const calculateInsheetFromQty = (qty: number, mounting: MountingData) => {
     const isi = mounting.ukuran_cetak_isi_1 || 1;
     const bagian = mounting.ukuran_cetak_bagian_1 || 1;
 
-    // Step 1: Calculate RAW Jumlah Druk (base, without insheet)
     const rawJumlahDruk = Math.ceil(qty / isi);
-
-    // Step 2: Get Ketentuan Insheet BASED ON RAW DRUK (not qty)
     const ketentuanInsheet = getKetentuanInsheet(rawJumlahDruk);
     const ketentuanValue =
       typeof ketentuanInsheet === 'object'
@@ -190,10 +192,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           : ketentuanInsheet.nilai
         : ketentuanInsheet;
 
-    // Step 3: Calculate Total Insheet
     const totalInsheet = Math.ceil(ketentuanValue);
-
-    // Step 4: Distribute to processes
     const totalPercentage = prosesInsheetData.reduce(
       (sum, p) => sum + p.persentase_insheet,
       0,
@@ -202,13 +201,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     let cetak = 0,
       pond = 0,
       finishing = 0;
-
     prosesInsheetData.forEach((proses) => {
       const value = Math.ceil(
         (totalInsheet * proses.persentase_insheet) / totalPercentage,
       );
       const prosesName = proses.proses.toUpperCase();
-
       if (prosesName === 'CETAK') cetak = value;
       else if (
         prosesName === 'POND' ||
@@ -219,17 +216,14 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       else if (prosesName === 'FINISHING') finishing = value;
     });
 
-    // Step 5: Calculate displayed druk and LP
     const displayedDruk = rawJumlahDruk + totalInsheet;
     const jumlahLP = Math.ceil(displayedDruk / bagian);
 
-    // UPDATE FORM DATA WITH NEW FIELDS
     setFormData((prev) => ({
       ...prev,
       qty_druk: displayedDruk,
       qty_lp: jumlahLP,
     }));
-
     setInsheetValues({
       jumlah_druk: rawJumlahDruk,
       jumlah_insheet_cetak: cetak,
@@ -240,12 +234,19 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     });
   };
 
+  // ── Fetch on open ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (isOpen) {
-      fetchSOData();
-      fetchJumlahJO();
       fetchKetentuanInsheet();
       fetchProsesInsheet();
+      fetchJumlahJO();
+
+      if (isIOProofMode) {
+        // NEW: fetch IO proof list instead of SO list
+        fetchIOProofData();
+      } else {
+        fetchSOData();
+      }
     }
   }, [isOpen]);
 
@@ -253,6 +254,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     generateJONumber();
   }, [jumlahJO]);
 
+  // ── Fetch SO data ─────────────────────────────────────────────────────────
   const fetchSOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/so`;
     try {
@@ -260,7 +262,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const res: AxiosResponse = await axios.get(url, {
         params: {
           is_jo_done: false,
-
           ...(tipeJO === 'JO PROOF' && { status_produk: 'proof' }),
         },
         withCredentials: true,
@@ -274,18 +275,33 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
+  // NEW: Fetch IO proof list
+  const fetchIOProofData = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/marketing/ioSendProofJo`;
+    try {
+      setLoading(true);
+      const res: AxiosResponse = await axios.get(url, {
+        withCredentials: true,
+      });
+      setIOProofData(res.data.data || []);
+    } catch (error) {
+      console.error('Error fetching IO proof data:', error);
+      setIOProofData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Generate JO number ────────────────────────────────────────────────────
   const generateJONumber = () => {
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
     const nextNumber = String(jumlahJO + 1).padStart(5, '0');
-    // ADD suffix:
     const suffix = tipeJO === 'JO PROOF' ? '-P' : '';
-    const joNumber = `JO-${nextNumber}/${month}/${year}${suffix}`;
-
     setFormData((prev) => ({
       ...prev,
-      no_jo: joNumber,
+      no_jo: `JO-${nextNumber}/${month}/${year}${suffix}`,
     }));
   };
 
@@ -295,43 +311,36 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-      console.log('Jumlah JO response:', res.data);
       const totalData =
         tipeJO === 'JO PROOF'
           ? res.data.total_data_proof ?? 0
           : res.data.total_data ?? 0;
       setJumlahJO(totalData);
 
-      // Generate JO number immediately after setting jumlahJO
       const now = new Date();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const year = now.getFullYear();
       const nextNumber = String(totalData + 1).padStart(5, '0');
       const suffix = tipeJO === 'JO PROOF' ? '-P' : '';
-      const joNumber = `JO-${nextNumber}/${month}/${year}${suffix}`;
-
       setFormData((prev) => ({
         ...prev,
-        no_jo: joNumber,
+        no_jo: `JO-${nextNumber}/${month}/${year}${suffix}`,
       }));
     } catch (error) {
       console.error('Error fetching jumlah JO:', error);
       setJumlahJO(0);
-
-      // Even on error, generate JO-00001
       const now = new Date();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const year = now.getFullYear();
       const suffix = tipeJO === 'JO PROOF' ? '-P' : '';
-      const joNumber = `JO-00001/${month}/${year}${suffix}`;
-
       setFormData((prev) => ({
         ...prev,
-        no_jo: joNumber,
+        no_jo: `JO-00001/${month}/${year}${suffix}`,
       }));
     }
   };
 
+  // ── Fetch mounting ────────────────────────────────────────────────────────
   const fetchMountingData = async (idIO: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${idIO}`;
     try {
@@ -339,10 +348,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
-      console.log('Mounting data response:', res.data);
       if (res.data.data && res.data.data.io_mounting) {
-        const mountings = res.data.data.io_mounting || [];
-        setMountingData(mountings);
+        setMountingData(res.data.data.io_mounting || []);
         setSelectedMounting(null);
         setInsheetValues({
           jumlah_druk: 0,
@@ -371,7 +378,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         withCredentials: true,
       });
       if (res.data.data) {
-        const customer = res.data.data || {};
+        const customer = res.data.data;
         setFormData((prev) => ({
           ...prev,
           id_customer: customer.id || 0,
@@ -384,67 +391,56 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   };
 
   const fetchKetentuanInsheet = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/master/ketentuanInsheet`;
     try {
-      const res: AxiosResponse = await axios.get(url, {
-        withCredentials: true,
-      });
+      const res: AxiosResponse = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/ketentuanInsheet`,
+        { withCredentials: true },
+      );
       setKetentuanInsheetData(res.data.data || []);
     } catch (error) {
-      console.error('Error fetching ketentuan insheet:', error);
       setKetentuanInsheetData([]);
     }
   };
 
   const fetchProsesInsheet = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/master/prosesInsheet`;
     try {
-      const res: AxiosResponse = await axios.get(url, {
-        withCredentials: true,
-      });
+      const res: AxiosResponse = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/prosesInsheet`,
+        { withCredentials: true },
+      );
       setProsesInsheetData(res.data.data || []);
     } catch (error) {
-      console.error('Error fetching proses insheet:', error);
       setProsesInsheetData([]);
     }
   };
 
-  // ✅ NEW FUNCTION: Fetch IO Mounting with Tahapan
   const fetchIOMountingWithTahapan = async (
     idIO: number,
   ): Promise<MountingData[]> => {
-    const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${idIO}`;
     try {
-      const res: AxiosResponse = await axios.get(url, {
-        withCredentials: true,
-      });
-      console.log('IO Mounting with Tahapan response:', res.data);
-      if (res.data.data && res.data.data.io_mounting) {
-        return res.data.data.io_mounting || [];
-      }
+      const res: AxiosResponse = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/marketing/io/${idIO}`,
+        { withCredentials: true },
+      );
+      if (res.data.data?.io_mounting) return res.data.data.io_mounting || [];
       return [];
     } catch (error) {
-      console.error('Error fetching IO mounting with tahapan:', error);
       return [];
     }
   };
 
-  // ✅ MODIFIED: fetchJODetail with IO/JO mounting comparison
+  // ── fetchJODetail (edit mode) ─────────────────────────────────────────────
   const fetchJODetail = async (joId: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${joId}`;
     try {
       setLoading(true);
-      // ✅ SET FLAG TO PREVENT AUTO-CALCULATION
       setIsInitialEditLoad(true);
-
       const res: AxiosResponse = await axios.get(url, {
         withCredentials: true,
       });
 
       if (res.data.data) {
         const joDetail = res.data.data;
-
-        // ✅ STORE ORIGINAL QTY
         setOriginalQty(joDetail.qty || 0);
 
         setFormData({
@@ -480,67 +476,50 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           jo_mounting: joDetail.jo_mounting || [],
         });
 
-        // ✅ FETCH IO_MOUNTING TO COMPARE AND MERGE
         if (joDetail.id_io) {
           const ioMountingData = await fetchIOMountingWithTahapan(
             joDetail.id_io,
           );
-
           if (ioMountingData.length > 0) {
-            // Create a map of existing JO mountings by id_io_mounting
             const joMountingMap = new Map();
-            if (joDetail.jo_mounting && joDetail.jo_mounting.length > 0) {
-              joDetail.jo_mounting.forEach((jm: any) => {
-                joMountingMap.set(jm.id_io_mounting, jm);
-              });
+            if (joDetail.jo_mounting?.length > 0) {
+              joDetail.jo_mounting.forEach((jm: any) =>
+                joMountingMap.set(jm.id_io_mounting, jm),
+              );
             }
 
-            // Merge IO mounting with JO mounting data
             const mergedMountings = ioMountingData.map((ioMounting: any) => {
               const existingJoMounting = joMountingMap.get(ioMounting.id);
-
-              // Always use IO mounting data for display (except insheet values from JO)
               return {
-                // Core IDs
                 id: ioMounting.id,
                 id_io: joDetail.id_io,
                 nama_mounting: ioMounting.nama_mounting || '',
                 barcode: ioMounting.barcode || '',
                 format_data: ioMounting.format_data || '',
-
-                // Ukuran Jadi
                 ukuran_jadi_panjang: ioMounting.ukuran_jadi_panjang || 0,
                 ukuran_jadi_lebar: ioMounting.ukuran_jadi_lebar || 0,
                 ukuran_jadi_tinggi: ioMounting.ukuran_jadi_tinggi || 0,
                 ukuran_jadi_terb_panjang:
                   ioMounting.ukuran_jadi_terb_panjang || 0,
                 ukuran_jadi_terb_lebar: ioMounting.ukuran_jadi_terb_lebar || 0,
-
-                // Kertas
                 jenis_kertas: ioMounting.jenis_kertas || '',
                 gramature_kertas: ioMounting.gramature_kertas || 0,
                 lebar_plano: ioMounting.lebar_plano || 0,
                 panjang_plano: ioMounting.panjang_plano || 0,
                 id_kertas: ioMounting.id_kertas || 0,
                 nama_kertas: ioMounting.nama_kertas || '',
-
-                // Warna
                 jumlah_warna: ioMounting.jumlah_warna || 0,
                 warna_depan: ioMounting.warna_depan || 0,
                 warna_belakang: ioMounting.warna_belakang || 0,
                 keterangan_warna_depan: ioMounting.keterangan_warna_depan || '',
                 keterangan_warna_belakang:
                   ioMounting.keterangan_warna_belakang || '',
-
-                // Coating
                 id_coating_depan: ioMounting.id_coating_depan || 0,
                 id_coating_belakang: ioMounting.id_coating_belakang || 0,
                 nama_coating_depan: ioMounting.nama_coating_depan || '',
                 nama_coating_belakang: ioMounting.nama_coating_belakang || '',
                 merk_coating_depan: ioMounting.merk_coating_depan || '',
                 merk_coating_belakang: ioMounting.merk_coating_belakang || '',
-
-                // Pons & Lem
                 id_jenis_pons: ioMounting.id_jenis_pons || 0,
                 nama_jenis_pons: ioMounting.nama_jenis_pons || '',
                 keterangan_jenis_pons: ioMounting.keterangan_jenis_pons || '',
@@ -549,67 +528,45 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                 keterangan_lem: ioMounting.keterangan_lem || '',
                 merk_komp_lem: ioMounting.merk_komp_lem || '',
                 merk_serat_kertas: ioMounting.merk_serat_kertas || '',
-
-                // Layout
                 id_layout: ioMounting.id_layout || '',
                 lebar_layout: ioMounting.lebar_layout || 0,
                 panjang_layout: ioMounting.panjang_layout || 0,
-
-                // Ukuran Cetak 1
                 ukuran_cetak_panjang_1: ioMounting.ukuran_cetak_panjang_1 || 0,
                 ukuran_cetak_lebar_1: ioMounting.ukuran_cetak_lebar_1 || 0,
                 ukuran_cetak_bagian_1: ioMounting.ukuran_cetak_bagian_1 || 0,
                 ukuran_cetak_isi_1: ioMounting.ukuran_cetak_isi_1 || 0,
-
-                // Ukuran Cetak 2
                 ukuran_cetak_panjang_2: ioMounting.ukuran_cetak_panjang_2 || 0,
                 ukuran_cetak_lebar_2: ioMounting.ukuran_cetak_lebar_2 || 0,
                 ukuran_cetak_bagian_2: ioMounting.ukuran_cetak_bagian_2 || 0,
                 ukuran_cetak_isi_2: ioMounting.ukuran_cetak_isi_2 || 0,
-
-                // Pack
                 isi_dalam_1_pack: ioMounting.isi_dalam_1_pack || 0,
                 jenis_pack: ioMounting.jenis_pack || '',
                 keterangan_pack: ioMounting.keterangan_pack || '',
-
-                // Partisi
                 is_ukuran_partisi_sekat:
                   ioMounting.is_ukuran_partisi_sekat || false,
                 lebar_partisi_1: ioMounting.lebar_partisi_1 || 0,
                 panjang_partisi_1: ioMounting.panjang_partisi_1 || 0,
                 lebar_partisi_2: ioMounting.lebar_partisi_2 || 0,
                 panjang_partisi_2: ioMounting.panjang_partisi_2 || 0,
-
-                // Misc
                 tambahan_insheet_druk: ioMounting.tambahan_insheet_druk || 0,
                 lampiran: ioMounting.lampiran || '',
                 untuk: ioMounting.untuk || '',
                 keterangan_revisi: ioMounting.keterangan_revisi || '',
-
-                // Metadata
                 is_active: ioMounting.is_active ?? true,
                 createdAt: ioMounting.createdAt || '',
                 updatedAt: ioMounting.updatedAt || '',
-
-                // Tahapan
                 tahapan: ioMounting.tahapan || [],
-
-                // Store JO mounting reference for later use (custom property)
                 _joMountingRef: existingJoMounting || null,
               };
             });
 
             setMountingData(mergedMountings);
 
-            // Find and set the selected mounting
             const selectedJoMounting = joDetail.jo_mounting?.find(
               (jm: any) => jm.is_selected,
             );
-
             if (selectedJoMounting) {
               setSelectedMounting(selectedJoMounting.id_io_mounting);
-
-              // ✅ USE INSHEET VALUES FROM JO MOUNTING (these are user-edited values)
               setInsheetValues({
                 jumlah_druk:
                   selectedJoMounting.jumlah_druk_cetak -
@@ -627,15 +584,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           }
         }
 
-        // Still fetch customer data for toleransi
         if (joDetail.id_customer) {
           await fetchCustomerData(joDetail.id_customer);
         }
 
-        // ✅ AFTER ALL DATA IS LOADED, RELEASE THE FLAG
-        setTimeout(() => {
-          setIsInitialEditLoad(false);
-        }, 100);
+        setTimeout(() => setIsInitialEditLoad(false), 100);
       }
     } catch (error) {
       console.error('Error fetching JO detail:', error);
@@ -646,11 +599,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
+  // ── Reset form ────────────────────────────────────────────────────────────
   const resetForm = () => {
-    setFormData({
-      ...initialFormData,
-      tipe_jo: tipeJO,
-    });
+    setFormData({ ...initialFormData, tipe_jo: tipeJO });
     setSelectedMounting(null);
     setMountingData([]);
     setInsheetValues({
@@ -662,7 +613,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       jumlah_lp: 0,
     });
     setHasUnsavedChanges(false);
-    // ✅ RESET NEW STATES
     setIsInitialEditLoad(false);
     setOriginalQty(0);
     setHasQtyBeenEdited(false);
@@ -676,6 +626,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   }, [isOpen, editMode, editJOId]);
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
   const getKetentuanInsheet = (rawDruk: number): any => {
     const ketentuan = ketentuanInsheetData.find((k) => {
       const batasBawah = parseInt(k.batas_bawah);
@@ -683,7 +634,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         k.batas_atas === '-' ? Infinity : parseInt(k.batas_atas);
       return rawDruk >= batasBawah && rawDruk <= batasAtas;
     });
-
     return ketentuan || { nilai: 0, is_persentase: false };
   };
 
@@ -692,20 +642,18 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const warnaBelakang = mounting.warna_belakang || 0;
     const coatingDepan = mounting.nama_coating_depan ? 1 : 0;
     const coatingBelakang = mounting.nama_coating_belakang ? 1 : 0;
-
     const coatingNames = [
       mounting.nama_coating_depan,
       mounting.nama_coating_belakang,
     ]
       .filter(Boolean)
       .join(' + ');
-
     return `${warnaDepan}/${warnaBelakang} + ${coatingDepan}/${coatingBelakang} ${coatingNames}`.trim();
   };
 
+  // ── SO change handler ─────────────────────────────────────────────────────
   const handleSOChange = (soId: number) => {
     const selectedSO = soData.find((so) => so.id === soId);
-
     if (selectedSO) {
       setFormData((prev) => ({
         ...prev,
@@ -728,20 +676,45 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           : new Date().toISOString().split('T')[0],
       }));
 
-      // Only fetch mounting data if not in edit mode
-      if (!editMode) {
-        fetchMountingData(selectedSO.id_io);
-      }
-
+      if (!editMode) fetchMountingData(selectedSO.id_io);
       fetchCustomerData(selectedSO.id_customer);
     }
   };
 
+  // NEW: IO change handler (for IO proof mode)
+  const handleIOChange = (ioId: number) => {
+    const selectedIO = ioProofData.find((io) => io.id === ioId);
+    if (selectedIO) {
+      setFormData((prev) => ({
+        ...prev,
+        // id_so stays 0 — no SO for IO proof
+        id_so: 0,
+        no_so: '',
+        id_io: selectedIO.id,
+        id_customer: selectedIO.id_customer,
+        id_produk: selectedIO.id_produk || 0,
+        no_io: selectedIO.no_io,
+        customer: selectedIO.customer,
+        produk: selectedIO.produk,
+        // IO proof typically doesn't have a PO qty, default to 0
+        po_qty: 0,
+        no_po_customer: '',
+        alamat_pengiriman: selectedIO.alamat_pengiriman || '',
+        standar_warna: selectedIO.ada_standar_warna || '',
+        status_produk: selectedIO.status_produk || '',
+        status_jo: '-',
+        tgl_kirim: selectedIO.tgl_pengiriman
+          ? selectedIO.tgl_pengiriman.split('T')[0]
+          : new Date().toISOString().split('T')[0],
+      }));
+
+      fetchMountingData(selectedIO.id);
+      fetchCustomerData(selectedIO.id_customer);
+    }
+  };
+
   const handleFieldChange = (field: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleMountingSelect = (mountingId: number) => {
@@ -767,8 +740,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       if (mounting) {
         const spesifikasi = generateSpesifikasi(mounting);
         setFormData((prev) => ({ ...prev, spesifikasi }));
-
-        // ✅ Only recalculate if not in edit mode or if qty has been edited
         if (!editMode && formData.qty) {
           calculateInsheetFromQty(formData.qty, mounting);
         }
@@ -778,8 +749,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
   const handleTotalInsheetChange = (totalValue: number) => {
     if (!selectedMounting) return;
-
-    // SET FLAG to prevent auto-recalculation
     setIsManualInsheetEdit(true);
 
     const mounting = mountingData.find((m) => m.id === selectedMounting);
@@ -787,7 +756,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
     const isi = mounting.ukuran_cetak_isi_1 || 1;
     const bagian = mounting.ukuran_cetak_bagian_1 || 1;
-
     const totalPercentage = prosesInsheetData.reduce(
       (sum, p) => sum + p.persentase_insheet,
       0,
@@ -796,13 +764,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     let cetak = 0,
       pond = 0,
       finishing = 0;
-
     prosesInsheetData.forEach((proses) => {
       const value = Math.ceil(
         (totalValue * proses.persentase_insheet) / totalPercentage,
       );
       const prosesName = proses.proses.toUpperCase();
-
       if (prosesName === 'CETAK') cetak = value;
       else if (
         prosesName === 'POND' ||
@@ -818,14 +784,12 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const calculatedQty = displayedDruk * isi;
     const jumlahLP = Math.ceil(displayedDruk / bagian);
 
-    // UPDATE FORM DATA WITH NEW FIELDS
     setFormData((prev) => ({
       ...prev,
       qty: calculatedQty,
       qty_druk: displayedDruk,
       qty_lp: jumlahLP,
     }));
-
     setInsheetValues({
       jumlah_druk: currentRawDruk,
       jumlah_insheet_cetak: cetak,
@@ -835,38 +799,35 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       jumlah_lp: jumlahLP,
     });
 
-    // ✅ Mark that qty has been edited (when insheet changes, qty changes)
-    if (editMode) {
-      setHasQtyBeenEdited(true);
-    }
+    if (editMode) setHasQtyBeenEdited(true);
   };
 
-  // ✅ MODIFIED: handleQtyChange
   const handleQtyChange = (newQty: number) => {
-    // ✅ Mark that qty has been edited if value changed from original
-    if (editMode && newQty !== originalQty) {
-      setHasQtyBeenEdited(true);
-    }
+    if (editMode && newQty !== originalQty) setHasQtyBeenEdited(true);
     setFormData((prev) => ({ ...prev, qty: newQty }));
 
-    if (!selectedMounting) {
-      return;
-    }
-
+    if (!selectedMounting) return;
     const mounting = mountingData.find((m) => m.id === selectedMounting);
-    if (mounting) {
-      // Only recalculate if qty has been edited or not in edit mode
-      if (!editMode || hasQtyBeenEdited || newQty !== originalQty) {
-        calculateInsheetFromQty(newQty, mounting);
-      }
+    if (mounting && (!editMode || hasQtyBeenEdited || newQty !== originalQty)) {
+      calculateInsheetFromQty(newQty, mounting);
     }
   };
 
+  // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (!formData.id_so) {
-      alert('Pilih SO terlebih dahulu');
-      return;
+    // Validation differs for IO proof mode
+    if (isIOProofMode) {
+      if (!formData.id_io) {
+        alert('Pilih IO terlebih dahulu');
+        return;
+      }
+    } else {
+      if (!formData.id_so) {
+        alert('Pilih SO terlebih dahulu');
+        return;
+      }
     }
+
     if (!selectedMounting) {
       alert('Pilih mounting terlebih dahulu');
       return;
@@ -875,17 +836,14 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const displayedJumlahDruk =
       insheetValues.jumlah_druk + insheetValues.total_insheet;
 
-    // ✅ MODIFIED: Create jo_mounting data for ALL mountings (including new ones from IO)
     const joMountingData = mountingData.map(
       (mounting: ExtendedMountingData) => {
         const isSelected = mounting.id === selectedMounting;
-
-        // Check if this mounting has an existing JO mounting reference
         const joMountingRef = mounting._joMountingRef;
 
         if (isSelected) {
           return {
-            id: joMountingRef?.id || null, // null for new mountings
+            id: joMountingRef?.id || null,
             id_jo: formData.id_jo,
             id_io_mounting: mounting.id,
             id_kertas: mounting.id_kertas,
@@ -918,7 +876,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           };
         } else {
           return {
-            id: joMountingRef?.id || null, // null for new mountings
+            id: joMountingRef?.id || null,
             id_jo: formData.id_jo,
             id_io_mounting: mounting.id,
             nama_mounting: mounting.nama_mounting,
@@ -953,14 +911,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       },
     );
 
-    const submitData = {
-      ...formData,
-      jo_mounting: joMountingData,
-    };
+    const submitData = { ...formData, jo_mounting: joMountingData };
 
     try {
       setLoading(true);
-      console.log('Submitting JO data:', submitData);
       if (editMode && editJOId) {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${editJOId}`;
         const res: AxiosResponse = await axios.put(url, submitData, {
@@ -972,7 +926,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           onSuccess();
           onClose();
         }
-        console.log('Edit JO submit data:', submitData);
       } else {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jo`;
         const res: AxiosResponse = await axios.post(url, submitData, {
@@ -984,12 +937,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           onSuccess();
           onClose();
         }
-        console.log('Create JO submit data:', submitData);
       }
     } catch (error: any) {
       console.error('Error saving JO:', error);
-      const errorMessage = error.response?.data?.msg || 'Gagal menyimpan JO';
-      alert(errorMessage);
+      alert(error.response?.data?.msg || 'Gagal menyimpan JO');
     } finally {
       setLoading(false);
     }
@@ -1023,14 +974,26 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
           onClick={handleClose}
         />
-        {/* TWO COLUMN LAYOUT */}
         <div className="relative w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg flex flex-col">
+          {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b bg-gradient-to-r from-blue-600 to-blue-700 flex-shrink-0">
             <div className="flex flex-col">
-              <h2 className="text-xl font-bold text-white">
-                {editMode ? `Edit ${tipeJO}` : `Tambah ${tipeJO}`}
-              </h2>
-              {/* ADD THIS STATUS PRODUK BADGE */}
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-white">
+                  {editMode ? `Edit ${tipeJO}` : `Tambah ${tipeJO}`}
+                </h2>
+                {/* NEW: show source badge for IO proof */}
+                {isIOProofMode && (
+                  <span className="px-2 py-0.5 text-xs font-semibold bg-teal-400 text-white rounded-full">
+                    Dari IO
+                  </span>
+                )}
+                {tipeJO === 'JO PROOF' && !isIOProofMode && !editMode && (
+                  <span className="px-2 py-0.5 text-xs font-semibold bg-blue-400 text-white rounded-full">
+                    Dari SO
+                  </span>
+                )}
+              </div>
               {formData.status_produk && (
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-xs text-white opacity-90">
@@ -1072,19 +1035,22 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
               </svg>
             </button>
           </div>
-          {/* Body - Two Column Layout */}
+
+          {/* Body — Two Column Layout */}
           <div className="flex-1 overflow-hidden flex">
-            {/* LEFT COLUMN - Basic Info & Production Details */}
+            {/* LEFT */}
             <div className="w-1/3 border-r overflow-y-auto p-6 bg-gray-50">
               <div className="space-y-6">
                 <BasicInfoSection
                   formData={formData}
                   soData={soData}
+                  ioProofData={ioProofData}
                   onSOChange={handleSOChange}
+                  onIOChange={handleIOChange}
                   loadingMounting={loadingMounting}
                   editMode={editMode}
+                  isIOProofMode={isIOProofMode}
                 />
-
                 <ProductionDetailsSection
                   formData={formData}
                   onChange={handleFieldChange}
@@ -1093,7 +1059,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
               </div>
             </div>
 
-            {/* RIGHT COLUMN - Mounting Selection & Insheet Calculation */}
+            {/* RIGHT */}
             <div className="w-2/3 overflow-y-auto p-6">
               <div className="space-y-6">
                 <MountingSection
@@ -1103,7 +1069,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                   loadingMounting={loadingMounting}
                   insheetValues={insheetValues}
                 />
-
                 {selectedMountingData && (
                   <InsheetCalculationSection
                     mounting={selectedMountingData}
@@ -1117,11 +1082,12 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
               </div>
             </div>
           </div>
+
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-gray-50 flex-shrink-0">
             <button
               onClick={handleClose}
-              className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
               disabled={loading}
             >
               Batal
@@ -1129,7 +1095,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             <button
               onClick={handleSubmit}
               disabled={loading || !selectedMounting}
-              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loading && (
                 <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -1143,4 +1109,5 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     document.body,
   );
 };
+
 export default JOPPICCreateModal;

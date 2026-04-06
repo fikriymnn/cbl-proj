@@ -5,7 +5,10 @@ import JOPPICCreateModal from './utils/JOPPICCreateModal';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import JOPrintModal from './utils/JOPrintModal';
+
 type SortDirection = 'asc' | 'desc';
+// NEW: source type for JO PROOF
+type JOProofSourceType = 'SO' | 'IO';
 
 interface JOData {
   so: any;
@@ -49,6 +52,13 @@ const JOPPICCreate: React.FC = () => {
   const [editJOId, setEditJOId] = useState<number | null>(null);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [printJOId, setPrintJOId] = useState<number | null>(null);
+
+  // NEW: proof source selection
+  const [showProofSourceSelection, setShowProofSourceSelection] =
+    useState<boolean>(false);
+  const [selectedProofSource, setSelectedProofSource] =
+    useState<JOProofSourceType>('SO');
+
   // Pagination states
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -71,7 +81,6 @@ const JOPPICCreate: React.FC = () => {
         },
         withCredentials: true,
       });
-      console.log('Fetched JO data:', res.data);
       if (res.data.succes) {
         setJOData(res.data.data || []);
         if (res.data.total_page) {
@@ -88,7 +97,7 @@ const JOPPICCreate: React.FC = () => {
 
   const handleSearch = (): void => {
     setSearchTerm(searchInput);
-    setPage(1); // Reset to first page on new search
+    setPage(1);
   };
 
   const handleClearSearch = (): void => {
@@ -96,10 +105,12 @@ const JOPPICCreate: React.FC = () => {
     setSearchTerm('');
     setPage(1);
   };
+
   const handlePrintJO = (item: JOData) => {
     setPrintJOId(item.id);
     setShowPrintModal(true);
   };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -108,7 +119,7 @@ const JOPPICCreate: React.FC = () => {
 
   const handleLimitChange = (newLimit: number): void => {
     setLimit(newLimit);
-    setPage(1); // Reset to first page when changing limit
+    setPage(1);
   };
 
   const handleSort = (field: string) => {
@@ -221,6 +232,29 @@ const JOPPICCreate: React.FC = () => {
       : 'bg-orange-100 text-orange-800';
   };
 
+  const getStatusProdukColor = (status: string): string => {
+    if (status?.toLowerCase() === 'acc') return 'bg-green-100 text-green-800';
+    return 'bg-yellow-100 text-yellow-800';
+  };
+
+  const isProductAccepted = (statusProduk: string): boolean => {
+    return (
+      statusProduk?.toLowerCase() === 'acc' ||
+      statusProduk?.toLowerCase() === 'ppos' ||
+      statusProduk?.toLowerCase() === 'proof'
+    );
+  };
+
+  const getRowClassName = (item: JOData): string => {
+    const baseClass = 'hover:bg-gray-50 transition-colors';
+    if (!isProductAccepted(item.so?.status_produk)) {
+      return `${baseClass} bg-yellow-50`;
+    }
+    return baseClass;
+  };
+
+  // ─── Tambah JO flow ───────────────────────────────────────────────────────
+
   const handleTambahJO = () => {
     setEditMode(false);
     setEditJOId(null);
@@ -230,6 +264,19 @@ const JOPPICCreate: React.FC = () => {
   const handleSelectTipeJO = (tipe: JOTipeOption) => {
     setSelectedTipeJO(tipe);
     setShowTipeJOSelection(false);
+
+    if (tipe === 'JO PROOF') {
+      // NEW: For JO PROOF, show source selection (IO or SO)
+      setShowProofSourceSelection(true);
+    } else {
+      setShowModal(true);
+    }
+  };
+
+  // NEW: Handle proof source selection
+  const handleSelectProofSource = (source: JOProofSourceType) => {
+    setSelectedProofSource(source);
+    setShowProofSourceSelection(false);
     setShowModal(true);
   };
 
@@ -247,6 +294,8 @@ const JOPPICCreate: React.FC = () => {
     setEditMode(true);
     setEditJOId(item.id);
     setSelectedTipeJO(item.tipe_jo as JOTipeOption);
+    // When editing existing JO PROOF, default source to SO (modal will detect from data)
+    setSelectedProofSource('SO');
     setShowModal(true);
   };
 
@@ -254,13 +303,7 @@ const JOPPICCreate: React.FC = () => {
     if (window.confirm('Apakah Anda yakin ingin Next Process JO Ini?')) {
       try {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/request/${id}`;
-        const res = await axios.put(
-          url,
-          {},
-          {
-            withCredentials: true,
-          },
-        );
+        await axios.put(url, {}, { withCredentials: true });
         fetchJOData();
         alert('JO berhasil di-request!');
       } catch (error: any) {
@@ -270,46 +313,22 @@ const JOPPICCreate: React.FC = () => {
     }
   };
 
-  // Apply sorting to data (client-side sorting)
+  // Apply sorting
   const sortedData = [...joData].sort((a, b) => {
     const aValue = a[sortKey as keyof JOData];
     const bValue = b[sortKey as keyof JOData];
-
     if (aValue === null || aValue === undefined) return 1;
     if (bValue === null || bValue === undefined) return -1;
-
     if (typeof aValue === 'string' && typeof bValue === 'string') {
       return sortDirection === 'asc'
         ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
     }
-
     if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
     return 0;
   });
-  const isProductAccepted = (statusProduk: string): boolean => {
-    return (
-      statusProduk?.toLowerCase() === 'acc' ||
-      statusProduk?.toLowerCase() === 'ppos' ||
-      statusProduk?.toLowerCase() === 'proof'
-    );
-  };
 
-  const getRowClassName = (item: JOData): string => {
-    const baseClass = 'hover:bg-gray-50 transition-colors';
-    if (!isProductAccepted(item.so?.status_produk)) {
-      return `${baseClass} bg-yellow-50`; // Light yellow background for non-ACC
-    }
-    return baseClass;
-  };
-
-  const getStatusProdukColor = (status: string): string => {
-    if (status?.toLowerCase() === 'acc') {
-      return 'bg-green-100 text-green-800';
-    }
-    return 'bg-yellow-100 text-yellow-800';
-  };
   return (
     <div className="">
       {/* Header Section */}
@@ -401,8 +420,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('no_jo')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    NO JO
-                    {getSortIcon('no_jo')}
+                    NO JO{getSortIcon('no_jo')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -410,8 +428,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('no_so')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    NO SO
-                    {getSortIcon('no_so')}
+                    NO SO{getSortIcon('no_so')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -419,8 +436,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('no_io')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    NO IO
-                    {getSortIcon('no_io')}
+                    NO IO{getSortIcon('no_io')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -428,8 +444,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('customer')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    CUSTOMER
-                    {getSortIcon('customer')}
+                    CUSTOMER{getSortIcon('customer')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -437,8 +452,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('produk')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    PRODUK
-                    {getSortIcon('produk')}
+                    PRODUK{getSortIcon('produk')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -446,8 +460,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('qty')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    QTY
-                    {getSortIcon('qty')}
+                    QTY{getSortIcon('qty')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -455,8 +468,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('tgl_kirim')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    TGL KIRIM
-                    {getSortIcon('tgl_kirim')}
+                    TGL KIRIM{getSortIcon('tgl_kirim')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -464,8 +476,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('tipe_jo')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    TIPE JO
-                    {getSortIcon('tipe_jo')}
+                    TIPE JO{getSortIcon('tipe_jo')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -473,8 +484,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('status_jo')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    STATUS JO
-                    {getSortIcon('status_jo')}
+                    STATUS JO{getSortIcon('status_jo')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -482,8 +492,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('status_produk')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    STATUS PRODUK
-                    {getSortIcon('status_produk')}
+                    STATUS PRODUK{getSortIcon('status_produk')}
                   </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -491,8 +500,7 @@ const JOPPICCreate: React.FC = () => {
                     onClick={() => handleSort('status_proses')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
                   >
-                    STATUS PROSES
-                    {getSortIcon('status_proses')}
+                    STATUS PROSES{getSortIcon('status_proses')}
                   </button>
                 </th>
               </tr>
@@ -500,7 +508,7 @@ const JOPPICCreate: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={12} className="px-3 py-8 text-center">
+                  <td colSpan={13} className="px-3 py-8 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                       <p className="mt-2 text-sm text-gray-600">
@@ -511,7 +519,7 @@ const JOPPICCreate: React.FC = () => {
                 </tr>
               ) : sortedData.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="px-3 py-8 text-center">
+                  <td colSpan={13} className="px-3 py-8 text-center">
                     <p className="text-sm text-gray-500">
                       {searchTerm
                         ? 'Tidak ada data yang sesuai dengan pencarian'
@@ -521,10 +529,7 @@ const JOPPICCreate: React.FC = () => {
                 </tr>
               ) : (
                 sortedData.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className={getRowClassName(item)} // MODIFIED THIS LINE
-                  >
+                  <tr key={item.id} className={getRowClassName(item)}>
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
                       {(page - 1) * limit + index + 1}
                     </td>
@@ -544,7 +549,6 @@ const JOPPICCreate: React.FC = () => {
                             >
                               EDIT JO
                             </button>
-
                             <button
                               onClick={() => NextProcessKabag(item.id)}
                               disabled={
@@ -649,7 +653,7 @@ const JOPPICCreate: React.FC = () => {
         </div>
       </div>
 
-      {/* Pagination with Rows per page selector */}
+      {/* Pagination */}
       <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Rows per page:</span>
@@ -669,22 +673,19 @@ const JOPPICCreate: React.FC = () => {
             ))}
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           <Stack spacing={2}>
             <Pagination
               count={totalPages}
               page={page}
               color="primary"
-              onChange={(e, i) => {
-                setPage(i);
-              }}
+              onChange={(e, i) => setPage(i)}
             />
           </Stack>
         </div>
       </div>
 
-      {/* Tipe JO Selection Modal */}
+      {/* ── Step 1: Tipe JO Selection Modal ───────────────────────────────────── */}
       {showTipeJOSelection && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -765,6 +766,142 @@ const JOPPICCreate: React.FC = () => {
         </div>
       )}
 
+      {/* ── Step 2 (NEW): JO PROOF — Source Selection Modal (IO vs SO) ─────────── */}
+      {showProofSourceSelection && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+              onClick={() => setShowProofSourceSelection(false)}
+            />
+            <div className="inline-block align-middle bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full">
+              <div className="bg-white px-6 pt-6 pb-4">
+                {/* Back button + title */}
+                <div className="flex items-center gap-3 mb-1">
+                  <button
+                    onClick={() => {
+                      setShowProofSourceSelection(false);
+                      setShowTipeJOSelection(true);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Kembali"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      JO PROOF — Pilih Sumber Data
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Pilih apakah JO Proof dibuat berdasarkan SO atau IO
+                    </p>
+                  </div>
+                </div>
+
+                {/* Breadcrumb hint */}
+                <div className="flex items-center gap-1 text-xs text-gray-400 mb-5 ml-8">
+                  <span>Tipe JO</span>
+                  <svg
+                    className="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                  <span className="text-orange-500 font-medium">
+                    Sumber Data
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* SO */}
+                  <button
+                    onClick={() => handleSelectProofSource('SO')}
+                    className="flex flex-col items-center justify-center p-6 border-2 border-blue-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                  >
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-200">
+                      <svg
+                        className="w-8 h-8 text-blue-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900">
+                      Dari SO
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1 text-center">
+                      Berdasarkan Sales Order yang sudah ada
+                    </span>
+                  </button>
+
+                  {/* IO */}
+                  <button
+                    onClick={() => handleSelectProofSource('IO')}
+                    className="flex flex-col items-center justify-center p-6 border-2 border-teal-300 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-all group"
+                  >
+                    <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-3 group-hover:bg-teal-200">
+                      <svg
+                        className="w-8 h-8 text-teal-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-lg font-semibold text-gray-900">
+                      Dari IO
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1 text-center">
+                      Berdasarkan Item Order (tanpa SO)
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-6 py-4">
+                <button
+                  onClick={() => setShowProofSourceSelection(false)}
+                  className="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* JO Create/Edit Modal */}
       <JOPPICCreateModal
         isOpen={showModal}
@@ -773,7 +910,12 @@ const JOPPICCreate: React.FC = () => {
         tipeJO={selectedTipeJO}
         editMode={editMode}
         editJOId={editJOId}
+        // NEW props
+        proofSourceType={
+          selectedTipeJO === 'JO PROOF' ? selectedProofSource : undefined
+        }
       />
+
       <JOPrintModal
         isOpen={showPrintModal}
         joId={printJOId}

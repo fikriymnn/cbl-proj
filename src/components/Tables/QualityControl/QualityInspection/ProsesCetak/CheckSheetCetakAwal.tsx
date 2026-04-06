@@ -431,6 +431,9 @@ function CheckSheetCetakAwal() {
                               Tanggal
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
+                              Bagian
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
                               Jumlah Druk
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
@@ -449,6 +452,9 @@ function CheckSheetCetakAwal() {
                           <div className="flex flex-col gap-2 col-span-2  py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {tanggalHistory}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.bagian}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               :{' '}
@@ -705,6 +711,12 @@ function CheckSheetCetakAwal() {
                     </td>
                     <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
                       : {tanggal}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Bagian
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {cetakMesinAwal?.bagian}
                     </td>
                     <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
                       Jam
