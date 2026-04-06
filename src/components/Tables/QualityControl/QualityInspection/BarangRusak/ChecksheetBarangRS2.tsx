@@ -271,6 +271,12 @@ function CheckSheetBarangRS2() {
                     Tanggal
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
+                    Cabutan Operator
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    Penandaan Operator
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
                     No. JO
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
@@ -289,6 +295,12 @@ function CheckSheetBarangRS2() {
                 <div className="flex flex-col gap-2 ">
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {tanggal}
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {cetakMesinAwal?.cabutanOperator}
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {cetakMesinAwal?.penandaanOperator}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {cetakMesinAwal?.no_jo}
