@@ -148,7 +148,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       setTglKirim(formatDateForInput(firstItem.so.tgl_pengiriman || ''));
       setPelanggan(firstItem.customer || '');
       setAlamat(
-        firstItem.detail_customer?.alamat_kantor || firstItem.alamat || '',
+        firstItem.detail_customer?.alamat_penagihan || firstItem.alamat || '',
       );
       setTglFaktur(formatDateForInput(new Date().toISOString()));
       setWaktuJatuhTempo(

@@ -36,6 +36,7 @@ interface DOItem {
     id: number;
     nama_customer: string;
     alamat_kantor: string;
+    alamat_penagihan: string;
     telepon: string;
     email: string;
     npwp: string;
@@ -52,6 +53,7 @@ interface DOItem {
     saldo: number | null;
     createdAt: string;
     updatedAt: string;
+    gudang?: Gudang[];
     harga_pengiriman?: {
       id: number;
       nama_area: string;
@@ -61,6 +63,15 @@ interface DOItem {
       updatedAt: string;
     };
   };
+}
+
+interface Gudang {
+  id: number;
+  id_customer: number;
+  alamat_gudang: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface CreateDOPopupProps {
@@ -132,9 +143,9 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
   // DO Nomor data
   const [doNomorData, setDoNomorData] = useState<DONomorResponse | null>(null);
 
-  // Get alamat_kantor from the first selected item
-  const getAlamatKantor = () => {
-    return selectedItems[0]?.detail_customer?.alamat_kantor || '';
+  // Get alamat_penagihan from the first selected item
+  const getAlamatPenagihan = () => {
+    return selectedItems[0]?.detail_customer?.gudang?.[0]?.alamat_gudang || '';
   };
 
   // Get nama_area from the first selected item
@@ -155,7 +166,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
     no_jo: selectedItems[0]?.no_jo || '',
     no_po_customer: selectedItems[0]?.no_po_customer || '',
     pelanggan: selectedItems[0]?.customer || '',
-    alamat: getAlamatKantor(), // Auto-fill from alamat_kantor
+    alamat: getAlamatPenagihan(), // Auto-fill from alamat_penagihan
     kota: getNamaArea(), // Auto-fill from nama_area
     is_tax: false,
     note: '',
@@ -176,7 +187,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
 
   // Update alamat and kota when selectedItems change
   useEffect(() => {
-    const alamatKantor = getAlamatKantor();
+    const alamatKantor = getAlamatPenagihan();
     const namaArea = getNamaArea();
 
     if (!isConfirmationMode) {
@@ -527,7 +538,7 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
       no_jo: selectedItems[0]?.no_jo || '',
       no_po_customer: selectedItems[0]?.no_po_customer || '',
       pelanggan: selectedItems[0]?.customer || '',
-      alamat: getAlamatKantor(), // Reset to alamat_kantor
+      alamat: getAlamatPenagihan(), // Reset to alamat_penagihan
       kota: getNamaArea(), // Reset to nama_area
       is_tax: false,
       note: '',
