@@ -94,6 +94,7 @@ interface JOPrintData {
       warna_belakang: number;
       keterangan_warna_depan?: string;
       keterangan_warna_belakang?: string;
+      file?: string | null; // <-- mounting image file field
       tahapan: Array<{
         id: number;
         id_io: number | null;
@@ -139,6 +140,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
   const [printData, setPrintData] = useState<JOPrintData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [logoBase64, setLogoBase64] = useState<string>('');
+  // State to hold base64 of the mounting image for print
+  const [mountingImageBase64, setMountingImageBase64] = useState<string>('');
 
   useEffect(() => {
     if (isOpen && joId) {
@@ -164,6 +167,35 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     img.src = Logo;
   }, []);
 
+  // When printData changes, convert the mounting image to base64 if it exists
+  useEffect(() => {
+    const mounting = getMountingFromData(printData);
+    const fileField = mounting?.io_mounting?.file;
+
+    if (fileField) {
+      const imageUrl = `${import.meta.env.VITE_API_LINK}/images/${fileField}`;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          setMountingImageBase64(canvas.toDataURL('image/png'));
+        }
+      };
+      img.onerror = () => {
+        // If conversion fails, fall back to direct URL
+        setMountingImageBase64(imageUrl);
+      };
+      img.src = imageUrl;
+    } else {
+      setMountingImageBase64('');
+    }
+  }, [printData]);
+
   const fetchJOData = async () => {
     try {
       setLoading(true);
@@ -183,14 +215,17 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     }
   };
 
-  const getSelectedMounting = () => {
-    if (!printData?.jo_mounting || printData.jo_mounting.length === 0) {
-      return null;
-    }
-    const selectedMounting = printData.jo_mounting.find(
-      (m) => m.is_selected === true,
+  // Pure helper that accepts data as argument (used in useEffect above)
+  const getMountingFromData = (data: JOPrintData | null) => {
+    if (!data?.jo_mounting || data.jo_mounting.length === 0) return null;
+    return (
+      data.jo_mounting.find((m) => m.is_selected === true) ||
+      data.jo_mounting[0]
     );
-    return selectedMounting || printData.jo_mounting[0];
+  };
+
+  const getSelectedMounting = () => {
+    return getMountingFromData(printData);
   };
 
   const getValue = (value: any, defaultValue: string = '-') => {
@@ -208,30 +243,26 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     const year = date.getFullYear();
     return `${day} ${month} ${year}`;
   };
+
   const getRevisiFromIO = (noIO: string): string => {
     if (!noIO) return '0';
 
-    // Split by '/' to get the base part (before any date)
     const parts = noIO.split('/');
     const basePart = parts[0].trim();
 
-    // Pattern 1: Check for dash followed by 1-2 digit number and optional letter (e.g., "4630-2", "4429-3A", "IO-00341-1")
-    // This pattern indicates revision number
     const dashRevisionMatch = basePart.match(/-(\d{1,2})[A-Z]?$/);
     if (dashRevisionMatch) {
-      return dashRevisionMatch[1]; // Return the number part (e.g., "2" from "4630-2", "3" from "4429-3A")
+      return dashRevisionMatch[1];
     }
 
-    // Pattern 2: Check for number followed by letter only (e.g., "4429A")
-    // This indicates revision 0 with a variant letter
     const letterOnlyMatch = basePart.match(/\d+[A-Z]$/);
     if (letterOnlyMatch) {
-      return '0'; // Letter suffix without dash means revision 0
+      return '0';
     }
 
-    // Default: No revision found
     return '0';
   };
+
   const calculateLayout = (): LayoutCalculation => {
     const mounting = getSelectedMounting();
     if (!mounting) {
@@ -254,6 +285,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
 
     return { across, down, total, isi };
   };
+
   const getIndonesianMonth = (month: number): string => {
     const months = [
       'Januari',
@@ -271,10 +303,10 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     ];
     return months[month];
   };
+
   const getProcessTableRows = () => {
     const selectedMounting = getSelectedMounting();
 
-    // Use real tahapan from API if available
     if (
       selectedMounting?.io_mounting?.tahapan &&
       selectedMounting.io_mounting.tahapan.length > 0
@@ -287,8 +319,157 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
         }));
     }
 
-    // Fallback to default if no tahapan data
     return [];
+  };
+
+  // Returns the HTML string for the KERTAS POTONG cell content.
+  // If io_mounting.file exists → show the image (base64 for print quality).
+  // Otherwise → render the calculated layout diagram.
+  const getKertasPotongCellContent = (
+    selectedMounting: NonNullable<ReturnType<typeof getSelectedMounting>>,
+    layout: LayoutCalculation,
+  ): string => {
+    const fileField = selectedMounting?.io_mounting?.file;
+
+    // --- BRANCH 1: Use uploaded image ---
+    if (fileField && mountingImageBase64) {
+      return `
+        <div style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 130px; padding: 4px;">
+          ${
+            selectedMounting.nama_mounting
+              ? `<div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: bold; z-index: 5;">${selectedMounting.nama_mounting}</div>`
+              : ''
+          }
+          <img
+            src="${mountingImageBase64}"
+            alt="Kertas Potong"
+            style="max-width: 100%; max-height: 160px; object-fit: contain; display: block; margin: auto;"
+          />
+        </div>
+      `;
+    }
+
+    // --- BRANCH 2: Calculated layout diagram (original code) ---
+    const panjangKertas = selectedMounting.panjang_kertas;
+    const lebarKertas = selectedMounting.lebar_kertas;
+    const panjangCetak = selectedMounting.ukuran_cetak_panjang_1;
+    const lebarCetak = selectedMounting.ukuran_cetak_lebar_1;
+
+    const topDimension = Math.max(panjangKertas, lebarKertas);
+    const leftDimension = Math.min(panjangKertas, lebarKertas);
+
+    let horizontalCut: number,
+      verticalCut: number,
+      horizontalCount: number,
+      verticalCount: number;
+
+    if (panjangKertas === topDimension) {
+      horizontalCut = panjangCetak;
+      horizontalCount = Math.floor(panjangKertas / panjangCetak);
+      verticalCut = lebarCetak;
+      verticalCount = Math.floor(lebarKertas / lebarCetak);
+    } else {
+      horizontalCut = lebarCetak;
+      horizontalCount = Math.floor(lebarKertas / lebarCetak);
+      verticalCut = panjangCetak;
+      verticalCount = Math.floor(panjangKertas / panjangCetak);
+    }
+
+    const usedWidthPercent =
+      ((horizontalCount * horizontalCut) / topDimension) * 100;
+    const usedHeightPercent =
+      ((verticalCount * verticalCut) / leftDimension) * 100;
+
+    const sisaHorizontal = topDimension - horizontalCount * horizontalCut;
+    const sisaVertical = leftDimension - verticalCount * verticalCut;
+
+    const boxWidth = 180;
+    const boxHeight = 120;
+
+    const totalPlanoArea = topDimension * leftDimension;
+    const totalUsedArea =
+      horizontalCount * horizontalCut * (verticalCount * verticalCut);
+    const efficiency = ((totalUsedArea / totalPlanoArea) * 100).toFixed(1);
+
+    return `
+      <div style="position: relative; display: inline-block; padding: 20px 12px 28px 50px;">
+        ${
+          selectedMounting.nama_mounting
+            ? `<div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: bold; text-align: left; z-index: 5;">${selectedMounting.nama_mounting}</div>`
+            : ''
+        }
+
+        <!-- Top dimension -->
+        <div style="position: absolute; top: 12px; left: ${
+          50 + boxWidth - 25
+        }px;">
+          <div style="font-size: 9px; font-weight: bold;">${topDimension}</div>
+        </div>
+
+        <!-- Left dimension -->
+        <div style="position: absolute; left: 32px; top: ${boxHeight + 3}px;">
+          <div style="font-size: 9px; font-weight: bold; white-space: nowrap;">${leftDimension}</div>
+        </div>
+
+        <!-- Main rectangle -->
+        <div style="border: 2px solid black; background-color: white; display: inline-block; position: relative; width: ${boxWidth}px; height: ${boxHeight}px;">
+          <!-- Top/Horizontal cut dimension -->
+          <div style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 8px; font-weight: bold; display: flex; align-items: center; gap: 6px; z-index: 10;">
+            <span>${horizontalCut}</span>
+            <span style="font-size: 12px;">→</span>
+            <span>${horizontalCount}x</span>
+          </div>
+
+          <!-- Left/Vertical cut dimension -->
+          <div style="position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 2px; z-index: 10;">
+            <span>${verticalCut}</span>
+            <span style="font-size: 12px;">↓</span>
+            <span>${verticalCount}x</span>
+          </div>
+
+          <!-- Used area -->
+          <div style="position: absolute; top: 0; left: 0; width: ${usedWidthPercent}%; height: ${usedHeightPercent}%; background-color: white; display: flex; justify-content: center; align-items: center;">
+            ${
+              selectedMounting.ukuran_cetak_bagian_1 >= 1
+                ? `<div style="font-size: 9px; font-weight: bold;">1/${selectedMounting.ukuran_cetak_bagian_1} Bagian</div>`
+                : ''
+            }
+            <div style="position: absolute; bottom: 4px; right: 8px; font-size: 8px;">
+              Isi: ${
+                selectedMounting.ukuran_cetak_isi_1 ||
+                horizontalCount *
+                  verticalCount *
+                  (selectedMounting.ukuran_cetak_bagian_1 || 1)
+              }
+            </div>
+          </div>
+
+          <!-- Waste areas -->
+          ${
+            sisaHorizontal > 0
+              ? `<div style="position: absolute; top: 0; right: 0; width: ${
+                  100 - usedWidthPercent
+                }%; height: ${usedHeightPercent}%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
+              : ''
+          }
+          ${
+            sisaVertical > 0
+              ? `<div style="position: absolute; bottom: 0; left: 0; width: 100%; height: ${
+                  100 - usedHeightPercent
+                }%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
+              : ''
+          }
+        </div>
+
+        <!-- Bottom info -->
+        <div style="position: absolute; bottom: 4px; left: 50px; right: 12px; font-size: 7px; display: flex; justify-content: space-between;">
+          <div><strong>Sisa Potong:</strong> ${sisaHorizontal.toFixed(
+            0,
+          )} × ${sisaVertical.toFixed(0)} mm</div>
+          <div><strong>Efisiensi:</strong> ${efficiency}%</div>
+        </div>
+      </div>
+    `;
   };
 
   const getPrintContent = () => {
@@ -323,7 +504,6 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             }
           }
           
-          /* New Header Styles */
           .header-container {
             width: 100%;
             display: flex;
@@ -487,9 +667,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
         </style>
       </head>
       <body>
-        <!-- New Header Design -->
+        <!-- Header -->
         <div class="header-container">
-          <!-- Left: JO and IO -->
           <div class="header-left">
             <table>
               <tbody>
@@ -505,14 +684,12 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             </table>
           </div>
           
-          <!-- Center: Logo and Company Name -->
           <div class="header-center">
             <img src="${logoSrc}" alt="Logo" class="logo" />
             <div class="company-name">PT. CAHAYA BERLIAN LESTARI</div>
             <div class="job-order-text">JOB ORDER</div>
           </div>
           
-          <!-- Right: QR Code and Form Code -->
           <div class="header-right">
             <div class="qr-code-container">
               <div class="form-code">FM-PPIC-001</div>
@@ -531,446 +708,327 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
         `
             : ''
         }
-          <!-- Main Info Table -->
-          <table class="info-table">
-            <tbody>
+
+        <!-- Main Info Table -->
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <td class="info-label">Pemesan</td>
+              <td class="info-colon">:</td>
+              <td colspan="3">${getValue(printData?.customer)}</td>
+              <td class="info-label">DUS</td>
+              <td class="info-label">Marketing</td>
+              <td class="info-colon">:</td>
+              <td>TS</td>
+            </tr>
+            <tr>
+              <td class="info-label">Nama Produk</td>
+              <td class="info-colon">:</td>
+              <td colspan="4">${getValue(printData?.produk)}</td>
+              <td class="info-label">Tanggal JO</td>
+              <td class="info-colon">:</td>
+              <td>${formatDate(printData?.createdAt || '')}</td>
+            </tr>
+            <tr>
+              <td class="info-label">Spesifikasi</td>
+              <td class="info-colon">:</td>
+              <td colspan="4">${getValue(printData?.spesifikasi)}</td>
+              <td class="info-label">No SO</td>
+              <td class="info-colon">:</td>
+              <td>${getValue(printData?.no_so)}</td>
+            </tr>
+            <tr>
+              <td class="info-label">Quantity PO</td>
+              <td class="info-colon">:</td>
+              <td>${printData?.po_qty?.toLocaleString()}</td>
+              <td class="info-label">Qty Produksi</td>
+              <td colspan="2">${printData?.qty?.toLocaleString()}</td>
+              <td class="info-label">No PO</td>
+              <td class="info-colon">:</td>
+              <td>${getValue(printData?.so?.no_po_customer)}</td>
+            </tr>
+            <tr>
+              <td class="info-label">Status Produk</td>
+              <td class="info-colon">:</td>
+              <td>${getValue(printData?.so?.status_produk)}</td>
+              <td class="info-label">Stok FG</td>
+              <td colspan="2">${printData?.stok_fg?.toLocaleString() || 0}</td>
+              <td class="info-label">Tgl PO</td>
+              <td class="info-colon">:</td>
+              <td>${formatDate(printData?.so?.tgl_po_customer || '')}</td>
+            </tr>
+            <tr>
+              <td class="info-label">Revisi</td>
+              <td class="info-colon">:</td>
+              <td colspan="4">${getRevisiFromIO(printData?.no_io || '')}</td>
+              <td class="info-label">Tgl Pengiriman</td>
+              <td class="info-colon">:</td>
+              <td>${formatDate(printData?.tgl_kirim || '')}</td>
+            </tr>
+            <tr>
+              <td class="info-label">Status JO</td>
+              <td class="info-colon">:</td>
+              <td colspan="4">${getValue(printData?.status_jo || '')}</td>
+              <td class="info-label">Toleransi Pengiriman</td>
+              <td class="info-colon">:</td>
+              <td>${getValue(printData?.toleransi, '3D')}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        ${
+          selectedMounting
+            ? `
+        <!-- UK & WARNA and KERTAS Section -->
+        <table class="warna-table">
+          <tbody>
+            <tr>
+              <td rowspan="2" style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 11px; border: 1px solid black; padding: 5px;">
+                UK & WARNA
+              </td>
+              <td class="info-label" style="font-size: 10px; width: 120px;">Ukuran Jadi</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.io_mounting?.ukuran_jadi_panjang ||
+                selectedMounting.ukuran_cetak_panjang_1
+              } X ${
+                selectedMounting.io_mounting?.ukuran_jadi_lebar ||
+                selectedMounting.ukuran_cetak_lebar_1
+              }${
+                selectedMounting.io_mounting?.ukuran_jadi_tinggi
+                  ? ` X ${selectedMounting.io_mounting.ukuran_jadi_tinggi}`
+                  : ''
+              } mm</td>
+              <td class="info-label" style="font-size: 10px; width: 120px;">Ukuran Terbentang</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.io_mounting?.ukuran_jadi_terb_panjang || '-'
+              } X ${
+                selectedMounting.io_mounting?.ukuran_jadi_terb_lebar || '-'
+              } mm</td>
+            </tr>
+            <tr>
+              <td class="info-label" style="font-size: 10px;">Warna Depan</td>
+              <td style="font-size: 10px;">${selectedMounting.io_mounting
+                ?.warna_depan}, ${selectedMounting.io_mounting
+                ?.keterangan_warna_depan}</td>
+              <td class="info-label" style="font-size: 10px;">Warna Belakang</td>
+              <td style="font-size: 10px;">${selectedMounting.io_mounting
+                ?.warna_belakang}, ${selectedMounting.io_mounting
+                ?.keterangan_warna_belakang}</td>
+            </tr>
+            <tr>
+              <td rowspan="4" style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 11px; border: 1px solid black; padding: 5px;">
+                KERTAS
+              </td>
+              <td class="info-label" style="font-size: 10px;">Jenis Kertas</td>
+              <td style="font-size: 10px;">${getValue(
+                selectedMounting.nama_kertas,
+              )}</td>
+              <td class="info-label" style="font-size: 10px;">Gramatur</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.gramature_kertas
+              } gsm</td>
+            </tr>
+            <tr>
+              <td class="info-label" style="font-size: 10px;">Ukuran</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.panjang_kertas
+              } x ${selectedMounting.lebar_kertas} mm</td>
+              <td class="info-label" style="font-size: 10px;">JML</td>
+              <td style="font-size: 10px;">${selectedMounting.jumlah_kertas.toLocaleString()} LP</td>
+            </tr>
+            <tr>
+              <td class="info-label" style="font-size: 10px;">UK Cetak (P×L)</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.ukuran_cetak_panjang_1
+              } x ${selectedMounting.ukuran_cetak_lebar_1} mm</td>
+              <td class="info-label" style="font-size: 10px;">Bagian</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.ukuran_cetak_bagian_1 || 2
+              }</td>
+            </tr>
+            <tr>
+              <td class="info-label" style="font-size: 10px;">UK Cetak (P×L)</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.ukuran_cetak_panjang_2 || 0
+              } x ${selectedMounting.ukuran_cetak_lebar_2 || 0} mm</td>
+              <td class="info-label" style="font-size: 10px;">Isi</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.ukuran_cetak_isi_1 || layout.isi
+              }</td>
+            </tr>
+          </tbody>
+        </table>
+        `
+            : ''
+        }
+
+        ${
+          selectedMounting
+            ? `
+        <!-- KERTAS POTONG Section -->
+        <table class="warna-table" style="page-break-inside: avoid; margin-top: 6px;">
+          <tbody>
+            <tr>
+              <td style="width: 80px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 10px; border: 1px solid black; padding: 4px;">
+                KERTAS<br />POTONG
+              </td>
+
+              <!-- ============================================================
+                   KERTAS POTONG CELL:
+                   - If io_mounting.file exists  → show uploaded image
+                   - Otherwise                   → show calculated layout diagram
+                   ============================================================ -->
+              <td style="width: 300px; padding: 8px; vertical-align: middle; text-align: center; border: 1px solid black; position: relative;">
+                ${getKertasPotongCellContent(selectedMounting, layout)}
+              </td>
+
+              <td style="padding: 4px; vertical-align: top; border: 1px solid black;">
+                <!-- Process table -->
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 4px;">
+                  <thead>
+                    <tr>
+                      <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Proses</th>
+                      <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Jml Druk</th>
+                      <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Insheet</th>
+                      <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="border: 1px solid black; padding: 2px;">Cetak</td>
+                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_cetak?.toLocaleString()}</td>
+                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_cetak?.toLocaleString()}</td>
+                      <td style="border: 1px solid black; padding: 2px;">druk</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid black; padding: 2px;">Ponds</td>
+                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_pond?.toLocaleString()}</td>
+                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_pond?.toLocaleString()}</td>
+                      <td style="border: 1px solid black; padding: 2px;">druk</td>
+                    </tr>
+                    <tr>
+                      <td style="border: 1px solid black; padding: 2px;">Finishing</td>
+                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_finishing?.toLocaleString()}</td>
+                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
+                      <td style="border: 1px solid black; padding: 2px;">druk</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Keterangan -->
+                <div style="border: 1px solid black; padding: 4px; font-size: 9px; margin-bottom: 4px;">
+                  <div style="font-weight: bold; margin-bottom: 2px;">Keterangan Pengerjaan :</div>
+                  <div style="min-height: 35px;">${getValue(
+                    printData?.keterangan_pengerjaan,
+                  )}</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        `
+            : ''
+        }
+
+        <!-- Process Table -->
+        <table class="process-table">
+          <thead>
+            <tr>
+              <th>Proses</th>
+              <th>Mesin</th>
+              <th>Baik</th>
+              <th>Rs</th>
+              <th>Rt</th>
+              <th>Keterangan</th>
+              <th>Paraf</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${getProcessTableRows()
+              .map(
+                (process) => `
               <tr>
-                <td class="info-label">Pemesan</td>
-                <td class="info-colon">:</td>
-                <td colspan="3">${getValue(printData?.customer)}</td>
-                <td class="info-label">DUS</td>
-                <td class="info-label">Marketing</td>
-                <td class="info-colon">:</td>
-                <td>TS</td>
+                <td>${process.name}</td>
+                <td>${process.mesin}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
               </tr>
-              <tr>
-                <td class="info-label">Nama Produk</td>
-                <td class="info-colon">:</td>
-                <td colspan="4">${getValue(printData?.produk)}</td>
-                <td class="info-label">Tanggal JO</td>
-                <td class="info-colon">:</td>
-                <td>${formatDate(printData?.createdAt || '')}</td>
-              </tr>
-              <tr>
-                <td class="info-label">Spesifikasi</td>
-                <td class="info-colon">:</td>
-                <td colspan="4">${getValue(printData?.spesifikasi)}</td>
-                <td class="info-label">No SO</td>
-                <td class="info-colon">:</td>
-                <td>${getValue(printData?.no_so)}</td>
-              </tr>
-              <tr>
-                <td class="info-label">Quantity PO</td>
-                <td class="info-colon">:</td>
-                <td>${printData?.po_qty?.toLocaleString()}</td>
-                <td class="info-label">Qty Produksi</td>
-                <td colspan="2">${printData?.qty?.toLocaleString()}</td>
-                <td class="info-label">No PO</td>
-                <td class="info-colon">:</td>
-                <td>${getValue(printData?.so?.no_po_customer)}</td>
-              </tr>
-              <tr>
-                <td class="info-label">Status Produk</td>
-                <td class="info-colon">:</td>
-                <td>${getValue(printData?.so?.status_produk)}</td>
-                <td class="info-label">Stok FG</td>
-                <td colspan="2">${
-                  printData?.stok_fg?.toLocaleString() || 0
-                }</td>
-                <td class="info-label">Tgl PO</td>
-                <td class="info-colon">:</td>
-                <td>${formatDate(printData?.so?.tgl_po_customer || '')}</td>
-              </tr>
-              <tr>
-                <td class="info-label">Revisi</td>
-                <td class="info-colon">:</td>
-                <td colspan="4">${getRevisiFromIO(printData?.no_io || '')}</td>
-                <td class="info-label">Tgl Pengiriman</td>
-                <td class="info-colon">:</td>
-                <td>${formatDate(printData?.tgl_kirim || '')}</td>
-              </tr>
-                <tr>
-                <td class="info-label">Status JO</td>
-                <td class="info-colon">:</td>
-                <td colspan="4">${getValue(printData?.status_jo || '')}</td>
-                <td class="info-label">Toleransi Pengiriman</td>
-                <td class="info-colon">:</td>
-                <td>${getValue(printData?.toleransi, '3D')}</td>
-              </tr>
-              
-            </tbody>
-          </table>
-${
-  selectedMounting
-    ? `
-<!-- UK & WARNA and KERTAS Section - Merged with left headers -->
-<table class="warna-table">
-  <tbody>
-    <tr>
-      <td rowspan="2" style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 11px; border: 1px solid black; padding: 5px;">
-        UK & WARNA
-      </td>
-      <td class="info-label" style="font-size: 10px; width: 120px;">Ukuran Jadi</td>
-      <td style="font-size: 10px;">${
-        selectedMounting.io_mounting?.ukuran_jadi_panjang ||
-        selectedMounting.ukuran_cetak_panjang_1
-      } X ${
-        selectedMounting.io_mounting?.ukuran_jadi_lebar ||
-        selectedMounting.ukuran_cetak_lebar_1
-      }${
-        selectedMounting.io_mounting?.ukuran_jadi_tinggi
-          ? ` X ${selectedMounting.io_mounting.ukuran_jadi_tinggi}`
-          : ''
-      } mm</td>
-      <td class="info-label" style="font-size: 10px; width: 120px;">Ukuran Terbentang</td>
-      <td style="font-size: 10px;">${
-        selectedMounting.io_mounting?.ukuran_jadi_terb_panjang || '-'
-      } X ${selectedMounting.io_mounting?.ukuran_jadi_terb_lebar || '-'} mm</td>
-    </tr>
-    <tr>
-      <td class="info-label" style="font-size: 10px;">Warna Depan</td>
-      <td style="font-size: 10px;">${selectedMounting.io_mounting
-        ?.warna_depan}, ${selectedMounting.io_mounting
-        ?.keterangan_warna_depan}</td>
-      <td class="info-label" style="font-size: 10px;">Warna Belakang</td>
-      <td style="font-size: 10px;">${selectedMounting.io_mounting
-        ?.warna_belakang}, ${selectedMounting.io_mounting
-        ?.keterangan_warna_belakang}</td>
-    </tr>
-    <tr>
-      <td rowspan="4" style="width: 100px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 11px; border: 1px solid black; padding: 5px;">
-        KERTAS
-      </td>
-      <td class="info-label" style="font-size: 10px;">Jenis Kertas</td>
-      <td style="font-size: 10px;">${getValue(
-        selectedMounting.nama_kertas,
-      )}</td>
-      <td class="info-label" style="font-size: 10px;">Gramatur</td>
-      <td style="font-size: 10px;">${selectedMounting.gramature_kertas} gsm</td>
-    </tr>
-    <tr>
-      <td class="info-label" style="font-size: 10px;">Ukuran</td>
-      <td style="font-size: 10px;">${selectedMounting.panjang_kertas} x ${
-        selectedMounting.lebar_kertas
-      } mm</td>
-      <td class="info-label" style="font-size: 10px;">JML</td>
-      <td style="font-size: 10px;">${selectedMounting.jumlah_kertas.toLocaleString()} LP</td>
-    </tr>
-    <tr>
-      <td class="info-label" style="font-size: 10px;">UK Cetak (P×L)</td>
-      <td style="font-size: 10px;">${
-        selectedMounting.ukuran_cetak_panjang_1
-      } x ${selectedMounting.ukuran_cetak_lebar_1} mm</td>
-      <td class="info-label" style="font-size: 10px;">Bagian</td>
-      <td style="font-size: 10px;">${
-        selectedMounting.ukuran_cetak_bagian_1 || 2
-      }</td>
-    </tr>
-    <tr>
-      <td class="info-label" style="font-size: 10px;">UK Cetak (P×L)</td>
-      <td style="font-size: 10px;">${
-        selectedMounting.ukuran_cetak_panjang_2 || 0
-      } x ${selectedMounting.ukuran_cetak_lebar_2 || 0} mm</td>
-      <td class="info-label" style="font-size: 10px;">Isi</td>
-      <td style="font-size: 10px;">${
-        selectedMounting.ukuran_cetak_isi_1 || layout.isi
-      }</td>
-    </tr>
-  </tbody>
-</table>
-`
-    : ''
-}
+            `,
+              )
+              .join('')}
+          </tbody>
+        </table>
 
-          ${
-            selectedMounting
-              ? `
+        <!-- Delivery Info -->
+        <table class="info-table" style="margin-top: 8px;">
+          <tbody>
+            <tr>
+              <td class="info-label">Pengiriman Ke</td>
+              <td class="info-colon">:</td>
+              <td colspan="3">${getValue(printData?.customer)}</td>
+            </tr>
+            <tr>
+              <td class="info-label">Alamat</td>
+              <td class="info-colon">:</td>
+              <td colspan="3">${getValue(printData?.alamat_pengiriman)}</td>
+            </tr>
+          </tbody>
+        </table>
 
-<!-- KERTAS POTONG Section with Layout Diagram - Made Smaller -->
-<table class="warna-table" style="page-break-inside: avoid; margin-top: 6px;">
-  <tbody>
-    <tr>
-      <td style="width: 80px; font-weight: bold; vertical-align: middle; text-align: center; font-size: 10px; border: 1px solid black; padding: 4px;">
-        KERTAS<br />POTONG
-      </td>
-      <td style="width: 300px; padding: 8px; vertical-align: middle; text-align: center; border: 1px solid black; position: relative;">
-       ${(() => {
-         const panjangKertas = selectedMounting.panjang_kertas;
-         const lebarKertas = selectedMounting.lebar_kertas;
-         const panjangCetak = selectedMounting.ukuran_cetak_panjang_1;
-         const lebarCetak = selectedMounting.ukuran_cetak_lebar_1;
-
-         // Determine which dimension is longer
-         const topDimension = Math.max(panjangKertas, lebarKertas);
-         const leftDimension = Math.min(panjangKertas, lebarKertas);
-
-         // Determine which cut dimension goes where based on paper orientation
-         let horizontalCut, verticalCut, horizontalCount, verticalCount;
-
-         if (panjangKertas === topDimension) {
-           // panjang is on top (horizontal)
-           horizontalCut = panjangCetak;
-           horizontalCount = Math.floor(panjangKertas / panjangCetak);
-           verticalCut = lebarCetak;
-           verticalCount = Math.floor(lebarKertas / lebarCetak);
-         } else {
-           // lebar is on top (horizontal)
-           horizontalCut = lebarCetak;
-           horizontalCount = Math.floor(lebarKertas / lebarCetak);
-           verticalCut = panjangCetak;
-           verticalCount = Math.floor(panjangKertas / panjangCetak);
-         }
-
-         const usedWidthPercent =
-           ((horizontalCount * horizontalCut) / topDimension) * 100;
-         const usedHeightPercent =
-           ((verticalCount * verticalCut) / leftDimension) * 100;
-
-         const sisaHorizontal = topDimension - horizontalCount * horizontalCut;
-         const sisaVertical = leftDimension - verticalCount * verticalCut;
-
-         const boxWidth = 180; // Reduced from 240
-         const boxHeight = 120; // Reduced from 160
-
-         const totalPlanoArea = topDimension * leftDimension;
-         const totalUsedArea =
-           horizontalCount * horizontalCut * (verticalCount * verticalCut);
-         const efficiency = ((totalUsedArea / totalPlanoArea) * 100).toFixed(1);
-
-         return `
-    <div style="position: relative; display: inline-block; padding: 20px 12px 28px 50px;">
-     ${
-       selectedMounting.nama_mounting
-         ? `<div style="position: absolute; top: 6px; left: 6px; font-size: 10px; font-weight: bold; text-align: left; z-index: 5;">${selectedMounting.nama_mounting}</div>`
-         : ''
-     }
-<!-- Top dimension (longer one) - positioned at top right corner of rectangle -->
-      <div style="position: absolute; top: 12px; left: ${
-        50 + boxWidth - 25
-      }px;">
-        <div style="font-size: 9px; font-weight: bold;">
-          ${topDimension}
-        </div>
-      </div>
-
-      <!-- Left dimension (shorter one) - positioned at bottom left corner of rectangle -->
-      <div style="position: absolute; left: 32px; top: ${boxHeight + 3}px;">
-        <div style="font-size: 9px; font-weight: bold; white-space: nowrap;">
-          ${leftDimension}
-        </div>
-      </div>
-
-      <!-- Main rectangle -->
-      <div style="border: 2px solid black; background-color: white; display: inline-block; position: relative; width: ${boxWidth}px; height: ${boxHeight}px;">
-        <!-- Top/Horizontal cut dimension (inside box, near top) -->
-        <div style="position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 8px; font-weight: bold; display: flex; align-items: center; gap: 6px; z-index: 10;">
-          <span>${horizontalCut}</span>
-          <span style="font-size: 12px;">→</span>
-          <span>${horizontalCount}x</span>
-        </div>
-
-        <!-- Left/Vertical cut dimension (inside box, near left) -->
-        <div style="position: absolute; left: 6px; top: 50%; transform: translateY(-50%); font-size: 8px; font-weight: bold; display: flex; flex-direction: column; align-items: center; gap: 2px; z-index: 10;">
-          <span>${verticalCut}</span>
-          <span style="font-size: 12px;">↓</span>
-          <span>${verticalCount}x</span>
-        </div>
-
-        <!-- Used area (white space) -->
-        <div style="position: absolute; top: 0; left: 0; width: ${usedWidthPercent}%; height: ${usedHeightPercent}%; background-color: white; display: flex; justify-content: center; align-items: center;">
-          ${
-            selectedMounting.ukuran_cetak_bagian_1 >= 1
-              ? `<div style="font-size: 9px; font-weight: bold;">1/${selectedMounting.ukuran_cetak_bagian_1} Bagian</div>`
-              : ''
-          }
-          
-          <!-- Isi inside white space at bottom right -->
-          <div style="position: absolute; bottom: 4px; right: 8px; font-size: 8px;">
-            Isi: ${
-              selectedMounting.ukuran_cetak_isi_1 ||
-              horizontalCount *
-                verticalCount *
-                (selectedMounting.ukuran_cetak_bagian_1 || 1)
-            }
+        <!-- Date and Signatures -->
+        <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="flex: 0 0 200px;">
+            <div style="font-size: 9px; margin-bottom: 3px;">Bandung,</div>
+            <div style="font-size: 9px;">Dibuat Oleh,</div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="font-size: 9px; margin-bottom: 3px;">${formatDate(
+              new Date().toISOString(),
+            )}</div>
           </div>
         </div>
 
-        <!-- Waste areas (grey) -->
-        ${
-          sisaHorizontal > 0
-            ? `<div style="position: absolute; top: 0; right: 0; width: ${
-                100 - usedWidthPercent
-              }%; height: ${usedHeightPercent}%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
-            : ''
-        }
-        ${
-          sisaVertical > 0
-            ? `<div style="position: absolute; bottom: 0; left: 0; width: 100%; height: ${
-                100 - usedHeightPercent
-              }%; background-color: rgba(128, 128, 128, 0.3); border: 1px dashed #999;"></div>`
-            : ''
-        }
-      </div>
+        <div style="margin-top: 12px; display: flex; justify-content: space-between; gap: 10px; font-size: 9px;">
+          <div style="flex: 1; text-align: center;">
+            <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+            <div style="font-weight: normal; margin-bottom: 2px;">(PPIC)</div>
+            <div>Tgl:</div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+            <div style="font-weight: normal; margin-bottom: 2px;">(SPV PPIC)</div>
+            <div>Tgl:</div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+            <div style="font-weight: normal; margin-bottom: 2px;">(Prepress)</div>
+            <div>Tgl:</div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+            <div style="font-weight: normal; margin-bottom: 2px;">(Printing)</div>
+            <div>Tgl:</div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+            <div style="font-weight: normal; margin-bottom: 2px;">(Ponds)</div>
+            <div>Tgl:</div>
+          </div>
+          <div style="flex: 1; text-align: center;">
+            <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
+            <div style="font-weight: normal; margin-bottom: 2px;">(Finishing)</div>
+            <div>Tgl:</div>
+          </div>
+        </div>
 
-      <!-- Bottom info (now inside the padding area) -->
-      <div style="position: absolute; bottom: 4px; left: 50px; right: 12px; font-size: 7px; display: flex; justify-content: space-between;">
-        <div><strong>Sisa Potong:</strong> ${sisaHorizontal.toFixed(
-          0,
-        )} × ${sisaVertical.toFixed(0)} mm</div>
-        <div><strong>Efisiensi:</strong> ${efficiency}%</div>
-      </div>
-    </div>
+      </body>
+    </html>
   `;
-       })()}
-      </td>
-                <td style="padding: 4px; vertical-align: top; border: 1px solid black;">
-                  <!-- Process table -->
-                  <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 4px;">
-                    <thead>
-                      <tr>
-                        <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Proses</th>
-                        <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Jml Druk</th>
-                        <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Insheet</th>
-                        <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td style="border: 1px solid black; padding: 2px;">Cetak</td>
-                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_cetak?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_cetak?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 2px;">druk</td>
-                      </tr>
-                      <tr>
-                        <td style="border: 1px solid black; padding: 2px;">Ponds</td>
-                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_pond?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_pond?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 2px;">druk</td>
-                      </tr>
-                      <tr>
-                        <td style="border: 1px solid black; padding: 2px;">Finishing</td>
-                        <td style="border:1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_finishing?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
-                        <td style="border: 1px solid black; padding: 2px;">druk</td>
-                        </tr>
-                    </tbody>
-                  </table>
-              <!-- Keterangan -->
-              <div style="border: 1px solid black; padding: 4px; font-size: 9px; margin-bottom: 4px;">
-                <div style="font-weight: bold; margin-bottom: 2px;">Keterangan Pengerjaan :</div>
-                <div style="min-height: 35px;">${getValue(
-                  printData?.keterangan_pengerjaan,
-                )}</div>
-              </div>
-
-              
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      `
-              : ''
-          }
-
-      <!-- Process Table -->
-      <table class="process-table">
-        <thead>
-          <tr>
-            <th>Proses</th>
-            <th>Mesin</th>
-            <th>Baik</th>
-            <th>Rs</th>
-            <th>Rt</th>
-            <th>Keterangan</th>
-            <th>Paraf</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${getProcessTableRows()
-            .map(
-              (process) => `
-            <tr>
-              <td>${process.name}</td>
-              <td>${process.mesin}</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-          `,
-            )
-            .join('')}
-        </tbody>
-      </table>
-
-      <!-- Delivery Info -->
-      <table class="info-table" style="margin-top: 8px;">
-        <tbody>
-          <tr>
-            <td class="info-label">Pengiriman Ke</td>
-            <td class="info-colon">:</td>
-            <td colspan="3">${getValue(printData?.customer)}</td>
-          </tr>
-          <tr>
-            <td class="info-label">Alamat</td>
-            <td class="info-colon">:</td>
-            <td colspan="3">${getValue(printData?.alamat_pengiriman)}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Date and Signatures - Borderless Layout -->
-      <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: flex-start;">
-        <div style="flex: 0 0 200px;">
-          <div style="font-size: 9px; margin-bottom: 3px;">Bandung,</div>
-          <div style="font-size: 9px;">Dibuat Oleh,</div>
-        </div>
-        <div style="flex: 1; text-align: center;">
-          <div style="font-size: 9px; margin-bottom: 3px;">${formatDate(
-            new Date().toISOString(),
-          )}</div>
-        </div>
-      </div>
-
-      <div style="margin-top: 12px; display: flex; justify-content: space-between; gap: 10px; font-size: 9px;">
-        <div style="flex: 1; text-align: center;">
-          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
-          <div style="font-weight: normal; margin-bottom: 2px;">(PPIC)</div>
-          <div>Tgl:</div>
-        </div>
-        <div style="flex: 1; text-align: center;">
-          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
-          <div style="font-weight: normal; margin-bottom: 2px;">(SPV PPIC)</div>
-          <div>Tgl:</div>
-        </div>
-        <div style="flex: 1; text-align: center;">
-          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
-          <div style="font-weight: normal; margin-bottom: 2px;">(Prepress)</div>
-          <div>Tgl:</div>
-        </div>
-        <div style="flex: 1; text-align: center;">
-          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
-          <div style="font-weight: normal; margin-bottom: 2px;">(Printing)</div>
-          <div>Tgl:</div>
-        </div>
-        <div style="flex: 1; text-align: center;">
-          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
-          <div style="font-weight: normal; margin-bottom: 2px;">(Ponds)</div>
-          <div>Tgl:</div>
-        </div>
-        <div style="flex: 1; text-align: center;">
-          <div style="border-bottom: 1px dotted black; margin-bottom: 3px; min-height: 35px;"></div>
-          <div style="font-weight: normal; margin-bottom: 2px;">(Finishing)</div>
-          <div>Tgl:</div>
-        </div>
-      </div>
-
-      
-    </body>
-  </html>
-`;
   };
+
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -984,9 +1042,12 @@ ${
       };
     }
   };
+
   if (!isOpen) return null;
+
   const layout = calculateLayout();
   const selectedMounting = getSelectedMounting();
+
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-black bg-opacity-75">
       <div className="flex flex-col h-full">
@@ -1011,6 +1072,7 @@ ${
             </button>
           </div>
         </div>
+
         {/* Scrollable preview area */}
         <div className="flex-1 overflow-auto bg-gray-600 p-8">
           {loading ? (
@@ -1026,12 +1088,11 @@ ${
             </div>
           ) : (
             <div className="max-w-[210mm] mx-auto bg-white shadow-2xl">
-              {/* PDF Preview using iframe */}
               <iframe
                 srcDoc={getPrintContent()}
                 className="w-full"
                 style={{
-                  height: '297mm', // A4 height
+                  height: '297mm',
                   border: 'none',
                   backgroundColor: 'white',
                 }}
@@ -1052,4 +1113,5 @@ ${
     </div>
   );
 };
+
 export default JOPrintModal;
