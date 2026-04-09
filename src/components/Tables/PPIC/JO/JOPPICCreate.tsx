@@ -241,7 +241,9 @@ const JOPPICCreate: React.FC = () => {
     return (
       statusProduk?.toLowerCase() === 'acc' ||
       statusProduk?.toLowerCase() === 'ppos' ||
-      statusProduk?.toLowerCase() === 'proof'
+      statusProduk?.toLowerCase() === 'proof' ||
+      statusProduk?.toLowerCase() === null ||
+      statusProduk?.toLowerCase() === undefined
     );
   };
 
