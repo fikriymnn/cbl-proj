@@ -234,6 +234,25 @@ const JOHistory: React.FC = () => {
     setShowModal(true);
   };
 
+  const SendJoToJadwal = async (id: number) => {
+    if (window.confirm('Apakah Anda yakin ingin kirim ke jadwal?')) {
+      try {
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/sendJadwal/${id}`;
+        await axios.put(url, {}, { withCredentials: true });
+        fetchJOData();
+        alert('JO berhasil di kirim ke jadwal!');
+      } catch (error: any) {
+        console.log(error);
+        alert(
+          'Gagal kirim JO ke jadwal. Silakan coba lagi.' +
+            ' ' +
+            'Error:' +
+            error.response.data.msg,
+        );
+      }
+    }
+  };
+
   // Apply sorting to data (client-side sorting)
   const sortedData = [...joData].sort((a, b) => {
     const aValue = a[sortKey as keyof JOData];
@@ -446,6 +465,13 @@ const JOHistory: React.FC = () => {
                           title="View JO Details"
                         >
                           DETAIL
+                        </button>
+                        <button
+                          onClick={() => SendJoToJadwal(item.id)}
+                          className="text-white bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded text-xs transition-colors"
+                          title="View JO Details"
+                        >
+                          SEND JADWAL
                         </button>
                         <button
                           onClick={() => handlePrintJO(item)}
