@@ -42,6 +42,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
     nama_mounting: '',
     barcode: '',
     format_data: 'CTP',
+    spesifikasi: '',
     untuk: '',
     ukuran_jadi_panjang: 0,
     ukuran_jadi_lebar: 0,
@@ -162,6 +163,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         format_data: mountingData.format_data || 'CTP',
         untuk: mountingData.untuk || '',
         ukuran_jadi_panjang: mountingData.ukuran_jadi_panjang || 0,
+        spesifikasi: mountingData.spesifikasi || '',
         ukuran_jadi_lebar: mountingData.ukuran_jadi_lebar || 0,
         ukuran_jadi_tinggi: mountingData.ukuran_jadi_tinggi || 0,
         ukuran_jadi_terb_panjang: mountingData.ukuran_jadi_terb_panjang || 0,
@@ -225,6 +227,7 @@ const MountingFormPopup: React.FC<MountingFormPopupProps> = ({
         ukuran_jadi_panjang: templateMounting?.ukuran_jadi_panjang || 0,
         ukuran_jadi_lebar: templateMounting?.ukuran_jadi_lebar || 0,
         ukuran_jadi_tinggi: templateMounting?.ukuran_jadi_tinggi || 0,
+        spesifikasi: templateMounting?.spesifikasi || '',
         ukuran_jadi_terb_panjang:
           templateMounting?.ukuran_jadi_terb_panjang || 0,
         ukuran_jadi_terb_lebar: templateMounting?.ukuran_jadi_terb_lebar || 0,

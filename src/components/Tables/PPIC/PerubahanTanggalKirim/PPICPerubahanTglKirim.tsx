@@ -4,6 +4,18 @@ import axios, { AxiosResponse } from 'axios';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 
+interface SoData {
+  id: number;
+  no_so: string;
+  produk: string;
+  customer: string;
+  no_io: string;
+  tgl_pengiriman: string;
+  status: string;
+  status_proses: string;
+  [key: string]: any;
+}
+
 interface PerubahanTglKirimData {
   id: number;
   id_so: number;
@@ -19,6 +31,7 @@ interface PerubahanTglKirimData {
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
+  so?: SoData;
 }
 
 interface APIResponse<T> {
@@ -28,12 +41,47 @@ interface APIResponse<T> {
   total_page?: number;
 }
 
+type StatusFilter = 'all' | 'requested' | 'approved' | 'rejected';
+
+const STATUS_OPTIONS: {
+  value: StatusFilter;
+  label: string;
+  color: string;
+  activeColor: string;
+}[] = [
+  {
+    value: 'all',
+    label: 'Semua',
+    color: 'bg-gray-100 text-black hover:bg-black',
+    activeColor: 'bg-gray-700 text-black',
+  },
+  {
+    value: 'requested',
+    label: 'Requested',
+    color: 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100',
+    activeColor: 'bg-yellow-500 text-white',
+  },
+  {
+    value: 'approved',
+    label: 'Approved',
+    color: 'bg-green-50 text-green-700 hover:bg-green-100',
+    activeColor: 'bg-green-600 text-white',
+  },
+  {
+    value: 'rejected',
+    label: 'Rejected',
+    color: 'bg-red-50 text-red-700 hover:bg-red-100',
+    activeColor: 'bg-red-600 text-white',
+  },
+];
+
 const PPICPerubahanTglKirim: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<PerubahanTglKirimData[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sortConfig, setSortConfig] = useState<{
     key: keyof PerubahanTglKirimData | null;
     direction: 'asc' | 'desc';
@@ -47,7 +95,7 @@ const PPICPerubahanTglKirim: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [page, limit]);
+  }, [page, limit, statusFilter]);
 
   const fetchData = async (): Promise<void> => {
     const url = `${
@@ -55,16 +103,20 @@ const PPICPerubahanTglKirim: React.FC = () => {
     }/marketing/soPerubahanTanggalKirim`;
     try {
       setLoading(true);
+      const params: Record<string, any> = {
+        page,
+        limit,
+      };
+      if (statusFilter !== 'all') {
+        params.status = statusFilter;
+      }
+
       const res: AxiosResponse<APIResponse<PerubahanTglKirimData[]>> =
         await axios.get(url, {
-          params: {
-            page: page,
-            limit: limit,
-          },
+          params,
           withCredentials: true,
         });
 
-      console.log('Fetched perubahan tanggal kirim data:', res.data);
       if (res.data.succes) {
         setData(res.data.data);
         if (res.data.total_page) {
@@ -213,8 +265,35 @@ const PPICPerubahanTglKirim: React.FC = () => {
     setPage(1);
   };
 
+  const handleStatusFilterChange = (value: StatusFilter): void => {
+    setStatusFilter(value);
+    setPage(1);
+  };
+
   return (
     <div className="">
+      {/* Status Filter */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="text-sm text-gray-600 font-medium">
+          Filter Status:
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {STATUS_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => handleStatusFilterChange(opt.value)}
+              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+                statusFilter === opt.value
+                  ? `${opt.activeColor} border-transparent`
+                  : `${opt.color} border-gray-200`
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -240,6 +319,15 @@ const PPICPerubahanTglKirim: React.FC = () => {
                       NO SO
                       {getSortIcon('no_so')}
                     </button>
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    PRODUK
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    CUSTOMER
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    NO IO
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
@@ -286,7 +374,7 @@ const PPICPerubahanTglKirim: React.FC = () => {
                 {sortedData.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={11}
                       className="px-4 py-6 text-center text-gray-500 text-sm"
                     >
                       Tidak ada data perubahan tanggal kirim
@@ -332,6 +420,34 @@ const PPICPerubahanTglKirim: React.FC = () => {
                             : '-'}
                         </span>
                       </td>
+                      {/* PRODUK */}
+                      <td className="px-2 py-2 text-xs text-gray-900 max-w-40">
+                        <span title={item.so?.produk ?? '-'}>
+                          {item.so?.produk
+                            ? item.so.produk.substring(0, 200) +
+                              (item.so.produk.length > 200 ? '...' : '')
+                            : '-'}
+                        </span>
+                      </td>
+                      {/* CUSTOMER */}
+                      <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                        <span title={item.so?.customer ?? '-'}>
+                          {item.so?.customer
+                            ? item.so.customer.substring(0, 200) +
+                              (item.so.customer.length > 200 ? '...' : '')
+                            : '-'}
+                        </span>
+                      </td>
+                      {/* NO IO */}
+                      <td className="px-2 py-2 whitespace-nowrap">
+                        {item.so?.no_io ? (
+                          <span className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium">
+                            {item.so.no_io}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                         {formatDate(item.tgl_awal)}
                       </td>
@@ -342,8 +458,8 @@ const PPICPerubahanTglKirim: React.FC = () => {
                         <div>
                           <span title={item.note}>
                             {item.note
-                              ? item.note.substring(0, 40) +
-                                (item.note.length > 40 ? '...' : '')
+                              ? item.note.substring(0, 200) +
+                                (item.note.length > 200 ? '...' : '')
                               : '-'}
                           </span>
                         </div>
@@ -352,8 +468,8 @@ const PPICPerubahanTglKirim: React.FC = () => {
                             className="text-red-600 mt-1"
                             title={item.note_reject}
                           >
-                            Reject: {item.note_reject.substring(0, 20)}
-                            {item.note_reject.length > 20 ? '...' : ''}
+                            Reject: {item.note_reject.substring(0, 200)}
+                            {item.note_reject.length > 200 ? '...' : ''}
                           </div>
                         )}
                       </td>
@@ -461,6 +577,18 @@ const PPICPerubahanTglKirim: React.FC = () => {
                     <span className="text-gray-600">No SO:</span>
                     <p className="font-medium">{selectedItem.no_so}</p>
                   </div>
+                  {selectedItem.so?.produk && (
+                    <div className="col-span-2">
+                      <span className="text-gray-600">Produk:</span>
+                      <p className="font-medium">{selectedItem.so.produk}</p>
+                    </div>
+                  )}
+                  {selectedItem.so?.customer && (
+                    <div className="col-span-2">
+                      <span className="text-gray-600">Customer:</span>
+                      <p className="font-medium">{selectedItem.so.customer}</p>
+                    </div>
+                  )}
                   <div>
                     <span className="text-gray-600">Tanggal Awal:</span>
                     <p className="font-medium">

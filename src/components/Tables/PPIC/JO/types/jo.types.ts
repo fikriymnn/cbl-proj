@@ -81,6 +81,7 @@ export interface MountingData {
   id_io: number;
   nama_mounting: string;
   barcode: string;
+  spesifikasi?: string;
   format_data: string;
   ukuran_jadi_panjang: number;
   ukuran_jadi_lebar: number;
@@ -145,7 +146,8 @@ export interface JOMounting {
   id?: number;
   id_jo?: number;
   id_io_mounting: number;
-  nama_mounting: string; // ADD THIS
+  nama_mounting: string;
+  spesifikasi?: string;
   id_kertas: number;
   nama_kertas: string;
   gramature_kertas: number;

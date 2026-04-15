@@ -38,6 +38,7 @@ export interface TahapanData {
 
 export interface MountingFormData {
   nama_mounting: string;
+  spesifikasi: string;
   barcode: string;
   file?: string;
   lampiran: string;

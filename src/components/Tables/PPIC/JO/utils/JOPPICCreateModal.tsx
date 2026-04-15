@@ -266,6 +266,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         },
         withCredentials: true,
       });
+      console.log('Fetched SO data:', res.data.data);
       setSOData(res.data.data || []);
     } catch (error) {
       console.error('Error fetching SO data:', error);
@@ -493,6 +494,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
               return {
                 id: ioMounting.id,
                 id_io: joDetail.id_io,
+                spesifikasi: ioMounting.spesifikasi || '',
                 nama_mounting: ioMounting.nama_mounting || '',
                 barcode: ioMounting.barcode || '',
                 format_data: ioMounting.format_data || '',
@@ -590,6 +592,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
         setTimeout(() => setIsInitialEditLoad(false), 100);
       }
+      console.log('Fetched JO detail:', res.data.data);
     } catch (error) {
       console.error('Error fetching JO detail:', error);
       alert('Gagal mengambil data JO');
@@ -635,20 +638,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       return rawDruk >= batasBawah && rawDruk <= batasAtas;
     });
     return ketentuan || { nilai: 0, is_persentase: false };
-  };
-
-  const generateSpesifikasi = (mounting: MountingData): string => {
-    const warnaDepan = mounting.warna_depan || 0;
-    const warnaBelakang = mounting.warna_belakang || 0;
-    const coatingDepan = mounting.nama_coating_depan ? 1 : 0;
-    const coatingBelakang = mounting.nama_coating_belakang ? 1 : 0;
-    const coatingNames = [
-      mounting.nama_coating_depan,
-      mounting.nama_coating_belakang,
-    ]
-      .filter(Boolean)
-      .join(' + ');
-    return `${warnaDepan}/${warnaBelakang} + ${coatingDepan}/${coatingBelakang} ${coatingNames}`.trim();
   };
 
   // ── SO change handler ─────────────────────────────────────────────────────
@@ -738,8 +727,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       setSelectedMounting(mountingId);
       const mounting = mountingData.find((m) => m.id === mountingId);
       if (mounting) {
-        const spesifikasi = generateSpesifikasi(mounting);
-        setFormData((prev) => ({ ...prev, spesifikasi }));
+        setFormData((prev) => ({
+          ...prev,
+          spesifikasi: mounting.spesifikasi || '',
+        }));
         if (!editMode && formData.qty) {
           calculateInsheetFromQty(formData.qty, mounting);
         }
