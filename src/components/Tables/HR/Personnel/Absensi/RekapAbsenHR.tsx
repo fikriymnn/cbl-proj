@@ -135,17 +135,27 @@ function RekapAbsenHR() {
       const menitPulangCepat = parseFloat(record.menit_pulang_cepat || 0);
       const jamIstirahatLembur = parseFloat(record.jam_istirahat_lembur || 0);
 
-      totalTerlambat += menitTerlambat;
+      // Check if tardiness type is Dinas or Pribadi — these are exempt from denda
+      const isDinasPribadi = [
+        'terlambat : dinas',
+        'terlambat : pribadi',
+      ].includes(record.status_masuk?.toLowerCase());
+
       totalPulangCepat += menitPulangCepat;
       totalIstirahatLembur += jamIstirahatLembur;
 
-      if (menitTerlambat > 0) {
-        jumlahHariTerlambat++;
+      // Only count tardiness metrics for denda if NOT Dinas or Pribadi
+      if (!isDinasPribadi) {
+        totalTerlambat += menitTerlambat;
 
-        if (menitTerlambat <= 0.5) {
-          terlambatKurangDari30Menit++;
-        } else {
-          terlambatLebihDari30Menit++;
+        if (menitTerlambat > 0) {
+          jumlahHariTerlambat++;
+
+          if (menitTerlambat <= 0.5) {
+            terlambatKurangDari30Menit++;
+          } else {
+            terlambatLebihDari30Menit++;
+          }
         }
       }
     });
@@ -1049,100 +1059,122 @@ function RekapAbsenHR() {
 
                               {/* Detail Table Body */}
                               <div className="max-h-96 overflow-y-auto">
-                                {data.absensi?.map((record: any, ii: any) => (
-                                  <div
-                                    key={ii}
-                                    className="grid grid-cols-12 gap-2 p-3 border-b text-sm hover:bg-gray-50"
-                                  >
-                                    <div className="col-span-1">{ii + 1}</div>
-                                    <div className="col-span-2">
-                                      {record.tgl_masuk || '-'}
-                                    </div>
-                                    <div className="col-span-1">
-                                      {record.jam_masuk &&
-                                      record.jam_masuk !== '0'
-                                        ? record.jam_masuk
-                                        : '-'}
-                                    </div>
-                                    <div className="col-span-1">
-                                      {record.jam_keluar &&
-                                      record.jam_keluar !== '0'
-                                        ? record.jam_keluar
-                                        : '-'}
-                                    </div>
-                                    <div className="col-span-1">
-                                      {record.shift && record.shift !== '0'
-                                        ? record.shift
-                                        : '-'}
-                                    </div>
-                                    <div className="col-span-1">
-                                      <span
-                                        className={`px-1 py-1 rounded text-xs ${
-                                          record.status_absen === 'masuk'
-                                            ? 'bg-green-100 text-green-800'
-                                            : record.status_absen === 'izin'
-                                            ? 'bg-yellow-100 text-yellow-800'
-                                            : record.status_absen === 'sakit'
-                                            ? 'bg-red-100 text-red-800'
-                                            : 'bg-gray-100 text-gray-800'
-                                        }`}
-                                      >
-                                        {record.status_absen || '-'}
-                                      </span>
-                                    </div>
-                                    <div className="col-span-1">
-                                      {record.jam_lembur &&
-                                      record.jam_lembur !== '0'
-                                        ? `${record.jam_lembur} jam`
-                                        : '-'}
-                                    </div>
-                                    <div className="col-span-1">
-                                      {record.jam_istirahat_lembur &&
-                                      record.jam_istirahat_lembur !== '0'
-                                        ? `${record.jam_istirahat_lembur} jam`
-                                        : '-'}
-                                    </div>
-                                    <div className="col-span-3">
-                                      <div className="text-xs space-y-1">
-                                        {record.status_masuk && (
-                                          <div className="text-gray-600">
-                                            Status: {record.status_masuk}
-                                          </div>
-                                        )}
-                                        {record.menit_terlambat > 0 && (
-                                          <div className="text-red-600">
-                                            Terlambat: {record.menit_terlambat}{' '}
-                                            Jam
-                                          </div>
-                                        )}
-                                        {record.menit_pulang_cepat > 0 && (
-                                          <div className="text-orange-600">
-                                            Pulang Cepat:{' '}
-                                            {record.menit_pulang_cepat} Jam
-                                          </div>
-                                        )}
-                                        {record.status_lembur &&
-                                          record.status_lembur !== '-' && (
-                                            <div className="text-blue-600">
-                                              {record.status_lembur}
+                                {data.absensi?.map((record: any, ii: any) => {
+                                  // Check if this record is exempt from denda
+                                  const isDinasPribadi = [
+                                    'terlambat : dinas',
+                                    'terlambat : pribadi',
+                                  ].includes(
+                                    record.status_masuk?.toLowerCase(),
+                                  );
+
+                                  return (
+                                    <div
+                                      key={ii}
+                                      className="grid grid-cols-12 gap-2 p-3 border-b text-sm hover:bg-gray-50"
+                                    >
+                                      <div className="col-span-1">{ii + 1}</div>
+                                      <div className="col-span-2">
+                                        {record.tgl_masuk || '-'}
+                                      </div>
+                                      <div className="col-span-1">
+                                        {record.jam_masuk &&
+                                        record.jam_masuk !== '0'
+                                          ? record.jam_masuk
+                                          : '-'}
+                                      </div>
+                                      <div className="col-span-1">
+                                        {record.jam_keluar &&
+                                        record.jam_keluar !== '0'
+                                          ? record.jam_keluar
+                                          : '-'}
+                                      </div>
+                                      <div className="col-span-1">
+                                        {record.shift && record.shift !== '0'
+                                          ? record.shift
+                                          : '-'}
+                                      </div>
+                                      <div className="col-span-1">
+                                        <span
+                                          className={`px-1 py-1 rounded text-xs ${
+                                            record.status_absen === 'masuk'
+                                              ? 'bg-green-100 text-green-800'
+                                              : record.status_absen === 'izin'
+                                              ? 'bg-yellow-100 text-yellow-800'
+                                              : record.status_absen === 'sakit'
+                                              ? 'bg-red-100 text-red-800'
+                                              : 'bg-gray-100 text-gray-800'
+                                          }`}
+                                        >
+                                          {record.status_absen || '-'}
+                                        </span>
+                                      </div>
+                                      <div className="col-span-1">
+                                        {record.jam_lembur &&
+                                        record.jam_lembur !== '0'
+                                          ? `${record.jam_lembur} jam`
+                                          : '-'}
+                                      </div>
+                                      <div className="col-span-1">
+                                        {record.jam_istirahat_lembur &&
+                                        record.jam_istirahat_lembur !== '0'
+                                          ? `${record.jam_istirahat_lembur} jam`
+                                          : '-'}
+                                      </div>
+                                      <div className="col-span-3">
+                                        <div className="text-xs space-y-1">
+                                          {record.status_masuk && (
+                                            <div className="text-gray-600">
+                                              Status: {record.status_masuk}
                                             </div>
                                           )}
-                                        {record.status_lembur_spl &&
-                                          record.status_lembur_spl !== '-' && (
-                                            <div className="text-purple-600 text-xs">
-                                              SPL: {record.status_lembur_spl}
+                                          {record.menit_terlambat > 0 && (
+                                            <div
+                                              className={
+                                                isDinasPribadi
+                                                  ? 'text-gray-400'
+                                                  : 'text-red-600'
+                                              }
+                                            >
+                                              Terlambat:{' '}
+                                              {record.menit_terlambat} Jam
+                                              {isDinasPribadi && (
+                                                <span className="ml-1 italic">
+                                                  (tidak kena denda)
+                                                </span>
+                                              )}
                                             </div>
                                           )}
-                                        {record.keterangan &&
-                                          record.keterangan !== '-' && (
-                                            <div className="text-gray-500">
-                                              {record.keterangan}
+                                          {record.menit_pulang_cepat > 0 && (
+                                            <div className="text-orange-600">
+                                              Pulang Cepat:{' '}
+                                              {record.menit_pulang_cepat} Jam
                                             </div>
                                           )}
+                                          {record.status_lembur &&
+                                            record.status_lembur !== '-' && (
+                                              <div className="text-blue-600">
+                                                {record.status_lembur}
+                                              </div>
+                                            )}
+                                          {record.status_lembur_spl &&
+                                            record.status_lembur_spl !==
+                                              '-' && (
+                                              <div className="text-purple-600 text-xs">
+                                                SPL: {record.status_lembur_spl}
+                                              </div>
+                                            )}
+                                          {record.keterangan &&
+                                            record.keterangan !== '-' && (
+                                              <div className="text-gray-500">
+                                                {record.keterangan}
+                                              </div>
+                                            )}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                           )}

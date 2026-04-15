@@ -403,6 +403,30 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/inspection/pm_1_form/:id"
+          element={
+            <P>
+              <Pm1Form />
+            </P>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/pm_2_form/:id"
+          element={
+            <P>
+              <Pm2Form />
+            </P>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/pm_3_form/:id"
+          element={
+            <P>
+              <Pm3Form />
+            </P>
+          }
+        />
+        <Route
           path="/maintenance/preventive/pm2"
           element={
             <P>

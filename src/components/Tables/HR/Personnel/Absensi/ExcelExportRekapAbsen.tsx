@@ -26,6 +26,7 @@ const ExcelExportRekapAbsen = ({
   convertTimeStampToDate,
 }: ExcelExportProps) => {
   // Calculate violations (pelanggaran) - CUMULATIVE, NOT RESET EACH MONTH
+  // Terlambat : Dinas and Terlambat : Pribadi are EXEMPT from denda
   const calculateCumulativeViolations = (absensiData: any[]) => {
     const violationsData: any[] = [];
     let cumulativeViolationCount = 0; // This will NOT reset each month
@@ -38,10 +39,18 @@ const ExcelExportRekapAbsen = ({
 
     sortedRecords.forEach((record: any) => {
       const menitTerlambat = parseFloat(record.menit_terlambat || 0);
+
+      // Terlambat : Dinas and Terlambat : Pribadi are exempt from denda
+      const isDinasPribadi = [
+        'terlambat : dinas',
+        'terlambat : pribadi',
+      ].includes(record.status_masuk?.toLowerCase());
+
       let violationType = '';
       let violationFine = 0;
 
-      if (menitTerlambat > 0) {
+      // Only count denda if late AND not Dinas/Pribadi
+      if (menitTerlambat > 0 && !isDinasPribadi) {
         cumulativeViolationCount++; // Increment cumulative counter
 
         if (menitTerlambat <= 0.5) {
@@ -69,6 +78,10 @@ const ExcelExportRekapAbsen = ({
             violationFine = 50000;
           }
         }
+      } else if (menitTerlambat > 0 && isDinasPribadi) {
+        // Mark as exempt for display purposes
+        violationType = 'Bebas Denda (Dinas/Pribadi)';
+        violationFine = 0;
       }
 
       const monthKey = record.tgl_absen ? record.tgl_absen.substring(0, 7) : '';
@@ -76,8 +89,9 @@ const ExcelExportRekapAbsen = ({
       violationsData.push({
         ...record,
         monthKey,
+        isDinasPribadi,
         cumulativeViolationCount:
-          menitTerlambat > 0 ? cumulativeViolationCount : 0,
+          menitTerlambat > 0 && !isDinasPribadi ? cumulativeViolationCount : 0,
         violationType,
         violationFine,
       });
@@ -139,7 +153,7 @@ const ExcelExportRekapAbsen = ({
       (employee: any, empIndex: number) => {
         const overtimeCalc = calculateOvertimeHours(employee.absensi);
         const timeMetrics = calculateTimeMetrics(employee.absensi);
-        const violationsData = calculateCumulativeViolations(employee.absensi); // CHANGED: Now cumulative
+        const violationsData = calculateCumulativeViolations(employee.absensi);
         const totalFine = calculateTotalFine(violationsData);
         const totalViolations = violationsData.filter(
           (v) => v.violationFine > 0,
@@ -162,7 +176,7 @@ const ExcelExportRekapAbsen = ({
       (a, b) => b.totalFine - a.totalFine,
     );
 
-    // Calculate total employees who were late (at least once)
+    // Calculate total employees who were late (at least once, denda only)
     const totalEmployeesLate = sortedEmployeeData.filter(
       (empData) => empData.totalViolations > 0,
     ).length;
@@ -179,7 +193,10 @@ const ExcelExportRekapAbsen = ({
     summaryData.push([]);
     summaryData.push(['STATISTIK UMUM']);
     summaryData.push(['Total Karyawan', allDataForExport.length]);
-    summaryData.push(['Total Karyawan yang Terlambat', totalEmployeesLate]);
+    summaryData.push([
+      'Total Karyawan yang Terlambat (kena denda)',
+      totalEmployeesLate,
+    ]);
     summaryData.push([]);
     summaryData.push([
       'No',
@@ -274,7 +291,7 @@ const ExcelExportRekapAbsen = ({
       sheetData.push([]);
 
       // Late Section
-      sheetData.push(['KETERLAMBATAN']);
+      sheetData.push(['KETERLAMBATAN (hanya yang kena denda)']);
       sheetData.push([
         'Total Jam Terlambat',
         `${timeMetrics.totalTerlambat} Jam`,
@@ -416,13 +433,13 @@ const ExcelExportRekapAbsen = ({
         'Status Lembur',
         'Status SPL',
         'Bulan',
-        'Pelanggaran Ke-', // CHANGED: Now cumulative
+        'Pelanggaran Ke-',
         'Jenis Pelanggaran',
         'Denda (Rp)',
         'Keterangan',
       ]);
 
-      // Detail Attendance Rows with cumulative violation count
+      // Detail Attendance Rows
       violationsData.forEach((record: any, index: number) => {
         const keterangan = [];
         if (record.status_masuk) keterangan.push(record.status_masuk);
@@ -461,11 +478,15 @@ const ExcelExportRekapAbsen = ({
                 month: 'long',
               })
             : '-',
+          // Show pelanggaran ke- only for records with actual denda
           record.cumulativeViolationCount > 0
             ? record.cumulativeViolationCount
-            : '-', // CHANGED
+            : '-',
           record.violationType || '-',
-          record.violationFine > 0
+          // Show Rp 0 / bebas denda label for Dinas/Pribadi, actual fine otherwise
+          record.isDinasPribadi && record.menit_terlambat > 0
+            ? 'Bebas Denda'
+            : record.violationFine > 0
             ? `Rp ${record.violationFine.toLocaleString('id-ID')}`
             : '-',
           keterangan.join(', ') || '-',
@@ -475,9 +496,9 @@ const ExcelExportRekapAbsen = ({
       // Add Total Denda section BELOW the detail table
       sheetData.push([]);
       sheetData.push(['TOTAL DENDA']);
-      sheetData.push(['Total Terlambat', totalViolations]);
+      sheetData.push(['Total Terlambat (kena denda)', totalViolations]);
       sheetData.push([
-        'Total Jam Terlambat',
+        'Total Jam Terlambat (kena denda)',
         `${timeMetrics.totalTerlambat} Jam`,
       ]);
       sheetData.push([
@@ -566,6 +587,7 @@ const ExcelExportRekapAbsen = ({
     )}_${convertTimeStampToDate(dateTo)}.xlsx`;
     saveAs(blob, fileName);
   };
+
   return (
     <button
       onClick={exportToExcel}
@@ -589,4 +611,5 @@ const ExcelExportRekapAbsen = ({
     </button>
   );
 };
+
 export default ExcelExportRekapAbsen;

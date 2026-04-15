@@ -86,7 +86,7 @@ function ProsesSamplingRabutHistory() {
             </div>
           </div>
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-            <div className="grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
+            <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 No. JO
               </label>
@@ -99,13 +99,16 @@ function ProsesSamplingRabutHistory() {
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Tanggal
               </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                Catatan
+              </label>
             </div>
             <div className="w-2 h-full "></div>
             {RabutMesin?.data.map((data: any, i: any) => {
               const tglTicket = convertTimeStampToDate(data.createdAt);
               return (
                 <>
-                  <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
+                  <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
                       className={`w-full h-full sticky left-0 z-20  gap-8 col-span-2 flex items-center`}
                     >
@@ -125,6 +128,9 @@ function ProsesSamplingRabutHistory() {
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {tglTicket}
+                    </label>
+                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                      {data.catatan}
                     </label>
                     <div className="justify-end flex pr-2 col-span-2">
                       <>

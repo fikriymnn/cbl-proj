@@ -7,7 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Histori from './Histori';
-import HistoriPm2 from './historiPm2';
+import HistoriPm2 from './HistoriPm2';
 import HistoriPm3 from './HistoriPm3';
 
 interface TabPanelProps {

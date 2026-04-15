@@ -191,11 +191,9 @@ function HistoriPm3() {
             const tgl = convertTimeStampToDate(data.tgl_approve_from);
             const inspectionPointsTotal = data.inspection_point_pm3s;
 
-
             const countTotal = inspectionPointsTotal.length;
 
             const inspectionPoints = data.point_pm3;
-
 
             const count = inspectionPoints.length;
             return (
@@ -205,16 +203,17 @@ function HistoriPm3() {
                   className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                 >
                   <div
-                    className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
-                      ? 'bg-green-600'
-                      : data.mesin.bagian_mesin == 'water base'
+                    className={`w-2 h-full sticky left-0 z-20 ${
+                      data.mesin.bagian_mesin == 'printing'
+                        ? 'bg-green-600'
+                        : data.mesin.bagian_mesin == 'water base'
                         ? 'bg-yellow-600'
                         : data.mesin.bagian_mesin == 'pond'
-                          ? 'bg-violet-900'
-                          : data.mesin.bagian_mesin == 'finishing'
-                            ? 'bg-red-900'
-                            : ''
-                      }`}
+                        ? 'bg-violet-900'
+                        : data.mesin.bagian_mesin == 'finishing'
+                        ? 'bg-red-900'
+                        : ''
+                    }`}
                   ></div>
 
                   <div className=" w-full h-full flex flex-col justify-center relative">
@@ -232,13 +231,15 @@ function HistoriPm3() {
                         </p>
                       </div>
                       <div className=" flex-col justify-center  items-center ">
-                        <p className="">{count} / {countTotal}</p>
+                        <p className="">
+                          {count} / {countTotal}
+                        </p>
                       </div>
                       <div className="flex justify-center">
                         <>
                           {data.waktu_selesai != null ? (
                             <Link
-                              to={`/maintenance/inspection/pm_3_form/${data.id}`}
+                              to={`/maintenance/preventive/pm3/form/${data.id}`}
                               className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                             >
                               DETAIL
