@@ -217,15 +217,15 @@ function EditMasterKaryawanIsi() {
   }
 
   async function getMasterMesin() {
-    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-mesin`;
+    const url = `${import.meta.env.VITE_API_LINK}/master/mesinTahapan`;
     try {
       const res = await axios.get(url, {});
       setMesinMaster(res.data.data);
       console.log('mesin list', res.data.data);
       setOptions(
         res.data.data.map((item: any) => ({
-          value: item.mesin,
-          label: item.mesin,
+          value: item.nama_mesin,
+          label: item.nama_mesin,
         })),
       );
       console.log(res.data);

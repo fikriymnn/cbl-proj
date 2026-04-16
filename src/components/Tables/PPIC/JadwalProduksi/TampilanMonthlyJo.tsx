@@ -7,6 +7,7 @@ import formatInteger from '../../../../utils/formaterInteger';
 import JobOrderTable from './JobOrderTable';
 
 import * as XLSX from 'xlsx';
+
 interface JobOrder {
   id: number;
   no_jo: string;
@@ -53,26 +54,6 @@ const bookingTextColors = [
   'text-amber-700',
 ];
 
-const machineList = [
-  'R700',
-  'SM',
-  'GTO',
-  'HOCK',
-  'WB MANUAL',
-  'BAODER',
-  'KSB',
-  'M1',
-  'M2',
-  'M3',
-  'JK650',
-  'JK1000',
-  'POLAR',
-  'ITOH',
-  'LIPAT 1',
-  'LIPAT 2',
-  'OUTSORCE',
-];
-
 // Memoized utility functions
 const createBetterHash = (str: string): number => {
   let hash = 0;
@@ -88,14 +69,6 @@ const createBetterHash = (str: string): number => {
   hash = hash * 0xc2b2ae35;
   hash = hash ^ (hash >>> 16);
   return hash;
-};
-
-const normalizeMesin = (mesin: string): string => {
-  const lowerMesin = mesin.toLowerCase().replace(/\s|-/g, '');
-  if (lowerMesin.includes('manual1') || lowerMesin === 'manual') return 'M1';
-  if (lowerMesin.includes('manual2')) return 'M2';
-  if (lowerMesin.includes('manual3')) return 'M3';
-  return lowerMesin.toUpperCase();
 };
 
 // Memoized JobOrderCard component
@@ -169,7 +142,6 @@ const MachineColumn = React.memo(
 );
 
 function TampilanMonthlyJO() {
-  // Loading state management
   const [loadingState, setLoadingState] = useState<LoadingState>({
     main: true,
     schedule: false,
@@ -185,19 +157,19 @@ function TampilanMonthlyJO() {
   const [mapData, setMapData] = useState<any[]>([]);
   const [lemburViewData, setLemburViewData] = useState<any[]>([]);
   const [listJO1, setJo1] = useState<any>();
+  const [machineList, setMachineList] = useState<string[]>([]);
 
   // UI states
   const [selectedMonth, setSelectedMonth] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().slice(0, 7);
   });
-
   const [selectedJO, setSelectedJO] = useState<any>(null);
   const [selectedIndex, setSelectedIndex] = useState<any>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailVisible, setIsDetailVisible] = useState(false);
   const [activeView, setActiveView] = useState('default');
-  const [clickedJobOrder, setClickedJobOrder] = useState<any>(null); // Changed from hoveredJobOrder
+  const [clickedJobOrder, setClickedJobOrder] = useState<any>(null);
 
   // Search states
   const [searchJO, setSearchJO] = useState<string>('');
@@ -248,58 +220,41 @@ function TampilanMonthlyJO() {
     const usedBookingColors = new Set<string>();
 
     const getJobOrderColor = (jobOrderNumber: string): string => {
-      if (jobMap.has(jobOrderNumber)) {
-        return jobMap.get(jobOrderNumber)!;
-      }
-
+      if (jobMap.has(jobOrderNumber)) return jobMap.get(jobOrderNumber)!;
       let assignedColor: string;
       if (usedJobColors.size < jobOrderColors.length) {
         const hash = createBetterHash(jobOrderNumber);
         const colorIndex = Math.abs(hash) % jobOrderColors.length;
         const potentialColor = jobOrderColors[colorIndex];
-
-        if (!usedJobColors.has(potentialColor)) {
-          assignedColor = potentialColor;
-        } else {
-          assignedColor =
-            jobOrderColors.find((color) => !usedJobColors.has(color)) ||
+        assignedColor = !usedJobColors.has(potentialColor)
+          ? potentialColor
+          : jobOrderColors.find((color) => !usedJobColors.has(color)) ||
             jobOrderColors[0];
-        }
       } else {
         const hash = createBetterHash(jobOrderNumber);
-        const colorIndex = Math.abs(hash) % jobOrderColors.length;
-        assignedColor = jobOrderColors[colorIndex];
+        assignedColor = jobOrderColors[Math.abs(hash) % jobOrderColors.length];
       }
-
       jobMap.set(jobOrderNumber, assignedColor);
       usedJobColors.add(assignedColor);
       return assignedColor;
     };
 
     const getBookingTextColor = (bookingNumber: string): string => {
-      if (bookingMap.has(bookingNumber)) {
-        return bookingMap.get(bookingNumber)!;
-      }
-
+      if (bookingMap.has(bookingNumber)) return bookingMap.get(bookingNumber)!;
       let assignedColor: string;
       if (usedBookingColors.size < bookingTextColors.length) {
         const hash = createBetterHash(bookingNumber);
         const colorIndex = Math.abs(hash) % bookingTextColors.length;
         const potentialColor = bookingTextColors[colorIndex];
-
-        if (!usedBookingColors.has(potentialColor)) {
-          assignedColor = potentialColor;
-        } else {
-          assignedColor =
-            bookingTextColors.find((color) => !usedBookingColors.has(color)) ||
+        assignedColor = !usedBookingColors.has(potentialColor)
+          ? potentialColor
+          : bookingTextColors.find((color) => !usedBookingColors.has(color)) ||
             bookingTextColors[0];
-        }
       } else {
         const hash = createBetterHash(bookingNumber);
-        const colorIndex = Math.abs(hash) % bookingTextColors.length;
-        assignedColor = bookingTextColors[colorIndex];
+        assignedColor =
+          bookingTextColors[Math.abs(hash) % bookingTextColors.length];
       }
-
       bookingMap.set(bookingNumber, assignedColor);
       usedBookingColors.add(assignedColor);
       return assignedColor;
@@ -308,21 +263,19 @@ function TampilanMonthlyJO() {
     return { getJobOrderColor, getBookingTextColor };
   }, [mapData]);
 
-  // Memoized machine heights to prevent recalculation
+  // Memoized machine heights — depends on machineList from API
   const machineHeights = useMemo(() => {
     const heights = new Map<string, number>();
-
     machineList.forEach((machine) => {
       const maxHeight = Math.max(
         ...monthDates.map((date) => {
-          const normalizedMachine = normalizeMesin(machine);
           const matchingData = mapData.filter((d: any) => {
             const dateTanggal = new Date(d.tanggal);
             return (
               dateTanggal.getFullYear() === date.getFullYear() &&
               dateTanggal.getMonth() === date.getMonth() &&
               dateTanggal.getDate() === date.getDate() &&
-              normalizeMesin(d.mesin) === normalizedMachine
+              d.mesin === machine
             );
           });
           return Math.max(60, 40 + matchingData.length * 32 + 8);
@@ -331,34 +284,22 @@ function TampilanMonthlyJO() {
       );
       heights.set(machine, maxHeight);
     });
-
     return heights;
-  }, [mapData, monthDates]);
+  }, [mapData, monthDates, machineList]);
 
   // Memoized grouped data by machine and date
   const groupedData = useMemo(() => {
     const grouped = new Map<string, Map<string, any[]>>();
-
     mapData.forEach((item) => {
-      const normalizedMachine = normalizeMesin(item.mesin);
       const dateKey = new Date(item.tanggal).toDateString();
-
-      if (!grouped.has(normalizedMachine)) {
-        grouped.set(normalizedMachine, new Map());
-      }
-
-      const machineData = grouped.get(normalizedMachine)!;
-      if (!machineData.has(dateKey)) {
-        machineData.set(dateKey, []);
-      }
-
+      if (!grouped.has(item.mesin)) grouped.set(item.mesin, new Map());
+      const machineData = grouped.get(item.mesin)!;
+      if (!machineData.has(dateKey)) machineData.set(dateKey, []);
       machineData.get(dateKey)!.push(item);
     });
-
     return grouped;
   }, [mapData]);
 
-  // Memoized format custom date function
   const formatCustomDate = useCallback((dateString: string) => {
     const months = [
       'Januari',
@@ -374,18 +315,30 @@ function TampilanMonthlyJO() {
       'November',
       'Desember',
     ];
-
     const [datePart, timePart] = dateString.split(' ');
     const [year, month, day] = datePart.split('-');
-
     return `${parseInt(day)} / ${
       months[parseInt(month) - 1]
     } / ${year} - ${timePart.replace(/\./g, ':')}`;
   }, []);
 
-  // API functions with proper loading states
   const setLoading = useCallback((key: keyof LoadingState, value: boolean) => {
     setLoadingState((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const getMachineList = useCallback(async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/mesinTahapan`,
+        { withCredentials: true },
+      );
+      const machines: string[] = res.data.data.map((m: any) => m.nama_mesin);
+      setMachineList(machines);
+      // Expand showEdit array to match machine count
+      setShowEdit(new Array(machines.length).fill(false));
+    } catch (error) {
+      console.error('Error fetching machine list:', error);
+    }
   }, []);
 
   const get1Tiket = useCallback(
@@ -418,7 +371,6 @@ function TampilanMonthlyJO() {
           params: { start_date: tglAwal, end_date: tglAkhir },
           withCredentials: true,
         });
-        console.log('Schedule data fetched successfully:', response.data.data);
         setMapData(response.data.data || []);
       } catch (error) {
         console.error('Error fetching schedule data:', error);
@@ -466,9 +418,7 @@ function TampilanMonthlyJO() {
         if (startDate) params.start_date = startDate;
         if (endDate) params.end_date = endDate;
         if (searchTerm) params.search = searchTerm;
-
         const res = await axios.get(url, { params, withCredentials: true });
-
         if (statusTiket === 'history') {
           setHistoryListJO(res.data || { data: [] });
         } else if (statusTiket === 'penjadwalan') {
@@ -476,11 +426,9 @@ function TampilanMonthlyJO() {
         }
       } catch (error) {
         console.error('Error fetching master kategori:', error);
-        if (statusTiket === 'history') {
-          setHistoryListJO({ data: [] });
-        } else if (statusTiket === 'penjadwalan') {
+        if (statusTiket === 'history') setHistoryListJO({ data: [] });
+        else if (statusTiket === 'penjadwalan')
           setPenjadwalanListJO({ data: [] });
-        }
       } finally {
         setLoading('main', false);
       }
@@ -497,7 +445,7 @@ function TampilanMonthlyJO() {
         setLoading('main', true);
         await axios.post(
           url,
-          { data_lembur: lembur_data, mesin: mesin },
+          { data_lembur: lembur_data, mesin },
           { withCredentials: true },
         );
         alert('Berhasil menambah data lembur!');
@@ -512,7 +460,6 @@ function TampilanMonthlyJO() {
     [setLoading, getJadwalLembur, dateRangeForMonth],
   );
 
-  // Event handlers
   const handleMonthChange = useCallback(
     (direction: 'next' | 'prev') => {
       const currentDate = new Date(selectedMonth + '-01');
@@ -538,10 +485,7 @@ function TampilanMonthlyJO() {
       updatedShowEdit[index] = true;
       setShowEdit(updatedShowEdit);
 
-      const matchingEntries = mapData.filter(
-        (d: any) => normalizeMesin(d.mesin) === normalizeMesin(machine),
-      );
-
+      const matchingEntries = mapData.filter((d: any) => d.mesin === machine);
       if (matchingEntries.length > 0) {
         setSelectedMachine(matchingEntries[0].mesin);
       } else {
@@ -569,17 +513,14 @@ function TampilanMonthlyJO() {
       const end = new Date(endDate);
       const dateList = [];
       let currentDate = new Date(start);
-
       while (currentDate <= end) {
-        const formattedDate = currentDate.toISOString().split('T')[0];
         dateList.push({
-          tanggal_lembur: formattedDate,
+          tanggal_lembur: currentDate.toISOString().split('T')[0],
           shift_1: false,
           shift_2: false,
         });
         currentDate.setDate(currentDate.getDate() + 1);
       }
-
       return dateList;
     },
     [],
@@ -589,13 +530,10 @@ function TampilanMonthlyJO() {
     (field: 'startDate' | 'endDate', value: string) => {
       const newDateRange = { ...dateRange, [field]: value };
       setDateRange(newDateRange);
-
       if (newDateRange.startDate && newDateRange.endDate) {
-        const newLemburData = generateDateRange(
-          newDateRange.startDate,
-          newDateRange.endDate,
+        setLemburData(
+          generateDateRange(newDateRange.startDate, newDateRange.endDate),
         );
-        setLemburData(newLemburData);
       }
     },
     [dateRange, generateDateRange],
@@ -616,11 +554,9 @@ function TampilanMonthlyJO() {
       setSearchResults([]);
       return;
     }
-
     const results = mapData.filter((item: any) =>
       item.no_jo.toLowerCase().includes(searchJO.toLowerCase()),
     );
-
     if (results.length > 0) {
       setHighlightedJO(searchJO.toLowerCase());
       setSearchResults(results);
@@ -643,22 +579,20 @@ function TampilanMonthlyJO() {
     setSearchResults([]);
   }, []);
 
-  // Handler for job order click
   const handleJobOrderClick = useCallback((data: any) => {
     setClickedJobOrder(data);
   }, []);
 
-  // Handler to close job order details
   const closeJobOrderDetails = useCallback(() => {
     setClickedJobOrder(null);
   }, []);
 
-  // Effects
   useEffect(() => {
     const initializeData = async () => {
       setLoading('main', true);
       try {
         await Promise.all([
+          getMachineList(),
           getmasterKategori('history'),
           getmasterKategori('penjadwalan'),
           getJadwalView(dateRangeForMonth.start, dateRangeForMonth.end),
@@ -670,7 +604,6 @@ function TampilanMonthlyJO() {
         setLoading('main', false);
       }
     };
-
     initializeData();
   }, [
     selectedMonth,
@@ -682,14 +615,9 @@ function TampilanMonthlyJO() {
   ]);
 
   useEffect(() => {
-    const initialLemburData = generateDateRange(
-      dateRange.startDate,
-      dateRange.endDate,
-    );
-    setLemburData(initialLemburData);
+    setLemburData(generateDateRange(dateRange.startDate, dateRange.endDate));
   }, [dateRange.startDate, dateRange.endDate, generateDateRange]);
 
-  // Check if all critical data is loaded
   const isDataLoaded = useMemo(() => {
     return (
       !loadingState.main && !loadingState.schedule && !loadingState.overtime
@@ -700,7 +628,6 @@ function TampilanMonthlyJO() {
     return Object.values(loadingState).some((loading) => loading);
   }, [loadingState]);
 
-  // Render loading state
   if (!isDataLoaded) {
     return (
       <main className="overflow-x-scroll">
@@ -720,11 +647,10 @@ function TampilanMonthlyJO() {
       </main>
     );
   }
+
   const exportToExcel = (data: any, filename = 'production_schedule') => {
-    // Group data by no_jo/no_booking first, then by tahapan, then by date
     const groupedData = data.reduce((acc: any, item: any) => {
       const jobNumber = item.no_jo || item.no_booking || 'No Job Number';
-
       if (!acc[jobNumber]) {
         acc[jobNumber] = {
           no_jo: item.no_jo,
@@ -733,8 +659,6 @@ function TampilanMonthlyJO() {
           tahapan_list: {},
         };
       }
-
-      // Group by tahapan within each job
       if (!acc[jobNumber].tahapan_list[item.tahapan]) {
         acc[jobNumber].tahapan_list[item.tahapan] = {
           tahapan: item.tahapan,
@@ -744,17 +668,13 @@ function TampilanMonthlyJO() {
           dates: {},
         };
       }
-
       const date = new Date(item.tanggal).toLocaleDateString('id-ID');
-
       if (!acc[jobNumber].tahapan_list[item.tahapan].dates[date]) {
         acc[jobNumber].tahapan_list[item.tahapan].dates[date] = {
           tanggal: date,
           machines: [],
         };
       }
-
-      // Add machine info for this date and tahapan
       acc[jobNumber].tahapan_list[item.tahapan].dates[date].machines.push({
         mesin: item.mesin,
         qty_pcs: item.qty_pcs,
@@ -765,15 +685,11 @@ function TampilanMonthlyJO() {
         drying_time: item.drying_time,
         setting: item.setting,
       });
-
       return acc;
     }, {});
 
-    // Convert grouped data to Excel format
     const excelData: any = [];
-
     Object.entries(groupedData).forEach(([jobNumber, jobInfo]: [any, any]) => {
-      // Add job header row
       excelData.push({
         'No JO': jobInfo.no_jo || '',
         'No Booking': jobInfo.no_booking || '',
@@ -792,17 +708,12 @@ function TampilanMonthlyJO() {
         'Drying Time': '',
         Setting: '',
       });
-
-      // Sort tahapan by tahapan_ke (stage order)
       const sortedTahapan = Object.entries(jobInfo.tahapan_list).sort(
         ([, a], [, b]) => {
           return ((a as any).tahapan_ke || 0) - ((b as any).tahapan_ke || 0);
         },
       );
-
-      // Add rows for each tahapan
       sortedTahapan.forEach(([tahapanName, tahapanInfo]: [any, any]) => {
-        // Add tahapan header
         excelData.push({
           'No JO': '',
           'No Booking': '',
@@ -821,8 +732,6 @@ function TampilanMonthlyJO() {
           'Drying Time': '',
           Setting: '',
         });
-
-        // Sort dates chronologically for this tahapan
         const sortedDates = Object.keys(tahapanInfo.dates).sort(
           (a: any, b: any) => {
             return (
@@ -831,36 +740,31 @@ function TampilanMonthlyJO() {
             );
           },
         );
-
-        // Add rows for each date within this tahapan
         sortedDates.forEach((date) => {
-          const dateInfo = tahapanInfo.dates[date];
-
-          // Add all machines for this date
-          dateInfo.machines.forEach((machine: any, index: any) => {
-            excelData.push({
-              'No JO': '',
-              'No Booking': '',
-              Item: '',
-              Kategori: '',
-              'Nama Kategori': '',
-              Tahapan: '',
-              'Tahapan Ke': '',
-              Tanggal: index === 0 ? date : '', // Only show date on first machine
-              Mesin: machine.mesin,
-              'Qty Pieces': machine.qty_pcs,
-              'Qty Druk': machine.qty_druk,
-              Jam: machine.jam,
-              'Total Waktu ': machine.total_waktu,
-              'Kapasitas/Jam': machine.kapasitas_per_jam,
-              'Drying Time': machine.drying_time,
-              Setting: machine.setting,
-            });
-          });
+          tahapanInfo.dates[date].machines.forEach(
+            (machine: any, index: any) => {
+              excelData.push({
+                'No JO': '',
+                'No Booking': '',
+                Item: '',
+                Kategori: '',
+                'Nama Kategori': '',
+                Tahapan: '',
+                'Tahapan Ke': '',
+                Tanggal: index === 0 ? date : '',
+                Mesin: machine.mesin,
+                'Qty Pieces': machine.qty_pcs,
+                'Qty Druk': machine.qty_druk,
+                Jam: machine.jam,
+                'Total Waktu ': machine.total_waktu,
+                'Kapasitas/Jam': machine.kapasitas_per_jam,
+                'Drying Time': machine.drying_time,
+                Setting: machine.setting,
+              });
+            },
+          );
         });
       });
-
-      // Add separator row between jobs
       excelData.push({
         'No JO': '',
         'No Booking': '',
@@ -881,50 +785,35 @@ function TampilanMonthlyJO() {
       });
     });
 
-    // Create workbook and worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-    // Auto-size columns
-    const colWidths = [
-      { wch: 15 }, // No JO
-      { wch: 15 }, // No Booking
-      { wch: 40 }, // Item
-      { wch: 10 }, // Kategori
-      { wch: 15 }, // Nama Kategori
-      { wch: 15 }, // Tahapan
-      { wch: 10 }, // Tahapan Ke
-      { wch: 12 }, // Tanggal
-      { wch: 10 }, // Mesin
-      { wch: 12 }, // Qty Pieces
-      { wch: 12 }, // Qty Druk
-      { wch: 10 }, // Jam
-      { wch: 15 }, // Total Waktu
-      { wch: 15 }, // Kapasitas/Jam
-      { wch: 12 }, // Drying Time
-      { wch: 10 }, // Setting
+    worksheet['!cols'] = [
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 40 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 12 },
+      { wch: 10 },
+      { wch: 12 },
+      { wch: 12 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 12 },
+      { wch: 10 },
     ];
-    worksheet['!cols'] = colWidths;
-
-    // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Production Schedule');
 
-    // Generate file and download
-    // Get date range from the data
     const allDates = data
       .map((item: any) => new Date(item.tanggal))
       .filter((date: any) => !isNaN(date));
     const minDate = new Date(Math.min(...allDates));
     const maxDate = new Date(Math.max(...allDates));
-
-    // Format dates for filename
-    const formatDate = (date: any) => {
-      return date.toLocaleDateString('id-ID', {
-        year: 'numeric',
-        month: '2-digit',
-      });
-    };
-
+    const formatDate = (date: any) =>
+      date.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit' });
     const exportDate = new Date()
       .toLocaleDateString('id-ID', {
         year: 'numeric',
@@ -932,27 +821,19 @@ function TampilanMonthlyJO() {
         day: '2-digit',
       })
       .replace(/\//g, '-');
-
-    // Create filename with data period and export date
-    let dataRange;
-    if (
+    const dataRange =
       minDate.getMonth() === maxDate.getMonth() &&
       minDate.getFullYear() === maxDate.getFullYear()
-    ) {
-      // Same month
-      dataRange = formatDate(minDate).replace('/', '-');
-    } else {
-      // Different months
-      dataRange = `${formatDate(minDate).replace('/', '-')}_to_${formatDate(
-        maxDate,
-      ).replace('/', '-')}`;
-    }
-
-    const fileName = `${filename}_${dataRange}_exported_${exportDate}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
+        ? formatDate(minDate).replace('/', '-')
+        : `${formatDate(minDate).replace('/', '-')}_to_${formatDate(
+            maxDate,
+          ).replace('/', '-')}`;
+    XLSX.writeFile(
+      workbook,
+      `${filename}_${dataRange}_exported_${exportDate}.xlsx`,
+    );
   };
 
-  // Usage in your component:
   const handleExportExcel = () => {
     if (mapData && mapData.length > 0) {
       exportToExcel(mapData, 'jadwal_produksi');
@@ -974,14 +855,12 @@ function TampilanMonthlyJO() {
               >
                 Prev
               </button>
-
               <input
                 type="month"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
                 className="rounded-md bg-[#D8EAFF] px-2 h-8"
               />
-
               <button
                 onClick={() => handleMonthChange('next')}
                 className="bg-primary text-white rounded-md py-1 px-2"
@@ -1009,7 +888,6 @@ function TampilanMonthlyJO() {
                 >
                   Search
                 </button>
-
                 <button
                   onClick={clearSearch}
                   className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
@@ -1042,12 +920,14 @@ function TampilanMonthlyJO() {
                 </button>
               </div>
             </div>
+
             <button
               onClick={handleExportExcel}
               className="bg-green-600 text-white py-1 px-4 mb-2 rounded hover:bg-green-700 font-medium"
             >
               Export to Excel
             </button>
+
             {/* Schedule Grid */}
             <div className="overflow-x-auto">
               <div className="flex">
@@ -1084,10 +964,8 @@ function TampilanMonthlyJO() {
                         </div>
 
                         {machineList.map((machine, machineIndex) => {
-                          const normalizedMachine = normalizeMesin(machine);
                           const dateKey = date.toDateString();
-                          const machineData =
-                            groupedData.get(normalizedMachine);
+                          const machineData = groupedData.get(machine);
                           const matchingData = machineData?.get(dateKey) || [];
                           const height = machineHeights.get(machine) || 60;
 
@@ -1101,9 +979,7 @@ function TampilanMonthlyJO() {
                                     : 'bg-white'
                                 }`}
                                 style={{
-                                  height: `${
-                                    machineHeights.get(machine) || 60
-                                  }px`,
+                                  height: `${height}px`,
                                   minHeight: '60px',
                                 }}
                               >
@@ -1126,7 +1002,6 @@ function TampilanMonthlyJO() {
                                           data.no_jo
                                             .toLowerCase()
                                             .includes(highlightedJO);
-
                                         return (
                                           <JobOrderCard
                                             key={index}
@@ -1147,29 +1022,24 @@ function TampilanMonthlyJO() {
                             );
                           } else {
                             // LEMBUR view
-                            const normalizedMachine = normalizeMesin(machine);
                             const lemburForDateAndMachine =
                               lemburViewData.filter((l: any) => {
                                 const lemburDateParts = l.tanggal_lembur
                                   .split('T')[0]
                                   .split('-');
-                                const currentYear = date.getFullYear();
-                                const currentMonth = date.getMonth() + 1;
-                                const currentDay = date.getDate();
-
                                 return (
                                   parseInt(lemburDateParts[0]) ===
-                                    currentYear &&
+                                    date.getFullYear() &&
                                   parseInt(lemburDateParts[1]) ===
-                                    currentMonth &&
-                                  parseInt(lemburDateParts[2]) === currentDay &&
-                                  normalizeMesin(l.mesin) === normalizedMachine
+                                    date.getMonth() + 1 &&
+                                  parseInt(lemburDateParts[2]) ===
+                                    date.getDate() &&
+                                  l.mesin === machine
                                 );
                               });
 
                             let bgColorClass = '';
                             let shiftText = '';
-
                             if (lemburForDateAndMachine.length > 0) {
                               const shift1Active = lemburForDateAndMachine.some(
                                 (l) => l.shift_1,
@@ -1177,7 +1047,6 @@ function TampilanMonthlyJO() {
                               const shift2Active = lemburForDateAndMachine.some(
                                 (l) => l.shift_2,
                               );
-
                               if (shift1Active && shift2Active) {
                                 bgColorClass = 'bg-green-500';
                                 shiftText = 'Shift 1 & 2';
@@ -1198,11 +1067,7 @@ function TampilanMonthlyJO() {
                                     ? 'bg-[#F0F7FF]'
                                     : 'bg-white'
                                 }`}
-                                style={{
-                                  height: `${
-                                    machineHeights.get(machine) || 60
-                                  }px`,
-                                }}
+                                style={{ height: `${height}px` }}
                               >
                                 {lemburForDateAndMachine.length > 0 && (
                                   <div
@@ -1224,7 +1089,7 @@ function TampilanMonthlyJO() {
             </div>
           </div>
 
-          {/* Job Order Details Card - Changed from hover to click */}
+          {/* Job Order Details Card */}
           {clickedJobOrder && (
             <div className="fixed bottom-4 right-4 bg-white shadow-lg p-4 rounded-md border-2 border-black z-50 max-w-sm">
               <div className="flex justify-between items-center mb-2">
@@ -1370,7 +1235,6 @@ function TampilanMonthlyJO() {
             </div>
           )}
 
-          {/* Render JobOrderTable with both lists */}
           {isDetailVisible && (
             <JobOrderTable
               historyListJO={historyListJO}
@@ -1542,7 +1406,7 @@ function TampilanMonthlyJO() {
                     </div>
                   ))}
                 </div>
-                <div className="">
+                <div>
                   <button
                     title="button"
                     onClick={() => handleClickDetail(selectedIndex)}

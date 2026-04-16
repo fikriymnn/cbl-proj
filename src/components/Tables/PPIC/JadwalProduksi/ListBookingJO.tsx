@@ -193,7 +193,7 @@ function ListBookingJo() {
 
   const [mesinList, setmesinList] = useState<any>([]);
   async function getMasterMesin() {
-    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-mesin`;
+    const url = `${import.meta.env.VITE_API_LINK}/master/mesinTahapan`;
     try {
       setIsActionLoading(true);
       const res = await axios.get(url, {});

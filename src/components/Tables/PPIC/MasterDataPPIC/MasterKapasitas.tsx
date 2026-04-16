@@ -36,7 +36,7 @@ function MasterKapasitas() {
   }
 
   async function getMasterMesin() {
-    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-mesin`;
+    const url = `${import.meta.env.VITE_API_LINK}/master/mesinTahapan`;
     try {
       const res = await axios.get(url, {});
       setMesinMaster(res.data.data || []);
