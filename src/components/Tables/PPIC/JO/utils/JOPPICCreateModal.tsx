@@ -806,8 +806,12 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    // Validation differs for IO proof mode
-    if (isIOProofMode) {
+    // In edit mode, a JO originally created from IO won't have id_so — that's valid.
+    // Determine if this JO is IO-based: either actively in IO proof mode, or editing a JO that has no SO.
+    const isIOBased =
+      isIOProofMode || (editMode && !formData.id_so && !!formData.id_io);
+
+    if (isIOBased) {
       if (!formData.id_io) {
         alert('Pilih IO terlebih dahulu');
         return;
