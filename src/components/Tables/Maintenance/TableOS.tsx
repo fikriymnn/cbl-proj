@@ -1511,6 +1511,7 @@ function TableOS() {
                                               catatan={proses.note_mtc}
                                               unit={proses.unit}
                                               bagian={proses.bagian_mesin}
+                                              file={proses.file}
                                             ></ModalDetail>
                                           )}
                                         </>
@@ -2135,6 +2136,7 @@ function TableOS() {
                                           catatan={proses.note_mtc}
                                           unit={proses.unit}
                                           bagian={proses.bagian_mesin}
+                                          file={proses.file}
                                         ></ModalDetail>
                                       )}
                                     </div>

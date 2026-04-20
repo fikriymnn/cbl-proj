@@ -1,7 +1,4 @@
-// import React, { useState } from 'react';
-
-import { useEffect, useRef, useState } from 'react';
-import CheckStockPengganti from '../Tables/Modals/SparepartPengganti';
+import { useEffect, useState } from 'react';
 
 const ModalDetail = ({
   children,
@@ -21,6 +18,7 @@ const ModalDetail = ({
   catatan,
   unit,
   bagian,
+  file, // <-- new prop: filename string returned from /images endpoint
 }: {
   children: any;
   isOpen: any;
@@ -39,49 +37,77 @@ const ModalDetail = ({
   catatan: any;
   unit: any;
   bagian: any;
+  file?: string | null;
 }) => {
   if (!isOpen) return null;
 
-  const [sparepart, setSparepart] = useState([
-    {
-      rusak: '',
-      pengganti: '',
-    },
-  ]);
-  const [selectedOption, setSelectedOption] = useState<string>('');
-  const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-
-  const changeTextColor = () => {
-    setIsOptionSelected(true);
-  };
-  const [isHidden, setIsHidden] = useState(true);
-  const [buttonHidden, setButtonHidden] = useState(true);
-  const handleClick = () => {
-    setIsHidden(false);
-    setButtonHidden(false);
-    setSparepart([]);
-  };
   const [isMobile, setIsMobile] = useState(false);
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
-  };
+  const [imgError, setImgError] = useState(false);
+
+  const handleResize = () => setIsMobile(window.innerWidth < 768);
+
   useEffect(() => {
     handleResize();
-
-    // Event listener for window resize
     window.addEventListener('resize', handleResize);
-
-    // Cleanup on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const [rusak, setRusak] = useState(false);
+  // Reset image error state when file changes
+  useEffect(() => {
+    setImgError(false);
+  }, [file]);
+
+  // Build the full image URL from the filename
+  const imageUrl = file
+    ? `${import.meta.env.VITE_API_LINK}/images/${file}`
+    : null;
+
+  // ─── Photo Display Component ───
+  const PhotoDisplay = () => {
+    if (!imageUrl || imgError) {
+      return (
+        <div className="w-full h-36 rounded-lg border border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center gap-2">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#F3F4F6" />
+            <path
+              d="M8 22l6-6 4 4 3-3 5 5"
+              stroke="#9CA3AF"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <circle cx="12" cy="13" r="2" stroke="#9CA3AF" strokeWidth="1.5" />
+            <rect
+              x="6"
+              y="8"
+              width="20"
+              height="16"
+              rx="2"
+              stroke="#9CA3AF"
+              strokeWidth="1.5"
+            />
+          </svg>
+          <p className="text-xs text-gray-400">Tidak ada foto</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+        <img
+          src={imageUrl}
+          alt="Foto maintenance"
+          className="w-full h-48 object-contain"
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
+        {/* Header */}
         <div className="flex w-full items-center pt-4 px-3">
           <svg
             className="flex w-12"
@@ -94,13 +120,12 @@ const ModalDetail = ({
             <path
               d="M4.55799 4.51474L8.56073 8.46883M4.55799 4.51474H1.8895L1 1.87869L1.8895 1L4.55799 1.87869V4.51474ZM16.3518 1.65111L14.0146 3.95997C13.6623 4.30794 13.4861 4.48192 13.4202 4.68255C13.3621 4.85904 13.3621 5.04913 13.4202 5.22562C13.4861 5.42625 13.6623 5.60023 14.0146 5.94821L14.2256 6.15668C14.5778 6.50466 14.754 6.67864 14.9571 6.74383C15.1357 6.80117 15.3282 6.80117 15.5068 6.74383C15.7099 6.67864 15.8861 6.50466 16.2383 6.15668L18.4246 3.99695C18.6601 4.56297 18.7899 5.18289 18.7899 5.83277C18.7899 8.50187 16.5996 10.6655 13.8977 10.6655C13.572 10.6655 13.2536 10.6341 12.9458 10.5741C12.5133 10.4899 12.2971 10.4477 12.166 10.4606C12.0267 10.4743 11.958 10.495 11.8345 10.5603C11.7184 10.6217 11.6019 10.7367 11.3689 10.9669L5.00274 17.2557C4.26585 17.9836 3.07113 17.9836 2.33425 17.2557C1.59736 16.5278 1.59736 15.3475 2.33425 14.6196L8.70038 8.33088C8.93343 8.10066 9.04986 7.9856 9.11204 7.87088C9.17813 7.7489 9.19903 7.68106 9.21291 7.54341C9.22598 7.41392 9.18329 7.20034 9.09807 6.77318C9.03732 6.46899 9.00548 6.15456 9.00548 5.83277C9.00548 3.1637 11.1958 1 13.8977 1C14.7921 1 15.6305 1.23709 16.3518 1.65111ZM9.89506 12.4228L14.7872 17.2556C15.5241 17.9835 16.7188 17.9835 17.4557 17.2556C18.1926 16.5277 18.1926 15.3474 17.4557 14.6195L13.431 10.6438C13.1461 10.6172 12.8683 10.5664 12.5998 10.4936C12.2537 10.3997 11.874 10.4679 11.6203 10.7185L9.89506 12.4228Z"
               stroke="#0065DE"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
-
-          <label className="flex w-11/12 text-blue-700 text-sm font-bold ">
+          <label className="flex w-11/12 text-blue-700 text-sm font-bold">
             Detail
           </label>
           <button
@@ -139,15 +164,15 @@ const ModalDetail = ({
         </div>
 
         <div className="px-4 pb-4">
-          <div className=" flex w-full pt-4 gap-5">
-            <div className=" w-6/12">
+          {/* Machine & Kendala Info */}
+          <div className="flex w-full pt-4 gap-5">
+            <div className="w-6/12">
               <label
                 htmlFor="namamesin"
-                className="form-label block  text-black text-xs font-extrabold"
+                className="form-label block text-black text-xs font-extrabold"
               >
                 NAMA MESIN
               </label>
-
               <span
                 id="namamesin"
                 className="text-neutral-500 text-xl font-normal"
@@ -157,24 +182,22 @@ const ModalDetail = ({
               <div className="pt-2">
                 <label
                   htmlFor="kendala"
-                  className="form-label block  text-black text-xs font-extrabold"
+                  className="form-label block text-black text-xs font-extrabold"
                 >
                   KENDALA
                 </label>
               </div>
-              <div>
-                <span
-                  id="kendala"
-                  className="text-neutral-500 text-xl font-normal"
-                >
-                  {kodeLkh} - {kendala}
-                </span>
-              </div>
+              <span
+                id="kendala"
+                className="text-neutral-500 text-xl font-normal"
+              >
+                {kodeLkh} - {kendala}
+              </span>
             </div>
-            <div className="w-6/12 justify-end justify-items-end">
+            <div className="w-6/12">
               <label
                 htmlFor="tgl"
-                className="form-label block  text-black text-xs font-extrabold"
+                className="form-label block text-black text-xs font-extrabold"
               >
                 TANGGAL PEMERIKSAAN
               </label>
@@ -183,7 +206,7 @@ const ModalDetail = ({
               </span>
               <label
                 htmlFor="jam"
-                className="form-label block  text-black text-xs font-extrabold mt-2"
+                className="form-label block text-black text-xs font-extrabold mt-2"
               >
                 JAM PEMERIKSAAN
               </label>
@@ -192,7 +215,7 @@ const ModalDetail = ({
               </span>
               <label
                 htmlFor="namaPemeriksa"
-                className="form-label block  text-black text-xs font-extrabold mt-2"
+                className="form-label block text-black text-xs font-extrabold mt-2"
               >
                 NAMA PEMERIKSAAN
               </label>
@@ -204,100 +227,98 @@ const ModalDetail = ({
               </span>
             </div>
           </div>
-          <div className="flex w-full pt-1">
-            <div className=" w-6/12">
-              <label className="form-label block  text-black text-xs font-extrabold mt-2">
+
+          {/* KODE MTC + FOTO — Desktop: side by side */}
+          <div className="flex w-full pt-3 gap-4">
+            {/* KODE MTC */}
+            <div className="flex flex-col lg:w-6/12 w-full">
+              <label className="form-label block text-black text-xs font-extrabold mb-1">
                 KODE MTC
               </label>
-              <div>{analisisPenyebab}</div>
+              <div className="text-sm text-neutral-600 bg-gray-50 border border-gray-200 rounded-md px-3 py-2 min-h-[40px]">
+                {analisisPenyebab || '-'}
+              </div>
             </div>
+
+            {/* FOTO — Desktop */}
             {!isMobile && (
-              <div className="flex pl-2 w-6/12">
-                <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                  UPLOAD FOTO
+              <div className="flex flex-col lg:w-6/12 w-full">
+                <label className="form-label block text-black text-xs font-extrabold mb-1">
+                  FOTO
                 </label>
+                <PhotoDisplay />
               </div>
             )}
           </div>
-          <div className="flex w-full pt-1">
-            <div className="flex lg:w-6/12 w-full">
-              <div>
-                <div className="relative z-20 bg-white dark:bg-form-input lg:w-[400px] w-full">
-                  <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    ></svg>
-                  </span>
-                </div>
-              </div>
-            </div>
-            {!isMobile && (
-              <div className="flex ml-2 lg:w-[389px] h-50 rounded-md border border-stroke px-2 py-2"></div>
-            )}
-          </div>
+
+          {/* FOTO — Mobile */}
           {isMobile && (
-            <>
-              <div className="flex  w-full mt-2 rounded-md border border-stroke px-2 py-2"></div>
-            </>
+            <div className="flex flex-col w-full mt-3">
+              <label className="form-label block text-black text-xs font-extrabold mb-1">
+                FOTO
+              </label>
+              <PhotoDisplay />
+            </div>
           )}
 
-          <div className="flex w-full pt-2">
-            <label className="form-label block  text-black text-xs font-extrabold mt-3">
+          {/* KEBUTUHAN SPAREPART */}
+          <div className="flex w-full pt-3">
+            <label className="form-label block text-black text-xs font-extrabold">
               KEBUTUHAN SPAREPART
             </label>
           </div>
-          <div className="">
-            <div className="w-full overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="p-2 border text-left">No</th>
-                    <th className="p-2 border text-left">
-                      Nama Sparepart Baru
-                    </th>
-                    <th className="p-2 border text-left">
-                      Nama Sparepart Rusak
-                    </th>
-                    <th className="p-2 border text-left">Grade Baru</th>
-                    <th className="p-2 border text-left">Grade Rusak</th>
-                    <th className="p-2 border text-left">Lokasi Baru</th>
-                    <th className="p-2 border text-left">Lokasi Rusak</th>
-                    <th className="p-2 border text-left">Qty</th>
-                    <th className="p-2 border text-left">Status</th>
-                    <th className="p-2 border text-left">Tanggal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {kebutuhanSparepart.map((item: any, index: any) => (
+          <div className="w-full overflow-x-auto mt-2">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="p-2 border text-left text-xs">No</th>
+                  <th className="p-2 border text-left text-xs">
+                    Nama Sparepart Baru
+                  </th>
+                  <th className="p-2 border text-left text-xs">
+                    Nama Sparepart Rusak
+                  </th>
+                  <th className="p-2 border text-left text-xs">Grade Baru</th>
+                  <th className="p-2 border text-left text-xs">Grade Rusak</th>
+                  <th className="p-2 border text-left text-xs">Lokasi Baru</th>
+                  <th className="p-2 border text-left text-xs">Lokasi Rusak</th>
+                  <th className="p-2 border text-left text-xs">Qty</th>
+                  <th className="p-2 border text-left text-xs">Status</th>
+                  <th className="p-2 border text-left text-xs">Tanggal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {kebutuhanSparepart && kebutuhanSparepart.length > 0 ? (
+                  kebutuhanSparepart.map((item: any, index: any) => (
                     <tr
                       key={index}
                       className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                     >
-                      <td className="p-2 border">{index + 1}</td>
-                      <td className="p-2 border">{item.nama_sparepart_baru}</td>
-                      <td className="p-2 border">
-                        {item.nama_sparepart_sebelumnya}
+                      <td className="p-2 border text-xs">{index + 1}</td>
+                      <td className="p-2 border text-xs">
+                        {item.nama_sparepart_baru || '-'}
                       </td>
-                      <td className="p-2 border">
-                        {item.grade_sparepart_baru}
+                      <td className="p-2 border text-xs">
+                        {item.nama_sparepart_sebelumnya || '-'}
                       </td>
-                      <td className="p-2 border">
-                        {item.grade_sparepart_sebelumnya}
+                      <td className="p-2 border text-xs">
+                        {item.grade_sparepart_baru || '-'}
                       </td>
-                      <td className="p-2 border">
-                        {item.lokasi_sparepart_baru}
+                      <td className="p-2 border text-xs">
+                        {item.grade_sparepart_sebelumnya || '-'}
                       </td>
-                      <td className="p-2 border">
-                        {item.lokasi_sparepart_sebelumnya}
+                      <td className="p-2 border text-xs">
+                        {item.lokasi_sparepart_baru || '-'}
                       </td>
-                      <td className="p-2 border">{item.use_qty}</td>
-                      <td className="p-2 border">
+                      <td className="p-2 border text-xs">
+                        {item.lokasi_sparepart_sebelumnya || '-'}
+                      </td>
+                      <td className="p-2 border text-xs">
+                        {item.use_qty || '-'}
+                      </td>
+                      <td className="p-2 border text-xs">
                         <span
-                          className={`px-2 py-1 rounded ${
+                          className={`px-2 py-1 rounded text-xs ${
                             item.status === 'done'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-yellow-100 text-yellow-800'
@@ -306,71 +327,84 @@ const ModalDetail = ({
                           {item.status}
                         </span>
                       </td>
-                      <td className="p-2 border">
-                        {new Date(item.tgl_ganti).toLocaleDateString()}
+                      <td className="p-2 border text-xs">
+                        {item.tgl_ganti
+                          ? new Date(item.tgl_ganti).toLocaleDateString()
+                          : '-'}
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="flex w-full pt-2">
-              <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                UNIT
-              </label>
-            </div>
-            <div className="flex w-full pt-1">
-              <div className="flex lg:w-6/12 w-full">{unit}</div>
-            </div>
-            <div className="flex w-full pt-2">
-              <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                BAGIAN
-              </label>
-            </div>
-          </div>
-          <div className="flex w-full pt-1">
-            <div className="flex lg:w-6/12 w-full">{bagian}</div>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={10}
+                      className="p-4 text-center text-xs text-gray-400"
+                    >
+                      Tidak ada data sparepart
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
 
-          <div className="flex w-full pt-1">
-            <div className="flex w-full">
-              <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                TIPE MAINTENANCE
-              </label>
-            </div>
+          {/* UNIT */}
+          <div className="flex w-full pt-3">
+            <label className="form-label block text-black text-xs font-extrabold">
+              UNIT
+            </label>
           </div>
           <div className="flex w-full pt-1">
-            <div className="flex lg:w-6/12 w-full">{tipeMaintenance}</div>
+            <div className="flex lg:w-6/12 w-full text-sm text-neutral-600">
+              {unit || '-'}
+            </div>
+          </div>
+
+          {/* BAGIAN */}
+          <div className="flex w-full pt-3">
+            <label className="form-label block text-black text-xs font-extrabold">
+              BAGIAN
+            </label>
           </div>
           <div className="flex w-full pt-1">
-            <div className="flex w-full">
-              <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                ANALISIS PENYEBAB DAN DETAIL TINDAKAN
-              </label>
+            <div className="flex lg:w-6/12 w-full text-sm text-neutral-600">
+              {bagian || '-'}
             </div>
+          </div>
+
+          {/* TIPE MAINTENANCE */}
+          <div className="flex w-full pt-3">
+            <label className="form-label block text-black text-xs font-extrabold">
+              TIPE MAINTENANCE
+            </label>
+          </div>
+          <div className="flex w-full pt-1">
+            <div className="flex lg:w-6/12 w-full text-sm text-neutral-600">
+              {tipeMaintenance || '-'}
+            </div>
+          </div>
+
+          {/* ANALISIS */}
+          <div className="flex w-full pt-3">
+            <label className="form-label block text-black text-xs font-extrabold">
+              ANALISIS PENYEBAB DAN DETAIL TINDAKAN
+            </label>
           </div>
           <div className="relative w-full min-w-[200px] pt-1">
-            {catatan == null ? (
-              <>
-                <textarea
-                  readOnly
-                  className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                ></textarea>
-              </>
-            ) : (
-              <>
-                <textarea
-                  value={catatan}
-                  readOnly
-                  className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                ></textarea>
-              </>
-            )}
+            <textarea
+              value={catatan ?? ''}
+              readOnly
+              className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+            />
           </div>
 
+          {/* Close Button */}
           <div className="pt-5">
-            <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-              SIMPAN
+            <button
+              onClick={onClose}
+              className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+            >
+              TUTUP
             </button>
           </div>
         </div>
@@ -380,7 +414,7 @@ const ModalDetail = ({
           type="button"
           onClick={onClose}
           className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
-        ></button>
+        />
         {children}
       </div>
     </div>

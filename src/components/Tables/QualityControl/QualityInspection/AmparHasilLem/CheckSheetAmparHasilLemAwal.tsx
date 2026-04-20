@@ -28,6 +28,30 @@ function CheckSheetHasilRabut() {
     new Array(add != null && add.length).fill(false),
   );
 
+  // ── Edit-defect modal state (mirrored from ChecksheetBarangRS) ──────────────
+  const [showDefectEditModal, setShowDefectEditModal] = useState(false);
+  const [editingDefectData, setEditingDefectData] = useState<any>(null);
+  const [isSavingDefectEdit, setIsSavingDefectEdit] = useState(false);
+  const [defectEditForm, setDefectEditForm] = useState<any>({
+    hasil: '',
+    kode: '',
+    masalah: '',
+    kode_lkh: '',
+    masalah_lkh: '',
+    kriteria: '',
+    persen_kriteria: '',
+    mesin: '',
+    operator: '',
+    sumber_masalah: '',
+  });
+  const [defectEditFirstOption, setDefectEditFirstOption] = useState<any>(null);
+  const [defectEditSecondOption, setDefectEditSecondOption] =
+    useState<any>(null);
+  const [defectEditSecondOptions, setDefectEditSecondOptions] = useState<any[]>(
+    [],
+  );
+  // ────────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     getRabutMesin();
     getMasterDefect();
@@ -70,14 +94,14 @@ function CheckSheetHasilRabut() {
       setIsLoading(true);
       const res = await axios.get(url);
       setIsLoading(false);
-      setDefectMaster(res.data); // Save raw data for filtering
+      setDefectMaster(res.data);
       setOptions(
         res.data.map((item: any) => ({
           value: item.e_kode_produksi,
           label: `${item.e_kode_produksi} - ${item.nama_kendala}`,
+          nama_kendala: item.nama_kendala,
         })),
       );
-      //console.log('master defect', res.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error.data.msg);
@@ -92,9 +116,8 @@ function CheckSheetHasilRabut() {
     try {
       setIsLoading(true);
       const res = await axios.get(url2);
-      setMasterWaste(res.data.waste); // Save raw data for filtering
+      setMasterWaste(res.data.waste);
       setIsLoading(false);
-      //console.log("Master Waste Data:", res.data.waste);
     } catch (error: any) {
       setIsLoading(false);
       console.error('Error fetching master waste:', error);
@@ -105,9 +128,9 @@ function CheckSheetHasilRabut() {
   const [selectedMesinJO, setselectedMesinJO] = useState<any>(null);
   const [selectedOperatorJO, setselectedOperatorJO] = useState<any>(null);
   const [mesinByJo, setmesinByJo] = useState<any>([]);
+
   async function getKendalaByJO(noJO: any) {
     const url = `${import.meta.env.VITE_API_LINK}/produksi/kendalaByJo`;
-
     try {
       setIsLoading(true);
       const res = await axios.get(url, {
@@ -122,9 +145,9 @@ function CheckSheetHasilRabut() {
       console.log(error);
     }
   }
+
   async function getmesinByJo(noJO: any) {
     const url = `${import.meta.env.VITE_API_LINK}/produksi/mesinByJo`;
-
     try {
       setIsLoading(true);
       const res = await axios.get(url);
@@ -136,6 +159,7 @@ function CheckSheetHasilRabut() {
       console.log(error);
     }
   }
+
   // First dropdown handler
   const handleChangePointSelect1 = (selected: any) => {
     if (!selected) {
@@ -144,98 +168,54 @@ function CheckSheetHasilRabut() {
     }
 
     const { value } = selected;
-    console.log(`Processing selection: ${value}`);
 
-    // Log data availability
-    console.log('Data available for processing:', {
-      masterWasteAvailable:
-        Array.isArray(masterWaste) && masterWaste.length > 0,
-      defectMasterAvailable:
-        Array.isArray(defectMaster) && defectMaster.length > 0,
-      kendalaByJoAvailable:
-        Array.isArray(kendalaByJo) && kendalaByJo.length > 0,
-    });
-
-    // Check if masterWaste is defined before filtering
     const filteredWaste = Array.isArray(masterWaste)
       ? masterWaste.filter((item: any) => item.kode_waste === value)
       : [];
 
-    // Check if defectMaster is defined before filtering
     const filteredDefect = Array.isArray(defectMaster)
       ? defectMaster.filter((item: any) => item.e_kode_produksi === value)
       : [];
 
-    // Only proceed if filteredDefect has items
     if (filteredDefect.length > 0) {
       const firstFilteredItemDefect = filteredDefect[0];
-      console.log(firstFilteredItemDefect.i_id);
       setIdDefect(firstFilteredItemDefect);
-      console.log(firstFilteredItemDefect.target_department);
       settujuanDepartment(firstFilteredItemDefect.target_department);
     }
 
-    // Check if kendalaByJo is defined before using find
     if (Array.isArray(kendalaByJo)) {
-      // Priority 1: Always check kendalaByJo first
       const matchingKendala = kendalaByJo.find(
         (kendala: any) => kendala.kode_kendala === value,
       );
-
-      // If a match is found in kendalaByJo, always use that machine
       if (matchingKendala) {
         setselectedMesinJO(matchingKendala.mesin);
         setselectedOperatorJO(matchingKendala.operator);
-        console.log(
-          `Using machine from kendalaByJo: ${matchingKendala.mesin} for kode_kendala: ${value}`,
-        );
-      }
-      // Fallback to process-based logic only if not found in kendalaByJo
-      else {
+      } else {
         let targetProcess = '';
+        if (value.startsWith('CO')) targetProcess = 'coating';
+        else if (value.startsWith('PT')) targetProcess = 'potong';
+        else if (value.startsWith('C')) targetProcess = 'cetak';
+        else if (value.startsWith('P')) targetProcess = 'pond';
+        else if (value.startsWith('LP')) targetProcess = 'lipat';
+        else if (value.startsWith('L')) targetProcess = 'lem';
 
-        if (value.startsWith('CO')) {
-          targetProcess = 'coating';
-        } else if (value.startsWith('PT')) {
-          targetProcess = 'potong';
-        } else if (value.startsWith('C')) {
-          targetProcess = 'cetak';
-        } else if (value.startsWith('P')) {
-          targetProcess = 'pond';
-        } else if (value.startsWith('LP')) {
-          targetProcess = 'lipat';
-        } else if (value.startsWith('L')) {
-          targetProcess = 'lem';
-        }
-
-        // Check if mesinByJo is defined and has items before using find
         if (targetProcess && Array.isArray(mesinByJo) && mesinByJo.length > 0) {
           const matchingMachine = mesinByJo.find((mesin: any) =>
             mesin.proses.toLowerCase().includes(targetProcess.toLowerCase()),
           );
-
           if (matchingMachine) {
             setselectedMesinJO(matchingMachine.mesin);
             setselectedOperatorJO(matchingMachine.operator);
-            console.log(
-              `Selected machine: ${matchingMachine.mesin} for process: ${targetProcess}`,
-            );
           } else {
-            console.warn(`No machine found for process: ${targetProcess}`);
             setselectedMesinJO(null);
             setselectedOperatorJO(null);
           }
         } else {
-          console.warn(
-            `No valid process identified for kode_waste: ${value} or mesinByJo is empty`,
-          );
           setselectedMesinJO(null);
           setselectedOperatorJO(null);
         }
       }
     } else {
-      console.warn('kendalaByJo is undefined or not an array');
-      // Use null instead of empty array
       setselectedMesinJO(null);
       setselectedOperatorJO(null);
     }
@@ -247,13 +227,10 @@ function CheckSheetHasilRabut() {
           value: wasteItem.i_kendala,
           label: `${wasteItem.kode_kendala} - ${wasteItem.kendala_desc}`,
         })) || [];
-
-      console.log('All Second Options:', allSecondOptions);
       setSelectedOption(selected);
       setSecondOptions(allSecondOptions);
       setSelectedSecondOption(null);
     } else {
-      console.warn('No matching waste found for kode_waste:', value);
       setSelectedOption(selected);
       setSecondOptions([]);
       setSelectedSecondOption(null);
@@ -264,41 +241,22 @@ function CheckSheetHasilRabut() {
 
   // Second dropdown handler
   const handleChangePointSelect2 = (selected: any) => {
-    console.log('Selected Second Option:', selected);
     setSelectedSecondOption(selected);
-
     if (selected?.label) {
       const [code, description] = selected.label.split(' - ');
-      const selectedCode = code?.trim() || '';
-      const selectedDescription = description?.trim() || '';
+      setwasteSelectCode(code?.trim() || '');
+      setwasteSelectLkh(description?.trim() || '');
 
-      setwasteSelectCode(selectedCode);
-      setwasteSelectLkh(selectedDescription);
-
-      // Check if kendalaByJo is defined before using find
       if (Array.isArray(kendalaByJo)) {
-        // Priority 1: Always check kendalaByJo first for the second dropdown as well
         const matchingKendala = kendalaByJo.find(
-          (kendala: any) => kendala.kode_kendala === selectedCode,
+          (kendala: any) => kendala.kode_kendala === code?.trim(),
         );
-
-        // If found in kendalaByJo, always use that machine (overriding any previous selection)
         if (matchingKendala) {
           setselectedMesinJO(matchingKendala.mesin);
           setselectedOperatorJO(matchingKendala.operator);
-          console.log(
-            `Updated machine from second selection: ${matchingKendala.mesin} for kode_kendala: ${selectedCode}`,
-          );
         }
-        // Otherwise keep the machine that was set in the first dropdown
-      } else {
-        console.warn(
-          'kendalaByJo is undefined or not an array in second dropdown handler',
-        );
-        // No need to set anything here as we want to keep the previous selection
       }
     } else {
-      console.warn('Invalid selection for handleChangePointSelect2:', selected);
       setwasteSelectCode('');
       setwasteSelectLkh('');
     }
@@ -310,13 +268,7 @@ function CheckSheetHasilRabut() {
     }/qc/cs/inspeksiAmparLemPoint/start/${id}`;
     try {
       setIsLoading(true);
-      const res = await axios.put(
-        url,
-        {},
-        {
-          withCredentials: true,
-        },
-      );
+      const res = await axios.put(url, {}, { withCredentials: true });
       setIsLoading(false);
       getRabutMesin();
     } catch (error: any) {
@@ -339,18 +291,10 @@ function CheckSheetHasilRabut() {
     try {
       setIsLoading(true);
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
-      console.log(elapsedSeconds);
       const res = await axios.put(
         url,
-        {
-          catatan: catatan,
-          lama_pengerjaan: elapsedSeconds,
-          qty_pallet,
-          data_defect,
-        },
-        {
-          withCredentials: true,
-        },
+        { catatan, lama_pengerjaan: elapsedSeconds, qty_pallet, data_defect },
+        { withCredentials: true },
       );
       setIsLoading(false);
       getRabutMesin();
@@ -369,12 +313,8 @@ function CheckSheetHasilRabut() {
       setIsLoading(true);
       const res = await axios.post(
         url,
-        {
-          id_inspeksi_ampar_lem: id,
-        },
-        {
-          withCredentials: true,
-        },
+        { id_inspeksi_ampar_lem: id },
+        { withCredentials: true },
       );
       setIsLoading(false);
       getRabutMesin();
@@ -391,12 +331,8 @@ function CheckSheetHasilRabut() {
       setIsLoading(true);
       const res = await axios.put(
         url,
-        {
-          catatan: Catatan,
-        },
-        {
-          withCredentials: true,
-        },
+        { catatan: Catatan },
+        { withCredentials: true },
       );
       setIsLoading(false);
       getRabutMesin();
@@ -405,25 +341,6 @@ function CheckSheetHasilRabut() {
       console.log(error);
     }
   }
-
-  // async function pendingRabut(id: number) {
-  //   const url = `${
-  //     import.meta.env.VITE_API_LINK
-  //   }/qc/cs/inspeksiAmparLem/pending/${id}`;
-  //   try {
-  //     const res = await axios.put(
-  //       url,
-  //       {},
-  //       {
-  //         withCredentials: true,
-  //       },
-  //     );
-
-  //     getRabutMesin();
-  //   } catch (error: any) {
-  //     console.log(error.data.msg);
-  //   }
-  // }
 
   async function tambahDefectPeriode(
     id: number,
@@ -442,7 +359,6 @@ function CheckSheetHasilRabut() {
       setIsLoading(true);
       const res = await axios.post(
         url,
-
         {
           id_inspeksi_ampar_lem: id,
           id_inspeksi_ampar_lem_point: idPoint,
@@ -450,15 +366,11 @@ function CheckSheetHasilRabut() {
           target_department: tujuanDepartment,
           kode_lkh: kodeLkh,
           masalah_lkh: masalahLkh,
-          mesin: mesin,
-          operator: operator,
+          mesin,
+          operator,
         },
-
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
-
       setShowModal2(false);
       handleClickAdd(index);
       setIdDefect(null);
@@ -469,21 +381,17 @@ function CheckSheetHasilRabut() {
       console.log(error);
     }
   }
+
   const handleChangePointDepatment = (selected: any, i: number) => {
     const { value } = selected;
-    const filteredData = defectMaster.find(
-      (item: any) => item.i_id == value,
-      // item.id.includes(parseInt(value));
-    );
-
-    console.log(filteredData?.i_id);
-
+    const filteredData = defectMaster.find((item: any) => item.i_id == value);
     setIdDefect(filteredData);
   };
+
   const handleClickAdd = (index: number) => {
     setShowDetail((prevState) => {
-      const updatedShowDetail = [...prevState]; // Create a copy
-      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+      const updatedShowDetail = [...prevState];
+      updatedShowDetail[index] = !updatedShowDetail[index];
       return updatedShowDetail;
     });
     setSelectedOption(null);
@@ -509,47 +417,203 @@ function CheckSheetHasilRabut() {
 
   const tanggal = convertTimeStampToDateOnly(RabutMesin?.data?.createdAt);
   const jam = convertDateToTime(RabutMesin?.data?.createdAt);
-
   const jumlahWaktuCheck = formatElapsedTime(RabutMesin?.data?.waktu_check);
 
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
-    setOpenGuide((prevState: any) => {
-      return prevState === index ? null : index;
-    });
+    setOpenGuide((prevState: any) => (prevState === index ? null : index));
   };
 
   const [isOpen, setIsOpen] = useState(false);
+  const openPreview = () => setIsOpen(true);
+  const closePreview = () => setIsOpen(false);
 
-  const openPreview = () => {
-    setIsOpen(true);
-  };
+  // ── Edit-defect handlers (mirrored from ChecksheetBarangRS) ─────────────────
+  function openDefectEditModal(defect: any) {
+    setEditingDefectData(defect);
+    setDefectEditForm({
+      hasil: defect.hasil ?? '',
+      kode: defect.kode ?? '',
+      masalah: defect.masalah ?? '',
+      kode_lkh: defect.kode_lkh ?? '',
+      masalah_lkh: defect.masalah_lkh ?? '',
+      kriteria: defect.kriteria ?? '',
+      persen_kriteria: defect.persen_kriteria ?? '',
+      mesin: defect.mesin ?? '',
+      operator: defect.operator ?? '',
+      sumber_masalah: defect.sumber_masalah ?? '',
+    });
 
-  const closePreview = () => {
-    setIsOpen(false);
-  };
+    // Pre-select first dropdown
+    const firstOpt = options.find((o: any) => o.value === defect.kode) || null;
+    setDefectEditFirstOption(firstOpt);
+
+    // Pre-populate second dropdown
+    if (firstOpt) {
+      const matchingWaste = masterWaste?.find(
+        (w: any) => w.kode_waste === defect.kode,
+      );
+      if (matchingWaste?.waste) {
+        const wasteOpts = matchingWaste.waste.map((item: any) => ({
+          value: item.i_kendala,
+          label: `${item.kode_kendala} - ${item.kendala_desc}`,
+          kode_kendala: item.kode_kendala,
+          kendala_desc: item.kendala_desc,
+        }));
+        setDefectEditSecondOptions(wasteOpts);
+        const secondOpt =
+          wasteOpts.find((o: any) => o.kode_kendala === defect.kode_lkh) ||
+          null;
+        setDefectEditSecondOption(secondOpt);
+      } else {
+        setDefectEditSecondOptions([]);
+        setDefectEditSecondOption(null);
+      }
+    } else {
+      setDefectEditSecondOptions([]);
+      setDefectEditSecondOption(null);
+    }
+
+    setShowDefectEditModal(true);
+  }
+
+  function handleDefectEditSelect1(selected: any) {
+    setDefectEditFirstOption(selected);
+    setDefectEditSecondOption(null);
+
+    if (!selected) {
+      setDefectEditSecondOptions([]);
+      setDefectEditForm((prev: any) => ({
+        ...prev,
+        kode: '',
+        masalah: '',
+        kode_lkh: '',
+        masalah_lkh: '',
+      }));
+      return;
+    }
+
+    setDefectEditForm((prev: any) => ({
+      ...prev,
+      kode: selected.value,
+      masalah: selected.nama_kendala || '',
+      kode_lkh: '',
+      masalah_lkh: '',
+    }));
+
+    const matchingWaste = masterWaste?.find(
+      (w: any) => w.kode_waste === selected.value,
+    );
+    if (matchingWaste?.waste) {
+      const wasteOpts = matchingWaste.waste.map((item: any) => ({
+        value: item.i_kendala,
+        label: `${item.kode_kendala} - ${item.kendala_desc}`,
+        kode_kendala: item.kode_kendala,
+        kendala_desc: item.kendala_desc,
+      }));
+      setDefectEditSecondOptions(wasteOpts);
+    } else {
+      setDefectEditSecondOptions([]);
+    }
+
+    // Auto-fill mesin/operator from kendalaByJo
+    if (Array.isArray(kendalaByJo)) {
+      const match = kendalaByJo.find(
+        (k: any) => k.kode_kendala === selected.value,
+      );
+      if (match) {
+        setDefectEditForm((prev: any) => ({
+          ...prev,
+          mesin: match.mesin ?? prev.mesin,
+          operator: match.operator ?? prev.operator,
+        }));
+      }
+    }
+  }
+
+  function handleDefectEditSelect2(selected: any) {
+    setDefectEditSecondOption(selected);
+    if (!selected) {
+      setDefectEditForm((prev: any) => ({
+        ...prev,
+        kode_lkh: '',
+        masalah_lkh: '',
+      }));
+      return;
+    }
+    setDefectEditForm((prev: any) => ({
+      ...prev,
+      kode_lkh: selected.kode_kendala ?? '',
+      masalah_lkh: selected.kendala_desc ?? '',
+    }));
+
+    // Override mesin/operator if this kendala exists in kendalaByJo
+    if (Array.isArray(kendalaByJo)) {
+      const match = kendalaByJo.find(
+        (k: any) => k.kode_kendala === selected.kode_kendala,
+      );
+      if (match) {
+        setDefectEditForm((prev: any) => ({
+          ...prev,
+          mesin: match.mesin ?? prev.mesin,
+          operator: match.operator ?? prev.operator,
+        }));
+      }
+    }
+  }
+
+  async function saveDefectEdit() {
+    if (!editingDefectData) return;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiAmparLemPoint/updateDefect/${editingDefectData.id}`;
+    try {
+      setIsSavingDefectEdit(true);
+      await axios.put(
+        url,
+        {
+          hasil:
+            defectEditForm.hasil !== '' ? parseInt(defectEditForm.hasil) : null,
+          kode: defectEditForm.kode,
+          masalah: defectEditForm.masalah,
+          kode_lkh: defectEditForm.kode_lkh,
+          masalah_lkh: defectEditForm.masalah_lkh,
+          kriteria: defectEditForm.kriteria,
+          persen_kriteria:
+            defectEditForm.persen_kriteria !== ''
+              ? parseFloat(defectEditForm.persen_kriteria)
+              : null,
+          mesin: defectEditForm.mesin,
+          operator: defectEditForm.operator,
+          sumber_masalah: defectEditForm.sumber_masalah,
+        },
+        { withCredentials: true },
+      );
+      setShowDefectEditModal(false);
+      setEditingDefectData(null);
+      getRabutMesin();
+    } catch (error: any) {
+      alert(error?.response?.data?.msg || 'Gagal update defect');
+      console.error(error);
+    } finally {
+      setIsSavingDefectEdit(false);
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────────────
 
   const printChecksheet = () => {
     const printArea = document.getElementById('print-area');
-
     if (!printArea) return;
-
-    // Store the current page
     const currentPage = window.location.href;
-
-    // Create a new window for printing with your domain still in URL
     const printWindow = window.open(
       currentPage,
       '_blank',
       'toolbar=0,location=1,menubar=0',
     );
-
     if (!printWindow) {
       alert('Please allow pop-ups for printing functionality');
       return;
     }
-
-    // Get all styles from the current document
     const styles = Array.from(document.styleSheets)
       .map((styleSheet) => {
         try {
@@ -557,122 +621,57 @@ function CheckSheetHasilRabut() {
             .map((rule) => rule.cssText)
             .join('');
         } catch (e) {
-          // Likely a CORS issue with external stylesheet
-          if (styleSheet.href) {
+          if (styleSheet.href)
             return `<link rel="stylesheet" href="${styleSheet.href}">`;
-          }
           return '';
         }
       })
       .filter(Boolean);
 
-    // Clear the new window and insert content with styles
     printWindow.document.open();
     printWindow.document.write(`
       <html>
         <head>
           <style>
             ${styles.join('')}
-            
-            /* A4 page setup with consistent scale */
-            @page {
-              size: A4;
-              margin: 10mm;
-            }
-            
-            body {
-              margin: 0;
-              padding: 0;
-            }
-            
-            .print-container {
-              width: 100%;
-              max-width: 100%;
-              box-sizing: border-box;
-              transform: scale(0.95);
-              transform-origin: top left;
-            }
-            
-            /* Adjust font sizes for print */
-            .print-container * {
-              font-size: 10px !important;
-            }
-            
-            .print-container h3, 
-            .print-container .text-lg, 
-            .print-container .font-semibold {
-              font-size: 12px !important;
-            }
-            
-            /* Adjust row heights */
-            .print-container table td {
-              padding: 2px !important;
-            }
-            
-            /* Ensure table fits width */
-            .print-container table {
-              width: 100% !important;
-              table-layout: fixed;
-            }
-            
-            /* Print settings - allow multiple pages */
+            @page { size: A4; margin: 10mm; }
+            body { margin: 0; padding: 0; }
+            .print-container { width: 100%; max-width: 100%; box-sizing: border-box; transform: scale(0.95); transform-origin: top left; }
+            .print-container * { font-size: 10px !important; }
+            .print-container h3, .print-container .text-lg, .print-container .font-semibold { font-size: 12px !important; }
+            .print-container table td { padding: 2px !important; }
+            .print-container table { width: 100% !important; table-layout: fixed; }
             @media print {
-              html, body {
-                width: 210mm;
-              }
-              
-              .print-container {
-                page-break-inside: auto; /* Allow page breaks within container */
-              }
-              
-              /* Keep table rows together where possible */
-              tr {
-                page-break-inside: avoid;
-              }
-              
-              /* Keep table headers with their tables */
-              thead {
-                display: table-header-group;
-              }
-              
-              /* Better page break handling */
-              h1, h2, h3, h4, h5 {
-                page-break-after: avoid;
-              }
+              html, body { width: 210mm; }
+              .print-container { page-break-inside: auto; }
+              tr { page-break-inside: avoid; }
+              thead { display: table-header-group; }
+              h1, h2, h3, h4, h5 { page-break-after: avoid; }
             }
           </style>
         </head>
         <body>
-          <div class="print-container">
-            ${printArea.innerHTML}
-          </div>
+          <div class="print-container">${printArea.innerHTML}</div>
           <script>
             window.onload = function() {
-              // Small delay to ensure styles are applied
               setTimeout(function() {
                 window.print();
-                window.onafterprint = function() {
-                  window.close();
-                }
+                window.onafterprint = function() { window.close(); }
               }, 500);
             }
           </script>
         </body>
       </html>
     `);
-
     printWindow.document.close();
   };
+
   return (
     <>
       <>
-        {/* Button to open preview */}
-
-        {/* Print Preview Modal */}
         {isOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start overflow-y-auto pt-10">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl">
-              {/* Modal header */}
               <div className="border-b px-4 py-3 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Print Preview
@@ -687,7 +686,6 @@ function CheckSheetHasilRabut() {
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
                         strokeLinecap="round"
@@ -707,7 +705,6 @@ function CheckSheetHasilRabut() {
                 </div>
               </div>
 
-              {/* Print area content */}
               <div
                 id="print-area"
                 className="p-6 overflow-auto max-h-[calc(100vh-150px)]"
@@ -742,9 +739,7 @@ function CheckSheetHasilRabut() {
                       </td>
                     </tr>
                   </thead>
-
                   <tbody>
-                    {/* Job Order Information */}
                     <tr>
                       <td colSpan={3} className="border border-black p-2">
                         <div className="grid grid-cols-2 gap-4">
@@ -799,8 +794,6 @@ function CheckSheetHasilRabut() {
                         </div>
                       </td>
                     </tr>
-
-                    {/* Inspection Details */}
                     <tr>
                       <td colSpan={3} className="border border-black p-0">
                         <table className="w-full border-collapse">
@@ -828,37 +821,33 @@ function CheckSheetHasilRabut() {
                           </thead>
                           <tbody>
                             {RabutMesin?.data?.inspeksi_ampar_lem_point?.map(
-                              (data: any, index: any) => {
-                                return (
-                                  <tr key={index}>
-                                    <td className="border border-black p-1 text-center">
-                                      {index + 1}
-                                    </td>
-                                    <td className="border border-black p-1">
-                                      Palet ke-{index + 1}
-                                    </td>
-                                    <td className="border border-black p-1">
-                                      {data.qty_pallet || '-'}
-                                    </td>
-                                    <td className="border border-black p-1">
-                                      {data.inspektor?.nama || '-'}
-                                    </td>
-                                    <td className="border border-black p-1">
-                                      {formatElapsedTime(data.lama_pengerjaan)}
-                                    </td>
-                                    <td className="border border-black p-1">
-                                      {data.catatan || '-'}
-                                    </td>
-                                  </tr>
-                                );
-                              },
+                              (data: any, index: any) => (
+                                <tr key={index}>
+                                  <td className="border border-black p-1 text-center">
+                                    {index + 1}
+                                  </td>
+                                  <td className="border border-black p-1">
+                                    Palet ke-{index + 1}
+                                  </td>
+                                  <td className="border border-black p-1">
+                                    {data.qty_pallet || '-'}
+                                  </td>
+                                  <td className="border border-black p-1">
+                                    {data.inspektor?.nama || '-'}
+                                  </td>
+                                  <td className="border border-black p-1">
+                                    {formatElapsedTime(data.lama_pengerjaan)}
+                                  </td>
+                                  <td className="border border-black p-1">
+                                    {data.catatan || '-'}
+                                  </td>
+                                </tr>
+                              ),
                             )}
                           </tbody>
                         </table>
                       </td>
                     </tr>
-
-                    {/* Defect Details */}
                     <tr>
                       <td colSpan={3} className="border border-black p-0">
                         <table className="w-full border-collapse">
@@ -904,8 +893,6 @@ function CheckSheetHasilRabut() {
                         </table>
                       </td>
                     </tr>
-
-                    {/* Summary */}
                     <tr>
                       <td colSpan={3} className="border border-black p-2">
                         <div className="grid grid-cols-2 gap-4">
@@ -942,8 +929,6 @@ function CheckSheetHasilRabut() {
                         </div>
                       </td>
                     </tr>
-
-                    {/* Keterangan */}
                     <tr>
                       <td colSpan={3} className="border border-black p-2">
                         <div className="font-semibold mb-2">Keterangan:</div>
@@ -952,8 +937,6 @@ function CheckSheetHasilRabut() {
                         </div>
                       </td>
                     </tr>
-
-                    {/* History Kendala JO */}
                   </tbody>
                 </table>
               </div>
@@ -961,18 +944,18 @@ function CheckSheetHasilRabut() {
           </div>
         )}
       </>
+
       <main className="overflow-x-hidden">
         {isLoading && <Loading />}
         <form
           action=""
           onSubmit={(e) => {
             e.preventDefault();
-            console.log(RabutMesin);
             doneRabut(RabutMesin?.data.id);
           }}
         >
           <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 justify-between  border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
+            <p className="text-[14px] font-semibold w-full flex border-b-8 justify-between border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
               <div className="flex gap-1">
                 <svg
                   width="24"
@@ -999,7 +982,6 @@ function CheckSheetHasilRabut() {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
                     strokeLinecap="round"
@@ -1018,8 +1000,8 @@ function CheckSheetHasilRabut() {
               </button>
             </p>
 
-            <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
+            <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF]">
+              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Tanggal
                 </label>
@@ -1029,7 +1011,6 @@ function CheckSheetHasilRabut() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   No. IO
                 </label>
-
                 <label className="text-neutral-500 text-sm font-semibold">
                   Nama Produk
                 </label>
@@ -1037,7 +1018,7 @@ function CheckSheetHasilRabut() {
                   Customer
                 </label>
               </div>
-              <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
+              <div className="grid grid-rows-6 gap-2 col-span-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {tanggal}
                 </label>
@@ -1047,7 +1028,6 @@ function CheckSheetHasilRabut() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {RabutMesin?.data?.no_io}
                 </label>
-
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {RabutMesin?.data?.nama_produk}
                 </label>
@@ -1055,24 +1035,22 @@ function CheckSheetHasilRabut() {
                   : {RabutMesin?.data?.customer}
                 </label>
               </div>
-
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+              <div className="grid grid-rows-6 gap-2 col-span-2 justify-between px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jam
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
+              <div className="grid grid-rows-6 gap-2 col-span-2 justify-between px-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {jam}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+              <div className="grid grid-rows-6 gap-2 col-span-2 justify-between px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Shift
                 </label>
-
                 <label className="text-neutral-500 text-sm font-semibold">
                   Mesin
                 </label>
@@ -1086,7 +1064,7 @@ function CheckSheetHasilRabut() {
                   QTY JO
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
+              <div className="grid grid-rows-6 gap-2 col-span-2 justify-between px-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {RabutMesin?.data?.shift}
                 </label>
@@ -1105,30 +1083,29 @@ function CheckSheetHasilRabut() {
               </div>
             </div>
 
-            {/* =============================chekcsheet========================= */}
+            {/* ============================= checksheet ========================= */}
             {RabutMesin?.data?.inspeksi_ampar_lem_point?.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
                 return (
-                  <>
+                  <React.Fragment key={index}>
                     <label
-                      className="text-blue-400 text-sm font-semibold  w-full flex justify-end px-4 py-2"
+                      className="text-blue-400 text-sm font-semibold w-full flex justify-end px-4 py-2 cursor-pointer"
                       onClick={() => handleClickGuide(index)}
                     >
                       History Kendala JO
                     </label>
                     {openGuide == index ? (
-                      <div className="  rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
+                      <div className="rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
                         <div className="grid grid-cols-1">
                           <div className="flex flex-col">
                             <label className="text-blue-600 text-sm font-semibold pb-6">
                               Daftar Kendala : {RabutMesin?.data?.no_jo}
                             </label>
                             <div className="grid grid-cols-12 gap-2">
-                              <label className="text-stone-600 text-sm font-semibold ">
+                              <label className="text-stone-600 text-sm font-semibold">
                                 No
                               </label>
-
                               <label className="text-stone-600 text-sm font-semibold col-span-3">
                                 Tanggal Produksi
                               </label>
@@ -1143,44 +1120,40 @@ function CheckSheetHasilRabut() {
                               </label>
                             </div>
                             {kendalaByJo?.map((data: any, i: any) => (
-                              <>
-                                <div key={i} className="flex flex-col">
-                                  <div className="grid grid-cols-12 gap-2">
-                                    <label className="text-stone-600 text-sm  ">
-                                      {i + 1}.
-                                    </label>
-
-                                    <label className="text-stone-600 text-sm  col-span-3">
-                                      {data.tgl_produksi}
-                                    </label>
-                                    <label className="text-stone-600 text-sm  col-span-2">
-                                      {data.durasi}
-                                    </label>
-                                    <label className="text-stone-600 text-sm  col-span-2">
-                                      {data.mesin}
-                                    </label>
-                                    <label className="text-stone-600 text-sm  col-span-4">
-                                      {data.kode_kendala} - {data.nama_kendala}
-                                    </label>
-                                  </div>
+                              <div key={i} className="flex flex-col">
+                                <div className="grid grid-cols-12 gap-2">
+                                  <label className="text-stone-600 text-sm">
+                                    {i + 1}.
+                                  </label>
+                                  <label className="text-stone-600 text-sm col-span-3">
+                                    {data.tgl_produksi}
+                                  </label>
+                                  <label className="text-stone-600 text-sm col-span-2">
+                                    {data.durasi}
+                                  </label>
+                                  <label className="text-stone-600 text-sm col-span-2">
+                                    {data.mesin}
+                                  </label>
+                                  <label className="text-stone-600 text-sm col-span-4">
+                                    {data.kode_kendala} - {data.nama_kendala}
+                                  </label>
                                 </div>
-                              </>
+                              </div>
                             ))}
                           </div>
                         </div>
                       </div>
-                    ) : (
-                      <></>
-                    )}
-                    <div className="flex flex-col py-6 px-10 ">
-                      <div className=" grid grid-cols-6 w-full  gap-2">
+                    ) : null}
+
+                    <div className="flex flex-col py-6 px-10">
+                      <div className="grid grid-cols-6 w-full gap-2">
                         <div className="w-11/12">
                           <label className="text-neutral-500 text-sm font-semibold w-10/12">
                             QTY PALET KE {index + 1}
                           </label>
                         </div>
                         <div>
-                          <label className="text-neutral-500 text-sm font-semibold ">
+                          <label className="text-neutral-500 text-sm font-semibold">
                             PARAMETER
                           </label>
                           {data.status == 'done' ? (
@@ -1203,240 +1176,221 @@ function CheckSheetHasilRabut() {
                           ) : null}
                         </div>
                         <div className="flex flex-col">
-                          <label className="text-neutral-500 text-sm font-semibold ">
+                          <label className="text-neutral-500 text-sm font-semibold">
                             INSPEKTOR
                           </label>
-                          <label className="text-neutral-500 text-sm font-semibold ">
+                          <label className="text-neutral-500 text-sm font-semibold">
                             {data.inspektor?.nama}
                           </label>
                         </div>
                         <div className="flex flex-col">
-                          <label className="text-neutral-500 text-sm font-semibold ">
+                          <label className="text-neutral-500 text-sm font-semibold">
                             WAKTU
                           </label>
-                          <label className="text-neutral-500 text-sm font-semibold ">
+                          <label className="text-neutral-500 text-sm font-semibold">
                             {lamaPengerjaan}
                           </label>
                         </div>
                         <div className="flex flex-col">
-                          <label className="text-neutral-500 text-sm font-semibold ">
+                          <label className="text-neutral-500 text-sm font-semibold">
                             Time :
                           </label>
-                          <label className="text-neutral-500 text-sm font-semibold ">
+                          <label className="text-neutral-500 text-sm font-semibold">
                             {convertTimeStampToDateTime(data.waktu_mulai)}
                           </label>
                         </div>
-                        <div className="flex flex-col ">
-                          <>
-                            <div className="flex flex-col ">
-                              <p className="md:text-[14px] text-[9px] font-semibold">
-                                Upload Foto (Optional):
-                              </p>
-
-                              <div className="">
-                                <input
-                                  disabled
-                                  type="file"
-                                  name=""
-                                  id=""
-                                  className="w-40"
-                                />
-                              </div>
+                        <div className="flex flex-col">
+                          <div className="flex flex-col">
+                            <p className="md:text-[14px] text-[9px] font-semibold">
+                              Upload Foto (Optional):
+                            </p>
+                            <div>
+                              <input
+                                disabled
+                                type="file"
+                                name=""
+                                id=""
+                                className="w-40"
+                              />
                             </div>
-                          </>
+                          </div>
                         </div>
-                        <div className="flex flex-col ">
-                          <>
-                            {data.status == 'incoming' ? (
-                              <>
-                                <p className="font-bold text-[#DE0000]">
-                                  Task Belum Dimulai
-                                </p>
-                                <button
-                                  disabled={isLoading}
-                                  onClick={() => {
-                                    startTaskRabut(data.id);
-                                  }}
-                                  className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                        <div className="flex flex-col">
+                          {data.status == 'incoming' ? (
+                            <>
+                              <p className="font-bold text-[#DE0000]">
+                                Task Belum Dimulai
+                              </p>
+                              <button
+                                disabled={isLoading}
+                                onClick={() => startTaskRabut(data.id)}
+                                className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                              >
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 14 14"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
                                 >
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 14 14"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                      fill="white"
-                                    />
-                                  </svg>
-                                </button>
-                              </>
-                            ) : data.status == 'on progress' ? (
-                              <>
-                                <p className="font-bold text-green-600">
-                                  Task Dimulai
-                                </p>
-                                <p className="font-semibold">
-                                  Time :{' '}
-                                  {convertTimeStampToDateTime(data.waktu_mulai)}
-                                </p>
-                                <button
-                                  disabled={isLoading}
-                                  onClick={() => {
-                                    console.log(RabutMesin.data);
-                                    stopTaskRabut(
-                                      data.id,
-                                      data.waktu_mulai,
-                                      data.catatan,
-                                      data.qty_pallet,
-                                      data.inspeksi_ampar_lem_defect,
-                                    );
-                                  }}
-                                  className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                  <path
+                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                    fill="white"
+                                  />
+                                </svg>
+                              </button>
+                            </>
+                          ) : data.status == 'on progress' ? (
+                            <>
+                              <p className="font-bold text-green-600">
+                                Task Dimulai
+                              </p>
+                              <p className="font-semibold">
+                                Time :{' '}
+                                {convertTimeStampToDateTime(data.waktu_mulai)}
+                              </p>
+                              <button
+                                disabled={isLoading}
+                                onClick={() =>
+                                  stopTaskRabut(
+                                    data.id,
+                                    data.waktu_mulai,
+                                    data.catatan,
+                                    data.qty_pallet,
+                                    data.inspeksi_ampar_lem_defect,
+                                  )
+                                }
+                                className="flex w-full rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                              >
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 14 14"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
                                 >
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 14 14"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                      fill="white"
-                                    />
-                                  </svg>
-                                </button>
-                              </>
-                            ) : null}
-                          </>
+                                  <path
+                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                    fill="white"
+                                  />
+                                </svg>
+                              </button>
+                            </>
+                          ) : null}
                         </div>
                       </div>
                     </div>
-                    <div className="flex">
+
+                    {/* Defect cards */}
+                    <div className="flex flex-wrap">
                       {data?.inspeksi_ampar_lem_defect?.map(
-                        (data2: any, i: number) => {
-                          return (
-                            <div className="flex flex-col py-4 px-4 justify-between max-w-[15%]">
-                              <label className=" text-[#6c6b6b] text-sm font-semibold line-clamp-4">
-                                {data2.kode} - {data2.masalah}
+                        (data2: any, i: number) => (
+                          <div
+                            key={i}
+                            className="flex flex-col py-4 px-4 justify-between max-w-[15%]"
+                          >
+                            <label className="text-[#6c6b6b] text-sm font-semibold line-clamp-4">
+                              {data2.kode} - {data2.masalah}
+                            </label>
+                            {data2.kode_lkh == '' ||
+                            data2.kode_lkh == null ? null : (
+                              <label className="text-[#6c6b6b] text-sm font-semibold">
+                                Dengan : {data2.kode_lkh} - {data2.masalah_lkh}
                               </label>
-                              {data2.kode_lkh == '' ||
-                              data2.kode_lkh == null ? (
-                                <></>
-                              ) : (
-                                <>
-                                  <label className=" text-[#6c6b6b] text-sm font-semibold">
-                                    Dengan : {data2.kode_lkh} -{' '}
-                                    {data2.masalah_lkh}
-                                  </label>
-                                </>
-                              )}
-                              {data.status == 'done' ? (
-                                <input
-                                  type="text"
-                                  name="hasil"
-                                  defaultValue={data2.hasil}
-                                  disabled
-                                  onChange={(e) =>
-                                    handleChangePoint(e, index, i)
-                                  }
-                                  className="px-1 max-h-7 border rounded border-strokedark w-full"
-                                />
-                              ) : data.status == 'on progress' ? (
-                                <input
-                                  required
-                                  type="text"
-                                  name="hasil"
-                                  onChange={(e) =>
-                                    handleChangePoint(e, index, i)
-                                  }
-                                  className="px-1 max-h-7 border rounded border-strokedark w-full"
-                                />
-                              ) : null}
-                            </div>
-                          );
-                        },
+                            )}
+                            {data.status == 'done' ? (
+                              <input
+                                type="text"
+                                name="hasil"
+                                defaultValue={data2.hasil}
+                                disabled
+                                onChange={(e) => handleChangePoint(e, index, i)}
+                                className="px-1 max-h-7 border rounded border-strokedark w-full"
+                              />
+                            ) : data.status == 'on progress' ? (
+                              <input
+                                required
+                                type="text"
+                                name="hasil"
+                                onChange={(e) => handleChangePoint(e, index, i)}
+                                className="px-1 max-h-7 border rounded border-strokedark w-full"
+                              />
+                            ) : null}
+
+                            {/* ── Edit Defect Button ── */}
+                            <button
+                              type="button"
+                              onClick={() => openDefectEditModal(data2)}
+                              className="mt-1 w-full rounded bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold px-2 py-1 transition-colors"
+                            >
+                              ✏️ Edit Defect
+                            </button>
+                          </div>
+                        ),
                       )}
                       {data.status == 'on progress' ? (
-                        <>
-                          <button
-                            type="button"
-                            disabled={isLoading}
-                            onClick={() => handleClickAdd(index)}
-                            className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
-                          >
-                            Add
-                          </button>
-                        </>
+                        <button
+                          type="button"
+                          disabled={isLoading}
+                          onClick={() => handleClickAdd(index)}
+                          className="h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                        >
+                          Add
+                        </button>
                       ) : null}
                     </div>
 
                     {showDetail[index] == true && (
-                      <>
-                        <ModalAddPeriode
-                          isOpen={showDetail[index]}
-                          onClose={() => handleClickAdd(index)}
-                          judul={'ADD PROBLEM CODE'}
-                        >
-                          <div className="flex flex-col gap-2">
-                            <label className="text-black text-sm font-bold pt-4">
-                              Master Defect
-                            </label>
-                            <Select
-                              options={options}
-                              value={selectedOption}
-                              onChange={handleChangePointSelect1}
-                              placeholder="Select a Defect"
-                            />
-                            <Select
-                              options={secondOptions}
-                              value={selectedSecondOption}
-                              onChange={handleChangePointSelect2}
-                              placeholder="Select an Option"
-                              isDisabled={!selectedOption} // Disable until the first dropdown has a selection
-                            />
-                            {selectedOption && selectedSecondOption && (
-                              <button
-                                type="button"
-                                disabled={isLoading}
-                                onClick={() => {
-                                  tambahDefectPeriode(
-                                    RabutMesin?.data?.id,
-                                    idDefect,
-                                    data.id,
-                                    index,
-                                    wasteSelectCode,
-                                    wasteSelectLkh,
-                                    selectedMesinJO,
-                                    selectedOperatorJO,
-                                  ),
-                                    console.log(
-                                      RabutMesin?.data?.id,
-                                      idDefect,
-                                      data.id,
-                                      index,
-                                      wasteSelectCode,
-                                      wasteSelectLkh,
-                                      selectedMesinJO,
-                                      selectedOperatorJO,
-                                    );
-                                }}
-                                className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
-                              >
-                                TAMBAH MASALAH
-                              </button>
-                            )}
-                          </div>
-                        </ModalAddPeriode>
-                      </>
+                      <ModalAddPeriode
+                        isOpen={showDetail[index]}
+                        onClose={() => handleClickAdd(index)}
+                        judul={'ADD PROBLEM CODE'}
+                      >
+                        <div className="flex flex-col gap-2">
+                          <label className="text-black text-sm font-bold pt-4">
+                            Master Defect
+                          </label>
+                          <Select
+                            options={options}
+                            value={selectedOption}
+                            onChange={handleChangePointSelect1}
+                            placeholder="Select a Defect"
+                          />
+                          <Select
+                            options={secondOptions}
+                            value={selectedSecondOption}
+                            onChange={handleChangePointSelect2}
+                            placeholder="Select an Option"
+                            isDisabled={!selectedOption}
+                          />
+                          {selectedOption && selectedSecondOption && (
+                            <button
+                              type="button"
+                              disabled={isLoading}
+                              onClick={() => {
+                                tambahDefectPeriode(
+                                  RabutMesin?.data?.id,
+                                  idDefect,
+                                  data.id,
+                                  index,
+                                  wasteSelectCode,
+                                  wasteSelectLkh,
+                                  selectedMesinJO,
+                                  selectedOperatorJO,
+                                );
+                              }}
+                              className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
+                            >
+                              TAMBAH MASALAH
+                            </button>
+                          )}
+                        </div>
+                      </ModalAddPeriode>
                     )}
 
                     <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3">
                       <div className="grid col-span-8">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
+                        <label className="text-[#6c6b6b] text-sm font-semibold">
                           Catatan<span className="text-red-500">*</span> :
                         </label>
                         {data.status == 'on progress' ? (
@@ -1446,7 +1400,7 @@ function CheckSheetHasilRabut() {
                             defaultValue={data.catatan}
                             onChange={(e) => handleChangeRabutPoint(e, index)}
                             className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
+                          />
                         ) : data.status == 'done' ? (
                           <textarea
                             name="catatan"
@@ -1454,31 +1408,33 @@ function CheckSheetHasilRabut() {
                             defaultValue={data.catatan}
                             onChange={(e) => handleChangeRabutPoint(e, index)}
                             className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
+                          />
                         ) : null}
                       </div>
                       <div className="grid col-span-2 items-end justify-center"></div>
                     </div>
-                  </>
+                  </React.Fragment>
                 );
               },
             )}
           </div>
+
           {RabutMesin?.data?.status == 'incoming' ||
           RabutMesin?.data?.status == 'pending' ? (
             <button
               disabled={isLoading}
               onClick={() => tambahTaskRabut(RabutMesin?.data.id)}
-              className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
+              className="w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
             >
               + QTY PALET
             </button>
           ) : null}
-          <div className="bg-white ">
+
+          <div className="bg-white">
             <p className="text-sm font-semibold px-5 pt-5">SUB TOTAL</p>
             <div>
               <div className="px-5 flex flex-col w-[20%]">
-                <p className="font-semibold text-sm mt-5 ">
+                <p className="font-semibold text-sm mt-5">
                   Parameter Qty Palet
                 </p>
                 <input
@@ -1489,83 +1445,68 @@ function CheckSheetHasilRabut() {
                 />
               </div>
               <div>
-                <div className="flex  gap-4 py-4 p-5">
+                <div className="flex gap-4 py-4 p-5">
                   {RabutMesin?.totalPointDefect?.map(
-                    (data: any, index: number) => {
-                      return (
-                        <div className="grid  items-center">
-                          <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                            {data.kode}
-                          </label>
-                          <input
-                            type="text"
-                            defaultValue={data.total_defect}
-                            className="bg-[#e8e6e6] px-1 border rounded border-strokedark w-full"
-                          />
-                        </div>
-                      );
-                    },
+                    (data: any, index: number) => (
+                      <div key={index} className="grid items-center">
+                        <label className="text-[#6c6b6b] text-sm font-semibold">
+                          {data.kode}
+                        </label>
+                        <input
+                          type="text"
+                          defaultValue={data.total_defect}
+                          className="bg-[#e8e6e6] px-1 border rounded border-strokedark w-full"
+                        />
+                      </div>
+                    ),
                   )}
                 </div>
-                <div className=" p-5">
+                <div className="p-5">
                   <div className="w-4/12">
-                    <label className=" text-[#6c6b6b] text-sm font-semibold">
+                    <label className="text-[#6c6b6b] text-sm font-semibold">
                       JUMLAH DEFECT YANG DITEMUKAN
                     </label>
                     <input
                       type="text"
                       disabled
                       defaultValue={RabutMesin?.totalDefect}
-                      className="bg-[#e8e6e6]  px-1 border rounded border-strokedark w-full"
+                      className="bg-[#e8e6e6] px-1 border rounded border-strokedark w-full"
                     />
                   </div>
-
                   <div className="w-full mt-10">
                     {RabutMesin?.data?.status != 'history' ? (
-                      <>
-                        <div className="grid grid-cols-1">
-                          <label className=" text-[#6c6b6b] text-sm font-semibold">
-                            KETERANGAN
-                          </label>
-                          <textarea
-                            required
-                            onChange={(e) => setCatatan(e.target.value)}
-                            className="border rounded h-44 w-12/12 resize-none"
-                          ></textarea>
-                        </div>
-                      </>
+                      <div className="grid grid-cols-1">
+                        <label className="text-[#6c6b6b] text-sm font-semibold">
+                          KETERANGAN
+                        </label>
+                        <textarea
+                          required
+                          onChange={(e) => setCatatan(e.target.value)}
+                          className="border rounded h-44 w-12/12 resize-none"
+                        />
+                      </div>
                     ) : (
-                      <>
-                        <div className="grid grid-cols-1">
-                          <label className=" text-[#6c6b6b] text-sm font-semibold">
-                            KETERANGAN
-                          </label>
-                          <textarea
-                            defaultValue={RabutMesin?.data.catatan}
-                            disabled
-                            className="border rounded h-44 w-12/12 resize-none"
-                          ></textarea>
-                        </div>
-                      </>
+                      <div className="grid grid-cols-1">
+                        <label className="text-[#6c6b6b] text-sm font-semibold">
+                          KETERANGAN
+                        </label>
+                        <textarea
+                          defaultValue={RabutMesin?.data.catatan}
+                          disabled
+                          className="border rounded h-44 w-12/12 resize-none"
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
                 <div className="flex justify-end item w-full p-5">
-                  {/* {RabutMesin?.data?.status == 'incoming' ? (
-                      <button
-                        onClick={() => pendingRabut(RabutMesin?.data.id)}
-                        className=" w-full h-10 rounded-sm bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                      >
-                        PENDING
-                      </button>
-                    ) : null} */}
                   {RabutMesin?.data?.status == 'incoming' ||
                   RabutMesin?.data?.status == 'pending' ? (
                     <button
                       disabled={isLoading}
                       type="submit"
                       value="submit"
-                      className=" col-span-2 w-[25%] h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                      className="col-span-2 w-[25%] h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                     >
                       CHECKSHEET SELESAI
                     </button>
@@ -1576,6 +1517,204 @@ function CheckSheetHasilRabut() {
           </div>
         </form>
       </main>
+
+      {/* ── Per-Defect Edit Modal ─────────────────────────────────────────────── */}
+      {showDefectEditModal && editingDefectData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-800">
+                ✏️ Edit Defect —{' '}
+                <span className="text-blue-600">{editingDefectData.kode}</span>
+              </h2>
+              <button
+                onClick={() => {
+                  setShowDefectEditModal(false);
+                  setEditingDefectData(null);
+                }}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-600 font-bold text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 flex flex-col gap-4">
+              {/* Kode Defect (first dropdown) */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Kode Defect <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  options={options}
+                  value={defectEditFirstOption}
+                  onChange={handleDefectEditSelect1}
+                  placeholder="Pilih Kode Defect"
+                />
+              </div>
+
+              {/* Kendala / Kode LKH (second dropdown) */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Kendala (Kode LKH)
+                </label>
+                <Select
+                  options={defectEditSecondOptions}
+                  value={defectEditSecondOption}
+                  onChange={handleDefectEditSelect2}
+                  placeholder="Pilih Kendala"
+                  isDisabled={!defectEditFirstOption}
+                />
+              </div>
+
+              {/* Hasil */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Hasil
+                </label>
+                <input
+                  type="number"
+                  value={defectEditForm.hasil}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      hasil: e.target.value,
+                    }))
+                  }
+                  placeholder="Jumlah hasil"
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Kriteria */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Kriteria
+                </label>
+                <select
+                  value={defectEditForm.kriteria}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      kriteria: e.target.value,
+                    }))
+                  }
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">-- Pilih Kriteria --</option>
+                  <option value="Major">Major</option>
+                  <option value="Minor">Minor</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+
+              {/* Persen Kriteria */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Persen Kriteria
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={defectEditForm.persen_kriteria}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      persen_kriteria: e.target.value,
+                    }))
+                  }
+                  placeholder="Contoh: 1"
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Mesin */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Mesin
+                </label>
+                <input
+                  type="text"
+                  value={defectEditForm.mesin}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      mesin: e.target.value,
+                    }))
+                  }
+                  placeholder="Mesin"
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Operator */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Operator
+                </label>
+                <input
+                  type="text"
+                  value={defectEditForm.operator}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      operator: e.target.value,
+                    }))
+                  }
+                  placeholder="Operator"
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Sumber Masalah */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Sumber Masalah
+                </label>
+                <select
+                  value={defectEditForm.sumber_masalah}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      sumber_masalah: e.target.value,
+                    }))
+                  }
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">-- Pilih Sumber Masalah --</option>
+                  <option value="Mesin">Mesin</option>
+                  <option value="Material">Material</option>
+                  <option value="Metode">Metode</option>
+                  <option value="Manusia">Manusia</option>
+                  <option value="Lingkungan">Lingkungan</option>
+                </select>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowDefectEditModal(false);
+                    setEditingDefectData(null);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  disabled={isSavingDefectEdit || !defectEditForm.kode}
+                  onClick={saveDefectEdit}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold rounded-md transition-colors"
+                >
+                  {isSavingDefectEdit ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ─────────────────────────────────────────────────────────────────────── */}
     </>
   );
 }

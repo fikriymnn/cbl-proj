@@ -118,7 +118,27 @@ function CheckSheetHasilRabut() {
   const [editTujuanDepartment, setEditTujuanDepartment] = useState<string>('');
   const [editWasteSelectCode, setEditWasteSelectCode] = useState<string>('');
   const [editWasteSelectLkh, setEditWasteSelectLkh] = useState<string>('');
-
+  const [showDefectEditModal, setShowDefectEditModal] = useState(false);
+  const [editingDefectData, setEditingDefectData] = useState<any>(null);
+  const [defectEditForm, setDefectEditForm] = useState<any>({
+    hasil: '',
+    kode: '',
+    masalah: '',
+    kode_lkh: '',
+    masalah_lkh: '',
+    kriteria: '',
+    persen_kriteria: '',
+    sumber_masalah: '',
+    mesin: '',
+    operator: '',
+  });
+  const [defectEditFirstOption, setDefectEditFirstOption] = useState<any>(null);
+  const [defectEditSecondOption, setDefectEditSecondOption] =
+    useState<any>(null);
+  const [defectEditSecondOptions, setDefectEditSecondOptions] = useState<any[]>(
+    [],
+  );
+  const [isSavingDefectEdit, setIsSavingDefectEdit] = useState(false);
   const openEditModal = (data: any, index: any) => {
     setEditingPalletData({
       id: data.id,
@@ -500,6 +520,191 @@ function CheckSheetHasilRabut() {
       setIsLoadingEdit(false);
     }
   };
+  function openDefectEditModal(defect: any) {
+    setEditingDefectData(defect);
+    setDefectEditForm({
+      hasil: defect.hasil ?? '',
+      kode: defect.kode ?? '',
+      masalah: defect.masalah ?? '',
+      kode_lkh: defect.kode_lkh ?? '',
+      masalah_lkh: defect.masalah_lkh ?? '',
+      kriteria: defect.kriteria ?? '',
+      persen_kriteria: defect.persen_kriteria ?? '',
+      sumber_masalah: defect.sumber_masalah ?? '',
+      mesin: defect.mesin ?? '',
+      operator: defect.operator ?? '',
+    });
+
+    // Pre-select first dropdown from options
+    const firstOpt = options.find((o: any) => o.value === defect.kode) || null;
+    setDefectEditFirstOption(firstOpt);
+
+    // Pre-populate second dropdown options and selection
+    if (firstOpt) {
+      const matchingWaste = masterWaste?.find(
+        (w: any) => w.kode_waste === defect.kode,
+      );
+      if (matchingWaste?.waste) {
+        const wasteOpts = matchingWaste.waste.map((item: any) => ({
+          value: item.i_kendala,
+          label: `${item.kode_kendala} - ${item.kendala_desc}`,
+          kode_kendala: item.kode_kendala,
+          kendala_desc: item.kendala_desc,
+        }));
+        setDefectEditSecondOptions(wasteOpts);
+        const secondOpt =
+          wasteOpts.find((o: any) => o.kode_kendala === defect.kode_lkh) ||
+          null;
+        setDefectEditSecondOption(secondOpt);
+      } else {
+        setDefectEditSecondOptions([]);
+        setDefectEditSecondOption(null);
+      }
+    } else {
+      setDefectEditSecondOptions([]);
+      setDefectEditSecondOption(null);
+    }
+
+    setShowDefectEditModal(true);
+  }
+
+  function handleDefectEditSelect1(selected: any) {
+    setDefectEditFirstOption(selected);
+    setDefectEditSecondOption(null);
+
+    if (!selected) {
+      setDefectEditSecondOptions([]);
+      setDefectEditForm((prev: any) => ({
+        ...prev,
+        kode: '',
+        masalah: '',
+        kode_lkh: '',
+        masalah_lkh: '',
+      }));
+      return;
+    }
+
+    setDefectEditForm((prev: any) => ({
+      ...prev,
+      kode: selected.value,
+      masalah: selected.kendala_desc || selected.nama_kendala || '',
+      kode_lkh: '',
+      masalah_lkh: '',
+    }));
+
+    const matchingWaste = masterWaste?.find(
+      (w: any) => w.kode_waste === selected.value,
+    );
+    if (matchingWaste?.waste) {
+      const wasteOpts = matchingWaste.waste.map((item: any) => ({
+        value: item.i_kendala,
+        label: `${item.kode_kendala} - ${item.kendala_desc}`,
+        kode_kendala: item.kode_kendala,
+        kendala_desc: item.kendala_desc,
+      }));
+      setDefectEditSecondOptions(wasteOpts);
+    } else {
+      setDefectEditSecondOptions([]);
+    }
+
+    // Auto-fill mesin/operator from kendalaByJo
+    if (Array.isArray(kendalaByJo)) {
+      const match = kendalaByJo.find(
+        (k: any) => k.kode_kendala === selected.value,
+      );
+      if (match) {
+        setDefectEditForm((prev: any) => ({
+          ...prev,
+          mesin: match.mesin ?? prev.mesin,
+          operator: match.operator ?? prev.operator,
+        }));
+      }
+    }
+
+    // Auto-fill kriteria/persen_kriteria/sumber_masalah from defectMaster
+    if (Array.isArray(defectMaster)) {
+      const masterItem = defectMaster.find(
+        (item: any) => item.e_kode_produksi === selected.value,
+      );
+      if (masterItem) {
+        setDefectEditForm((prev: any) => ({
+          ...prev,
+          kriteria: masterItem.criteria ?? prev.kriteria,
+          persen_kriteria: masterItem.criteria_percent ?? prev.persen_kriteria,
+          sumber_masalah: masterItem.kategori_kendala ?? prev.sumber_masalah,
+        }));
+      }
+    }
+  }
+
+  function handleDefectEditSelect2(selected: any) {
+    setDefectEditSecondOption(selected);
+    if (!selected) {
+      setDefectEditForm((prev: any) => ({
+        ...prev,
+        kode_lkh: '',
+        masalah_lkh: '',
+      }));
+      return;
+    }
+    setDefectEditForm((prev: any) => ({
+      ...prev,
+      kode_lkh: selected.kode_kendala ?? '',
+      masalah_lkh: selected.kendala_desc ?? '',
+    }));
+
+    // Override mesin/operator if this specific kendala exists in kendalaByJo
+    if (Array.isArray(kendalaByJo)) {
+      const match = kendalaByJo.find(
+        (k: any) => k.kode_kendala === selected.kode_kendala,
+      );
+      if (match) {
+        setDefectEditForm((prev: any) => ({
+          ...prev,
+          mesin: match.mesin ?? prev.mesin,
+          operator: match.operator ?? prev.operator,
+        }));
+      }
+    }
+  }
+
+  async function saveDefectEdit() {
+    if (!editingDefectData) return;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiRabutPoint/updateDefect/${editingDefectData.id}`;
+    try {
+      setIsSavingDefectEdit(true);
+      await axios.put(
+        url,
+        {
+          hasil:
+            defectEditForm.hasil !== '' ? Number(defectEditForm.hasil) : null,
+          kode: defectEditForm.kode,
+          masalah: defectEditForm.masalah,
+          kode_lkh: defectEditForm.kode_lkh,
+          masalah_lkh: defectEditForm.masalah_lkh,
+          kriteria: defectEditForm.kriteria,
+          persen_kriteria:
+            defectEditForm.persen_kriteria !== ''
+              ? Number(defectEditForm.persen_kriteria)
+              : null,
+          sumber_masalah: defectEditForm.sumber_masalah,
+          mesin: defectEditForm.mesin,
+          operator: defectEditForm.operator,
+        },
+        { withCredentials: true },
+      );
+      setShowDefectEditModal(false);
+      setEditingDefectData(null);
+      getRabutMesin();
+    } catch (error: any) {
+      alert(error?.response?.data?.msg || 'Gagal update defect');
+      console.error(error);
+    } finally {
+      setIsSavingDefectEdit(false);
+    }
+  }
   const [options, setOptions] = useState<any>([]); // Options for the first dropdown
   const [secondOptions, setSecondOptions] = useState<any>([]); // Filtered options for the second dropdown
   const [defectMaster, setDefectMaster] = useState<any>([]); // Full data for the first dropdown
@@ -2108,6 +2313,14 @@ function CheckSheetHasilRabut() {
                                     className="px-1 border rounded border-strokedark w-full "
                                   />
                                 ) : null}
+
+                                <button
+                                  type="button"
+                                  onClick={() => openDefectEditModal(data2)}
+                                  className="mt-1 w-full rounded bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-semibold px-2 py-1 transition-colors"
+                                >
+                                  ✏️ Edit Defect
+                                </button>
                               </div>
                             </>
                           );
@@ -2661,6 +2874,200 @@ function CheckSheetHasilRabut() {
           </div>
         </div>
       </main>
+      {/* Per-Defect Edit Modal */}
+      {showDefectEditModal && editingDefectData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-800">
+                ✏️ Edit Defect —{' '}
+                <span className="text-blue-600">{editingDefectData.kode}</span>
+              </h2>
+              <button
+                onClick={() => {
+                  setShowDefectEditModal(false);
+                  setEditingDefectData(null);
+                }}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-600 font-bold text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 flex flex-col gap-4">
+              {/* Kode & Masalah via dropdowns */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Kode Defect <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  options={options}
+                  value={defectEditFirstOption}
+                  onChange={handleDefectEditSelect1}
+                  placeholder="Pilih Kode Defect"
+                />
+              </div>
+
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Kendala (Kode LKH)
+                </label>
+                <Select
+                  options={defectEditSecondOptions}
+                  value={defectEditSecondOption}
+                  onChange={handleDefectEditSelect2}
+                  placeholder="Pilih Kendala"
+                  isDisabled={!defectEditFirstOption}
+                />
+              </div>
+
+              {/* Hasil */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Hasil (Jumlah)
+                </label>
+                <input
+                  type="number"
+                  value={defectEditForm.hasil}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      hasil: e.target.value,
+                    }))
+                  }
+                  placeholder="Jumlah hasil defect"
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Kriteria */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Kriteria
+                </label>
+                <select
+                  value={defectEditForm.kriteria}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      kriteria: e.target.value,
+                    }))
+                  }
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">Pilih Kriteria</option>
+                  <option value="Critical">Critical</option>
+                  <option value="Major">Major</option>
+                  <option value="Minor">Minor</option>
+                </select>
+              </div>
+
+              {/* Persen Kriteria */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  % Kriteria
+                </label>
+                <input
+                  type="number"
+                  value={defectEditForm.persen_kriteria}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      persen_kriteria: e.target.value,
+                    }))
+                  }
+                  placeholder="Persen kriteria"
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Sumber Masalah */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Sumber Masalah
+                </label>
+                <select
+                  value={defectEditForm.sumber_masalah}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      sumber_masalah: e.target.value,
+                    }))
+                  }
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                >
+                  <option value="">Pilih Sumber Masalah</option>
+                  <option value="Mesin">Mesin</option>
+                  <option value="Man">Man</option>
+                  <option value="Material">Material</option>
+                  <option value="Persiapan">Persiapan</option>
+                  <option value="Design">Design</option>
+                </select>
+              </div>
+
+              {/* Mesin */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Mesin
+                </label>
+                <input
+                  type="text"
+                  value={defectEditForm.mesin}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      mesin: e.target.value,
+                    }))
+                  }
+                  placeholder="Mesin"
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Operator */}
+              <div>
+                <label className="text-gray-800 font-semibold text-sm block mb-1">
+                  Operator
+                </label>
+                <input
+                  type="text"
+                  value={defectEditForm.operator}
+                  onChange={(e) =>
+                    setDefectEditForm((prev: any) => ({
+                      ...prev,
+                      operator: e.target.value,
+                    }))
+                  }
+                  placeholder="Operator"
+                  className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowDefectEditModal(false);
+                    setEditingDefectData(null);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-semibold rounded-md hover:bg-gray-50 transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  disabled={isSavingDefectEdit || !defectEditForm.kode}
+                  onClick={saveDefectEdit}
+                  className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold rounded-md transition-colors"
+                >
+                  {isSavingDefectEdit ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
