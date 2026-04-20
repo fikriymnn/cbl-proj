@@ -14,6 +14,20 @@ const MasterKategori = () => {
   const [masterKategori, setmasterKategori] = useState<any>();
   const [masterMesin, setmasterMesin] = useState<any>();
   const [selectedID, setSelectedID] = useState<any>();
+
+  // ── NEW: search state ──────────────────────────────────────────
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Derived filtered list (runs on every render, no extra useEffect needed)
+  const filteredKategori = masterKategori?.data?.filter((item: any) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      item.nama_mesin?.toLowerCase().includes(q) ||
+      item.nama_kategori?.toLowerCase().includes(q)
+    );
+  });
+  // ──────────────────────────────────────────────────────────────
+
   useEffect(() => {
     getMasterMesin();
     getmasterKategori();
@@ -87,6 +101,7 @@ const MasterKategori = () => {
       console.log(error);
     }
   }
+
   async function putMasterKategori(id: any, mesin: any, i: any) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -126,6 +141,7 @@ const MasterKategori = () => {
       console.log(error);
     }
   }
+
   async function hapusKategori(id: any) {
     if (window.confirm('Apakah Anda yakin ingin Menghapus Kategori Ini?')) {
       const url = `${
@@ -133,13 +149,9 @@ const MasterKategori = () => {
       }/master/ppic/settingKapasitas/${id}`;
       try {
         setIsLoading(true);
-        const res = await axios.delete(
-          url,
-
-          {
-            withCredentials: true,
-          },
-        );
+        const res = await axios.delete(url, {
+          withCredentials: true,
+        });
         setIsLoading(false);
         getmasterKategori();
       } catch (error: any) {
@@ -148,6 +160,7 @@ const MasterKategori = () => {
       }
     }
   }
+
   async function getMasterMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/master/mesinTahapan`;
     try {
@@ -176,37 +189,68 @@ const MasterKategori = () => {
   const openEdit = (i: any) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = true;
-
     setshowEdit(onchangeVal);
   };
   const closeEdit = (i: any) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = false;
-
     setshowEdit(onchangeVal);
   };
+
   const handleChangePointDepatment = (selected: any) => {
     const { value } = selected;
-    const filteredData = masterMesin.find(
-      (item: any) => item.mesin == value,
-      // item.id.includes(parseInt(value));
-    );
-
+    const filteredData = masterMesin.find((item: any) => item.mesin == value);
     console.log(filteredData?.mesin);
-
     setSelectedID(filteredData?.mesin);
   };
+
   return (
     <main className="overflow-x-scroll ' ">
       {isLoading && <Loading />}
       <div className="min-w-[700px]  bg-white rounded-xl flex flex-col gap-1 py-[1%]">
-        <div className="flex w-full justify-between pb-2 px-[1%] border-b-8 border-[#D8EAFF]">
+        {/* ── Header row: TAMBAH button + Search input ── */}
+        <div className="flex w-full justify-between items-center pb-2 px-[1%] border-b-8 border-[#D8EAFF] gap-2">
           <button
             onClick={() => openModalHistory()}
             className=" bg-blue-600 rounded-sm text-white text-xs font-bold px-2 py-1"
           >
             TAMBAH KATEGORI
           </button>
+
+          {/* ── NEW: Search bar ── */}
+          <div className="relative flex items-center">
+            <svg
+              className="absolute left-2 text-gray-400 w-4 h-4 pointer-events-none"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Cari mesin / kategori..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 pr-3 py-1 text-xs border-2 border-stroke rounded-md focus:outline-none focus:border-blue-400 w-52"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 text-gray-400 hover:text-gray-600 text-sm leading-none"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          {/* ─────────────────────── */}
+
           {showHistory == true && (
             <>
               <ModalKosonganSmall
@@ -312,6 +356,8 @@ const MasterKategori = () => {
             </>
           )}
         </div>
+
+        {/* ── Table header ── */}
         <div className="grid grid-cols-9  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%]">
           <p className="text-[#646464] text-xs font-bold col-span-2"></p>
           <p className="text-[#646464] text-xs font-bold ">Setting A</p>
@@ -321,8 +367,15 @@ const MasterKategori = () => {
           <p className="text-[#646464] text-xs font-bold ">Kapasitas B</p>
           <p className="text-[#646464] text-xs font-bold ">Kapasitas C</p>
         </div>
+
+        {/* ── Table body — now uses filteredKategori ── */}
         <div className="flex w-full flex-col bg-white">
-          {masterKategori?.data?.map((data: any, i: number) => (
+          {filteredKategori?.length === 0 && (
+            <p className="text-center text-xs text-gray-400 py-4">
+              Tidak ada data yang cocok dengan pencarian.
+            </p>
+          )}
+          {filteredKategori?.map((data: any, i: number) => (
             <>
               <div
                 key={i}
@@ -337,23 +390,18 @@ const MasterKategori = () => {
                 <p className="text-[#646464] text-xs font-bold ">
                   {data.setting_a}
                 </p>
-
                 <p className="text-[#646464] text-xs font-bold ">
                   {data.setting_b}
                 </p>
-
                 <p className="text-[#646464] text-xs font-bold ">
                   {data.setting_c}
                 </p>
-
                 <p className="text-[#646464] text-xs font-bold ">
                   {data.kapasitas_a}
                 </p>
-
                 <p className="text-[#646464] text-xs font-bold ">
                   {data.kapasitas_b}
                 </p>
-
                 <p className="text-[#646464] text-xs font-bold ">
                   {data.kapasitas_c}
                 </p>

@@ -9,50 +9,50 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Cell,
-  LineChart,
-  Line,
 } from 'recharts';
 
-// Define TypeScript interfaces for our data structures
-interface BookingDetail {
-  createdAt: string;
+// ─── Interfaces ──────────────────────────────────────────────────────────────
+
+interface DetailItem {
   id: number;
+  item: string;
+  jam: string;
+  jenis: string;
   mesin: string;
-  nama_customer: string;
-  nama_item: string;
-  no_io: string;
+  no_booking: string | null;
+  no_jo: string;
+  qty_dipakai: number;
   qty_druk: number;
   qty_pcs: number;
-  status: string;
+  tahapan: string;
   tanggal: string;
-  updatedAt: string;
 }
 
-interface MachineBooking {
-  mesin: string;
-  total_qty_pcs: number;
-  total_qty_druk: number;
-  detail: BookingDetail[];
-}
-
-interface MachineCapacity {
-  mesin: string;
+interface SisaKapasitas {
+  id: number;
+  kode_mesin: string;
+  nama_mesin: string;
+  type_kapasitas: string;
+  bulan: number;
+  tahun: number;
+  label: string;
   kapasitas: number;
-  proses: string;
+  sisa: number;
+  terpakai: number;
+  detail: DetailItem[];
 }
 
-interface MachineRemainingCapacity {
-  mesin: string;
-  kapasitas_mesin: number;
-  total_kapasitas: number;
-  sisa_kapasitas_percent: number;
+interface ListKapasitas {
+  id: number;
+  kode_mesin: string;
+  nama_mesin: string;
+  type_kapasitas: string;
+  kapasitas: number;
 }
 
 interface ApiResponse {
-  data_booking: Record<string, MachineBooking>;
-  list_kapasitas_perbulan: MachineCapacity[];
-  sisa_kapasitas: MachineRemainingCapacity[];
+  list_kapasitas: ListKapasitas[];
+  sisa_kapasitas: SisaKapasitas[];
 }
 
 interface MonthRangeData {
@@ -62,59 +62,84 @@ interface MonthRangeData {
   data: ApiResponse;
 }
 
-interface AggregatedData {
-  data_booking: Record<string, MachineBooking>;
-  sisa_kapasitas: MachineRemainingCapacity[];
-  monthly_data: MonthRangeData[];
-}
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const MONTH_NAMES = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
+];
+
+const getMonthName = (month: number) => MONTH_NAMES[month - 1];
+
+const formatNumber = (num: number) =>
+  new Intl.NumberFormat('id-ID').format(Math.round(num));
+
+const formatDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+const capacityColor = (pct: number) => {
+  if (pct <= 10) return 'text-red-600';
+  if (pct <= 50) return 'text-amber-600';
+  if (pct <= 75) return 'text-blue-600';
+  return 'text-green-600';
+};
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 function ReportKapasitas() {
-  // State for filter parameters
-  const [startMonth, setStartMonth] = useState(new Date().getMonth() + 1);
-  const [startYear, setStartYear] = useState(new Date().getFullYear());
-  const [endMonth, setEndMonth] = useState(new Date().getMonth() + 1);
-  const [endYear, setEndYear] = useState(new Date().getFullYear());
+  const now = new Date();
+  const [startMonth, setStartMonth] = useState(now.getMonth() + 1);
+  const [startYear, setStartYear] = useState(now.getFullYear());
+  const [endMonth, setEndMonth] = useState(now.getMonth() + 1);
+  const [endYear, setEndYear] = useState(now.getFullYear());
   const [isLoading, setIsLoading] = useState(false);
-  const [aggregatedData, setAggregatedData] = useState<AggregatedData | null>(
-    null,
-  );
-  const [showDetails, setShowDetails] = useState<Record<string, boolean>>({});
-  const [selectedMachine, setSelectedMachine] = useState<string | null>(null);
-  const [showMonthlyDetails, setShowMonthlyDetails] = useState<
+  const [monthlyData, setMonthlyData] = useState<MonthRangeData[]>([]);
+  const [expandedMachine, setExpandedMachine] = useState<string | null>(null);
+  const [showMonthlyDetail, setShowMonthlyDetail] = useState<
     Record<string, boolean>
   >({});
 
-  // Function to get month range
-  const getMonthRange = (
-    startMonth: number,
-    startYear: number,
-    endMonth: number,
-    endYear: number,
-  ) => {
-    const months = [];
-    let currentMonth = startMonth;
-    let currentYear = startYear;
+  // ── Date range helpers ────────────────────────────────────────────────────
 
-    while (
-      currentYear < endYear ||
-      (currentYear === endYear && currentMonth <= endMonth)
-    ) {
-      months.push({ month: currentMonth, year: currentYear });
-      currentMonth++;
-      if (currentMonth > 12) {
-        currentMonth = 1;
-        currentYear++;
+  const getMonthRange = () => {
+    const months: { month: number; year: number }[] = [];
+    let m = startMonth,
+      y = startYear;
+    while (y < endYear || (y === endYear && m <= endMonth)) {
+      months.push({ month: m, year: y });
+      m++;
+      if (m > 12) {
+        m = 1;
+        y++;
       }
     }
-
     return months;
   };
 
-  // Function to fetch data from API for a single month
-  async function fetchSingleMonth(
-    month: number,
-    year: number,
-  ): Promise<ApiResponse> {
+  const dateRangeLabel =
+    startMonth === endMonth && startYear === endYear
+      ? `${getMonthName(startMonth)} ${startYear}`
+      : `${getMonthName(startMonth)} ${startYear} – ${getMonthName(
+          endMonth,
+        )} ${endYear}`;
+
+  // ── Fetch ─────────────────────────────────────────────────────────────────
+
+  async function fetchMonth(month: number, year: number): Promise<ApiResponse> {
     const url = `${
       import.meta.env.VITE_API_LINK || '/api'
     }/ppic/reportKapasitas`;
@@ -125,861 +150,551 @@ function ReportKapasitas() {
     return res.data;
   }
 
-  // Function to fetch data for month range
-  async function getReportKapasitasRange() {
+  async function fetchAll() {
     setIsLoading(true);
     try {
-      const monthRange = getMonthRange(
-        startMonth,
-        startYear,
-        endMonth,
-        endYear,
+      const range = getMonthRange();
+      const results = await Promise.all(
+        range.map(({ month, year }) =>
+          fetchMonth(month, year).then((data) => ({
+            month,
+            year,
+            monthLabel: `${getMonthName(month)} ${year}`,
+            data,
+          })),
+        ),
       );
-
-      // Fetch data for all months in parallel
-      const promises = monthRange.map(({ month, year }) =>
-        fetchSingleMonth(month, year).then((data) => ({
-          month,
-          year,
-          monthLabel: `${getMonthName(month)} ${year}`,
-          data,
-        })),
-      );
-
-      const monthlyResults = await Promise.all(promises);
-
-      // Aggregate the data
-      const aggregated = aggregateMonthlyData(monthlyResults);
-      setAggregatedData(aggregated);
-
-      console.log('Aggregated data:', aggregated);
-    } catch (error) {
-      console.error('Error fetching data:', error);
+      setMonthlyData(results);
+    } catch (err) {
+      console.error('Error fetching data:', err);
     } finally {
       setIsLoading(false);
     }
   }
 
-  // Function to aggregate data from multiple months
-  const aggregateMonthlyData = (
-    monthlyResults: MonthRangeData[],
-  ): AggregatedData => {
-    const aggregatedBookings: Record<string, MachineBooking> = {};
-    const machineCapacities: Record<string, MachineRemainingCapacity> = {};
-
-    monthlyResults.forEach(({ data }) => {
-      // Aggregate booking data
-      Object.entries(data.data_booking).forEach(([machine, booking]) => {
-        if (!aggregatedBookings[machine]) {
-          aggregatedBookings[machine] = {
-            mesin: machine,
-            total_qty_pcs: 0,
-            total_qty_druk: 0,
-            detail: [],
-          };
-        }
-
-        aggregatedBookings[machine].total_qty_pcs += booking.total_qty_pcs;
-        aggregatedBookings[machine].total_qty_druk += booking.total_qty_druk;
-        aggregatedBookings[machine].detail.push(...booking.detail);
-      });
-
-      // For capacity, we'll use the average across months
-      data.sisa_kapasitas.forEach((capacity) => {
-        if (!machineCapacities[capacity.mesin]) {
-          machineCapacities[capacity.mesin] = {
-            mesin: capacity.mesin,
-            kapasitas_mesin: capacity.kapasitas_mesin,
-            total_kapasitas: 0,
-            sisa_kapasitas_percent: 0,
-          };
-        }
-
-        // Sum up for averaging later
-        machineCapacities[capacity.mesin].total_kapasitas +=
-          capacity.total_kapasitas;
-        machineCapacities[capacity.mesin].sisa_kapasitas_percent +=
-          capacity.sisa_kapasitas_percent;
-      });
-    });
-
-    // Calculate averages for capacity
-    const avgCapacities = Object.values(machineCapacities).map((capacity) => ({
-      ...capacity,
-      kapasitas_mesin: capacity.kapasitas_mesin * monthlyResults.length, // Total capacity for the period
-      total_kapasitas: capacity.total_kapasitas / monthlyResults.length,
-      sisa_kapasitas_percent:
-        capacity.sisa_kapasitas_percent / monthlyResults.length,
-    }));
-
-    return {
-      data_booking: aggregatedBookings,
-      sisa_kapasitas: avgCapacities,
-      monthly_data: monthlyResults,
-    };
-  };
-
-  // Format number with thousand separator
-  const formatNumber = (num: number): string => {
-    return new Intl.NumberFormat('id-ID').format(num);
-  };
-
-  const getMonthName = (month: number): string => {
-    const months = [
-      'Januari',
-      'Februari',
-      'Maret',
-      'April',
-      'Mei',
-      'Juni',
-      'Juli',
-      'Agustus',
-      'September',
-      'Oktober',
-      'November',
-      'Desember',
-    ];
-    return months[month - 1];
-  };
-
-  const months = [
-    { value: 1, label: 'Januari' },
-    { value: 2, label: 'Februari' },
-    { value: 3, label: 'Maret' },
-    { value: 4, label: 'April' },
-    { value: 5, label: 'Mei' },
-    { value: 6, label: 'Juni' },
-    { value: 7, label: 'Juli' },
-    { value: 8, label: 'Agustus' },
-    { value: 9, label: 'September' },
-    { value: 10, label: 'Oktober' },
-    { value: 11, label: 'November' },
-    { value: 12, label: 'Desember' },
-  ];
-
-  // Generate years for dropdown (10 years back and 5 years forward)
-  const currentYear = new Date().getFullYear();
-  const startYearRange = currentYear - 10;
-  const endYearRange = currentYear + 5;
-  const years = Array.from(
-    { length: endYearRange - startYearRange + 1 },
-    (_, i) => startYearRange + i,
-  );
-
-  // Fetch data when filters change
   useEffect(() => {
-    getReportKapasitasRange();
+    fetchAll();
   }, [startMonth, startYear, endMonth, endYear]);
 
-  // Handle machine selection
-  const handleMachineSelect = (machine: string) => {
-    if (selectedMachine === machine) {
-      setSelectedMachine(null);
-    } else {
-      setSelectedMachine(machine);
-    }
-  };
+  // ── Aggregation ───────────────────────────────────────────────────────────
 
-  // Toggle showing monthly details for a specific machine
-  const toggleMonthlyDetails = (machine: string) => {
-    setShowMonthlyDetails({
-      ...showMonthlyDetails,
-      [machine]: !showMonthlyDetails[machine],
-    });
-  };
+  // Build a unified list of machines from all months
+  const allMachines: string[] = monthlyData.length
+    ? [
+        ...new Set(
+          monthlyData.flatMap((m) =>
+            m.data.sisa_kapasitas.map((s) => s.nama_mesin),
+          ),
+        ),
+      ]
+    : [];
 
-  // Get monthly data for a specific machine
-  const getMonthlyDataForMachine = (machineName: string) => {
-    if (!aggregatedData?.monthly_data) return [];
-
-    return aggregatedData.monthly_data.map((monthData) => {
-      const machineCapacity = monthData.data.sisa_kapasitas.find(
-        (capacity) => capacity.mesin === machineName,
-      );
-
-      if (!machineCapacity) {
-        return {
-          month: monthData.monthLabel,
-          kapasitas_mesin: 0,
-          kapasitas_terpakai: 0,
-          kapasitas_tersisa: 0,
-          sisa_kapasitas_percent: 0,
-        };
-      }
-
-      const usedCapacity =
-        machineCapacity.kapasitas_mesin -
-        (machineCapacity.kapasitas_mesin *
-          machineCapacity.sisa_kapasitas_percent) /
-          100;
-      const remainingCapacity =
-        (machineCapacity.kapasitas_mesin *
-          machineCapacity.sisa_kapasitas_percent) /
-        100;
-
-      return {
-        month: monthData.monthLabel,
-        kapasitas_mesin: machineCapacity.kapasitas_mesin,
-        kapasitas_terpakai: usedCapacity,
-        kapasitas_tersisa: remainingCapacity,
-        sisa_kapasitas_percent: machineCapacity.sisa_kapasitas_percent,
-      };
-    });
-  };
-
-  // Process the data for the capacity chart
-  const getCapacityChartData = () => {
-    if (!aggregatedData?.sisa_kapasitas) return [];
-
-    return aggregatedData.sisa_kapasitas.map((item) => ({
-      name: item.mesin,
-      usedCapacity: 100 - item.sisa_kapasitas_percent,
-      remainingCapacity: item.sisa_kapasitas_percent,
-      totalCapacity: item.kapasitas_mesin,
-    }));
-  };
-
-  // Process data for monthly trend chart
-  const getMonthlyTrendData = () => {
-    if (!aggregatedData?.monthly_data) return [];
-
-    const machines = [
-      ...new Set(aggregatedData.sisa_kapasitas.map((item) => item.mesin)),
-    ];
-
-    return aggregatedData.monthly_data.map(({ monthLabel, data }) => {
-      const monthData: any = { month: monthLabel };
-
-      machines.forEach((machine) => {
-        const machineData = data.sisa_kapasitas.find(
-          (item) => item.mesin === machine,
-        );
-        if (machineData) {
-          monthData[machine] = 100 - machineData.sisa_kapasitas_percent;
-        }
-      });
-
-      return monthData;
-    });
-  };
-
-  // Define color scheme for chart
-  const getCapacityColor = (percent: number) => {
-    if (percent <= 10) return '#22c55e'; // Red for critical
-    if (percent <= 50) return '#22c55e'; // Amber for warning
-    if (percent <= 75) return '#22c55e'; // Blue for moderate
-    return '#22c55e'; // Green for good
-  };
-
-  // Calculate total capacity utilization
-  const getTotalUtilization = () => {
-    if (!aggregatedData?.sisa_kapasitas)
-      return { used: 0, remaining: 0, total: 0 };
-
-    const totalCapacity = aggregatedData.sisa_kapasitas.reduce(
-      (sum, item) => sum + item.kapasitas_mesin,
-      0,
+  // Aggregate across all months per machine
+  const aggregated = allMachines.map((nama) => {
+    const rows = monthlyData.flatMap((m) =>
+      m.data.sisa_kapasitas.filter((s) => s.nama_mesin === nama),
     );
-    const used = aggregatedData.sisa_kapasitas.reduce((sum, item) => {
-      const usedPercent = 100 - item.sisa_kapasitas_percent;
-      return sum + (item.kapasitas_mesin * usedPercent) / 100;
-    }, 0);
-
+    const totalKapasitas = rows.reduce((sum, r) => sum + r.kapasitas, 0);
+    const totalTerpakai = rows.reduce((sum, r) => sum + r.terpakai, 0);
+    const totalSisa = rows.reduce((sum, r) => sum + r.sisa, 0);
+    const sisaPct = totalKapasitas > 0 ? (totalSisa / totalKapasitas) * 100 : 0;
+    const allDetail = rows.flatMap((r) => r.detail);
     return {
-      used,
-      remaining: totalCapacity - used,
-      total: totalCapacity,
+      nama_mesin: nama,
+      totalKapasitas,
+      totalTerpakai,
+      totalSisa,
+      sisaPct,
+      allDetail,
     };
+  });
+
+  const grandTotal = {
+    kapasitas: aggregated.reduce((s, a) => s + a.totalKapasitas, 0),
+    terpakai: aggregated.reduce((s, a) => s + a.totalTerpakai, 0),
+    sisa: aggregated.reduce((s, a) => s + a.totalSisa, 0),
   };
 
-  const getDateRangeLabel = () => {
-    if (startMonth === endMonth && startYear === endYear) {
-      return `${getMonthName(startMonth)} ${startYear}`;
-    }
-    return `${getMonthName(startMonth)} ${startYear} - ${getMonthName(
-      endMonth,
-    )} ${endYear}`;
-  };
+  // Bar chart data
+  const chartData = aggregated.map((a) => ({
+    name: a.nama_mesin,
+    Terpakai: a.totalTerpakai,
+    Tersisa: a.totalSisa,
+  }));
+
+  // Monthly trend data
+  const trendData = monthlyData.map(({ monthLabel, data }) => {
+    const row: Record<string, any> = { month: monthLabel };
+    data.sisa_kapasitas.forEach((s) => {
+      row[s.nama_mesin] = s.terpakai;
+    });
+    return row;
+  });
+
+  const COLORS = [
+    '#3b82f6',
+    '#f59e0b',
+    '#10b981',
+    '#ef4444',
+    '#8b5cf6',
+    '#ec4899',
+    '#14b8a6',
+    '#f97316',
+    '#6366f1',
+    '#84cc16',
+  ];
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  const currentYear = now.getFullYear();
+  const years = Array.from({ length: 16 }, (_, i) => currentYear - 10 + i);
 
   return (
-    <div className="p-4">
-      {isLoading ? (
-        <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    <div className=" mx-auto">
+      {/* ── Header & Filters ── */}
+      <h1 className="text-2xl font-bold mb-4">Report Kapasitas</h1>
+
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+        <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-3">
+          Filter Periode
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Start */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Dari
+            </label>
+            <div className="flex gap-2">
+              <select
+                className="border rounded p-2 flex-1 text-sm"
+                value={startMonth}
+                onChange={(e) => setStartMonth(+e.target.value)}
+              >
+                {MONTH_NAMES.map((name, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="border rounded p-2 flex-1 text-sm"
+                value={startYear}
+                onChange={(e) => setStartYear(+e.target.value)}
+              >
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {/* End */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Sampai
+            </label>
+            <div className="flex gap-2">
+              <select
+                className="border rounded p-2 flex-1 text-sm"
+                value={endMonth}
+                onChange={(e) => setEndMonth(+e.target.value)}
+              >
+                {MONTH_NAMES.map((name, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <select
+                className="border rounded p-2 flex-1 text-sm"
+                value={endYear}
+                onChange={(e) => setEndYear(+e.target.value)}
+              >
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
-      ) : (
+        <div className="mt-3 flex justify-between items-center">
+          <span className="text-sm text-gray-600">
+            Periode: <strong>{dateRangeLabel}</strong>
+          </span>
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
+            onClick={fetchAll}
+          >
+            Tampilkan
+          </button>
+        </div>
+      </div>
+
+      {isLoading && (
+        <div className="flex justify-center items-center h-40">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+        </div>
+      )}
+
+      {!isLoading && monthlyData.length > 0 && (
         <>
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-4">Report Kapasitas</h1>
-
-            {/* Date Range Filters */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-4">
-              <h3 className="text-lg font-semibold mb-3">Filter Periode</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Start Date */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-2">
-                    Dari:
-                  </label>
-                  <div className="flex space-x-2">
-                    <select
-                      className="border rounded p-2 flex-1"
-                      value={startMonth}
-                      onChange={(e) => setStartMonth(parseInt(e.target.value))}
-                    >
-                      {months.map((m) => (
-                        <option key={m.value} value={m.value}>
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="border rounded p-2 flex-1"
-                      value={startYear}
-                      onChange={(e) => setStartYear(parseInt(e.target.value))}
-                    >
-                      {years.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* End Date */}
-                <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-2">
-                    Sampai:
-                  </label>
-                  <div className="flex space-x-2">
-                    <select
-                      className="border rounded p-2 flex-1"
-                      value={endMonth}
-                      onChange={(e) => setEndMonth(parseInt(e.target.value))}
-                    >
-                      {months.map((m) => (
-                        <option key={m.value} value={m.value}>
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      className="border rounded p-2 flex-1"
-                      value={endYear}
-                      onChange={(e) => setEndYear(parseInt(e.target.value))}
-                    >
-                      {years.map((y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex justify-between items-center">
-                <div className="text-sm text-gray-600">
-                  Periode:{' '}
-                  <span className="font-semibold">{getDateRangeLabel()}</span>
-                </div>
-                <button
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                  onClick={getReportKapasitasRange}
-                >
-                  Tampilkan
-                </button>
-              </div>
+          {/* ── Summary Cards ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-xs font-medium text-blue-700 uppercase mb-1">
+                Total Kapasitas
+              </p>
+              <p className="text-2xl font-bold text-blue-900">
+                {formatNumber(grandTotal.kapasitas)}
+              </p>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p className="text-xs font-medium text-amber-700 uppercase mb-1">
+                Kapasitas Terpakai
+              </p>
+              <p className="text-2xl font-bold text-amber-900">
+                {formatNumber(grandTotal.terpakai)}
+              </p>
+            </div>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-xs font-medium text-green-700 uppercase mb-1">
+                Kapasitas Tersisa
+              </p>
+              <p className="text-2xl font-bold text-green-900">
+                {formatNumber(grandTotal.sisa)}
+              </p>
+            </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <p className="text-xs font-medium text-purple-700 uppercase mb-1">
+                Utilisasi (%)
+              </p>
+              <p className="text-2xl font-bold text-purple-900">
+                {grandTotal.kapasitas > 0
+                  ? Math.round(
+                      (grandTotal.terpakai / grandTotal.kapasitas) * 100,
+                    )
+                  : 0}
+                %
+              </p>
             </div>
           </div>
 
-          {aggregatedData && (
-            <>
-              {/* Capacity Overview Dashboard */}
-              <div className="mb-8 bg-white p-6 rounded-lg shadow">
-                <h2 className="text-xl font-bold mb-4">
-                  Dashboard Kapasitas - {getDateRangeLabel()}
-                </h2>
+          {/* ── Capacity Bar Chart ── */}
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            <h2 className="text-lg font-semibold mb-3">
+              Kapasitas Per Mesin – {dateRangeLabel}
+            </h2>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis
+                    tickFormatter={(v) => formatNumber(v)}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip formatter={(v: any) => formatNumber(v)} />
+                  <Legend />
+                  <Bar dataKey="Terpakai" stackId="a" fill="#f59e0b" />
+                  <Bar
+                    dataKey="Tersisa"
+                    stackId="a"
+                    fill="#22c55e"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
 
-                {/* Total Capacity Section */}
-                <div className="bg-white p-6 rounded-lg shadow mb-6">
-                  <h2 className="text-xl font-bold mb-4">
-                    KAPASITAS TOTAL PERIODE
-                  </h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                    {aggregatedData.sisa_kapasitas.map((item) => (
-                      <div
-                        key={item.mesin}
-                        className="bg-blue-50 border border-blue-300 rounded-lg p-2 shadow-sm w-full text-sm"
-                      >
-                        <h3 className="text-center text-blue-700 font-semibold mb-1">
-                          {item.mesin}
-                        </h3>
-                        <p className="text-center font-bold text-blue-900">
-                          {formatNumber(item.kapasitas_mesin)}
-                        </p>
-                      </div>
+          {/* ── Monthly Trend Chart (multi-month only) ── */}
+          {monthlyData.length > 1 && (
+            <div className="bg-white rounded-lg shadow p-4 mb-6">
+              <h2 className="text-lg font-semibold mb-3">
+                Tren Terpakai Per Bulan
+              </h2>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={trendData}
+                    margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis
+                      tickFormatter={(v) => formatNumber(v)}
+                      tick={{ fontSize: 11 }}
+                    />
+                    <Tooltip formatter={(v: any) => formatNumber(v)} />
+                    <Legend />
+                    {allMachines.map((name, i) => (
+                      <Bar
+                        key={name}
+                        dataKey={name}
+                        fill={COLORS[i % COLORS.length]}
+                      />
                     ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <h3 className="text-sm font-medium text-blue-800 mb-2">
-                      Total Kapasitas Periode
-                    </h3>
-                    <p className="text-2xl font-bold">
-                      {formatNumber(getTotalUtilization().total)}
-                    </p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <h3 className="text-sm font-medium text-green-800 mb-2">
-                      Kapasitas Tersisa
-                    </h3>
-                    <p className="text-2xl font-bold">
-                      {formatNumber(getTotalUtilization().remaining)}
-                    </p>
-                  </div>
-                  <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-                    <h3 className="text-sm font-medium text-amber-800 mb-2">
-                      Kapasitas Terpakai
-                    </h3>
-                    <p className="text-2xl font-bold">
-                      {formatNumber(getTotalUtilization().used)}
-                    </p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <h3 className="text-sm font-medium text-purple-800 mb-2">
-                      Persentase Terpakai
-                    </h3>
-                    <p className="text-2xl font-bold">
-                      {getTotalUtilization().total === 0
-                        ? '0%'
-                        : Math.round(
-                            (getTotalUtilization().used /
-                              getTotalUtilization().total) *
-                              100,
-                          ) + '%'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Capacity Bar Chart */}
-                <div className="h-64 mb-6">
-                  <h3 className="text-lg font-semibold mb-2">
-                    Kapasitas Per Mesin (Rata-rata)
-                  </h3>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={getCapacityChartData()}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip
-                        formatter={(value: any, name: string) => {
-                          if (name === 'usedCapacity')
-                            return [`${value.toFixed(1)}%`, 'Terpakai'];
-                          if (name === 'remainingCapacity')
-                            return [`${value.toFixed(1)}%`, 'Tersisa'];
-                          return [value, name];
-                        }}
-                      />
-                      <Legend />
-                      <Bar
-                        dataKey="usedCapacity"
-                        name="Kapasitas Terpakai"
-                        stackId="a"
-                        fill="#f59e0b"
-                      />
-                      <Bar
-                        dataKey="remainingCapacity"
-                        name="Kapasitas Tersisa"
-                        stackId="a"
-                        fill="#22c55e"
-                      >
-                        {getCapacityChartData().map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={getCapacityColor(entry.remainingCapacity)}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Monthly Trend Chart - Only show if multiple months */}
-                {aggregatedData.monthly_data.length > 1 && (
-                  <div className="h-80 mb-4">
-                    <h3 className="text-lg font-semibold mb-2">
-                      Tren Utilisasi Bulanan (%)
-                    </h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={getMonthlyTrendData()}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis
-                          label={{
-                            value: 'Utilisasi (%)',
-                            angle: -90,
-                            position: 'insideLeft',
-                          }}
-                          domain={[0, 100]}
-                        />
-                        <Tooltip
-                          formatter={(value: any, name: string) => [
-                            `${Number(value).toFixed(1)}%`,
-                            name,
-                          ]}
-                        />
-                        <Legend />
-                        {aggregatedData.sisa_kapasitas.map((item, index) => (
-                          <Bar
-                            key={item.mesin}
-                            dataKey={item.mesin}
-                            fill={`hsl(${(index * 137.5) % 360}, 70%, 50%)`}
-                            name={item.mesin}
-                          />
-                        ))}
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
+            </div>
+          )}
 
-              {/* Capacity Tables */}
-              <div className="mb-8">
-                <h2 className="text-xl font-bold mb-4">
-                  Kapasitas Per Mesin (Rata-rata Periode)
-                </h2>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white border border-gray-300 shadow-sm rounded-lg">
-                    <thead>
-                      <tr className="bg-gray-100 text-gray-700">
-                        <th className="py-3 px-4 border-b text-left">Mesin</th>
-                        <th className="py-3 px-4 border-b text-right">
-                          Kapasitas Total Periode
-                        </th>
-                        <th className="py-3 px-4 border-b text-right">
-                          Kapasitas Terpakai
-                        </th>
-                        <th className="py-3 px-4 border-b text-right">
-                          Kapasitas Tersisa
-                        </th>
-                        <th className="py-3 px-4 border-b text-right">
-                          Sisa (%)
-                        </th>
-                        <th className="py-3 px-4 border-b text-center">
-                          Action
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {aggregatedData.sisa_kapasitas.map((item, index) => {
-                        const usedCapacity =
-                          item.kapasitas_mesin -
-                          (item.kapasitas_mesin * item.sisa_kapasitas_percent) /
-                            100;
-                        const remainingCapacity =
-                          (item.kapasitas_mesin * item.sisa_kapasitas_percent) /
-                          100;
-
-                        return (
-                          <React.Fragment key={item.mesin}>
-                            <tr
-                              className={`${
-                                index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                              } hover:bg-blue-50`}
+          {/* ── Capacity Table ── */}
+          <div className="bg-white rounded-lg shadow mb-6">
+            <div className="px-4 py-3 border-b">
+              <h2 className="text-lg font-semibold">Kapasitas Per Mesin</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-100 text-gray-700 text-left">
+                    <th className="py-3 px-4 border-b">Mesin</th>
+                    <th className="py-3 px-4 border-b text-right">
+                      Kapasitas Total
+                    </th>
+                    <th className="py-3 px-4 border-b text-right">Terpakai</th>
+                    <th className="py-3 px-4 border-b text-right">Tersisa</th>
+                    <th className="py-3 px-4 border-b text-right">Sisa (%)</th>
+                    <th className="py-3 px-4 border-b text-center">Detail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aggregated.map((item, idx) => (
+                    <React.Fragment key={item.nama_mesin}>
+                      <tr className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="py-3 px-4 border-b font-medium">
+                          {item.nama_mesin}
+                        </td>
+                        <td className="py-3 px-4 border-b text-right">
+                          {formatNumber(item.totalKapasitas)}
+                        </td>
+                        <td className="py-3 px-4 border-b text-right">
+                          {formatNumber(item.totalTerpakai)}
+                        </td>
+                        <td className="py-3 px-4 border-b text-right">
+                          {formatNumber(item.totalSisa)}
+                        </td>
+                        <td
+                          className={`py-3 px-4 border-b text-right font-bold ${capacityColor(
+                            item.sisaPct,
+                          )}`}
+                        >
+                          {item.sisaPct.toFixed(1)}%
+                        </td>
+                        <td className="py-3 px-4 border-b text-center">
+                          {item.allDetail.length > 0 ? (
+                            <button
+                              onClick={() =>
+                                setShowMonthlyDetail((prev) => ({
+                                  ...prev,
+                                  [item.nama_mesin]: !prev[item.nama_mesin],
+                                }))
+                              }
+                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
                             >
-                              <td className="py-3 px-4 border-b font-medium">
-                                {item.mesin}
-                              </td>
-                              <td className="py-3 px-4 border-b text-right">
-                                {formatNumber(item.kapasitas_mesin)}
-                              </td>
-                              <td className="py-3 px-4 border-b text-right">
-                                {formatNumber(usedCapacity)}
-                              </td>
-                              <td className="py-3 px-4 border-b text-right">
-                                {formatNumber(remainingCapacity)}
-                              </td>
-                              <td
-                                className={`py-3 px-4 border-b text-right font-bold ${
-                                  item.sisa_kapasitas_percent > 75
-                                    ? 'text-green-600'
-                                    : item.sisa_kapasitas_percent > 50
-                                    ? 'text-blue-600'
-                                    : item.sisa_kapasitas_percent > 10
-                                    ? 'text-amber-600'
-                                    : 'text-red-600'
-                                }`}
-                              >
-                                {item.sisa_kapasitas_percent.toFixed(1)}%
-                              </td>
-                              <td className="py-3 px-4 border-b text-center">
-                                <button
-                                  onClick={() =>
-                                    toggleMonthlyDetails(item.mesin)
-                                  }
-                                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                                >
-                                  {showMonthlyDetails[item.mesin]
-                                    ? 'Hide'
-                                    : 'Detail'}
-                                </button>
-                              </td>
-                            </tr>
+                              {showMonthlyDetail[item.nama_mesin]
+                                ? 'Tutup'
+                                : `Detail (${item.allDetail.length})`}
+                            </button>
+                          ) : (
+                            <span className="text-gray-400 text-xs">–</span>
+                          )}
+                        </td>
+                      </tr>
 
-                            {/* Monthly Details Row */}
-                            {showMonthlyDetails[item.mesin] && (
-                              <tr>
-                                <td colSpan={6} className="py-0 px-0 border-b">
-                                  <div className="bg-gray-50 p-4 border-l-4 border-blue-500">
-                                    <h4 className="font-semibold text-blue-800 mb-3">
-                                      Detail Bulanan - {item.mesin}
-                                    </h4>
-                                    <div className="overflow-x-auto">
-                                      <table className="min-w-full bg-white border border-gray-200 rounded">
-                                        <thead>
-                                          <tr className="bg-blue-100 text-blue-800">
-                                            <th className="py-2 px-3 border-b text-left text-sm">
-                                              Bulan
-                                            </th>
-                                            <th className="py-2 px-3 border-b text-right text-sm">
-                                              Kapasitas Mesin
-                                            </th>
-                                            <th className="py-2 px-3 border-b text-right text-sm">
-                                              Kapasitas Terpakai
-                                            </th>
-                                            <th className="py-2 px-3 border-b text-right text-sm">
-                                              Kapasitas Tersisa
-                                            </th>
-                                            <th className="py-2 px-3 border-b text-right text-sm">
-                                              Sisa (%)
-                                            </th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {getMonthlyDataForMachine(
-                                            item.mesin,
-                                          ).map((monthData, monthIndex) => (
-                                            <tr
-                                              key={monthData.month}
-                                              className={
-                                                monthIndex % 2 === 0
-                                                  ? 'bg-white'
-                                                  : 'bg-gray-50'
-                                              }
-                                            >
-                                              <td className="py-2 px-3 border-b text-sm">
-                                                {monthData.month}
-                                              </td>
-                                              <td className="py-2 px-3 border-b text-right text-sm">
-                                                {formatNumber(
-                                                  monthData.kapasitas_mesin,
-                                                )}
-                                              </td>
-                                              <td className="py-2 px-3 border-b text-right text-sm">
-                                                {formatNumber(
-                                                  monthData.kapasitas_terpakai,
-                                                )}
-                                              </td>
-                                              <td className="py-2 px-3 border-b text-right text-sm">
-                                                {formatNumber(
-                                                  monthData.kapasitas_tersisa,
-                                                )}
-                                              </td>
-                                              <td
-                                                className={`py-2 px-3 border-b text-right text-sm font-bold ${
-                                                  monthData.sisa_kapasitas_percent >
-                                                  75
-                                                    ? 'text-green-600'
-                                                    : monthData.sisa_kapasitas_percent >
-                                                      50
-                                                    ? 'text-blue-600'
-                                                    : monthData.sisa_kapasitas_percent >
-                                                      10
-                                                    ? 'text-amber-600'
-                                                    : 'text-red-600'
-                                                }`}
-                                              >
-                                                {monthData.sisa_kapasitas_percent.toFixed(
-                                                  1,
-                                                )}
-                                                %
-                                              </td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Detail Booking Section */}
-              <div>
-                <h2 className="text-xl font-bold mb-4">
-                  Detail Booking Periode ({getDateRangeLabel()})
-                </h2>
-
-                {/* Machine boxes grid layout */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  {Object.entries(aggregatedData.data_booking).map(
-                    ([machine, bookingData]) => (
-                      <div
-                        key={machine}
-                        className={`rounded-lg shadow cursor-pointer transition-all duration-300 overflow-hidden ${
-                          selectedMachine === machine ? 'col-span-full' : ''
-                        }`}
-                        onClick={() => handleMachineSelect(machine)}
-                      >
-                        {selectedMachine === machine ? (
-                          // Expanded view with table
-                          <div className="bg-white">
-                            <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
-                              <h3 className="font-bold text-lg">{machine}</h3>
-                              <div className="flex space-x-6">
-                                <div>
-                                  <span className="text-blue-200 text-sm">
-                                    Total PCS:
-                                  </span>
-                                  <span className="ml-2 font-bold">
-                                    {formatNumber(bookingData.total_qty_pcs)}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-blue-200 text-sm">
-                                    Total DRUK:
-                                  </span>
-                                  <span className="ml-2 font-bold">
-                                    {formatNumber(bookingData.total_qty_druk)}
-                                  </span>
-                                </div>
-                                <button className="text-white">▲</button>
-                              </div>
-                            </div>
-
-                            <div className="overflow-x-auto">
-                              <table className="min-w-full">
-                                <thead>
-                                  <tr className="bg-gray-100 text-gray-700">
-                                    <th className="py-3 px-4 border-b text-left">
-                                      No. IO
-                                    </th>
-                                    <th className="py-3 px-4 border-b text-left">
-                                      Customer
-                                    </th>
-                                    <th className="py-3 px-4 border-b text-left">
-                                      Item
-                                    </th>
-                                    <th className="py-3 px-4 border-b text-right">
-                                      Quantity (PCS)
-                                    </th>
-                                    <th className="py-3 px-4 border-b text-right">
-                                      Quantity (DRUK)
-                                    </th>
-                                    <th className="py-3 px-4 border-b text-left">
-                                      Tanggal
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {bookingData.detail
-                                    .slice()
-                                    .sort(
-                                      (a, b) =>
-                                        new Date(a.tanggal).getTime() -
-                                        new Date(b.tanggal).getTime(),
-                                    )
-                                    .map((detail, index) => (
-                                      <tr
-                                        key={detail.id}
-                                        className={
-                                          index % 2 === 0
-                                            ? 'bg-white'
-                                            : 'bg-gray-50'
-                                        }
-                                      >
-                                        <td className="py-3 px-4 border-b">
-                                          {detail.no_io}
-                                        </td>
-                                        <td className="py-3 px-4 border-b">
-                                          {detail.nama_customer}
-                                        </td>
-                                        <td className="py-3 px-4 border-b">
-                                          {detail.nama_item}
-                                        </td>
-                                        <td className="py-3 px-4 border-b text-right">
-                                          {formatNumber(detail.qty_pcs)}
-                                        </td>
-                                        <td className="py-3 px-4 border-b text-right">
-                                          {formatNumber(detail.qty_druk)}
-                                        </td>
-                                        <td className="py-3 px-4 border-b">
-                                          {new Date(
-                                            detail.tanggal,
-                                          ).toLocaleDateString('id-ID', {
-                                            day: 'numeric',
-                                            month: 'long',
-                                            year: 'numeric',
-                                          })}
-                                        </td>
+                      {/* Inline detail rows */}
+                      {showMonthlyDetail[item.nama_mesin] &&
+                        item.allDetail.length > 0 && (
+                          <tr>
+                            <td colSpan={6} className="p-0 border-b">
+                              <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
+                                <h4 className="font-semibold text-blue-800 mb-2 text-sm">
+                                  Detail Pemakaian – {item.nama_mesin}
+                                </h4>
+                                <div className="overflow-x-auto">
+                                  <table className="min-w-full bg-white border border-gray-200 rounded text-xs">
+                                    <thead>
+                                      <tr className="bg-blue-100 text-blue-800">
+                                        <th className="py-2 px-3 border-b text-left">
+                                          No. JO
+                                        </th>
+                                        <th className="py-2 px-3 border-b text-left">
+                                          Item
+                                        </th>
+                                        <th className="py-2 px-3 border-b text-left">
+                                          Tahapan
+                                        </th>
+                                        <th className="py-2 px-3 border-b text-left">
+                                          Jenis
+                                        </th>
+                                        <th className="py-2 px-3 border-b text-right">
+                                          Qty PCS
+                                        </th>
+                                        <th className="py-2 px-3 border-b text-right">
+                                          Qty Druk
+                                        </th>
+                                        <th className="py-2 px-3 border-b text-right">
+                                          Qty Dipakai
+                                        </th>
+                                        <th className="py-2 px-3 border-b text-left">
+                                          Tanggal
+                                        </th>
                                       </tr>
-                                    ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        ) : (
-                          // Collapsed box view
-                          <div className="bg-white p-4 h-full flex flex-col justify-between hover:bg-blue-50">
-                            <div className="bg-blue-600 text-white p-3 rounded-t-lg">
-                              <h3 className="font-bold text-lg">{machine}</h3>
-                            </div>
-                            <div className="flex-grow flex flex-col justify-center p-4">
-                              <div className="flex justify-between mb-2">
-                                <span className="text-blue-800">
-                                  Total PCS:
-                                </span>
-                                <span className="font-bold text-blue-900">
-                                  {formatNumber(bookingData.total_qty_pcs)}
-                                </span>
+                                    </thead>
+                                    <tbody>
+                                      {item.allDetail
+                                        .slice()
+                                        .sort(
+                                          (a, b) =>
+                                            new Date(a.tanggal).getTime() -
+                                            new Date(b.tanggal).getTime(),
+                                        )
+                                        .map((d, i) => (
+                                          <tr
+                                            key={d.id}
+                                            className={
+                                              i % 2 === 0
+                                                ? 'bg-white'
+                                                : 'bg-gray-50'
+                                            }
+                                          >
+                                            <td className="py-2 px-3 border-b">
+                                              {d.no_jo}
+                                            </td>
+                                            <td className="py-2 px-3 border-b">
+                                              {d.item}
+                                            </td>
+                                            <td className="py-2 px-3 border-b">
+                                              {d.tahapan}
+                                            </td>
+                                            <td className="py-2 px-3 border-b capitalize">
+                                              {d.jenis}
+                                            </td>
+                                            <td className="py-2 px-3 border-b text-right">
+                                              {formatNumber(d.qty_pcs)}
+                                            </td>
+                                            <td className="py-2 px-3 border-b text-right">
+                                              {formatNumber(d.qty_druk)}
+                                            </td>
+                                            <td className="py-2 px-3 border-b text-right">
+                                              {formatNumber(d.qty_dipakai)}
+                                            </td>
+                                            <td className="py-2 px-3 border-b">
+                                              {formatDate(d.tanggal)}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                    </tbody>
+                                  </table>
+                                </div>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-blue-800">
-                                  Total DRUK:
-                                </span>
-                                <span className="font-bold text-blue-900">
-                                  {formatNumber(bookingData.total_qty_druk)}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="text-center text-blue-600 mt-2">
-                              Click to view details ▼
-                            </div>
-                          </div>
+                            </td>
+                          </tr>
                         )}
-                      </div>
-                    ),
-                  )}
-                </div>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+                {/* Totals row */}
+                <tfoot>
+                  <tr className="bg-gray-200 font-bold text-sm">
+                    <td className="py-3 px-4 border-t">TOTAL</td>
+                    <td className="py-3 px-4 border-t text-right">
+                      {formatNumber(grandTotal.kapasitas)}
+                    </td>
+                    <td className="py-3 px-4 border-t text-right">
+                      {formatNumber(grandTotal.terpakai)}
+                    </td>
+                    <td className="py-3 px-4 border-t text-right">
+                      {formatNumber(grandTotal.sisa)}
+                    </td>
+                    <td className="py-3 px-4 border-t text-right">
+                      {grandTotal.kapasitas > 0
+                        ? (
+                            (grandTotal.sisa / grandTotal.kapasitas) *
+                            100
+                          ).toFixed(1)
+                        : '0.0'}
+                      %
+                    </td>
+                    <td className="py-3 px-4 border-t" />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* ── Per-month breakdown (multi-month) ── */}
+          {monthlyData.length > 1 && (
+            <div className="bg-white rounded-lg shadow mb-6">
+              <div className="px-4 py-3 border-b">
+                <h2 className="text-lg font-semibold">Detail Per Bulan</h2>
               </div>
-            </>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-700 text-left">
+                      <th className="py-3 px-4 border-b">Mesin</th>
+                      {monthlyData.map(({ monthLabel }) => (
+                        <th
+                          key={monthLabel}
+                          className="py-3 px-4 border-b text-right whitespace-nowrap"
+                        >
+                          {monthLabel}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allMachines.map((nama, idx) => (
+                      <tr
+                        key={nama}
+                        className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                      >
+                        <td className="py-2 px-4 border-b font-medium">
+                          {nama}
+                        </td>
+                        {monthlyData.map(({ monthLabel, data }) => {
+                          const row = data.sisa_kapasitas.find(
+                            (s) => s.nama_mesin === nama,
+                          );
+                          const pct =
+                            row && row.kapasitas > 0
+                              ? ((row.terpakai / row.kapasitas) * 100).toFixed(
+                                  1,
+                                )
+                              : '0.0';
+                          return (
+                            <td
+                              key={monthLabel}
+                              className="py-2 px-4 border-b text-right"
+                            >
+                              {row ? (
+                                <span
+                                  title={`Terpakai: ${formatNumber(
+                                    row.terpakai,
+                                  )}`}
+                                >
+                                  {pct}%
+                                </span>
+                              ) : (
+                                '–'
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
         </>
       )}

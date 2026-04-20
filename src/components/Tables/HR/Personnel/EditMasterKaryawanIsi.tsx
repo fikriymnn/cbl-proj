@@ -275,6 +275,7 @@ function EditMasterKaryawanIsi() {
     try {
       setIsLoading(true);
       const res = await axios.get(url, {
+        params: { is_active: true },
         withCredentials: true,
       });
       setIsLoading(false);

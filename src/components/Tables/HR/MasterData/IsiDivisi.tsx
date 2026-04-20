@@ -202,7 +202,10 @@ function IsiDivisi() {
                 <label className="text-neutral-500 text-xs font-semibold  ">
                   No
                 </label>
-                <label className="text-neutral-500 text-xs font-semibold  col-span-8">
+                <label className="text-neutral-500 text-xs font-semibold  col-span-2">
+                  Active
+                </label>
+                <label className="text-neutral-500 text-xs font-semibold  col-span-6">
                   Nama Divisi
                 </label>
               </div>
@@ -214,7 +217,10 @@ function IsiDivisi() {
                       <label className="text-neutral-500 text-xs font-semibold  ">
                         {i + 1}
                       </label>
-                      <label className="text-neutral-500 text-xs font-semibold  col-span-8">
+                      <label className="text-neutral-500 text-xs font-semibold  col-span-2">
+                        {data.is_active ? 'Ya' : 'Tidak'}
+                      </label>
+                      <label className="text-neutral-500 text-xs font-semibold  col-span-6">
                         {data.nama_divisi}
                       </label>
                       <button

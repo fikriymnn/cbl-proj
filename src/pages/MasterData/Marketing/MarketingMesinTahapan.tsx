@@ -7,6 +7,7 @@ interface MesinTahapan {
   id?: number;
   kode_mesin?: string;
   nama_mesin: string;
+  type_kapasitas: 'druk' | 'pcs' | 'lp';
 }
 
 type ModalType = 'mesinTahapan' | null;
@@ -24,6 +25,7 @@ function MasterMesinTahapan() {
   >({
     kode_mesin: '',
     nama_mesin: '',
+    type_kapasitas: 'druk',
   });
 
   const [searches, setSearches] = useState({
@@ -79,6 +81,7 @@ function MasterMesinTahapan() {
       setMesinTahapanForm({
         kode_mesin: item.kode_mesin || '',
         nama_mesin: item.nama_mesin || '',
+        type_kapasitas: item.type_kapasitas || 'druk',
       });
     } else {
       setEditingId(null);
@@ -96,6 +99,7 @@ function MasterMesinTahapan() {
     setMesinTahapanForm({
       kode_mesin: '',
       nama_mesin: '',
+      type_kapasitas: 'druk',
     });
   };
 
@@ -156,6 +160,25 @@ function MasterMesinTahapan() {
       await updateMesinTahapan(editingId, mesinTahapanForm);
     } else {
       await createMesinTahapan(mesinTahapanForm);
+    }
+  };
+
+  const type_kapasitas_OPTIONS: Array<'druk' | 'pcs' | 'lp'> = [
+    'druk',
+    'pcs',
+    'lp',
+  ];
+
+  const typeBadgeColor = (type: string) => {
+    switch (type) {
+      case 'druk':
+        return 'bg-blue-100 text-blue-700';
+      case 'pcs':
+        return 'bg-green-100 text-green-700';
+      case 'lp':
+        return 'bg-purple-100 text-purple-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -224,6 +247,9 @@ function MasterMesinTahapan() {
                   Nama Mesin
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type Tahapan
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -239,6 +265,15 @@ function MasterMesinTahapan() {
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                     {item.nama_mesin}
+                  </td>
+                  <td className="px-2 py-2 whitespace-nowrap text-xs">
+                    <span
+                      className={`px-2 py-0.5 rounded-full font-medium uppercase ${typeBadgeColor(
+                        item.type_kapasitas,
+                      )}`}
+                    >
+                      {item.type_kapasitas || '-'}
+                    </span>
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs font-medium space-x-1">
                     <button
@@ -317,6 +352,32 @@ function MasterMesinTahapan() {
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Type Kapasitas
+                    </label>
+                    <select
+                      value={mesinTahapanForm.type_kapasitas}
+                      onChange={(e) =>
+                        setMesinTahapanForm((prev) => ({
+                          ...prev,
+                          type_kapasitas: e.target.value as
+                            | 'druk'
+                            | 'pcs'
+                            | 'lp',
+                        }))
+                      }
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      required
+                    >
+                      {type_kapasitas_OPTIONS.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

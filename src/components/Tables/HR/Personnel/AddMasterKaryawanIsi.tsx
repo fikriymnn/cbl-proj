@@ -81,7 +81,11 @@ const useApiData = () => {
         params: { params: { is_active: true } },
       },
       { url: `${API_BASE}/master/hr/bagian`, key: 'bagian' },
-      { url: `${API_BASE}/master/hr/divisi`, key: 'divisi' },
+      {
+        url: `${API_BASE}/master/hr/divisi`,
+        key: 'divisi',
+        params: { params: { is_active: true } },
+      },
       { url: `${API_BASE}/master/hr/grade`, key: 'gradeMaster' },
       { url: `${API_BASE}/master/statusKaryawan`, key: 'karyawanStatus' },
       { url: `${API_BASE}/master/hr/jabatan`, key: 'jabatanMaster' },
