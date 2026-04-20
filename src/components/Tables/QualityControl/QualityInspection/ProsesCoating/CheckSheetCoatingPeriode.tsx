@@ -1688,17 +1688,32 @@ function CheckSheetCoatingPeriode() {
                                       data.status == 'on progress' && (
                                         <div className="space-y-2">
                                           <input
-                                            type="text"
+                                            type="number"
                                             name="jumlah_defect"
-                                            placeholder="Jumlah Defect"
-                                            onChange={(e) =>
+                                            placeholder={`Jumlah Defect (max: ${formatInteger(
+                                              parseInt(
+                                                CoatingMesinPeriode?.jumlah_druk,
+                                              ),
+                                            )})`}
+                                            max={parseInt(
+                                              CoatingMesinPeriode?.jumlah_druk,
+                                            )}
+                                            onChange={(e) => {
+                                              const val = parseInt(
+                                                e.target.value,
+                                              );
+                                              const max = parseInt(
+                                                CoatingMesinPeriode?.jumlah_druk,
+                                              );
+                                              if (val > max)
+                                                e.target.value = String(max);
                                               handleChangePointHasil(
                                                 e,
                                                 index,
                                                 i,
                                                 data2.kode,
-                                              )
-                                            }
+                                              );
+                                            }}
                                             className="w-full text-xs p-2 border border-gray-300 rounded focus:border-red-500 focus:outline-none"
                                           />
 
@@ -1735,15 +1750,30 @@ function CheckSheetCoatingPeriode() {
                                           <input
                                             type="number"
                                             name="jumlah_up_defect"
-                                            placeholder="Jumlah UP Defect"
-                                            onChange={(e) =>
+                                            placeholder={`Jumlah UP Defect (max: ${formatInteger(
+                                              parseInt(
+                                                CoatingMesinPeriode?.mata,
+                                              ),
+                                            )})`}
+                                            max={parseInt(
+                                              CoatingMesinPeriode?.mata,
+                                            )}
+                                            onChange={(e) => {
+                                              const val = parseInt(
+                                                e.target.value,
+                                              );
+                                              const max = parseInt(
+                                                CoatingMesinPeriode?.mata,
+                                              );
+                                              if (val > max)
+                                                e.target.value = String(max);
                                               handleChangePointHasil(
                                                 e,
                                                 index,
                                                 i,
                                                 data2.kode,
-                                              )
-                                            }
+                                              );
+                                            }}
                                             className="w-full text-xs p-2 border border-gray-300 rounded focus:border-red-500 focus:outline-none"
                                           />
 
@@ -2937,15 +2967,21 @@ function CheckSheetCoatingPeriode() {
                       Jumlah Defect
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       value={editForm.jumlah_defect}
-                      onChange={(e) =>
+                      max={parseInt(CoatingMesinPeriode?.jumlah_druk)}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        const max = parseInt(CoatingMesinPeriode?.jumlah_druk);
                         setEditForm((prev: any) => ({
                           ...prev,
-                          jumlah_defect: e.target.value,
-                        }))
-                      }
-                      placeholder="Jumlah Defect"
+                          jumlah_defect:
+                            val > max ? String(max) : e.target.value,
+                        }));
+                      }}
+                      placeholder={`Jumlah Defect (max: ${formatInteger(
+                        parseInt(CoatingMesinPeriode?.jumlah_druk),
+                      )})`}
                       className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
                     />
                   </div>
@@ -2989,13 +3025,19 @@ function CheckSheetCoatingPeriode() {
                     <input
                       type="number"
                       value={editForm.jumlah_up_defect}
-                      onChange={(e) =>
+                      max={parseInt(CoatingMesinPeriode?.mata)}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        const max = parseInt(CoatingMesinPeriode?.mata);
                         setEditForm((prev: any) => ({
                           ...prev,
-                          jumlah_up_defect: e.target.value,
-                        }))
-                      }
-                      placeholder="Jumlah UP Defect"
+                          jumlah_up_defect:
+                            val > max ? String(max) : e.target.value,
+                        }));
+                      }}
+                      placeholder={`Jumlah UP Defect (max: ${formatInteger(
+                        parseInt(CoatingMesinPeriode?.mata),
+                      )})`}
                       className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
                     />
                   </div>

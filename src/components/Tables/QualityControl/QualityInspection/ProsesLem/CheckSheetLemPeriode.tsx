@@ -1478,17 +1478,32 @@ function CheckSheetLemPeriode() {
                                         data.status == 'on progress' && (
                                           <div className="space-y-2">
                                             <input
-                                              type="text"
+                                              type="number"
                                               name="jumlah_defect"
-                                              placeholder="Jumlah Defect"
-                                              onChange={(e) =>
+                                              placeholder={`Jumlah Defect (max: ${formatInteger(
+                                                parseInt(
+                                                  LemMesinPeriode?.jumlah_pcs,
+                                                ),
+                                              )})`}
+                                              max={parseInt(
+                                                LemMesinPeriode?.jumlah_pcs,
+                                              )}
+                                              onChange={(e) => {
+                                                const val = parseInt(
+                                                  e.target.value,
+                                                );
+                                                const max = parseInt(
+                                                  LemMesinPeriode?.jumlah_pcs,
+                                                );
+                                                if (val > max)
+                                                  e.target.value = String(max);
                                                 handleChangePointHasil(
                                                   e,
                                                   index,
                                                   i,
                                                   data2.kode,
-                                                )
-                                              }
+                                                );
+                                              }}
                                               className="w-full text-xs p-2 border border-gray-300 rounded focus:border-red-500 focus:outline-none"
                                             />
 
@@ -2409,15 +2424,21 @@ function CheckSheetLemPeriode() {
                       Jumlah Defect
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       value={editForm.jumlah_defect}
-                      onChange={(e) =>
+                      max={parseInt(LemMesinPeriode?.jumlah_pcs)}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        const max = parseInt(LemMesinPeriode?.jumlah_pcs);
                         setEditForm((prev: any) => ({
                           ...prev,
-                          jumlah_defect: e.target.value,
-                        }))
-                      }
-                      placeholder="Jumlah Defect"
+                          jumlah_defect:
+                            val > max ? String(max) : e.target.value,
+                        }));
+                      }}
+                      placeholder={`Jumlah Defect (max: ${formatInteger(
+                        parseInt(LemMesinPeriode?.jumlah_pcs),
+                      )})`}
                       className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
                     />
                   </div>
