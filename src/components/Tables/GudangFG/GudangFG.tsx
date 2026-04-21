@@ -1154,11 +1154,11 @@ const GudangFG: React.FC = () => {
                 <tr>
                   {[
                     'No',
+                    'No JO',
                     'No IO',
                     'Produk',
                     'Customer',
-                    'No JO',
-                    'No SO',
+
                     'PO Qty',
                     'Jml Masuk',
                     'Jml Keluar',
@@ -1241,6 +1241,9 @@ const GudangFG: React.FC = () => {
                             <td className="p-2 sm:p-3 text-xs text-gray-400 pl-8">
                               {rowIdx}
                             </td>
+                            <td className="p-2 sm:p-3 text-xs font-bold text-violet-600 whitespace-nowrap">
+                              {barang.no_jo || '-'}
+                            </td>
                             <td className="p-2 sm:p-3 text-xs text-gray-600 whitespace-nowrap">
                               {barang.no_io || '-'}
                             </td>
@@ -1252,12 +1255,7 @@ const GudangFG: React.FC = () => {
                             <td className="p-2 sm:p-3 text-xs text-gray-700">
                               {barang.customer || '-'}
                             </td>
-                            <td className="p-2 sm:p-3 text-xs font-bold text-violet-600 whitespace-nowrap">
-                              {barang.no_jo || '-'}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs text-blue-600 whitespace-nowrap">
-                              {barang.no_so || '-'}
-                            </td>
+
                             <td className="p-2 sm:p-3 text-xs text-right font-medium">
                               {fmtQty(barang.po_qty)}
                             </td>

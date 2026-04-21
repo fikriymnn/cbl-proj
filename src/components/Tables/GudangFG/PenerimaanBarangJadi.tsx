@@ -435,7 +435,7 @@ const IncomingBarangJadi: React.FC = () => {
                   {[
                     'No',
                     'No JO',
-                    'No SO',
+
                     'No IO',
                     'Produk',
                     'Customer',
@@ -477,9 +477,7 @@ const IncomingBarangJadi: React.FC = () => {
                       <td className="p-2 sm:p-3 text-xs font-bold text-violet-600 whitespace-nowrap">
                         {row.no_jo || '-'}
                       </td>
-                      <td className="p-2 sm:p-3 text-xs text-blue-600 font-medium whitespace-nowrap">
-                        {row.no_so || '-'}
-                      </td>
+
                       <td className="p-2 sm:p-3 text-xs text-gray-600 whitespace-nowrap">
                         {row.no_io || '-'}
                       </td>

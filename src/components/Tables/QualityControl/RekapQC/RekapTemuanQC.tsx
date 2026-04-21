@@ -53,6 +53,16 @@ interface RekapData {
   sortir_rs: TemuanDetail[];
 }
 
+// Sections we want to display (sortir_rs is intentionally excluded)
+const ACTIVE_SECTIONS = [
+  'cetak',
+  'coating',
+  'lem',
+  'pond',
+  'sampling_rabut',
+] as const;
+type ActiveSection = (typeof ACTIVE_SECTIONS)[number];
+
 function RekapTemuanQC() {
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<RekapData[]>([]);
@@ -187,7 +197,7 @@ function RekapTemuanQC() {
       return <Bug className="w-4 h-4 text-orange-500" />;
     }
 
-    // For other sections including sortir_rs, hasil represents ok/not ok status
+    // For other sections, hasil represents ok/not ok status
     switch (hasil) {
       case 'ok':
         return <CheckCircle className="w-4 h-4 text-green-500" />;
@@ -228,7 +238,6 @@ function RekapTemuanQC() {
       lem: 'Lem',
       pond: 'Pond',
       sampling_rabut: 'Sampling Rabut',
-      sortir_rs: 'Sortir RS',
     };
     return sectionNames[sectionName] || sectionName;
   };
@@ -247,18 +256,41 @@ function RekapTemuanQC() {
       return item.customer;
     }
 
-    // Look for customer in any of the sections
+    // Look for customer in active sections only (sortir_rs excluded)
     const allSections = [
       ...item.cetak,
       ...item.coating,
       ...item.lem,
       ...item.pond,
       ...item.sampling_rabut,
-      ...item.sortir_rs,
     ];
 
     const customerData = allSections.find((section) => section.customer);
     return customerData?.customer || 'N/A';
+  };
+
+  /**
+   * Returns total jumlah_defect for a given section list.
+   */
+  const getSectionDefectTotal = (
+    temuanList: TemuanDetail[],
+    sectionName?: string,
+  ) => {
+    if (sectionName === 'sampling_rabut') {
+      return temuanList.reduce((sum, t) => sum + (parseFloat(t.hasil) || 0), 0);
+    }
+    return temuanList.reduce((sum, t) => sum + (t.jumlah_defect || 0), 0);
+  };
+  /**
+   * Builds a summary array for the JO card header, only for active sections
+   * that actually have data.
+   */
+  const getJOSummary = (item: RekapData) => {
+    return ACTIVE_SECTIONS.map((key) => ({
+      section: key,
+      count: item[key]?.length || 0,
+      totalDefects: getSectionDefectTotal(item[key] || [], key), // pass key here
+    })).filter((s) => s.count > 0);
   };
 
   const renderTemuanTable = (
@@ -270,32 +302,38 @@ function RekapTemuanQC() {
       return null;
     }
 
-    const isDefectSection = sectionName === 'sampling_rabut'; // Only sampling_rabut is defect section now
+    const isDefectSection = sectionName === 'sampling_rabut';
     const isRabut = sectionName === 'sampling_rabut';
-    const isSortirRs = sectionName === 'sortir_rs';
 
+    const totalDefects = getSectionDefectTotal(temuanList, sectionName);
     return (
       <div className="mb-6">
-        <div className="flex items-center mb-3">
-          <Settings className="w-5 h-5 text-blue-600 mr-2" />
-          <h4 className="font-semibold text-gray-800">
-            {getSectionDisplayName(sectionName)}
-          </h4>
-          <span className="ml-2 bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium">
-            {temuanList.length} {isDefectSection ? 'defect' : 'temuan'}
-            {temuanList.length > 1 ? '' : ''}
-          </span>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center">
+            <Settings className="w-5 h-5 text-blue-600 mr-2" />
+            <h4 className="font-semibold text-gray-800">
+              {getSectionDisplayName(sectionName)}
+            </h4>
+            <span className="ml-2 bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium">
+              {temuanList.length} {isDefectSection ? 'defect' : 'temuan'}
+            </span>
+          </div>
+          {/* Per-section defect total */}
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-gray-500">Total Defects:</span>
+            <span className="bg-orange-100 text-orange-800 border border-orange-200 font-semibold px-2.5 py-0.5 rounded-full text-xs">
+              {totalDefects.toLocaleString('id-ID')}
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto bg-white rounded-lg border border-gray-200 shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {!isSortirRs && (
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {getStatusColumnHeader(sectionName)}
-                  </th>
-                )}
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {getStatusColumnHeader(sectionName)}
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Code & Criteria
                 </th>
@@ -303,7 +341,7 @@ function RekapTemuanQC() {
                   Problem Details
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  {isSortirRs ? 'Check Name' : 'Machine & Operator'}
+                  Machine & Operator
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Defects
@@ -311,7 +349,7 @@ function RekapTemuanQC() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Inspector & Date
                 </th>
-                {!isRabut && !isSortirRs && (
+                {!isRabut && (
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Period
                   </th>
@@ -324,21 +362,19 @@ function RekapTemuanQC() {
                   key={temuan.id || index}
                   className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                 >
-                  {!isSortirRs && (
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        {getStatusIcon(temuan.hasil, sectionName)}
-                        <span className="ml-2 text-sm font-medium text-gray-900">
-                          {isDefectSection
-                            ? temuan.hasil
-                            : temuan.hasil
-                            ? temuan.hasil.charAt(0).toUpperCase() +
-                              temuan.hasil.slice(1)
-                            : 'Unknown'}
-                        </span>
-                      </div>
-                    </td>
-                  )}
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      {getStatusIcon(temuan.hasil, sectionName)}
+                      <span className="ml-2 text-sm font-medium text-gray-900">
+                        {isDefectSection
+                          ? temuan.hasil
+                          : temuan.hasil
+                          ? temuan.hasil.charAt(0).toUpperCase() +
+                            temuan.hasil.slice(1)
+                          : 'Unknown'}
+                      </span>
+                    </div>
+                  </td>
                   <td className="px-4 py-4">
                     <div className="space-y-2">
                       {/* Main Code */}
@@ -357,8 +393,8 @@ function RekapTemuanQC() {
                         )}
                       </div>
 
-                      {/* LKH Code for sampling_rabut and sortir_rs */}
-                      {(isRabut || isSortirRs) && temuan.kode_lkh && (
+                      {/* LKH Code for sampling_rabut */}
+                      {isRabut && temuan.kode_lkh && (
                         <div className="pt-1 border-t border-gray-200">
                           <div className="text-xs text-blue-600 font-medium">
                             LKH: {temuan.kode_lkh}
@@ -381,8 +417,8 @@ function RekapTemuanQC() {
                         )}
                       </div>
 
-                      {/* LKH Problem for sampling_rabut and sortir_rs */}
-                      {(isRabut || isSortirRs) && temuan.masalah_lkh && (
+                      {/* LKH Problem for sampling_rabut */}
+                      {isRabut && temuan.masalah_lkh && (
                         <div className="pt-1 border-t border-gray-200">
                           <div className="text-xs text-orange-600 font-medium">
                             LKH Problem: {temuan.masalah_lkh}
@@ -393,35 +429,25 @@ function RekapTemuanQC() {
                   </td>
                   <td className="px-4 py-4">
                     <div className="text-sm">
-                      {isSortirRs ? (
-                        temuan.nama_pengecekan && (
-                          <div className="flex items-center text-gray-900">
-                            <Settings className="w-3 h-3 mr-1 text-gray-400" />
-                            {temuan.nama_pengecekan}
-                          </div>
-                        )
-                      ) : (
-                        <>
-                          {temuan.mesin && (
-                            <div className="flex items-center text-gray-900 mb-1">
-                              <Settings className="w-3 h-3 mr-1 text-gray-400" />
-                              {temuan.mesin}
-                            </div>
-                          )}
-                          {temuan.operator && (
-                            <div className="flex items-center text-gray-600">
-                              <User className="w-3 h-3 mr-1 text-gray-400" />
-                              {temuan.operator}
-                            </div>
-                          )}
-                        </>
+                      {temuan.mesin && (
+                        <div className="flex items-center text-gray-900 mb-1">
+                          <Settings className="w-3 h-3 mr-1 text-gray-400" />
+                          {temuan.mesin}
+                        </div>
+                      )}
+                      {temuan.operator && (
+                        <div className="flex items-center text-gray-600">
+                          <User className="w-3 h-3 mr-1 text-gray-400" />
+                          {temuan.operator}
+                        </div>
                       )}
                     </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
                     <div className="text-sm">
                       <div className="text-gray-900 font-medium">
-                        {temuan.jumlah_defect}
+                        {isRabut ? temuan.hasil : temuan.jumlah_defect}{' '}
+                        {/* ← change here */}
                       </div>
                       {temuan.persen_kriteria !== undefined && (
                         <div className="text-gray-500 text-xs">
@@ -442,7 +468,7 @@ function RekapTemuanQC() {
                       </div>
                     </div>
                   </td>
-                  {!isRabut && !isSortirRs && (
+                  {!isRabut && (
                     <td className="px-4 py-4 whitespace-nowrap text-center">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {temuan.periode_ke}
@@ -452,6 +478,21 @@ function RekapTemuanQC() {
                 </tr>
               ))}
             </tbody>
+            {/* Section defect footer */}
+            <tfoot>
+              <tr className="bg-orange-50 border-t-2 border-orange-200">
+                <td
+                  colSpan={isRabut ? 4 : 4}
+                  className="px-4 py-2 text-right text-sm font-semibold text-orange-800"
+                >
+                  Section Total Defects:
+                </td>
+                <td className="px-4 py-2 text-sm font-bold text-orange-900">
+                  {totalDefects.toLocaleString('id-ID')}
+                </td>
+                <td colSpan={isRabut ? 1 : 2} />
+              </tr>
+            </tfoot>
           </table>
         </div>
       </div>
@@ -470,8 +511,8 @@ function RekapTemuanQC() {
   }
 
   return (
-    <div className="bg-gray-50 w-full min-h-screen p-5">
-      <div className="max-w-7xl mx-auto">
+    <div className="bg-gray-50 w-full min-h-screen ">
+      <div className=" mx-auto">
         <div className="mb-6">
           {/* Filters */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -586,80 +627,124 @@ function RekapTemuanQC() {
 
         {/* JO Cards with clear separation */}
         <div className="space-y-8">
-          {filteredData?.map((item, index) => (
-            <div
-              key={item.no_jo || index}
-              className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
-            >
-              {/* JO Header with distinctive styling */}
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-2xl font-bold mb-2 flex items-center">
-                      <Package className="w-6 h-6 mr-2" />
-                      Job Order: {item.no_jo}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-100">
-                      <div className="flex items-center">
-                        <span className="font-medium">IO Number:</span>
-                        <span className="ml-2 bg-blue-500 bg-opacity-50 px-2 py-1 rounded">
-                          {item.no_io}
-                        </span>
+          {filteredData?.map((item, index) => {
+            const summary = getJOSummary(item);
+            const grandTotalTemuan = summary.reduce((s, x) => s + x.count, 0);
+            const grandTotalDefects = summary.reduce(
+              (s, x) => s + x.totalDefects,
+              0,
+            );
+            const hasFindings = summary.length > 0;
+
+            return (
+              <div
+                key={item.no_jo || index}
+                className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
+              >
+                {/* JO Header */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold mb-2 flex items-center">
+                        <Package className="w-6 h-6 mr-2" />
+                        Job Order: {item.no_jo}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-blue-100 mb-4">
+                        <div className="flex items-center">
+                          <span className="font-medium">IO Number:</span>
+                          <span className="ml-2 bg-blue-500 bg-opacity-50 px-2 py-1 rounded">
+                            {item.no_io}
+                          </span>
+                        </div>
+                        <div className="flex items-center col-span-2">
+                          <span className="font-medium">Item:</span>
+                          <span className="ml-2 bg-blue-500 bg-opacity-50 px-2 py-1 rounded">
+                            {item.item}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <span className="font-medium">Customer:</span>
+                          <span className="ml-2 bg-blue-500 bg-opacity-50 px-2 py-1 rounded">
+                            {getCustomerFromSections(item)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <span className="font-medium">Item:</span>
-                        <span className="ml-2 bg-blue-500 bg-opacity-50 px-2 py-1 rounded">
-                          {item.item}
-                        </span>
-                      </div>
-                      <div className="flex items-center">
-                        <span className="font-medium">Customer:</span>
-                        <span className="ml-2 bg-blue-500 bg-opacity-50 px-2 py-1 rounded">
-                          {getCustomerFromSections(item)}
-                        </span>
-                      </div>
+
+                      {/* Summary strip — only when there are findings */}
+                      {hasFindings && (
+                        <div className="mt-1">
+                          <div className="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-2">
+                            Summary by Section
+                          </div>
+                          <div className="flex flex-wrap gap-2 items-center">
+                            {summary.map((s) => (
+                              <div
+                                key={s.section}
+                                className="bg-white bg-opacity-15 rounded-lg px-3 py-1.5 text-xs"
+                              >
+                                <span className="font-semibold text-white">
+                                  {getSectionDisplayName(s.section)}
+                                </span>
+                                <span className="text-blue-200 mx-1">·</span>
+                                <span className="text-blue-100">
+                                  {s.count} temuan
+                                </span>
+                                <span className="text-blue-200 mx-1">·</span>
+                                <span className="text-orange-300 font-semibold">
+                                  {s.totalDefects.toLocaleString('id-ID')}{' '}
+                                  defect
+                                </span>
+                              </div>
+                            ))}
+
+                            {/* Grand total */}
+                            <div className="bg-orange-500 bg-opacity-80 rounded-lg px-3 py-1.5 text-xs ml-auto">
+                              <span className="font-bold text-white">
+                                Total: {grandTotalTemuan} temuan ·{' '}
+                                {grandTotalDefects.toLocaleString('id-ID')}{' '}
+                                defect
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold opacity-75">
-                      #{index + 1}
+
+                    <div className="text-right ml-4">
+                      <div className="text-3xl font-bold opacity-75">
+                        #{index + 1}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Inspection Results */}
-              <div className="p-6">
-                {/* Check if JO has any findings at all */}
-                {!item.cetak?.length &&
-                !item.coating?.length &&
-                !item.lem?.length &&
-                !item.pond?.length &&
-                !item.sampling_rabut?.length &&
-                !item.sortir_rs?.length ? (
-                  <div className="text-center py-8">
-                    <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                      No Quality Issues Found
-                    </h4>
-                    <p className="text-gray-600">
-                      This job order passed all quality inspections without any
-                      findings.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {renderTemuanTable('cetak', item.cetak)}
-                    {renderTemuanTable('coating', item.coating)}
-                    {renderTemuanTable('lem', item.lem)}
-                    {renderTemuanTable('pond', item.pond)}
-                    {renderTemuanTable('sampling_rabut', item.sampling_rabut)}
-                    {renderTemuanTable('sortir_rs', item.sortir_rs)}
-                  </div>
-                )}
+                {/* Inspection Results */}
+                <div className="p-6">
+                  {!hasFindings ? (
+                    <div className="text-center py-8">
+                      <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                      <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                        No Quality Issues Found
+                      </h4>
+                      <p className="text-gray-600">
+                        This job order passed all quality inspections without
+                        any findings.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {renderTemuanTable('cetak', item.cetak)}
+                      {renderTemuanTable('coating', item.coating)}
+                      {renderTemuanTable('lem', item.lem)}
+                      {renderTemuanTable('pond', item.pond)}
+                      {renderTemuanTable('sampling_rabut', item.sampling_rabut)}
+                      {/* sortir_rs intentionally not rendered */}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
