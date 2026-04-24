@@ -17,15 +17,11 @@ function ProsesLemMesinHistory() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const handleResize = () => {
-    setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
+    setIsMobile(window.innerWidth < 768);
   };
   useEffect(() => {
     handleResize();
-
-    // Event listener for window resize
     window.addEventListener('resize', handleResize);
-
-    // Cleanup on component unmount
     return () => {
       window.removeEventListener('resize', handleResize);
     };
@@ -57,42 +53,6 @@ function ProsesLemMesinHistory() {
     }
   }
 
-  // const [me, setMe] = useState<any>();
-
-  // async function getMe() {
-  //     const url = `${import.meta.env.VITE_API_LINK}/me`;
-  //     try {
-  //         const res = await axios.get(url, {
-  //             withCredentials: true,
-  //         });
-
-  //         setMe(res.data);
-  //     } catch (error: any) {
-  //         console.log(error.data.msg);
-  //     }
-  // }
-
-  const mesin = [
-    {
-      nama: 'R700',
-      no_job_order: '00-000A',
-      inspector: 'Iko Uwais',
-      nama_jo: 'Kemasan',
-    },
-    {
-      nama: 'SM74',
-      no_job_order: '00-000A',
-      inspector: 'Cris Pratt',
-      nama_jo: 'Kemasan',
-    },
-    {
-      nama: 'GTO',
-      no_job_order: '00-000A',
-      inspector: 'Zoe Saldana',
-      nama_jo: 'Kemasan',
-    },
-  ];
-
   return (
     <>
       <main className="overflow-x-scroll">
@@ -122,11 +82,13 @@ function ProsesLemMesinHistory() {
             </div>
           </div>
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-            <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
+            <div
+              className="grid px-10 py-4 border-b-8 border-[#D8EAFF] gap-2"
+              style={{ gridTemplateColumns: 'repeat(13, minmax(0, 1fr))' }}
+            >
               <label className="text-neutral-500 text-sm font-semibold ">
                 MESIN
               </label>
-
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 No. JO / IO
               </label>
@@ -139,6 +101,9 @@ function ProsesLemMesinHistory() {
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Inspektor
               </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-1">
+                Periode
+              </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Tanggal
               </label>
@@ -146,9 +111,17 @@ function ProsesLemMesinHistory() {
             <div className="w-2 h-full "></div>
             {cetakMesin?.data.map((data: any, i: any) => {
               const tglTicket = convertTimeStampToDate(data.createdAt);
+              const periodeCount =
+                data.inspeksi_lem_periode?.[0]?.inspeksi_lem_periode_point
+                  ?.length ?? 0;
               return (
                 <>
-                  <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center">
+                  <div
+                    className="grid border-b-8 border-[#D8EAFF] gap-2 items-center"
+                    style={{
+                      gridTemplateColumns: 'repeat(13, minmax(0, 1fr))',
+                    }}
+                  >
                     <div
                       className={`w-full h-full sticky left-0 z-20  gap-8  flex items-center`}
                     >
@@ -185,6 +158,11 @@ function ProsesLemMesinHistory() {
                         }
                       </label>
                     </div>
+                    <div className="col-span-1 flex items-center">
+                      <span className="inline-flex items-center justify-center bg-blue-100 text-blue-700 text-xs font-bold rounded-full w-7 h-7">
+                        {periodeCount}
+                      </span>
+                    </div>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {tglTicket}
                     </label>
@@ -192,7 +170,7 @@ function ProsesLemMesinHistory() {
                       <>
                         <Link to={`/qc/inspection/lem/jenis/${data.id}`}>
                           <button
-                            className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                            className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`}
                           >
                             PILIH
                           </button>

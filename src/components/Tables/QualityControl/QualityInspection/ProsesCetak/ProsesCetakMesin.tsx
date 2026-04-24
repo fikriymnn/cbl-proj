@@ -45,7 +45,7 @@ function ProsesCetakMesin() {
       });
 
       setCetakMesin(res.data);
-      console.log(res.data);
+      console.log('cetakMesin', res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
