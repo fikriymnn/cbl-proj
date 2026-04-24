@@ -485,9 +485,6 @@ const IncomingBarangJadi: React.FC = () => {
                         <span className="block " title={row.produk}>
                           {row.produk || '-'}
                         </span>
-                        <span className="text-[10px] text-gray-400">
-                          {row.no_po_customer}
-                        </span>
                       </td>
                       <td className="p-2 sm:p-3 text-xs font-medium text-gray-700 whitespace-nowrap">
                         {row.customer || '-'}

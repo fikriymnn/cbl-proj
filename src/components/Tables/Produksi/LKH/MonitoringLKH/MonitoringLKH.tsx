@@ -31,6 +31,8 @@ interface ProduksiLKH {
 }
 
 interface LKHData {
+  mesin: any;
+  jo: any;
   id: number;
   id_produksi_lkh: number;
   id_produksi_lkh_tahapan: number;
@@ -133,7 +135,7 @@ const MonitoringLKH: React.FC = () => {
         },
         withCredentials: true,
       });
-
+      console.log('Raw LKH API Response:', res.data);
       const responseData = Array.isArray(res.data.data)
         ? res.data.data
         : (res.data as any)?.rows || (res.data as any)?.result || [];
@@ -504,7 +506,7 @@ const MonitoringLKH: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  No JO
+                  Nomor / Mesin
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Operator
@@ -550,8 +552,10 @@ const MonitoringLKH: React.FC = () => {
               ) : (
                 lkhData.map((lkh) => (
                   <tr key={lkh.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium flex flex-col gap-1 mt-[10%]">
                       {lkh.produksi_lkh?.no_jo || '-'}
+                      <span> {lkh.jo.no_io || '-'} </span>
+                      <span>{lkh.mesin.nama_mesin || '-'}</span>
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                       {lkh.operator?.nama || '-'}
