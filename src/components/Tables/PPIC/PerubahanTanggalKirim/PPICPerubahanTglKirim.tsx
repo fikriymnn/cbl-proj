@@ -3,6 +3,10 @@ import React, { useEffect, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
+interface JobOrder {
+  no_jo: string;
+  [key: string]: any;
+}
 
 interface SoData {
   id: number;
@@ -13,6 +17,7 @@ interface SoData {
   tgl_pengiriman: string;
   status: string;
   status_proses: string;
+  job_order?: JobOrder;
   [key: string]: any;
 }
 
@@ -116,7 +121,7 @@ const PPICPerubahanTglKirim: React.FC = () => {
           params,
           withCredentials: true,
         });
-
+      console.log('API Response:', res.data);
       if (res.data.succes) {
         setData(res.data.data);
         if (res.data.total_page) {
@@ -316,7 +321,7 @@ const PPICPerubahanTglKirim: React.FC = () => {
                       onClick={() => handleSort('no_so')}
                       className="flex items-center hover:text-gray-700 focus:outline-none"
                     >
-                      NO SO
+                      NOMOR
                       {getSortIcon('no_so')}
                     </button>
                   </th>
@@ -326,9 +331,7 @@ const PPICPerubahanTglKirim: React.FC = () => {
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     CUSTOMER
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    NO IO
-                  </th>
+
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <button
                       onClick={() => handleSort('tgl_awal')}
@@ -409,16 +412,42 @@ const PPICPerubahanTglKirim: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-2 py-2 whitespace-nowrap">
-                        <span
-                          className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
-                          title={item.no_so}
-                        >
-                          {item.no_so
-                            ? item.no_so.substring(0, 30) +
-                              (item.no_so.length > 30 ? '...' : '')
-                            : '-'}
-                        </span>
+
+                      <td className="px-2 py-2 whitespace-nowrap text-xs">
+                        <div className="flex flex-col gap-0.5">
+                          {/* NO JO */}
+                          {item.so?.job_order?.no_jo ? (
+                            <span
+                              className="bg-orange-100 text-orange-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                              title={item.so.job_order.no_jo}
+                            >
+                              {item.so.job_order.no_jo}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                          {/* NO SO */}
+                          <span
+                            className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                            title={item.no_so}
+                          >
+                            {item.no_so
+                              ? item.no_so.substring(0, 30) +
+                                (item.no_so.length > 30 ? '...' : '')
+                              : '-'}
+                          </span>
+                          {/* NO IO */}
+                          {item.so?.no_io ? (
+                            <span
+                              className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                              title={item.so.no_io}
+                            >
+                              {item.so.no_io}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
                       </td>
                       {/* PRODUK */}
                       <td className="px-2 py-2 text-xs text-gray-900 max-w-40">
@@ -438,16 +467,7 @@ const PPICPerubahanTglKirim: React.FC = () => {
                             : '-'}
                         </span>
                       </td>
-                      {/* NO IO */}
-                      <td className="px-2 py-2 whitespace-nowrap">
-                        {item.so?.no_io ? (
-                          <span className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium">
-                            {item.so.no_io}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
+
                       <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                         {formatDate(item.tgl_awal)}
                       </td>

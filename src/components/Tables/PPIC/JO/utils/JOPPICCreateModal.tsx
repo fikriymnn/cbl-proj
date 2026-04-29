@@ -33,6 +33,15 @@ interface IOProofData {
   alamat_pengiriman?: string;
   ada_standar_warna?: string;
   status_produk?: string;
+  io_mounting?: Array<{ tahapan: TahapanItem[] }>;
+}
+
+interface TahapanItem {
+  id: number;
+  id_drying_time: number | null;
+  id_setting_kapasitas: number | null;
+  nama_mesin: string;
+  nama_proses: string;
 }
 
 interface JOPPICCreateModalProps {
@@ -45,6 +54,22 @@ interface JOPPICCreateModalProps {
   // NEW: 'SO' | 'IO' — only relevant when tipeJO === 'JO PROOF'
   proofSourceType?: 'SO' | 'IO';
 }
+
+// ── Helper: compute block reasons from a list of tahapan arrays ──────────────
+const getCreateBlockReasons = (allTahapan: TahapanItem[]): string[] => {
+  const reasons: string[] = [];
+  if (allTahapan.length === 0) {
+    reasons.push('Tahapan belum diset');
+  } else {
+    if (allTahapan.some((t) => t.id_drying_time === null)) {
+      reasons.push('Drying time belum diset pada tahapan');
+    }
+    if (allTahapan.some((t) => t.id_setting_kapasitas === null)) {
+      reasons.push('Kapasitas belum diset pada tahapan');
+    }
+  }
+  return reasons;
+};
 
 const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   isOpen,
@@ -70,6 +95,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const [isInitialEditLoad, setIsInitialEditLoad] = useState(false);
   const [originalQty, setOriginalQty] = useState<number>(0);
   const [hasQtyBeenEdited, setHasQtyBeenEdited] = useState(false);
+
+  // NEW: block reasons for create JO
+  const [createBlockReasons, setCreateBlockReasons] = useState<string[]>([]);
 
   // Determine if this modal is in "IO proof" mode
   const isIOProofMode =
@@ -242,7 +270,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       fetchJumlahJO();
 
       if (isIOProofMode) {
-        // NEW: fetch IO proof list instead of SO list
         fetchIOProofData();
       } else {
         fetchSOData();
@@ -266,7 +293,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         },
         withCredentials: true,
       });
-      console.log('Fetched SO data:', res.data.data);
       setSOData(res.data.data || []);
     } catch (error) {
       console.error('Error fetching SO data:', error);
@@ -592,7 +618,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
         setTimeout(() => setIsInitialEditLoad(false), 100);
       }
-      console.log('Fetched JO detail:', res.data.data);
     } catch (error) {
       console.error('Error fetching JO detail:', error);
       alert('Gagal mengambil data JO');
@@ -619,6 +644,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     setIsInitialEditLoad(false);
     setOriginalQty(0);
     setHasQtyBeenEdited(false);
+    setCreateBlockReasons([]);
   };
 
   useEffect(() => {
@@ -644,6 +670,13 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const handleSOChange = (soId: number) => {
     const selectedSO = soData.find((so) => so.id === soId);
     if (selectedSO) {
+      // Compute block reasons from SO → io.io_mounting[].tahapan[]
+      const allTahapan: TahapanItem[] =
+        selectedSO.io?.io_mounting?.flatMap(
+          (m: { tahapan: TahapanItem[] }) => m.tahapan ?? [],
+        ) ?? [];
+      setCreateBlockReasons(getCreateBlockReasons(allTahapan));
+
       setFormData((prev) => ({
         ...prev,
         id_so: selectedSO.id,
@@ -667,6 +700,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
       if (!editMode) fetchMountingData(selectedSO.id_io);
       fetchCustomerData(selectedSO.id_customer);
+    } else {
+      // Deselected
+      setCreateBlockReasons([]);
     }
   };
 
@@ -674,9 +710,13 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const handleIOChange = (ioId: number) => {
     const selectedIO = ioProofData.find((io) => io.id === ioId);
     if (selectedIO) {
+      // Compute block reasons from IO → io_mounting[].tahapan[]
+      const allTahapan: TahapanItem[] =
+        selectedIO.io_mounting?.flatMap((m) => m.tahapan ?? []) ?? [];
+      setCreateBlockReasons(getCreateBlockReasons(allTahapan));
+
       setFormData((prev) => ({
         ...prev,
-        // id_so stays 0 — no SO for IO proof
         id_so: 0,
         no_so: '',
         id_io: selectedIO.id,
@@ -685,7 +725,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         no_io: selectedIO.no_io,
         customer: selectedIO.customer,
         produk: selectedIO.produk,
-        // IO proof typically doesn't have a PO qty, default to 0
         po_qty: 0,
         no_po_customer: '',
         alamat_pengiriman: selectedIO.alamat_pengiriman || '',
@@ -699,6 +738,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
       fetchMountingData(selectedIO.id);
       fetchCustomerData(selectedIO.id_customer);
+    } else {
+      setCreateBlockReasons([]);
     }
   };
 
@@ -806,8 +847,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    // In edit mode, a JO originally created from IO won't have id_so — that's valid.
-    // Determine if this JO is IO-based: either actively in IO proof mode, or editing a JO that has no SO.
     const isIOBased =
       isIOProofMode || (editMode && !formData.id_so && !!formData.id_io);
 
@@ -825,6 +864,15 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
     if (!selectedMounting) {
       alert('Pilih mounting terlebih dahulu');
+      return;
+    }
+
+    // Guard against blocked submission
+    if (!editMode && createBlockReasons.length > 0) {
+      alert(
+        'JO tidak dapat dibuat:\n' +
+          createBlockReasons.map((r) => `• ${r}`).join('\n'),
+      );
       return;
     }
 
@@ -962,6 +1010,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     ? mountingData.find((m) => m.id === selectedMounting)
     : null;
 
+  // Determine if submit is blocked (only for create mode)
+  const isSubmitBlocked = !editMode && createBlockReasons.length > 0;
+
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="flex items-center justify-center w-full h-full px-4 py-4">
@@ -977,7 +1028,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                 <h2 className="text-xl font-bold text-white">
                   {editMode ? `Edit ${tipeJO}` : `Tambah ${tipeJO}`}
                 </h2>
-                {/* NEW: show source badge for IO proof */}
                 {isIOProofMode && (
                   <span className="px-2 py-0.5 text-xs font-semibold bg-teal-400 text-white rounded-full">
                     Dari IO
@@ -1030,6 +1080,38 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
               </svg>
             </button>
           </div>
+
+          {/* ── Block reasons banner (create mode only, after SO/IO is selected) ── */}
+          {!editMode && createBlockReasons.length > 0 && (
+            <div className="flex-shrink-0 mx-6 mt-4 flex items-start gap-3 bg-red-50 border border-red-300 rounded-lg px-4 py-3">
+              <svg
+                className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-red-700">
+                  JO tidak dapat dibuat — selesaikan item berikut terlebih
+                  dahulu:
+                </p>
+                <ul className="mt-1 list-disc list-inside space-y-0.5">
+                  {createBlockReasons.map((reason, i) => (
+                    <li key={i} className="text-xs text-red-600">
+                      {reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
 
           {/* Body — Two Column Layout */}
           <div className="flex-1 overflow-hidden flex">
@@ -1087,16 +1169,61 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             >
               Batal
             </button>
-            <button
-              onClick={handleSubmit}
-              disabled={loading || !selectedMounting}
-              className="px-5 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {loading && (
-                <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+
+            {/* Submit button — with tooltip when blocked */}
+            <div className="relative group">
+              <button
+                onClick={handleSubmit}
+                disabled={loading || !selectedMounting || isSubmitBlocked}
+                className={`px-5 py-2 text-sm font-medium text-white border border-transparent rounded-md flex items-center gap-2 transition-colors ${
+                  isSubmitBlocked
+                    ? 'bg-red-400 cursor-not-allowed opacity-70'
+                    : 'bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed'
+                }`}
+              >
+                {loading && (
+                  <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                )}
+                {isSubmitBlocked && (
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                    />
+                  </svg>
+                )}
+                {loading
+                  ? 'Menyimpan...'
+                  : editMode
+                  ? 'Update JO'
+                  : isSubmitBlocked
+                  ? 'Tidak Dapat Dibuat'
+                  : 'Simpan JO'}
+              </button>
+
+              {/* Hover tooltip showing block reasons */}
+              {isSubmitBlocked && (
+                <div className="absolute z-20 bottom-full right-0 mb-2 w-64 bg-white text-black text-xs border border-red-300 rounded-lg shadow-lg p-3 hidden group-hover:block pointer-events-none">
+                  <p className="font-semibold mb-1.5 text-red-600">
+                    Tidak bisa membuat JO:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1">
+                    {createBlockReasons.map((reason, i) => (
+                      <li key={i} className="text-gray-700">
+                        {reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
-              {loading ? 'Menyimpan...' : editMode ? 'Update JO' : 'Simpan JO'}
-            </button>
+            </div>
           </div>
         </div>
       </div>

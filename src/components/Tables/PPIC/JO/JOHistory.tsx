@@ -5,7 +5,25 @@ import JOPPICCreateModal from './utils/JOPPICCreateModal';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import JOPrintModal from './utils/JOPrintModal';
+
 type SortDirection = 'asc' | 'desc';
+
+interface TahapanItem {
+  id: number;
+  id_drying_time: number | null;
+  id_setting_kapasitas: number | null;
+  nama_mesin: string;
+  nama_proses: string;
+}
+
+interface IOMounting {
+  tahapan: TahapanItem[];
+}
+
+interface JOMounting {
+  id: number;
+  io_mounting: IOMounting;
+}
 
 interface JOData {
   status_proses: string;
@@ -22,6 +40,7 @@ interface JOData {
   tipe_jo: string;
   is_active: boolean;
   createdAt: string;
+  jo_mounting: JOMounting[];
 }
 
 interface APIResponse<T> {
@@ -84,7 +103,7 @@ const JOHistory: React.FC = () => {
 
   const handleSearch = (): void => {
     setSearchTerm(searchInput);
-    setPage(1); // Reset to first page on new search
+    setPage(1);
   };
 
   const handleClearSearch = (): void => {
@@ -92,10 +111,12 @@ const JOHistory: React.FC = () => {
     setSearchTerm('');
     setPage(1);
   };
+
   const handlePrintJO = (item: JOData) => {
     setPrintJOId(item.id);
     setShowPrintModal(true);
   };
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -104,7 +125,7 @@ const JOHistory: React.FC = () => {
 
   const handleLimitChange = (newLimit: number): void => {
     setLimit(newLimit);
-    setPage(1); // Reset to first page when changing limit
+    setPage(1);
   };
 
   const handleSort = (field: string) => {
@@ -215,6 +236,27 @@ const JOHistory: React.FC = () => {
     return tipe === 'JO PRODUKSI'
       ? 'bg-purple-100 text-purple-800'
       : 'bg-orange-100 text-orange-800';
+  };
+
+  // Returns list of reasons why Send Jadwal should be blocked
+  const getJadwalBlockReasons = (item: JOData): string[] => {
+    const reasons: string[] = [];
+    const allTahapan =
+      item.jo_mounting?.flatMap((jm) => jm.io_mounting?.tahapan ?? []) ?? [];
+
+    if (allTahapan.length === 0) {
+      reasons.push('Tahapan belum diset');
+    } else {
+      const missingDrying = allTahapan.some((t) => t.id_drying_time === null);
+      if (missingDrying) reasons.push('Drying time belum diset');
+
+      const missingKapasitas = allTahapan.some(
+        (t) => t.id_setting_kapasitas === null,
+      );
+      if (missingKapasitas) reasons.push('Kapasitas belum diset');
+    }
+
+    return reasons;
   };
 
   const handleModalClose = () => {
@@ -449,99 +491,134 @@ const JOHistory: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                sortedData.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      {(page - 1) * limit + index + 1}
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
-                      <div className="flex flex-col gap-1">
-                        <button
-                          onClick={() => handleViewJO(item)}
-                          className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
-                          title="View JO Details"
+                sortedData.map((item, index) => {
+                  const jadwalBlockReasons = getJadwalBlockReasons(item);
+                  const isJadwalBlocked = jadwalBlockReasons.length > 0;
+
+                  return (
+                    <tr
+                      key={item.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                        {(page - 1) * limit + index + 1}
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                        <div className="flex flex-col gap-1">
+                          <button
+                            onClick={() => handleViewJO(item)}
+                            className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
+                            title="View JO Details"
+                          >
+                            DETAIL
+                          </button>
+
+                          {/* SEND JADWAL with conditional disable + tooltip */}
+                          <div className="relative group">
+                            <button
+                              onClick={() =>
+                                !isJadwalBlocked && SendJoToJadwal(item.id)
+                              }
+                              disabled={isJadwalBlocked}
+                              className={`w-full px-3 py-1 rounded text-xs transition-colors text-white ${
+                                isJadwalBlocked
+                                  ? 'bg-yellow-300 cursor-not-allowed opacity-60'
+                                  : 'bg-yellow-500 hover:bg-yellow-600 cursor-pointer'
+                              }`}
+                              title={
+                                isJadwalBlocked
+                                  ? jadwalBlockReasons.join(' | ')
+                                  : 'Kirim ke Jadwal'
+                              }
+                            >
+                              SEND JADWAL
+                            </button>
+
+                            {/* Hover tooltip showing block reasons */}
+                            {isJadwalBlocked && (
+                              <div className="absolute z-20 left-0 mt-1 w-52 bg-white text-black text-xs border border-gray-600 rounded-lg shadow-lg p-2 hidden group-hover:block pointer-events-none">
+                                <p className="font-semibold mb-1 text-red-600">
+                                  Tidak bisa kirim:
+                                </p>
+                                <ul className="list-disc list-inside space-y-0.5">
+                                  {jadwalBlockReasons.map((reason, i) => (
+                                    <li key={i}>{reason}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => handlePrintJO(item)}
+                            className="text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-xs transition-colors"
+                            title="Print JO"
+                          >
+                            PRINT
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">
+                        <div className="max-w-xs" title={item.no_jo}>
+                          {truncateText(item.no_jo, 30)}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                        <div className="max-w-xs" title={item.no_so}>
+                          {truncateText(item.no_so, 30)}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                        <div className="max-w-xs" title={item.no_io}>
+                          {truncateText(item.no_io, 30)}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-xs text-gray-900">
+                        <div className="max-w-xs" title={item.customer}>
+                          {truncateText(item.customer, 30)}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-xs text-gray-900">
+                        <div className="max-w-xs" title={item.produk}>
+                          {truncateText(item.produk, 40)}
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                        {item.qty?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                        {formatDate(item.tgl_kirim)}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTipeJOColor(
+                            item.tipe_jo,
+                          )}`}
                         >
-                          DETAIL
-                        </button>
-                        <button
-                          onClick={() => SendJoToJadwal(item.id)}
-                          className="text-white bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded text-xs transition-colors"
-                          title="View JO Details"
+                          {item.tipe_jo || '-'}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                            item.status_jo,
+                          )}`}
                         >
-                          SEND JADWAL
-                        </button>
-                        <button
-                          onClick={() => handlePrintJO(item)}
-                          className="text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-xs transition-colors"
-                          title="Print JO"
+                          {item.status_jo || '-'}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusProsesColor(
+                            item.status_proses,
+                          )}`}
                         >
-                          PRINT
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">
-                      <div className="max-w-xs" title={item.no_jo}>
-                        {truncateText(item.no_jo, 30)}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      <div className="max-w-xs" title={item.no_so}>
-                        {truncateText(item.no_so, 30)}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      <div className="max-w-xs" title={item.no_io}>
-                        {truncateText(item.no_io, 30)}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 text-xs text-gray-900">
-                      <div className="max-w-xs" title={item.customer}>
-                        {truncateText(item.customer, 30)}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 text-xs text-gray-900">
-                      <div className="max-w-xs" title={item.produk}>
-                        {truncateText(item.produk, 40)}
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      {item.qty?.toLocaleString() || 0}
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      {formatDate(item.tgl_kirim)}
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTipeJOColor(
-                          item.tipe_jo,
-                        )}`}
-                      >
-                        {item.tipe_jo || '-'}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                          item.status_jo,
-                        )}`}
-                      >
-                        {item.status_jo || '-'}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusProsesColor(
-                          item.status_proses,
-                        )}`}
-                      >
-                        {item.status_proses || '-'}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                          {item.status_proses || '-'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

@@ -1,5 +1,6 @@
 // types/jo.types.ts
 export interface SOData {
+  io: any;
   tgl_pengiriman: any;
   status_produk: string;
   id_customer: number;

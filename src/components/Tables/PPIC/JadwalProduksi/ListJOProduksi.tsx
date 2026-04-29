@@ -20,6 +20,7 @@ interface JOData {
   status: string;
   nama_bahan: string;
   no_io: string;
+  createdAt: string;
 }
 
 interface JadwalPerJam {
@@ -58,6 +59,65 @@ interface DetailJOData {
   };
 }
 
+type SortKey = keyof Pick<
+  JOData,
+  | 'no_jo'
+  | 'item'
+  | 'nama_bahan'
+  | 'qty_pcs'
+  | 'qty_druk'
+  | 'qty_lp'
+  | 'qty_po'
+  | 'tgl_kirim'
+  | 'createdAt'
+>;
+type SortDirection = 'asc' | 'desc' | null;
+
+interface SortConfig {
+  key: SortKey | null;
+  direction: SortDirection;
+}
+
+// Sort indicator icon component
+function SortIcon({
+  column,
+  sortConfig,
+}: {
+  column: SortKey;
+  sortConfig: SortConfig;
+}) {
+  const isActive = sortConfig.key === column;
+  const isAsc = isActive && sortConfig.direction === 'asc';
+  const isDesc = isActive && sortConfig.direction === 'desc';
+
+  return (
+    <span className="inline-flex flex-col ml-1.5 gap-[1px] align-middle">
+      <svg
+        width="8"
+        height="5"
+        viewBox="0 0 8 5"
+        fill="none"
+        className={`transition-opacity duration-150 ${
+          isAsc ? 'opacity-100' : 'opacity-35'
+        }`}
+      >
+        <path d="M4 0L7.46 4.5H0.54L4 0Z" fill="white" />
+      </svg>
+      <svg
+        width="8"
+        height="5"
+        viewBox="0 0 8 5"
+        fill="none"
+        className={`transition-opacity duration-150 ${
+          isDesc ? 'opacity-100' : 'opacity-35'
+        }`}
+      >
+        <path d="M4 5L0.54 0.5H7.46L4 5Z" fill="white" />
+      </svg>
+    </span>
+  );
+}
+
 function ListJOProduksi() {
   // Consolidated state management with proper typing
   const [isLoading, setIsLoading] = useState(false);
@@ -71,6 +131,12 @@ function ListJOProduksi() {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [mesinList, setmesinList] = useState<any>([]);
 
+  // Sort state
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: null,
+    direction: null,
+  });
+
   // UI state
   const [showCalculateIndex, setShowCalculateIndex] = useState<number | null>(
     null,
@@ -81,6 +147,17 @@ function ListJOProduksi() {
   );
   const [selectedTahapan, setSelectedTahapan] = useState<string | null>(null);
   const [selectedData, setSelectedData] = useState<JadwalPerJam | null>(null);
+
+  // Handle column sort toggle
+  const handleSort = useCallback((key: SortKey) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.direction === 'asc') return { key, direction: 'desc' };
+        if (prev.direction === 'desc') return { key: null, direction: null };
+      }
+      return { key, direction: 'asc' };
+    });
+  }, []);
 
   // Format date for display
   const formatCustomDate = useCallback((dateString: string) => {
@@ -141,15 +218,10 @@ function ListJOProduksi() {
   // Memoized API base URL
   const API_BASE = useMemo(() => import.meta.env.VITE_API_LINK, []);
 
-  // Create separate functions for initial data loading without filters
   const getInitialJadwalView = useCallback(async () => {
     const url = `${API_BASE}/ppic/jadwalProduksiView`;
-    // Call without date parameters to get all data
     const data = await fetchAPI(url, {});
-
-    if (data) {
-      setMapData(data.data || []);
-    }
+    if (data) setMapData(data.data || []);
   }, [API_BASE, fetchAPI]);
 
   async function getMasterMesin() {
@@ -159,7 +231,6 @@ function ListJOProduksi() {
       const res = await axios.get(url, {});
       setIsLoading(false);
       setmesinList(res.data.data);
-      console.log('getmesin', res.data.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error.data.msg);
@@ -168,17 +239,9 @@ function ListJOProduksi() {
 
   const getInitialJOList = useCallback(async () => {
     const url = `${API_BASE}/ppic/jadwalProduksi`;
-    // Only use the required status_tiket parameter
-    const params = {
-      status_tiket: 'incoming',
-      type: 'jadwal',
-    };
-
+    const params = { status_tiket: 'incoming', type: 'jadwal' };
     const data = await fetchAPI(url, params);
-
-    if (data) {
-      setListJO(data);
-    }
+    if (data) setListJO(data);
   }, [API_BASE, fetchAPI]);
 
   const getJadwalView = useCallback(async () => {
@@ -187,49 +250,30 @@ function ListJOProduksi() {
       start_date: dateRange.startDate,
       end_date: dateRange.endDate,
     });
-
-    if (data) {
-      setMapData(data.data || []);
-    }
+    if (data) setMapData(data.data || []);
   }, [API_BASE, fetchAPI, dateRange]);
 
   const getJOList = useCallback(async () => {
     const url = `${API_BASE}/ppic/jadwalProduksi`;
-    // Add date range and search filters to the API call
     const params: {
       status_tiket: string;
       start_date?: string;
       end_date?: string;
       search?: string;
-    } = {
-      status_tiket: 'incoming',
-    };
+    } = { status_tiket: 'incoming' };
 
-    // Only add filters if they have values
-    if (dateRange.startDate) {
-      params.start_date = dateRange.startDate;
-    }
-
-    if (dateRange.endDate) {
-      params.end_date = dateRange.endDate;
-    }
-
-    if (searchTerm.trim()) {
-      params.search = searchTerm.trim();
-    }
+    if (dateRange.startDate) params.start_date = dateRange.startDate;
+    if (dateRange.endDate) params.end_date = dateRange.endDate;
+    if (searchTerm.trim()) params.search = searchTerm.trim();
 
     const data = await fetchAPI(url, params);
-
-    if (data) {
-      setListJO(data);
-    }
+    if (data) setListJO(data);
   }, [API_BASE, fetchAPI, dateRange, searchTerm]);
 
   const getSingleJO = useCallback(
     async (id: string) => {
       const url = `${API_BASE}/ppic/jadwalProduksi/${id}`;
       const data = await fetchAPI(url);
-
       if (data) {
         setSelectedJO(data);
         return data;
@@ -241,15 +285,10 @@ function ListJOProduksi() {
 
   const calculateJO = useCallback(
     async (id: string, isLembur: boolean) => {
-      if (!window.confirm(`Lakukan Kalkulasi pada JO ini?`)) {
-        return false;
-      }
-
+      if (!window.confirm(`Lakukan Kalkulasi pada JO ini?`)) return false;
       const url = `${API_BASE}/ppic/calculateJadwalProduksi/${id}`;
       const data = await fetchAPI(url, { is_lembur: isLembur });
-
       if (data) {
-        // Refresh data after calculation
         await getJOList();
         return true;
       }
@@ -262,7 +301,6 @@ function ListJOProduksi() {
     async (id: string) => {
       const url = `${API_BASE}/ppic/jadwalProduksi/submit/${id}`;
       const data = await fetchAPI(url, {}, 'put');
-
       if (data) {
         await getJOList();
         alert('Berhasil masuk jadwal');
@@ -273,54 +311,32 @@ function ListJOProduksi() {
     [API_BASE, fetchAPI, getJOList],
   );
 
-  // New cancel function
   const cancelJobOrder = useCallback(
     async (id: string) => {
-      if (
-        !window.confirm('Apakah Anda yakin ingin membatalkan Job Order ini?')
-      ) {
+      if (!window.confirm('Apakah Anda yakin ingin membatalkan Job Order ini?'))
         return false;
-      }
-
       const url = `${API_BASE}/ppic/jadwalProduksi/cancel/${id}`;
       try {
         setIsLoading(true);
-
-        const res = await axios.delete(url, {
-          withCredentials: true,
-        });
-
-        console.log('Job Order cancelled successfully:', res.data);
-
-        // Refresh the data after successful cancellation
+        const res = await axios.delete(url, { withCredentials: true });
         await Promise.all([getInitialJadwalView(), getJOList()]);
-
         setIsLoading(false);
-
-        // Show success message
         alert('Job Order cancelled successfully!');
-
         return res.data;
       } catch (error: any) {
         setIsLoading(false);
         console.error('Error cancelling job order:', error);
-
-        // Show error message
         alert('Failed to cancel job order. Please try again.');
-
         throw error;
       }
     },
     [API_BASE, getInitialJadwalView, getJOList],
   );
 
-  // Handle UI actions
   const handleViewCalculation = useCallback(
     async (id: string, index: number) => {
       const data = await getSingleJO(id);
-      if (data) {
-        setShowCalculateIndex(index);
-      }
+      if (data) setShowCalculateIndex(index);
     },
     [getSingleJO],
   );
@@ -328,9 +344,7 @@ function ListJOProduksi() {
   const handleCalculateJO = useCallback(
     async (id: string, index: number, isLembur: boolean) => {
       const success = await calculateJO(id, isLembur);
-      if (success) {
-        handleViewCalculation(id, index);
-      }
+      if (success) handleViewCalculation(id, index);
     },
     [calculateJO, handleViewCalculation],
   );
@@ -355,12 +369,10 @@ function ListJOProduksi() {
 
   useEffect(() => {
     getMasterMesin();
-    // Load ALL data initially without filters
     getInitialJadwalView();
     getInitialJOList();
   }, [getInitialJadwalView, getInitialJOList]);
 
-  // Handle date range changes
   const handleDateChange = useCallback(
     (field: 'startDate' | 'endDate', value: string) => {
       setDateRange((prev) => ({ ...prev, [field]: value }));
@@ -372,30 +384,21 @@ function ListJOProduksi() {
     setSearchTerm(e.target.value);
   }, []);
 
-  // Apply filters
   const handleApplyFilters = useCallback(() => {
     getJadwalView();
     getJOList();
   }, [getJadwalView, getJOList]);
 
+  // Filter then sort
   const filteredJOData = useMemo(() => {
     if (!listJO?.data) return [];
 
     let filtered = listJO.data;
 
-    // Apply search filter
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase().trim();
       filtered = filtered.filter((jo) => {
-        // Search in multiple fields - adjust these based on your data structure
-        const searchableFields = [
-          jo.no_jo,
-          jo.item,
-          jo.nama_bahan,
-          jo.no_io,
-          // Add other fields you want to search in
-        ];
-
+        const searchableFields = [jo.no_jo, jo.item, jo.nama_bahan, jo.no_io];
         return searchableFields.some(
           (field) =>
             field && field.toString().toLowerCase().includes(searchLower),
@@ -403,8 +406,56 @@ function ListJOProduksi() {
       });
     }
 
+    if (sortConfig.key && sortConfig.direction) {
+      const { key, direction } = sortConfig;
+      filtered = [...filtered].sort((a, b) => {
+        const aVal = a[key];
+        const bVal = b[key];
+
+        // Numeric columns
+        if (
+          key === 'qty_pcs' ||
+          key === 'qty_druk' ||
+          key === 'qty_lp' ||
+          key === 'qty_po'
+        ) {
+          return direction === 'asc'
+            ? (aVal as number) - (bVal as number)
+            : (bVal as number) - (aVal as number);
+        }
+
+        // String / date columns
+        const aStr = (aVal ?? '').toString().toLowerCase();
+        const bStr = (bVal ?? '').toString().toLowerCase();
+        if (aStr < bStr) return direction === 'asc' ? -1 : 1;
+        if (aStr > bStr) return direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
     return filtered;
-  }, [listJO?.data, searchTerm]);
+  }, [listJO?.data, searchTerm, sortConfig]);
+
+  // Sortable th helper
+  const SortableTh = ({
+    label,
+    column,
+    className = '',
+  }: {
+    label: string;
+    column: SortKey;
+    className?: string;
+  }) => (
+    <th
+      onClick={() => handleSort(column)}
+      className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500 cursor-pointer select-none hover:bg-blue-800 active:bg-blue-900 transition-colors duration-150 ${className}`}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        <SortIcon column={column} sortConfig={sortConfig} />
+      </span>
+    </th>
+  );
 
   return (
     <main className="overflow-x-scroll">
@@ -459,7 +510,6 @@ function ListJOProduksi() {
                       Rentang Tanggal
                     </label>
                   </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -490,9 +540,8 @@ function ListJOProduksi() {
                   </div>
                 </div>
 
-                {/* Search and Status Section */}
+                {/* Search Section */}
                 <div className="flex justify-end flex-col">
-                  {/* Search Field */}
                   <div className="flex items-center gap-2">
                     <svg
                       className="w-4 h-4 text-blue-600"
@@ -522,8 +571,35 @@ function ListJOProduksi() {
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="flex justify-end pt-6 mt-6 border-t border-gray-200">
+              {/* Action Button + Total Data */}
+              <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-200">
+                {/* Total data badge */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Total data:</span>
+                  <span className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold px-3 py-1 rounded-full">
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                    {filteredJOData.length}
+                    {filteredJOData.length !== (listJO?.data?.length ?? 0) && (
+                      <span className="text-blue-400 font-normal">
+                        / {listJO?.data?.length ?? 0}
+                      </span>
+                    )}
+                    &nbsp;record
+                  </span>
+                </div>
+
                 <button
                   onClick={handleApplyFilters}
                   disabled={isLoading}
@@ -577,37 +653,23 @@ function ListJOProduksi() {
 
           {/* Table Container */}
           <div className="bg-white shadow-xl rounded-b-xl">
-            <div className="h-full overflow-y-auto rounded-b-xl ">
+            <div className="h-full overflow-y-auto rounded-b-xl">
               <table className="w-full border-collapse">
                 <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10">
                   <tr>
                     <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
                       No
                     </th>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      Job Order
-                    </th>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      Nama Item
-                    </th>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      Nama Bahan
-                    </th>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      Qty Pcs
-                    </th>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      Qty Druk
-                    </th>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      Qty LP
-                    </th>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      Qty PO
-                    </th>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      Tanggal Kirim
-                    </th>
+                    <SortableTh label="Waktu Masuk Tiket" column="createdAt" />
+                    <SortableTh label="Job Order" column="no_jo" />
+                    <SortableTh label="Nama Item" column="item" />
+                    <SortableTh label="Nama Bahan" column="nama_bahan" />
+                    <SortableTh label="Qty Pcs" column="qty_pcs" />
+                    <SortableTh label="Qty Druk" column="qty_druk" />
+                    <SortableTh label="Qty LP" column="qty_lp" />
+                    <SortableTh label="Qty PO" column="qty_po" />
+                    <SortableTh label="Tanggal Kirim" column="tgl_kirim" />
+
                     <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider">
                       Action
                     </th>
@@ -624,6 +686,9 @@ function ListJOProduksi() {
                       >
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
                           {index + 1}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
+                          {jo.createdAt ? formatCustomDate(jo.createdAt) : '-'}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
                           {jo.no_jo}
@@ -649,6 +714,7 @@ function ListJOProduksi() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
                           {jo.tgl_kirim}
                         </td>
+
                         <td className="px-4 py-4 whitespace-nowrap text-center">
                           {jo.status === 'calculated' ? (
                             <div className="flex flex-col gap-2">
@@ -821,7 +887,7 @@ function ListJOProduksi() {
                                         <div className="justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
                                           {tahap?.jadwal_per_jam?.length ===
                                           0 ? (
-                                            <label className="text-red-500 text-xs border-2 px-3 py-2 rounded-lg border-blue-400 text-center cursor-pointer  transition">
+                                            <label className="text-red-500 text-xs border-2 px-3 py-2 rounded-lg border-blue-400 text-center cursor-pointer transition">
                                               {formatCustomDate(tahap.tgl_from)}
                                             </label>
                                           ) : (
@@ -842,8 +908,6 @@ function ListJOProduksi() {
                                               - {tahap.jadwal_per_jam[0]?.jam}
                                             </button>
                                           )}
-
-                                          {/* Modal Full Component */}
                                           {showModalFull[
                                             `${index}-${tahapIndex}`
                                           ] && (
@@ -881,7 +945,6 @@ function ListJOProduksi() {
                                           )}
                                         </div>
 
-                                        {/* Details info */}
                                         {showDetails[jo.id] && (
                                           <>
                                             <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
@@ -919,7 +982,6 @@ function ListJOProduksi() {
                                   )}
                                 </div>
 
-                                {/* Detail toggle button */}
                                 <div>
                                   <button
                                     onClick={() => toggleDetailsView(jo.id)}
@@ -930,17 +992,14 @@ function ListJOProduksi() {
                                 </div>
                               </div>
 
-                              {/* Submit Button */}
-                              {/* Only show button if jadwal_per_jam has data */}
                               {selectedJO.data?.jadwal_per_jam?.length > 0 && (
                                 <div className="flex justify-center items-center pt-4">
                                   <button
                                     onClick={() => {
                                       submitToSchedule(jo.id).then(
                                         (success) => {
-                                          if (success) {
+                                          if (success)
                                             setShowCalculateIndex(null);
-                                          }
                                         },
                                       );
                                     }}
@@ -957,7 +1016,7 @@ function ListJOProduksi() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-4 py-12 text-center">
+                      <td colSpan={10} className="px-4 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <div className="text-gray-400 text-6xl mb-4">📋</div>
                           <p className="text-gray-500 text-lg">

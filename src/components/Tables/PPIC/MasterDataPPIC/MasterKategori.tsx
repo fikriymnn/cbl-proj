@@ -1,12 +1,8 @@
 import { useEffect, useState } from 'react';
-// import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
-
 import axios from 'axios';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import Select from 'react-select';
 import Loading from '../../../Loading';
-import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 
 const MasterKategori = () => {
   const [options, setOptions] = useState([]);
@@ -15,10 +11,15 @@ const MasterKategori = () => {
   const [masterMesin, setmasterMesin] = useState<any>();
   const [selectedID, setSelectedID] = useState<any>();
 
-  // ── NEW: search state ──────────────────────────────────────────
+  // ── search state ──────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Derived filtered list (runs on every render, no extra useEffect needed)
+  // ── NEW: track which mesin is selected in the Tambah modal ──
+  const [selectedMesinName, setSelectedMesinName] = useState<string | null>(
+    null,
+  );
+
+  // Derived filtered list
   const filteredKategori = masterKategori?.data?.filter((item: any) => {
     const q = searchQuery.toLowerCase();
     return (
@@ -26,6 +27,13 @@ const MasterKategori = () => {
       item.nama_kategori?.toLowerCase().includes(q)
     );
   });
+
+  // ── NEW: count how many rows already use the selected mesin ──
+  const mesinCount = selectedMesinName
+    ? masterKategori?.data?.filter(
+        (item: any) => item.nama_mesin === selectedMesinName,
+      ).length ?? 0
+    : null;
   // ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -87,6 +95,7 @@ const MasterKategori = () => {
       );
       setIsLoading(false);
       setSelectedID(null);
+      setSelectedMesinName(null);
       setnamaKategori('');
       setsettingA(0);
       setsettingB(0);
@@ -182,7 +191,11 @@ const MasterKategori = () => {
   }
 
   const [showHistory, setShowHistory] = useState(false);
-  const openModalHistory = () => setShowHistory(true);
+  const openModalHistory = () => {
+    setSelectedMesinName(null);
+    setSelectedID(null);
+    setShowHistory(true);
+  };
   const closeModalHistory = () => setShowHistory(false);
 
   const [showEdit, setshowEdit] = useState<any>([]);
@@ -202,6 +215,8 @@ const MasterKategori = () => {
     const filteredData = masterMesin.find((item: any) => item.mesin == value);
     console.log(filteredData?.mesin);
     setSelectedID(filteredData?.mesin);
+    // ── NEW: also store the display name for the count lookup ──
+    setSelectedMesinName(value);
   };
 
   return (
@@ -217,7 +232,7 @@ const MasterKategori = () => {
             TAMBAH KATEGORI
           </button>
 
-          {/* ── NEW: Search bar ── */}
+          {/* ── Search bar ── */}
           <div className="relative flex items-center">
             <svg
               className="absolute left-2 text-gray-400 w-4 h-4 pointer-events-none"
@@ -249,7 +264,6 @@ const MasterKategori = () => {
               </button>
             )}
           </div>
-          {/* ─────────────────────── */}
 
           {showHistory == true && (
             <>
@@ -269,6 +283,27 @@ const MasterKategori = () => {
                       className={`relative z-30 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
                     ></Select>
+
+                    {/* ── NEW: mesin count info badge ── */}
+                    {selectedMesinName !== null && (
+                      <div
+                        className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md w-fit ${
+                          mesinCount === 0
+                            ? 'bg-green-50 text-green-700 border border-green-200'
+                            : 'bg-blue-50 text-blue-700 border border-blue-200'
+                        }`}
+                      >
+                        <span>{selectedMesinName}</span>
+                        <span className="text-gray-400">·</span>
+                        <span>
+                          {mesinCount === 0
+                            ? 'Belum ada kategori'
+                            : `${mesinCount} kategori sudah ditambahkan`}
+                        </span>
+                      </div>
+                    )}
+                    {/* ─────────────────────────────────── */}
+
                     <label className="text-black text-xs font-bold">
                       Nama Kategori
                     </label>
@@ -357,18 +392,20 @@ const MasterKategori = () => {
           )}
         </div>
 
-        {/* ── Table header ── */}
-        <div className="grid grid-cols-9  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%]">
+        {/* ── Table header — added "No" column ── */}
+        <div className="grid grid-cols-10 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]">
+          {/* NEW: No column */}
+          <p className="text-[#646464] text-xs font-bold">No</p>
           <p className="text-[#646464] text-xs font-bold col-span-2"></p>
-          <p className="text-[#646464] text-xs font-bold ">Setting A</p>
-          <p className="text-[#646464] text-xs font-bold ">Setting B</p>
-          <p className="text-[#646464] text-xs font-bold ">Setting C</p>
-          <p className="text-[#646464] text-xs font-bold ">Kapasitas A</p>
-          <p className="text-[#646464] text-xs font-bold ">Kapasitas B</p>
-          <p className="text-[#646464] text-xs font-bold ">Kapasitas C</p>
+          <p className="text-[#646464] text-xs font-bold">Setting A</p>
+          <p className="text-[#646464] text-xs font-bold">Setting B</p>
+          <p className="text-[#646464] text-xs font-bold">Setting C</p>
+          <p className="text-[#646464] text-xs font-bold">Kapasitas A</p>
+          <p className="text-[#646464] text-xs font-bold">Kapasitas B</p>
+          <p className="text-[#646464] text-xs font-bold">Kapasitas C</p>
         </div>
 
-        {/* ── Table body — now uses filteredKategori ── */}
+        {/* ── Table body ── */}
         <div className="flex w-full flex-col bg-white">
           {filteredKategori?.length === 0 && (
             <p className="text-center text-xs text-gray-400 py-4">
@@ -379,30 +416,33 @@ const MasterKategori = () => {
             <>
               <div
                 key={i}
-                className="grid grid-cols-9  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%]"
+                className="grid grid-cols-10 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]"
               >
-                <p className="text-[#646464] text-xs font-bold ">
+                {/* NEW: row number */}
+                <p className="text-[#646464] text-xs font-bold">{i + 1}</p>
+
+                <p className="text-[#646464] text-xs font-bold">
                   {data.nama_mesin}
                 </p>
-                <p className="text-[#646464] text-xs font-bold ">
+                <p className="text-[#646464] text-xs font-bold">
                   {data.nama_kategori}
                 </p>
-                <p className="text-[#646464] text-xs font-bold ">
+                <p className="text-[#646464] text-xs font-bold">
                   {data.setting_a}
                 </p>
-                <p className="text-[#646464] text-xs font-bold ">
+                <p className="text-[#646464] text-xs font-bold">
                   {data.setting_b}
                 </p>
-                <p className="text-[#646464] text-xs font-bold ">
+                <p className="text-[#646464] text-xs font-bold">
                   {data.setting_c}
                 </p>
-                <p className="text-[#646464] text-xs font-bold ">
+                <p className="text-[#646464] text-xs font-bold">
                   {data.kapasitas_a}
                 </p>
-                <p className="text-[#646464] text-xs font-bold ">
+                <p className="text-[#646464] text-xs font-bold">
                   {data.kapasitas_b}
                 </p>
-                <p className="text-[#646464] text-xs font-bold ">
+                <p className="text-[#646464] text-xs font-bold">
                   {data.kapasitas_c}
                 </p>
                 <div className="flex flex-col gap-1">
