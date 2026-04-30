@@ -21,6 +21,7 @@ interface IOMounting {
 }
 
 interface JOMounting {
+  is_selected: unknown;
   id: number;
   io_mounting: IOMounting;
 }
@@ -238,22 +239,26 @@ const JOHistory: React.FC = () => {
       : 'bg-orange-100 text-orange-800';
   };
 
-  // Returns list of reasons why Send Jadwal should be blocked
+  // AFTER: only checks the selected mounting's tahapan
   const getJadwalBlockReasons = (item: JOData): string[] => {
     const reasons: string[] = [];
-    const allTahapan =
-      item.jo_mounting?.flatMap((jm) => jm.io_mounting?.tahapan ?? []) ?? [];
 
-    if (allTahapan.length === 0) {
+    const selectedJoMounting = item.jo_mounting?.find((jm) => jm.is_selected);
+
+    if (!selectedJoMounting) {
+      reasons.push('Mounting belum dipilih');
+      return reasons;
+    }
+
+    const tahapan = selectedJoMounting.io_mounting?.tahapan ?? [];
+
+    if (tahapan.length === 0) {
       reasons.push('Tahapan belum diset');
     } else {
-      const missingDrying = allTahapan.some((t) => t.id_drying_time === null);
-      if (missingDrying) reasons.push('Drying time belum diset');
-
-      const missingKapasitas = allTahapan.some(
-        (t) => t.id_setting_kapasitas === null,
-      );
-      if (missingKapasitas) reasons.push('Kapasitas belum diset');
+      if (tahapan.some((t) => t.id_drying_time === null))
+        reasons.push('Drying time belum diset');
+      if (tahapan.some((t) => t.id_setting_kapasitas === null))
+        reasons.push('Kapasitas belum diset');
     }
 
     return reasons;

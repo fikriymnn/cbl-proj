@@ -671,11 +671,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const selectedSO = soData.find((so) => so.id === soId);
     if (selectedSO) {
       // Compute block reasons from SO → io.io_mounting[].tahapan[]
-      const allTahapan: TahapanItem[] =
-        selectedSO.io?.io_mounting?.flatMap(
-          (m: { tahapan: TahapanItem[] }) => m.tahapan ?? [],
-        ) ?? [];
-      setCreateBlockReasons(getCreateBlockReasons(allTahapan));
+      setCreateBlockReasons([]);
 
       setFormData((prev) => ({
         ...prev,
@@ -711,10 +707,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const selectedIO = ioProofData.find((io) => io.id === ioId);
     if (selectedIO) {
       // Compute block reasons from IO → io_mounting[].tahapan[]
-      const allTahapan: TahapanItem[] =
-        selectedIO.io_mounting?.flatMap((m) => m.tahapan ?? []) ?? [];
-      setCreateBlockReasons(getCreateBlockReasons(allTahapan));
-
+      setCreateBlockReasons([]);
       setFormData((prev) => ({
         ...prev,
         id_so: 0,
@@ -750,6 +743,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   const handleMountingSelect = (mountingId: number) => {
     if (selectedMounting === mountingId) {
       setSelectedMounting(null);
+      setCreateBlockReasons([]); // clear when deselecting
       setFormData((prev) => ({
         ...prev,
         spesifikasi: '',
@@ -768,6 +762,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       setSelectedMounting(mountingId);
       const mounting = mountingData.find((m) => m.id === mountingId);
       if (mounting) {
+        // Compute block reasons from this mounting's tahapan only
+        const tahapan: TahapanItem[] = (mounting as any).tahapan ?? [];
+        setCreateBlockReasons(getCreateBlockReasons(tahapan));
+
         setFormData((prev) => ({
           ...prev,
           spesifikasi: mounting.spesifikasi || '',
