@@ -56,8 +56,14 @@ interface JOPPICCreateModalProps {
 }
 
 // ── Helper: compute block reasons from a list of tahapan arrays ──────────────
-const getCreateBlockReasons = (allTahapan: TahapanItem[]): string[] => {
+const getCreateBlockReasons = (
+  allTahapan: TahapanItem[],
+  spesifikasi?: string,
+): string[] => {
   const reasons: string[] = [];
+  if (!spesifikasi?.trim()) {
+    reasons.push('Spesifikasi belum diisi pada mounting');
+  }
   if (allTahapan.length === 0) {
     reasons.push('Tahapan belum diset');
   } else {
@@ -764,7 +770,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       if (mounting) {
         // Compute block reasons from this mounting's tahapan only
         const tahapan: TahapanItem[] = (mounting as any).tahapan ?? [];
-        setCreateBlockReasons(getCreateBlockReasons(tahapan));
+        setCreateBlockReasons(
+          getCreateBlockReasons(tahapan, mounting.spesifikasi),
+        );
 
         setFormData((prev) => ({
           ...prev,

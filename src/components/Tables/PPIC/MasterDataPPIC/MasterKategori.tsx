@@ -88,7 +88,8 @@ const MasterKategori = () => {
       const res = await axios.post(
         url,
         {
-          mesin: selectedID,
+          mesin: selectedMesinName,
+
           nama_kategori: namaKategori,
           setting_a: settingA,
           setting_b: settingB,
