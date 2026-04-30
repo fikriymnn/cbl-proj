@@ -35,7 +35,15 @@ const MasterKategori = () => {
       ).length ?? 0
     : null;
   // ──────────────────────────────────────────────────────────────
-
+  const mesinSummary = (masterKategori?.data ?? []).reduce(
+    (acc: Record<string, { name: string; count: number }>, item: any) => {
+      const key = item.nama_mesin;
+      if (!acc[key]) acc[key] = { name: item.nama_mesin, count: 0 };
+      acc[key].count += 1;
+      return acc;
+    },
+    {} as Record<string, { name: string; count: number }>,
+  );
   useEffect(() => {
     getMasterMesin();
     getmasterKategori();
@@ -223,6 +231,22 @@ const MasterKategori = () => {
     <main className="overflow-x-scroll ' ">
       {isLoading && <Loading />}
       <div className="min-w-[700px]  bg-white rounded-xl flex flex-col gap-1 py-[1%]">
+        {/* Machine summary */}
+        {Object.keys(mesinSummary).length > 0 && (
+          <div className="flex flex-wrap gap-2 px-[1%] py-2 border-b-8 border-[#D8EAFF]">
+            {Object.values(mesinSummary).map((m: any) => (
+              <span
+                key={m.name}
+                className="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-md px-3 py-1 text-xs text-gray-700"
+              >
+                {m.name}
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium rounded-full px-2 py-0.5">
+                  {m.count}
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
         {/* ── Header row: TAMBAH button + Search input ── */}
         <div className="flex w-full justify-between items-center pb-2 px-[1%] border-b-8 border-[#D8EAFF] gap-2">
           <button
