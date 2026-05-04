@@ -643,10 +643,16 @@ function ChecksheetBarangRS() {
   };
   function openDefectEditModal(defect: any) {
     setEditingDefectData(defect);
+
+    // Resolve masalah from defectMaster in case defect.masalah is stale/empty
+    const matchedDefect = Array.isArray(defectMaster)
+      ? defectMaster.find((item: any) => item.e_kode_produksi === defect.kode)
+      : null;
+
     setDefectEditForm({
       jumlah_defect: defect.jumlah_defect ?? '',
       kode: defect.kode ?? '',
-      masalah: defect.masalah ?? '',
+      masalah: defect.masalah || matchedDefect?.nama_kendala || '',
       kode_lkh: defect.kode_lkh ?? '',
       masalah_lkh: defect.masalah_lkh ?? '',
       mesin: defect.mesin ?? '',
@@ -702,12 +708,27 @@ function ChecksheetBarangRS() {
       return;
     }
 
+    // Look up masalah from defectMaster using the selected value
+    const matchedDefect = Array.isArray(defectMaster)
+      ? defectMaster.find(
+          (item: any) => item.e_kode_produksi === selected.value,
+        )
+      : null;
+
+    // Fallback: parse from label "KODE - nama_kendala"
+    const masalahFromLabel = selected.label?.includes(' - ')
+      ? selected.label.split(' - ').slice(1).join(' - ').trim()
+      : '';
+
+    const masalah = matchedDefect?.nama_kendala || masalahFromLabel || '';
+
     setDefectEditForm((prev: any) => ({
       ...prev,
       kode: selected.value,
-      masalah: selected.kendala_desc || selected.nama_kendala || '',
+      masalah,
       kode_lkh: '',
       masalah_lkh: '',
+      // Keep existing mesin/operator — only override below if found in kendalaByJo
     }));
 
     const matchingWaste = masterWaste?.find(
@@ -725,7 +746,7 @@ function ChecksheetBarangRS() {
       setDefectEditSecondOptions([]);
     }
 
-    // Auto-fill mesin/operator from kendalaByJo
+    // Only override mesin/operator if found in kendalaByJo; otherwise keep existing values
     if (Array.isArray(kendalaByJo)) {
       const match = kendalaByJo.find(
         (k: any) => k.kode_kendala === selected.value,
@@ -777,6 +798,18 @@ function ChecksheetBarangRS() {
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiBarangRusakPointV2/updateDefect/${editingDefectData.id}`;
     try {
+      console.log('Updating defect with data:', {
+        jumlah_defect:
+          defectEditForm.jumlah_defect !== ''
+            ? parseInt(defectEditForm.jumlah_defect)
+            : null,
+        kode: defectEditForm.kode,
+        masalah: defectEditForm.masalah,
+        kode_lkh: defectEditForm.kode_lkh,
+        masalah_lkh: defectEditForm.masalah_lkh,
+        mesin: defectEditForm.mesin,
+        operator: defectEditForm.operator,
+      });
       setIsSavingDefectEdit(true);
       await axios.put(
         url,
@@ -794,6 +827,7 @@ function ChecksheetBarangRS() {
         },
         { withCredentials: true },
       );
+
       setShowDefectEditModal(false);
       setEditingDefectData(null);
       getRabutMesin();
