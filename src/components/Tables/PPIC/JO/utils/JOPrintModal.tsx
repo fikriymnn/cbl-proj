@@ -281,9 +281,10 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     const across = Math.floor(panjang_kertas / ukuran_cetak_panjang_1);
     const down = Math.floor(lebar_kertas / ukuran_cetak_lebar_1);
     const total = across * down;
-    const isi = ukuran_cetak_isi_1 || total * (ukuran_cetak_bagian_1 || 1);
-
-    return { across, down, total, isi };
+    const totalIsi =
+      (ukuran_cetak_isi_1 || 0) + (mounting.ukuran_cetak_isi_2 || 0) ||
+      total * (ukuran_cetak_bagian_1 || 1);
+    return { across, down, total, isi: totalIsi };
   };
 
   const getIndonesianMonth = (month: number): string => {
@@ -799,7 +800,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                   : ''
               } mm</td>
               <td class="info-label" style="font-size: 10px; width: 120px;">Ukuran Terbentang</td>
-              <td style="font-size: 10px;">${
+              <td colspan="3" style="font-size: 10px;">${
                 selectedMounting.io_mounting?.ukuran_jadi_terb_panjang || '-'
               } X ${
                 selectedMounting.io_mounting?.ukuran_jadi_terb_lebar || '-'
@@ -811,8 +812,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 ?.warna_depan}, ${selectedMounting.io_mounting
                 ?.keterangan_warna_depan}</td>
               <td class="info-label" style="font-size: 10px;">Warna Belakang</td>
-              <td style="font-size: 10px;">${selectedMounting.io_mounting
-                ?.warna_belakang}, ${selectedMounting.io_mounting
+              <td colspan="3" style="font-size: 10px;">${selectedMounting
+                .io_mounting?.warna_belakang}, ${selectedMounting.io_mounting
                 ?.keterangan_warna_belakang}</td>
             </tr>
             <tr>
@@ -824,7 +825,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 selectedMounting.nama_kertas,
               )}</td>
               <td class="info-label" style="font-size: 10px;">Gramatur</td>
-              <td style="font-size: 10px;">${
+              <td colspan="3" style="font-size: 10px;">${
                 selectedMounting.gramature_kertas
               } gsm</td>
             </tr>
@@ -833,29 +834,38 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               <td style="font-size: 10px;">${
                 selectedMounting.panjang_kertas
               } x ${selectedMounting.lebar_kertas} mm</td>
-              <td class="info-label" style="font-size: 10px;">JML</td>
-              <td style="font-size: 10px;">${selectedMounting.jumlah_kertas.toLocaleString()} LP</td>
+              <td  class="info-label" style="font-size: 10px;">JML</td>
+              <td colspan="3" style="font-size: 10px; ">${selectedMounting.jumlah_kertas.toLocaleString()} LP</td>
             </tr>
-            <tr>
-              <td class="info-label" style="font-size: 10px;">UK Cetak (P×L)</td>
+           <tr>
+              <td class="info-label" style="font-size: 10px;">UK Cetak A (P×L)</td>
               <td style="font-size: 10px;">${
                 selectedMounting.ukuran_cetak_panjang_1
               } x ${selectedMounting.ukuran_cetak_lebar_1} mm</td>
-              <td class="info-label" style="font-size: 10px;">Bagian</td>
+              <td class="info-label" style="font-size: 10px;">Bagian A</td>
               <td style="font-size: 10px;">${
-                selectedMounting.ukuran_cetak_bagian_1 || 2
+                selectedMounting.ukuran_cetak_bagian_1 || 0
+              }</td>
+              <td class="info-label" style="font-size: 10px;">Isi A</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.ukuran_cetak_isi_1 || 0
               }</td>
             </tr>
             <tr>
-              <td class="info-label" style="font-size: 10px;">UK Cetak (P×L)</td>
+              <td class="info-label" style="font-size: 10px;">UK Cetak B (P×L)</td>
               <td style="font-size: 10px;">${
                 selectedMounting.ukuran_cetak_panjang_2 || 0
               } x ${selectedMounting.ukuran_cetak_lebar_2 || 0} mm</td>
-              <td class="info-label" style="font-size: 10px;">Isi</td>
+               <td class="info-label" style="font-size: 10px;">Bagian B</td>
               <td style="font-size: 10px;">${
-                selectedMounting.ukuran_cetak_isi_1 || layout.isi
+                selectedMounting.ukuran_cetak_bagian_2 || 0
+              }</td>
+              <td class="info-label" style="font-size: 10px;">Isi B</td>
+              <td style="font-size: 10px;">${
+                selectedMounting.ukuran_cetak_isi_2 || 0
               }</td>
             </tr>
+            
           </tbody>
         </table>
         `

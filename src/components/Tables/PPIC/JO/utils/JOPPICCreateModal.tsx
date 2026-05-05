@@ -214,10 +214,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
   // ── calculateInsheetFromQty ───────────────────────────────────────────────
   const calculateInsheetFromQty = (qty: number, mounting: MountingData) => {
-    const isi = mounting.ukuran_cetak_isi_1 || 1;
+    const isi1 = mounting.ukuran_cetak_isi_1 || 0;
+    const isi2 = mounting.ukuran_cetak_isi_2 || 0;
+    const totalIsi = isi1 + isi2 || 1;
     const bagian = mounting.ukuran_cetak_bagian_1 || 1;
-
-    const rawJumlahDruk = Math.ceil(qty / isi);
+    const rawJumlahDruk = Math.ceil(qty / totalIsi);
     const ketentuanInsheet = getKetentuanInsheet(rawJumlahDruk);
     const ketentuanValue =
       typeof ketentuanInsheet === 'object'
@@ -792,7 +793,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const mounting = mountingData.find((m) => m.id === selectedMounting);
     if (!mounting) return;
 
-    const isi = mounting.ukuran_cetak_isi_1 || 1;
+    const isi1 = mounting.ukuran_cetak_isi_1 || 0;
+    const isi2 = mounting.ukuran_cetak_isi_2 || 0;
+    const totalIsi = isi1 + isi2 || 1;
     const bagian = mounting.ukuran_cetak_bagian_1 || 1;
     const totalPercentage = prosesInsheetData.reduce(
       (sum, p) => sum + p.persentase_insheet,
@@ -819,7 +822,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
     const currentRawDruk = insheetValues.jumlah_druk;
     const displayedDruk = currentRawDruk + totalValue;
-    const calculatedQty = displayedDruk * isi;
+    const calculatedQty = displayedDruk * totalIsi;
     const jumlahLP = Math.ceil(displayedDruk / bagian);
 
     setFormData((prev) => ({

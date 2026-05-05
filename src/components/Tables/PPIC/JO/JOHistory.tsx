@@ -65,6 +65,16 @@ const JOHistory: React.FC = () => {
   const [editJOId, setEditJOId] = useState<number | null>(null);
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [printJOId, setPrintJOId] = useState<number | null>(null);
+
+  // Date filter states
+  const [startDateInput, setStartDateInput] = useState<string>('');
+  const [endDateInput, setEndDateInput] = useState<string>('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+
+  // Sort order state: 'newest' = desc, 'oldest' = asc
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+
   // Pagination states
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -72,7 +82,7 @@ const JOHistory: React.FC = () => {
 
   useEffect(() => {
     fetchJOData();
-  }, [page, limit, searchTerm]);
+  }, [page, limit, searchTerm, startDate, endDate, sortOrder]);
 
   const fetchJOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jo`;
@@ -84,6 +94,9 @@ const JOHistory: React.FC = () => {
           limit: limit,
           search: searchTerm,
           status: 'history',
+          start_date: startDate || undefined,
+          end_date: endDate || undefined,
+          sort: sortOrder,
         },
         withCredentials: true,
       });
@@ -110,6 +123,25 @@ const JOHistory: React.FC = () => {
   const handleClearSearch = (): void => {
     setSearchInput('');
     setSearchTerm('');
+    setPage(1);
+  };
+
+  const handleApplyDateFilter = (): void => {
+    setStartDate(startDateInput);
+    setEndDate(endDateInput);
+    setPage(1);
+  };
+
+  const handleClearDateFilter = (): void => {
+    setStartDateInput('');
+    setEndDateInput('');
+    setStartDate('');
+    setEndDate('');
+    setPage(1);
+  };
+
+  const handleSortOrderChange = (order: 'newest' | 'oldest'): void => {
+    setSortOrder(order);
     setPage(1);
   };
 
@@ -239,7 +271,6 @@ const JOHistory: React.FC = () => {
       : 'bg-orange-100 text-orange-800';
   };
 
-  // AFTER: only checks the selected mounting's tahapan
   const getJadwalBlockReasons = (item: JOData): string[] => {
     const reasons: string[] = [];
 
@@ -319,12 +350,14 @@ const JOHistory: React.FC = () => {
     return 0;
   });
 
+  const isDateFilterActive = startDate || endDate;
+
   return (
     <div className="">
       {/* Header Section */}
       <div className="mb-6">
         {/* Search Section */}
-        <div className="mb-4">
+        <div className="mb-3">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <input
@@ -367,6 +400,124 @@ const JOHistory: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Date Filter & Sort Section */}
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end flex-wrap">
+          {/* Start Date */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">
+              Start Date
+            </label>
+            <input
+              type="date"
+              value={startDateInput}
+              onChange={(e) => setStartDateInput(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* End Date */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">
+              End Date
+            </label>
+            <input
+              type="date"
+              value={endDateInput}
+              min={startDateInput || undefined}
+              onChange={(e) => setEndDateInput(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Apply / Clear Date Filter Buttons */}
+          <div className="flex gap-2 self-end">
+            <button
+              onClick={handleApplyDateFilter}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Apply
+            </button>
+            {isDateFilterActive && (
+              <button
+                onClick={handleClearDateFilter}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-300"
+              >
+                Clear Date
+              </button>
+            )}
+          </div>
+
+          {/* Sort Order Toggle */}
+          <div className="flex flex-col gap-1 sm:ml-auto">
+            <label className="text-xs font-medium text-gray-600">Sort</label>
+            <div className="flex rounded-lg overflow-hidden border border-gray-300">
+              <button
+                onClick={() => handleSortOrderChange('newest')}
+                className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${
+                  sortOrder === 'newest'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                  />
+                </svg>
+                Newest
+              </button>
+              <button
+                onClick={() => handleSortOrderChange('oldest')}
+                className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 border-l border-gray-300 ${
+                  sortOrder === 'oldest'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"
+                  />
+                </svg>
+                Oldest
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Active filter badges */}
+        {isDateFilterActive && (
+          <div className="mt-2 flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500">Active filters:</span>
+            {startDate && (
+              <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full border border-blue-200">
+                From: {formatDate(startDate)}
+              </span>
+            )}
+            {endDate && (
+              <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full border border-blue-200">
+                To: {formatDate(endDate)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -518,7 +669,6 @@ const JOHistory: React.FC = () => {
                             DETAIL
                           </button>
 
-                          {/* SEND JADWAL with conditional disable + tooltip */}
                           <div className="relative group">
                             <button
                               onClick={() =>
@@ -539,7 +689,6 @@ const JOHistory: React.FC = () => {
                               SEND JADWAL
                             </button>
 
-                            {/* Hover tooltip showing block reasons */}
                             {isJadwalBlocked && (
                               <div className="absolute z-20 left-0 mt-1 w-52 bg-white text-black text-xs border border-gray-600 rounded-lg shadow-lg p-2 hidden group-hover:block pointer-events-none">
                                 <p className="font-semibold mb-1 text-red-600">

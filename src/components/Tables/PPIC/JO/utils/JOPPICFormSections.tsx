@@ -524,24 +524,50 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                   <div className="ml-8 mb-3 p-3 bg-white rounded border border-gray-200">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div>
-                        <span className="text-gray-600">Bagian:</span>
-                        <p className="font-semibold text-blue-600 text-lg">
-                          {ukuranCetakBagian}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Isi:</span>
-                        <p className="font-semibold text-blue-600 text-lg">
-                          {ukuranCetakIsi}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Ukuran Cetak:</span>
+                        <span className="text-gray-600">UK Cetak A (P×L):</span>
                         <p className="font-medium">
                           {mounting.ukuran_cetak_panjang_1} x{' '}
                           {mounting.ukuran_cetak_lebar_1}
                         </p>
                       </div>
+                      <div>
+                        <span className="text-gray-600">Bagian A:</span>
+                        <p className="font-semibold text-blue-600 text-lg">
+                          {ukuranCetakBagian}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Isi A:</span>
+                        <p className="font-semibold text-blue-600 text-lg">
+                          {ukuranCetakIsi}
+                        </p>
+                      </div>
+                      {mounting.ukuran_cetak_panjang_2 ||
+                      mounting.ukuran_cetak_lebar_2 ? (
+                        <>
+                          <div>
+                            <span className="text-gray-600">
+                              UK Cetak B (P×L):
+                            </span>
+                            <p className="font-medium">
+                              {mounting.ukuran_cetak_panjang_2} x{' '}
+                              {mounting.ukuran_cetak_lebar_2}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Bagian B:</span>
+                            <p className="font-semibold text-blue-600 text-lg">
+                              {mounting.ukuran_cetak_bagian_2 || 0}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Isi B:</span>
+                            <p className="font-semibold text-blue-600 text-lg">
+                              {mounting.ukuran_cetak_isi_2 || 0}
+                            </p>
+                          </div>
+                        </>
+                      ) : null}
                       <div>
                         <span className="text-gray-600">Format:</span>
                         <p className="font-medium">
@@ -654,9 +680,11 @@ export const InsheetCalculationSection: React.FC<
   insheetValues,
   onTotalInsheetChange,
 }) => {
-  const isi = mounting.ukuran_cetak_isi_1 || 1;
+  const isi1 = mounting.ukuran_cetak_isi_1 || 0;
+  const isi2 = mounting.ukuran_cetak_isi_2 || 0;
+  const totalIsi = isi1 + isi2 || 1;
   const bagian = mounting.ukuran_cetak_bagian_1 || 1;
-  const calculatedRawJumlahDruk = Math.ceil(qty / isi);
+  const calculatedRawJumlahDruk = Math.ceil(qty / totalIsi);
 
   const getKetentuanInsheet = (rawDruk: number): any => {
     const ketentuan = ketentuanInsheetData.find((k) => {
@@ -680,7 +708,8 @@ export const InsheetCalculationSection: React.FC<
   const calculatedJumlahLP = Math.ceil(
     (insheetValues.jumlah_druk + insheetValues.total_insheet) / bagian,
   );
-
+  const ukuranCetakBagian = mounting.ukuran_cetak_bagian_1 || 1;
+  const ukuranCetakIsi = mounting.ukuran_cetak_isi_1 || 1;
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
@@ -697,8 +726,9 @@ export const InsheetCalculationSection: React.FC<
             <div>
               <span className="font-medium">1. RAW Jumlah Druk:</span>
               <div className="ml-3 text-gray-700">
-                = Qty / Isi
-                <br />= {qty.toLocaleString()} / {isi}
+                = Qty / (Isi A{isi2 ? ' + Isi B' : ''})
+                <br />= {qty.toLocaleString()} / ({isi1}
+                {isi2 ? ` + ${isi2}` : ''})
                 <br />={' '}
                 <span className="font-bold text-blue-700">
                   {calculatedRawJumlahDruk.toLocaleString()}
@@ -896,20 +926,47 @@ export const InsheetCalculationSection: React.FC<
             </p>
           </div>
           <div>
-            <span className="text-gray-600">Ukuran Cetak:</span>
+            <span className="text-gray-600">UK Cetak A (P×L):</span>
             <p className="font-medium">
               {mounting.ukuran_cetak_panjang_1} x{' '}
               {mounting.ukuran_cetak_lebar_1}
             </p>
           </div>
           <div>
-            <span className="text-gray-600">Isi:</span>
-            <p className="font-medium text-blue-700">{isi}</p>
+            <span className="text-gray-600">Bagian A:</span>
+            <p className="font-semibold text-blue-600 text-lg">
+              {ukuranCetakBagian}
+            </p>
           </div>
           <div>
-            <span className="text-gray-600">Bagian:</span>
-            <p className="font-medium text-blue-700">{bagian}</p>
+            <span className="text-gray-600">Isi A:</span>
+            <p className="font-semibold text-blue-600 text-lg">
+              {ukuranCetakIsi}
+            </p>
           </div>
+          {mounting.ukuran_cetak_panjang_2 || mounting.ukuran_cetak_lebar_2 ? (
+            <>
+              <div>
+                <span className="text-gray-600">UK Cetak B (P×L):</span>
+                <p className="font-medium">
+                  {mounting.ukuran_cetak_panjang_2} x{' '}
+                  {mounting.ukuran_cetak_lebar_2}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-600">Bagian B:</span>
+                <p className="font-semibold text-blue-600 text-lg">
+                  {mounting.ukuran_cetak_bagian_2 || 0}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-600">Isi B:</span>
+                <p className="font-semibold text-blue-600 text-lg">
+                  {mounting.ukuran_cetak_isi_2 || 0}
+                </p>
+              </div>
+            </>
+          ) : null}
           <div>
             <span className="text-gray-600">Format:</span>
             <p className="font-medium">{mounting.format_data || '-'}</p>

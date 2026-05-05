@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import Loading from '../../Loading';
 import Select from 'react-select';
@@ -32,7 +32,57 @@ const customSelectStyles = {
   menu: (base: any) => ({ ...base, zIndex: 9999 }),
   menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
 };
+type SortKey =
+  | 'no_jo'
+  | 'no_so'
+  | 'customer'
+  | 'produk'
+  | 'po_qty'
+  | 'tgl_pengiriman'
+  | 'status_kirim';
+type SortDirection = 'asc' | 'desc' | null;
+interface SortConfig {
+  key: SortKey | null;
+  direction: SortDirection;
+}
 
+function SortIcon({
+  column,
+  sortConfig,
+}: {
+  column: SortKey;
+  sortConfig: SortConfig;
+}) {
+  const isActive = sortConfig.key === column;
+  const isAsc = isActive && sortConfig.direction === 'asc';
+  const isDesc = isActive && sortConfig.direction === 'desc';
+  return (
+    <span className="inline-flex flex-col ml-1.5 gap-[1px] align-middle">
+      <svg
+        width="8"
+        height="5"
+        viewBox="0 0 8 5"
+        fill="none"
+        className={`transition-opacity duration-150 ${
+          isAsc ? 'opacity-100' : 'opacity-35'
+        }`}
+      >
+        <path d="M4 0L7.46 4.5H0.54L4 0Z" fill="currentColor" />
+      </svg>
+      <svg
+        width="8"
+        height="5"
+        viewBox="0 0 8 5"
+        fill="none"
+        className={`transition-opacity duration-150 ${
+          isDesc ? 'opacity-100' : 'opacity-35'
+        }`}
+      >
+        <path d="M4 5L0.54 0.5H7.46L4 5Z" fill="currentColor" />
+      </svg>
+    </span>
+  );
+}
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function todayStr() {
@@ -715,6 +765,10 @@ function JOMonitoring() {
   // Modals
   const [detailRow, setDetailRow] = useState<any>(null);
   const [tahapanRow, setTahapanRow] = useState<any>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: null,
+    direction: null,
+  });
 
   useEffect(() => {
     fetchJO(
@@ -725,7 +779,15 @@ function JOMonitoring() {
       null,
     );
   }, []);
-
+  const handleSort = useCallback((key: SortKey) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        if (prev.direction === 'asc') return { key, direction: 'desc' };
+        if (prev.direction === 'desc') return { key: null, direction: null };
+      }
+      return { key, direction: 'asc' };
+    });
+  }, []);
   async function fetchJO(
     start: string,
     end: string,
@@ -788,19 +850,67 @@ function JOMonitoring() {
     );
   };
 
-  const filtered = joData.filter((d) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      !q ||
-      d.no_so?.toLowerCase().includes(q) ||
-      d.customer?.toLowerCase().includes(q) ||
-      d.produk?.toLowerCase().includes(q) ||
-      d.job_order?.no_jo?.toLowerCase().includes(q) ||
-      d.no_io?.toLowerCase().includes(q) ||
-      d.ppic?.toLowerCase().includes(q)
-    );
-  });
+  const filtered = useMemo(() => {
+    let result = joData.filter((d) => {
+      const q = searchQuery.toLowerCase();
+      return (
+        !q ||
+        d.no_so?.toLowerCase().includes(q) ||
+        d.customer?.toLowerCase().includes(q) ||
+        d.produk?.toLowerCase().includes(q) ||
+        d.job_order?.no_jo?.toLowerCase().includes(q) ||
+        d.no_io?.toLowerCase().includes(q) ||
+        d.ppic?.toLowerCase().includes(q)
+      );
+    });
 
+    if (sortConfig.key && sortConfig.direction) {
+      const { key, direction } = sortConfig;
+      result = [...result].sort((a, b) => {
+        let aVal: any, bVal: any;
+        if (key === 'no_jo') {
+          aVal = a.job_order?.no_jo;
+          bVal = b.job_order?.no_jo;
+        } else if (key === 'status_kirim') {
+          aVal = calcDeliveryProgress(a)?.status ?? 'belum kirim';
+          bVal = calcDeliveryProgress(b)?.status ?? 'belum kirim';
+        } else if (key === 'po_qty') {
+          aVal = a.po_qty ?? 0;
+          bVal = b.po_qty ?? 0;
+        } else {
+          aVal = a[key as keyof typeof a];
+          bVal = b[key as keyof typeof b];
+        }
+
+        if (key === 'po_qty') {
+          return direction === 'asc' ? aVal - bVal : bVal - aVal;
+        }
+        const aStr = (aVal ?? '').toString().toLowerCase();
+        const bStr = (bVal ?? '').toString().toLowerCase();
+        if (aStr < bStr) return direction === 'asc' ? -1 : 1;
+        if (aStr > bStr) return direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return result;
+  }, [joData, searchQuery, sortConfig]);
+  const SortableTh = ({
+    label,
+    column,
+  }: {
+    label: string;
+    column: SortKey;
+  }) => (
+    <th
+      onClick={() => handleSort(column)}
+      className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap cursor-pointer select-none hover:bg-gray-200 active:bg-gray-300 transition-colors duration-150"
+    >
+      <span className="inline-flex items-center gap-1 text-gray-600">
+        {label}
+        <SortIcon column={column} sortConfig={sortConfig} />
+      </span>
+    </th>
+  );
   return (
     <>
       <main>
@@ -968,27 +1078,30 @@ function JOMonitoring() {
             <table className="w-full text-xs sm:text-sm min-w-[1300px]">
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>
-                  {[
-                    'No',
-                    'Nomor',
-                    'Customer',
-                    'Produk',
-                    'Qty',
-                    'Progress Kirim',
-                    'Tgl Kirim',
-                    'Sisa Waktu',
-                    'Tahapan Terakhir',
-                    'Mounting',
-                    'Status Kirim',
-                    'Aksi',
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  ))}
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    No
+                  </th>
+                  <SortableTh label="Nomor" column="no_jo" />
+                  <SortableTh label="Customer" column="customer" />
+                  <SortableTh label="Produk" column="produk" />
+                  <SortableTh label="Qty" column="po_qty" />
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Progress Kirim
+                  </th>
+                  <SortableTh label="Tgl Kirim" column="tgl_pengiriman" />
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Sisa Waktu
+                  </th>
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Tahapan Terakhir
+                  </th>
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Mounting
+                  </th>
+                  <SortableTh label="Status Kirim" column="status_kirim" />
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Aksi
+                  </th>
                 </tr>
               </thead>
               <tbody>

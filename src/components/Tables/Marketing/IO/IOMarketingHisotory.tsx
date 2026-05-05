@@ -84,6 +84,9 @@ interface OKPData {
 type SortField = keyof IOData;
 type SortDirection = 'asc' | 'desc';
 
+type SortOrder = 'newest' | 'oldest';
+type SortBy = 'tgl_approve_io' | 'createdAt';
+
 const IOMarketingHistory: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [ioData, setIOData] = useState<IOData[]>([]);
@@ -104,9 +107,13 @@ const IOMarketingHistory: React.FC = () => {
   // Add is_active filter state
   const [isActiveFilter, setIsActiveFilter] = useState<string>('active');
 
-  // Add sorting state
+  // Add sorting state (client-side column sort)
   const [sortKey, setSortKey] = useState<SortField>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  // Server-side sort filter states
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [sortBy, setSortBy] = useState<SortBy>('createdAt');
 
   // Print states
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
@@ -122,7 +129,7 @@ const IOMarketingHistory: React.FC = () => {
   const [sendProofIONumber, setSendProofIONumber] = useState<string>('');
   const [sendProofQty, setSendProofQty] = useState<number>(400);
 
-  // Add sorting functions
+  // Add sorting functions (client-side column sort)
   const handleSort = (field: SortField) => {
     if (sortKey === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -181,7 +188,7 @@ const IOMarketingHistory: React.FC = () => {
     );
   };
 
-  // Create sorted data
+  // Create sorted data (client-side)
   const sortedData = React.useMemo(() => {
     const sorted = [...ioData].sort((a, b) => {
       let aValue = a[sortKey];
@@ -247,6 +254,17 @@ const IOMarketingHistory: React.FC = () => {
     setPage(1);
   };
 
+  // Handle server-side sort filter changes
+  const handleSortOrderChange = (order: SortOrder): void => {
+    setSortOrder(order);
+    setPage(1);
+  };
+
+  const handleSortByChange = (by: SortBy): void => {
+    setSortBy(by);
+    setPage(1);
+  };
+
   const fetchIOData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io`;
     try {
@@ -257,6 +275,8 @@ const IOMarketingHistory: React.FC = () => {
         limit: limit,
         search: searchTerm,
         status: 'history',
+        sort: sortOrder,
+        sort_by: sortBy,
       };
 
       if (isActiveFilter === 'active') {
@@ -429,7 +449,7 @@ const IOMarketingHistory: React.FC = () => {
 
   useEffect(() => {
     fetchIOData();
-  }, [page, limit, searchTerm, isActiveFilter]);
+  }, [page, limit, searchTerm, isActiveFilter, sortOrder, sortBy]);
 
   const handleShowDetail = (ioId: number) => {
     setSelectedIOId(ioId);
@@ -439,8 +459,9 @@ const IOMarketingHistory: React.FC = () => {
   return (
     <div className="">
       {/* Header with Search and Filter */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-3">
+      <div className="mb-6">
+        {/* Row 1: Search */}
+        <div className="flex items-center gap-3 mb-3 flex-wrap">
           <input
             type="text"
             placeholder="Search IO..."
@@ -476,6 +497,75 @@ const IOMarketingHistory: React.FC = () => {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+          </div>
+        </div>
+
+        {/* Row 2: Sort filters */}
+        <div className="flex items-end gap-4 flex-wrap">
+          {/* Sort By */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Sort By</label>
+            <select
+              value={sortBy}
+              onChange={(e) => handleSortByChange(e.target.value as SortBy)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm bg-white"
+            >
+              <option value="createdAt">Tgl Dibuat</option>
+              <option value="tgl_approve_io">Tgl Approve IO</option>
+            </select>
+          </div>
+
+          {/* Sort Order toggle */}
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">Sort</label>
+            <div className="flex rounded-md overflow-hidden border border-gray-300">
+              <button
+                onClick={() => handleSortOrderChange('newest')}
+                className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${
+                  sortOrder === 'newest'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                  />
+                </svg>
+                Newest
+              </button>
+              <button
+                onClick={() => handleSortOrderChange('oldest')}
+                className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 border-l border-gray-300 ${
+                  sortOrder === 'oldest'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"
+                  />
+                </svg>
+                Oldest
+              </button>
+            </div>
           </div>
         </div>
       </div>
