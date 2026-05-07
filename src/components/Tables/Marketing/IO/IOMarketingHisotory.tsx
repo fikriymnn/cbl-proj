@@ -81,9 +81,6 @@ interface OKPData {
   rencana_tgl_kirim: string;
 }
 
-type SortField = keyof IOData;
-type SortDirection = 'asc' | 'desc';
-
 type SortOrder = 'newest' | 'oldest';
 type SortBy = 'tgl_approve_io' | 'createdAt';
 
@@ -107,10 +104,6 @@ const IOMarketingHistory: React.FC = () => {
   // Add is_active filter state
   const [isActiveFilter, setIsActiveFilter] = useState<string>('active');
 
-  // Add sorting state (client-side column sort)
-  const [sortKey, setSortKey] = useState<SortField>('id');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-
   // Server-side sort filter states
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [sortBy, setSortBy] = useState<SortBy>('createdAt');
@@ -128,94 +121,6 @@ const IOMarketingHistory: React.FC = () => {
   const [sendProofIOId, setSendProofIOId] = useState<number | null>(null);
   const [sendProofIONumber, setSendProofIONumber] = useState<string>('');
   const [sendProofQty, setSendProofQty] = useState<number>(400);
-
-  // Add sorting functions (client-side column sort)
-  const handleSort = (field: SortField) => {
-    if (sortKey === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const getSortIcon = (key: SortField) => {
-    if (sortKey !== key) {
-      return (
-        <svg
-          className="w-3 h-3 ml-1 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-          />
-        </svg>
-      );
-    }
-    return sortDirection === 'asc' ? (
-      <svg
-        className="w-3 h-3 ml-1 text-blue-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M5 15l7-7 7 7"
-        />
-      </svg>
-    ) : (
-      <svg
-        className="w-3 h-3 ml-1 text-blue-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    );
-  };
-
-  // Create sorted data (client-side)
-  const sortedData = React.useMemo(() => {
-    const sorted = [...ioData].sort((a, b) => {
-      let aValue = a[sortKey];
-      let bValue = b[sortKey];
-
-      if (aValue === undefined || aValue === null) aValue = '';
-      if (bValue === undefined || bValue === null) bValue = '';
-
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
-      }
-
-      if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
-        const av = aValue ? 1 : 0;
-        const bv = bValue ? 1 : 0;
-        return sortDirection === 'asc' ? av - bv : bv - av;
-      }
-
-      const aStr = String(aValue).toLowerCase();
-      const bStr = String(bValue).toLowerCase();
-
-      if (aStr < bStr) return sortDirection === 'asc' ? -1 : 1;
-      if (aStr > bStr) return sortDirection === 'asc' ? 1 : -1;
-      return 0;
-    });
-    return sorted;
-  }, [ioData, sortKey, sortDirection]);
 
   // Utility function to truncate text
   const truncateText = (text: string, maxLength: number) => {
@@ -577,75 +482,31 @@ const IOMarketingHistory: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                  <button className="flex items-center hover:text-gray-700 focus:outline-none">
-                    NO
-                  </button>
+                  NO
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   ACTION
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('no_io')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    NO IO
-                    {getSortIcon('no_io')}
-                  </button>
+                  NO IO
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('status_io')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    STATUS IO
-                    {getSortIcon('status_io')}
-                  </button>
+                  STATUS IO
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('customer')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    CUSTOMER
-                    {getSortIcon('customer')}
-                  </button>
+                  CUSTOMER
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('produk')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    PRODUK
-                    {getSortIcon('produk')}
-                  </button>
+                  PRODUK
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('tgl_pembuatan_io')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    TGL BUAT
-                    {getSortIcon('tgl_pembuatan_io')}
-                  </button>
+                  TGL DIBUAT / APPROVE
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('status')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    STATUS
-                    {getSortIcon('status')}
-                  </button>
+                  STATUS
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('status_proses')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    STATUS PROSES
-                    {getSortIcon('status_proses')}
-                  </button>
+                  STATUS PROSES
                 </th>
               </tr>
             </thead>
@@ -658,7 +519,7 @@ const IOMarketingHistory: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ) : sortedData.length === 0 ? (
+              ) : ioData.length === 0 ? (
                 <tr>
                   <td
                     colSpan={10}
@@ -670,7 +531,7 @@ const IOMarketingHistory: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                sortedData.map((item, index) => (
+                ioData.map((item, index) => (
                   <tr
                     key={item.id}
                     className="hover:bg-gray-50 transition-colors"
@@ -749,9 +610,18 @@ const IOMarketingHistory: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                      <span title={item.tgl_pembuatan_io}>
-                        {formatDate(item.tgl_pembuatan_io)}
-                      </span>
+                      <div className="flex flex-col gap-0.5">
+                        <span title={item.tgl_pembuatan_io}>
+                          <span className="text-gray-500">Dibuat: </span>
+                          {formatDate(item.tgl_pembuatan_io)}
+                        </span>
+                        <span title={item.tgl_approve_io ?? '-'}>
+                          <span className="text-gray-500">Approve: </span>
+                          {item.tgl_approve_io
+                            ? formatDate(item.tgl_approve_io)
+                            : '-'}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span
@@ -763,7 +633,6 @@ const IOMarketingHistory: React.FC = () => {
                         {truncateText(item.status, 8)}
                       </span>
                     </td>
-
                     <td className="px-2 py-2 flex flex-col gap-1 items-center">
                       <span
                         className={`text-xs px-1.5 py-0.5 rounded font-medium ${getStatusColor2(

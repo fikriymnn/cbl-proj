@@ -6,8 +6,6 @@ import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import JOPrintModal from './utils/JOPrintModal';
 
-type SortDirection = 'asc' | 'desc';
-
 interface TahapanItem {
   id: number;
   id_drying_time: number | null;
@@ -54,8 +52,6 @@ interface APIResponse<T> {
 const JOHistory: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [joData, setJOData] = useState<JOData[]>([]);
-  const [sortKey, setSortKey] = useState<string>('id');
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedTipeJO, setSelectedTipeJO] =
     useState<JOTipeOption>('JO PRODUKSI');
@@ -159,64 +155,6 @@ const JOHistory: React.FC = () => {
   const handleLimitChange = (newLimit: number): void => {
     setLimit(newLimit);
     setPage(1);
-  };
-
-  const handleSort = (field: string) => {
-    if (sortKey === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(field);
-      setSortDirection('asc');
-    }
-  };
-
-  const getSortIcon = (key: string) => {
-    if (sortKey !== key) {
-      return (
-        <svg
-          className="w-3 h-3 ml-1 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-          />
-        </svg>
-      );
-    }
-    return sortDirection === 'asc' ? (
-      <svg
-        className="w-3 h-3 ml-1 text-blue-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M5 15l7-7 7 7"
-        />
-      </svg>
-    ) : (
-      <svg
-        className="w-3 h-3 ml-1 text-blue-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    );
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -330,25 +268,6 @@ const JOHistory: React.FC = () => {
       }
     }
   };
-
-  // Apply sorting to data (client-side sorting)
-  const sortedData = [...joData].sort((a, b) => {
-    const aValue = a[sortKey as keyof JOData];
-    const bValue = b[sortKey as keyof JOData];
-
-    if (aValue === null || aValue === undefined) return 1;
-    if (bValue === null || bValue === undefined) return -1;
-
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortDirection === 'asc'
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
 
   const isDateFilterActive = startDate || endDate;
 
@@ -533,94 +452,34 @@ const JOHistory: React.FC = () => {
                   ACTION
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('no_jo')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    NO JO
-                    {getSortIcon('no_jo')}
-                  </button>
+                  NO JO
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('no_so')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    NO SO
-                    {getSortIcon('no_so')}
-                  </button>
+                  NO SO
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('no_io')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    NO IO
-                    {getSortIcon('no_io')}
-                  </button>
+                  NO IO
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('customer')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    CUSTOMER
-                    {getSortIcon('customer')}
-                  </button>
+                  CUSTOMER
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('produk')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    PRODUK
-                    {getSortIcon('produk')}
-                  </button>
+                  PRODUK
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('qty')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    QTY
-                    {getSortIcon('qty')}
-                  </button>
+                  QTY
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('tgl_kirim')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    TGL KIRIM
-                    {getSortIcon('tgl_kirim')}
-                  </button>
+                  TGL KIRIM
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('tipe_jo')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    TIPE JO
-                    {getSortIcon('tipe_jo')}
-                  </button>
+                  TIPE JO
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('status_jo')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    STATUS JO
-                    {getSortIcon('status_jo')}
-                  </button>
+                  STATUS JO
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('status_proses')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    STATUS PROSES
-                    {getSortIcon('status_proses')}
-                  </button>
+                  STATUS PROSES
                 </th>
               </tr>
             </thead>
@@ -636,7 +495,7 @@ const JOHistory: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ) : sortedData.length === 0 ? (
+              ) : joData.length === 0 ? (
                 <tr>
                   <td colSpan={12} className="px-3 py-8 text-center">
                     <p className="text-sm text-gray-500">
@@ -647,7 +506,7 @@ const JOHistory: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                sortedData.map((item, index) => {
+                joData.map((item, index) => {
                   const jadwalBlockReasons = getJadwalBlockReasons(item);
                   const isJadwalBlocked = jadwalBlockReasons.length > 0;
 
