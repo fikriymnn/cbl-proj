@@ -1076,7 +1076,7 @@ function JOMonitoring() {
 
           <div className="overflow-x-auto max-h-[650px] overflow-y-auto">
             <table className="w-full text-xs sm:text-sm min-w-[1300px]">
-              <thead className="bg-gray-100 sticky top-0 z-10">
+              <thead className="bg-white sticky top-0 z-10">
                 <tr>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
                     No

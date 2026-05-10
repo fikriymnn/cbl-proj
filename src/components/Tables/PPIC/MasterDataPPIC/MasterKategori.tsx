@@ -417,195 +417,196 @@ const MasterKategori = () => {
           )}
         </div>
 
-        {/* ── Table header — added "No" column ── */}
-        <div className="grid grid-cols-10 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]">
-          {/* NEW: No column */}
-          <p className="text-[#646464] text-xs font-bold">No</p>
-          <p className="text-[#646464] text-xs font-bold col-span-2"></p>
-          <p className="text-[#646464] text-xs font-bold">Setting A</p>
-          <p className="text-[#646464] text-xs font-bold">Setting B</p>
-          <p className="text-[#646464] text-xs font-bold">Setting C</p>
-          <p className="text-[#646464] text-xs font-bold">Kapasitas A</p>
-          <p className="text-[#646464] text-xs font-bold">Kapasitas B</p>
-          <p className="text-[#646464] text-xs font-bold">Kapasitas C</p>
-        </div>
+        <div className="overflow-y-auto max-h-[600px]">
+          {/* ── Table header ── */}
+          <div className="grid grid-cols-10 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%] sticky top-0 z-10">
+            <p className="text-[#646464] text-xs font-bold">No</p>
+            <p className="text-[#646464] text-xs font-bold col-span-2"></p>
+            <p className="text-[#646464] text-xs font-bold">Setting A</p>
+            <p className="text-[#646464] text-xs font-bold">Setting B</p>
+            <p className="text-[#646464] text-xs font-bold">Setting C</p>
+            <p className="text-[#646464] text-xs font-bold">Kapasitas A</p>
+            <p className="text-[#646464] text-xs font-bold">Kapasitas B</p>
+            <p className="text-[#646464] text-xs font-bold">Kapasitas C</p>
+          </div>
 
-        {/* ── Table body ── */}
-        <div className="flex w-full flex-col bg-white">
-          {filteredKategori?.length === 0 && (
-            <p className="text-center text-xs text-gray-400 py-4">
-              Tidak ada data yang cocok dengan pencarian.
-            </p>
-          )}
-          {filteredKategori?.map((data: any, i: number) => (
-            <>
-              <div
-                key={i}
-                className="grid grid-cols-10 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]"
-              >
-                {/* NEW: row number */}
-                <p className="text-[#646464] text-xs font-bold">{i + 1}</p>
+          {/* ── Table body ── */}
+          <div className="flex w-full flex-col bg-white">
+            {filteredKategori?.length === 0 && (
+              <p className="text-center text-xs text-gray-400 py-4">
+                Tidak ada data yang cocok dengan pencarian.
+              </p>
+            )}
+            {filteredKategori?.map((data: any, i: number) => (
+              <>
+                <div
+                  key={i}
+                  className="grid grid-cols-10 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]"
+                >
+                  {/* NEW: row number */}
+                  <p className="text-[#646464] text-xs font-bold">{i + 1}</p>
 
-                <p className="text-[#646464] text-xs font-bold">
-                  {data.nama_mesin}
-                </p>
-                <p className="text-[#646464] text-xs font-bold">
-                  {data.nama_kategori}
-                </p>
-                <p className="text-[#646464] text-xs font-bold">
-                  {data.setting_a}
-                </p>
-                <p className="text-[#646464] text-xs font-bold">
-                  {data.setting_b}
-                </p>
-                <p className="text-[#646464] text-xs font-bold">
-                  {data.setting_c}
-                </p>
-                <p className="text-[#646464] text-xs font-bold">
-                  {data.kapasitas_a}
-                </p>
-                <p className="text-[#646464] text-xs font-bold">
-                  {data.kapasitas_b}
-                </p>
-                <p className="text-[#646464] text-xs font-bold">
-                  {data.kapasitas_c}
-                </p>
-                <div className="flex flex-col gap-1">
-                  <button
-                    onClick={() => openEdit(i)}
-                    className="px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full "
-                  >
-                    Edit
-                  </button>
-                  {showEdit[i] == true && (
-                    <ModalKosonganSmall
-                      isOpen={showEdit[i]}
-                      onClose={() => closeEdit(i)}
-                      judul={'Edit Kategori'}
+                  <p className="text-[#646464] text-xs font-bold">
+                    {data.nama_mesin}
+                  </p>
+                  <p className="text-[#646464] text-xs font-bold">
+                    {data.nama_kategori}
+                  </p>
+                  <p className="text-[#646464] text-xs font-bold">
+                    {data.setting_a}
+                  </p>
+                  <p className="text-[#646464] text-xs font-bold">
+                    {data.setting_b}
+                  </p>
+                  <p className="text-[#646464] text-xs font-bold">
+                    {data.setting_c}
+                  </p>
+                  <p className="text-[#646464] text-xs font-bold">
+                    {data.kapasitas_a}
+                  </p>
+                  <p className="text-[#646464] text-xs font-bold">
+                    {data.kapasitas_b}
+                  </p>
+                  <p className="text-[#646464] text-xs font-bold">
+                    {data.kapasitas_c}
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    <button
+                      onClick={() => openEdit(i)}
+                      className="px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full "
                     >
-                      <>
-                        <div className="flex flex-col gap-1 px-[1%] py-[1%]">
-                          <label className="text-black text-xs font-bold">
-                            {data.nama_mesin}
-                          </label>
-                          <label className="text-black text-xs font-bold">
-                            Nama Kategori
-                          </label>
-                          <input
-                            onChange={(e) =>
-                              setnamaKategoriEdit(e.target.value)
-                            }
-                            defaultValue={data.nama_kategori}
-                            type="text"
-                            className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                          />
-                          <div className="grid grid-cols-3 gap-2">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-black text-xs font-bold">
-                                Setting A
-                              </label>
-                              <input
-                                onChange={(e) =>
-                                  setsettingAEdit(e.target.value)
-                                }
-                                type="number"
-                                defaultValue={data.setting_a}
-                                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-black text-xs font-bold">
-                                Setting B
-                              </label>
-                              <input
-                                onChange={(e) =>
-                                  setsettingBEdit(e.target.value)
-                                }
-                                type="number"
-                                defaultValue={data.setting_b}
-                                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-black text-xs font-bold">
-                                Setting C
-                              </label>
-                              <input
-                                onChange={(e) =>
-                                  setsettingCEdit(e.target.value)
-                                }
-                                type="number"
-                                defaultValue={data.setting_c}
-                                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                              />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-3 gap-2">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-black text-xs font-bold">
-                                Kapasitas A
-                              </label>
-                              <input
-                                onChange={(e) =>
-                                  setkapasitasAEdit(e.target.value)
-                                }
-                                type="number"
-                                defaultValue={data.kapasitas_a}
-                                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-black text-xs font-bold">
-                                Kapasitas B
-                              </label>
-                              <input
-                                onChange={(e) =>
-                                  setkapasitasBEdit(e.target.value)
-                                }
-                                type="number"
-                                defaultValue={data.kapasitas_b}
-                                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-black text-xs font-bold">
-                                Kapasitas C
-                              </label>
-                              <input
-                                onChange={(e) =>
-                                  setkapasitasCEdit(e.target.value)
-                                }
-                                type="number"
-                                defaultValue={data.kapasitas_c}
-                                className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                              />
-                            </div>
-                          </div>
-                          <div className="pt-4">
-                            <button
-                              disabled={isLoading}
-                              onClick={() =>
-                                putMasterKategori(data.id, data.mesin, i)
+                      Edit
+                    </button>
+                    {showEdit[i] == true && (
+                      <ModalKosonganSmall
+                        isOpen={showEdit[i]}
+                        onClose={() => closeEdit(i)}
+                        judul={'Edit Kategori'}
+                      >
+                        <>
+                          <div className="flex flex-col gap-1 px-[1%] py-[1%]">
+                            <label className="text-black text-xs font-bold">
+                              {data.nama_mesin}
+                            </label>
+                            <label className="text-black text-xs font-bold">
+                              Nama Kategori
+                            </label>
+                            <input
+                              onChange={(e) =>
+                                setnamaKategoriEdit(e.target.value)
                               }
-                              className="rounded-md justify-center items-center w-full h-10 bg-blue-600 text-white font-semibold text-sm"
-                            >
-                              {isLoading ? 'Loading...' : 'SIMPAN'}
-                            </button>
+                              defaultValue={data.nama_kategori}
+                              type="text"
+                              className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                            />
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-black text-xs font-bold">
+                                  Setting A
+                                </label>
+                                <input
+                                  onChange={(e) =>
+                                    setsettingAEdit(e.target.value)
+                                  }
+                                  type="number"
+                                  defaultValue={data.setting_a}
+                                  className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-black text-xs font-bold">
+                                  Setting B
+                                </label>
+                                <input
+                                  onChange={(e) =>
+                                    setsettingBEdit(e.target.value)
+                                  }
+                                  type="number"
+                                  defaultValue={data.setting_b}
+                                  className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-black text-xs font-bold">
+                                  Setting C
+                                </label>
+                                <input
+                                  onChange={(e) =>
+                                    setsettingCEdit(e.target.value)
+                                  }
+                                  type="number"
+                                  defaultValue={data.setting_c}
+                                  className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                                />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-black text-xs font-bold">
+                                  Kapasitas A
+                                </label>
+                                <input
+                                  onChange={(e) =>
+                                    setkapasitasAEdit(e.target.value)
+                                  }
+                                  type="number"
+                                  defaultValue={data.kapasitas_a}
+                                  className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-black text-xs font-bold">
+                                  Kapasitas B
+                                </label>
+                                <input
+                                  onChange={(e) =>
+                                    setkapasitasBEdit(e.target.value)
+                                  }
+                                  type="number"
+                                  defaultValue={data.kapasitas_b}
+                                  className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                                />
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <label className="text-black text-xs font-bold">
+                                  Kapasitas C
+                                </label>
+                                <input
+                                  onChange={(e) =>
+                                    setkapasitasCEdit(e.target.value)
+                                  }
+                                  type="number"
+                                  defaultValue={data.kapasitas_c}
+                                  className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                                />
+                              </div>
+                            </div>
+                            <div className="pt-4">
+                              <button
+                                disabled={isLoading}
+                                onClick={() =>
+                                  putMasterKategori(data.id, data.mesin, i)
+                                }
+                                className="rounded-md justify-center items-center w-full h-10 bg-blue-600 text-white font-semibold text-sm"
+                              >
+                                {isLoading ? 'Loading...' : 'SIMPAN'}
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    </ModalKosonganSmall>
-                  )}
-                  <button
-                    onClick={() => hapusKategori(data.id)}
-                    className="px-2 py-1  text-xs bg-red-400 items-center justify-center text-white font-semibold rounded-md flex w-full "
-                  >
-                    Delete
-                  </button>
+                        </>
+                      </ModalKosonganSmall>
+                    )}
+                    <button
+                      onClick={() => hapusKategori(data.id)}
+                      className="px-2 py-1  text-xs bg-red-400 items-center justify-center text-white font-semibold rounded-md flex w-full "
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </>
-          ))}
+              </>
+            ))}
+          </div>
         </div>
       </div>
     </main>

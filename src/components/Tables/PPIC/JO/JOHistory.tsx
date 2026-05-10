@@ -441,9 +441,9 @@ const JOHistory: React.FC = () => {
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[600px]">
           <table className="min-w-full text-xs">
-            <thead className="bg-gray-50">
+            <thead className="bg-white sticky top-0 z-10">
               <tr>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                   NO

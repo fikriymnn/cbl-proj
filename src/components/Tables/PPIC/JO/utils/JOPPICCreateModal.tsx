@@ -269,12 +269,15 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     });
   };
 
-  // ── Fetch on open ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (isOpen) {
       fetchKetentuanInsheet();
       fetchProsesInsheet();
-      fetchJumlahJO();
+
+      if (!editMode) {
+        // ← only fetch/generate JO number on create
+        fetchJumlahJO();
+      }
 
       if (isIOProofMode) {
         fetchIOProofData();
@@ -285,7 +288,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   }, [isOpen]);
 
   useEffect(() => {
-    generateJONumber();
+    if (!editMode) {
+      generateJONumber();
+    }
   }, [jumlahJO]);
 
   // ── Fetch SO data ─────────────────────────────────────────────────────────

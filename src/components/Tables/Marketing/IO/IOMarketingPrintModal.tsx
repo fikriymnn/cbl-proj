@@ -88,7 +88,15 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
     }
   };
 
-  const getPrintContent = () => {
+  /**
+   * Generates the full HTML document for the IO print/preview.
+   *
+   * @param limitLog - When true (used for printing), only the creator info and
+   *                   the single latest action are rendered in the log section.
+   *                   When false (default, used for the iframe preview), the
+   *                   full action log is rendered.
+   */
+  const getPrintContent = (limitLog: boolean = false) => {
     if (!printData) return '';
 
     const mounting = printData.io_mounting?.[selectedMountingIndex];
@@ -102,6 +110,13 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
     const tahapan = mounting?.tahapan
       ? [...mounting.tahapan].sort((a, b) => (a.index || 0) - (b.index || 0))
       : [];
+
+    // All action logs
+    const actionLogs = printData.io_action_user ?? [];
+
+    // Latest action only (for print mode)
+    const latestAction =
+      actionLogs.length > 0 ? actionLogs[actionLogs.length - 1] : null;
 
     // Generate tahapan rows dynamically (6 columns per row)
     const generateTahapanRows = () => {
@@ -190,12 +205,82 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
       return column === mountingLetter ? getValue(mounting?.id_layout) : '';
     };
 
+    // ─── Log section HTML ────────────────────────────────────────────────────
+    // Shared snippet: creator info block
+    const creatorBlock =
+      printData.user_create || printData.createdAt
+        ? `
+        <div style="margin-bottom: 4px; line-height: 1.5;">
+          <span style="font-weight: bold;">Dibuat oleh:</span> ${getValue(
+            printData.user_create?.nama || printData.user_create,
+          )}
+          ${
+            printData.user_create?.bagian
+              ? `(<span style="font-weight: bold;">Bagian:</span> ${getValue(
+                  printData.user_create.bagian,
+                )})`
+              : ''
+          }
+          ${
+            printData.createdAt
+              ? `pada <span style="font-weight: bold;">${formatDateTime(
+                  printData.createdAt,
+                )}</span>`
+              : ''
+          }
+        </div>`
+        : '';
+
+    // Single action row renderer
+    const renderActionRow = (action: any) => `
+      <div style="margin-bottom: 4px; line-height: 1.5;">
+        <span style="font-weight: bold;">${getStatusLabel(
+          action.status,
+        )}</span> oleh ${getValue(action.user?.nama)}
+        ${
+          action.user?.bagian
+            ? `(<span style="font-weight: bold;">Bagian:</span> ${getValue(
+                action.user.bagian,
+              )})`
+            : ''
+        }
+        pada <span style="font-weight: bold;">${formatDateTime(
+          action.createdAt,
+        )}</span>
+      </div>`;
+
+    // PRINT MODE: creator + latest action only
+    const printLogSection = `
+      <div style="margin-top: 16px; page-break-inside: avoid;">
+        ${creatorBlock}
+        ${latestAction ? renderActionRow(latestAction) : ''}
+      </div>`;
+
+    // PREVIEW MODE: creator + full action log
+    const previewLogSection =
+      actionLogs.length > 0
+        ? `
+        <div style="margin-top: 16px; page-break-inside: avoid;">
+          ${creatorBlock}
+          ${actionLogs.map(renderActionRow).join('')}
+        </div>`
+        : printData.user_create || printData.createdAt
+        ? `
+        <div style="margin-top: 16px; page-break-inside: avoid;">
+          <div style="font-weight: bold; margin-bottom: 8px; font-size: 10px;">LOG AKTIVITAS IO:</div>
+          ${creatorBlock}
+        </div>`
+        : '';
+
+    // Choose which log section to render based on the limitLog flag
+    const logSection = limitLog ? printLogSection : previewLogSection;
+    // ────────────────────────────────────────────────────────────────────────
+
     return `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Print - ${printData.no_io || 'IO'}</title>
-       
 
 <style>
   @page {
@@ -211,8 +296,8 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    font-size: 11px; /* Changed from 9px to 11px */
-    line-height: 1.4; /* Changed from 1.3 to 1.4 */
+    font-size: 11px;
+    line-height: 1.4;
     min-height: 277mm;
     display: flex;
     flex-direction: column;
@@ -237,15 +322,15 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
   table {
     border-collapse: collapse;
     width: 100%;
-    margin-bottom: 10px; /* Changed from 8px to 10px */
+    margin-bottom: 10px;
   }
 
   td, th {
     border: 1px solid black;
-    padding: 3px 5px; /* Changed from 2px 4px to 3px 5px */
-    line-height: 1.4; /* Changed from 1.3 to 1.4 */
+    padding: 3px 5px;
+    line-height: 1.4;
     vertical-align: top;
-    font-size: 11px; /* Added explicit font size */
+    font-size: 11px;
   }
 
   .text-center {
@@ -261,15 +346,15 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
   }
 
   .text-lg {
-    font-size: 14px; /* Changed from 12px to 14px */
+    font-size: 14px;
   }
 
   .text-2xl {
-    font-size: 20px; /* Changed from 18px to 20px */
+    font-size: 20px;
   }
 
   .text-sm {
-    font-size: 10px; /* Changed from 8px to 10px */
+    font-size: 10px;
   }
 </style>
         </head>
@@ -545,7 +630,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                 <td>${getPondId('B')}</td>
                 <td>${getPondId('C')}</td>
                 <td>${getPondId('D')}</td>
-                <td>Merk & Komposisi Lem</td>
+                <td>Merk &amp; Komposisi Lem</td>
                 <td>${getValue(mounting?.merk_komp_lem)}</td>
               </tr>
               <tr>
@@ -581,94 +666,8 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
             </tbody>
           </table>
 
-
           <!-- User Action Log -->
-          ${
-            printData.io_action_user && printData.io_action_user.length > 0
-              ? `
-          <div style="margin-top: 16px; page-break-inside: avoid;">
-        
-            
-            <!-- Creator Info (if available) -->
-            ${
-              printData.user_create || printData.createdAt
-                ? `
-            <div style="margin-bottom: 4px; line-height: 1.5;">
-              <span style="font-weight: bold;">Dibuat oleh:</span> ${getValue(
-                printData.user_create?.nama || printData.user_create,
-              )} 
-              ${
-                printData.user_create?.bagian
-                  ? `(<span style="font-weight: bold;">Bagian:</span> ${getValue(
-                      printData.user_create.bagian,
-                    )})`
-                  : ''
-              }
-              ${
-                printData.createdAt
-                  ? `pada <span style="font-weight: bold;">${formatDateTime(
-                      printData.createdAt,
-                    )}</span>`
-                  : ''
-              }
-            </div>
-            `
-                : ''
-            }
-            
-            <!-- Action Logs -->
-            ${printData.io_action_user
-              .map(
-                (action) => `
-            <div style="margin-bottom: 4px; line-height: 1.5;">
-              <span style="font-weight: bold;">${getStatusLabel(
-                action.status,
-              )}</span> oleh ${getValue(action.user?.nama)} 
-              ${
-                action.user?.bagian
-                  ? `(<span style="font-weight: bold;">Bagian:</span> ${getValue(
-                      action.user.bagian,
-                    )})`
-                  : ''
-              }
-              pada <span style="font-weight: bold;">${formatDateTime(
-                action.createdAt,
-              )}</span>
-            </div>
-            `,
-              )
-              .join('')}
-          </div>
-          `
-              : printData.user_create || printData.createdAt
-              ? `
-          <div style="margin-top: 16px; page-break-inside: avoid;">
-            <div style="font-weight: bold; margin-bottom: 8px; font-size: 10px;">LOG AKTIVITAS IO:</div>
-            <div style="margin-bottom: 4px; line-height: 1.5;">
-              <span style="font-weight: bold;">Dibuat oleh:</span> ${getValue(
-                printData.user_create?.nama || printData.user_create,
-              )} 
-              ${
-                printData.user_create?.bagian
-                  ? `(<span style="font-weight: bold;">Bagian:</span> ${getValue(
-                      printData.user_create.bagian,
-                    )})`
-                  : ''
-              }
-              ${
-                printData.createdAt
-                  ? `pada <span style="font-weight: bold;">${formatDateTime(
-                      printData.createdAt,
-                    )}</span>`
-                  : ''
-              }
-            </div>
-          </div>
-          `
-              : ''
-          }
-
-
+          ${logSection}
 
         </body>
       </html>
@@ -678,7 +677,8 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (printWindow) {
-      printWindow.document.write(getPrintContent());
+      // Pass limitLog=true so only creator + latest action appear in the printout
+      printWindow.document.write(getPrintContent(true));
       printWindow.document.close();
       printWindow.onload = () => {
         printWindow.print();
@@ -732,7 +732,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
         {/* Scrollable preview area */}
         <div className="flex-1 overflow-auto bg-gray-600 p-8">
           <div className="max-w-[210mm] mx-auto bg-white shadow-2xl">
-            {/* PDF Preview using iframe */}
+            {/* PDF Preview using iframe — full log, no limitLog flag */}
             <iframe
               srcDoc={getPrintContent()}
               className="w-full"
