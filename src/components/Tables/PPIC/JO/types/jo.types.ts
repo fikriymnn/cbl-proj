@@ -176,6 +176,7 @@ export interface JOMounting {
   total_insheet: number;
   is_selected: boolean;
 }
+
 export interface JOFormData {
   id_io: number;
   id_jo?: number;
@@ -197,8 +198,8 @@ export interface JOFormData {
   status_produk: string;
   stok_fg: number;
   qty: number;
-  qty_druk: number; // NEW FIELD
-  qty_lp: number; // NEW FIELD
+  qty_druk: number;
+  qty_lp: number;
   po_qty: number;
   spesifikasi: string;
   keterangan_pengerjaan: string;
@@ -206,8 +207,9 @@ export interface JOFormData {
   alamat_pengiriman: string;
   tgl_kirim: string;
   standar_warna: string;
-  tipe_jo: 'JO PRODUKSI' | 'JO PROOF';
+  tipe_jo: 'JO PRODUKSI' | 'JO PROOF' | 'JO KANBAN';
   jo_mounting: JOMounting[];
 }
 
-export type JOTipeOption = 'JO PRODUKSI' | 'JO PROOF';
+// NEW: JO KANBAN added
+export type JOTipeOption = 'JO PRODUKSI' | 'JO PROOF' | 'JO KANBAN';

@@ -30,6 +30,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     no_booking: '',
     status_jo: '',
     customer: '',
+    is_so_kanban: false,
     produk: '',
     status_produk: '',
     tgl_acc_customer: '',
@@ -76,8 +77,8 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   const [soNumberData, setSoNumberData] = useState<{
     no_so_tax_new: string;
     no_so_non_tax_new: string;
+    no_so_kanban_new: string; // add this
   } | null>(null);
-
   // Status Produk options
   const statusProdukOptions = [
     { value: 'OKP', label: 'OKP' },
@@ -123,14 +124,16 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
         const soData = {
           no_so_tax_new: res.data.no_so_tax_new || '',
           no_so_non_tax_new: res.data.no_so_non_tax_new || '',
+          no_so_kanban_new: res.data.no_so_kanban_new || '',
         };
         setSoNumberData(soData);
 
         // Set initial SO number based on current PPN selection
-        const initialSONumber =
-          formData.ppn === 'yes'
-            ? soData.no_so_tax_new
-            : soData.no_so_non_tax_new;
+        const initialSONumber = formData.is_so_kanban
+          ? soData.no_so_kanban_new
+          : formData.ppn === 'yes'
+          ? soData.no_so_tax_new
+          : soData.no_so_non_tax_new;
 
         setFormData((prev) => ({
           ...prev,
@@ -145,20 +148,20 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     }
   };
 
-  // Update SO number when PPN changes - only in create mode
   useEffect(() => {
     if (mode === 'create' && soNumberData) {
-      const newSONumber =
-        formData.ppn === 'yes'
-          ? soNumberData.no_so_tax_new
-          : soNumberData.no_so_non_tax_new;
+      const newSONumber = formData.is_so_kanban
+        ? soNumberData.no_so_kanban_new
+        : formData.ppn === 'yes'
+        ? soNumberData.no_so_tax_new
+        : soNumberData.no_so_non_tax_new;
 
       setFormData((prev) => ({
         ...prev,
         no_so: newSONumber,
       }));
     }
-  }, [formData.ppn, soNumberData, mode]);
+  }, [formData.ppn, formData.is_so_kanban, soNumberData, mode]);
 
   const fetchKalkulasiData = async () => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/kalkulasi`;
@@ -369,6 +372,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
       no_so: '',
       id_kalkulasi: null,
       id_so_cancel: null,
+      is_so_kanban: false,
       so_cancel: '',
       no_booking: '',
       status_jo: '',
@@ -430,24 +434,40 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Row 1 - PPN moved to top */}
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                PPN <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.ppn}
-                onChange={(e) => handleInputChange('ppn', e.target.value)}
-                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  !isFieldEditable('ppn')
-                    ? 'bg-gray-100 cursor-not-allowed'
-                    : ''
-                }`}
-                disabled={!isFieldEditable('ppn')}
-                required={mode === 'create'}
-              >
-                <option value="yes">Ya</option>
-                <option value="no">Tidak</option>
-              </select>
+            <div className=" grid grid-cols-3 gap-2">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium mb-1">
+                  PPN <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.ppn}
+                  onChange={(e) => handleInputChange('ppn', e.target.value)}
+                  className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    !isFieldEditable('ppn')
+                      ? 'bg-gray-100 cursor-not-allowed'
+                      : ''
+                  }`}
+                  disabled={!isFieldEditable('ppn')}
+                  required={mode === 'create'}
+                >
+                  <option value="yes">Ya</option>
+                  <option value="no">Tidak</option>
+                </select>
+              </div>
+              <div>
+                <label className="flex items-center space-x-2 pt-7">
+                  <input
+                    type="checkbox"
+                    checked={formData.is_so_kanban}
+                    onChange={(e) =>
+                      handleInputChange('is_so_kanban', e.target.checked)
+                    }
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    disabled={!isFieldEditable('is_so_kanban')}
+                  />
+                  <span className="text-sm font-medium">SO Kanban</span>
+                </label>
+              </div>
             </div>
 
             <div>

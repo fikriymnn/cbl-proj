@@ -16,7 +16,7 @@ interface TahapanData {
 interface TahapanPopupProps {
   isOpen: boolean;
   onClose: () => void;
-  tahapanData: TahapanData[];
+  tahapanData?: TahapanData[] | null;
   mountingName: string;
 }
 
@@ -58,7 +58,7 @@ const TahapanPopup: React.FC<TahapanPopupProps> = ({
 
         {/* Body - Table Format */}
         <div className="overflow-y-auto max-h-96 p-6">
-          {tahapanData.length === 0 ? (
+          {tahapanData?.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               Tidak ada data tahapan untuk mounting ini
             </div>
@@ -85,7 +85,7 @@ const TahapanPopup: React.FC<TahapanPopupProps> = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white">
-                  {tahapanData.map((tahapan, idx) => (
+                  {tahapanData?.map((tahapan, idx) => (
                     <tr
                       key={tahapan.id}
                       className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}

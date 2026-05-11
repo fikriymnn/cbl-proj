@@ -605,6 +605,15 @@ const SOMarketing: React.FC = () => {
                               (item.status_produk.length > 20 ? '...' : '')
                             : '-'}
                         </span>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                            item.is_so_kanban
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          Kanban : {item.is_so_kanban ? 'Ya' : 'Tidak'}
+                        </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
                         <span

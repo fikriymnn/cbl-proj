@@ -437,6 +437,14 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
       <div className="grid grid-cols-1 gap-3">
         {mountingData.map((mounting) => {
           const isSelected = selectedMounting === mounting.id;
+          console.log(
+            'Mounting:',
+            mounting.nama_mounting,
+            'Selected:',
+            isSelected,
+            mounting.id,
+            selectedMounting,
+          );
           const ukuranCetakBagian = mounting.ukuran_cetak_bagian_1 || 1;
           const ukuranCetakIsi = mounting.ukuran_cetak_isi_1 || 1;
           const displayedJumlahDruk =

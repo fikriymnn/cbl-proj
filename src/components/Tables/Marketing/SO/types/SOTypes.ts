@@ -311,6 +311,7 @@ export interface SOData {
   updatedAt: string;
   is_io_selesai: any;
   no_booking: any;
+  is_so_kanban: any;
   label?: string;
   job_order?: {
     no_jo: string;
@@ -322,6 +323,7 @@ export interface SOData {
 
 export interface SOFormData {
   no_so: string;
+  is_so_kanban: boolean;
   tgl_input_po: string;
   id_kalkulasi: any;
   id_so_cancel: any;

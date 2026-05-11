@@ -2,12 +2,13 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { JOTipeOption } from './types/jo.types';
 import JOPPICCreateModal from './utils/JOPPICCreateModal';
+import JOKanbanModal from './utils/Jokanbanmodal'; // NEW
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import JOPrintModal from './utils/JOPrintModal';
 
 type SortDirection = 'asc' | 'desc';
-// NEW: source type for JO PROOF
+// source type for JO PROOF
 type JOProofSourceType = 'SO' | 'IO';
 
 interface JOData {
@@ -53,11 +54,14 @@ const JOPPICCreate: React.FC = () => {
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [printJOId, setPrintJOId] = useState<number | null>(null);
 
-  // NEW: proof source selection
+  // proof source selection
   const [showProofSourceSelection, setShowProofSourceSelection] =
     useState<boolean>(false);
   const [selectedProofSource, setSelectedProofSource] =
     useState<JOProofSourceType>('SO');
+
+  // NEW: JO Kanban modal state
+  const [showKanbanModal, setShowKanbanModal] = useState<boolean>(false);
 
   // Pagination states
   const [page, setPage] = useState<number>(1);
@@ -81,6 +85,7 @@ const JOPPICCreate: React.FC = () => {
         },
         withCredentials: true,
       });
+      console.log('Fetched JO data:', res.data);
       if (res.data.succes) {
         setJOData(res.data.data || []);
         if (res.data.total_page) {
@@ -227,9 +232,16 @@ const JOPPICCreate: React.FC = () => {
   };
 
   const getTipeJOColor = (tipe: string): string => {
-    return tipe === 'JO PRODUKSI'
-      ? 'bg-purple-100 text-purple-800'
-      : 'bg-orange-100 text-orange-800';
+    switch (tipe) {
+      case 'JO PRODUKSI':
+        return 'bg-purple-100 text-purple-800';
+      case 'JO PROOF':
+        return 'bg-orange-100 text-orange-800';
+      case 'JO KANBAN':
+        return 'bg-indigo-100 text-indigo-800'; // NEW
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   const getStatusProdukColor = (status: string): string => {
@@ -263,19 +275,22 @@ const JOPPICCreate: React.FC = () => {
     setShowTipeJOSelection(true);
   };
 
+  // NEW: open JO Kanban modal directly
+  const handleTambahJOKanban = () => {
+    setShowKanbanModal(true);
+  };
+
   const handleSelectTipeJO = (tipe: JOTipeOption) => {
     setSelectedTipeJO(tipe);
     setShowTipeJOSelection(false);
 
     if (tipe === 'JO PROOF') {
-      // NEW: For JO PROOF, show source selection (IO or SO)
       setShowProofSourceSelection(true);
     } else {
       setShowModal(true);
     }
   };
 
-  // NEW: Handle proof source selection
   const handleSelectProofSource = (source: JOProofSourceType) => {
     setSelectedProofSource(source);
     setShowProofSourceSelection(false);
@@ -296,7 +311,6 @@ const JOPPICCreate: React.FC = () => {
     setEditMode(true);
     setEditJOId(item.id);
     setSelectedTipeJO(item.tipe_jo as JOTipeOption);
-    // When editing existing JO PROOF, default source to SO (modal will detect from data)
     setSelectedProofSource('SO');
     setShowModal(true);
   };
@@ -336,6 +350,7 @@ const JOPPICCreate: React.FC = () => {
       {/* Header Section */}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          {/* NEW: two action buttons side by side */}
           <div className="flex items-center gap-2">
             <button
               onClick={handleTambahJO}
@@ -355,6 +370,27 @@ const JOPPICCreate: React.FC = () => {
                 />
               </svg>
               Tambah JO
+            </button>
+
+            {/* NEW: Tambah JO Kanban button */}
+            <button
+              onClick={handleTambahJOKanban}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
+                />
+              </svg>
+              Tambah JO Kanban
             </button>
           </div>
         </div>
@@ -544,31 +580,34 @@ const JOPPICCreate: React.FC = () => {
                           </div>
                         ) : (
                           <div className="flex flex-col gap-2">
-                            <button
-                              onClick={() => handleEditJO(item)}
-                              className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
-                              title="EDIT JO"
-                            >
-                              EDIT JO
-                            </button>
-                            <button
-                              onClick={() => NextProcessKabag(item.id)}
-                              disabled={
-                                !isProductAccepted(item.so?.status_produk)
-                              }
-                              className={`px-3 py-1 rounded text-xs transition-colors ${
-                                isProductAccepted(item.so?.status_produk)
-                                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              }`}
-                              title={
-                                isProductAccepted(item.so?.status_produk)
-                                  ? 'Next Process'
-                                  : 'Product must be ACC to proceed'
-                              }
-                            >
-                              NEXT PROCESS
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleEditJO(item)}
+                                className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
+                                title="EDIT JO"
+                              >
+                                EDIT JO
+                              </button>
+                              <button
+                                onClick={() => NextProcessKabag(item.id)}
+                                disabled={
+                                  !isProductAccepted(item.so?.status_produk)
+                                }
+                                className={`px-3 py-1 rounded text-xs transition-colors ${
+                                  isProductAccepted(item.so?.status_produk)
+                                    ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={
+                                  isProductAccepted(item.so?.status_produk)
+                                    ? 'Next Process'
+                                    : 'Product must be ACC to proceed'
+                                }
+                              >
+                                NEXT PROCESS
+                              </button>
+                            </>
+
                             <button
                               onClick={() => handlePrintJO(item)}
                               className="text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-xs transition-colors"
@@ -768,7 +807,7 @@ const JOPPICCreate: React.FC = () => {
         </div>
       )}
 
-      {/* ── Step 2 (NEW): JO PROOF — Source Selection Modal (IO vs SO) ─────────── */}
+      {/* ── Step 2: JO PROOF — Source Selection Modal (IO vs SO) ─────────── */}
       {showProofSourceSelection && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -912,10 +951,19 @@ const JOPPICCreate: React.FC = () => {
         tipeJO={selectedTipeJO}
         editMode={editMode}
         editJOId={editJOId}
-        // NEW props
         proofSourceType={
           selectedTipeJO === 'JO PROOF' ? selectedProofSource : undefined
         }
+      />
+
+      {/* NEW: JO Kanban Modal */}
+      <JOKanbanModal
+        isOpen={showKanbanModal}
+        onClose={() => setShowKanbanModal(false)}
+        onSuccess={() => {
+          fetchJOData();
+          setShowKanbanModal(false);
+        }}
       />
 
       <JOPrintModal

@@ -583,7 +583,28 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
                     : data.ppn || '-'}
                 </div>
               </div>
-
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  SO Kanban
+                </label>
+                {isFieldEditable('is_so_kanban') ? (
+                  <label className="flex items-center space-x-2 pt-2">
+                    <input
+                      type="checkbox"
+                      checked={editFormData.is_so_kanban || false}
+                      onChange={(e) =>
+                        handleEditInputChange('is_so_kanban', e.target.checked)
+                      }
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                    <span className="text-sm">Ya</span>
+                  </label>
+                ) : (
+                  <div className="w-full p-2 border border-gray-200 rounded bg-gray-50">
+                    {data.is_so_kanban ? 'Ya' : 'Tidak'}
+                  </div>
+                )}
+              </div>
               {/* Tanggal Input PO - Always Read-only */}
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">

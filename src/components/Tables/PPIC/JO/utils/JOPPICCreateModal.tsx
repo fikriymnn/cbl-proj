@@ -605,6 +605,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             const selectedJoMounting = joDetail.jo_mounting?.find(
               (jm: any) => jm.is_selected,
             );
+            console.log('Selected JO mounting:', selectedJoMounting);
             if (selectedJoMounting) {
               setSelectedMounting(selectedJoMounting.id_io_mounting);
               setInsheetValues({
