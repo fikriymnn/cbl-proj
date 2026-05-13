@@ -76,6 +76,9 @@ const BukaLKH: React.FC = () => {
   );
   const [loadingTahapan, setLoadingTahapan] = useState<boolean>(false);
   const [submittingTahapan, setSubmittingTahapan] = useState<boolean>(false);
+  const [reopeningTahapanId, setReopeningTahapanId] = useState<number | null>(
+    null,
+  );
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -131,14 +134,10 @@ const BukaLKH: React.FC = () => {
 
       console.log('Fetched Tahapan data:', res.data);
 
-      // Sort tahapan data by index field
       const sortedTahapan = (res.data.data || []).sort(
         (a, b) => a.index - b.index,
       );
       setTahapanData(sortedTahapan);
-
-      // Initialize selected tahapan with only non-done status that user can select
-      // Don't include already done status in selectedTahapan
       setSelectedTahapan(new Set());
     } catch (error) {
       console.error('Error fetching Tahapan data:', error);
@@ -162,7 +161,6 @@ const BukaLKH: React.FC = () => {
   };
 
   const handleTahapanToggle = (tahapanId: number, currentIndex: number) => {
-    // Don't allow toggling if this tahapan is already done
     const currentTahapan = tahapanData[currentIndex];
     if (
       currentTahapan.status === 'done' ||
@@ -174,7 +172,6 @@ const BukaLKH: React.FC = () => {
     const newSelected = new Set(selectedTahapan);
 
     if (newSelected.has(tahapanId)) {
-      // Trying to uncheck - need to check if any subsequent tahapan is checked
       const hasSubsequentChecked = tahapanData
         .slice(currentIndex + 1)
         .some((t) => newSelected.has(t.id));
@@ -188,7 +185,6 @@ const BukaLKH: React.FC = () => {
 
       newSelected.delete(tahapanId);
     } else {
-      // Trying to check - need to check if all previous tahapan are checked or done
       const allPreviousCheckedOrDone = tahapanData
         .slice(0, currentIndex)
         .every(
@@ -232,7 +228,7 @@ const BukaLKH: React.FC = () => {
 
       alert('Tahapan berhasil diupdate!');
       handleClosePopup();
-      fetchJOData(); // Refresh the JO list
+      fetchJOData();
     } catch (error) {
       console.error('Error updating tahapan:', error);
       alert('Gagal mengupdate tahapan. Silakan coba lagi.');
@@ -240,6 +236,34 @@ const BukaLKH: React.FC = () => {
       setSubmittingTahapan(false);
     }
   };
+
+  // ── NEW: Reopen a single "done" tahapan ──────────────────────────────────────
+  const handleReopenTahapan = async (tahapan: TahapanData) => {
+    const confirmed = window.confirm(
+      `Apakah Anda yakin ingin membuka ulang tahapan "${tahapan.tahapan?.nama_tahapan}"?`,
+    );
+    if (!confirmed) return;
+
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/openLkhTahapan/${
+      tahapan.id
+    }`;
+
+    try {
+      setReopeningTahapanId(tahapan.id);
+
+      await axios.put(url, {}, { withCredentials: true });
+
+      alert('Tahapan berhasil dibuka ulang!');
+      // Refresh tahapan list in place (keep popup open)
+      if (selectedJO) await fetchTahapanData(selectedJO.id);
+    } catch (error) {
+      console.error('Error reopening tahapan:', error);
+      alert('Gagal membuka ulang tahapan. Silakan coba lagi.');
+    } finally {
+      setReopeningTahapanId(null);
+    }
+  };
+  // ─────────────────────────────────────────────────────────────────────────────
 
   const handleLimitChange = (newLimit: number): void => {
     setLimit(newLimit);
@@ -613,16 +637,22 @@ const BukaLKH: React.FC = () => {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
                     <p className="text-sm text-blue-800">
                       <strong>Catatan:</strong> Anda harus memilih tahapan
-                      secara berurutan. Tahapan yang sudah selesai tidak dapat
-                      diubah.
+                      secara berurutan. Tahapan yang sudah selesai dapat dibuka
+                      ulang dengan menekan tombol <strong>Buka Ulang</strong>.
                     </p>
                   </div>
 
                   {tahapanData.map((tahapan, arrayIndex) => {
                     const isDone = tahapan.status === 'done';
+                    const isActive = tahapan.status === 'active';
                     const isChecked = selectedTahapan.has(tahapan.id);
+                    const isReopening = reopeningTahapanId === tahapan.id;
+
+                    const canReopen = isDone;
+
                     const isFirstUnchecked =
                       !isDone &&
+                      !isActive &&
                       !isChecked &&
                       (arrayIndex === 0 ||
                         tahapanData[arrayIndex - 1].status === 'done' ||
@@ -643,11 +673,15 @@ const BukaLKH: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-start">
-                          {isDone || tahapan.status === 'active' ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-700 mr-2 mt-1">
-                              {tahapan.status === 'active'
-                                ? 'Active'
-                                : '✓ Selesai'}
+                          {isDone || isActive ? (
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-2 mt-1 ${
+                                isActive
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-gray-200 text-gray-700'
+                              }`}
+                            >
+                              {isActive ? 'Active' : '✓ Selesai'}
                             </span>
                           ) : (
                             <input
@@ -662,7 +696,7 @@ const BukaLKH: React.FC = () => {
                           )}
 
                           <div className="ml-3 flex-1">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
                               <div
                                 className={`font-medium ${
                                   isDone ? 'text-gray-600' : 'text-gray-900'
@@ -671,12 +705,50 @@ const BukaLKH: React.FC = () => {
                                 {tahapan.index}.{' '}
                                 {tahapan.tahapan?.nama_tahapan || '-'}
                               </div>
-                              {isChecked && !isDone && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  ✓ Dipilih
-                                </span>
-                              )}
+
+                              <div className="flex items-center gap-2">
+                                {isChecked && !isDone && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    ✓ Dipilih
+                                  </span>
+                                )}
+
+                                {/* ── Buka Ulang button for done tahapan ── */}
+                                {isDone && canReopen && (
+                                  <button
+                                    onClick={() => handleReopenTahapan(tahapan)}
+                                    disabled={isReopening || submittingTahapan}
+                                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                  >
+                                    {isReopening ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-3 w-3 border-b border-orange-700"></div>
+                                        Membuka...
+                                      </>
+                                    ) : (
+                                      <>
+                                        {/* Refresh-like icon */}
+                                        <svg
+                                          className="w-3 h-3"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                          />
+                                        </svg>
+                                        Buka Ulang
+                                      </>
+                                    )}
+                                  </button>
+                                )}
+                              </div>
                             </div>
+
                             <div
                               className={`text-sm mt-1 ${
                                 isDone ? 'text-gray-500' : 'text-gray-600'

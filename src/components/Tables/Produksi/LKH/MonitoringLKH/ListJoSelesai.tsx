@@ -48,7 +48,6 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // Display values only (no restriction)
   const poQty = item.so?.po_qty || 0;
   const currentQtyKirim = item.qty_kirim || 0;
 
@@ -69,13 +68,8 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
 
       await axios.put(
         url,
-        {
-          qty_kirim: qtyKirim,
-          is_jo_done: isJoDone,
-        },
-        {
-          withCredentials: true,
-        },
+        { qty_kirim: qtyKirim, is_jo_done: isJoDone },
+        { withCredentials: true },
       );
 
       onSuccess();
@@ -225,6 +219,7 @@ const ListJoSelesai: React.FC = () => {
   const [joDoneData, setJoDoneData] = useState<JoDoneItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<JoDoneItem | null>(null);
   const [showKirimPopup, setShowKirimPopup] = useState<boolean>(false);
+  const [openingJoId, setOpeningJoId] = useState<number | null>(null);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -240,15 +235,9 @@ const ListJoSelesai: React.FC = () => {
       setLoading(true);
 
       const res: AxiosResponse<JoDoneResponse> = await axios.get(url, {
-        params: {
-          page: page,
-          limit: limit,
-          search: searchTerm,
-        },
+        params: { page, limit, search: searchTerm },
         withCredentials: true,
       });
-
-      console.log('Fetched Jo Selesai data:', res.data);
 
       setJoDoneData(res.data.data || []);
       setTotalPages(res.data.total_page || 1);
@@ -278,6 +267,31 @@ const ListJoSelesai: React.FC = () => {
   const handleKirimSuccess = () => {
     fetchJoDoneData();
   };
+
+  // ── NEW: Open JO Done ────────────────────────────────────────────────────────
+  const handleOpenJoDone = async (item: JoDoneItem) => {
+    const confirmed = window.confirm(
+      `Apakah Anda yakin ingin membuka kembali JO "${item.no_jo}"?`,
+    );
+    if (!confirmed) return;
+
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/joDone/open/${
+      item.id
+    }`;
+
+    try {
+      setOpeningJoId(item.id);
+      await axios.put(url, {}, { withCredentials: true });
+      alert('JO berhasil dibuka kembali!');
+      fetchJoDoneData();
+    } catch (error) {
+      console.error('Error opening JO Done:', error);
+      alert('Gagal membuka JO. Silakan coba lagi.');
+    } finally {
+      setOpeningJoId(null);
+    }
+  };
+  // ─────────────────────────────────────────────────────────────────────────────
 
   const truncateText = (text: string | null, maxLength: number) => {
     if (!text) return '-';
@@ -309,12 +323,47 @@ const ListJoSelesai: React.FC = () => {
     );
   };
 
+  /** Render the action cell — Kirim or Open depending on is_jo_done */
+  const renderActionCell = (item: JoDoneItem) => {
+    // is_jo_done = true → show "Open JO" button
+    if (item.is_jo_done === true) {
+      return (
+        <button
+          onClick={() => handleOpenJoDone(item)}
+          disabled={openingJoId === item.id}
+          className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {openingJoId === item.id ? 'Opening...' : 'Open JO'}
+        </button>
+      );
+    }
+
+    // is_jo_done = false/null + valid status → show "Kirim" button
+    if (
+      (item.status_proses === 'progress' ||
+        item.status_proses === 'reject qc' ||
+        item.status_proses === 'reject fg' ||
+        item.status_proses === 'done') &&
+      (item.is_jo_done === false || item.is_jo_done == null)
+    ) {
+      return (
+        <button
+          onClick={() => handleKirimClick(item)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
+        >
+          Kirim
+        </button>
+      );
+    }
+
+    return <>-</>;
+  };
+
   return (
     <div className="">
       {/* Header Section */}
       <div className="mb-4 sm:mb-6">
         <div className="flex flex-col gap-2 sm:gap-3 mb-3 sm:mb-4">
-          {/* Search */}
           <div className="relative w-full">
             <input
               type="text"
@@ -400,23 +449,7 @@ const ListJoSelesai: React.FC = () => {
                 joDoneData.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-3 py-2 whitespace-nowrap text-xs">
-                      {(item.status_proses == 'progress' ||
-                        item.status_proses == 'reject qc' ||
-                        item.status_proses == 'reject fg' ||
-                        item.status_proses == 'done') &&
-                      (item.is_jo_done == false || item.is_jo_done == null) ? (
-                        <>
-                          {' '}
-                          <button
-                            onClick={() => handleKirimClick(item)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-                          >
-                            Kirim
-                          </button>
-                        </>
-                      ) : (
-                        <>-</>
-                      )}
+                      {renderActionCell(item)}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
                       {item.no_jo || '-'}
@@ -455,7 +488,7 @@ const ListJoSelesai: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination with Rows per page selector */}
+        {/* Pagination */}
         <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4 px-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Rows per page:</span>
@@ -482,9 +515,7 @@ const ListJoSelesai: React.FC = () => {
                 count={totalPages}
                 color="primary"
                 page={page}
-                onChange={(e, i) => {
-                  setPage(i);
-                }}
+                onChange={(e, i) => setPage(i)}
                 size="small"
               />
             </Stack>
@@ -514,22 +545,7 @@ const ListJoSelesai: React.FC = () => {
                     {item.customer || '-'}
                   </div>
                 </div>
-                {(item.status_proses == 'progress' ||
-                  item.status_proses == 'reject qc' ||
-                  item.status_proses == 'done') &&
-                (item.is_jo_done == false || item.is_jo_done == null) ? (
-                  <>
-                    {' '}
-                    <button
-                      onClick={() => handleKirimClick(item)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
-                    >
-                      Kirim
-                    </button>
-                  </>
-                ) : (
-                  <>-</>
-                )}
+                {renderActionCell(item)}
               </div>
 
               <div className="space-y-2 text-sm">
@@ -627,9 +643,7 @@ const ListJoSelesai: React.FC = () => {
               count={totalPages}
               color="primary"
               page={page}
-              onChange={(e, i) => {
-                setPage(i);
-              }}
+              onChange={(e, i) => setPage(i)}
               size="small"
             />
           </Stack>
