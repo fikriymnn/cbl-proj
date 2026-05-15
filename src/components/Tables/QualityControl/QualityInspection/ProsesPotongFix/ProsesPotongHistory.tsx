@@ -1,213 +1,173 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
 function ProsesPotongHistory() {
   const [isMobile, setIsMobile] = useState(false);
-  const kosong: any = [];
-  const today = new Date();
-  const month = today.getMonth() + 1;
-  const year = today.getFullYear();
-  const date = today.getDate();
-  const currentDate = month + '/' + date + '/' + year;
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
+
   const handleResize = () => {
-    setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
+    setIsMobile(window.innerWidth < 768);
   };
+
   useEffect(() => {
     handleResize();
-
-    // Event listener for window resize
     window.addEventListener('resize', handleResize);
-
-    // Cleanup on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const [pondMesin, setPondMesin] = useState<any>();
+  const [noJo, setNoJo] = useState<string>('');
 
   useEffect(() => {
     getPondMesin();
   }, [page]);
-  const [noJo, setNoJo] = useState<any>();
+
   async function getPondMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong`;
     try {
       const res = await axios.get(url, {
-        params: {
-          search: noJo,
-          status: 'history',
-          page: page,
-          limit: 15,
-        },
+        params: { search: noJo, status: 'history', page, limit: 15 },
         withCredentials: true,
       });
-
       setPondMesin(res.data);
-      console.log(res.data);
     } catch (error: any) {
       console.log(error);
     }
   }
 
-  function convertDatetimeToDate(datetime: any) {
-    const dateObject = new Date(datetime);
-    const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
-    const month = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Adjust for zero-based month
-    const year = dateObject.getFullYear();
-    const hours = dateObject.getHours().toString().padStart(2, '0');
-    const minutes = dateObject.getMinutes().toString().padStart(2, '0');
-
-    return `${year}/${month}/${day} `; // Example format (YYYY-MM-DD)
-  }
-
-  const tanggal = convertDatetimeToDate(new Date());
+  const colStyle = 'text-neutral-500 text-sm font-semibold px-3 py-4';
+  const cellStyle = 'text-neutral-700 text-sm px-3 py-4';
 
   return (
-    <>
-      <main className="overflow-x-scroll">
-        <div className="min-w-[700px] bg-white rounded-xl">
-          <div className="flex w-full justify-end h-full items-center border-b-8 border-[#D8EAFF]">
-            <div className="flex flex-col gap-1 w-[20%] px-4 py-2 ">
-              <p className=" my-auto text-xs text-primary font-semibold ">
-                Cari
-              </p>
-              <input
-                className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
-                placeholder="Nomor Jo"
-                type="text"
-                onChange={(e) => setNoJo(e.target.value)}
-              ></input>
-            </div>
-            <div className="flex flex-col  w-[15%] px-4 py-2   gap-4">
-              <p className=" my-auto text-xs text-primary font-semibold "></p>
-              <button
-                onClick={() => {
-                  getPondMesin();
-                }}
-                className="bg-primary text-white  rounded-md px-1 py-1 "
-              >
-                Cari
-              </button>
-            </div>
-          </div>
-          <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-            <div className="grid grid-cols-12 pl-4 py-4 border-b-8 border-[#D8EAFF]  ">
-              <label className="text-neutral-500 text-sm font-semibold ">
-                Mesin
-              </label>
-              <label className="text-neutral-500 text-sm font-semibold  ">
-                No. JO
-              </label>
-
-              <label className="text-neutral-500 text-sm font-semibold  ">
-                Shift
-              </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                Customer
-              </label>
-              <label className="text-neutral-500 text-sm font-semibold  col-span-2">
-                Tanggal
-              </label>
-              <label className="text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1">
-                Item
-              </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2 uppercase">
-                Jenis Potong
-              </label>
-            </div>
-            <div className="w-2 h-full "></div>
-            {pondMesin != null &&
-              pondMesin.data?.map((data: any, i: any) => {
-                const tglTicket = convertTimeStampToDate(data.createdAt);
-                return (
-                  <>
-                    <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center ">
-                      <div className="flex w-full bg-red items-center gap-4">
-                        <div
-                          className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${
-                            data.jenis_potong == 'potong bahan'
-                              ? 'bg-green-600'
-                              : 'bg-blue-600'
-                          }`}
-                        ></div>
-
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {data.mesin}
-                        </label>
-                      </div>
-
-                      <label className="text-neutral-500 text-sm font-semibold  ">
-                        {data.no_jo}
-                      </label>
-
-                      <label className="text-neutral-500 text-sm font-semibold  ">
-                        {data.shift}
-                      </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                        {data.customer}
-                      </label>
-                      <label className="text-neutral-500 text-sm font-semibold  col-span-2">
-                        {tglTicket}
-                      </label>
-                      <label className="text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-2">
-                        {data.item}
-                      </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2 uppercase">
-                        {data.jenis_potong}
-                      </label>
-                      <div className="justify-end flex pr-2 ">
-                        {data.jenis_potong == 'potong bahan' ? (
-                          <>
-                            <Link to={`/qc/inspection/potong/bahan/${data.id}`}>
-                              <button
-                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                              >
-                                PILIH
-                              </button>
-                            </Link>
-                          </>
-                        ) : data.jenis_potong == 'potong jadi' ? (
-                          <>
-                            <Link to={`/qc/inspection/potong/jadi/${data.id}`}>
-                              <button
-                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                              >
-                                PILIH
-                              </button>
-                            </Link>
-                          </>
-                        ) : (
-                          <></>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                );
-              })}
-          </div>
-        </div>
-        <div className="w-full flex justify-center mt-5 ">
-          <Stack spacing={2}>
-            <Pagination
-              count={pondMesin?.total_page}
-              color="primary"
-              onChange={(e, i) => {
-                setPage(i);
-                console.log(i);
-              }}
+    <main className="overflow-x-auto">
+      <div className="min-w-[900px] bg-white rounded-xl shadow-sm ">
+        {/* Search bar */}
+        <div className="flex items-end justify-end gap-3 px-4 py-3 border-b-8 border-[#D8EAFF] bg-gray-50 rounded-t-xl">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs text-blue-600 font-semibold">Cari</p>
+            <input
+              className="rounded-md h-8 bg-[#D8EAFF] px-3 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Nomor JO"
+              type="text"
+              value={noJo}
+              onChange={(e) => setNoJo(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && getPondMesin()}
             />
-          </Stack>
+          </div>
+          <button
+            onClick={getPondMesin}
+            className="bg-blue-600 hover:bg-blue-500 transition-colors text-white rounded-md px-4 py-1.5 text-sm font-medium h-8"
+          >
+            Cari
+          </button>
         </div>
-      </main>
-    </>
+
+        {/* Header */}
+        <div
+          className="grid border-b-8 border-[#D8EAFF] bg-gray-50"
+          style={{
+            gridTemplateColumns:
+              '80px 110px 60px 80px 160px 170px 200px 130px 90px',
+          }}
+        >
+          <div className={colStyle}>Mesin</div>
+          <div className={colStyle}>No. JO</div>
+          <div className={colStyle}>Shift</div>
+          <div className={colStyle}>Bagian</div>
+          <div className={colStyle}>Customer</div>
+          <div className={colStyle}>Tanggal</div>
+          <div className={colStyle}>Item</div>
+          <div className={colStyle + ' uppercase'}>Jenis Potong</div>
+          <div className={colStyle}></div>
+        </div>
+
+        {/* Rows */}
+        {pondMesin?.data?.map((data: any, i: number) => {
+          const tglTicket = convertTimeStampToDate(data.createdAt);
+          const isPotongBahan = data.jenis_potong === 'potong bahan';
+
+          return (
+            <div
+              key={i}
+              className="grid border-b-8 border-[#D8EAFF] items-center hover:bg-blue-50 transition-colors"
+              style={{
+                gridTemplateColumns:
+                  '80px 110px 60px 80px 160px 170px 200px 130px 90px',
+              }}
+            >
+              {/* Mesin with left color bar */}
+              <div className="flex items-center h-full">
+                <div
+                  className={`w-1.5 self-stretch flex-shrink-0 ${
+                    isPotongBahan ? 'bg-green-500' : 'bg-blue-500'
+                  }`}
+                />
+                <span className={cellStyle + ' flex-1'}>{data.mesin}</span>
+              </div>
+
+              <div className={cellStyle + ' font-medium'}>{data.no_jo}</div>
+              <div className={cellStyle}>{data.shift}</div>
+              <div className={cellStyle}>{data.bagian ?? '-'}</div>
+              <div className={cellStyle}>{data.customer}</div>
+              <div className={cellStyle + ' text-xs'}>{tglTicket}</div>
+              <div className={cellStyle + ' text-xs line-clamp-2'}>
+                {data.item}
+              </div>
+
+              {/* Jenis Potong badge */}
+              <div className="px-3 py-4">
+                <span
+                  className={`inline-block text-xs font-semibold uppercase px-2 py-1 rounded-full ${
+                    isPotongBahan
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-blue-100 text-blue-700'
+                  }`}
+                >
+                  {data.jenis_potong}
+                </span>
+              </div>
+
+              {/* Action button */}
+              <div className="px-3 py-4 flex justify-end">
+                {(isPotongBahan || data.jenis_potong === 'potong jadi') && (
+                  <Link
+                    to={`/qc/inspection/potong/${
+                      isPotongBahan ? 'bahan' : 'jadi'
+                    }/${data.id}`}
+                  >
+                    <button className="uppercase px-4 py-1.5 rounded text-white text-xs font-bold bg-blue-600 hover:bg-blue-500 transition-colors">
+                      PILIH
+                    </button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {(!pondMesin?.data || pondMesin.data.length === 0) && (
+          <div className="text-center text-gray-400 py-10 text-sm">
+            Tidak ada data
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      <div className="w-full flex justify-center mt-5">
+        <Stack spacing={2}>
+          <Pagination
+            count={pondMesin?.total_page}
+            color="primary"
+            onChange={(_, i) => setPage(i)}
+          />
+        </Stack>
+      </div>
+    </main>
   );
 }
 

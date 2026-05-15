@@ -174,11 +174,10 @@ const buildPrintHTML = (
   const PAGE_H = '186mm';
 
   const singleLabel = (copyIndex: number) => {
-    const rowCount = data.tanda_retur ? 8 : 7;
+    const rowCount = data.tanda_retur ? 7 : 6;
     const dataAreaMm = 44;
     const unitMm = dataAreaMm / rowCount;
     const rowH = `${unitMm.toFixed(2)}mm`;
-    const qtyRowH = rowH;
 
     return `
     <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; height:${LABEL_H}; max-height:${LABEL_H}; overflow:hidden;">
@@ -219,21 +218,16 @@ const buildPrintHTML = (
           <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NAMA PRODUK</div>
           <div style="flex:1;font-weight:bold">: ${data.produk || ''}</div>
         </div>
-
-        <div style="display:flex;align-items:center;height:${qtyRowH};overflow:hidden;">
-          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY PO</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-weight:bold;">: ${qtyPoFormatted}</span>
-            <span style="font-size:23px;font-weight:900;line-height:1;">${
-              data.tanda_retur || ''
-            }</span>
-          </div>
+       
+      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY LABEL</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-weight:bold;">: ${qtyLabelFormatted}</span>
+          <span style="font-size:23px;font-weight:900;line-height:1;">${
+            data.tanda_retur || ''
+          }</span>
         </div>
-
-        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY LABEL</div>
-          <div style="flex:1;font-weight:bold;">: ${qtyLabelFormatted}</div>
-        </div>
+      </div>
 
         <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
           <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANGGAL PRODUKSI</div>

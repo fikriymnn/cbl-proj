@@ -6,6 +6,8 @@ import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import JOPrintModal from './utils/JOPrintModal';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface TahapanItem {
   id: number;
   id_drying_time: number | null;
@@ -24,6 +26,36 @@ interface JOMounting {
   io_mounting: IOMounting;
 }
 
+interface TiketJadwalProduksi {
+  id: number;
+  id_jo: number;
+  item: string;
+  no_jo: string;
+  no_io: string;
+  no_po: string;
+  no_booking: string | null;
+  customer: string;
+  nama_bahan: string;
+  qty_pcs: number;
+  qty_po: number;
+  qty_druk: number;
+  qty_lp: number;
+  status: string;
+  status_tiket: string;
+  type: string;
+  tgl_kirim: string;
+  tgl_kirim_date: string;
+  tgl_kirim_update: string;
+  tgl_kirim_update_date: string;
+  tgl_mulai_produksi: string;
+  tgl_masuk_jadwal: string;
+  tgl_so: string;
+  tgl_so_date: string;
+  tgl_cetak: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface JOData {
   status_proses: string;
   status: any;
@@ -40,6 +72,7 @@ interface JOData {
   is_active: boolean;
   createdAt: string;
   jo_mounting: JOMounting[];
+  tiket_jadwal_produksi: TiketJadwalProduksi[];
 }
 
 interface APIResponse<T> {
@@ -48,6 +81,178 @@ interface APIResponse<T> {
   total_page?: number;
   message?: string;
 }
+
+// ─── Helper: Tiket Status Badge ───────────────────────────────────────────────
+
+const getTiketStatusColor = (status: string): string => {
+  switch (status?.toLowerCase()) {
+    case 'calculated':
+      return 'bg-blue-100 text-blue-800';
+    case 'history':
+      return 'bg-gray-100 text-gray-700';
+    case 'done':
+      return 'bg-green-100 text-green-800';
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800';
+    default:
+      return 'bg-gray-100 text-gray-600';
+  }
+};
+
+// ─── Expanded Row Component ───────────────────────────────────────────────────
+
+const ExpandedTiketRow: React.FC<{
+  tikets: TiketJadwalProduksi[];
+  colSpan: number;
+}> = ({ tikets, colSpan }) => {
+  if (!tikets || tikets.length === 0) {
+    return (
+      <tr>
+        <td colSpan={colSpan} className="bg-slate-50 px-6 py-4">
+          <p className="text-xs text-gray-400 italic text-center">
+            Tidak ada tiket jadwal produksi
+          </p>
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <tr>
+      <td colSpan={colSpan} className="bg-slate-50 px-4 py-3">
+        <div className="rounded-lg border border-slate-200 overflow-hidden">
+          {/* Sub-table header */}
+          <div className="bg-slate-200 px-3 py-1.5 flex items-center gap-2">
+            <svg
+              className="w-3.5 h-3.5 text-slate-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
+              Tiket Jadwal Produksi
+            </span>
+            <span className="ml-auto text-xs text-slate-500">
+              {tikets.length} tiket
+            </span>
+          </div>
+
+          {/* Sub-table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-xs">
+              <thead>
+                <tr className="bg-slate-100">
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    No
+                  </th>
+
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    No Booking
+                  </th>
+
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Tgl Mulai Produksi
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Tgl Kirim
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Tgl Masuk Jadwal
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Status
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Status Tiket
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-slate-100">
+                {tikets.map((tiket, idx) => (
+                  <tr
+                    key={tiket.id}
+                    className="hover:bg-blue-50 transition-colors"
+                  >
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-500">
+                      {idx + 1}
+                    </td>
+
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-700">
+                      {tiket.no_booking || (
+                        <span className="text-slate-400 italic">-</span>
+                      )}
+                    </td>
+                    <td
+                      className="px-3 py-2 text-slate-700 max-w-[200px] truncate"
+                      title={tiket.nama_bahan}
+                    >
+                      {tiket.nama_bahan || '-'}
+                    </td>
+
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-700">
+                      {tiket.tgl_mulai_produksi
+                        ? new Date(tiket.tgl_mulai_produksi).toLocaleDateString(
+                            'id-ID',
+                            {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                            },
+                          )
+                        : '-'}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-700">
+                      {tiket.tgl_kirim_update || tiket.tgl_kirim || '-'}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-700">
+                      {tiket.tgl_masuk_jadwal
+                        ? new Date(tiket.tgl_masuk_jadwal).toLocaleDateString(
+                            'id-ID',
+                            {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                            },
+                          )
+                        : '-'}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-0.5 rounded-full font-medium capitalize ${getTiketStatusColor(
+                          tiket.status,
+                        )}`}
+                      >
+                        {tiket.status || '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-0.5 rounded-full font-medium capitalize ${getTiketStatusColor(
+                          tiket.status_tiket,
+                        )}`}
+                      >
+                        {tiket.status_tiket || '-'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const JOHistory: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -62,13 +267,16 @@ const JOHistory: React.FC = () => {
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [printJOId, setPrintJOId] = useState<number | null>(null);
 
+  // Expanded rows set
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
   // Date filter states
   const [startDateInput, setStartDateInput] = useState<string>('');
   const [endDateInput, setEndDateInput] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
 
-  // Sort order state: 'newest' = desc, 'oldest' = asc
+  // Sort order state
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
   // Pagination states
@@ -86,8 +294,8 @@ const JOHistory: React.FC = () => {
       setLoading(true);
       const res: AxiosResponse<APIResponse<JOData[]>> = await axios.get(url, {
         params: {
-          page: page,
-          limit: limit,
+          page,
+          limit,
           search: searchTerm,
           status: 'history',
           start_date: startDate || undefined,
@@ -96,7 +304,6 @@ const JOHistory: React.FC = () => {
         },
         withCredentials: true,
       });
-      console.log('Fetched JO data:', res.data);
       if (res.data.succes) {
         setJOData(res.data.data || []);
         if (res.data.total_page) {
@@ -111,23 +318,34 @@ const JOHistory: React.FC = () => {
     }
   };
 
+  // ── Expand/collapse toggle ──────────────────────────────────────────────────
+  const toggleExpandRow = (id: number) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleSearch = (): void => {
     setSearchTerm(searchInput);
     setPage(1);
   };
-
   const handleClearSearch = (): void => {
     setSearchInput('');
     setSearchTerm('');
     setPage(1);
   };
-
   const handleApplyDateFilter = (): void => {
     setStartDate(startDateInput);
     setEndDate(endDateInput);
     setPage(1);
   };
-
   const handleClearDateFilter = (): void => {
     setStartDateInput('');
     setEndDateInput('');
@@ -135,23 +353,17 @@ const JOHistory: React.FC = () => {
     setEndDate('');
     setPage(1);
   };
-
   const handleSortOrderChange = (order: 'newest' | 'oldest'): void => {
     setSortOrder(order);
     setPage(1);
   };
-
   const handlePrintJO = (item: JOData) => {
     setPrintJOId(item.id);
     setShowPrintModal(true);
   };
-
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
+    if (e.key === 'Enter') handleSearch();
   };
-
   const handleLimitChange = (newLimit: number): void => {
     setLimit(newLimit);
     setPage(1);
@@ -203,24 +415,19 @@ const JOHistory: React.FC = () => {
     }
   };
 
-  const getTipeJOColor = (tipe: string): string => {
-    return tipe === 'JO PRODUKSI'
+  const getTipeJOColor = (tipe: string): string =>
+    tipe === 'JO PRODUKSI'
       ? 'bg-purple-100 text-purple-800'
       : 'bg-orange-100 text-orange-800';
-  };
 
   const getJadwalBlockReasons = (item: JOData): string[] => {
     const reasons: string[] = [];
-
     const selectedJoMounting = item.jo_mounting?.find((jm) => jm.is_selected);
-
     if (!selectedJoMounting) {
       reasons.push('Mounting belum dipilih');
       return reasons;
     }
-
     const tahapan = selectedJoMounting.io_mounting?.tahapan ?? [];
-
     if (tahapan.length === 0) {
       reasons.push('Tahapan belum diset');
     } else {
@@ -229,7 +436,6 @@ const JOHistory: React.FC = () => {
       if (tahapan.some((t) => t.id_setting_kapasitas === null))
         reasons.push('Kapasitas belum diset');
     }
-
     return reasons;
   };
 
@@ -238,11 +444,9 @@ const JOHistory: React.FC = () => {
     setEditMode(false);
     setEditJOId(null);
   };
-
   const handleModalSuccess = () => {
     fetchJOData();
   };
-
   const handleViewJO = (item: JOData) => {
     setEditMode(true);
     setEditJOId(item.id);
@@ -258,11 +462,8 @@ const JOHistory: React.FC = () => {
         fetchJOData();
         alert('JO berhasil di kirim ke jadwal!');
       } catch (error: any) {
-        console.log(error);
         alert(
-          'Gagal kirim JO ke jadwal. Silakan coba lagi.' +
-            ' ' +
-            'Error:' +
+          'Gagal kirim JO ke jadwal. Silakan coba lagi. Error:' +
             error.response.data.msg,
         );
       }
@@ -270,6 +471,9 @@ const JOHistory: React.FC = () => {
   };
 
   const isDateFilterActive = startDate || endDate;
+
+  // Total columns (used for colSpan in expanded row)
+  const TOTAL_COLUMNS = 13;
 
   return (
     <div className="">
@@ -322,7 +526,6 @@ const JOHistory: React.FC = () => {
 
         {/* Date Filter & Sort Section */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end flex-wrap">
-          {/* Start Date */}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-gray-600">
               Start Date
@@ -334,8 +537,6 @@ const JOHistory: React.FC = () => {
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
-          {/* End Date */}
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-gray-600">
               End Date
@@ -348,8 +549,6 @@ const JOHistory: React.FC = () => {
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
-          {/* Apply / Clear Date Filter Buttons */}
           <div className="flex gap-2 self-end">
             <button
               onClick={handleApplyDateFilter}
@@ -366,8 +565,6 @@ const JOHistory: React.FC = () => {
               </button>
             )}
           </div>
-
-          {/* Sort Order Toggle */}
           <div className="flex flex-col gap-1 sm:ml-auto">
             <label className="text-xs font-medium text-gray-600">Sort</label>
             <div className="flex rounded-lg overflow-hidden border border-gray-300">
@@ -452,14 +649,9 @@ const JOHistory: React.FC = () => {
                   ACTION
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  NO JO
+                  NOMOR
                 </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  NO SO
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  NO IO
-                </th>
+
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   CUSTOMER
                 </th>
@@ -481,12 +673,16 @@ const JOHistory: React.FC = () => {
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   STATUS PROSES
                 </th>
+                {/* New expand column */}
+                <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                  TIKET
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={12} className="px-3 py-8 text-center">
+                  <td colSpan={TOTAL_COLUMNS} className="px-3 py-8 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                       <p className="mt-2 text-sm text-gray-600">
@@ -497,7 +693,7 @@ const JOHistory: React.FC = () => {
                 </tr>
               ) : joData.length === 0 ? (
                 <tr>
-                  <td colSpan={12} className="px-3 py-8 text-center">
+                  <td colSpan={TOTAL_COLUMNS} className="px-3 py-8 text-center">
                     <p className="text-sm text-gray-500">
                       {searchTerm
                         ? 'Tidak ada data yang sesuai dengan pencarian'
@@ -509,127 +705,178 @@ const JOHistory: React.FC = () => {
                 joData.map((item, index) => {
                   const jadwalBlockReasons = getJadwalBlockReasons(item);
                   const isJadwalBlocked = jadwalBlockReasons.length > 0;
+                  const isExpanded = expandedRows.has(item.id);
+                  const tiketCount = item.tiket_jadwal_produksi?.length ?? 0;
 
                   return (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                        {(page - 1) * limit + index + 1}
-                      </td>
-                      <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
-                        <div className="flex flex-col gap-1">
-                          <button
-                            onClick={() => handleViewJO(item)}
-                            className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
-                            title="View JO Details"
-                          >
-                            DETAIL
-                          </button>
-
-                          <div className="relative group">
+                    <React.Fragment key={item.id}>
+                      {/* Main row */}
+                      <tr
+                        className={`hover:bg-gray-50 transition-colors ${
+                          isExpanded ? 'bg-blue-50' : ''
+                        }`}
+                      >
+                        <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                          {(page - 1) * limit + index + 1}
+                        </td>
+                        <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                          <div className="flex flex-col gap-1">
                             <button
-                              onClick={() =>
-                                !isJadwalBlocked && SendJoToJadwal(item.id)
-                              }
-                              disabled={isJadwalBlocked}
-                              className={`w-full px-3 py-1 rounded text-xs transition-colors text-white ${
-                                isJadwalBlocked
-                                  ? 'bg-yellow-300 cursor-not-allowed opacity-60'
-                                  : 'bg-yellow-500 hover:bg-yellow-600 cursor-pointer'
-                              }`}
-                              title={
-                                isJadwalBlocked
-                                  ? jadwalBlockReasons.join(' | ')
-                                  : 'Kirim ke Jadwal'
-                              }
+                              onClick={() => handleViewJO(item)}
+                              className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
+                              title="View JO Details"
                             >
-                              SEND JADWAL
+                              DETAIL
                             </button>
-
-                            {isJadwalBlocked && (
-                              <div className="absolute z-20 left-0 mt-1 w-52 bg-white text-black text-xs border border-gray-600 rounded-lg shadow-lg p-2 hidden group-hover:block pointer-events-none">
-                                <p className="font-semibold mb-1 text-red-600">
-                                  Tidak bisa kirim:
-                                </p>
-                                <ul className="list-disc list-inside space-y-0.5">
-                                  {jadwalBlockReasons.map((reason, i) => (
-                                    <li key={i}>{reason}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
+                            <div className="relative group">
+                              <button
+                                onClick={() =>
+                                  !isJadwalBlocked && SendJoToJadwal(item.id)
+                                }
+                                disabled={isJadwalBlocked}
+                                className={`w-full px-3 py-1 rounded text-xs transition-colors text-white ${
+                                  isJadwalBlocked
+                                    ? 'bg-yellow-300 cursor-not-allowed opacity-60'
+                                    : 'bg-yellow-500 hover:bg-yellow-600 cursor-pointer'
+                                }`}
+                                title={
+                                  isJadwalBlocked
+                                    ? jadwalBlockReasons.join(' | ')
+                                    : 'Kirim ke Jadwal'
+                                }
+                              >
+                                SEND JADWAL
+                              </button>
+                              {isJadwalBlocked && (
+                                <div className="absolute z-20 left-0 mt-1 w-52 bg-white text-black text-xs border border-gray-600 rounded-lg shadow-lg p-2 hidden group-hover:block pointer-events-none">
+                                  <p className="font-semibold mb-1 text-red-600">
+                                    Tidak bisa kirim:
+                                  </p>
+                                  <ul className="list-disc list-inside space-y-0.5">
+                                    {jadwalBlockReasons.map((reason, i) => (
+                                      <li key={i}>{reason}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handlePrintJO(item)}
+                              className="text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-xs transition-colors"
+                              title="Print JO"
+                            >
+                              PRINT
+                            </button>
                           </div>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900 justify-between flex flex-col gap-1">
+                          <div className="max-w-xs " title={item.no_jo}>
+                            {truncateText(item.no_jo, 30)}
+                          </div>
+                          <div className="max-w-xs " title={item.no_so}>
+                            {truncateText(item.no_so, 30)}
+                          </div>
+                          <div className="max-w-xs " title={item.no_io}>
+                            {truncateText(item.no_io, 30)}
+                          </div>
+                        </td>
 
-                          <button
-                            onClick={() => handlePrintJO(item)}
-                            className="text-white bg-green-500 hover:bg-green-600 px-3 py-1 rounded text-xs transition-colors"
-                            title="Print JO"
+                        <td className="px-3 py-3 text-xs text-gray-900">
+                          <div className="max-w-xs" title={item.customer}>
+                            {truncateText(item.customer, 200)}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 text-xs text-gray-900">
+                          <div className="max-w-xs" title={item.produk}>
+                            {truncateText(item.produk, 200)}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                          {item.qty?.toLocaleString() || 0}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                          {formatDate(item.tgl_kirim)}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTipeJOColor(
+                              item.tipe_jo,
+                            )}`}
                           >
-                            PRINT
+                            {item.tipe_jo || '-'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
+                              item.status_jo,
+                            )}`}
+                          >
+                            {item.status_jo || '-'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusProsesColor(
+                              item.status_proses,
+                            )}`}
+                          >
+                            {item.status_proses || '-'}
+                          </span>
+                        </td>
+
+                        {/* ── Expand / Collapse button ── */}
+                        <td className="px-3 py-3 whitespace-nowrap text-center">
+                          <button
+                            onClick={() => toggleExpandRow(item.id)}
+                            title={
+                              isExpanded
+                                ? 'Sembunyikan tiket'
+                                : 'Lihat tiket jadwal produksi'
+                            }
+                            className={`inline-flex items-center justify-center w-7 h-7 rounded-full border transition-all duration-200 ${
+                              isExpanded
+                                ? 'bg-blue-500 border-blue-500 text-white shadow-sm'
+                                : 'bg-white border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-500'
+                            }`}
+                          >
+                            {/* Chevron icon — rotates when expanded */}
+                            <svg
+                              className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                                isExpanded ? 'rotate-180' : ''
+                              }`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2.5}
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
                           </button>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">
-                        <div className="max-w-xs" title={item.no_jo}>
-                          {truncateText(item.no_jo, 30)}
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                        <div className="max-w-xs" title={item.no_so}>
-                          {truncateText(item.no_so, 30)}
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                        <div className="max-w-xs" title={item.no_io}>
-                          {truncateText(item.no_io, 30)}
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 text-xs text-gray-900">
-                        <div className="max-w-xs" title={item.customer}>
-                          {truncateText(item.customer, 30)}
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 text-xs text-gray-900">
-                        <div className="max-w-xs" title={item.produk}>
-                          {truncateText(item.produk, 40)}
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                        {item.qty?.toLocaleString() || 0}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                        {formatDate(item.tgl_kirim)}
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTipeJOColor(
-                            item.tipe_jo,
-                          )}`}
-                        >
-                          {item.tipe_jo || '-'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                            item.status_jo,
-                          )}`}
-                        >
-                          {item.status_jo || '-'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusProsesColor(
-                            item.status_proses,
-                          )}`}
-                        >
-                          {item.status_proses || '-'}
-                        </span>
-                      </td>
-                    </tr>
+                          {tiketCount > 0 && (
+                            <div
+                              className={`mt-1 text-xs font-semibold ${
+                                isExpanded ? 'text-blue-600' : 'text-gray-400'
+                              }`}
+                            >
+                              {tiketCount}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+
+                      {/* ── Expanded tiket row ── */}
+                      {isExpanded && (
+                        <ExpandedTiketRow
+                          tikets={item.tiket_jadwal_produksi ?? []}
+                          colSpan={TOTAL_COLUMNS}
+                        />
+                      )}
+                    </React.Fragment>
                   );
                 })
               )}
@@ -658,22 +905,19 @@ const JOHistory: React.FC = () => {
             ))}
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           <Stack spacing={2}>
             <Pagination
               count={totalPages}
               page={page}
               color="primary"
-              onChange={(e, i) => {
-                setPage(i);
-              }}
+              onChange={(e, i) => setPage(i)}
             />
           </Stack>
         </div>
       </div>
 
-      {/* JO View Modal */}
+      {/* Modals */}
       <JOPPICCreateModal
         isOpen={showModal}
         onClose={handleModalClose}

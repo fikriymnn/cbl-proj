@@ -1417,7 +1417,10 @@ const JOKanbanModal: React.FC<JOKanbanModalProps> = ({
     try {
       const res: AxiosResponse = await axios.get(
         `${import.meta.env.VITE_API_LINK}/marketing/so`,
-        { params: { is_jo_done: false }, withCredentials: true },
+        {
+          params: { is_jo_done: false, is_so_kanban: true },
+          withCredentials: true,
+        },
       );
       setSOData(res.data.data || []);
     } catch {
@@ -1425,13 +1428,13 @@ const JOKanbanModal: React.FC<JOKanbanModalProps> = ({
     }
   };
 
-  const fetchFGByJO = async () => {
+  const fetchFGByJO = async (idIO: number) => {
     setLoadingFG(true);
     setFGList([]);
     try {
       const res: AxiosResponse = await axios.get(
         `${import.meta.env.VITE_API_LINK}/fg/gudangFinishGoodByJo`,
-        { withCredentials: true },
+        { params: { id_io: idIO }, withCredentials: true },
       );
       setFGList(res.data.data || []);
     } catch {
@@ -1526,7 +1529,7 @@ const JOKanbanModal: React.FC<JOKanbanModalProps> = ({
     setFGList([]);
     setToleransi('');
     if (so) {
-      fetchFGByJO();
+      fetchFGByJO(so.id_io);
       fetchCustomerData(so.id_customer); // ← NEW
     }
   };

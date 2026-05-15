@@ -49,6 +49,9 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     is_io_selesai: false,
   });
 
+  // Buffer Stok state
+  const [isBufferStok, setIsBufferStok] = useState(false);
+
   interface KalkulasiOption {
     value: string;
     label: string;
@@ -79,6 +82,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
     no_so_non_tax_new: string;
     no_so_kanban_new: string; // add this
   } | null>(null);
+
   // Status Produk options
   const statusProdukOptions = [
     { value: 'OKP', label: 'OKP' },
@@ -367,6 +371,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
   };
 
   const resetForm = () => {
+    setIsBufferStok(false); // Reset Buffer Stok state
     setFormData({
       tgl_input_po: new Date().toISOString().split('T')[0],
       no_so: '',
@@ -697,13 +702,19 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
                   )
                 }
                 className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  !isFieldEditable('harga_jual')
+                  !isFieldEditable('harga_jual') || isBufferStok
                     ? 'bg-gray-100 cursor-not-allowed'
                     : ''
                 }`}
-                disabled={!isFieldEditable('harga_jual')}
+                disabled={!isFieldEditable('harga_jual') || isBufferStok}
                 required={mode === 'create'}
               />
+              {/* Hint text when Buffer Stok is active */}
+              {isBufferStok && (
+                <p className="text-xs text-blue-500 mt-1">
+                  Harga jual diset 0 karena Buffer Stok aktif
+                </p>
+              )}
             </div>
 
             {/* Row 6 */}
@@ -755,26 +766,58 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               />
             </div>
 
-            {/* Row 7 */}
+            {/* Row 7 - Nomor PO Customer with Buffer Stok */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Nomor PO Customer <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                placeholder="Masukan Nomor PO Customer"
-                value={formData.no_po_customer}
-                onChange={(e) =>
-                  handleInputChange('no_po_customer', e.target.value)
-                }
-                className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  !isFieldEditable('no_po_customer')
-                    ? 'bg-gray-100 cursor-not-allowed'
-                    : ''
-                }`}
-                disabled={!isFieldEditable('no_po_customer')}
-                required
-              />
+
+              {/* Buffer Stok checkbox — only shown when field is editable */}
+              {isFieldEditable('no_po_customer') && (
+                <label className="flex items-center space-x-2 mb-1 cursor-pointer w-fit">
+                  <input
+                    type="checkbox"
+                    checked={isBufferStok}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setIsBufferStok(checked);
+                      setFormData((prev) => ({
+                        ...prev,
+                        no_po_customer: checked ? 'BUFFER STOK' : '',
+                        harga_jual: checked ? 0 : prev.harga_jual,
+                        total_harga: checked ? 0 : prev.total_harga,
+                      }));
+                    }}
+                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-gray-600 font-medium">
+                    Buffer Stok
+                  </span>
+                </label>
+              )}
+
+              {/* Conditional: read-only styled label vs normal text input */}
+              {isBufferStok ? (
+                <div className="w-full p-2 border border-blue-300 rounded bg-blue-50 text-blue-700 font-semibold text-sm">
+                  BUFFER STOK
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Masukan Nomor PO Customer"
+                  value={formData.no_po_customer}
+                  onChange={(e) =>
+                    handleInputChange('no_po_customer', e.target.value)
+                  }
+                  className={`w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    !isFieldEditable('no_po_customer')
+                      ? 'bg-gray-100 cursor-not-allowed'
+                      : ''
+                  }`}
+                  disabled={!isFieldEditable('no_po_customer')}
+                  required
+                />
+              )}
             </div>
 
             <div className="col-span-2">
@@ -792,7 +835,7 @@ const SOCreatePopup: React.FC<SOCreatePopupProps> = ({
               />
             </div>
 
-            {/* Row 8 - New Alamat Penagihan */}
+            {/* Row 8 - Alamat Penagihan */}
             <div className="col-span-2">
               <label className="block text-sm font-medium mb-1">
                 Alamat Penagihan

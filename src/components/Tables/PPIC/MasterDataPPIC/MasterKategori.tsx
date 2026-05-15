@@ -14,10 +14,18 @@ const MasterKategori = () => {
   // ── search state ──────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
 
-  // ── NEW: track which mesin is selected in the Tambah modal ──
+  // ── Tambah modal: track which mesin is selected ──
   const [selectedMesinName, setSelectedMesinName] = useState<string | null>(
     null,
   );
+
+  // ── Edit modal: track which mesin is selected ──
+  const [selectedMesinEdit, setSelectedMesinEdit] = useState<string | null>(
+    null,
+  );
+  const [selectedMesinNameEdit, setSelectedMesinNameEdit] = useState<
+    string | null
+  >(null);
 
   // Derived filtered list
   const filteredKategori = masterKategori?.data?.filter((item: any) => {
@@ -28,13 +36,21 @@ const MasterKategori = () => {
     );
   });
 
-  // ── NEW: count how many rows already use the selected mesin ──
+  // ── count how many rows already use the selected mesin (Tambah) ──
   const mesinCount = selectedMesinName
     ? masterKategori?.data?.filter(
         (item: any) => item.nama_mesin === selectedMesinName,
       ).length ?? 0
     : null;
-  // ──────────────────────────────────────────────────────────────
+
+  // ── count how many rows already use the selected mesin (Edit) ──
+  const mesinCountEdit = selectedMesinNameEdit
+    ? masterKategori?.data?.filter(
+        (item: any) => item.nama_mesin === selectedMesinNameEdit,
+      ).length ?? 0
+    : null;
+
+  // ── machine summary badges ──
   const mesinSummary = (masterKategori?.data ?? []).reduce(
     (acc: Record<string, { name: string; count: number }>, item: any) => {
       const key = item.nama_mesin;
@@ -44,6 +60,7 @@ const MasterKategori = () => {
     },
     {} as Record<string, { name: string; count: number }>,
   );
+
   useEffect(() => {
     getMasterMesin();
     getmasterKategori();
@@ -53,9 +70,7 @@ const MasterKategori = () => {
     const url = `${import.meta.env.VITE_API_LINK}/master/ppic/settingKapasitas`;
     try {
       setIsLoading(true);
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
+      const res = await axios.get(url, { withCredentials: true });
       setIsLoading(false);
       setmasterKategori(res.data);
       console.log('kapasitas', res.data);
@@ -65,6 +80,7 @@ const MasterKategori = () => {
     }
   }
 
+  // ── Tambah form state ──
   const [namaKategori, setnamaKategori] = useState<any>();
   const [settingA, setsettingA] = useState<any>(0);
   const [settingB, setsettingB] = useState<any>(0);
@@ -73,6 +89,7 @@ const MasterKategori = () => {
   const [kapasitasB, setkapasitasB] = useState<any>(0);
   const [kapasitasC, setkapasitasC] = useState<any>(0);
 
+  // ── Edit form state ──
   const [namaKategoriEdit, setnamaKategoriEdit] = useState<any>();
   const [settingAEdit, setsettingAEdit] = useState<any>(0);
   const [settingBEdit, setsettingBEdit] = useState<any>(0);
@@ -89,7 +106,6 @@ const MasterKategori = () => {
         url,
         {
           mesin: selectedMesinName,
-
           nama_kategori: namaKategori,
           setting_a: settingA,
           setting_b: settingB,
@@ -98,9 +114,7 @@ const MasterKategori = () => {
           kapasitas_b: kapasitasB,
           kapasitas_c: kapasitasC,
         },
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
       setIsLoading(false);
       setSelectedID(null);
@@ -120,7 +134,7 @@ const MasterKategori = () => {
     }
   }
 
-  async function putMasterKategori(id: any, mesin: any, i: any) {
+  async function putMasterKategori(id: any, i: any) {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/master/ppic/settingKapasitas/${id}`;
@@ -129,7 +143,7 @@ const MasterKategori = () => {
       const res = await axios.put(
         url,
         {
-          mesin: mesin,
+          mesin: selectedMesinEdit,
           nama_kategori: namaKategoriEdit,
           setting_a: settingAEdit,
           setting_b: settingBEdit,
@@ -138,13 +152,13 @@ const MasterKategori = () => {
           kapasitas_b: kapasitasBEdit,
           kapasitas_c: kapasitasCEdit,
         },
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
       alert('Edit Data Berhasil');
       setIsLoading(false);
       setSelectedID(null);
+      setSelectedMesinEdit(null);
+      setSelectedMesinNameEdit(null);
       setnamaKategoriEdit('');
       setsettingAEdit(0);
       setsettingBEdit(0);
@@ -167,9 +181,7 @@ const MasterKategori = () => {
       }/master/ppic/settingKapasitas/${id}`;
       try {
         setIsLoading(true);
-        const res = await axios.delete(url, {
-          withCredentials: true,
-        });
+        const res = await axios.delete(url, { withCredentials: true });
         setIsLoading(false);
         getmasterKategori();
       } catch (error: any) {
@@ -199,6 +211,7 @@ const MasterKategori = () => {
     }
   }
 
+  // ── Tambah modal ──
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => {
     setSelectedMesinName(null);
@@ -207,25 +220,44 @@ const MasterKategori = () => {
   };
   const closeModalHistory = () => setShowHistory(false);
 
+  // ── Edit modal ──
   const [showEdit, setshowEdit] = useState<any>([]);
-  const openEdit = (i: any) => {
+
+  const openEdit = (i: any, data: any) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = true;
     setshowEdit(onchangeVal);
+    // Pre-fill all edit state from the row being edited
+    setSelectedMesinEdit(data.mesin);
+    setSelectedMesinNameEdit(data.nama_mesin);
+    setnamaKategoriEdit(data.nama_kategori);
+    setsettingAEdit(data.setting_a);
+    setsettingBEdit(data.setting_b);
+    setsettingCEdit(data.setting_c);
+    setkapasitasAEdit(data.kapasitas_a);
+    setkapasitasBEdit(data.kapasitas_b);
+    setkapasitasCEdit(data.kapasitas_c);
   };
+
   const closeEdit = (i: any) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = false;
     setshowEdit(onchangeVal);
   };
 
+  // ── Tambah: mesin select handler ──
   const handleChangePointDepatment = (selected: any) => {
     const { value } = selected;
     const filteredData = masterMesin.find((item: any) => item.mesin == value);
     console.log(filteredData?.mesin);
     setSelectedID(filteredData?.mesin);
-    // ── NEW: also store the display name for the count lookup ──
     setSelectedMesinName(value);
+  };
+
+  // ── Edit: mesin select handler ──
+  const handleChangeMesinEdit = (selected: any) => {
+    setSelectedMesinEdit(selected.value);
+    setSelectedMesinNameEdit(selected.value);
   };
 
   return (
@@ -248,6 +280,7 @@ const MasterKategori = () => {
             ))}
           </div>
         )}
+
         {/* ── Header row: TAMBAH button + Search input ── */}
         <div className="flex w-full justify-between items-center pb-2 px-[1%] border-b-8 border-[#D8EAFF] gap-2">
           <button
@@ -290,6 +323,7 @@ const MasterKategori = () => {
             )}
           </div>
 
+          {/* ── Tambah Modal ── */}
           {showHistory == true && (
             <>
               <ModalKosonganSmall
@@ -300,16 +334,15 @@ const MasterKategori = () => {
                 <>
                   <div className="flex flex-col gap-1 px-[1%] py-[1%]">
                     <Select
-                      placeholder="Cari Mesin "
+                      placeholder="Cari Mesin"
                       options={options}
                       onChange={(selectedId) => {
                         handleChangePointDepatment(selectedId);
                       }}
-                      className={`relative z-30 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-                    ></Select>
+                      className={`relative z-30 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white'`}
+                    />
 
-                    {/* ── NEW: mesin count info badge ── */}
+                    {/* mesin count info badge */}
                     {selectedMesinName !== null && (
                       <div
                         className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md w-fit ${
@@ -327,7 +360,6 @@ const MasterKategori = () => {
                         </span>
                       </div>
                     )}
-                    {/* ─────────────────────────────────── */}
 
                     <label className="text-black text-xs font-bold">
                       Nama Kategori
@@ -443,9 +475,7 @@ const MasterKategori = () => {
                   key={i}
                   className="grid grid-cols-10 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]"
                 >
-                  {/* NEW: row number */}
                   <p className="text-[#646464] text-xs font-bold">{i + 1}</p>
-
                   <p className="text-[#646464] text-xs font-bold">
                     {data.nama_mesin}
                   </p>
@@ -471,12 +501,15 @@ const MasterKategori = () => {
                     {data.kapasitas_c}
                   </p>
                   <div className="flex flex-col gap-1">
+                    {/* ── Edit button: now passes data ── */}
                     <button
-                      onClick={() => openEdit(i)}
+                      onClick={() => openEdit(i, data)}
                       className="px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full "
                     >
                       Edit
                     </button>
+
+                    {/* ── Edit Modal ── */}
                     {showEdit[i] == true && (
                       <ModalKosonganSmall
                         isOpen={showEdit[i]}
@@ -485,9 +518,42 @@ const MasterKategori = () => {
                       >
                         <>
                           <div className="flex flex-col gap-1 px-[1%] py-[1%]">
+                            {/* ── Mesin selector (NEW) ── */}
                             <label className="text-black text-xs font-bold">
-                              {data.nama_mesin}
+                              Mesin
                             </label>
+                            <Select
+                              placeholder="Pilih Mesin"
+                              options={options}
+                              defaultValue={{
+                                value: data.nama_mesin,
+                                label: data.nama_mesin,
+                              }}
+                              onChange={(selected) =>
+                                handleChangeMesinEdit(selected)
+                              }
+                              className={`relative z-30 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white'`}
+                            />
+
+                            {/* ── Mesin count badge (same as Tambah) ── */}
+                            {selectedMesinNameEdit !== null && (
+                              <div
+                                className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md w-fit ${
+                                  mesinCountEdit === 0
+                                    ? 'bg-green-50 text-green-700 border border-green-200'
+                                    : 'bg-blue-50 text-blue-700 border border-blue-200'
+                                }`}
+                              >
+                                <span>{selectedMesinNameEdit}</span>
+                                <span className="text-gray-400">·</span>
+                                <span>
+                                  {mesinCountEdit === 0
+                                    ? 'Belum ada kategori'
+                                    : `${mesinCountEdit} kategori sudah ditambahkan`}
+                                </span>
+                              </div>
+                            )}
+
                             <label className="text-black text-xs font-bold">
                               Nama Kategori
                             </label>
@@ -584,9 +650,7 @@ const MasterKategori = () => {
                             <div className="pt-4">
                               <button
                                 disabled={isLoading}
-                                onClick={() =>
-                                  putMasterKategori(data.id, data.mesin, i)
-                                }
+                                onClick={() => putMasterKategori(data.id, i)}
                                 className="rounded-md justify-center items-center w-full h-10 bg-blue-600 text-white font-semibold text-sm"
                               >
                                 {isLoading ? 'Loading...' : 'SIMPAN'}
@@ -596,6 +660,7 @@ const MasterKategori = () => {
                         </>
                       </ModalKosonganSmall>
                     )}
+
                     <button
                       onClick={() => hapusKategori(data.id)}
                       className="px-2 py-1  text-xs bg-red-400 items-center justify-center text-white font-semibold rounded-md flex w-full "

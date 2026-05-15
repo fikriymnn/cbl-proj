@@ -20,6 +20,7 @@ const EditSO: React.FC<EditSOProps> = ({
   const [formData, setFormData] = useState<SOFormData>({
     tgl_input_po: new Date().toISOString().split('T')[0],
     no_so: '',
+    is_so_kanban: false,
     id_kalkulasi: null,
     id_so_cancel: null,
     so_cancel: '',
@@ -184,6 +185,7 @@ const EditSO: React.FC<EditSOProps> = ({
       setFormData({
         tgl_input_po: new Date().toISOString().split('T')[0],
         no_so: '',
+        is_so_kanban: soData.is_so_kanban || false,
         id_kalkulasi: soData.id_kalkulasi || null,
         id_so_cancel: soData.id,
         so_cancel: soData.no_so || '',
