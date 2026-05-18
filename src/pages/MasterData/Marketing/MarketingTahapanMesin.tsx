@@ -34,6 +34,12 @@ function MasterTahapanMesin() {
     tahapanMesin: 1,
   });
 
+  // Filter states
+  const [filters, setFilters] = useState({
+    id_tahapan: 0,
+    id_mesin_tahapan: 0,
+  });
+
   // Form states
   const [tahapanMesinForm, setTahapanMesinForm] = useState<
     Omit<TahapanMesin, 'id'>
@@ -41,10 +47,6 @@ function MasterTahapanMesin() {
     id_tahapan: 0,
     id_mesin_tahapan: 0,
     shift: '',
-  });
-
-  const [searches, setSearches] = useState({
-    tahapanMesin: '',
   });
 
   const [activeModal, setActiveModal] = useState<ModalType>(null);
@@ -62,19 +64,20 @@ function MasterTahapanMesin() {
   }, []);
 
   // Fetch tahapan mesin
-  async function getTahapanMesinList() {
+  async function getTahapanMesinList(overrideFilters?: typeof filters) {
     const url = `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`;
+    const activeFilters = overrideFilters ?? filters;
     try {
       setLoading(true);
       const res = await axios.get(url, {
         params: {
           page: page,
           limit: 15,
-          search: searches.tahapanMesin || undefined,
+          id_tahapan: activeFilters.id_tahapan || undefined,
+          id_mesin_tahapan: activeFilters.id_mesin_tahapan || undefined,
         },
         withCredentials: true,
       });
-      console.log('Fetched tahapan mesin:', res.data);
       setTahapanMesinList(res.data.data);
       setTotalPages((prev) => ({ ...prev, tahapanMesin: res.data.total_page }));
     } catch (error: any) {
@@ -84,7 +87,7 @@ function MasterTahapanMesin() {
     }
   }
 
-  // Fetch tahapan list
+  // Fetch tahapan list for dropdown options
   async function getTahapanList() {
     const url = `${import.meta.env.VITE_API_LINK}/master/tahapan`;
     try {
@@ -95,7 +98,7 @@ function MasterTahapanMesin() {
     }
   }
 
-  // Fetch mesin tahapan list
+  // Fetch mesin tahapan list for dropdown options
   async function getMesinTahapanList() {
     const url = `${import.meta.env.VITE_API_LINK}/master/mesinTahapan`;
     try {
@@ -106,15 +109,18 @@ function MasterTahapanMesin() {
     }
   }
 
-  const handleSearch = (type: keyof typeof searches) => {
+  const handleFilterChange = (key: keyof typeof filters, value: number) => {
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
     setPage(1);
-    getTahapanMesinList();
+    getTahapanMesinList(newFilters);
   };
 
-  const handleResetSearch = (type: keyof typeof searches) => {
-    setSearches((prev) => ({ ...prev, [type]: '' }));
+  const handleResetFilters = () => {
+    const reset = { id_tahapan: 0, id_mesin_tahapan: 0 };
+    setFilters(reset);
     setPage(1);
-    getTahapanMesinList();
+    getTahapanMesinList(reset);
   };
 
   const openModal = (type: ModalType, item?: TahapanMesin) => {
@@ -150,11 +156,7 @@ function MasterTahapanMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`;
     try {
       setLoading(true);
-      console.log('Creating tahapan mesin with data:', data);
-      const res = await axios.post(url, data, {
-        withCredentials: true,
-      });
-
+      const res = await axios.post(url, data, { withCredentials: true });
       getTahapanMesinList();
       closeModal();
       return res.data;
@@ -172,7 +174,6 @@ function MasterTahapanMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/master/tahapanMesin/${id}`;
     try {
       setLoading(true);
-      console.log('Updating tahapan mesin with data:', data);
       const res = await axios.put(url, data, { withCredentials: true });
       getTahapanMesinList();
       closeModal();
@@ -221,6 +222,9 @@ function MasterTahapanMesin() {
       : 'Unknown';
   };
 
+  const hasActiveFilters =
+    filters.id_tahapan !== 0 || filters.id_mesin_tahapan !== 0;
+
   return (
     <DefaultLayout>
       <div className="p-4">
@@ -228,47 +232,60 @@ function MasterTahapanMesin() {
           Master Data &gt; Tahapan Mesin
         </p>
 
-        {/* Search and Add Button */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Search tahapan mesin..."
-              value={searches.tahapanMesin}
+        {/* Filter Dropdowns and Add Button */}
+        <div className="flex justify-between items-center mb-4 gap-2 flex-wrap">
+          <div className="grid grid-cols-8 gap-2  items-center">
+            {/* Filter by Tahapan */}
+            <select
+              value={filters.id_tahapan}
               onChange={(e) =>
-                setSearches((prev) => ({
-                  ...prev,
-                  tahapanMesin: e.target.value,
-                }))
+                handleFilterChange('id_tahapan', Number(e.target.value))
               }
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch('tahapanMesin');
-                }
-              }}
-              className="px-2 py-1 text-sm border border-gray-300 rounded"
-            />
-            <button
-              onClick={() => handleSearch('tahapanMesin')}
               disabled={loading}
-              className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+              className="px-2 py-1 text-sm border border-gray-300 rounded bg-white disabled:opacity-50"
             >
-              {loading ? 'Searching...' : 'Search'}
-            </button>
-            <button
-              onClick={() => handleResetSearch('tahapanMesin')}
+              <option value={0}>All Tahapan</option>
+              {tahapanList.map((tahapan) => (
+                <option key={tahapan.id} value={tahapan.id}>
+                  {tahapan.kode_tahapan} - {tahapan.nama_tahapan}
+                </option>
+              ))}
+            </select>
+
+            {/* Filter by Mesin Tahapan */}
+            <select
+              value={filters.id_mesin_tahapan}
+              onChange={(e) =>
+                handleFilterChange('id_mesin_tahapan', Number(e.target.value))
+              }
               disabled={loading}
-              className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+              className="px-2 py-1 text-sm border border-gray-300 rounded bg-white disabled:opacity-50"
             >
-              Reset
+              <option value={0}>All Mesin</option>
+              {mesinTahapanList.map((mesin) => (
+                <option key={mesin.id} value={mesin.id}>
+                  {mesin.kode_mesin || 'No Code'} - {mesin.nama_mesin}
+                </option>
+              ))}
+            </select>
+
+            {/* Reset button — only shown when a filter is active */}
+            {hasActiveFilters && (
+              <button
+                onClick={handleResetFilters}
+                disabled={loading}
+                className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+              >
+                Reset Filter
+              </button>
+            )}
+            <button
+              onClick={() => openModal('tahapanMesin')}
+              className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              + Tahapan Mesin
             </button>
           </div>
-          <button
-            onClick={() => openModal('tahapanMesin')}
-            className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            + Tahapan Mesin
-          </button>
         </div>
 
         {/* Table */}
