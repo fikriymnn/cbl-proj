@@ -42,7 +42,7 @@ interface DryingTime {
 
 interface TahapanTabProps {
   formData: MountingFormData;
-  onInputChange: (field: keyof MountingFormData, value: any) => void; // Changed from string to keyof MountingFormData
+  onInputChange: (field: keyof MountingFormData, value: any) => void;
   isEditMode: boolean;
 }
 
@@ -51,6 +51,7 @@ type LocalTahapan = TahapanData & {
   _clientId?: string;
   id_mesin?: number;
 };
+
 interface DragState {
   isDragging: boolean;
   draggedIndex: number | null;
@@ -99,20 +100,41 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
     return () => clearTimeout(timer);
   }, []);
 
+  // FIX 1: Derive setting_type from nama_setting when loading existing API data
+  const deriveSettingType = (item: any): string | undefined => {
+    // If already set, keep it
+    if (item.setting_type) return item.setting_type;
+    // Derive from nama_setting: "Setting A" → "a", "Setting B" → "b", "Setting C" → "c"
+    if (item.nama_setting) {
+      const match = item.nama_setting.match(/([ABC])$/i);
+      if (match) return match[1].toLowerCase();
+    }
+    // Fallback: derive from nama_kapasitas: "Kapasitas A" → "a"
+    if (item.nama_kapasitas) {
+      const match = item.nama_kapasitas.match(/([ABC])$/i);
+      if (match) return match[1].toLowerCase();
+    }
+    return undefined;
+  };
+
   useEffect(() => {
     if (formData.tahapan && formData.tahapan.length > 0) {
       const normalized: LocalTahapan[] = formData.tahapan.map((item) => {
+        // Derive setting_type for all items (fixes blank default in edit mode)
+        const setting_type = deriveSettingType(item);
+
         if ((item as any)._clientId) {
-          return { ...(item as LocalTahapan) };
+          return { ...(item as LocalTahapan), setting_type };
         }
         if (item.id) {
           return {
             ...(item as LocalTahapan),
+            setting_type,
             _clientId: `item-${item.id}`,
           };
         }
         const newId = `new-${newTempIdRef.current++}`;
-        return { ...(item as LocalTahapan), _clientId: newId };
+        return { ...(item as LocalTahapan), setting_type, _clientId: newId };
       });
 
       const sorted = normalized.sort((a, b) => (a.index || 0) - (b.index || 0));
@@ -136,7 +158,6 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
 
   const exitDragMode = () => {
     setMode('view');
-    // Reset any ongoing drag state
   };
 
   const startEditing = (index: number) => {
@@ -370,7 +391,6 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
         `${import.meta.env.VITE_API_LINK}/master/ppic/settingKapasitas`,
         { withCredentials: true },
       );
-      console.log('Fetched setting kapasitas:', response.data.data);
       setSettingKapasitasList(response.data.data);
     } catch (error) {
       console.error('Error fetching setting kapasitas:', error);
@@ -383,13 +403,12 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
         `${import.meta.env.VITE_API_LINK}/master/ppic/dryingTime`,
         { withCredentials: true },
       );
-      console.log('Fetched drying time:', response.data.data);
       setDryingTimeList(response.data.data);
     } catch (error) {
       console.error('Error fetching drying time:', error);
     }
   };
-  // Keep all the existing utility functions unchanged
+
   const addNewTahapan = () => {
     if (mode === 'drag') return;
     const clientId = `new-${newTempIdRef.current++}`;
@@ -463,10 +482,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
   };
 
   const normalizeName = (name: string): string => {
-    return name
-      .toLowerCase()
-      .replace(/\s+/g, '') // remove all spaces
-      .trim();
+    return name.toLowerCase().replace(/\s+/g, '').trim();
   };
 
   const getFilteredSettingKapasitas = (tahapanIndex: number) => {
@@ -554,9 +570,9 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
           return {
             ...item,
             id_setting_kapasitas: selectedSetting.id,
-            nama_setting_kapasitas: selectedSetting.nama_kategori, // Only category name
-            nama_kapasitas: `Kapasitas ${type.toUpperCase()}`, // e.g., "Kapasitas A"
-            nama_setting: `Setting ${type.toUpperCase()}`, // e.g., "Setting A"
+            nama_setting_kapasitas: selectedSetting.nama_kategori,
+            nama_kapasitas: `Kapasitas ${type.toUpperCase()}`,
+            nama_setting: `Setting ${type.toUpperCase()}`,
             value_setting_kapasitas: settingValue,
             value_kapasitas: kapasitasValue,
             value_setting: settingValue,
@@ -578,12 +594,12 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
       </div>
     );
   }
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-800">Tahapan Proses</h3>
         <div className="flex items-center gap-2">
-          {/* Mode Toggle Buttons */}
           {mode !== 'drag' && (
             <>
               <button
@@ -747,23 +763,34 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
               {/* Content - Show differently based on mode */}
               {mode === 'drag' ? (
                 // Read-only view for drag mode
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Tahapan:</span>{' '}
                     {tahapan.nama_proses || 'Belum dipilih'}
                   </div>
+                  {/* FIX 2 (drag mode): Guard on id_setting_kapasitas */}
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Kapasitas:</span>{' '}
-                    {tahapan.nama_setting_kapasitas
-                      ? `${tahapan.nama_setting_kapasitas} - ${
-                          tahapan.nama_kapasitas || ''
-                        }`
-                      : 'Belum dipilih'}
+                    {tahapan.id_setting_kapasitas &&
+                    tahapan.nama_setting_kapasitas ? (
+                      `${tahapan.nama_setting_kapasitas} - ${
+                        tahapan.nama_kapasitas || ''
+                      }`
+                    ) : (
+                      <span className="text-amber-500 italic">
+                        Belum dipilih
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-gray-600">
                     <span className="font-medium">Drying:</span>{' '}
-                    {tahapan.nama_drying_time || 'Belum dipilih'}
+                    {tahapan.id_drying_time && tahapan.nama_drying_time ? (
+                      tahapan.nama_drying_time
+                    ) : (
+                      <span className="text-amber-500 italic">
+                        Belum dipilih
+                      </span>
+                    )}
                   </div>
                 </div>
               ) : editingIndex === index ? (
@@ -788,6 +815,7 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
                     <label className="block text-xs font-medium text-gray-600 mb-1">
                       Setting Kapasitas
                     </label>
+                    {/* FIX 1: setting_type now derived on load, so composite key matches correctly */}
                     <SearchableSelect
                       options={getSettingKapasitasOptions(index)}
                       value={
@@ -801,6 +829,23 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
                       placeholder="Pilih Kapasitas"
                       className="w-full text-xs"
                     />
+                    {/* Alert info when id_setting_kapasitas is null */}
+                    {!tahapan.id_setting_kapasitas && (
+                      <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                        <svg
+                          className="w-3 h-3 flex-shrink-0"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Setting kapasitas belum dipilih
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -816,11 +861,27 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
                       placeholder="Pilih Drying Time"
                       className="w-full text-xs"
                     />
+                    {/* Alert info when id_drying_time is null */}
+                    {!tahapan.id_drying_time && (
+                      <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                        <svg
+                          className="w-3 h-3 flex-shrink-0"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Drying time belum dipilih
+                      </p>
+                    )}
                   </div>
                 </div>
               ) : (
-                // View mode - show read-only data with edit button
-                // Update the view mode display section
+                // View mode - show read-only data
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="text-xs">
                     <span className="text-gray-500">Tahapan Mesin:</span>
@@ -830,10 +891,13 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
                         : 'Belum dipilih'}
                     </div>
                   </div>
+
+                  {/* FIX 2 (view mode): Guard on id_setting_kapasitas being non-null */}
                   <div className="text-xs">
                     <span className="text-gray-500">Setting Kapasitas:</span>
                     <div className="font-medium text-gray-800 mt-1">
-                      {tahapan.nama_setting_kapasitas ? (
+                      {tahapan.id_setting_kapasitas &&
+                      tahapan.nama_setting_kapasitas ? (
                         <>
                           {tahapan.nama_setting_kapasitas}
                           {tahapan.nama_kapasitas && (
@@ -850,18 +914,29 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
                           )}
                         </>
                       ) : (
-                        'Belum dipilih'
+                        <span className="text-amber-500 italic">
+                          Belum dipilih
+                        </span>
                       )}
                     </div>
                   </div>
+
                   <div className="text-xs">
                     <span className="text-gray-500">Drying Time:</span>
                     <div className="font-medium text-gray-800 mt-1">
-                      {tahapan.nama_drying_time || 'Belum dipilih'}
-                      {tahapan.value_drying_time && (
-                        <span className="text-gray-600">
-                          {' '}
-                          - {tahapan.value_drying_time} jam
+                      {tahapan.id_drying_time && tahapan.nama_drying_time ? (
+                        <>
+                          {tahapan.nama_drying_time}
+                          {tahapan.value_drying_time && (
+                            <span className="text-gray-600">
+                              {' '}
+                              - {tahapan.value_drying_time} jam
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-amber-500 italic">
+                          Belum dipilih
                         </span>
                       )}
                     </div>
@@ -913,7 +988,6 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
          transform: translateY(-1px);
        }
 
-       /* Mode-specific styles */
        .tahapan-card[data-mode="drag"] {
          cursor: move;
        }
@@ -923,7 +997,6 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
          border-color: #3b82f6;
        }
 
-       /* Prevent text selection during drag */
        .tahapan-card[data-mode="drag"] * {
          user-select: none;
          -webkit-user-select: none;
@@ -931,13 +1004,11 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
          -ms-user-select: none;
        }
 
-       /* Edit mode highlight */
        .tahapan-card[data-editing="true"] {
          border-color: #3b82f6;
          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
        }
 
-       /* Fix dropdown stacking for edit mode only */
        .tahapan-card[data-editing="true"] .relative {
          z-index: 999;
        }
@@ -946,7 +1017,6 @@ const TahapanTab: React.FC<TahapanTabProps> = ({ formData, onInputChange }) => {
          z-index: 9999;
        }
 
-       /* Hide dropdowns during drag mode */
        .tahapan-card[data-mode="drag"] .relative > div[class*="absolute"] {
          display: none !important;
        }

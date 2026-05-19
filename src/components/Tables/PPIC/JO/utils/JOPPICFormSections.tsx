@@ -386,13 +386,15 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
   const [showTahapanPopup, setShowTahapanPopup] = useState(false);
   const [selectedTahapanData, setSelectedTahapanData] = useState<{
     tahapan: any[];
+    rawTahapan: any[];
     mountingName: string;
-  }>({ tahapan: [], mountingName: '' });
+  }>({ tahapan: [], rawTahapan: [], mountingName: '' });
 
   const handleShowTahapan = (mounting: MountingData, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedTahapanData({
       tahapan: mounting.tahapan || [],
+      rawTahapan: (mounting as any).tahapan || [], // raw shape has id_drying_time / id_setting_kapasitas
       mountingName: mounting.nama_mounting,
     });
     setShowTahapanPopup(true);
@@ -656,6 +658,7 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
         isOpen={showTahapanPopup}
         onClose={() => setShowTahapanPopup(false)}
         tahapanData={selectedTahapanData.tahapan}
+        rawTahapan={selectedTahapanData.rawTahapan}
         mountingName={selectedTahapanData.mountingName}
       />
     </div>
