@@ -189,12 +189,6 @@ const ExpandedTiketRow: React.FC<{
                         <span className="text-slate-400 italic">-</span>
                       )}
                     </td>
-                    <td
-                      className="px-3 py-2 text-slate-700 max-w-[200px] truncate"
-                      title={tiket.nama_bahan}
-                    >
-                      {tiket.nama_bahan || '-'}
-                    </td>
 
                     <td className="px-3 py-2 whitespace-nowrap text-slate-700">
                       {tiket.tgl_mulai_produksi

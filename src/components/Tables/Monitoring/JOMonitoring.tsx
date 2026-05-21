@@ -32,6 +32,7 @@ const customSelectStyles = {
   menu: (base: any) => ({ ...base, zIndex: 9999 }),
   menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
 };
+
 type SortKey =
   | 'no_jo'
   | 'no_so'
@@ -83,6 +84,7 @@ function SortIcon({
     </span>
   );
 }
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function todayStr() {
@@ -143,8 +145,9 @@ function sisaWaktu(tglPengiriman: string | null | undefined): {
   return { label: `${diff} hari lagi`, color: 'text-gray-500' };
 }
 
+// ── uses row.total_qty (pre-summed by API) as shipped qty ──
 function calcDeliveryProgress(row: any) {
-  const shipped = row.delivery_order_group?.total_qty ?? 0;
+  const shipped = row.total_qty ?? 0;
   const total = row.po_qty ?? 0;
   if (total === 0) return null;
   const rawPct = Math.round((shipped / total) * 100);
@@ -169,7 +172,6 @@ function calcTahapanProgress(tahapan: any[]) {
   return { done, total: tahapan.length, pct };
 }
 
-// Get the latest completed tahapan name
 function getLatestTahapan(tahapan: any[]): string | null {
   if (!tahapan || tahapan.length === 0) return null;
   const done = [...tahapan]
@@ -245,7 +247,6 @@ function DeliveryProgressBar({
   );
 }
 
-// Qty difference display: shows diff with color based on status
 function QtyDiffLabel({ shipped, total }: { shipped: number; total: number }) {
   const diff = shipped - total;
   if (diff > 0) {
@@ -453,7 +454,9 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
   const mountings: any[] = jo?.jo_mounting ?? [];
   const dp = calcDeliveryProgress(row);
   const tahapanProg = calcTahapanProgress(row.produksi_lkh_tahapan);
-  const do_group = row.delivery_order_group;
+  const do_group: any[] = Array.isArray(row.delivery_order_group)
+    ? row.delivery_order_group
+    : [];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
@@ -575,8 +578,8 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
             )}
           </div>
 
-          {/* Delivery Order info */}
-          {do_group && (
+          {/* ── Delivery Order (array) ── */}
+          {do_group.length > 0 && (
             <div className="bg-green-50 rounded-xl p-4 border border-green-200">
               <h4 className="text-xs font-semibold text-green-700 mb-3 flex items-center gap-1.5">
                 <svg
@@ -592,24 +595,36 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Delivery Order
+                Delivery Order ({do_group.length})
               </h4>
-              <div className="grid grid-cols-3 gap-3 text-xs">
-                <div>
-                  <p className="text-gray-400 mb-0.5">No DO</p>
-                  <p className="font-bold text-gray-800">{do_group.no_do}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 mb-0.5">Tgl DO</p>
-                  <p className="font-bold text-gray-800">
-                    {fmtDate(do_group.tgl_do)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-gray-400 mb-0.5">Total Qty DO</p>
-                  <p className="font-bold text-green-600">
-                    {fmtQty(do_group.total_qty)}
-                  </p>
+              <div className="space-y-2">
+                {do_group.map((doItem: any, di: number) => (
+                  <div
+                    key={doItem.id ?? di}
+                    className="bg-white rounded-lg border border-green-200 grid grid-cols-3 gap-3 px-3 py-2 text-xs"
+                  >
+                    <div>
+                      <p className="text-gray-400 mb-0.5">No DO</p>
+                      <p className="font-bold text-gray-800">{doItem.no_do}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Tgl DO</p>
+                      <p className="font-bold text-gray-800">
+                        {fmtDate(doItem.tgl_do)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Qty DO</p>
+                      <p className="font-bold text-green-600">
+                        {fmtQty(doItem.total_qty)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                <div className="flex justify-end pt-1 border-t border-green-200 mt-1">
+                  <span className="text-xs font-semibold text-green-700">
+                    Total Terkirim: {fmtQty(row.total_qty)} Pcs
+                  </span>
                 </div>
               </div>
             </div>
@@ -779,6 +794,7 @@ function JOMonitoring() {
       null,
     );
   }, []);
+
   const handleSort = useCallback((key: SortKey) => {
     setSortConfig((prev) => {
       if (prev.key === key) {
@@ -788,6 +804,7 @@ function JOMonitoring() {
       return { key, direction: 'asc' };
     });
   }, []);
+
   async function fetchJO(
     start: string,
     end: string,
@@ -808,6 +825,7 @@ function JOMonitoring() {
         },
         withCredentials: true,
       });
+      console.log('Fetched JO data:', res.data);
       const list: any[] = Array.isArray(res.data?.data) ? res.data.data : [];
       setJoData(list);
       const seen = new Map<any, any>();
@@ -894,6 +912,7 @@ function JOMonitoring() {
     }
     return result;
   }, [joData, searchQuery, sortConfig]);
+
   const SortableTh = ({
     label,
     column,
@@ -911,6 +930,7 @@ function JOMonitoring() {
       </span>
     </th>
   );
+
   return (
     <>
       <main>
@@ -1130,7 +1150,6 @@ function JOMonitoring() {
                     const latestTahapan = getLatestTahapan(
                       row.produksi_lkh_tahapan ?? [],
                     );
-                    const do_group = row.delivery_order_group;
 
                     const rowBg = dp?.isOver
                       ? 'bg-purple-50'
@@ -1152,28 +1171,28 @@ function JOMonitoring() {
                         <td className="p-2 sm:p-3 text-xs flex flex-col gap-2">
                           <span
                             onClick={() => setDetailRow(row)}
-                            className="text-violet-600 hover:text-violet-800 hover:underline font-bold whitespace-nowrap"
+                            className="text-violet-600 hover:text-violet-800 hover:underline font-bold whitespace-nowrap cursor-pointer"
                           >
                             {jo?.no_jo || '-'}
                           </span>
-                          <span className=" text-xs whitespace-nowrap text-blue-600 font-medium">
+                          <span className="text-xs whitespace-nowrap text-blue-600 font-medium">
                             {row.no_so || '-'}
                           </span>
-                          <span className=" text-xs whitespace-nowrap text-gray-500">
+                          <span className="text-xs whitespace-nowrap text-gray-500">
                             {row.no_io || '-'}
                           </span>
                         </td>
 
                         <td className="p-2 sm:p-3 text-xs max-w-[130px]">
                           <span
-                            className="block  font-medium"
+                            className="block font-medium"
                             title={row.customer}
                           >
                             {row.customer || '-'}
                           </span>
                         </td>
                         <td className="p-2 sm:p-3 text-xs max-w-[180px]">
-                          <span className="block " title={row.produk}>
+                          <span className="block" title={row.produk}>
                             {row.produk || '-'}
                           </span>
                           <span className="text-blue-400 text-[10px]">
@@ -1185,7 +1204,7 @@ function JOMonitoring() {
                         </td>
 
                         {/* Progress Kirim */}
-                        <td className="p-2 sm:p-3 text-xs min-w-[140px]">
+                        <td className="p-2 sm:p-3 text-xs min-w-[140px] flex flex-col gap-1">
                           {dp ? (
                             <div className="space-y-1">
                               <DeliveryProgressBar
@@ -1205,6 +1224,11 @@ function JOMonitoring() {
                               </span>
                             </div>
                           )}
+                          {row.status_work == 'done' && (
+                            <span className="bg-red-100 text-red-800 text-xs px-1.5 py-0.5 rounded font-medium">
+                              Status Work : Done (Close)
+                            </span>
+                          )}
                         </td>
 
                         <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
@@ -1217,7 +1241,7 @@ function JOMonitoring() {
                           {sisa.label}
                         </td>
 
-                        {/* Tahapan Terakhir (replaces Status Proses) */}
+                        {/* Tahapan Terakhir */}
                         <td className="p-2 sm:p-3 text-xs max-w-[140px]">
                           <div className="space-y-1">
                             {latestTahapan ? (
@@ -1240,7 +1264,6 @@ function JOMonitoring() {
                                 Belum ada
                               </span>
                             )}
-                            {/* Mini production progress bar below tahapan label */}
                             {tahapanProg && (
                               <div className="flex items-center gap-1">
                                 <div className="w-12 bg-gray-200 rounded-full h-1">
@@ -1257,7 +1280,7 @@ function JOMonitoring() {
                           </div>
                         </td>
 
-                        {/* Lokasi JO */}
+                        {/* Mounting */}
                         <td className="p-2 sm:p-3 text-xs">
                           {jo?.jo_mounting?.length > 0 ? (
                             <div className="flex flex-wrap gap-1">
@@ -1284,7 +1307,7 @@ function JOMonitoring() {
                           )}
                         </td>
 
-                        {/* Aksi: only tahapan detail button */}
+                        {/* Aksi */}
                         <td className="p-2 sm:p-3 text-xs">
                           {hasTahapan && (
                             <button

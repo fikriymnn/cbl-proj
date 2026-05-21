@@ -72,8 +72,9 @@ function fmtQty(val: number | null | undefined) {
   return val.toLocaleString('id-ID');
 }
 
+// ── uses row.total_qty (pre-summed by API) as shipped qty ──
 function calcDeliveryProgress(row: any) {
-  const shipped = row.delivery_order_group?.total_qty ?? 0;
+  const shipped = row.total_qty ?? 0;
   const total = row.po_qty ?? 0;
   if (total === 0) return null;
   const pct = Math.min(Math.round((shipped / total) * 100), 100);
@@ -389,10 +390,10 @@ function SOMonitoring() {
   const [sortBy, setSortBy] = useState<any>(SORT_BY_OPTIONS[0]);
   const [statusPo, setStatusPo] = useState<any>(STATUS_PO_OPTIONS[0]);
   const [idCustomer, setIdCustomer] = useState<any>(null);
-  const [idMarketing, setIdMarketing] = useState<any>(null); // ← NEW
+  const [idMarketing, setIdMarketing] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [customerOptions, setCustomerOptions] = useState<any[]>([]);
-  const [marketingOptions, setMarketingOptions] = useState<any[]>([]); // ← NEW
+  const [marketingOptions, setMarketingOptions] = useState<any[]>([]);
 
   // Modals
   const [detailRow, setDetailRow] = useState<any>(null);
@@ -409,10 +410,9 @@ function SOMonitoring() {
       null,
       null,
     );
-    fetchMarketingList(); // ← NEW
+    fetchMarketingList();
   }, []);
 
-  // ← NEW: fetch marketing list from /master/marketing
   async function fetchMarketingList() {
     const url = `${import.meta.env.VITE_API_LINK}/master/marketing`;
     try {
@@ -435,7 +435,7 @@ function SOMonitoring() {
     sort: string,
     status: string,
     customerId: any,
-    marketingId: any, // ← NEW param
+    marketingId: any,
   ) {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/soMonitoring`;
     try {
@@ -447,7 +447,7 @@ function SOMonitoring() {
           sort_by: sort,
           status_po: status,
           id_customer: customerId || undefined,
-          id_marketing: marketingId || undefined, // ← NEW param
+          id_marketing: marketingId || undefined,
         },
         withCredentials: true,
       });
@@ -481,7 +481,7 @@ function SOMonitoring() {
       statusPo?.value,
       idCustomer?.value ?? null,
       idMarketing?.value ?? null,
-    ); // ← pass marketing
+    );
 
   const handleReset = () => {
     const start = firstOfMonth();
@@ -491,7 +491,7 @@ function SOMonitoring() {
     setSortBy(SORT_BY_OPTIONS[0]);
     setStatusPo(STATUS_PO_OPTIONS[0]);
     setIdCustomer(null);
-    setIdMarketing(null); // ← reset marketing
+    setIdMarketing(null);
     setSearchQuery('');
     fetchSO(
       start,
@@ -762,6 +762,7 @@ function SOMonitoring() {
                   </div>
                 </div>
 
+                {/* ── Progress Pengiriman ── */}
                 {(() => {
                   const dp = calcDeliveryProgress(detailRow);
                   if (!dp) return null;
@@ -806,7 +807,8 @@ function SOMonitoring() {
                   );
                 })()}
 
-                {detailRow.delivery_order_group && (
+                {/* ── Delivery Order (array) ── */}
+                {detailRow.delivery_order_group?.length > 0 && (
                   <div className="bg-green-50 rounded-xl p-4 border border-green-200">
                     <h4 className="text-xs font-semibold text-green-700 mb-3 flex items-center gap-1.5">
                       <svg
@@ -822,26 +824,40 @@ function SOMonitoring() {
                           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
                       </svg>
-                      Delivery Order
+                      Delivery Order ({detailRow.delivery_order_group.length})
                     </h4>
-                    <div className="grid grid-cols-3 gap-3 text-xs">
-                      <div>
-                        <p className="text-gray-400 mb-0.5">No DO</p>
-                        <p className="font-bold text-gray-800">
-                          {detailRow.delivery_order_group.no_do}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 mb-0.5">Tgl DO</p>
-                        <p className="font-bold text-gray-800">
-                          {fmtDate(detailRow.delivery_order_group.tgl_do)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 mb-0.5">Total Qty DO</p>
-                        <p className="font-bold text-green-600">
-                          {fmtQty(detailRow.delivery_order_group.total_qty)}
-                        </p>
+                    <div className="space-y-2">
+                      {detailRow.delivery_order_group.map(
+                        (doItem: any, di: number) => (
+                          <div
+                            key={doItem.id ?? di}
+                            className="bg-white rounded-lg border border-green-200 grid grid-cols-3 gap-3 px-3 py-2 text-xs"
+                          >
+                            <div>
+                              <p className="text-gray-400 mb-0.5">No DO</p>
+                              <p className="font-bold text-gray-800">
+                                {doItem.no_do}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-gray-400 mb-0.5">Tgl DO</p>
+                              <p className="font-bold text-gray-800">
+                                {fmtDate(doItem.tgl_do)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-gray-400 mb-0.5">Qty DO</p>
+                              <p className="font-bold text-green-600">
+                                {fmtQty(doItem.total_qty)}
+                              </p>
+                            </div>
+                          </div>
+                        ),
+                      )}
+                      <div className="flex justify-end pt-1 border-t border-green-200 mt-1">
+                        <span className="text-xs font-semibold text-green-700">
+                          Total Terkirim: {fmtQty(detailRow.total_qty)} Pcs
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -986,8 +1002,6 @@ function SOMonitoring() {
                   menuPosition="fixed"
                 />
               </div>
-
-              {/* ── NEW: Marketing filter ── */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs sm:text-sm text-gray-600 font-medium">
                   Marketing:
@@ -1004,7 +1018,6 @@ function SOMonitoring() {
                   menuPosition="fixed"
                 />
               </div>
-
               <div className="flex flex-col gap-2">
                 <label className="text-xs sm:text-sm text-gray-600 font-medium">
                   Cari:
@@ -1152,7 +1165,7 @@ function SOMonitoring() {
 
           <div className="overflow-x-auto max-h-[650px] overflow-y-auto">
             <table className="w-full text-xs sm:text-sm min-w-[1200px]">
-              <thead className="bg-gray-100 sticky top-0 z-10">
+              <thead className="bg-white sticky top-0 z-10">
                 <tr>
                   {[
                     'No',
@@ -1224,18 +1237,18 @@ function SOMonitoring() {
                             {row.no_io || '-'}
                           </span>
                         </td>
-                        <td className="p-2 sm:p-3 text-xs max-w-[130px] ">
+                        <td className="p-2 sm:p-3 text-xs max-w-[130px]">
                           <div
-                            className="block  font-medium"
+                            className="block font-medium"
                             title={row.customer}
                           >
                             {row.customer || '-'}
                           </div>
                           <div
-                            className="block  font-medium text-blue-500"
+                            className="block font-medium text-blue-500"
                             title={row.kalkulasi?.nama_marketing || '-'}
                           >
-                            Marketing : {row.kalkulasi?.nama_marketing || '-'}
+                            Marketing: {row.kalkulasi?.nama_marketing || '-'}
                           </div>
                         </td>
                         <td className="p-2 sm:p-3 text-xs max-w-[180px]">
@@ -1252,7 +1265,7 @@ function SOMonitoring() {
                         <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
                           {fmtRp(row.total_harga)}
                         </td>
-                        <td className="p-2 sm:p-3 text-xs min-w-[140px]">
+                        <td className="p-2 sm:p-3 text-xs min-w-[140px] flex flex-col gap-1">
                           {dp ? (
                             <div className="space-y-1">
                               <ProgressBar pct={dp.pct} isOver={dp.isOver} />
@@ -1266,6 +1279,11 @@ function SOMonitoring() {
                             </div>
                           ) : (
                             <span className="text-gray-300 text-[10px]">—</span>
+                          )}
+                          {row.status_work == 'done' && (
+                            <span className="bg-red-100 text-red-800 text-xs px-1.5 py-0.5 rounded font-medium">
+                              Status Work : Done (Close)
+                            </span>
                           )}
                         </td>
                         <td className="p-2 sm:p-3 text-xs max-w-[140px]">

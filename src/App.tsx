@@ -261,6 +261,7 @@ import PenerimaanBarangJadiPage from './pages/GudangFG/PenerimaanBarangJadiPage'
 import GudangFGPage from './pages/GudangFG/GudangFGPage';
 import MutasiBarangPage from './pages/GudangFG/MutasiBarangPage';
 import ApproveStandarWarnaPageMarketing from './pages/Marketing/ApproveStandarWarnaPageMarketing';
+import LaporanRekapLKHPage from './pages/Monitoring/LaporanRekapLKHPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2406,6 +2407,14 @@ function App() {
           element={
             <P>
               <JOMonitoringPage />
+            </P>
+          }
+        />
+        <Route
+          path="/monitoring/laporan-rekap-lkh"
+          element={
+            <P>
+              <LaporanRekapLKHPage />
             </P>
           }
         />
