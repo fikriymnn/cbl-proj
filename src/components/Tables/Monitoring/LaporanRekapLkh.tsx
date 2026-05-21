@@ -691,7 +691,13 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
             {isOpen && (
               <div className="border-t border-gray-100 p-5 space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <StatCard label="Total JO" value={fmtNum(m.total_jo)} />
+                  <StatCard
+                    label="Total JO"
+                    value={fmtNum(m.total_jo)}
+                    sub={`${fmtNum(m.total_jo_produksi)} produksi / ${fmtNum(
+                      m.total_jo_proof,
+                    )} proof`}
+                  />
                   <StatCard
                     label="Total Jam"
                     value={fmtDurasi(m.total_jam)}
@@ -885,6 +891,7 @@ function LaporanRekapLKH() {
           withCredentials: true,
         },
       );
+      console.log('Rekap data response:', res.data);
       setRekapData(res.data?.data ?? res.data ?? null);
       setActiveTab('mesin');
     } catch (err) {

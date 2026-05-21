@@ -1462,6 +1462,7 @@ const JOKanbanModal: React.FC<JOKanbanModalProps> = ({
         `${import.meta.env.VITE_API_LINK}/master/ketentuanInsheet`,
         { withCredentials: true },
       );
+
       setKetentuanInsheetData(res.data.data || []);
     } catch {
       setKetentuanInsheetData([]);
@@ -1474,6 +1475,7 @@ const JOKanbanModal: React.FC<JOKanbanModalProps> = ({
         `${import.meta.env.VITE_API_LINK}/master/prosesInsheet`,
         { withCredentials: true },
       );
+
       setProsesInsheetData(res.data.data || []);
     } catch {
       setProsesInsheetData([]);
