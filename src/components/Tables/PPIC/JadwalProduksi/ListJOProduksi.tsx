@@ -17,6 +17,7 @@ interface JOData {
   qty_lp: number;
   qty_po: number;
   tgl_kirim: string;
+  tgl_kirim_date: string;
   status: string;
   nama_bahan: string;
   no_io: string;
@@ -53,6 +54,7 @@ interface DetailJOData {
     qty_pcs: number;
     qty_druk: number;
     tgl_kirim: string;
+    tgl_kirim_date: string;
     status: string;
     tahap: TahapData[];
     jadwal_per_jam: JadwalPerJam[];
@@ -68,7 +70,7 @@ type SortKey = keyof Pick<
   | 'qty_druk'
   | 'qty_lp'
   | 'qty_po'
-  | 'tgl_kirim'
+  | 'tgl_kirim_date'
   | 'createdAt'
 >;
 type SortDirection = 'asc' | 'desc' | null;
@@ -668,7 +670,7 @@ function ListJOProduksi() {
                     <SortableTh label="Qty Druk" column="qty_druk" />
                     <SortableTh label="Qty LP" column="qty_lp" />
                     <SortableTh label="Qty PO" column="qty_po" />
-                    <SortableTh label="Tanggal Kirim" column="tgl_kirim" />
+                    <SortableTh label="Tanggal Kirim" column="tgl_kirim_date" />
 
                     <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider">
                       Action
@@ -712,7 +714,7 @@ function ListJOProduksi() {
                           {formatInteger(jo.qty_po)}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
-                          {jo.tgl_kirim}
+                          {formatCustomDate(jo.tgl_kirim_date)}
                         </td>
 
                         <td className="px-4 py-4 whitespace-nowrap text-center">
