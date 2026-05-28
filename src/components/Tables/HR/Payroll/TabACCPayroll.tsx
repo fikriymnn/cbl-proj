@@ -6,13 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import ListPayroll from './ListPayroll';
-import PayrollBulanan from './PayrollBulanan';
-import HistoryPayroll from './HistoryPayroll';
-import HistoryPayrollBulanan from './HistoryPayrollBulanan';
-import PayrollMinggu from './PayrollMinggu';
-import HistoryMinggu from './HistoryMinggu';
-import PengajuanPayrollMinggu from './PengajuanPayrollMinggu';
+
 import ApprovePayroll from './ApprovePayroll';
 import ApprovePayrollBulanan from './ApprovePayrollBulanan';
 

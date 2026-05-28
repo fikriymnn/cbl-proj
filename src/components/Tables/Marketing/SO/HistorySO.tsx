@@ -513,80 +513,79 @@ const HistorySO: React.FC = () => {
                           </button>
                           {item.status_proses === 'done' && (
                             <>
-                              <button
-                                onClick={() => handleCancelClick(item)}
-                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
-                                title="Cancel SO"
-                              >
-                                CANCEL
-                              </button>
                               {item.status_work !== 'done' ? (
-                                <button
-                                  onClick={() => handleDoneWork(item.id)}
-                                  className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                                  disabled={doneWorkLoading === item.id}
-                                >
-                                  {doneWorkLoading === item.id
-                                    ? 'Processing...'
-                                    : 'DONE WORK'}
-                                </button>
-                              ) : (
                                 <>
-                                  {/* <button
-                                    className="bg-green-800 hover:bg-green-900 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
-                                    disabled
+                                  <button
+                                    onClick={() => handleCancelClick(item)}
+                                    className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                                    title="Cancel SO"
                                   >
-                                    DONE
-                                  </button> */}
-                                </>
-                              )}
+                                    CANCEL
+                                  </button>
 
-                              {(() => {
-                                const perubahanStatus =
-                                  getPerubahanTglKirimStatus(item);
-                                return (
                                   <button
-                                    onClick={() =>
-                                      handleUbahTglKirimClick(item)
-                                    }
-                                    disabled={!perubahanStatus.canRequest}
-                                    className={`${
-                                      perubahanStatus.canRequest
-                                        ? 'bg-orange-500 hover:bg-orange-600'
-                                        : 'bg-gray-300 cursor-not-allowed'
-                                    } text-white px-2 py-1 rounded text-xs transition-colors`}
-                                    title={
-                                      perubahanStatus.canRequest
-                                        ? 'Ubah Tanggal Kirim'
-                                        : 'Menunggu approval perubahan tanggal kirim'
-                                    }
+                                    onClick={() => handleDoneWork(item.id)}
+                                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs disabled:opacity-50"
+                                    disabled={doneWorkLoading === item.id}
                                   >
-                                    UBAH TGL KIRIM
+                                    {doneWorkLoading === item.id
+                                      ? 'Processing...'
+                                      : 'CLOSE PO'}
                                   </button>
-                                );
-                              })()}
-                              {(() => {
-                                const perubahanHargaStatus =
-                                  getPerubahanHargaStatus(item);
-                                return (
-                                  <button
-                                    onClick={() => handleUbahHargaClick(item)}
-                                    disabled={!perubahanHargaStatus.canRequest}
-                                    className={`${
-                                      perubahanHargaStatus.canRequest
-                                        ? 'bg-green-500 hover:bg-green-600'
-                                        : 'bg-gray-300 cursor-not-allowed'
-                                    } text-white px-2 py-1 rounded text-xs transition-colors`}
-                                    title={
-                                      perubahanHargaStatus.canRequest
-                                        ? 'Ubah Harga'
-                                        : 'Menunggu approval perubahan harga'
-                                    }
-                                  >
-                                    UBAH HARGA
-                                  </button>
-                                );
-                              })()}
+
+                                  {(() => {
+                                    const perubahanStatus =
+                                      getPerubahanTglKirimStatus(item);
+                                    return (
+                                      <button
+                                        onClick={() =>
+                                          handleUbahTglKirimClick(item)
+                                        }
+                                        disabled={!perubahanStatus.canRequest}
+                                        className={`${
+                                          perubahanStatus.canRequest
+                                            ? 'bg-orange-500 hover:bg-orange-600'
+                                            : 'bg-gray-300 cursor-not-allowed'
+                                        } text-white px-2 py-1 rounded text-xs transition-colors`}
+                                        title={
+                                          perubahanStatus.canRequest
+                                            ? 'Ubah Tanggal Kirim'
+                                            : 'Menunggu approval perubahan tanggal kirim'
+                                        }
+                                      >
+                                        UBAH TGL KIRIM
+                                      </button>
+                                    );
+                                  })()}
+
+                                  {(() => {
+                                    const perubahanHargaStatus =
+                                      getPerubahanHargaStatus(item);
+                                    return (
+                                      <button
+                                        onClick={() =>
+                                          handleUbahHargaClick(item)
+                                        }
+                                        disabled={
+                                          !perubahanHargaStatus.canRequest
+                                        }
+                                        className={`${
+                                          perubahanHargaStatus.canRequest
+                                            ? 'bg-green-500 hover:bg-green-600'
+                                            : 'bg-gray-300 cursor-not-allowed'
+                                        } text-white px-2 py-1 rounded text-xs transition-colors`}
+                                        title={
+                                          perubahanHargaStatus.canRequest
+                                            ? 'Ubah Harga'
+                                            : 'Menunggu approval perubahan harga'
+                                        }
+                                      >
+                                        UBAH HARGA
+                                      </button>
+                                    );
+                                  })()}
+                                </>
+                              ) : null}
                             </>
                           )}
                           <button
@@ -637,7 +636,7 @@ const HistorySO: React.FC = () => {
                         </span>
                         {item.status_work == 'done' && (
                           <span className="bg-green-100 text-green-800 text-xs px-1.5 py-0.5 rounded font-medium">
-                            Status Work : Done (Close)
+                            Status PO : CLOSED
                           </span>
                         )}
                       </td>

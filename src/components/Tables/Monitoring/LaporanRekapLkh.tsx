@@ -1,26 +1,33 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import Loading from '../../Loading';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface TahapanMesinOption {
-  id: number;
-  id_tahapan: number;
-  id_mesin_tahapan: number;
-  shift: string;
-  tahapan?: { id: number; kode_tahapan: string; nama_tahapan: string };
-  mesin?: { id: number; kode_mesin: string; nama_mesin: string };
+interface Tahapan {
+  id?: number;
+  kode_tahapan: string;
+  nama_tahapan: string;
+}
+
+interface MesinTahapan {
+  id?: number;
+  kode_mesin?: string;
+  nama_mesin: string;
+  type_kapasitas: 'druk' | 'pcs' | 'lp';
 }
 
 interface KendalaItem {
-  is_final_result: import('react/jsx-runtime').JSX.Element;
+  is_final_result: boolean;
   id: number;
   id_jo: number;
   no_jo: string;
+  no_io?: string;
   tipe_jo: string;
   kode: string;
   deskripsi: string;
+  produk?: string;
+  customer?: string;
   proses: string;
   operator: { id: number; nama: string } | null;
   kategori_kendala: { id: number; kategori: string } | null;
@@ -109,8 +116,6 @@ function fmtNum(val: number | null | undefined, dec = 0) {
     maximumFractionDigits: dec,
   });
 }
-
-/** Convert jam (float) → "X Jam Y Menit Z Detik" */
 function fmtDurasi(jam: number | null | undefined): string {
   if (jam == null) return '-';
   const totalDetik = Math.round(jam * 3600);
@@ -123,8 +128,6 @@ function fmtDurasi(jam: number | null | undefined): string {
   if (s > 0 || parts.length === 0) parts.push(`${s} Detik`);
   return parts.join(' ');
 }
-
-/** Convert detik (int) → "X Jam Y Menit Z Detik" */
 function fmtDetik(detik: number | null | undefined): string {
   if (detik == null) return '-';
   const totalDetik = Math.round(detik);
@@ -136,6 +139,166 @@ function fmtDetik(detik: number | null | undefined): string {
   if (m > 0) parts.push(`${m} Menit`);
   if (s > 0 || parts.length === 0) parts.push(`${s} Detik`);
   return parts.join(' ');
+}
+
+// ─── Searchable Select ────────────────────────────────────────────────────────
+
+function SearchableSelect<T>({
+  label,
+  required,
+  placeholder,
+  options,
+  value,
+  onChange,
+  getKey,
+  getLabel,
+  disabled,
+  loading,
+}: {
+  label: string;
+  required?: boolean;
+  placeholder: string;
+  options: T[];
+  value: T | null;
+  onChange: (v: T | null) => void;
+  getKey: (v: T) => string | number;
+  getLabel: (v: T) => string;
+  disabled?: boolean;
+  loading?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return options;
+    const q = search.toLowerCase();
+    return options.filter((o) => getLabel(o).toLowerCase().includes(q));
+  }, [options, search, getLabel]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+        setSearch('');
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-1.5 " ref={containerRef}>
+      <label className="text-xs font-medium text-gray-500">
+        {label} {required && <span className="text-red-400">*</span>}
+      </label>
+      <div className=" absolute mt-6">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => {
+            if (!disabled) {
+              setOpen((o) => !o);
+              setSearch('');
+            }
+          }}
+          className={`w-[300px] rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm text-left flex items-center justify-between transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-50 ${
+            open ? 'ring-2 ring-violet-400' : ''
+          }`}
+        >
+          <span className={value ? 'text-gray-800' : 'text-gray-400'}>
+            {loading ? 'Memuat...' : value ? getLabel(value) : placeholder}
+          </span>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ${
+              open ? 'rotate-180' : ''
+            }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        {open && (
+          <div className="absolute z-30 mt-1 w-full bg-white border border-violet-200 rounded-xl shadow-xl overflow-hidden">
+            <div className="p-2 border-b border-gray-100">
+              <div className="relative">
+                <svg
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+                <input
+                  autoFocus
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Cari..."
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-1 focus:ring-violet-400"
+                />
+              </div>
+            </div>
+            <div className="max-h-52 overflow-y-auto">
+              {!required && value && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(null);
+                    setOpen(false);
+                    setSearch('');
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-xs text-gray-400 hover:bg-gray-50 italic"
+                >
+                  — Tidak dipilih (opsional)
+                </button>
+              )}
+              {filtered.length === 0 ? (
+                <p className="text-center text-gray-400 text-xs py-6">
+                  Tidak ditemukan
+                </p>
+              ) : (
+                filtered.map((opt) => (
+                  <button
+                    key={getKey(opt)}
+                    type="button"
+                    onClick={() => {
+                      onChange(opt);
+                      setOpen(false);
+                      setSearch('');
+                    }}
+                    className={`w-full text-left px-4 py-2.5 text-xs hover:bg-violet-50 transition-colors ${
+                      value && getKey(value) === getKey(opt)
+                        ? 'bg-violet-50 text-violet-700 font-semibold'
+                        : 'text-gray-700'
+                    }`}
+                  >
+                    {getLabel(opt)}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -206,6 +369,189 @@ function PctBar({
 
 // ─── Detail List Modal ────────────────────────────────────────────────────────
 
+const TABLE_HEADERS = [
+  'No',
+  'Nomor',
+  'Produk',
+  'Customer',
+  'Deskripsi',
+  'Operator',
+  'Kategori',
+  'Waktu',
+  'Durasi',
+  'Baik',
+  'RS',
+  'RT',
+];
+
+function DetailTable({ items }: { items: KendalaItem[] }) {
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return items;
+    const q = search.toLowerCase();
+    return items.filter((item) =>
+      [
+        item.no_jo,
+        item.no_io,
+        item.produk,
+        item.customer,
+        item.deskripsi,
+        item.operator?.nama,
+        item.kategori_kendala?.kategori,
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [items, search]);
+
+  return (
+    <div className="space-y-3">
+      <div className="relative">
+        <svg
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cari No JO, No IO, produk, customer, operator..."
+          className="w-full pl-9 pr-4 py-2 text-sm rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-400"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+      {filtered.length === 0 ? (
+        <p className="text-center text-gray-400 py-8 text-sm">
+          Tidak ada data{search ? ' yang sesuai pencarian' : ''}
+        </p>
+      ) : (
+        <div className="overflow-auto">
+          <table className="w-full text-xs min-w-[1200px]">
+            <thead className="bg-gray-50 sticky top-0">
+              <tr>
+                {TABLE_HEADERS.map((h) => (
+                  <th
+                    key={h}
+                    className="px-3 py-2 text-left text-xs font-semibold text-gray-500 whitespace-nowrap border-b border-gray-200"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((item, i) => (
+                <tr
+                  key={item.id}
+                  className={`border-b ${
+                    i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  } hover:bg-violet-50 transition-colors`}
+                >
+                  <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
+                    {i + 1}
+                    {item.is_final_result && (
+                      <span
+                        title="Final Result"
+                        className="text-amber-500 text-base"
+                      >
+                        ★
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 font-medium  whitespace-nowrap flex flex-col gap-1">
+                    <span className="text-xs text-violet-600">
+                      {' '}
+                      {item.no_jo}
+                    </span>
+
+                    <span className="text-xs text-gray-500">
+                      {item.no_io || '-'}
+                    </span>
+                    <span
+                      className={`text-xs ${
+                        item.tipe_jo === 'JO PRODUKSI'
+                          ? 'text-green-500'
+                          : 'text-blue-500'
+                      }`}
+                    >
+                      {' '}
+                      {item.tipe_jo || '-'}
+                    </span>
+                  </td>
+
+                  <td className="px-3 py-2 max-w-[200px] " title={item.produk}>
+                    {item.produk || '-'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {item.customer || '-'}
+                  </td>
+                  <td className="px-3 py-2">{item.deskripsi || '-'}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {item.operator?.nama || '-'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {item.kategori_kendala?.kategori || '-'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-gray-500 flex flex-col gap-1  ">
+                    <span>Mulai : {fmtDateTime(item.waktu_mulai)}</span>
+                    <span>Selesai : {fmtDateTime(item.waktu_selesai)}</span>
+                  </td>
+
+                  <td className="px-3 py-2 whitespace-nowrap font-medium text-violet-700">
+                    {fmtDetik(item.total_waktu_detik)}
+                  </td>
+                  <td className="px-3 py-2 text-right text-green-600 font-semibold">
+                    {fmtNum(item.baik)}
+                  </td>
+                  <td className="px-3 py-2 text-right text-orange-500 font-semibold">
+                    {fmtNum(item.rusak_sebagian)}
+                  </td>
+                  <td className="px-3 py-2 text-right text-red-500 font-semibold">
+                    {fmtNum(item.rusak_total)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="text-xs text-gray-400">
+        {filtered.length} dari {items.length} record
+      </p>
+    </div>
+  );
+}
+
 function DetailListModal({
   title,
   items,
@@ -217,7 +563,7 @@ function DetailListModal({
 }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col">
         <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-6 py-4 text-white rounded-t-2xl flex justify-between items-center shrink-0">
           <h3 className="text-base font-bold">{title}</h3>
           <button
@@ -228,92 +574,9 @@ function DetailListModal({
           </button>
         </div>
         <div className="overflow-auto p-4">
-          {items.length === 0 ? (
-            <p className="text-center text-gray-400 py-10">Tidak ada data</p>
-          ) : (
-            <table className="w-full text-xs min-w-[1000px]">
-              <thead className="bg-white sticky top-0">
-                <tr>
-                  {[
-                    'No',
-                    'No JO',
-                    'Final',
-                    'Deskripsi',
-                    'Operator',
-                    'Kategori',
-                    'Waktu Mulai',
-                    'Waktu Selesai',
-                    'Durasi',
-                    'Baik',
-                    'Rusak Sebagian',
-                    'Rusak Total',
-                  ].map((h) => (
-                    <th
-                      key={h}
-                      className="px-3 py-2 text-left text-xs font-semibold text-gray-500 whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, i) => (
-                  <tr
-                    key={item.id}
-                    className={`border-b ${
-                      i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                    } hover:bg-violet-50 transition-colors`}
-                  >
-                    <td className="px-3 py-2 text-gray-400 whitespace-nowrap">
-                      {i + 1}
-                    </td>
-                    <td className="px-3 py-2 font-medium text-violet-600 whitespace-nowrap">
-                      {item.no_jo}
-                    </td>
-                    <td className="px-3 py-2 text-center">
-                      {item.is_final_result && (
-                        <span
-                          title="Final Result"
-                          className="text-amber-500 text-base"
-                        >
-                          ★
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2">{item.deskripsi || '-'}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      {item.operator?.nama || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      {item.kategori_kendala?.kategori || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-gray-500">
-                      {fmtDateTime(item.waktu_mulai)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-gray-500">
-                      {fmtDateTime(item.waktu_selesai)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap font-medium text-violet-700">
-                      {fmtDetik(item.total_waktu_detik)}
-                    </td>
-                    <td className="px-3 py-2 text-right text-green-600 font-semibold">
-                      {fmtNum(item.baik)}
-                    </td>
-                    <td className="px-3 py-2 text-right text-orange-500 font-semibold">
-                      {fmtNum(item.rusak_sebagian)}
-                    </td>
-                    <td className="px-3 py-2 text-right text-red-500 font-semibold">
-                      {fmtNum(item.rusak_total)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <DetailTable items={items} />
         </div>
-        <div className="px-6 py-3 bg-gray-50 rounded-b-2xl flex justify-between items-center shrink-0">
-          <span className="text-xs text-gray-400">{items.length} record</span>
+        <div className="px-6 py-3 bg-gray-50 rounded-b-2xl flex justify-end shrink-0">
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold rounded-lg"
@@ -334,7 +597,6 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
     items: KendalaItem[];
   } | null>(null);
 
-  // Use total_jam from API as the authoritative denominator for percentage bars
   const totalJam = data.total_jam ?? 0;
   const pctSetting =
     totalJam > 0 ? (data.total_waktu_setting_jam / totalJam) * 100 : 0;
@@ -354,40 +616,72 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
         />
       )}
       <div className="space-y-5">
-        {/* Main stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <StatCard
-            label="Total JO"
-            value={fmtNum(data.total_jo)}
-            sub={`${fmtNum(data.total_jo_produksi)} produksi / ${fmtNum(
-              data.total_jo_proof,
-            )} proof`}
-          />
-          <StatCard
-            label="Total Jam"
-            value={fmtDurasi(data.total_jam)}
-            accent
-          />
-          <StatCard label="Net Output" value={fmtNum(data.net_output, 4)} />
-          <StatCard label="Qty Baik" value={fmtNum(data.total_qty_baik)} />
-          <StatCard
-            label="Total Produksi"
-            value={fmtNum(data.total_qty_produksi)}
-          />
+        {/* Row 1: Time-based */}
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+            Waktu & JO
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <StatCard
+              label="Total Jam"
+              value={fmtDurasi(data.total_jam)}
+              accent
+            />
+            <StatCard
+              label="Waktu Setting"
+              value={fmtDurasi(data.total_waktu_setting_jam)}
+              sub={`${pctSetting.toFixed(1)}% dari total`}
+            />
+            <StatCard
+              label="Waktu Produksi"
+              value={fmtDurasi(data.total_waktu_produksi_jam)}
+              sub={`${pctProduksi.toFixed(1)}% dari total`}
+            />
+            <StatCard
+              label="Waktu Kendala"
+              value={fmtDurasi(data.total_waktu_kendala_jam)}
+              sub={`${pctKendala.toFixed(1)}% dari total`}
+            />
+            <StatCard
+              label="Waktu Off"
+              value={fmtDurasi(data.total_waktu_off_jam)}
+              sub={`${pctOff.toFixed(1)}% dari total`}
+            />
+            <StatCard
+              label="Total JO"
+              value={fmtNum(data.total_jo)}
+              sub={`${fmtNum(data.total_jo_produksi)} produksi / ${fmtNum(
+                data.total_jo_proof,
+              )} proof`}
+            />
+            <StatCard label="Net Output" value={fmtNum(data.net_output, 4)} />
+          </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <StatCard
-            label="Rusak Sebagian"
-            value={fmtNum(data.total_qty_rusak_sebagian)}
-          />
-          <StatCard
-            label="Rusak Total"
-            value={fmtNum(data.total_qty_rusak_total)}
-          />
-          <StatCard
-            label="Waktu Kendala"
-            value={fmtDurasi(data.total_waktu_kendala_jam)}
-          />
+
+        {/* Row 2: Qty-based */}
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+            Kuantitas
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <StatCard
+              label="Qty Baik"
+              value={fmtNum(data.total_qty_baik)}
+              accent
+            />
+            <StatCard
+              label="Total Produksi"
+              value={fmtNum(data.total_qty_produksi)}
+            />
+            <StatCard
+              label="Rusak Sebagian"
+              value={fmtNum(data.total_qty_rusak_sebagian)}
+            />
+            <StatCard
+              label="Rusak Total"
+              value={fmtNum(data.total_qty_rusak_total)}
+            />
+          </div>
         </div>
 
         {/* Time distribution */}
@@ -568,8 +862,8 @@ function RekapKendalaSection({ data }: { data: RekapKendala[] }) {
                 </svg>
               </button>
               {isOpen && (
-                <div className="border-t border-gray-100 px-5 py-4">
-                  <div className="flex justify-end mb-3">
+                <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+                  <div className="flex justify-end">
                     <button
                       onClick={() =>
                         setDetailModal({
@@ -579,45 +873,10 @@ function RekapKendalaSection({ data }: { data: RekapKendala[] }) {
                       }
                       className="text-xs text-violet-600 hover:underline font-semibold"
                     >
-                      Lihat semua detail →
+                      Lihat semua dalam modal →
                     </button>
                   </div>
-                  <div className="space-y-2">
-                    {k.data_kendala.slice(0, 5).map((item) => (
-                      <div
-                        key={item.id}
-                        className="grid grid-cols-4 gap-3 text-xs bg-gray-50 rounded-lg px-3 py-2"
-                      >
-                        <div>
-                          <p className="text-gray-400">No JO</p>
-                          <p className="font-medium text-violet-600">
-                            {item.no_jo}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Deskripsi</p>
-                          <p className="font-medium">{item.deskripsi || '-'}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Operator</p>
-                          <p className="font-medium">
-                            {item.operator?.nama || '-'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Durasi</p>
-                          <p className="font-bold text-red-500">
-                            {fmtDetik(item.total_waktu_detik)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {k.data_kendala.length > 5 && (
-                      <p className="text-xs text-gray-400 text-center pt-1">
-                        +{k.data_kendala.length - 5} lainnya
-                      </p>
-                    )}
-                  </div>
+                  <DetailTable items={k.data_kendala} />
                 </div>
               )}
             </div>
@@ -632,6 +891,36 @@ function RekapKendalaSection({ data }: { data: RekapKendala[] }) {
 
 function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
   const [activeOp, setActiveOp] = useState<number | null>(null);
+  const [activeOpTab, setActiveOpTab] = useState<
+    Record<
+      number,
+      | 'ringkasan'
+      | 'detail_produksi'
+      | 'detail_setting'
+      | 'detail_kendala'
+      | 'detail_off'
+    >
+  >({});
+
+  function getOpTab(id: number) {
+    return activeOpTab[id] ?? 'ringkasan';
+  }
+
+  const OP_TABS: {
+    key:
+      | 'ringkasan'
+      | 'detail_produksi'
+      | 'detail_setting'
+      | 'detail_kendala'
+      | 'detail_off';
+    label: string;
+  }[] = [
+    { key: 'ringkasan', label: 'Ringkasan' },
+    { key: 'detail_produksi', label: 'Produksi' },
+    { key: 'detail_setting', label: 'Setting' },
+    { key: 'detail_kendala', label: 'Kendala' },
+    { key: 'detail_off', label: 'Off' },
+  ];
 
   return (
     <div className="space-y-4">
@@ -639,11 +928,25 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
         const m = op.rekap_mesin;
         const isOpen = activeOp === op.id_operator;
         const totalJam = m.total_jam ?? 0;
+        const tab = getOpTab(op.id_operator);
+
+        const tabItems: KendalaItem[] =
+          tab === 'detail_produksi'
+            ? m.detail_produksi ?? []
+            : tab === 'detail_setting'
+            ? m.detail_setting ?? []
+            : tab === 'detail_kendala'
+            ? m.detail_kendala ?? []
+            : tab === 'detail_off'
+            ? m.detail_off ?? []
+            : [];
+
         return (
           <div
             key={op.id_operator}
             className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
           >
+            {/* Header */}
             <button
               onClick={() => setActiveOp(isOpen ? null : op.id_operator)}
               className="w-full px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
@@ -688,116 +991,188 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                 />
               </svg>
             </button>
+
             {isOpen && (
-              <div className="border-t border-gray-100 p-5 space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <StatCard
-                    label="Total JO"
-                    value={fmtNum(m.total_jo)}
-                    sub={`${fmtNum(m.total_jo_produksi)} produksi / ${fmtNum(
-                      m.total_jo_proof,
-                    )} proof`}
-                  />
-                  <StatCard
-                    label="Total Jam"
-                    value={fmtDurasi(m.total_jam)}
-                    accent
-                  />
-                  <StatCard
-                    label="Net Output"
-                    value={fmtNum(m.net_output, 4)}
-                  />
-                  <StatCard label="Qty Baik" value={fmtNum(m.total_qty_baik)} />
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <StatCard
-                    label="Qty Produksi"
-                    value={fmtNum(m.total_qty_produksi)}
-                  />
-                  <StatCard
-                    label="Rusak Sebagian"
-                    value={fmtNum(m.total_qty_rusak_sebagian)}
-                  />
-                  <StatCard
-                    label="Rusak Total"
-                    value={fmtNum(m.total_qty_rusak_total)}
-                  />
-                  <StatCard
-                    label="Waktu Kendala"
-                    value={fmtDurasi(m.total_waktu_kendala_jam)}
-                  />
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                  <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Distribusi Waktu
-                  </h5>
-                  {[
-                    {
-                      label: 'Setting',
-                      jam: m.total_waktu_setting_jam,
-                      bar: 'bg-blue-400',
-                    },
-                    {
-                      label: 'Produksi',
-                      jam: m.total_waktu_produksi_jam,
-                      bar: 'bg-emerald-400',
-                    },
-                    {
-                      label: 'Kendala',
-                      jam: m.total_waktu_kendala_jam,
-                      bar: 'bg-red-400',
-                    },
-                    {
-                      label: 'Off',
-                      jam: m.total_waktu_off_jam,
-                      bar: 'bg-gray-300',
-                    },
-                  ].map(({ label, jam, bar }) => {
-                    const pct = totalJam > 0 ? (jam / totalJam) * 100 : 0;
+              <div className="border-t border-gray-100">
+                {/* Sub-tabs */}
+                <div className="flex gap-0 border-b border-gray-100 overflow-x-auto">
+                  {OP_TABS.map(({ key, label }) => {
+                    const count =
+                      key === 'detail_produksi'
+                        ? m.detail_produksi?.length ?? 0
+                        : key === 'detail_setting'
+                        ? m.detail_setting?.length ?? 0
+                        : key === 'detail_kendala'
+                        ? m.detail_kendala?.length ?? 0
+                        : key === 'detail_off'
+                        ? m.detail_off?.length ?? 0
+                        : null;
                     return (
-                      <PctBar
-                        key={label}
-                        label={label}
-                        pct={pct}
-                        colorClass={bar}
-                        jam={jam}
-                      />
+                      <button
+                        key={key}
+                        onClick={() =>
+                          setActiveOpTab((prev) => ({
+                            ...prev,
+                            [op.id_operator]: key,
+                          }))
+                        }
+                        className={`px-4 py-2.5 text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5 border-b-2 ${
+                          tab === key
+                            ? 'border-violet-600 text-violet-700 bg-violet-50'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {label}
+                        {count !== null && (
+                          <span
+                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              tab === key
+                                ? 'bg-violet-200 text-violet-700'
+                                : 'bg-gray-100 text-gray-500'
+                            }`}
+                          >
+                            {count}
+                          </span>
+                        )}
+                      </button>
                     );
                   })}
                 </div>
-                {op.rekap_kendala?.length > 0 && (
-                  <div>
-                    <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-                      Rekap Kendala
-                    </h5>
-                    <div className="space-y-2">
-                      {op.rekap_kendala.map((k) => (
-                        <div
-                          key={k.kategori_kendala}
-                          className="flex items-center gap-3 text-xs"
-                        >
-                          <span className="w-20 text-gray-500 shrink-0">
-                            {k.kategori_kendala}
-                          </span>
-                          <div className="flex-1 bg-gray-200 rounded-full h-1.5">
-                            <div
-                              className="bg-red-400 h-1.5 rounded-full"
-                              style={{
-                                width: `${Math.min(k.persentase, 100)}%`,
-                              }}
-                            />
-                          </div>
-                          <span className="text-gray-500 text-right whitespace-nowrap">
-                            {fmtDetik(k.total_waktu_detik)}
-                          </span>
-                          <span className="font-semibold text-gray-600 w-10 text-right">
-                            {k.persentase.toFixed(1)}%
-                          </span>
+
+                <div className="p-5 space-y-4">
+                  {tab === 'ringkasan' && (
+                    <>
+                      {/* Time stats */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                          Waktu & JO
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <StatCard
+                            label="Total Jam"
+                            value={fmtDurasi(m.total_jam)}
+                            accent
+                          />
+                          <StatCard
+                            label="Total JO"
+                            value={fmtNum(m.total_jo)}
+                            sub={`${fmtNum(
+                              m.total_jo_produksi,
+                            )} produksi / ${fmtNum(m.total_jo_proof)} proof`}
+                          />
+                          <StatCard
+                            label="Net Output"
+                            value={fmtNum(m.net_output, 4)}
+                          />
+                          <StatCard
+                            label="Waktu Kendala"
+                            value={fmtDurasi(m.total_waktu_kendala_jam)}
+                          />
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                      </div>
+
+                      {/* Qty stats */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+                          Kuantitas
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <StatCard
+                            label="Qty Baik"
+                            value={fmtNum(m.total_qty_baik)}
+                            accent
+                          />
+                          <StatCard
+                            label="Total Produksi"
+                            value={fmtNum(m.total_qty_produksi)}
+                          />
+                          <StatCard
+                            label="Rusak Sebagian"
+                            value={fmtNum(m.total_qty_rusak_sebagian)}
+                          />
+                          <StatCard
+                            label="Rusak Total"
+                            value={fmtNum(m.total_qty_rusak_total)}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Time distribution */}
+                      <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                        <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          Distribusi Waktu
+                        </h5>
+                        {[
+                          {
+                            label: 'Setting',
+                            jam: m.total_waktu_setting_jam,
+                            bar: 'bg-blue-400',
+                          },
+                          {
+                            label: 'Produksi',
+                            jam: m.total_waktu_produksi_jam,
+                            bar: 'bg-emerald-400',
+                          },
+                          {
+                            label: 'Kendala',
+                            jam: m.total_waktu_kendala_jam,
+                            bar: 'bg-red-400',
+                          },
+                          {
+                            label: 'Off',
+                            jam: m.total_waktu_off_jam,
+                            bar: 'bg-gray-300',
+                          },
+                        ].map(({ label, jam, bar }) => (
+                          <PctBar
+                            key={label}
+                            label={label}
+                            pct={totalJam > 0 ? (jam / totalJam) * 100 : 0}
+                            colorClass={bar}
+                            jam={jam}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Rekap kendala */}
+                      {op.rekap_kendala?.length > 0 && (
+                        <div>
+                          <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                            Rekap Kendala
+                          </h5>
+                          <div className="space-y-2">
+                            {op.rekap_kendala.map((k) => (
+                              <div
+                                key={k.kategori_kendala}
+                                className="flex items-center gap-3 text-xs"
+                              >
+                                <span className="w-20 text-gray-500 shrink-0">
+                                  {k.kategori_kendala}
+                                </span>
+                                <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                                  <div
+                                    className="bg-red-400 h-1.5 rounded-full"
+                                    style={{
+                                      width: `${Math.min(k.persentase, 100)}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-gray-500 text-right whitespace-nowrap">
+                                  {fmtDetik(k.total_waktu_detik)}
+                                </span>
+                                <span className="font-semibold text-gray-600 w-10 text-right">
+                                  {k.persentase.toFixed(1)}%
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {tab !== 'ringkasan' && <DetailTable items={tabItems} />}
+                </div>
               </div>
             )}
           </div>
@@ -831,67 +1206,75 @@ const TABS: { key: ActiveTab; label: string; icon: string }[] = [
 
 function LaporanRekapLKH() {
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetchingOptions, setIsFetchingOptions] = useState(false);
-  const [tahapanMesinList, setTahapanMesinList] = useState<
-    TahapanMesinOption[]
-  >([]);
+  const [isFetchingTahapan, setIsFetchingTahapan] = useState(false);
+  const [isFetchingMesin, setIsFetchingMesin] = useState(false);
+  const [tahapanList, setTahapanList] = useState<Tahapan[]>([]);
+  const [mesinList, setMesinList] = useState<MesinTahapan[]>([]);
 
-  // Filter state
   const [startDate, setStartDate] = useState(firstOfMonth());
   const [endDate, setEndDate] = useState(todayStr());
-  const [selectedId, setSelectedId] = useState<string>(''); // id of tahapanMesin record
+  const [selectedTahapan, setSelectedTahapan] = useState<Tahapan | null>(null);
+  const [selectedMesin, setSelectedMesin] = useState<MesinTahapan | null>(null);
 
-  // Data
   const [rekapData, setRekapData] = useState<ApiResponse | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>('mesin');
 
-  // Load tahapanMesin options on mount (single API call)
+  // Load tahapan options on mount
   useEffect(() => {
-    async function loadOptions() {
-      setIsFetchingOptions(true);
+    async function loadTahapan() {
+      setIsFetchingTahapan(true);
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_LINK}/master/tahapanMesin`,
-          {
-            withCredentials: true,
-          },
+          `${import.meta.env.VITE_API_LINK}/master/tahapan`,
+          { withCredentials: true },
         );
-        const list = Array.isArray(res.data?.data) ? res.data.data : [];
-        setTahapanMesinList(list);
+        setTahapanList(Array.isArray(res.data?.data) ? res.data.data : []);
       } catch (err) {
-        console.error('Failed to load tahapan mesin options:', err);
+        console.error('Failed to load tahapan:', err);
       } finally {
-        setIsFetchingOptions(false);
+        setIsFetchingTahapan(false);
       }
     }
-    loadOptions();
+    loadTahapan();
   }, []);
 
-  // Derive id_tahapan and id_mesin from selected record
-  const selectedRecord = useMemo(
-    () => tahapanMesinList.find((r) => String(r.id) === selectedId) ?? null,
-    [tahapanMesinList, selectedId],
-  );
+  // Load mesin options on mount
+  useEffect(() => {
+    async function loadMesin() {
+      setIsFetchingMesin(true);
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_LINK}/master/mesinTahapan`,
+          { withCredentials: true },
+        );
+        setMesinList(Array.isArray(res.data?.data) ? res.data.data : []);
+      } catch (err) {
+        console.error('Failed to load mesin:', err);
+      } finally {
+        setIsFetchingMesin(false);
+      }
+    }
+    loadMesin();
+  }, []);
 
-  const canFetch = !!(startDate && endDate && selectedRecord);
+  const canFetch = !!(startDate && endDate && selectedMesin);
 
   async function fetchRekap() {
-    if (!canFetch || !selectedRecord) return;
+    if (!canFetch || !selectedMesin) return;
     try {
       setIsLoading(true);
+      const params: Record<string, string | number> = {
+        start_date: startDate,
+        end_date: endDate,
+        id_mesin: selectedMesin.id!,
+      };
+      if (selectedTahapan?.id) {
+        params.id_tahapan = selectedTahapan.id;
+      }
       const res = await axios.get(
         `${import.meta.env.VITE_API_LINK}/produksi/lkhRekap`,
-        {
-          params: {
-            start_date: startDate,
-            end_date: endDate,
-            id_tahapan: selectedRecord.id_tahapan,
-            id_mesin: selectedRecord.id_mesin_tahapan,
-          },
-          withCredentials: true,
-        },
+        { params, withCredentials: true },
       );
-      console.log('Rekap data response:', res.data);
       setRekapData(res.data?.data ?? res.data ?? null);
       setActiveTab('mesin');
     } catch (err) {
@@ -904,19 +1287,9 @@ function LaporanRekapLKH() {
   function handleReset() {
     setStartDate(firstOfMonth());
     setEndDate(todayStr());
-    setSelectedId('');
+    setSelectedTahapan(null);
+    setSelectedMesin(null);
     setRekapData(null);
-  }
-
-  // Build dropdown label per record
-  function recordLabel(r: TahapanMesinOption) {
-    const tahapan = r.tahapan
-      ? `${r.tahapan.kode_tahapan} - ${r.tahapan.nama_tahapan}`
-      : `Tahapan #${r.id_tahapan}`;
-    const mesin = r.mesin
-      ? `${r.mesin.kode_mesin || 'No Code'} - ${r.mesin.nama_mesin}`
-      : `Mesin #${r.id_mesin_tahapan}`;
-    return `${tahapan} / ${mesin}`;
   }
 
   return (
@@ -942,14 +1315,14 @@ function LaporanRekapLKH() {
             <h2 className="font-semibold text-violet-700 text-sm">
               Filter Data
             </h2>
-            {!selectedId && (
+            {!selectedMesin && (
               <span className="ml-auto text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full font-medium">
-                Pilih Tahapan &amp; Mesin untuk memuat data
+                Pilih Mesin untuk memuat data
               </span>
             )}
           </div>
           <div className="p-5">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-500">
                   Dari Tanggal
@@ -972,28 +1345,31 @@ function LaporanRekapLKH() {
                   className="rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all"
                 />
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-gray-500">
-                  Tahapan &amp; Mesin <span className="text-red-400">*</span>
-                </label>
-                <select
-                  value={selectedId}
-                  onChange={(e) => setSelectedId(e.target.value)}
-                  disabled={isFetchingOptions}
-                  className="rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all disabled:opacity-50"
-                >
-                  <option value="">
-                    {isFetchingOptions
-                      ? 'Memuat...'
-                      : '-- Pilih Tahapan & Mesin --'}
-                  </option>
-                  {tahapanMesinList.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {recordLabel(r)}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <SearchableSelect<MesinTahapan>
+                label="Mesin"
+                required
+                placeholder="-- Pilih Mesin --"
+                options={mesinList}
+                value={selectedMesin}
+                onChange={setSelectedMesin}
+                getKey={(r) => r.id ?? r.nama_mesin}
+                getLabel={(r) =>
+                  r.kode_mesin
+                    ? `${r.kode_mesin} - ${r.nama_mesin}`
+                    : r.nama_mesin
+                }
+                loading={isFetchingMesin}
+              />
+              <SearchableSelect<Tahapan>
+                label="Tahapan"
+                placeholder="-- Semua Tahapan (Opsional) --"
+                options={tahapanList}
+                value={selectedTahapan}
+                onChange={setSelectedTahapan}
+                getKey={(r) => r.id ?? r.kode_tahapan}
+                getLabel={(r) => `${r.kode_tahapan} - ${r.nama_tahapan}`}
+                loading={isFetchingTahapan}
+              />
             </div>
             <div className="flex flex-wrap gap-3 justify-end mt-4">
               <button
@@ -1034,7 +1410,7 @@ function LaporanRekapLKH() {
               />
             </svg>
             <p className="text-gray-400 text-sm">
-              Pilih Tahapan &amp; Mesin, lalu klik{' '}
+              Pilih Mesin, lalu klik{' '}
               <strong className="text-violet-600">Tampilkan Rekap</strong>
             </p>
           </div>
@@ -1044,41 +1420,45 @@ function LaporanRekapLKH() {
         {rekapData && (
           <div className="space-y-4">
             {/* Context pills */}
-            {selectedRecord && (
-              <div className="flex flex-wrap items-center gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              {selectedTahapan ? (
                 <span className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full font-medium border border-violet-200">
-                  {selectedRecord.tahapan
-                    ? `${selectedRecord.tahapan.kode_tahapan} - ${selectedRecord.tahapan.nama_tahapan}`
-                    : `Tahapan #${selectedRecord.id_tahapan}`}
+                  {selectedTahapan.kode_tahapan} -{' '}
+                  {selectedTahapan.nama_tahapan}
                 </span>
-                <span className="text-gray-300">·</span>
+              ) : (
+                <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full font-medium border border-gray-200 italic">
+                  Semua Tahapan
+                </span>
+              )}
+              <span className="text-gray-300">·</span>
+              {selectedMesin && (
                 <span className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full font-medium border border-violet-200">
-                  {selectedRecord.mesin
-                    ? `${selectedRecord.mesin.kode_mesin || ''} - ${
-                        selectedRecord.mesin.nama_mesin
-                      }`
-                    : `Mesin #${selectedRecord.id_mesin_tahapan}`}
+                  {selectedMesin.kode_mesin
+                    ? `${selectedMesin.kode_mesin} - `
+                    : ''}
+                  {selectedMesin.nama_mesin}
                 </span>
-                <span className="text-gray-300">·</span>
-                <span className="text-gray-400">
-                  {startDate} s/d {endDate}
-                </span>
-              </div>
-            )}
+              )}
+              <span className="text-gray-300">·</span>
+              <span className="text-gray-400">
+                {startDate} s/d {endDate}
+              </span>
+            </div>
 
-            {/* Tabs with background */}
+            {/* Tabs */}
             <div className="flex gap-0 rounded-xl overflow-hidden border border-violet-200 w-fit shadow-sm">
               {TABS.map(({ key, label, icon }, idx) => (
                 <button
                   key={key}
                   onClick={() => setActiveTab(key)}
-                  className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all
-                    ${idx > 0 ? 'border-l border-violet-200' : ''}
-                    ${
-                      activeTab === key
-                        ? 'bg-violet-600 text-white'
-                        : 'bg-white text-violet-600 hover:bg-violet-50'
-                    }`}
+                  className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all ${
+                    idx > 0 ? 'border-l border-violet-200' : ''
+                  } ${
+                    activeTab === key
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-white text-violet-600 hover:bg-violet-50'
+                  }`}
                 >
                   <svg
                     className="w-4 h-4 shrink-0"

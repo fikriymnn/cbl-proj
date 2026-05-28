@@ -1,724 +1,854 @@
 import React, { useEffect, useState } from 'react';
-import Loading from '../../../Loading';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
-import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
-import EmployeeFilter from './EmployeeFilter';
+// ─── Icons (inline SVG to avoid deps) ─────────────────────────────────────────
+const IconCalendar = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+const IconSearch = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+const IconChevron = ({ open }: { open: boolean }) => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    style={{
+      transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+      transition: 'transform 0.2s',
+    }}
+  >
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+const IconUser = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+const IconSend = () => (
+  <svg
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
+const IconEye = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+const IconX = () => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+const IconFilter = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </svg>
+);
+
+// ─── Status badge ──────────────────────────────────────────────────────────────
+const statusBadge = (status: string) => {
+  const map: Record<string, string> = {
+    Hadir: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    Izin: 'bg-sky-50 text-sky-700 border-sky-200',
+    Sakit: 'bg-amber-50 text-amber-700 border-amber-200',
+  };
+  const cls = map[status] ?? 'bg-red-50 text-red-700 border-red-200';
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${cls}`}
+    >
+      {status}
+    </span>
+  );
+};
+
+// ─── Spinner ──────────────────────────────────────────────────────────────────
+const Spinner = () => (
+  <div className="flex items-center justify-center py-20">
+    <div className="w-10 h-10 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin" />
+  </div>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 function PayrollMinggu() {
   const [isLoading, setIsLoading] = useState(false);
-  const [payWeek, setPayWeek] = useState<any>();
-  const [dateFrom, setDateFrom] = useState<any>();
-  const [dateTo, setDateTo] = useState<any>();
-  const [editedPayWeek, setEditedPayWeek] = useState(() =>
-    payWeek
-      ? {
-          ...payWeek,
-          detail: payWeek.detail.map((item: any) => ({
-            ...item,
-            originalSubTotal: item.summaryPayroll.sub_total, // Store initial sub_total
-          })),
-        }
-      : null,
-  );
-  useEffect(() => {
-    if (payWeek) {
-      setEditedPayWeek({
-        ...payWeek,
-        detail: payWeek.detail.map((item: any) => ({
-          ...item,
-          originalSubTotal: item.summaryPayroll.sub_total,
-          // Make sure these fields are preserved when setting up the state
-        })),
-      });
-    }
-    getDepartment();
-    getdivisi();
-  }, [payWeek]);
+  const [payWeek, setPayWeek] = useState<any>(null);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [filteredData, setFilteredData] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterDept, setFilterDept] = useState('');
+  const [openModal, setOpenModal] = useState<number | null>(null);
+  const [showDetailAbsen, setShowDetailAbsen] = useState(false);
+  const [showDetailRincian, setShowDetailRincian] = useState(false);
+  const [toast, setToast] = useState<{
+    msg: string;
+    type: 'success' | 'error';
+  } | null>(null);
+  const [periodStatus, setPeriodStatus] = useState<
+    'idle' | 'checking' | 'ok' | 'exists'
+  >('idle');
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  // ── Derived lists ──────────────────────────────────────────────────────────
+  const departments = payWeek
+    ? [
+        ...new Set(
+          (payWeek.detail as any[])
+            .map((d) => d.summaryPayroll?.department)
+            .filter(Boolean),
+        ),
+      ]
+    : [];
+
   useEffect(() => {
-    if (editedPayWeek?.detail) {
-      setFilteredData(editedPayWeek.detail);
+    if (!payWeek?.detail) {
+      setFilteredData([]);
+      return;
     }
-  }, [editedPayWeek]);
-  async function getPayrollMingguan(dateFrom1: any, dateTo1: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/hr/payrollAll`;
-    try {
-      setIsLoading(true);
-      const res = await axios.get(url, {
-        params: {
-          startDate: dateFrom1,
-          endDate: dateTo1,
-        },
-        withCredentials: true,
-      });
-      setIsLoading(false);
-      setPayWeek(res.data.data);
-      console.log(res.data.data);
-    } catch (error: any) {
-      setIsLoading(false);
-      console.log(error);
+    let list = payWeek.detail as any[];
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (d) =>
+          d.summaryPayroll?.nama_karyawan?.toLowerCase().includes(q) ||
+          d.summaryPayroll?.nik?.toString().includes(q),
+      );
     }
-  }
+    if (filterDept)
+      list = list.filter((d) => d.summaryPayroll?.department === filterDept);
+    setFilteredData(list);
+  }, [payWeek, searchQuery, filterDept]);
 
-  async function postPayrollMingguan() {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/hr/payroll/bayarMingguanPeriode`;
+  // ── API calls ──────────────────────────────────────────────────────────────
+  async function checkAndFetch() {
+    if (!dateFrom || !dateTo) {
+      showToast('Pilih tanggal dari & sampai', 'error');
+      return;
+    }
+    setPeriodStatus('checking');
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      const res = await axios.post(
-        url,
+      await axios.get(
+        `${import.meta.env.VITE_API_LINK}/hr/payroll/checkBayarMingguanPeriode`,
         {
-          data_payroll: editedPayWeek,
-        },
-        {
+          params: { periode_dari: dateFrom, periode_sampai: dateTo },
           withCredentials: true,
         },
       );
-      setIsLoading(false);
-      setPayWeek(res.data.data);
-      console.log(res.data.data);
-    } catch (error: any) {
-      setIsLoading(false);
-      console.log(error);
-    }
-  }
-
-  const handleInputChange = (index: number, value: number) => {
-    const newDetail = [...editedPayWeek.detail];
-    newDetail[index].summaryPayroll.pengurangan_penambahan = value;
-    newDetail[index].summaryPayroll.sub_total =
-      newDetail[index].originalSubTotal + value;
-
-    // Recalculate total based on new sub_totals
-    const newTotal = newDetail.reduce(
-      (sum, item) => sum + item.summaryPayroll.sub_total,
-      0,
-    );
-
-    setEditedPayWeek({
-      ...editedPayWeek,
-      detail: newDetail,
-      total: newTotal,
-    });
-  };
-
-  const handleInputNote = (index: number, value: string) => {
-    const newDetail = [...editedPayWeek.detail];
-    newDetail[index].summaryPayroll.note_pengurangan_penambahan = value;
-
-    setEditedPayWeek({
-      ...editedPayWeek,
-      detail: newDetail,
-    });
-  };
-
-  const [showEdit, setShowEdit] = useState<any>([]);
-  const openEdit = (i: any) => {
-    const onchangeVal = [...showEdit];
-    onchangeVal[i] = true;
-    setShowEdit(onchangeVal);
-    // Don't reset the data here
-  };
-
-  const closeEdit = (i: any) => {
-    const onchangeVal = [...showEdit];
-    onchangeVal[i] = false;
-    setShowEdit(onchangeVal);
-    // Don't reset the data here either
-  };
-  const handleClickDetail = (index: number) => {
-    setShowDetail((prevState) => {
-      const updatedShowDetail = [...prevState]; // Create a copy
-      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
-      return updatedShowDetail;
-    });
-  };
-  const [showDetail, setShowDetail] = useState<boolean[]>(
-    new Array(payWeek != null && payWeek.length).fill(false),
-  );
-
-  const handleClickDetail2 = (index: number) => {
-    setShowDetail2((prevState) => {
-      const updatedShowDetail = [...prevState]; // Create a copy
-      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
-      return updatedShowDetail;
-    });
-  };
-  const [showDetail2, setShowDetail2] = useState<boolean[]>(
-    new Array(payWeek != null && payWeek.length).fill(false),
-  );
-  const [department, setDepartment] = useState<any>();
-
-  async function getDepartment() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
-    try {
-      setIsLoading(true);
-      const res = await axios.get(url, {
-        params: {
-          is_active: true,
-        },
-        withCredentials: true,
-      });
-      setIsLoading(false);
-      setDepartment(res.data);
-      console.log('department', res.data);
-    } catch (error: any) {
-      setIsLoading(false);
-      console.log(error);
-    }
-  }
-  const [divisi, setdivisi] = useState<any>();
-
-  async function getdivisi() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi`;
-    try {
-      setIsLoading(true);
+      setPeriodStatus('ok');
       const res = await axios.get(
-        url,
-
+        `${import.meta.env.VITE_API_LINK}/hr/payrollAll`,
         {
+          params: { startDate: dateFrom, endDate: dateTo },
           withCredentials: true,
         },
       );
+      setPayWeek(res.data.data);
+      showToast('Data payroll berhasil dimuat');
+    } catch (err: any) {
+      if (err.response?.status === 404) {
+        setPeriodStatus('exists');
+
+        showToast('Periode ini sudah pernah dibuat sebelumnya', 'error');
+      } else {
+        showToast('Gagal memuat data', 'error');
+      }
+    } finally {
       setIsLoading(false);
-      setdivisi(res.data);
-      console.log('divisi', res.data);
-    } catch (error: any) {
-      setIsLoading(false);
-      console.log(error);
     }
   }
-  const tipeKaryawan: any = [
-    { tipe_karyawan: 'produksi' },
-    { tipe_karyawan: 'staff' },
-  ];
-  const tipePenggajian: any = [
-    { tipe_penggajian: 'bulanan' },
-    { tipe_penggajian: 'mingguan' },
-  ];
+
+  async function submitPayroll() {
+    if (!payWeek) return;
+    setIsLoading(true);
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarMingguanPeriode`,
+        { data_payroll: payWeek },
+        { withCredentials: true },
+      );
+      showToast('Payroll berhasil disimpan!');
+      setPayWeek(null);
+      setPeriodStatus('idle');
+    } catch {
+      showToast('Gagal menyimpan payroll', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const selectedEmployee = openModal !== null ? filteredData[openModal] : null;
+
   return (
-    <main>
-      {isLoading && <Loading />}
-      <div className="min-w-[700px] bg-white rounded-xl">
-        <div className="bg-white w-full mb-5 rounded-md p-3 flex flex-col justify-center items-center gap-3 border-b-8 border-[#D8EAFF]">
-          <div className="grid md:grid-cols-12 grid-cols-6  py-1 gap-3 ">
-            <div className="flex flex-col gap-2 col-span-3">
-              <div>
-                <p className="text-sm text-primary font-semibold">Dari:</p>
-                <input
-                  className=" bg-[#D8EAFF] px-2 h-8"
-                  type="date"
-                  onChange={(e) => setDateFrom(e.target.value)}
-                ></input>
-              </div>
-            </div>
-            <div className="flex flex-col gap-2 col-span-7">
-              <div>
-                <p className=" my-auto text-sm text-primary font-semibold ">
-                  Sampai:
-                </p>
-
-                <input
-                  className=" bg-[#D8EAFF] px-2 h-8"
-                  type="date"
-                  onChange={(e) => setDateTo(e.target.value)}
-                ></input>
-              </div>
-            </div>
-
-            <div className="flex w-full  items-end gap-1 col-span-2">
-              <button
-                onClick={() => {
-                  getPayrollMingguan(dateFrom, dateTo);
-                }}
-                className="bg-primary text-white px-5 py-2 rounded-md my-auto "
-              >
-                Pilih Periode
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen bg-slate-50 font-sans">
+      {/* ── Toast ── */}
+      {toast && (
+        <div
+          className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all
+          ${
+            toast.type === 'success'
+              ? 'bg-emerald-600 text-white'
+              : 'bg-red-500 text-white'
+          }`}
+        >
+          {toast.type === 'success' ? '✓' : '✕'} {toast.msg}
         </div>
-        <EmployeeFilter
-          editedPayWeek={editedPayWeek}
-          department={department?.data}
-          divisi={divisi?.data}
-          setFilteredData={setFilteredData}
-          tipe_karyawan={tipeKaryawan}
-          tipe_penggajian={tipePenggajian}
-        />
-        <div className=" w-full h-full  border-b-8 border-[#D8EAFF] bg-white px-4 py-4 items-center justify-between flex">
-          <div>
-            <label className="text-xl text-blue-400 font-semibold  justify-center text-center">
-              {payWeek == null
-                ? 'Periode Dari'
-                : convertTimeStampToDate(payWeek?.periode_dari)}{' '}
-              ~{' '}
-              {payWeek == null
-                ? 'Periode Sampai'
-                : convertTimeStampToDate(payWeek?.periode_sampai)}
-            </label>
-            <label className="text-xl text-blue-400 font-semibold  justify-center text-center">
-              {editedPayWeek == null
-                ? ''
-                : 'Total Gaji Rp.' + formatInteger(editedPayWeek?.total)}
-            </label>
-          </div>
-          {payWeek && (
+      )}
+
+      {/* ── Header ── */}
+      <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+        <div>
+          <h1 className="text-lg font-bold text-slate-800 tracking-tight">
+            Payroll Mingguan
+          </h1>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Generate & Simpan payroll berdasarkan periode
+          </p>
+        </div>
+        {payWeek && (
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <div className="text-xs text-slate-400">Total Gaji</div>
+              <div className="text-base font-bold text-blue-700">
+                Rp {formatInteger(payWeek.total)}
+              </div>
+            </div>
             <button
-              title="button"
-              onClick={() => postPayrollMingguan()}
-              className="text-xs w-[20%] flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+              onClick={submitPayroll}
+              className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 active:scale-95 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-sm"
             >
-              AJUKAN
+              <IconSend /> Simpan Draft Payroll
             </button>
+          </div>
+        )}
+      </div>
+
+      <div className="px-6 py-5 max-w-7xl mx-auto">
+        {/* ── Period Picker ── */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-5">
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Dari
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <IconCalendar />
+                </span>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="pl-9 pr-3 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Sampai
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  <IconCalendar />
+                </span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="pl-9 pr-3 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+              </div>
+            </div>
+            <button
+              onClick={checkAndFetch}
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all shadow-sm active:scale-95"
+            >
+              <IconSearch />
+              {isLoading ? 'Memuat...' : 'Cek & Muat Periode'}
+            </button>
+          </div>
+
+          {periodStatus === 'exists' && (
+            <div className="mt-3 flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              ⚠ Periode ini sudah dibuat. Silakan cek tab{' '}
+              <strong>Pengajuan</strong>.
+            </div>
           )}
         </div>
-        <div className=" w-full h-full flex-col  bg-white">
-          <div className="grid grid-cols-7 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
-            <div className="flex gap-3">
-              <label className="text-black text-xs font-bold">No</label>
-              <label className="text-neutral-500 text-xs font-semibold ">
-                NIK
-              </label>
-            </div>
-            <label className="text-neutral-500 text-xs font-semibold  ">
-              Nama
-            </label>
-            <label className="text-neutral-500 text-xs font-semibold  ">
-              Department
-            </label>
-            <label className="text-neutral-500 text-xs font-semibold  ">
-              Divisi
-            </label>
-            <label className="text-neutral-500 text-xs font-semibold  ">
-              Total
-            </label>
-            <div className="flex justify-center "></div>
-          </div>
-        </div>
-        {filteredData?.map((data: any, i: any) => (
+
+        {/* ── Loading ── */}
+        {isLoading && <Spinner />}
+
+        {/* ── Results ── */}
+        {!isLoading && payWeek && (
           <>
-            <div
-              key={i}
-              className="grid grid-cols-7 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] "
-            >
-              <div className="flex gap-3">
-                <label className="text-black text-xs font-bold">{i + 1}</label>
-                <label className="text-neutral-500 text-xs font-semibold ">
-                  {data.summaryPayroll?.nik}
-                </label>
+            {/* Period info bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2">
+                <IconCalendar />
+                <span className="text-sm font-semibold text-blue-800">
+                  {convertTimeStampToDate(payWeek.periode_dari)} —{' '}
+                  {convertTimeStampToDate(payWeek.periode_sampai)}
+                </span>
+                <span className="ml-3 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                  {filteredData.length} karyawan
+                </span>
               </div>
-              <label className="text-neutral-500 text-xs font-semibold  ">
-                {data.summaryPayroll?.nama_karyawan}
-              </label>
-              <label className="text-neutral-500 text-xs font-semibold  ">
-                {data.summaryPayroll?.department}
-              </label>
-              <label className="text-neutral-500 text-xs font-semibold  ">
-                {data.summaryPayroll?.divisi}
-              </label>
-              <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
-                Rp.{formatInteger(data.summaryPayroll?.sub_total)}
-              </label>
-              <div className="flex justify-center ">
-                <button
-                  onClick={() => openEdit(i)}
-                  className="px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full "
-                >
-                  Detail
-                </button>
-                {showEdit[i] == true && (
-                  <ModalKosongan
-                    isOpen={showEdit[i]}
-                    onClose={() => closeEdit(i)}
-                    judul={'Detail Payroll'}
+
+              {/* Filters */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <IconSearch />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Cari nama / NIK…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl bg-white w-48 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterDept}
+                    onChange={(e) => setFilterDept(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <div className="p-6 max-h-[80vh] overflow-y-auto">
-                      {/* Employee Info Section */}
-                      <div className="grid grid-cols-2 gap-6 mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
-                        <div className="flex flex-col gap-3">
-                          <div>
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              NAMA PERSONNEL
-                            </label>
-                            <p className="text-lg text-gray-800 font-medium">
+                    <option value="">Semua Department</option>
+                    {(departments as string[]).map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200">
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider w-10">
+                        #
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        NIK
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Nama
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Department
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Divisi
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Total Gaji
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredData.map((data, i) => (
+                      <tr
+                        key={i}
+                        className="hover:bg-slate-50 transition-colors"
+                      >
+                        <td className="px-4 py-3 text-slate-400 font-medium">
+                          {i + 1}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md">
+                            {data.summaryPayroll?.nik}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
+                              <IconUser />
+                            </div>
+                            <span className="font-medium text-slate-800">
                               {data.summaryPayroll?.nama_karyawan}
-                            </p>
+                            </span>
                           </div>
-                          <div>
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              NIK
-                            </label>
-                            <p className="text-lg text-gray-800">
-                              {data.summaryPayroll?.nik}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              DEPARTMENT
-                            </label>
-                            <p className="text-lg text-gray-800">
-                              {data.summaryPayroll?.department}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              DIVISI
-                            </label>
-                            <p className="text-lg text-gray-800">
-                              {data.summaryPayroll?.divisi}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                          <div>
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              PERIODE
-                            </label>
-                            <p className="text-lg text-gray-800">
-                              {convertTimeStampToDate(payWeek?.periode_dari)} ~{' '}
-                              {convertTimeStampToDate(payWeek?.periode_sampai)}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              TOTAL POTONGAN
-                            </label>
-                            <p className="text-lg text-gray-800">
-                              Rp.{' '}
-                              {formatInteger(
-                                data.summaryPayroll?.total_potongan,
-                              )}
-                            </p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              TOTAL UPAH
-                            </label>
-                            <p className="text-lg text-gray-800">
-                              Rp. {formatInteger(data.summaryPayroll?.total)}
-                            </p>
-                          </div>
-
-                          {/* Adjustment inputs */}
-                          <div className="mt-2">
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              CATATAN PENGURANGAN/PENAMBAHAN
-                            </label>
-                            <input
-                              className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 focus:outline-none"
-                              type="text"
-                              value={
-                                data.summaryPayroll
-                                  .note_pengurangan_penambahan || ''
-                              }
-                              onChange={(e) =>
-                                handleInputNote(i, String(e.target.value))
-                              }
-                              placeholder="Masukkan Catatan"
-                            />
-                          </div>
-
-                          <div className="mt-2">
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              JUMLAH PENGURANGAN/PENAMBAHAN
-                            </label>
-                            <input
-                              className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 focus:outline-none"
-                              type="number"
-                              value={
-                                data.summaryPayroll.pengurangan_penambahan || 0
-                              }
-                              onChange={(e) =>
-                                handleInputChange(i, Number(e.target.value))
-                              }
-                              placeholder="Masukkan Pengurangan atau Penambahan"
-                            />
-                          </div>
-
-                          <div className="mt-3">
-                            <label className="text-xs font-bold text-gray-700 block mb-1">
-                              TOTAL UPAH TERBARU
-                            </label>
-                            <p className="text-xl text-blue-600 font-bold">
-                              Rp. {formatInteger(data.summaryPayroll.sub_total)}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-3 mb-6">
-                        <button
-                          onClick={() => handleClickDetail(i)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors flex items-center gap-2"
-                        >
-                          {showDetail[i]
-                            ? 'Sembunyikan Rincian'
-                            : 'Lihat Rincian'}
-                        </button>
-
-                        <button
-                          onClick={() => handleClickDetail2(i)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors flex items-center gap-2"
-                        >
-                          {showDetail2[i]
-                            ? 'Sembunyikan Absensi'
-                            : 'Lihat Absensi'}
-                        </button>
-                      </div>
-
-                      {/* Detailed Payment Breakdown */}
-                      {showDetail[i] && (
-                        <div className="mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-                          <div className="grid grid-cols-2 gap-6 p-4">
-                            <div className="flex flex-col gap-4">
-                              {/* DETAIL POTONGAN */}
-                              {data.summaryPayroll?.potongan?.length > 0 && (
-                                <div className="bg-gray-50 p-3 rounded-md">
-                                  <h3 className="text-sm font-bold text-gray-800 mb-2 border-b pb-1">
-                                    DETAIL POTONGAN
-                                  </h3>
-                                  <ul className="space-y-1">
-                                    {data.summaryPayroll.potongan.map(
-                                      (data2: any, ii: any) => (
-                                        <li
-                                          key={ii}
-                                          className="text-gray-700 flex justify-between"
-                                        >
-                                          <span>
-                                            {data2.label} x {data2.jumlah}
-                                          </span>
-                                          <span className="font-medium">
-                                            Rp. {formatInteger(data2.total)}
-                                          </span>
-                                        </li>
-                                      ),
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {/* POTONGAN TERLAMBAT */}
-                              {data.summaryPayroll?.potongan_terlambat?.length >
-                                0 && (
-                                <div className="bg-gray-50 p-3 rounded-md">
-                                  <h3 className="text-sm font-bold text-gray-800 mb-2 border-b pb-1">
-                                    POTONGAN TERLAMBAT
-                                  </h3>
-                                  <ul className="space-y-1">
-                                    {data.summaryPayroll.potongan_terlambat.map(
-                                      (data2: any, ii: any) => (
-                                        <li
-                                          key={ii}
-                                          className="text-gray-700 flex justify-between"
-                                        >
-                                          <span>
-                                            {data2.label} × {data2.jumlah}
-                                          </span>
-                                          <span className="font-medium">
-                                            Rp. {formatInteger(data2.total)}
-                                          </span>
-                                        </li>
-                                      ),
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="flex flex-col gap-4">
-                              {/* RINCIAN PAYROLL */}
-                              {data.summaryPayroll?.rincian?.length > 0 && (
-                                <div className="bg-gray-50 p-3 rounded-md">
-                                  <h3 className="text-sm font-bold text-gray-800 mb-2 border-b pb-1">
-                                    RINCIAN PAYROLL
-                                  </h3>
-                                  <ul className="space-y-1">
-                                    {data.summaryPayroll.rincian.map(
-                                      (data2: any, ii: any) => (
-                                        <li
-                                          key={ii}
-                                          className="text-gray-700 flex justify-between"
-                                        >
-                                          <span>
-                                            {data2.label} × {data2.jumlah}
-                                          </span>
-                                          <span className="font-medium">
-                                            Rp. {formatInteger(data2.total)}
-                                          </span>
-                                        </li>
-                                      ),
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {/* UPAH HARIAN SAKIT */}
-                              {data.summaryPayroll?.upahHarianSakit?.length >
-                                0 && (
-                                <div className="bg-gray-50 p-3 rounded-md">
-                                  <h3 className="text-sm font-bold text-gray-800 mb-2 border-b pb-1">
-                                    UPAH HARIAN SAKIT
-                                  </h3>
-                                  <ul className="space-y-1">
-                                    {data.summaryPayroll.upahHarianSakit.map(
-                                      (data2: any, ii: any) => (
-                                        <li
-                                          key={ii}
-                                          className="text-gray-700 flex justify-between"
-                                        >
-                                          <span>
-                                            {data2.label} = {data2.jumlah} ×{' '}
-                                            {data2.nilai}
-                                          </span>
-                                          <span className="font-medium">
-                                            Rp. {formatInteger(data2.total)}
-                                          </span>
-                                        </li>
-                                      ),
-                                    )}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Attendance Details */}
-                      {showDetail2[i] && (
-                        <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-sm">
-                          <h3 className="text-sm font-bold text-gray-800 p-3 border-b">
-                            DETAIL ABSENSI
-                          </h3>
-
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead className="bg-gray-100">
-                                <tr>
-                                  <th className="px-3 py-2 text-left">No.</th>
-                                  <th className="px-3 py-2 text-left">Nama</th>
-                                  <th className="px-3 py-2 text-left">
-                                    Tanggal
-                                  </th>
-                                  <th className="px-3 py-2 text-left">
-                                    Jam Masuk
-                                  </th>
-                                  <th className="px-3 py-2 text-left">
-                                    Jam Keluar
-                                  </th>
-                                  <th className="px-3 py-2 text-left">
-                                    Lama Istirahat
-                                  </th>
-                                  <th className="px-3 py-2 text-left">Shift</th>
-                                  <th className="px-3 py-2 text-left">
-                                    Lembur
-                                  </th>
-                                  <th className="px-3 py-2 text-left">
-                                    Terlambat
-                                  </th>
-                                  <th className="px-3 py-2 text-left">
-                                    Status
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-200">
-                                {data.detailAbsensi?.map(
-                                  (data2: any, ii: any) => (
-                                    <tr
-                                      key={ii}
-                                      className={`${
-                                        data2.jam_lembur != data2.jam_lembur_spl
-                                          ? 'bg-red-100'
-                                          : ''
-                                      } hover:bg-gray-50`}
-                                    >
-                                      <td className="px-3 py-3">{ii + 1}</td>
-                                      <td className="px-3 py-3">
-                                        {data2.name}
-                                      </td>
-                                      <td className="px-3 py-3">
-                                        {data2.tgl_masuk}
-                                      </td>
-                                      <td className="px-3 py-3">
-                                        {data2.jam_masuk || '-'}
-                                      </td>
-                                      <td className="px-3 py-3">
-                                        {data2.jam_keluar || '-'}
-                                      </td>
-                                      <td className="px-3 py-3">
-                                        {data2.lama_istirahat || '-'} jam
-                                      </td>
-                                      <td className="px-3 py-3">
-                                        {data2.shift || '-'}
-                                      </td>
-                                      <td className="px-3 py-3">
-                                        <div>
-                                          {data2.status_lembur || '-'}
-                                          {data2.jam_lembur
-                                            ? ` (${
-                                                data2.jam_lembur -
-                                                data2.lama_istirahat
-                                              } jam)`
-                                            : ''}
-                                        </div>
-
-                                        {data2.jam_lembur !=
-                                          data2.jam_lembur_spl && (
-                                          <div className="text-xs text-red-600 mt-1">
-                                            <div>
-                                              Absen: {data2.jam_lembur} jam
-                                            </div>
-                                            <div>
-                                              SPL: {data2.jam_lembur_spl} jam
-                                            </div>
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="px-3 py-3">
-                                        <div>{data2.status_masuk}</div>
-                                        {data2.menit_terlambat > 0 && (
-                                          <div className="text-xs text-red-600">
-                                            {data2.menit_terlambat} Jam
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="px-3 py-3">
-                                        <span
-                                          className={`px-2 py-1 rounded-full text-xs ${
-                                            data2.status_absen === 'Hadir'
-                                              ? 'bg-green-100 text-green-800'
-                                              : data2.status_absen === 'Izin'
-                                              ? 'bg-blue-100 text-blue-800'
-                                              : data2.status_absen === 'Sakit'
-                                              ? 'bg-yellow-100 text-yellow-800'
-                                              : 'bg-red-100 text-red-800'
-                                          }`}
-                                        >
-                                          {data2.status_absen}
-                                        </span>
-                                      </td>
-                                    </tr>
-                                  ),
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </ModalKosongan>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">
+                          {data.summaryPayroll?.department}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 text-xs">
+                          {data.summaryPayroll?.divisi}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="font-semibold text-slate-800">
+                            Rp {formatInteger(data.summaryPayroll?.sub_total)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => {
+                              setOpenModal(i);
+                              setShowDetailAbsen(false);
+                              setShowDetailRincian(false);
+                            }}
+                            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+                          >
+                            <IconEye /> Detail
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {filteredData.length === 0 && (
+                  <div className="text-center py-16 text-slate-400 text-sm">
+                    Tidak ada data yang sesuai filter
+                  </div>
                 )}
               </div>
             </div>
+
+            {/* Sticky bottom summary */}
+            <div className="mt-4 flex items-center justify-between bg-blue-700 rounded-2xl px-5 py-3 text-white">
+              <span className="text-sm opacity-80">
+                {filteredData.length} karyawan •{' '}
+                {convertTimeStampToDate(payWeek.periode_dari)} —{' '}
+                {convertTimeStampToDate(payWeek.periode_sampai)}
+              </span>
+              <div className="flex items-center gap-4">
+                <div>
+                  <div className="text-xs opacity-70">Total Seluruh Gaji</div>
+                  <div className="text-xl font-bold">
+                    Rp {formatInteger(payWeek.total)}
+                  </div>
+                </div>
+                <button
+                  onClick={submitPayroll}
+                  className="flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 text-sm font-bold px-5 py-2.5 rounded-xl transition-all active:scale-95 shadow"
+                >
+                  <IconSend /> Simpan Draft Payroll
+                </button>
+              </div>
+            </div>
           </>
-        ))}
+        )}
+
+        {/* ── Empty state ── */}
+        {!isLoading && !payWeek && (
+          <div className="flex flex-col items-center justify-center py-24 text-slate-400">
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
+              <IconCalendar />
+            </div>
+            <p className="text-sm font-medium">
+              Pilih periode untuk memuat data payroll
+            </p>
+          </div>
+        )}
       </div>
-    </main>
+
+      {/* ── Employee Detail Modal ── */}
+      {openModal !== null && selectedEmployee && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setOpenModal(null)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+              <div>
+                <h2 className="font-bold text-slate-800">
+                  {selectedEmployee.summaryPayroll?.nama_karyawan}
+                </h2>
+                <p className="text-xs text-slate-400">
+                  NIK {selectedEmployee.summaryPayroll?.nik} ·{' '}
+                  {selectedEmployee.summaryPayroll?.department} /{' '}
+                  {selectedEmployee.summaryPayroll?.divisi}
+                </p>
+              </div>
+              <button
+                onClick={() => setOpenModal(null)}
+                className="text-slate-400 hover:text-slate-700 transition"
+              >
+                <IconX />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 p-6 space-y-5">
+              {/* Summary cards */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  {
+                    label: 'Total Upah',
+                    value: `Rp ${formatInteger(
+                      selectedEmployee.summaryPayroll?.total,
+                    )}`,
+                    color: 'blue',
+                  },
+                  {
+                    label: 'Total Potongan',
+                    value: `Rp ${formatInteger(
+                      selectedEmployee.summaryPayroll?.total_potongan,
+                    )}`,
+                    color: 'red',
+                  },
+                  {
+                    label: 'Sub Total',
+                    value: `Rp ${formatInteger(
+                      selectedEmployee.summaryPayroll?.sub_total,
+                    )}`,
+                    color: 'emerald',
+                  },
+                ].map((c) => (
+                  <div
+                    key={c.label}
+                    className={`rounded-xl p-3 ${
+                      c.color === 'blue'
+                        ? 'bg-blue-50 border border-blue-100'
+                        : c.color === 'red'
+                        ? 'bg-red-50 border border-red-100'
+                        : 'bg-emerald-50 border border-emerald-100'
+                    }`}
+                  >
+                    <div className="text-xs font-semibold text-slate-500 mb-1">
+                      {c.label}
+                    </div>
+                    <div
+                      className={`font-bold text-sm ${
+                        c.color === 'blue'
+                          ? 'text-blue-700'
+                          : c.color === 'red'
+                          ? 'text-red-700'
+                          : 'text-emerald-700'
+                      }`}
+                    >
+                      {c.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Toggle buttons */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowDetailRincian(!showDetailRincian)}
+                  className={`flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg border transition-all ${
+                    showDetailRincian
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400'
+                  }`}
+                >
+                  <IconEye />{' '}
+                  {showDetailRincian ? 'Sembunyikan Rincian' : 'Lihat Rincian'}
+                  <IconChevron open={showDetailRincian} />
+                </button>
+                <button
+                  onClick={() => setShowDetailAbsen(!showDetailAbsen)}
+                  className={`flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg border transition-all ${
+                    showDetailAbsen
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400'
+                  }`}
+                >
+                  <IconCalendar />{' '}
+                  {showDetailAbsen ? 'Sembunyikan Absensi' : 'Lihat Absensi'}
+                  <IconChevron open={showDetailAbsen} />
+                </button>
+              </div>
+
+              {/* Rincian Payroll */}
+              {showDetailRincian && (
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Rincian */}
+                  {selectedEmployee.summaryPayroll?.rincian?.length > 0 && (
+                    <DetailSection title="Rincian Payroll" color="blue">
+                      {selectedEmployee.summaryPayroll.rincian.map(
+                        (r: any, ii: number) => (
+                          <DetailRow
+                            key={ii}
+                            label={`${r.label} × ${r.jumlah}`}
+                            value={`Rp ${formatInteger(r.total)}`}
+                          />
+                        ),
+                      )}
+                    </DetailSection>
+                  )}
+                  {/* Potongan */}
+                  {selectedEmployee.summaryPayroll?.potongan?.length > 0 && (
+                    <DetailSection title="Detail Potongan" color="red">
+                      {selectedEmployee.summaryPayroll.potongan.map(
+                        (r: any, ii: number) => (
+                          <DetailRow
+                            key={ii}
+                            label={`${r.label} × ${r.jumlah}`}
+                            value={`Rp ${formatInteger(r.total)}`}
+                          />
+                        ),
+                      )}
+                    </DetailSection>
+                  )}
+                  {/* Potongan Terlambat */}
+                  {selectedEmployee.summaryPayroll?.potongan_terlambat?.length >
+                    0 && (
+                    <DetailSection title="Potongan Terlambat" color="amber">
+                      {selectedEmployee.summaryPayroll.potongan_terlambat.map(
+                        (r: any, ii: number) => (
+                          <DetailRow
+                            key={ii}
+                            label={`${r.label} × ${r.jumlah}`}
+                            value={`Rp ${formatInteger(r.total)}`}
+                          />
+                        ),
+                      )}
+                    </DetailSection>
+                  )}
+                  {/* Upah Sakit */}
+                  {selectedEmployee.summaryPayroll?.upahHarianSakit?.length >
+                    0 && (
+                    <DetailSection title="Upah Harian Sakit" color="emerald">
+                      {selectedEmployee.summaryPayroll.upahHarianSakit.map(
+                        (r: any, ii: number) => (
+                          <DetailRow
+                            key={ii}
+                            label={`${r.label} = ${r.jumlah} × ${r.nilai}`}
+                            value={`Rp ${formatInteger(r.total)}`}
+                          />
+                        ),
+                      )}
+                    </DetailSection>
+                  )}
+                </div>
+              )}
+
+              {/* Absensi Table */}
+              {showDetailAbsen && (
+                <div className="rounded-xl border border-slate-200 overflow-hidden">
+                  <div className="bg-slate-50 px-4 py-2 border-b border-slate-200">
+                    <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider">
+                      Detail Absensi
+                    </h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                          {[
+                            'No',
+                            'Tanggal',
+                            'Masuk',
+                            'Keluar',
+                            'Shift',
+                            'Lembur',
+                            'Terlambat',
+                            'Status',
+                          ].map((h) => (
+                            <th
+                              key={h}
+                              className="px-3 py-2 text-left font-bold text-slate-500"
+                            >
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {selectedEmployee.detailAbsensi?.map(
+                          (ab: any, ii: number) => (
+                            <tr
+                              key={ii}
+                              className={`${
+                                ab.jam_lembur !== ab.jam_lembur_spl
+                                  ? 'bg-red-50'
+                                  : 'hover:bg-slate-50'
+                              }`}
+                            >
+                              <td className="px-3 py-2 text-slate-400">
+                                {ii + 1}
+                              </td>
+                              <td className="px-3 py-2 font-medium">
+                                {ab.tgl_masuk}
+                              </td>
+                              <td className="px-3 py-2">
+                                {ab.jam_masuk || '-'}
+                              </td>
+                              <td className="px-3 py-2">
+                                {ab.jam_keluar || '-'}
+                              </td>
+                              <td className="px-3 py-2">{ab.shift || '-'}</td>
+                              <td className="px-3 py-2">
+                                {ab.status_lembur || '-'}
+                                {ab.jam_lembur
+                                  ? ` (${ab.jam_lembur - ab.lama_istirahat}j)`
+                                  : ''}
+                                {ab.jam_lembur !== ab.jam_lembur_spl && (
+                                  <div className="text-red-600 text-[10px]">
+                                    Absen: {ab.jam_lembur}j / SPL:{' '}
+                                    {ab.jam_lembur_spl}j
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                {ab.status_masuk}
+                                {ab.menit_terlambat > 0 && (
+                                  <div className="text-red-500">
+                                    {ab.menit_terlambat} mnt
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                {statusBadge(ab.status_absen)}
+                              </td>
+                            </tr>
+                          ),
+                        )}
+                        {(!selectedEmployee.detailAbsensi ||
+                          selectedEmployee.detailAbsensi.length === 0) && (
+                          <tr>
+                            <td
+                              colSpan={8}
+                              className="text-center py-8 text-slate-400"
+                            >
+                              Tidak ada data absensi
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Small helper components ───────────────────────────────────────────────────
+function DetailSection({
+  title,
+  color,
+  children,
+}: {
+  title: string;
+  color: string;
+  children: React.ReactNode;
+}) {
+  const border =
+    {
+      blue: 'border-blue-200',
+      red: 'border-red-200',
+      amber: 'border-amber-200',
+      emerald: 'border-emerald-200',
+    }[color] ?? 'border-slate-200';
+  const head =
+    {
+      blue: 'bg-blue-50 text-blue-800',
+      red: 'bg-red-50 text-red-800',
+      amber: 'bg-amber-50 text-amber-800',
+      emerald: 'bg-emerald-50 text-emerald-800',
+    }[color] ?? 'bg-slate-50 text-slate-800';
+  return (
+    <div className={`rounded-xl border ${border} overflow-hidden`}>
+      <div
+        className={`px-3 py-2 text-xs font-bold uppercase tracking-wider ${head}`}
+      >
+        {title}
+      </div>
+      <div className="divide-y divide-slate-100">{children}</div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between px-3 py-2 text-xs text-slate-700">
+      <span>{label}</span>
+      <span className="font-semibold ml-4 whitespace-nowrap">{value}</span>
+    </div>
   );
 }
 

@@ -1282,7 +1282,7 @@ function SOMonitoring() {
                           )}
                           {row.status_work == 'done' && (
                             <span className="bg-red-100 text-red-800 text-xs px-1.5 py-0.5 rounded font-medium">
-                              Status Work : Done (Close)
+                              Status PO : CLOSED
                             </span>
                           )}
                         </td>
