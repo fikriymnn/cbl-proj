@@ -1,499 +1,522 @@
-import { useEffect, useRef, useState } from 'react';
-import Filter from '../../../images/icon/filter.svg';
-import Burger from '../../../images/icon/burger.svg';
-import Arrow from '../../../images/icon/arrowDown.svg';
+import { useEffect, useState } from 'react';
 import Select from 'react-select';
-import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
-import Polygon6 from '../../../images/icon/Polygon6.svg';
-import X from '../../../images/icon/x.svg';
 import axios from 'axios';
-import ModalDetail from '../../Modals/ModalDetail';
+import * as XLSX from 'xlsx';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+
+import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
+import ModalDetail from '../../Modals/ModalDetail';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 import ModalSPBService from '../../Modals/ModalNewSPBService';
+import ModalFull from '../PPIC/JadwalProduksi/ModalFull';
 import Loading from '../../Loading';
-import convertTimeStampToDateTime from '../../../utils/converDateTime';
+
 import convertTimeStampToDate from '../../../utils/convertDate';
 import convertDateToTime from '../../../utils/converDateToTime';
 import convertTimeStampToDateOnly from '../../../utils/convertDateOnly';
-import * as XLSX from 'xlsx'; // Add this import at the top
-import ModalFull from '../PPIC/JadwalProduksi/ModalFull';
 import convertTimeStampToAllSecond from '../../../utils/ConverttimestametoAllSecond';
-import { union } from 'lodash';
-// import moment from 'moment';
+import { usePermissions } from '../../../constant/usePermissions';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface UserInfo {
+  id: number;
+  nama: string;
+  role: string;
+  bagian: string;
+  email: string;
+}
+
+interface MasalahSparepart {
+  nama_sparepart_sebelumnya: string | null;
+  nama_sparepart_baru: string | null;
+  lokasi_sparepart_baru: string | null;
+  lokasi_sparepart_sebelumnya: string | null;
+  grade_sparepart_sebelumnya: string | null;
+  grade_sparepart_baru: string | null;
+  tgl_ganti: string | null;
+  use_qty: number | null;
+  status: string | null;
+}
+
+interface ProsesMtc {
+  id: number;
+  id_tiket: number;
+  id_eksekutor: number;
+  id_qc: number;
+  bagian_mesin: string | null;
+  cara_perbaikan: string | null;
+  kode_analisis_mtc: string | null;
+  nama_analisis_mtc: string | null;
+  note_analisis: string | null;
+  note_mtc: string | null;
+  note_qc: string | null;
+  skor_mtc: number;
+  status_proses: string;
+  status_qc: string;
+  unit: string | null;
+  alasan_pending: string | null;
+  estimasi_pengerjaan: string | null;
+  tgl_mtc: string | null;
+  note_request_jadwal: string | null;
+  file: string | null;
+  is_rework: boolean;
+  waktu_mulai_mtc: string | null;
+  waktu_selesai_mtc: string | null;
+  waktu_selesai: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user_eksekutor: UserInfo;
+  user_qc: UserInfo;
+  masalah_spareparts: MasalahSparepart[];
+}
+
+interface Ticket {
+  id: number;
+  id_jo: number;
+  id_kendala: number;
+  bagian: string;
+  bagian_tiket: string;
+  cara_perbaikan: string | null;
+  createdAt: string;
+  updatedAt: string;
+  jenis_analisis_mtc: string | null;
+  jenis_kendala: string;
+  kode_analisis_mtc: string | null;
+  kode_lkh: string;
+  kode_ticket: string;
+  maksimal_kedatangan_tiket: number;
+  maksimal_periode_kedatangan_tiket: string;
+  maksimal_waktu_pengerjaan: number;
+  mesin: string;
+  nama_analisis_mtc: string | null;
+  nama_customer: string;
+  nama_kendala: string;
+  nama_produk: string;
+  no_io: string;
+  no_jo: string;
+  no_so: string;
+  note_qc: string | null;
+  operator: string;
+  proses: string;
+  qty: number;
+  qty_druk: number | null;
+  skor_mtc: number;
+  spek: string;
+  status_qc: string;
+  status_tiket: string;
+  unit: string | null;
+  waktu_mulai_istirahat: string | null;
+  waktu_mulai_mtc: string | null;
+  waktu_respon: string | null;
+  waktu_respon_qc: string | null;
+  waktu_selesai: string | null;
+  waktu_selesai_istirahat: string | null;
+  waktu_selesai_mtc: string | null;
+  proses_mtcs: ProsesMtc[];
+  user_respon_qc: UserInfo | null;
+}
+
+interface TicketResponse {
+  data: Ticket[];
+  total_page: number;
+  limit: string;
+  offset: string;
+}
+
+interface MasterMesin {
+  id: number;
+  nama_mesin: string;
+}
+
+interface UserOption {
+  value: number;
+  label: string;
+}
+
+interface MasterUser {
+  id: number;
+  nama: string;
+  role: string;
+  bagian: string;
+  email: string;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function calculateSecondsDiff(
+  start: string | null,
+  end: string | null,
+): number {
+  if (!start || !end) return 0;
+  return Math.floor(
+    (new Date(end).getTime() - new Date(start).getTime()) / 1000,
+  );
+}
+
+function formatSeconds(totalSeconds: number): string {
+  if (!totalSeconds || totalSeconds <= 0) return '-';
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return (
+    [
+      hours ? `${hours}h ` : '',
+      minutes ? `${minutes}m ` : '',
+      seconds ? `${seconds}s` : '',
+    ]
+      .join('')
+      .trim() || '-'
+  );
+}
+
+function formatDateTimeLocal(datetime: string | null): string {
+  if (!datetime) return '-';
+  const d = new Date(datetime);
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(
+    d.getHours(),
+  )}:${pad(d.getMinutes())}`;
+}
+
+type StatusTiket =
+  | 'pending'
+  | 'open'
+  | 'monitoring'
+  | 'temporary'
+  | 'request to qc'
+  | 'qc rejected';
+
+function getStatusClasses(status: string): string {
+  const map: Record<string, string> = {
+    pending: 'text-red-600 bg-red-100',
+    open: 'text-red-600 bg-red-100',
+    monitoring: 'text-blue-600 bg-blue-100',
+    temporary: 'text-yellow-600 bg-yellow-100',
+    'request to qc': 'text-yellow-600 bg-yellow-100',
+    'qc rejected': 'text-red-600 bg-red-100',
+  };
+  return map[status] ?? '';
+}
+
+function getSkorClasses(skor: number): string {
+  if (skor >= 60) return 'text-blue-600 bg-blue-100';
+  if (skor >= 21) return 'text-yellow-600 bg-yellow-100';
+  return 'text-red-600 bg-red-100';
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 function TableOS() {
+  const role = localStorage.getItem('userRole') ?? '';
+  const bagian = localStorage.getItem('userBagian') ?? '';
+  const { checkEdit } = usePermissions(role, bagian);
+  const canEdit = checkEdit('/os2'); // adjust path as needed
+
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState();
-  const [openButton, setOpenButton] = useState(null);
   const [page, setPage] = useState(1);
-
-  const handleClick = (i: any) => {
-    setOpenButton((prevState: any) => {
-      return prevState === i ? null : i;
-    });
-  };
-
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
-  };
-  useEffect(() => {
-    handleResize();
-
-    // Event listener for window resize
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup on component unmount
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const openModal2 = () => setShowModal2(true);
-  const closeModal2 = () => setShowModal2(false);
-
-  const openModal4 = () => setShowModal4(true);
-  const closeModal4 = () => setShowModal4(false);
-  const openModal5 = () => setShowModal5(true);
-  const closeModal5 = () => setShowModal5(false);
-
-  const handleClickDetail = (index: number) => {
-    setShowDetail((prevState) => {
-      const updatedShowDetail = [...prevState]; // Create a copy
-      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
-      return updatedShowDetail;
-    });
-  };
-  const handleClickDetailMobile = (index: number) => {
-    setShowDetailMobile((prevState) => {
-      const updatedShowDetailMobile = [...prevState]; // Create a copy
-      updatedShowDetailMobile[index] = !updatedShowDetailMobile[index]; // Toggle value
-      return updatedShowDetailMobile;
-    });
-  };
-  const [tiket, setTiket] = useState<any>(null);
-
-  const [showTwoButtons, setShowTwoButtons] = useState<any>([]);
-  const [showModal1, setShowModal1] = useState<any>([]);
-  const [user, setUser] = useState<any>(null);
-  const [filter, setFilter] = useState(false);
-  // const onchangeVal: any = [...showTwoButtons];
-  // setShowTwoButtons(showTwoButtons.map((item: any) => item = false))
-  //onchangeVal[i] = !onchangeVal[i];
-
-  // setShowTwoButtons(onchangeVal);
-
-  const openModal1 = (i: any) => {
-    const onchangeVal: any = [...showModal1];
-    onchangeVal[i] = true;
-
-    setShowModal1(onchangeVal);
-  };
-  const closeModal1 = (i: any) => {
-    const onchangeVal: any = [...showModal1];
-    onchangeVal[i] = false;
-
-    setShowModal1(onchangeVal);
-  };
   const [limit, setLimit] = useState(10);
-  useEffect(() => {
-    getTiket();
-    getMasterUser();
-  }, [page, limit]);
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1); // Reset to first page when changing limit
-  };
-  async function getMasterUser() {
-    const url = `${import.meta.env.VITE_API_LINK}/users`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          status: 'aktif',
-          bagian: 'maintenance',
-        },
-        withCredentials: true,
-      });
 
-      setUserList(res.data);
-      console.log('user list', res.data);
-      setOptions(
-        res.data.map((item: any) => {
-          return {
-            value: item.id,
-            label: `${item.nama}`,
-          };
-        }),
-      );
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-  const [showModalDetail, setShowModalDetail] = useState<any>([]);
+  // Filter state
+  const [startDate, setStartDate] = useState<string | undefined>();
+  const [endDate, setEndDate] = useState<string | undefined>();
+  const [mesinNama, setMesinNama] = useState<string | undefined>();
+  const [statusTiket, setStatusTiket] = useState<string | undefined>();
+  const [noJo, setNoJo] = useState<string | undefined>();
+  const [unit, setUnit] = useState<string | undefined>();
+  const [idKaryawan, setIdKaryawan] = useState<number | undefined>();
 
-  const openModalDetail = (i: any) => {
-    const onchangeVal: any = [...showModalDetail];
-    onchangeVal[i] = true;
-    console.log(onchangeVal);
-    setShowModalDetail(onchangeVal);
-  };
-  const closeModalDetail = (i: any) => {
-    const onchangeVal: any = [...showModalDetail];
-    onchangeVal[i] = false;
+  // Data
+  const [tiket, setTiket] = useState<TicketResponse | null>(null);
+  const [masterMesin, setMasterMesin] = useState<MasterMesin[]>([]);
+  const [userList, setUserList] = useState<MasterUser[]>([]);
+  const [options, setOptions] = useState<UserOption[]>([]);
 
-    setShowModalDetail(onchangeVal);
-  };
-  const [masterMesin, setmasterMesin] = useState<any>();
-  useEffect(() => {
-    getMasterMesin();
-  }, []);
+  // Modal visibility arrays (indexed by row)
+  const [showModal1, setShowModal1] = useState<boolean[]>([]);
+  const [showModalDetail, setShowModalDetail] = useState<boolean[]>([]);
+  const [showDetail, setShowDetail] = useState<boolean[]>([]);
+  const [openButton, setOpenButton] = useState<number | null>(null);
 
-  async function getMasterMesin() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
-    try {
-      setIsLoading(true);
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
-      setIsLoading(false);
-      setmasterMesin(res.data);
-    } catch (error: any) {
-      setIsLoading(false);
-      console.log(error.data.msg);
-    }
-  }
-  const [userList, setUserList] = useState<any>();
-  const [options, setOptions] = useState([]);
-  const [startDate, setStartDate] = useState<any>();
-  const [endDate, setEndDate] = useState<any>();
-  const [mesinNama, setMesinNama] = useState<any>();
-  const [statusTiket, setStatusTiket] = useState<any>();
-  const [noJo, setNoJo] = useState<any>();
-  const [unit, setunit] = useState<any>();
-  const [idKaryawan, setIdKaryawan] = useState<any>();
+  // Edit modal
+  const [editingProses, setEditingProses] = useState<{
+    ticket: Ticket;
+    proses: ProsesMtc;
+    prosesIndex: number;
+  } | null>(null);
 
-  async function getTiket(isRework?: boolean, idModal?: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket`;
-    try {
-      setIsLoading(true);
-      const res = await axios.get(url, {
-        params: {
-          search: noJo,
-          bagian_tiket: 'os2',
-          page: page,
-          unit: unit,
-          limit: limit, // Use the limit state here instead of hardcoded 10
-          start_date: startDate,
-          end_date: endDate,
-          mesin: mesinNama,
-          status_tiket: statusTiket,
-          id_eksekutor: idKaryawan,
-        },
-        withCredentials: true,
-      });
-      setIsLoading(false);
-      setTiket(res.data);
-      console.log(res.data);
-
-      let data: any[] = [];
-      for (let i = 0; i < res.data.data.length; i++) {
-        data.push(false);
-      }
-      setShowModal1(data);
-      setShowModalDetail(data);
-      setShowTwoButtons(data);
-      setShowTwoButtonsMobile(data);
-
-      if (isRework == true) {
-        openModal1(idModal);
-      }
-    } catch (error: any) {
-      setIsLoading(false);
-      console.log(error.response);
-    }
-  }
-  async function reworkTiket(idTiket: number, iModal: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket/rework/${idTiket}`;
-
-    console.log('idtiket', idTiket, user);
-
-    try {
-      setIsLoading(true);
-      const res = await axios.put(
-        url,
-        {
-          // id_eksekutor: user.id,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      setIsLoading(false);
-      alert(res.data.msg);
-      getTiket(true, iModal);
-      openModal1(iModal);
-    } catch (error: any) {
-      console.log(error);
-      setIsLoading(false);
-      alert(error.respone.data.msg);
-    }
-  }
-  const handleChangePointDepatment = (selected: any) => {
-    const { value } = selected;
-    const filteredData = userList.find(
-      (item: any) => item.id == value,
-      // item.id.includes(parseInt(value));
-    );
-
-    console.log(filteredData?.id);
-
-    setIdKaryawan(filteredData?.id);
-  };
-
-  function calculateResponTime(startDate: any, endDate: any) {
-    const createdAtDate = new Date(startDate);
-    const waktuResponDate = new Date(endDate);
-    const millisecondsDiff =
-      waktuResponDate.getTime() - createdAtDate.getTime();
-
-    const secondsDiff = millisecondsDiff / 1000;
-    const minutesDiff = Math.floor(secondsDiff / 60);
-    const hoursDiff = Math.floor(minutesDiff / 60);
-
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
-      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-    } `;
-
-    return formattedDifference; // Example format (YYYY-MM-DD)
-  }
-  function calculateResponTime2(startDate: any, endDate: any) {
-    const createdAtDate = new Date(startDate);
-    const waktuResponDate = new Date(endDate);
-    const millisecondsDiff =
-      waktuResponDate.getTime() - createdAtDate.getTime();
-
-    const secondsDiff = Math.floor(millisecondsDiff / 1000); // Total seconds difference
-    return secondsDiff;
-  }
-
-  function formatMinutesToHoursMinutesSeconds(totalSeconds: number) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    return `${hours ? hours + ' hours ' : ''}${
-      minutes ? minutes + ' minutes ' : ''
-    }${seconds ? seconds + ' seconds' : ''}`.trim();
-  }
-
-  const [showTwoButtonsMobile, setShowTwoButtonsMobile] = useState<boolean[]>(
-    new Array(tiket != null && tiket.length).fill(false),
-  );
-  const [showDetail, setShowDetail] = useState<boolean[]>(
-    new Array(tiket != null && tiket.length).fill(false),
-  );
-  const [showDetailMobile, setShowDetailMobile] = useState<boolean[]>(
-    new Array(tiket != null && tiket.length).fill(false),
-  );
-
+  // Modal state (non-indexed)
   const [showModal2, setShowModal2] = useState(false);
   const [showModal4, setShowModal4] = useState(false);
   const [showModal5, setShowModal5] = useState(false);
+
+  // Export
   const [showExportPreview, setShowExportPreview] = useState(false);
-  const [previewData, setPreviewData] = useState([]);
+  const [previewData, setPreviewData] = useState<Record<string, unknown>[]>([]);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [visibleRows, setVisibleRows] = useState(20);
 
-  // Function to open and close the export preview modal
-  const openModalExport = () => {
-    setVisibleRows(20); // Reset to 20 visible rows when opening the modal
-    setShowExportPreview(true);
-  };
-  const closeModalExport = () => setShowExportPreview(false);
+  // ─── Resize ───
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  const prepareExportData = async () => {
+  // ─── Init fetches ───
+  useEffect(() => {
+    getMasterMesin();
+    getMasterUser();
+  }, []);
+
+  useEffect(() => {
+    getTiket();
+  }, [page, limit]);
+
+  // ─── API Calls ───
+  async function getMasterMesin() {
     try {
-      // Show loading indicator
-      setIsLoadingPreview(true);
-      setVisibleRows(20); // Reset visible rows when loading new data
+      const res = await axios.get<MasterMesin[]>(
+        `${import.meta.env.VITE_API_LINK}/master/mesin`,
+        { withCredentials: true },
+      );
+      setMasterMesin(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-      // Fetch all data without pagination, but keeping other filters
-      const url = `${import.meta.env.VITE_API_LINK}/ticket`;
-      const response = await axios.get(url, {
-        params: {
-          no_jo: noJo,
-          unit: unit,
-          bagian_tiket: 'os2',
-          page: page,
-          start_date: startDate,
-          end_date: endDate,
-          mesin: mesinNama,
-          status_tiket: statusTiket,
+  async function getMasterUser() {
+    try {
+      const res = await axios.get<MasterUser[]>(
+        `${import.meta.env.VITE_API_LINK}/users`,
+        {
+          params: { status: 'aktif', bagian: 'maintenance' },
+          withCredentials: true,
         },
-        withCredentials: true,
-      });
+      );
+      setUserList(res.data);
+      setOptions(res.data.map((u) => ({ value: u.id, label: u.nama })));
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-      const allData = response.data.data;
+  async function getTiket(isRework?: boolean, idModal?: number) {
+    try {
+      setIsLoading(true);
+      const res = await axios.get<TicketResponse>(
+        `${import.meta.env.VITE_API_LINK}/ticket`,
+        {
+          params: {
+            search: noJo,
+            bagian_tiket: 'os2',
+            page,
+            unit,
+            limit,
+            start_date: startDate,
+            end_date: endDate,
+            mesin: mesinNama,
+            status_tiket: statusTiket,
+            id_eksekutor: idKaryawan,
+          },
+          withCredentials: true,
+        },
+      );
+      setTiket(res.data);
 
-      if (!allData || allData.length === 0) {
+      const falseArr = new Array(res.data.data.length).fill(false);
+      setShowModal1([...falseArr]);
+      setShowModalDetail([...falseArr]);
+      setShowDetail([...falseArr]);
+
+      if (isRework && idModal !== undefined) openModal1(idModal);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function reworkTiket(idTiket: number, iModal: number) {
+    try {
+      setIsLoading(true);
+      const res = await axios.put(
+        `${import.meta.env.VITE_API_LINK}/ticket/rework/${idTiket}`,
+        {},
+        { withCredentials: true },
+      );
+      alert(res.data.msg);
+      getTiket(true, iModal);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { msg?: string } } };
+      alert(error?.response?.data?.msg ?? 'Rework failed');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  // ─── Modal helpers ───
+  const openModal1 = (i: number) =>
+    setShowModal1((prev) => {
+      const a = [...prev];
+      a[i] = true;
+      return a;
+    });
+  const closeModal1 = (i: number) =>
+    setShowModal1((prev) => {
+      const a = [...prev];
+      a[i] = false;
+      return a;
+    });
+  const openModalDetail = (i: number) =>
+    setShowModalDetail((prev) => {
+      const a = [...prev];
+      a[i] = true;
+      return a;
+    });
+  const closeModalDetail = (i: number) =>
+    setShowModalDetail((prev) => {
+      const a = [...prev];
+      a[i] = false;
+      return a;
+    });
+  const toggleDetail = (i: number) =>
+    setShowDetail((prev) => {
+      const a = [...prev];
+      a[i] = !a[i];
+      return a;
+    });
+
+  // ─── Dropdown handler ───
+  const handleChangeUser = (selected: UserOption | null) => {
+    if (!selected) return;
+    const user = userList.find((u) => u.id === selected.value);
+    setIdKaryawan(user?.id);
+  };
+
+  // ─── Export ───
+  async function prepareExportData() {
+    try {
+      setIsLoadingPreview(true);
+      setVisibleRows(20);
+
+      const res = await axios.get<TicketResponse>(
+        `${import.meta.env.VITE_API_LINK}/ticket`,
+        {
+          params: {
+            search: noJo,
+            unit,
+            bagian_tiket: 'os2',
+            page,
+            start_date: startDate,
+            end_date: endDate,
+            mesin: mesinNama,
+            status_tiket: statusTiket,
+          },
+          withCredentials: true,
+        },
+      );
+
+      const allData = res.data.data;
+      if (!allData?.length) {
         alert('No data to export');
-        setIsLoadingPreview(false);
         return;
       }
 
-      // Extract all ticket data with their processes flattened
-      let excelData: any = [];
+      let rows: Record<string, unknown>[] = [];
 
-      // Go through each ticket and its associated processes
-      allData.forEach((ticket: any) => {
-        // If there are MTC processes, create a row for each process
-        if (ticket.proses_mtcs && ticket.proses_mtcs.length > 0) {
-          ticket.proses_mtcs.forEach((process: any) => {
-            // Format dates
-            const tglTicket = ticket.createdAt
-              ? convertTimeStampToDateOnly(ticket.createdAt)
-              : '-';
-            const jamTicket = ticket.createdAt
-              ? convertDateToTime(ticket.createdAt)
-              : '-';
-
-            // Calculate times
-            const waktuRespon = calculateResponTime2(
+      allData.forEach((ticket) => {
+        if (ticket.proses_mtcs?.length) {
+          ticket.proses_mtcs.forEach((process) => {
+            const waktuRespon = calculateSecondsDiff(
               process.waktu_selesai_mtc,
               process.waktu_selesai,
             );
-
-            const waktuBreakdownMinutes = calculateResponTime2(
+            const waktuBreakdown = calculateSecondsDiff(
               ticket.createdAt,
               process.waktu_selesai,
             );
-
-            const waktuBreakdownMTCMinutes = calculateResponTime2(
+            const waktuBreakdownMTC = calculateSecondsDiff(
               ticket.waktu_respon_qc,
               process.waktu_selesai_mtc,
             );
 
-            const waktuRespon2 =
-              formatMinutesToHoursMinutesSeconds(waktuRespon);
-            const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
-              waktuBreakdownMinutes,
-            );
-            const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
-              waktuBreakdownMTCMinutes,
-            );
-
-            // Gather sparepart information if available
             let sparepartInfo = '';
-            let sparepartSebelumnya = '';
-            let sparepartBaru = '';
-            let lokasiBaru = '';
-            let lokasiSebelumnya = '';
-            let grade = '';
+            let sparepartSebelumnya = '-',
+              sparepartBaru = '-';
+            let lokasiBaru = '-',
+              lokasiSebelumnya = '-',
+              grade = '-';
 
-            if (
-              process.masalah_spareparts &&
-              process.masalah_spareparts.length > 0
-            ) {
-              process.masalah_spareparts.forEach((part: any, idx: any) => {
-                if (idx === 0) {
-                  sparepartSebelumnya = part.nama_sparepart_sebelumnya || '-';
-                  sparepartBaru = part.nama_sparepart_baru || '-';
-                  lokasiBaru = part.lokasi_sparepart_baru || '-';
-                  lokasiSebelumnya = part.lokasi_sparepart_sebelumnya || '-';
-                  grade = `${part.grade_sparepart_sebelumnya || '-'} -> ${
-                    part.grade_sparepart_baru || '-'
-                  }`;
-                  sparepartInfo = `${
-                    part.nama_sparepart_sebelumnya || '-'
-                  } -> ${part.nama_sparepart_baru || '-'}`;
-                } else {
-                  sparepartInfo += `, ${
-                    part.nama_sparepart_sebelumnya || '-'
-                  } -> ${part.nama_sparepart_baru || '-'}`;
-                }
-              });
-            }
+            process.masalah_spareparts?.forEach((part, idx) => {
+              if (idx === 0) {
+                sparepartSebelumnya = part.nama_sparepart_sebelumnya ?? '-';
+                sparepartBaru = part.nama_sparepart_baru ?? '-';
+                lokasiBaru = part.lokasi_sparepart_baru ?? '-';
+                lokasiSebelumnya = part.lokasi_sparepart_sebelumnya ?? '-';
+                grade = `${part.grade_sparepart_sebelumnya ?? '-'} -> ${
+                  part.grade_sparepart_baru ?? '-'
+                }`;
+                sparepartInfo = `${sparepartSebelumnya} -> ${sparepartBaru}`;
+              } else {
+                sparepartInfo += `, ${
+                  part.nama_sparepart_sebelumnya ?? '-'
+                } -> ${part.nama_sparepart_baru ?? '-'}`;
+              }
+            });
 
-            excelData.push({
-              No: excelData.length + 1,
-              // Ticket information
-              'Kode Tiket': ticket.kode_ticket || '-',
-              'Tanggal Tiket': tglTicket,
-              'Jam Tiket': jamTicket,
-              'No Jo': ticket.no_jo || '-',
-              'No SO': ticket.no_so || '-',
-              'No IO': ticket.no_io || '-',
-              Item: ticket.nama_produk || '-',
-              Mesin: ticket.mesin || '-',
-              Proses: ticket.proses || '-',
-              Kendala: `${ticket.kode_lkh || '-'} - ${
-                ticket.nama_kendala || '-'
-              }`,
-              'Jenis Kendala': ticket.jenis_kendala || '-',
-              'Bagian Tiket': ticket.bagian_tiket || '-',
-              Bagian: ticket.bagian || '-',
-              Spek: ticket.spek || '-',
-              Customer: ticket.nama_customer || '-',
-              Operator: ticket.operator || '-',
-              QTY: ticket.qty || '-',
-              'QTY Druk': ticket.qty_druk || '-',
-              'Status Tiket': ticket.status_tiket || '-',
-              'Maksimal Kedatangan Tiket':
-                ticket.maksimal_kedatangan_tiket || '-',
-              'Maksimal Periode Kedatangan':
-                ticket.maksimal_periode_kedatangan_tiket || '-',
-              'Maksimal Waktu Pengerjaan':
-                ticket.maksimal_waktu_pengerjaan || '-',
-              'Kode Analisis (Tiket)': ticket.kode_analisis_mtc || '-',
-              'Nama Analisis (Tiket)': ticket.nama_analisis_mtc || '-',
-              'Jenis Analisis MTC': ticket.jenis_analisis_mtc || '-',
-
-              // Process MTC information
-              'Bagian Mesin': process.bagian_mesin || '-',
-              Unit: process.unit || '-',
-              'Cara Perbaikan': process.cara_perbaikan || '-',
-              'Kode Analisis MTC': process.kode_analisis_mtc || '-',
-              'Nama Analisis MTC': process.nama_analisis_mtc || '-',
-              'Note MTC': process.note_mtc || '-',
-              'Note QC': process.note_qc || '-',
-              'Note Analisis': process.note_analisis || '-',
-              'Skor MTC': process.skor_mtc || '-',
-              'Status Proses': process.status_proses || '-',
-              'Status QC': process.status_qc || '-',
-
-              'Alasan Pending': process.alasan_pending || '-',
-              'Estimasi Pengerjaan': process.estimasi_pengerjaan || '-',
-              'Tanggal MTC': process.tgl_mtc || '-',
-              'Note Request Jadwal': process.note_request_jadwal || '-',
-
-              // Sparepart details
+            rows.push({
+              No: rows.length + 1,
+              'Kode Tiket': ticket.kode_ticket,
+              'Tanggal Tiket': convertTimeStampToDateOnly(ticket.createdAt),
+              'Jam Tiket': convertDateToTime(ticket.createdAt),
+              'No Jo': ticket.no_jo,
+              'No SO': ticket.no_so,
+              'No IO': ticket.no_io,
+              Item: ticket.nama_produk,
+              Mesin: ticket.mesin,
+              Proses: ticket.proses,
+              Kendala: `${ticket.kode_lkh} - ${ticket.nama_kendala}`,
+              'Jenis Kendala': ticket.jenis_kendala,
+              'Bagian Tiket': ticket.bagian_tiket,
+              Bagian: ticket.bagian,
+              Spek: ticket.spek,
+              Customer: ticket.nama_customer,
+              Operator: ticket.operator,
+              QTY: ticket.qty,
+              'QTY Druk': ticket.qty_druk ?? '-',
+              'Status Tiket': ticket.status_tiket,
+              'Kode Analisis (Tiket)': ticket.kode_analisis_mtc ?? '-',
+              'Nama Analisis (Tiket)': ticket.nama_analisis_mtc ?? '-',
+              'Jenis Analisis MTC': ticket.jenis_analisis_mtc ?? '-',
+              'Bagian Mesin': process.bagian_mesin ?? '-',
+              Unit: process.unit ?? '-',
+              'Cara Perbaikan': process.cara_perbaikan ?? '-',
+              'Kode Analisis MTC': process.kode_analisis_mtc ?? '-',
+              'Nama Analisis MTC': process.nama_analisis_mtc ?? '-',
+              'Note MTC': process.note_mtc ?? '-',
+              'Note QC': process.note_qc ?? '-',
+              'Skor MTC': process.skor_mtc,
+              'Status Proses': process.status_proses,
+              'Status QC': process.status_qc,
+              'Alasan Pending': process.alasan_pending ?? '-',
               'Detail Sparepart': sparepartInfo || '-',
-              'Sparepart Sebelumnya': sparepartSebelumnya || '-',
-              'Sparepart Baru': sparepartBaru || '-',
-              'Lokasi Sebelumnya': lokasiSebelumnya || '-',
-              'Lokasi Baru': lokasiBaru || '-',
-              'Grade Perubahan': grade || '-',
-              'Tanggal Ganti':
-                process.masalah_spareparts &&
-                process.masalah_spareparts.length > 0
-                  ? convertTimeStampToDate(
-                      process.masalah_spareparts[0].tgl_ganti,
-                    )
-                  : '-',
-
-              // User information
-              'Eksekutor Nama': process.user_eksekutor?.nama || '-',
-              'Eksekutor Role': process.user_eksekutor?.role || '-',
-              'Eksekutor Bagian': process.user_eksekutor?.bagian || '-',
-              'Eksekutor Email': process.user_eksekutor?.email || '-',
-              'QC Nama': process.user_qc?.nama || '-',
-              'QC Role': process.user_qc?.role || '-',
-              'QC Bagian': process.user_qc?.bagian || '-',
-              'QC Email': process.user_qc?.email || '-',
-
-              // Timing information
+              'Sparepart Sebelumnya': sparepartSebelumnya,
+              'Sparepart Baru': sparepartBaru,
+              'Lokasi Sebelumnya': lokasiSebelumnya,
+              'Lokasi Baru': lokasiBaru,
+              'Grade Perubahan': grade,
+              'Tanggal Ganti': process.masalah_spareparts?.[0]?.tgl_ganti
+                ? convertTimeStampToDate(
+                    process.masalah_spareparts[0].tgl_ganti,
+                  )
+                : '-',
+              'Eksekutor Nama': process.user_eksekutor?.nama ?? '-',
+              'QC Nama': process.user_qc?.nama ?? '-',
               'Waktu Respon QC': ticket.waktu_respon_qc
                 ? convertTimeStampToAllSecond(ticket.waktu_respon_qc)
                 : '-',
@@ -503,270 +526,162 @@ function TableOS() {
               'Waktu Selesai MTC': process.waktu_selesai_mtc
                 ? convertTimeStampToAllSecond(process.waktu_selesai_mtc)
                 : '-',
-              'Waktu Selesai Total': process.waktu_selesai
-                ? convertTimeStampToAllSecond(process.waktu_selesai)
-                : '-',
-              'Waktu Breakdown MTC': waktuBreakdownMTC,
-              'Waktu Respon Total': waktuRespon2,
-              'Waktu Breakdown Total': waktuBreakdown,
-
-              // Add a sortable date field (for internal use)
-              _createdAtTimestamp: ticket.createdAt
-                ? new Date(ticket.createdAt).getTime()
-                : 0,
+              'Waktu Respon Total': formatSeconds(waktuRespon),
+              'Waktu Breakdown MTC': formatSeconds(waktuBreakdownMTC),
+              'Waktu Breakdown Total': formatSeconds(waktuBreakdown),
+              _ts: ticket.createdAt ? new Date(ticket.createdAt).getTime() : 0,
             });
           });
         } else {
-          // If there are no processes, still create a row for the ticket
-          const tglTicket = ticket.createdAt
-            ? convertTimeStampToAllSecond(ticket.createdAt)
-            : '-';
-          const jamTicket = ticket.createdAt
-            ? convertTimeStampToAllSecond(ticket.createdAt)
-            : '-';
-
-          excelData.push({
-            No: excelData.length + 1,
-            // Ticket information
-            'Kode Tiket': ticket.kode_ticket || '-',
-            'Tanggal Tiket': tglTicket,
-            'Jam Tiket': jamTicket,
-            'No Jo': ticket.no_jo || '-',
-            'No SO': ticket.no_so || '-',
-            'No IO': ticket.no_io || '-',
-            Item: ticket.nama_produk || '-',
-            Mesin: ticket.mesin || '-',
-            Proses: ticket.proses || '-',
-            Kendala: `${ticket.kode_lkh || '-'} - ${
-              ticket.nama_kendala || '-'
-            }`,
-            'Jenis Kendala': ticket.jenis_kendala || '-',
-            'Bagian Tiket': ticket.bagian_tiket || '-',
-            Bagian: ticket.bagian || '-',
-            Spek: ticket.spek || '-',
-            Customer: ticket.nama_customer || '-',
-            Operator: ticket.operator || '-',
-            QTY: ticket.qty || '-',
-            'QTY Druk': ticket.qty_druk || '-',
-            'Status Tiket': ticket.status_tiket || '-',
-
-            'Kode Analisis (Tiket)': ticket.kode_analisis_mtc || '-',
-            'Nama Analisis (Tiket)': ticket.nama_analisis_mtc || '-',
-            'Jenis Analisis MTC': ticket.jenis_analisis_mtc || '-',
-
-            // Process MTC information (empty for tickets without processes)
-            'Bagian Mesin': '-',
-            Unit: '-',
-            'Cara Perbaikan': '-',
-            'Kode Analisis MTC': '-',
-            'Nama Analisis MTC': '-',
-            'Note MTC': '-',
-            'Note QC': '-',
-            'Note Analisis': '-',
-            'Skor MTC': '-',
-            'Status Proses': '-',
-            'Status QC': '-',
-            'Is Rework': '-',
-            'Alasan Pending': '-',
-            'Estimasi Pengerjaan': '-',
-            'Tanggal MTC': '-',
-            'Note Request Jadwal': '-',
-
-            // Sparepart details
-            'Detail Sparepart': '-',
-            'Sparepart Sebelumnya': '-',
-            'Sparepart Baru': '-',
-            'Lokasi Sebelumnya': '-',
-            'Lokasi Baru': '-',
-            'Grade Perubahan': '-',
-            'Tanggal Ganti': '-',
-
-            // User information
-            'Eksekutor Nama': '-',
-            'Eksekutor Role': '-',
-            'Eksekutor Bagian': '-',
-            'Eksekutor Email': '-',
-            'QC Nama': ticket.user_respon_qc?.nama || '-',
-            'QC Role': ticket.user_respon_qc?.role || '-',
-            'QC Bagian': ticket.user_respon_qc?.bagian || '-',
-            'QC Email': ticket.user_respon_qc?.email || '-',
-
-            // Timing information
-            'Waktu Respon QC': ticket.waktu_respon_qc
-              ? convertTimeStampToAllSecond(ticket.waktu_respon_qc)
-              : '-',
-            'Waktu Mulai MTC': '-',
-            'Waktu Selesai MTC': '-',
-            'Waktu Selesai Total': '-',
-            'Waktu Breakdown MTC': '-',
-            'Waktu Respon Total': '-',
-            'Waktu Breakdown Total': '-',
-
-            // Add a sortable date field (for internal use)
-            _createdAtTimestamp: ticket.createdAt
-              ? new Date(ticket.createdAt).getTime()
-              : 0,
+          rows.push({
+            No: rows.length + 1,
+            'Kode Tiket': ticket.kode_ticket,
+            'Tanggal Tiket': convertTimeStampToAllSecond(ticket.createdAt),
+            'No Jo': ticket.no_jo,
+            Mesin: ticket.mesin,
+            Kendala: `${ticket.kode_lkh} - ${ticket.nama_kendala}`,
+            'Status Tiket': ticket.status_tiket,
+            'QC Nama': ticket.user_respon_qc?.nama ?? '-',
+            _ts: ticket.createdAt ? new Date(ticket.createdAt).getTime() : 0,
           });
         }
       });
 
-      // Sort the data so newest is at the top
-      excelData = excelData.sort(
-        (a: any, b: any) => b._createdAtTimestamp - a._createdAtTimestamp,
-      );
-
-      // Remove the temporary sort field before displaying/exporting
-      excelData = excelData.map((item: any, index: any) => {
-        const { _createdAtTimestamp, ...rest } = item;
-        return { No: index + 1, ...rest };
+      rows = rows.sort((a, b) => (b._ts as number) - (a._ts as number));
+      rows = rows.map((item, idx) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _ts, ...rest } = item;
+        return { No: idx + 1, ...rest };
       });
 
-      // Store formatted data for preview and show the modal
-      setPreviewData(excelData);
-      openModalExport();
-    } catch (error) {
-      console.error('Preview failed:', error);
+      setPreviewData(rows);
+      setVisibleRows(20);
+      setShowExportPreview(true);
+    } catch (err) {
+      console.error(err);
       alert('Preview failed. Please try again.');
     } finally {
-      // Hide loading indicator
       setIsLoadingPreview(false);
     }
-  };
+  }
 
-  // Actual export function that uses the preview data
-  const exportToExcel = () => {
+  function exportToExcel() {
     try {
-      // Show loading indicator
       setIsLoadingPreview(true);
-
-      if (!previewData || previewData.length === 0) {
+      if (!previewData.length) {
         alert('No data to export');
-        setIsLoadingPreview(false);
         return;
       }
 
-      // Create a new workbook
-      const workbook = XLSX.utils.book_new();
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(previewData);
+      ws['!cols'] = Object.keys(previewData[0]).map(() => ({ wch: 20 }));
+      XLSX.utils.book_append_sheet(wb, ws, 'Process MTC Details');
 
-      // Create worksheet and add data
-      const worksheet = XLSX.utils.json_to_sheet(previewData);
-
-      // Set column widths for better readability
-      const wscols =
-        previewData.length > 0
-          ? Object.keys(previewData[0]).map(() => ({ wch: 20 })) // Default width for all columns
-          : [];
-      worksheet['!cols'] = wscols;
-
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Process MTC Details');
-
-      // Generate Excel file
       const today = new Date();
-      const date = `${today.getFullYear()}-${(today.getMonth() + 1)
-        .toString()
-        .padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
-
+      const date = `${today.getFullYear()}-${String(
+        today.getMonth() + 1,
+      ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       let filename = `History_Validasi_${date}`;
-
-      // Add filter info to filename if any filter is applied
-      if (startDate && endDate) {
+      if (startDate && endDate)
         filename += `_${startDate.split('T')[0]}_to_${endDate.split('T')[0]}`;
-      }
-      if (mesinNama) {
-        filename += `_${mesinNama}`;
-      }
-      if (statusTiket) {
-        filename += `_${statusTiket}`;
-      }
-      if (noJo) {
-        filename += `_JO-${noJo}`;
-      }
+      if (mesinNama) filename += `_${mesinNama}`;
+      if (statusTiket) filename += `_${statusTiket}`;
+      if (noJo) filename += `_JO-${noJo}`;
+      filename += '.xlsx';
 
-      filename += `.xlsx`;
-
-      // Write and download the file
-      XLSX.writeFile(workbook, filename);
-
-      // Close the modal after export
-      closeModalExport();
-    } catch (error) {
-      console.error('Export failed:', error);
+      XLSX.writeFile(wb, filename);
+      setShowExportPreview(false);
+    } catch (err) {
+      console.error(err);
       alert('Export failed. Please try again.');
     } finally {
-      // Hide loading indicator
       setIsLoadingPreview(false);
     }
-  };
-  return (
-    <main>
-      <div className="flex  gap-1 items-center bg-white ">
-        {isLoading && <Loading />}
-        <div>
-          {filter && (
-            <div className=" bg-white shadow-2xl md:w-96 w-11/12 p-2 -translate-x-2 md:-translate-y-6 -translate-y-32 border border-gray"></div>
-          )}
-        </div>
+  }
 
-        <div className="bg-white  p-6 mb-6">
-          <div className="grid md:grid-cols-3 grid-cols-1 gap-6">
-            {/* Date Range */}
-            <div className="flex flex-row md:flex-row items-center gap-4 col-span-3 md:col-span-1">
-              <div className="flex flex-col gap-2 flex-1">
-                <p className="text-sm text-primary font-semibold">Dari:</p>
+  // ─── Render helpers ───
+  const StatusBadge = ({ status }: { status: string }) => (
+    <span
+      className={`text-xs px-2 py-0.5 font-medium rounded-full ${getStatusClasses(
+        status,
+      )}`}
+    >
+      {status}
+    </span>
+  );
+
+  const SkorBadge = ({ skor }: { skor: number }) => (
+    <span
+      className={`text-xs px-2 py-0.5 font-medium rounded-full ${getSkorClasses(
+        skor,
+      )}`}
+    >
+      {skor}%
+    </span>
+  );
+
+  // ─── Render ───
+  return (
+    <main className="min-h-screen bg-slate-50">
+      {isLoading && <Loading />}
+
+      {/* ── Filter Panel ── */}
+      <div className="bg-white border-b border-slate-200 shadow-sm">
+        <div className="px-6 py-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4">
+            {/* Date range */}
+            <div className="flex gap-2 col-span-1 md:col-span-1 lg:col-span-1">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Dari
+                </label>
                 <input
-                  className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
                   type="date"
+                  className="w-full rounded-lg bg-slate-50 border border-slate-200 px-3 h-9 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
                   onChange={(e) => setStartDate(e.target.value)}
                 />
               </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <p className="text-sm text-primary font-semibold">Sampai:</p>
+              <div className="flex-1">
+                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  Sampai
+                </label>
                 <input
-                  className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
                   type="date"
+                  className="w-full rounded-lg bg-slate-50 border border-slate-200 px-3 h-9 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
             </div>
 
-            {/* Dropdown Filters */}
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-primary font-semibold">Pilih Mesin:</p>
+            {/* Mesin */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
+                Mesin
+              </label>
               <select
-                onChange={(e) => {
-                  setMesinNama(e.target.value);
-                }}
-                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                onChange={(e) => setMesinNama(e.target.value)}
+                className="w-full rounded-lg bg-slate-50 border border-slate-200 px-3 h-9 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
               >
-                <option selected disabled>
-                  Pilih Mesin
-                </option>
-                {masterMesin?.map((data: any, i: any) => (
-                  <option
-                    key={i}
-                    value={data.nama_mesin}
-                    className="text-gray-800 text-sm"
-                  >
-                    {data.nama_mesin}
+                <option value="">Semua Mesin</option>
+                {masterMesin.map((m) => (
+                  <option key={m.id} value={m.nama_mesin}>
+                    {m.nama_mesin}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-primary font-semibold">
-                Status Tiket:
-              </p>
+            {/* Status */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
+                Status Tiket
+              </label>
               <select
-                onChange={(e) => {
-                  setStatusTiket(e.target.value);
-                }}
-                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                onChange={(e) => setStatusTiket(e.target.value)}
+                className="w-full rounded-lg bg-slate-50 border border-slate-200 px-3 h-9 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
               >
-                <option selected disabled>
-                  Pilih Status Tiket
-                </option>
+                <option value="">Semua Status</option>
                 <option value="open">Open</option>
                 <option value="request to qc">Request to QC</option>
                 <option value="temporary">Temporary</option>
@@ -774,1427 +689,1010 @@ function TableOS() {
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-primary font-semibold">Nama</label>
-              <Select
-                placeholder="Cari..."
+            {/* Nama karyawan */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
+                Eksekutor
+              </label>
+              <Select<UserOption>
+                placeholder="Cari nama..."
                 options={options}
-                onChange={handleChangePointDepatment}
-                className="rounded-lg"
+                onChange={handleChangeUser}
+                isClearable
                 styles={{
-                  control: (provided) => ({
-                    ...provided,
-                    backgroundColor: '#EBF5FF',
-                    borderColor: '#BFDBFE',
-                    minHeight: '40px',
+                  control: (base) => ({
+                    ...base,
+                    backgroundColor: '#f8fafc',
+                    borderColor: '#e2e8f0',
+                    minHeight: '36px',
+                    height: '36px',
+                    fontSize: '14px',
                     boxShadow: 'none',
-                    '&:hover': {
-                      borderColor: '#93C5FD',
-                    },
+                    '&:hover': { borderColor: '#94a3b8' },
                   }),
+                  valueContainer: (base) => ({ ...base, padding: '0 12px' }),
                 }}
               />
             </div>
 
-            {/* Text Search */}
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-primary font-semibold">Cari</p>
+            {/* Search */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
+                Cari
+              </label>
               <input
-                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                placeholder="Kendala / No Jo "
+                className="w-full rounded-lg bg-slate-50 border border-slate-200 px-3 h-9 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
+                placeholder="Kendala / No Jo"
                 type="text"
                 onChange={(e) => setNoJo(e.target.value)}
               />
             </div>
-            {/* Text Search */}
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-primary font-semibold">Cari Unit</p>
+
+            {/* Unit */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">
+                Unit
+              </label>
               <input
-                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                placeholder="Unit "
+                className="w-full rounded-lg bg-slate-50 border border-slate-200 px-3 h-9 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
+                placeholder="Cari unit..."
                 type="text"
-                onChange={(e) => setunit(e.target.value)}
+                onChange={(e) => setUnit(e.target.value)}
               />
             </div>
-            {/* Action Buttons */}
-            <div className="flex items-end gap-3">
+
+            {/* Actions */}
+            <div className="flex items-end gap-2 col-span-2 sm:col-span-2 lg:col-span-2">
               <button
-                onClick={() => getTiket()}
-                className="bg-primary hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg transition-colors flex-1"
+                onClick={() => {
+                  setPage(1);
+                  getTiket();
+                }}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold h-9 px-4 rounded-lg transition-colors"
               >
                 Tampilkan
               </button>
               <button
-                onClick={() => prepareExportData()}
-                className="bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2 rounded-lg transition-colors flex-1 disabled:opacity-50"
+                onClick={prepareExportData}
                 disabled={isLoadingPreview}
+                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold h-9 px-4 rounded-lg transition-colors disabled:opacity-50"
               >
                 {isLoadingPreview ? 'Loading...' : 'Export'}
               </button>
             </div>
           </div>
         </div>
-
-        {/* Export Preview Modal */}
-        {showExportPreview && (
-          <ModalFull
-            isOpen={showExportPreview}
-            onClose={() => closeModalExport()}
-            judul={'Export Preview'}
-          >
-            <div className="flex flex-col h-[85vh]">
-              <div className="flex justify-between mb-4 px-2 pt-5">
-                <div className="text-sm text-gray-500">
-                  Total Data: {previewData.length}
-                </div>
-                <button
-                  onClick={exportToExcel}
-                  className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600 font-medium"
-                  disabled={isLoadingPreview}
-                >
-                  {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
-                </button>
-              </div>
-              <div className="overflow-auto flex-1 relative">
-                <table className="min-w-full bg-white border">
-                  <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
-                    <tr>
-                      {previewData.length > 0 &&
-                        Object.keys(previewData[0]).map((key, index) => (
-                          <th
-                            key={index}
-                            className="py-3 px-4 border-b text-left text-xs font-semibold text-blue-700 uppercase tracking-wider"
-                          >
-                            {key}
-                          </th>
-                        ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {previewData.slice(0, visibleRows).map((row, rowIndex) => (
-                      <tr
-                        key={rowIndex}
-                        className={
-                          rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                        }
-                      >
-                        {Object.values(row).map((value, colIndex) => (
-                          <td
-                            key={colIndex}
-                            className="py-2 px-4 border-b text-sm"
-                          >
-                            {value?.toString() || '-'}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex items-center justify-between border-t bg-gray-50 py-3 px-4 mt-auto">
-                <div className="text-sm text-gray-600">
-                  Showing {Math.min(visibleRows, previewData.length)} of{' '}
-                  {previewData.length} rows
-                </div>
-
-                {visibleRows < previewData.length && (
-                  <div className="space-x-3">
-                    <button
-                      className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded font-medium text-sm"
-                      onClick={() =>
-                        setVisibleRows(
-                          Math.min(visibleRows + 20, previewData.length),
-                        )
-                      }
-                    >
-                      Show 20 More
-                    </button>
-                    <button
-                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium text-sm"
-                      onClick={() => setVisibleRows(previewData.length)}
-                    >
-                      Show All ({previewData.length} rows)
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </ModalFull>
-        )}
       </div>
 
-      {/* <input
-          type="search"
-          placeholder="search"
-          name=""
-          id=""
-          className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
-        /> */}
-
+      {/* ── Desktop Table ── */}
       {!isMobile && (
-        <>
-          <div className="flex bg-white mt-2 py-2">
-            <p className="w-10 px-3 text-xs font-bold ">No</p>
-            <div className="grid grid-cols-12 w-full gap-2">
-              <div className="flex gap-2  col-span-2">
-                <p className="text-xs font-bold ">Waktu Tiket</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2 ">
-                <p className="text-xs font-bold ">No.Jo</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2 ">
-                <p className="text-xs font-bold ">Mesin </p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2 col-span-2">
-                <p className="text-xs font-bold ">Jenis Kendala</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2">
-                <p className="text-xs font-bold ">Unit</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2">
-                <p className="text-xs font-bold ">Status</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2">
-                <p className="text-xs font-bold ">Percent</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2  col-span-2">
-                <p className="text-xs font-bold ">Breakdown Time</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2 ">
-                <p className="text-xs font-bold ">Action</p>
-              </div>
-            </div>
+        <div className="px-4 py-4">
+          {/* Header */}
+          <div className="grid grid-cols-12 gap-2 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-white rounded-lg shadow-sm border border-slate-100 mb-1">
+            <div className="col-span-1">No</div>
+            <div className="col-span-2">Waktu Tiket</div>
+            <div className="col-span-1">No.Jo</div>
+            <div className="col-span-1">Mesin</div>
+            <div className="col-span-2">Kendala</div>
+            <div className="col-span-1">Unit</div>
+            <div className="col-span-1">Status</div>
+            <div className="col-span-1">%</div>
+            <div className="col-span-1">Breakdown</div>
+            <div className="col-span-1">Aksi</div>
           </div>
-          <div className=" overflow-x-auto">
-            <div className="min-w-[700px]">
-              {tiket != null &&
-                tiket.data.map((data: any, i: any) => {
-                  const lengthProses = data.proses_mtcs.length - 1;
 
-                  function convertDatetimeToDate(datetime: any) {
-                    const dateObject = new Date(datetime);
-                    const day = dateObject
-                      .getDate()
-                      .toString()
-                      .padStart(2, '0'); // Ensure two-digit day
-                    const month = (dateObject.getMonth() + 1)
-                      .toString()
-                      .padStart(2, '0'); // Adjust for zero-based month
-                    const year = dateObject.getFullYear();
-                    const hours = dateObject
-                      .getHours()
-                      .toString()
-                      .padStart(2, '0');
-                    const minutes = dateObject
-                      .getMinutes()
-                      .toString()
-                      .padStart(2, '0');
+          {/* Rows */}
+          <div className="space-y-1.5">
+            {tiket?.data.map((data, i) => {
+              const lastProses = data.proses_mtcs[data.proses_mtcs.length - 1];
+              const waktuBreakdownSeconds = calculateSecondsDiff(
+                data.createdAt,
+                data.waktu_selesai,
+              );
+              const waktuValidasiQCSeconds = calculateSecondsDiff(
+                data.createdAt,
+                data.waktu_respon_qc,
+              );
+              const waktuBreakdownMTCSeconds = calculateSecondsDiff(
+                data.waktu_respon_qc,
+                data.waktu_selesai_mtc,
+              );
+              const waktuVerifikasiQCSeconds = calculateSecondsDiff(
+                data.waktu_selesai_mtc,
+                data.waktu_selesai,
+              );
 
-                    return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-                  }
+              return (
+                <div
+                  key={data.id}
+                  className="rounded-xl overflow-hidden shadow-sm border border-slate-100"
+                >
+                  {/* Main row */}
 
-                  const dateMtc = convertTimeStampToDateTime(data.createdAt);
-                  const waktuRespon = calculateResponTime(
-                    data.waktu_respon_qc == null
-                      ? data.createdAt
-                      : data.waktu_respon_qc,
-                    data.waktu_respon,
-                  );
+                  <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-white items-center hover:bg-slate-50 transition-colors relative">
+                    <div className="col-span-1 text-sm text-slate-500 font-medium">
+                      {i + 1 + (page - 1) * limit}
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-slate-700">
+                        {formatDateTimeLocal(data.createdAt)}
+                      </p>
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-xs font-medium text-slate-800">
+                        {data.no_jo}
+                      </p>
+                      <p className="text-xs text-emerald-600">
+                        {data.nama_produk}
+                      </p>
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-xs text-slate-700">{data.mesin}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-xs text-slate-700">
+                        {data.kode_lkh} – {data.nama_kendala}
+                      </p>
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-xs text-slate-700">
+                        {data.unit ?? '-'}
+                      </p>
+                    </div>
+                    <div className="col-span-1">
+                      <StatusBadge status={data.status_tiket} />
+                    </div>
+                    <div className="col-span-1">
+                      <SkorBadge skor={data.skor_mtc} />
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-xs text-slate-600">
+                        {data.waktu_selesai
+                          ? formatSeconds(waktuBreakdownSeconds)
+                          : '-'}
+                      </p>
+                    </div>
+                    <div className="col-span-1 flex items-center gap-1.5">
+                      {/* Burger menu */}
+                      {data.status_tiket !== 'monitoring' &&
+                        data.status_tiket !== 'request to qc' && (
+                          <div className="relative">
+                            <button
+                              onClick={() =>
+                                setOpenButton((prev) => (prev === i ? null : i))
+                              }
+                              className="p-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <rect y="3" width="20" height="2" rx="1" />
+                                <rect y="9" width="20" height="2" rx="1" />
+                                <rect y="15" width="20" height="2" rx="1" />
+                              </svg>
+                            </button>
 
-                  const waktuBreakdownMinutes = calculateResponTime2(
-                    data.createdAt,
-                    data.waktu_selesai,
-                  );
-                  const waktuBreakdownMTCMinutes = calculateResponTime2(
-                    data.waktu_respon_qc,
-                    data.waktu_selesai_mtc,
-                  );
-                  const waktuValidasiQCMinutes = calculateResponTime2(
-                    data.createdAt,
-                    data.waktu_respon_qc,
-                  );
-                  const waktuValidasiQC = formatMinutesToHoursMinutesSeconds(
-                    waktuValidasiQCMinutes,
-                  );
-                  const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
-                    waktuBreakdownMinutes,
-                  );
-                  const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
-                    waktuBreakdownMTCMinutes,
-                  );
-
-                  const qcRespon = calculateResponTime2(
-                    data.createdAt,
-                    data.waktu_respon_qc,
-                  );
-                  const qcVerif = calculateResponTime2(
-                    data.waktu_selesai_mtc,
-                    data.waktu_selesai,
-                  );
-                  const waktuVerifikasiQCMinutes = calculateResponTime2(
-                    data.waktu_selesai_mtc,
-                    data.waktu_selesai,
-                  );
-                  const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(
-                    waktuVerifikasiQCMinutes,
-                  );
-                  // Combine qcRespon and qcVerif and format them
-                  const waktuBreakdownQCMinutes: any = qcRespon + qcVerif;
-                  const waktuBreakdownQC = formatMinutesToHoursMinutesSeconds(
-                    waktuBreakdownQCMinutes,
-                  );
-
-                  let indexNama = data.proces_mtcs?.length - 1;
-                  return (
-                    <>
-                      <div className="my-2">
-                        <section className="flex  bg-white  rounded-lg">
-                          <div
-                            key={i}
-                            className="py-3 w-10 px-3 flex justify-center items-center"
-                          >
-                            {i + 1 + (page - 1) * limit}
-                          </div>
-                          <div className="grid grid-cols-12 w-full gap-2 px-3">
-                            <div className="flex flex-col md:gap-5 gap-1 w-full col-span-2">
-                              <div className="my-auto  ">
-                                <p className="text-xs font-light break-all">
-                                  {dateMtc}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col md:gap-5 gap-1 ">
-                              <div className="my-auto flex flex-col gap-2">
-                                <p className="text-xs font-light">
-                                  {data.no_jo}
-                                </p>
-                                <p className="text-xs font-light text-green-500">
-                                  {data.nama_produk}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col md:gap-5 gap-1 ">
-                              <div className="my-auto">
-                                <p className="text-xs font-light">
-                                  {data.mesin}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col md:gap-5 gap-1 col-span-2">
-                              <div className="my-auto w-full">
-                                <p className="text-xs font-light">
-                                  {data.kode_lkh} - {data.nama_kendala}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col md:gap-5 gap-1 ">
-                              <div className="my-auto">
-                                <p className="text-xs font-light">
-                                  {data.unit}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center md:gap-5 gap-1 ">
-                              <div className="flex ">
-                                <p
-                                  className={
-                                    data.status_tiket == 'pending'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : data.status_tiket == 'request to qc'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : data.status_tiket == 'qc rejected'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : ''
-                                  }
-                                >
-                                  {data.status_tiket}{' '}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center md:gap-5 gap-1  p-2">
-                              <div className="flex ">
-                                <p
-                                  className={
-                                    data.skor_mtc == 0
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.skor_mtc == 20
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.skor_mtc == 40
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.skor_mtc == 50
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#fff2b1bd] `
-                                      : data.skor_mtc >= 60
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : ''
-                                  }
-                                >
-                                  {data.skor_mtc}%
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col md:gap-5 gap-1 col-span-2">
-                              <div>
-                                <p className="text-xs font-light">
-                                  {data.waktu_selesai == null
-                                    ? '-'
-                                    : waktuBreakdown}
-                                  {/* {data.proses_mtcs[lengthProses].tgl_mtc}  */}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2 items-center md:mb-0 mb-2 ">
-                              <div>
-                                <div>
-                                  {data.status_tiket == 'monitoring' ||
-                                  data.status_tiket == 'request to qc' ? (
-                                    <button
-                                      title="button"
-                                      className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0"
-                                    >
-                                      <img
-                                        src={Burger}
-                                        alt=""
-                                        className="mx-3"
-                                      />
-                                    </button>
-                                  ) : (
-                                    <button
-                                      title="button"
-                                      className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                      onClick={() => handleClick(i)}
-                                    >
-                                      <img
-                                        src={Burger}
-                                        alt=""
-                                        className="mx-3"
-                                      />
-                                    </button>
-                                  )}
-                                  {openButton == i ? (
-                                    <div className="absolute bg-white p-3 shadow-5 rounded-md">
-                                      {' '}
-                                      {/* Wrap buttons for styling */}
-                                      <div className="flex flex-col gap-1">
-                                        {data.status_tiket == 'monitoring' ? (
-                                          <></>
-                                        ) : (
-                                          <button
-                                            onClick={() => {
-                                              if (data.status_tiket == 'open') {
-                                                openModal1(i);
-                                              } else if (
-                                                data.status_tiket ==
-                                                  'temporary' &&
-                                                data.proses_mtcs[lengthProses]
-                                                  .cara_perbaikan == null
-                                              ) {
-                                                openModal1(i);
-
-                                                // ini untuk fungsi rework
-                                              } else {
-                                                reworkTiket(data.id, i);
-                                              }
-                                            }}
-                                            className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                          >
-                                            PROSES
-                                          </button>
-                                        )}
-                                        <button
-                                          onClick={openModal2}
-                                          className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                        >
-                                          JADWALKAN{' '}
-                                        </button>
-                                      </div>
-                                      {showModal1[i] == true && (
-                                        <ModalStockCheck1
-                                          children={undefined}
-                                          isOpen={showModal1[i]}
-                                          onClose={() => closeModal1(i)}
-                                          onFinish={() => getTiket()}
-                                          kendala={data.nama_kendala}
-                                          kodeLkh={data.kode_lkh}
-                                          machineName={data.mesin}
-                                          tgl={data.waktu_respon}
-                                          jam={'19.09'}
-                                          namaPemeriksa={
-                                            data.proses_mtcs[lengthProses]
-                                              .user_eksekutor?.nama
-                                          }
-                                          no={'109299'}
-                                          idTiket={data.id}
-                                          idProses={
-                                            data.proses_mtcs[lengthProses]?.id
-                                          }
-                                          namaMesin={data.mesin}
-                                          skor_mtc={
-                                            data.proses_mtcs[lengthProses]
-                                              .skor_mtc
-                                          }
-                                          jenis_perbaikan={
-                                            data.proses_mtcs[lengthProses]
-                                              .cara_perbaikan
-                                          }
-                                          unit={
-                                            data.proses_mtcs[lengthProses].unit
-                                          }
-                                          bagian={
-                                            data.proses_mtcs[lengthProses]
-                                              .bagian_mesin
-                                          }
-                                        />
-                                        // <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
-
-                                        // </ModalStockCheckPengganti>
-                                      )}
-                                      {showModal2 && (
-                                        <ModalMtcLightHeavy
-                                          isOpen={showModal2}
-                                          onClose={closeModal2}
-                                          title={undefined}
-                                        >
-                                          <div className="pt-5">
-                                            <button
-                                              onClick={openModal4}
-                                              className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
-                                            >
-                                              PERBAIKAN INTERNAL
-                                            </button>
-                                          </div>
-                                          <div className="pt-2">
-                                            <button
-                                              onClick={openModal5}
-                                              className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
-                                            >
-                                              SERVICE
-                                            </button>
-                                          </div>
-                                        </ModalMtcLightHeavy>
-                                      )}
-                                      {showModal5 && (
-                                        <ModalSPBService
-                                          isOpen={showModal5}
-                                          onClose={closeModal5}
-                                          onFinish={getTiket}
-                                          idProses={
-                                            data.proses_mtcs[lengthProses].id
-                                          }
-                                          sumber={'Os2'}
-                                          noSPB={'MT-0001'}
-                                          tglSpb={'20 MEI 2024'}
-                                          data={undefined}
-                                        >
-                                          <p></p>
-                                        </ModalSPBService>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    ''
-                                  )}
-                                </div>
-                              </div>
-                              <div>
-                                <button
-                                  title="button"
-                                  onClick={() => handleClickDetail(i)}
-                                  className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                                >
-                                  <img src={Arrow} alt="" className="mx-3" />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </section>
-
-                        {showDetail[i] && (
-                          <>
-                            <div className="w-full flex flex-col bg-[#E9F3FF]  rounded-lg">
-                              <div className="flex px-5 py-2">
-                                <div className="flex flex-col gap-2 w-2/12">
-                                  <p className="text-xs font-bold">
-                                    Kode Tiket
-                                  </p>
-                                </div>
-                                <div className="grid grid-cols-7 gap-3 w-10/12">
-                                  <div className="flex flex-col gap-2">
-                                    <h5 className="text-xs font-bold">
-                                      Pengerjaan Ke
-                                    </h5>
-                                  </div>
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">Waktu</p>
-                                  </div>
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">
-                                      Eksekutor
-                                    </p>
-                                  </div>
-
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">
-                                      Progress Perbaikan
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">
-                                      Jenis Perbaikan
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">Unit</p>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="flex px-5 ">
-                                <div className="flex flex-col gap-2 w-2/12">
-                                  <div>
-                                    <p className="text-xs font-medium">
-                                      {data.kode_ticket}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-bold">
-                                      Waktu Respon
-                                    </p>
-                                    <p className="text-xs font-medium">
-                                      {waktuRespon}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-bold">Pelapor</p>
-                                    <p className="text-xs font-medium">
-                                      {data.operator}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-7 gap-3 w-10/12">
-                                  {data.proses_mtcs.map(
-                                    (proses: any, ii: any) => {
-                                      const tglMulaiMtc = convertDatetimeToDate(
-                                        proses.waktu_mulai_mtc,
-                                      );
-                                      function convertJam(datetime: any) {
-                                        const dateObject = new Date(datetime);
-                                        const hours = dateObject
-                                          .getHours()
-                                          .toString()
-                                          .padStart(2, '0');
-                                        const minutes = dateObject
-                                          .getMinutes()
-                                          .toString()
-                                          .padStart(2, '0');
-                                        return `${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-                                      }
-                                      function convertTgl(datetime: any) {
-                                        const dateObject = new Date(datetime);
-                                        const day = dateObject
-                                          .getDate()
-                                          .toString()
-                                          .padStart(2, '0'); // Ensure two-digit day
-                                        const month = (
-                                          dateObject.getMonth() + 1
-                                        )
-                                          .toString()
-                                          .padStart(2, '0'); // Adjust for zero-based month
-                                        const year = dateObject.getFullYear();
-
-                                        return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
-                                      }
-
-                                      const waktuMtc = convertTgl(
-                                        proses.waktu_mulai_mtc,
-                                      );
-                                      const jamMtc = convertJam(
-                                        proses.waktu_mulai_mtc,
-                                      );
-                                      return (
-                                        <>
-                                          <div className="flex flex-col gap-2">
-                                            <h5 className="text-xs font-medium pl-5">
-                                              {ii + 1}
-                                            </h5>
-                                          </div>
-                                          <div className="flex flex-col gap-2">
-                                            <p className="text-xs font-medium">
-                                              {tglMulaiMtc}
-                                            </p>
-                                          </div>
-                                          <div className="flex flex-col gap-2">
-                                            <p className="text-xs font-medium">
-                                              {proses.user_eksekutor.nama}
-                                            </p>
-                                          </div>
-
-                                          <div className="flex flex-col gap-2">
-                                            <div className="flex ">
-                                              <p
-                                                className={
-                                                  proses.skor_mtc <= 100 &&
-                                                  proses.skor_mtc >= 60
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                    : proses.skor_mtc > 20 &&
-                                                      proses.skor_mtc <= 59
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                    : proses.skor_mtc <= 20
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                    : ''
-                                                }
-                                              >
-                                                {proses.skor_mtc}%
-                                              </p>
-                                            </div>
-                                          </div>
-                                          <div className="flex flex-col gap-2">
-                                            <p className="text-xs font-medium">
-                                              {proses.cara_perbaikan}
-                                            </p>
-                                          </div>
-                                          <div className="flex flex-col gap-2">
-                                            <p className="text-xs font-medium">
-                                              {proses.unit}
-                                            </p>
-                                          </div>
-                                          <div className="">
-                                            <button
-                                              onClick={() =>
-                                                openModalDetail(ii)
-                                              }
-                                              className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md"
-                                            >
-                                              Detail
-                                            </button>
-                                          </div>
-                                          {showModalDetail[ii] && (
-                                            <ModalDetail
-                                              children={undefined}
-                                              isOpen={showModalDetail[ii]}
-                                              onClose={() =>
-                                                closeModalDetail(ii)
-                                              }
-                                              kendala={data.nama_kendala}
-                                              machineName={data.mesin}
-                                              tgl={waktuMtc}
-                                              jam={jamMtc}
-                                              namaPemeriksa={
-                                                proses.user_eksekutor.nama
-                                              }
-                                              no={'1'}
-                                              idTiket={data.id}
-                                              kodeLkh={data.kode_lkh}
-                                              analisisPenyebab={
-                                                `${proses.kode_analisis_mtc}` +
-                                                ' - ' +
-                                                `${proses.nama_analisis_mtc}`
-                                              }
-                                              kebutuhanSparepart={
-                                                proses.masalah_spareparts
-                                              }
-                                              tipeMaintenance={
-                                                proses.cara_perbaikan
-                                              }
-                                              catatan={proses.note_mtc}
-                                              unit={proses.unit}
-                                              bagian={proses.bagian_mesin}
-                                              file={proses.file}
-                                            ></ModalDetail>
-                                          )}
-                                        </>
-                                      );
-                                    },
-                                  )}
-                                </div>
-                              </div>
-                              {data.proses_mtcs?.map(
-                                (proses: any, index: any) =>
-                                  proses.status_proses === 'qc rejected' && (
-                                    <tr
-                                      key={index}
-                                      className=" text-sm px-4 py-4"
-                                    >
-                                      <td className=" p-2 text-red-400 font-bold">
-                                        QC Rejected
-                                      </td>
-                                      <td className=" p-2 text-center font-medium">
-                                        {proses.user_qc?.nama} -{' '}
-                                        {proses.note_qc}
-                                      </td>
-                                    </tr>
-                                  ),
-                              )}
-                              {data.waktu_selesai == null ? (
-                                ''
-                              ) : (
-                                <>
-                                  <table className="w-full border-collapse font-sans text-xs mx-auto">
-                                    <thead>
-                                      <tr className="bg-gray-200">
-                                        <th className="border border-gray-300 p-2 text-left">
-                                          Keterangan
-                                        </th>
-                                        <th className="border border-gray-300 p-2 text-left">
-                                          Detail
-                                        </th>
-                                        <th className="border border-gray-300 p-2 text-left">
-                                          Waktu
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr className="border-b border-gray-300">
-                                        <td className="border border-gray-300 p-2">
-                                          Waktu Tiket Masuk
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                          {dateMtc}
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                          -
-                                        </td>
-                                      </tr>
-                                      <tr
-                                        className={`border  p-2 ${
-                                          waktuValidasiQCMinutes >= 1800
-                                            ? 'text-red-500 border-red-500'
-                                            : 'border-gray-300'
-                                        }`}
-                                      >
-                                        <td
-                                          className={`border border-gray-300 p-2 ${
-                                            waktuValidasiQCMinutes >= 1800
-                                              ? 'text-red-500'
-                                              : ''
-                                          }`}
-                                        >
-                                          Waktu Validasi QC
-                                        </td>
-                                        <td
-                                          className={`border border-gray-300 p-2 ${
-                                            waktuValidasiQCMinutes >= 1800
-                                              ? 'text-red-500'
-                                              : ''
-                                          }`}
-                                        >
-                                          {data.user_respon_qc?.nama} ~{' '}
-                                          {convertTimeStampToDateTime(
-                                            data.waktu_respon_qc,
-                                          )}
-                                        </td>
-                                        <td
-                                          className={`border border-gray-300 p-2 ${
-                                            waktuValidasiQCMinutes >= 1800
-                                              ? 'text-red-500'
-                                              : ''
-                                          }`}
-                                        >
-                                          {waktuValidasiQC}
-                                        </td>
-                                      </tr>
-                                      <tr className="border-b border-gray-300">
-                                        <td className="border border-gray-300 p-2">
-                                          Waktu Breakdown MTC
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                          {convertTimeStampToDateTime(
-                                            data.waktu_mulai_mtc,
-                                          )}{' '}
-                                          -{' '}
-                                          {convertTimeStampToDateTime(
-                                            data.waktu_selesai_mtc,
-                                          )}{' '}
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                          {' '}
-                                          {waktuBreakdownMTC}
-                                        </td>
-                                      </tr>
-                                      <tr
-                                        className={`border border-gray-300 p-2 ${
-                                          waktuVerifikasiQCMinutes >= 3600
-                                            ? 'text-red-500 border-red-500'
-                                            : 'border-gray-300'
-                                        }`}
-                                      >
-                                        <td
-                                          className={`border border-gray-300 p-2 ${
-                                            waktuVerifikasiQCMinutes >= 3600
-                                              ? 'text-red-500'
-                                              : ''
-                                          }`}
-                                        >
-                                          Waktu Verifikasi QC
-                                        </td>
-                                        <td
-                                          className={`border border-gray-300 p-2 ${
-                                            waktuVerifikasiQCMinutes >= 3600
-                                              ? 'text-red-500'
-                                              : ''
-                                          }`}
-                                        >
-                                          {
-                                            data.proses_mtcs?.at(-1)?.user_qc
-                                              ?.nama
-                                          }{' '}
-                                          ~{' '}
-                                          {convertTimeStampToDateTime(
-                                            data.proses_mtcs?.at(-1)
-                                              ?.waktu_selesai,
-                                          )}{' '}
-                                        </td>
-                                        <td
-                                          className={`border border-gray-300 p-2 ${
-                                            waktuVerifikasiQCMinutes >= 3600
-                                              ? 'text-red-500'
-                                              : ''
-                                          }`}
-                                        >
-                                          {waktuVerifikasiQC}
-                                        </td>
-                                      </tr>
-                                      <tr className="border-b border-gray-300">
-                                        <td className="border border-gray-300 p-2">
-                                          Waktu Breakdown
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                          -
-                                        </td>
-                                        <td className="border border-gray-300 p-2">
-                                          {waktuBreakdown}
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </>
-                  );
-                })}
-            </div>
-          </div>
-          <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Rows per page:</span>
-              <div className="flex gap-2">
-                {[10, 25, 50, 100].map((pageSize) => (
-                  <button
-                    key={pageSize}
-                    onClick={() => handleLimitChange(pageSize)}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                      limit === pageSize
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {pageSize}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Stack spacing={2}>
-                <Pagination
-                  count={tiket?.total_page}
-                  color="primary"
-                  page={page}
-                  onChange={(e, i) => {
-                    setPage(i);
-                    console.log(i);
-                  }}
-                />
-              </Stack>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* =============================================================INI KOMPONEN UNTUK MOBILE========================================== */}
-      {isMobile && (
-        <>
-          <main className="overflow-x-scroll">
-            <div className="bg-white mt-2 px-1 grid grid-cols-4 gap-3 py-2">
-              <div className="flex gap-[1px] justify-center items-center">
-                <p className="text-xs font-bold ">Action</p>
-                <img src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-[1px] justify-center items-center">
-                <p className="text-xs font-bold ">Nama Mesin</p>
-                <img src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-[1px] justify-center items-center">
-                <p className="text-xs font-bold ">Jenis Kendala</p>
-                <img src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-[1px] justify-center items-center">
-                <p className="text-xs font-bold ">Persentase</p>
-                <img src={Polygon6} alt="" />
-              </div>
-            </div>
-            {tiket != null &&
-              tiket.data.map((data: any, i: any) => {
-                const lengthProses = data.proses_mtcs.length - 1;
-
-                function convertDatetimeToDate(datetime: any) {
-                  const dateObject = new Date(datetime);
-                  const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
-                  const month = (dateObject.getMonth() + 1)
-                    .toString()
-                    .padStart(2, '0'); // Adjust for zero-based month
-                  const year = dateObject.getFullYear();
-                  const hours = dateObject
-                    .getHours()
-                    .toString()
-                    .padStart(2, '0');
-                  const minutes = dateObject
-                    .getMinutes()
-                    .toString()
-                    .padStart(2, '0');
-
-                  return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-                }
-
-                const dateMtc = convertDatetimeToDate(data.createdAt);
-                const waktuRespon = calculateResponTime(
-                  data.waktu_respon_qc == null
-                    ? data.createdAt
-                    : data.waktu_respon_qc,
-                  data.waktu_respon,
-                );
-                const waktuBreakdown = calculateResponTime(
-                  data.waktu_mulai_mtc,
-                  data.waktu_selesai_mtc,
-                );
-                return (
-                  <>
-                    <div className="bg-white mt-2 grid grid-cols-4 gap-3 p-2">
-                      <div className="flex gap-1">
-                        <div>
-                          <button
-                            title="button"
-                            onClick={() => handleClick(i)}
-                            className="text-xs px-1 py-2 font-bold bg-blue-700  text-white rounded-sm"
-                          >
-                            <img src={Burger} alt="" className="mx-1" />
-                          </button>
-                          {openButton == i ? (
-                            <div className="absolute bg-white p-3 shadow-5 rounded-md">
-                              {' '}
-                              {/* Wrap buttons for styling */}
-                              <div className="flex flex-col gap-1">
-                                {data.status_tiket == 'monitoring' ? (
-                                  <></>
-                                ) : (
+                            {openButton === i && (
+                              <div className="absolute right-5 bottom-4 top-0 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-2 min-w-[8rem] flex flex-col gap-1">
+                                {data.status_tiket !== 'monitoring' && (
                                   <button
                                     onClick={() => {
-                                      if (data.status_tiket == 'open') {
+                                      setOpenButton(null);
+                                      if (data.status_tiket === 'open') {
                                         openModal1(i);
                                       } else if (
-                                        data.status_tiket == 'temporary' &&
-                                        data.proses_mtcs[lengthProses]
-                                          .cara_perbaikan == null
+                                        data.status_tiket === 'temporary' &&
+                                        lastProses?.cara_perbaikan == null
                                       ) {
                                         openModal1(i);
-
-                                        // ini untuk fungsi rework
                                       } else {
                                         reworkTiket(data.id, i);
                                       }
                                     }}
-                                    className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                    className="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors"
                                   >
                                     PROSES
                                   </button>
                                 )}
                                 <button
-                                  onClick={openModal2}
-                                  className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                  onClick={() => {
+                                    setOpenButton(null);
+                                    setShowModal2(true);
+                                  }}
+                                  className="text-xs font-semibold bg-slate-600 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg transition-colors"
                                 >
-                                  JADWALKAN{' '}
+                                  JADWALKAN
                                 </button>
                               </div>
-                              {showModal1[i] == true && (
-                                <ModalStockCheck1
-                                  children={undefined}
-                                  isOpen={showModal1[i]}
-                                  onClose={() => closeModal1(i)}
-                                  onFinish={() => getTiket()}
-                                  kendala={data.nama_kendala}
-                                  kodeLkh={data.kode_lkh}
-                                  machineName={data.mesin}
-                                  tgl={data.waktu_respon}
-                                  jam={'19.09'}
-                                  namaPemeriksa={
-                                    data.proses_mtcs[lengthProses]
-                                      .user_eksekutor.nama
-                                  }
-                                  no={'109299'}
-                                  idTiket={data.id}
-                                  idProses={data.proses_mtcs[lengthProses].id}
-                                  namaMesin={data.mesin}
-                                  skor_mtc={
-                                    data.proses_mtcs[lengthProses].skor_mtc
-                                  }
-                                  jenis_perbaikan={
-                                    data.proses_mtcs[lengthProses]
-                                      .cara_perbaikan
-                                  }
-                                  unit={data.proses_mtcs[lengthProses].unit}
-                                  bagian={
-                                    data.proses_mtcs[lengthProses].bagian_mesin
-                                  }
-                                />
-                              )}
-                              {showModal2 && (
-                                <ModalMtcLightHeavy
-                                  isOpen={showModal2}
-                                  onClose={closeModal2}
-                                  title={undefined}
-                                >
-                                  <div className="pt-5">
-                                    <button
-                                      onClick={openModal4}
-                                      className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
-                                    >
-                                      PERBAIKAN INTERNAL
-                                    </button>
-                                  </div>
-                                  <div className="pt-2">
-                                    <button
-                                      onClick={openModal5}
-                                      className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
-                                    >
-                                      SERVICE
-                                    </button>
-                                  </div>
-                                </ModalMtcLightHeavy>
-                              )}
-                              {showModal5 && (
-                                <ModalSPBService
-                                  isOpen={showModal5}
-                                  onClose={closeModal5}
-                                  noSPB={'MT-0001'}
-                                  tglSpb={'20 MEI 2024'}
-                                  sumber={'Os2'}
-                                  data={undefined}
-                                  onFinish={getTiket}
-                                  idProses={undefined}
-                                >
-                                  <p></p>
-                                </ModalSPBService>
-                              )}
-                            </div>
-                          ) : (
-                            ''
+                            )}
+                          </div>
+                        )}
+
+                      {/* Expand arrow */}
+                      <button
+                        onClick={() => toggleDetail(i)}
+                        className={`p-1.5 border rounded-lg transition-all ${
+                          showDetail[i]
+                            ? 'bg-blue-600 border-blue-600 text-white'
+                            : 'border-blue-600 text-blue-600 hover:bg-blue-50'
+                        }`}
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          className={`transition-transform duration-200 ${
+                            showDetail[i] ? 'rotate-180' : ''
+                          }`}
+                        >
+                          <path
+                            d="M2 4l4 4 4-4"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Modals for this row */}
+                    {showModal1[i] && (
+                      <ModalStockCheck1
+                        children={undefined}
+                        isOpen={showModal1[i]}
+                        onClose={() => closeModal1(i)}
+                        onFinish={() => getTiket()}
+                        kendala={data.nama_kendala}
+                        kodeLkh={data.kode_lkh}
+                        machineName={data.mesin}
+                        tgl={data.waktu_respon}
+                        jam="19.09"
+                        namaPemeriksa={lastProses?.user_eksekutor?.nama}
+                        no="109299"
+                        idTiket={data.id}
+                        idProses={lastProses?.id}
+                        namaMesin={data.mesin}
+                        skor_mtc={lastProses?.skor_mtc}
+                        jenis_perbaikan={lastProses?.cara_perbaikan}
+                        unit={lastProses?.unit}
+                        bagian={lastProses?.bagian_mesin}
+                      />
+                    )}
+                    {showModal2 && (
+                      <ModalMtcLightHeavy
+                        isOpen={showModal2}
+                        onClose={() => setShowModal2(false)}
+                        title={undefined}
+                      >
+                        <div className="pt-5 flex flex-col gap-2">
+                          <button
+                            onClick={() => setShowModal4(true)}
+                            className="w-full h-12 text-white text-xs font-bold bg-blue-700 rounded-md"
+                          >
+                            PERBAIKAN INTERNAL
+                          </button>
+                          <button
+                            onClick={() => setShowModal5(true)}
+                            className="w-full h-12 text-white text-xs font-bold bg-blue-700 rounded-md"
+                          >
+                            SERVICE
+                          </button>
+                        </div>
+                      </ModalMtcLightHeavy>
+                    )}
+                    {showModal5 && (
+                      <ModalSPBService
+                        isOpen={showModal5}
+                        onClose={() => setShowModal5(false)}
+                        onFinish={getTiket}
+                        idProses={lastProses?.id}
+                        sumber="Os2"
+                        noSPB="MT-0001"
+                        tglSpb="20 MEI 2024"
+                        data={undefined}
+                      >
+                        <p />
+                      </ModalSPBService>
+                    )}
+                  </div>
+
+                  {/* Detail expansion */}
+                  {showDetail[i] && (
+                    <div className="bg-blue-50/70 border-t border-blue-100 px-4 py-4">
+                      {/* Summary info row */}
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs mb-3 px-2">
+                        <div>
+                          <span className="font-semibold text-slate-500">
+                            Kode Tiket:{' '}
+                          </span>
+                          <span className="text-slate-700">
+                            {data.kode_ticket}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-500">
+                            No. JO:{' '}
+                          </span>
+                          <span className="text-slate-700">{data.no_jo}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-500">
+                            Pelapor:{' '}
+                          </span>
+                          <span className="text-slate-700">
+                            {data.operator}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-500">
+                            Waktu Respon:{' '}
+                          </span>
+                          <span className="text-slate-700">
+                            {data.waktu_respon_qc
+                              ? formatSeconds(
+                                  calculateSecondsDiff(
+                                    data.createdAt,
+                                    data.waktu_respon_qc,
+                                  ),
+                                )
+                              : '0 minutes'}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Header labels */}
+                      <div className="grid grid-cols-8 gap-2 text-xs font-semibold text-blue-700 mb-2 px-2">
+                        <div>#</div>
+                        <div className="col-span-2">Waktu Mulai</div>
+                        <div>Eksekutor</div>
+                        <div>Progress</div>
+                        <div>Jenis Perbaikan</div>
+                        <div>Unit</div>
+                        <div>Aksi</div>
+                      </div>
+
+                      {/* Proses rows */}
+                      {data.proses_mtcs.map((proses, ii) => (
+                        <div
+                          key={proses.id}
+                          className="grid grid-cols-8 gap-2 text-xs items-center py-2 border-b border-blue-100 last:border-0 px-2"
+                        >
+                          <div className="font-semibold text-blue-600">
+                            {ii + 1}
+                          </div>
+                          <div className="col-span-2 text-slate-700">
+                            {formatDateTimeLocal(proses.waktu_mulai_mtc)}
+                          </div>
+                          <div className="text-slate-700">
+                            {proses.user_eksekutor?.nama ?? '-'}
+                          </div>
+                          <div>
+                            <SkorBadge skor={proses.skor_mtc} />
+                          </div>
+                          <div className="text-slate-700">
+                            {proses.cara_perbaikan ?? '-'}
+                          </div>
+                          <div className="text-slate-700">
+                            {proses.unit ?? '-'}
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => openModalDetail(ii)}
+                              className="text-xs font-semibold bg-slate-700 hover:bg-slate-800 text-white px-2 py-1 rounded-lg transition-colors"
+                            >
+                              Detail
+                            </button>
+                            {canEdit && (
+                              <button
+                                onClick={() =>
+                                  setEditingProses({
+                                    ticket: data,
+                                    proses,
+                                    prosesIndex: ii,
+                                  })
+                                }
+                                className="text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded-lg transition-colors"
+                              >
+                                Edit
+                              </button>
+                            )}
+                          </div>
+
+                          {showModalDetail[ii] && (
+                            <ModalDetail
+                              children={undefined}
+                              isOpen={showModalDetail[ii]}
+                              onClose={() => closeModalDetail(ii)}
+                              kendala={data.nama_kendala}
+                              machineName={data.mesin}
+                              tgl={
+                                proses.waktu_mulai_mtc
+                                  ? formatDateTimeLocal(
+                                      proses.waktu_mulai_mtc,
+                                    ).split(' ')[0]
+                                  : '-'
+                              }
+                              jam={
+                                proses.waktu_mulai_mtc
+                                  ? formatDateTimeLocal(
+                                      proses.waktu_mulai_mtc,
+                                    ).split(' ')[1]
+                                  : '-'
+                              }
+                              namaPemeriksa={proses.user_eksekutor?.nama ?? '-'}
+                              no="1"
+                              idTiket={data.id}
+                              kodeLkh={data.kode_lkh}
+                              analisisPenyebab={`${
+                                proses.kode_analisis_mtc ?? ''
+                              } - ${proses.nama_analisis_mtc ?? ''}`}
+                              kebutuhanSparepart={proses.masalah_spareparts}
+                              tipeMaintenance={proses.cara_perbaikan}
+                              catatan={proses.note_mtc}
+                              unit={proses.unit}
+                              bagian={proses.bagian_mesin}
+                              file={proses.file}
+                            />
                           )}
                         </div>
+                      ))}
 
-                        <button
-                          title="button"
-                          onClick={() => handleClickDetailMobile(i)}
-                          className="text-xs h-6 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm"
-                        >
-                          <img src={Arrow} alt="" className="mx-1" />
-                        </button>
-                      </div>
+                      {/* QC Rejected notices */}
+                      {data.proses_mtcs
+                        .filter((p) => p.status_proses === 'qc rejected')
+                        .map((p, idx) => (
+                          <div
+                            key={idx}
+                            className="mt-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700"
+                          >
+                            <span className="font-bold">QC Rejected</span> —{' '}
+                            {p.user_qc?.nama}: {p.note_qc}
+                          </div>
+                        ))}
 
-                      <div className="flex gap-2">
-                        <p className="text-xs font-medium "> {data.mesin}</p>
+                      {/* Timing table */}
+                      {data.waktu_selesai && (
+                        <div className="mt-3 rounded-xl overflow-hidden border border-slate-200">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="bg-slate-100">
+                                <th className="text-left px-3 py-2 font-semibold text-slate-600">
+                                  Keterangan
+                                </th>
+                                <th className="text-left px-3 py-2 font-semibold text-slate-600">
+                                  Detail
+                                </th>
+                                <th className="text-left px-3 py-2 font-semibold text-slate-600">
+                                  Durasi
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                              <tr className="bg-white">
+                                <td className="px-3 py-2 text-slate-600">
+                                  Waktu Tiket Masuk
+                                </td>
+                                <td className="px-3 py-2">
+                                  {formatDateTimeLocal(data.createdAt)}
+                                </td>
+                                <td className="px-3 py-2">—</td>
+                              </tr>
+                              <tr
+                                className={
+                                  waktuValidasiQCSeconds >= 1800
+                                    ? 'bg-red-50 text-red-600'
+                                    : 'bg-white'
+                                }
+                              >
+                                <td className="px-3 py-2">Waktu Validasi QC</td>
+                                <td className="px-3 py-2">
+                                  {data.user_respon_qc?.nama} ~{' '}
+                                  {formatDateTimeLocal(data.waktu_respon_qc)}
+                                </td>
+                                <td className="px-3 py-2">
+                                  {formatSeconds(waktuValidasiQCSeconds)}
+                                </td>
+                              </tr>
+                              <tr className="bg-white">
+                                <td className="px-3 py-2 text-slate-600">
+                                  Waktu Breakdown MTC
+                                </td>
+                                <td className="px-3 py-2">
+                                  {formatDateTimeLocal(data.waktu_mulai_mtc)} –{' '}
+                                  {formatDateTimeLocal(data.waktu_selesai_mtc)}
+                                </td>
+                                <td className="px-3 py-2">
+                                  {formatSeconds(waktuBreakdownMTCSeconds)}
+                                </td>
+                              </tr>
+                              <tr
+                                className={
+                                  waktuVerifikasiQCSeconds >= 3600
+                                    ? 'bg-red-50 text-red-600'
+                                    : 'bg-white'
+                                }
+                              >
+                                <td className="px-3 py-2">
+                                  Waktu Verifikasi QC
+                                </td>
+                                <td className="px-3 py-2">
+                                  {data.proses_mtcs.at(-1)?.user_qc?.nama} ~{' '}
+                                  {formatDateTimeLocal(
+                                    data.proses_mtcs.at(-1)?.waktu_selesai ??
+                                      null,
+                                  )}
+                                </td>
+                                <td className="px-3 py-2">
+                                  {formatSeconds(waktuVerifikasiQCSeconds)}
+                                </td>
+                              </tr>
+                              <tr className="bg-white">
+                                <td className="px-3 py-2 text-slate-600">
+                                  Waktu Breakdown Total
+                                </td>
+                                <td className="px-3 py-2">—</td>
+                                <td className="px-3 py-2">
+                                  {formatSeconds(waktuBreakdownSeconds)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {tiket?.data.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                <svg
+                  width="48"
+                  height="48"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  className="mb-3 opacity-40"
+                >
+                  <rect
+                    x="8"
+                    y="8"
+                    width="32"
+                    height="32"
+                    rx="4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M16 24h16M16 18h10M16 30h8"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <p className="text-sm">Tidak ada data</p>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-500">Rows:</span>
+              <div className="flex gap-1">
+                {[10, 25, 50, 100].map((ps) => (
+                  <button
+                    key={ps}
+                    onClick={() => {
+                      setLimit(ps);
+                      setPage(1);
+                    }}
+                    className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
+                      limit === ps
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    {ps}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Stack spacing={2}>
+              <Pagination
+                count={tiket?.total_page ?? 1}
+                color="primary"
+                page={page}
+                onChange={(_, p) => setPage(p)}
+              />
+            </Stack>
+          </div>
+        </div>
+      )}
+
+      {/* ── Mobile View ── */}
+      {isMobile && (
+        <div className="px-3 py-3 space-y-2">
+          {tiket?.data.map((data, i) => {
+            const lastProses = data.proses_mtcs[data.proses_mtcs.length - 1];
+            const waktuBreakdownSeconds = calculateSecondsDiff(
+              data.createdAt,
+              data.waktu_selesai,
+            );
+
+            return (
+              <div
+                key={data.id}
+                className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden"
+              >
+                <div className="px-4 py-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs text-slate-400 font-medium">
+                          #{i + 1 + (page - 1) * limit}
+                        </span>
+                        <StatusBadge status={data.status_tiket} />
+                        <SkorBadge skor={data.skor_mtc} />
                       </div>
-                      <div className="flex gap-2">
-                        <p className={`text-xs font-medium line-clamp-2 `}>
-                          {data.kode_lkh} - {data.nama_kendala}{' '}
-                        </p>
-                      </div>
-                      <div className="flex gap-2 justify-center items-center">
-                        <p
-                          className={
-                            data.status_tiket == 'pending'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                              : data.status_tiket == 'open'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                              : data.status_tiket == 'monitoring'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                              : data.status_tiket == 'temporary'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                              : data.status_tiket == 'request to qc'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
-                              : data.status_tiket == 'qc rejected'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                              : ''
-                          }
+                      <p className="text-sm font-semibold text-slate-800">
+                        {data.mesin}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {data.kode_lkh} – {data.nama_kendala}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {formatDateTimeLocal(data.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      {data.status_tiket !== 'monitoring' &&
+                        data.status_tiket !== 'request to qc' && (
+                          <div className="relative">
+                            <button
+                              onClick={() =>
+                                setOpenButton((prev) => (prev === i ? null : i))
+                              }
+                              className="p-2 bg-blue-600 text-white rounded-lg"
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <rect y="3" width="20" height="2" rx="1" />
+                                <rect y="9" width="20" height="2" rx="1" />
+                                <rect y="15" width="20" height="2" rx="1" />
+                              </svg>
+                            </button>
+                            {openButton === i && (
+                              <div className="absolute right-0  bg-white border border-slate-200 rounded-xl shadow-xl  p-2 min-w-32 flex flex-col gap-1">
+                                {data.status_tiket !== 'monitoring' && (
+                                  <button
+                                    onClick={() => {
+                                      setOpenButton(null);
+                                      if (data.status_tiket === 'open')
+                                        openModal1(i);
+                                      else if (
+                                        data.status_tiket === 'temporary' &&
+                                        lastProses?.cara_perbaikan == null
+                                      )
+                                        openModal1(i);
+                                      else reworkTiket(data.id, i);
+                                    }}
+                                    className="text-xs font-semibold bg-blue-600 text-white px-3 py-1.5 rounded-lg"
+                                  >
+                                    PROSES
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    setOpenButton(null);
+                                    setShowModal2(true);
+                                  }}
+                                  className="text-xs font-semibold bg-slate-600 text-white px-3 py-1.5 rounded-lg"
+                                >
+                                  JADWALKAN
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      <button
+                        onClick={() => toggleDetail(i)}
+                        className={`p-2 border rounded-lg transition-all ${
+                          showDetail[i]
+                            ? 'bg-blue-600 border-blue-600 text-white'
+                            : 'border-blue-600 text-blue-600'
+                        }`}
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          className={`transition-transform ${
+                            showDetail[i] ? 'rotate-180' : ''
+                          }`}
                         >
-                          {data.skor_mtc}%
-                        </p>
+                          <path
+                            d="M2 4l4 4 4-4"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {showDetail[i] && (
+                  <div className="bg-blue-50 border-t border-blue-100 px-4 py-3 space-y-2">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="font-semibold text-slate-600">
+                          Kode Tiket
+                        </span>
+                        <p>{data.kode_ticket}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-slate-600">
+                          No. JO
+                        </span>
+                        <p>{data.no_jo}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-slate-600">
+                          Pelapor
+                        </span>
+                        <p>{data.operator}</p>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-slate-600">
+                          Breakdown
+                        </span>
+                        <p>{formatSeconds(waktuBreakdownSeconds)}</p>
                       </div>
                     </div>
 
-                    {showDetailMobile[i] && (
-                      <>
-                        <div className="w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-x-3 gap-y-3 p-1">
-                          <div>
-                            <h5 className="text-xs font-bold">
-                              Waktu tiket masuk
-                            </h5>
-                            <p className="text-xs font-medium">{dateMtc}</p>
-                          </div>
-                          <div>
-                            <h5 className="text-xs font-bold">Kode Tiket</h5>
-                            <p className="text-xs font-medium">
-                              {data.kode_ticket}
-                            </p>
-                          </div>
-                          <div>
-                            <h5 className="text-xs font-bold">Status</h5>
-                            <div className="flex items-center md:gap-5 gap-1 ">
-                              <div className="flex ">
-                                <p
-                                  className={
-                                    data.status_tiket == 'pending'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : data.status_tiket == 'request to qc'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
-                                      : data.status_tiket == 'qc rejected'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : ''
-                                  }
-                                >
-                                  {data.status_tiket}{' '}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div>
-                            <h5 className="text-xs font-bold">Waktu Respon</h5>
-                            <p className="text-xs font-medium">{waktuRespon}</p>
-                          </div>
-                          <div>
-                            <h5 className="text-xs font-bold">Jenis Kendala</h5>
-                            <p className="text-xs font-medium">
-                              {data.kode_lkh} - {data.nama_kendala}{' '}
-                            </p>
-                          </div>
-                          <div>
-                            <h5 className="text-xs font-bold">Jadwal</h5>
-                            <p className="text-xs font-medium"></p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold">Pelapor</p>
-                            <p className="text-xs font-medium">
-                              {data.operator}
-                            </p>
-                          </div>
-                          <div className="flex flex-col">
-                            <div>
-                              <p className="text-xs font-bold">No.Jo</p>
-                              <p className="text-xs font-medium">
-                                {data.no_jo}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs font-medium">
-                                {data.nama_produk}
-                              </p>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold">Breakdown Time</p>
-                            <div>
-                              <p className="text-xs font-light">
-                                {data.waktu_selesai_mtc == null
-                                  ? '-'
-                                  : waktuBreakdown}
-                                {/* {data.proses_mtcs[lengthProses].tgl_mtc}  */}
-                              </p>
-                            </div>
-                          </div>
+                    {data.proses_mtcs.map((proses, ii) => (
+                      <div
+                        key={proses.id}
+                        className="bg-white rounded-lg p-3 border border-blue-100"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-semibold text-blue-600">
+                            Pengerjaan {ii + 1}
+                          </span>
+                          <SkorBadge skor={proses.skor_mtc} />
                         </div>
-                        <div className="w-full  bg-[#E9F3FF]  rounded-lg px-4 gap-y-3 mt-3 p-1">
-                          {data.proses_mtcs.map((proses: any, ii: any) => {
-                            const tglMulaiMtc = convertDatetimeToDate(
-                              proses.waktu_mulai_mtc,
-                            );
-                            function convertDateonly(datetime: any) {
-                              const dateObject = new Date(datetime);
-                              const hours = dateObject
-                                .getHours()
-                                .toString()
-                                .padStart(2, '0');
-                              const minutes = dateObject
-                                .getMinutes()
-                                .toString()
-                                .padStart(2, '0');
-                              return `${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-                            }
-                            function convertTimeOnly(datetime: any) {
-                              const dateObject = new Date(datetime);
-                              const day = dateObject
-                                .getDate()
-                                .toString()
-                                .padStart(2, '0'); // Ensure two-digit day
-                              const month = (dateObject.getMonth() + 1)
-                                .toString()
-                                .padStart(2, '0'); // Adjust for zero-based month
-                              const year = dateObject.getFullYear();
-
-                              return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
-                            }
-
-                            const waktumulaiJam = convertDateonly(
-                              data.waktu_mulai_mtc,
-                            );
-                            const waktumulaimtcDate = convertTimeOnly(
-                              data.waktu_mulai_mtc,
-                            );
-                            return (
-                              <>
-                                <div className="py-3">
-                                  <div className="flex w-full gap-4 pb-4">
-                                    <div className="flex flex-col">
-                                      <h5 className="text-xs font-bold">
-                                        Pengerjaan Ke
-                                      </h5>
-                                      <p className="text-xs font-medium pt-1">
-                                        {ii + 1}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <h5 className="text-xs font-bold">
-                                        Waktu
-                                      </h5>
-                                      <p className="text-xs font-medium pt-1">
-                                        {tglMulaiMtc}
-                                      </p>
-                                    </div>
-                                    <div className="pl-4">
-                                      <h5 className="text-xs font-bold">
-                                        Eksekutor
-                                      </h5>
-                                      <p className="text-xs font-medium pt-1">
-                                        {proses.user_eksekutor.nama}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex w-full gap-5">
-                                    <div className="">
-                                      <div className="">
-                                        <button
-                                          onClick={() => openModalDetail(ii)}
-                                          className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md"
-                                        >
-                                          Detail
-                                        </button>
-                                      </div>
-                                      {showModalDetail[ii] && (
-                                        <ModalDetail
-                                          children={undefined}
-                                          isOpen={showModalDetail[ii]}
-                                          onClose={() => closeModalDetail(ii)}
-                                          kendala={data.nama_kendala}
-                                          machineName={data.mesin}
-                                          tgl={waktumulaimtcDate}
-                                          jam={waktumulaiJam}
-                                          namaPemeriksa={
-                                            proses.user_eksekutor.nama
-                                          }
-                                          no={'1'}
-                                          idTiket={data.id}
-                                          kodeLkh={data.kode_lkh}
-                                          analisisPenyebab={
-                                            `${proses.kode_analisis_mtc}` +
-                                            ' - ' +
-                                            `${proses.nama_analisis_mtc}`
-                                          }
-                                          kebutuhanSparepart={'undefined'}
-                                          tipeMaintenance={
-                                            proses.cara_perbaikan
-                                          }
-                                          catatan={proses.note_mtc}
-                                          unit={proses.unit}
-                                          bagian={proses.bagian_mesin}
-                                          file={proses.file}
-                                        ></ModalDetail>
-                                      )}
-                                    </div>
-                                    <div className="flex flex-col">
-                                      <h5 className="text-xs font-bold">
-                                        Progress Perbaikan
-                                      </h5>
-                                      <div className="flex w-full pt-1  items-center justify-start">
-                                        <p
-                                          className={
-                                            proses.skor_mtc <= 100 &&
-                                            proses.skor_mtc >= 60
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                              : proses.skor_mtc >= 20 &&
-                                                proses.skor_mtc <= 59
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                              : proses.skor_mtc < 20
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                              : ''
-                                          }
-                                        >
-                                          {proses.skor_mtc}%
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <h5 className="text-xs font-bold">
-                                        Jenis Perbaikan
-                                      </h5>
-                                      <p className="text-xs font-medium pt-1">
-                                        {proses.cara_perbaikan}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </>
-                            );
-                          })}
+                        <p className="text-xs text-slate-600">
+                          {proses.user_eksekutor?.nama}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {formatDateTimeLocal(proses.waktu_mulai_mtc)}
+                        </p>
+                        <div className="flex gap-1.5 mt-2">
+                          <button
+                            onClick={() => openModalDetail(ii)}
+                            className="text-xs font-semibold bg-slate-700 text-white px-3 py-1 rounded-lg"
+                          >
+                            Detail
+                          </button>
+                          {canEdit && (
+                            <button
+                              onClick={() =>
+                                setEditingProses({
+                                  ticket: data,
+                                  proses,
+                                  prosesIndex: ii,
+                                })
+                              }
+                              className="text-xs font-semibold bg-amber-500 text-white px-3 py-1 rounded-lg"
+                            >
+                              Edit
+                            </button>
+                          )}
                         </div>
-                      </>
+                        {showModalDetail[ii] && (
+                          <ModalDetail
+                            children={undefined}
+                            isOpen={showModalDetail[ii]}
+                            onClose={() => closeModalDetail(ii)}
+                            kendala={data.nama_kendala}
+                            machineName={data.mesin}
+                            tgl={
+                              proses.waktu_mulai_mtc
+                                ? formatDateTimeLocal(
+                                    proses.waktu_mulai_mtc,
+                                  ).split(' ')[0]
+                                : '-'
+                            }
+                            jam={
+                              proses.waktu_mulai_mtc
+                                ? formatDateTimeLocal(
+                                    proses.waktu_mulai_mtc,
+                                  ).split(' ')[1]
+                                : '-'
+                            }
+                            namaPemeriksa={proses.user_eksekutor?.nama ?? '-'}
+                            no="1"
+                            idTiket={data.id}
+                            kodeLkh={data.kode_lkh}
+                            analisisPenyebab={`${
+                              proses.kode_analisis_mtc ?? ''
+                            } - ${proses.nama_analisis_mtc ?? ''}`}
+                            kebutuhanSparepart={proses.masalah_spareparts}
+                            tipeMaintenance={proses.cara_perbaikan}
+                            catatan={proses.note_mtc}
+                            unit={proses.unit}
+                            bagian={proses.bagian_mesin}
+                            file={proses.file}
+                          />
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Modal triggers */}
+                    {showModal1[i] && (
+                      <ModalStockCheck1
+                        children={undefined}
+                        isOpen={showModal1[i]}
+                        onClose={() => closeModal1(i)}
+                        onFinish={() => getTiket()}
+                        kendala={data.nama_kendala}
+                        kodeLkh={data.kode_lkh}
+                        machineName={data.mesin}
+                        tgl={data.waktu_respon}
+                        jam="19.09"
+                        namaPemeriksa={lastProses?.user_eksekutor?.nama}
+                        no="109299"
+                        idTiket={data.id}
+                        idProses={lastProses?.id}
+                        namaMesin={data.mesin}
+                        skor_mtc={lastProses?.skor_mtc}
+                        jenis_perbaikan={lastProses?.cara_perbaikan}
+                        unit={lastProses?.unit}
+                        bagian={lastProses?.bagian_mesin}
+                      />
                     )}
-                  </>
-                );
-              })}
-            <div className="w-full flex justify-center mt-5 ">
-              <Stack spacing={2}>
-                <Pagination
-                  count={tiket?.total_page}
-                  color="primary"
-                  onChange={(e, i) => {
-                    setPage(i);
-                    console.log(i);
-                  }}
-                />
-              </Stack>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <div className="flex justify-center mt-4 pb-4">
+            <Stack spacing={2}>
+              <Pagination
+                count={tiket?.total_page ?? 1}
+                color="primary"
+                page={page}
+                onChange={(_, p) => setPage(p)}
+              />
+            </Stack>
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Modal ── */}
+      {editingProses && (
+        <ModalStockCheck1
+          children={undefined}
+          isOpen={true}
+          onClose={() => setEditingProses(null)}
+          onFinish={() => {
+            setEditingProses(null);
+            getTiket();
+          }}
+          kendala={editingProses.ticket.nama_kendala}
+          kodeLkh={editingProses.ticket.kode_lkh}
+          machineName={editingProses.ticket.mesin}
+          tgl={editingProses.proses.waktu_mulai_mtc}
+          jam=""
+          namaPemeriksa={editingProses.proses.user_eksekutor?.nama}
+          no=""
+          idTiket={editingProses.ticket.id}
+          idProses={editingProses.proses.id}
+          namaMesin={editingProses.ticket.mesin}
+          skor_mtc={editingProses.proses.skor_mtc}
+          jenis_perbaikan={editingProses.proses.cara_perbaikan}
+          unit={editingProses.proses.unit}
+          bagian={editingProses.proses.bagian_mesin}
+          isEditMode={true}
+          editInitialData={editingProses.proses}
+        />
+      )}
+
+      {/* ── Export Preview Modal ── */}
+      {showExportPreview && (
+        <ModalFull
+          isOpen={showExportPreview}
+          onClose={() => setShowExportPreview(false)}
+          judul="Export Preview"
+        >
+          <div className="flex flex-col h-[85vh]">
+            <div className="flex justify-between items-center mb-4 px-2 pt-5">
+              <span className="text-sm text-slate-500">
+                Total: {previewData.length} baris
+              </span>
+              <button
+                onClick={exportToExcel}
+                disabled={isLoadingPreview}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-5 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
+              </button>
             </div>
-          </main>
-        </>
+            <div className="overflow-auto flex-1">
+              <table className="min-w-full bg-white border border-slate-200 rounded-lg text-xs">
+                <thead className="bg-blue-50 sticky top-0 z-10">
+                  <tr>
+                    {previewData.length > 0 &&
+                      Object.keys(previewData[0]).map((key, idx) => (
+                        <th
+                          key={idx}
+                          className="py-2 px-3 border-b text-left font-semibold text-blue-700 uppercase tracking-wider whitespace-nowrap"
+                        >
+                          {key}
+                        </th>
+                      ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {previewData.slice(0, visibleRows).map((row, ri) => (
+                    <tr
+                      key={ri}
+                      className={ri % 2 === 0 ? 'bg-white' : 'bg-slate-50'}
+                    >
+                      {Object.values(row).map((val, ci) => (
+                        <td
+                          key={ci}
+                          className="py-1.5 px-3 border-b whitespace-nowrap"
+                        >
+                          {String(val ?? '-')}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex items-center justify-between border-t bg-slate-50 py-3 px-4">
+              <span className="text-sm text-slate-500">
+                Showing {Math.min(visibleRows, previewData.length)} /{' '}
+                {previewData.length}
+              </span>
+              {visibleRows < previewData.length && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() =>
+                      setVisibleRows((v) =>
+                        Math.min(v + 20, previewData.length),
+                      )
+                    }
+                    className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-semibold rounded-lg"
+                  >
+                    +20 Baris
+                  </button>
+                  <button
+                    onClick={() => setVisibleRows(previewData.length)}
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg"
+                  >
+                    Semua ({previewData.length})
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </ModalFull>
       )}
     </main>
   );

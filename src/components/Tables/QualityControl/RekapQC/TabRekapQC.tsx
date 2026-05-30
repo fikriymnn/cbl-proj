@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import RekapWasteQC from './RekapWasteQC';
 import RekapChecksheet from './RekapChecksheet';
 import RekapTemuanQC from './RekapTemuanQC';
+import RekapChecksheetInspector from './RekapChecksheetInspector';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -141,6 +142,7 @@ export default function TabRekapQC() {
               <Tab label="Waste" {...a11yProps(0)} />
               <Tab label="Checksheet" {...a11yProps(1)} />
               <Tab label="Temuan QC" {...a11yProps(2)} />
+              <Tab label="Inspector " {...a11yProps(3)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -158,6 +160,9 @@ export default function TabRekapQC() {
         </TabPanel>
         <TabPanel value={value} index={2} dir={theme.direction}>
           <RekapTemuanQC />
+        </TabPanel>
+        <TabPanel value={value} index={3} dir={theme.direction}>
+          <RekapChecksheetInspector />
         </TabPanel>
       </Box>
     </>

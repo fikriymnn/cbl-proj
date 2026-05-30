@@ -1,7 +1,123 @@
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import Info from '../../images/icon/Info.svg';
 import Loading from '../Loading';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface KodeAnalisis {
+  kode_analisis: string;
+  nama_analisis: string;
+  bagian_analisis: string;
+}
+
+interface SkorPerbaikan {
+  skor: number;
+  nama_skor: string;
+}
+
+interface MasterMesin {
+  id: number;
+  nama_mesin: string;
+}
+
+interface SparepartStok {
+  id: number;
+  kode: string;
+  part_number: string;
+  nama_sparepart: string;
+  nama_mesin: string;
+  lokasi: string;
+  umur_sparepart: number | null;
+  grade: string;
+  stok: number;
+}
+
+interface MasterSparepart {
+  id: number;
+  kode: string;
+  nama_sparepart: string;
+  nama_mesin: string;
+  posisi_part: string;
+  sisa_umur: number | null;
+  grade_2: string;
+}
+
+interface SparepartEntry {
+  id_stok: number | null;
+  detail_stok: {
+    kode: string;
+    part_number: string;
+    nama_sparepart: string;
+    nama_mesin: string;
+    lokasi: string;
+    umur: number | null;
+    grade: string;
+  };
+  id_ms_sparepart: number | null;
+  detail_ms_sparepart: {
+    kode: string;
+    nama_sparepart: string;
+    nama_mesin: string;
+    posisi_part: string;
+    sisa_umur: number | null;
+    grade: string;
+  };
+}
+
+interface ProsesMtcInitial {
+  id: number;
+  kode_analisis_mtc: string | null;
+  nama_analisis_mtc: string | null;
+  jenis_analisis_mtc?: string | null;
+  note_mtc: string | null;
+  skor_mtc: number;
+  cara_perbaikan: string | null;
+  unit: string | null;
+  bagian_mesin: string | null;
+  file: string | null;
+}
+
+interface ModalStockCheck1Props {
+  children: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  onFinish: () => void;
+  kendala: string;
+  machineName: string;
+  tgl: string | null;
+  jam: string;
+  namaPemeriksa: string | undefined;
+  no: string;
+  idTiket: number;
+  idProses: number | undefined;
+  kodeLkh: string;
+  namaMesin: string;
+  skor_mtc: number | undefined;
+  jenis_perbaikan: string | null | undefined;
+  unit: string | null | undefined;
+  bagian: string | null | undefined;
+  // Edit mode
+  isEditMode?: boolean;
+  editInitialData?: ProsesMtcInitial;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatDateTime(datetime: string | null): string {
+  if (!datetime) return '-';
+  const d = new Date(datetime);
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}`;
+}
+
+function formatTime(datetime: string | null): string {
+  if (!datetime) return '-';
+  const d = new Date(datetime);
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const ModalStockCheck1 = ({
   children,
@@ -22,44 +138,64 @@ const ModalStockCheck1 = ({
   jenis_perbaikan,
   unit,
   bagian,
-}: {
-  children: any;
-  isOpen: any;
-  onClose: any;
-  onFinish: any;
-  kendala: any;
-  machineName: any;
-  tgl: any;
-  jam: any;
-  namaPemeriksa: any;
-  no: any;
-  idTiket: any;
-  idProses: any;
-  kodeLkh: any;
-  namaMesin: any;
-  skor_mtc: any;
-  jenis_perbaikan: any;
-  unit: any;
-  bagian: any;
-}) => {
+  isEditMode = false,
+  editInitialData,
+}: ModalStockCheck1Props) => {
   if (!isOpen) return null;
 
-  const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-  const changeTextColor = () => setIsOptionSelected(true);
-
   const [isMobile, setIsMobile] = useState(false);
-  const handleResize = () => setIsMobile(window.innerWidth < 768);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // File upload
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+
+  // Form data
+  const [typePost, setTypePost] = useState<'normal' | 'pending'>('normal');
+  const [masterMesin, setMasterMesin] = useState<MasterMesin[]>([]);
+  const [kodeAnalisisList, setKodeAnalisisList] = useState<KodeAnalisis[]>([]);
+  const [skorPerbaikanList, setSkorPerbaikanList] = useState<SkorPerbaikan[]>(
+    [],
+  );
+  const [selectedKodeAnalisis, setSelectedKodeAnalisis] =
+    useState<KodeAnalisis | null>(null);
+  const [selectedSkorPerbaikan, setSelectedSkorPerbaikan] =
+    useState<SkorPerbaikan | null>(null);
+  const [noteMaintenance, setNoteMaintenance] = useState<string>('');
+  const [unitMaintenance, setUnitMaintenance] = useState<string>('');
+  const [bagianMaintenance, setBagianMaintenance] = useState<string>('');
+  const [alasanPending, setAlasanPending] = useState<string>('');
+  const [kebutuhanSparepart, setKebutuhanSparepart] = useState<
+    SparepartEntry[]
+  >([]);
+
+  // Sparepart modals
+  const [showModalStok, setShowModalStok] = useState(false);
+  const [showModalMsStok, setShowModalMsStok] = useState(false);
+  const [activeSparepartIndex, setActiveSparepartIndex] = useState<number>(0);
+  const [stokSparepart, setStokSparepart] = useState<SparepartStok[]>([]);
+  const [displayedStokSparepart, setDisplayedStokSparepart] = useState<
+    SparepartStok[]
+  >([]);
+  const [masterSparepart, setMasterSparepart] = useState<MasterSparepart[]>([]);
+  const [displayedMasterSparepart, setDisplayedMasterSparepart] = useState<
+    MasterSparepart[]
+  >([]);
+
+  // Info tooltips
+  const [info, setInfo] = useState<Record<number, boolean>>({});
+  const [infoPengganti, setInfoPengganti] = useState<Record<number, boolean>>(
+    {},
+  );
+
+  // ─── Init ───
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // ─── File Upload State ───
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [dragActive, setDragActive] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -67,13 +203,117 @@ const ModalStockCheck1 = ({
     };
   }, [previewUrl]);
 
+  useEffect(() => {
+    getKodeAnalisis();
+    getSkorPerbaikan();
+    getMasterMesin();
+
+    // Pre-fill in edit mode
+    if (isEditMode && editInitialData) {
+      setNoteMaintenance(editInitialData.note_mtc ?? '');
+      setUnitMaintenance(editInitialData.unit ?? '');
+      setBagianMaintenance(editInitialData.bagian_mesin ?? '');
+    }
+  }, []);
+
+  // ─── API ───
+  async function getKodeAnalisis() {
+    try {
+      const res = await axios.get<KodeAnalisis[]>(
+        `${import.meta.env.VITE_API_LINK}/master/kodeAnalisis`,
+        { withCredentials: true },
+      );
+      setKodeAnalisisList(res.data);
+
+      if (isEditMode && editInitialData?.kode_analisis_mtc) {
+        const found = res.data.find(
+          (k) => k.kode_analisis === editInitialData.kode_analisis_mtc,
+        );
+        if (found) setSelectedKodeAnalisis(found);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function getSkorPerbaikan() {
+    try {
+      const res = await axios.get<SkorPerbaikan[]>(
+        `${import.meta.env.VITE_API_LINK}/master/skorMtc`,
+        { withCredentials: true },
+      );
+      setSkorPerbaikanList(res.data);
+
+      if (isEditMode && editInitialData?.cara_perbaikan) {
+        const found = res.data.find(
+          (s) => s.nama_skor === editInitialData.cara_perbaikan,
+        );
+        if (found) setSelectedSkorPerbaikan(found);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function getMasterMesin() {
+    try {
+      const res = await axios.get<MasterMesin[]>(
+        `${import.meta.env.VITE_API_LINK}/master/mesin`,
+        { withCredentials: true },
+      );
+      setMasterMesin(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function getStokSparepart(idMesin: string) {
+    try {
+      const res = await axios.get<SparepartStok[]>(
+        `${import.meta.env.VITE_API_LINK}/stokSparepart`,
+        { params: { id_mesin: idMesin }, withCredentials: true },
+      );
+      setStokSparepart(res.data);
+      setDisplayedStokSparepart(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function getMasterSparepart(idMesin: string) {
+    try {
+      const res = await axios.get<MasterSparepart[]>(
+        `${import.meta.env.VITE_API_LINK}/master/sparepart`,
+        { params: { id_mesin: idMesin }, withCredentials: true },
+      );
+      setMasterSparepart(res.data);
+      setDisplayedMasterSparepart(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // ─── File upload ───
+  async function handleFileUpload(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await axios.post<{
+      fileName?: string;
+      filename?: string;
+      file?: string;
+    }>(`${import.meta.env.VITE_API_LINK}/images`, formData, {
+      withCredentials: true,
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data.fileName ?? res.data.filename ?? res.data.file ?? '';
+  }
+
   const validateAndSetFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Hanya file gambar yang diperbolehkan');
       return;
     }
-    const maxSize = 2 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if (file.size > 2 * 1024 * 1024) {
       alert('Ukuran file maksimal 2 MB');
       return;
     }
@@ -82,163 +322,64 @@ const ModalStockCheck1 = ({
     setSelectedFile(file);
   };
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true);
-    else if (e.type === 'dragleave') setDragActive(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files?.[0]) validateAndSetFile(e.dataTransfer.files[0]);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) validateAndSetFile(e.target.files[0]);
-  };
-
   const removeFile = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setSelectedFile(null);
     setPreviewUrl(null);
-    const input = document.getElementById(
-      'modal-file-upload',
-    ) as HTMLInputElement;
-    if (input) input.value = '';
-    const inputMobile = document.getElementById(
-      'modal-file-upload-mobile',
-    ) as HTMLInputElement;
-    if (inputMobile) inputMobile.value = '';
+    ['modal-file-upload', 'modal-file-upload-mobile'].forEach((id) => {
+      const el = document.getElementById(id) as HTMLInputElement | null;
+      if (el) el.value = '';
+    });
   };
-
-  // ─── Date helpers ───
-  function convertDatetimeToDate(datetime: any) {
-    const dateObject = new Date(datetime);
-    const day = dateObject.getDate().toString().padStart(2, '0');
-    const month = (dateObject.getMonth() + 1).toString().padStart(2, '0');
-    const year = dateObject.getFullYear();
-    return `${year}/${month}/${day}`;
-  }
-
-  function convertDatetimeToTime(datetime: any) {
-    const dateObject = new Date(datetime);
-    const hours = dateObject.getHours().toString().padStart(2, '0');
-    const minutes = dateObject.getMinutes().toString().padStart(2, '0');
-    const seconds = dateObject.getSeconds().toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
-  }
-
-  const tanggalPeriksa = convertDatetimeToDate(tgl);
-  const waktuPeriksa = convertDatetimeToTime(tgl);
-
-  // ─── Form State ───
-  const [typePost, setTypePost] = useState<any>('normal');
-  const [masterMesin, setmasterMesin] = useState<any>();
-  const [selectedKodeAnalisis, setSelectedKodeAnalisis] = useState<any>();
-  const [selectedSkorPerbaikan, setSelectedSkorPerbaikan] = useState<any>();
-  const [noteMaintenance, setNoteMaintenance] = useState<any>();
-  const [unitMaintenance, setUnitMaintenance] = useState<any>();
-  const [bagianMaintenance, setBagianMaintenance] = useState<any>();
-  const [alasanPending, setAlasanPending] = useState<any>();
-  const [kodeAnalisis, setKodeAnalisis] = useState<any>(null);
-  const [skorPerbaikan, setSkorPerbaikan] = useState<any>(null);
-  const [kebutuhanSparepart, setKebutuhanSparepart] = useState<any>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    getKodeAnalisis();
-    getSkorPerbaikan();
-    getMasterMesin();
-  }, []);
-
-  async function getKodeAnalisis() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/kodeAnalisis`;
-    try {
-      const res = await axios.get(url, { withCredentials: true });
-      setKodeAnalisis(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-
-  async function getSkorPerbaikan() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/skorMtc`;
-    try {
-      const res = await axios.get(url, { withCredentials: true });
-      setSkorPerbaikan(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-
-  async function getMasterMesin() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
-    try {
-      const res = await axios.get(url, { withCredentials: true });
-      setmasterMesin(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-
-  // ─── File Upload to /images endpoint ───
-  async function handleFileUpload(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    const response = await axios.post(
-      `${import.meta.env.VITE_API_LINK}/images`,
-      formData,
-      {
-        withCredentials: true,
-        headers: { 'Content-Type': 'multipart/form-data' },
-      },
-    );
-    return (
-      response.data.fileName || response.data.filename || response.data.file
-    );
-  }
 
   // ─── Submit ───
   async function postAnalisis() {
-    const urlNormal = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/analisis/${idTiket}`;
-    const urlPending = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/pending/${idTiket}`;
-
-    if (noteMaintenance == null) {
-      alert('Catatan Wajib Diisi');
+    if (!noteMaintenance.trim()) {
+      alert('Catatan wajib diisi');
       return;
     }
-    if (unitMaintenance == null) {
-      alert('Unit Wajib Diisi');
+    if (!unitMaintenance.trim()) {
+      alert('Unit wajib diisi');
       return;
     }
 
     try {
       setIsLoading(true);
-
       let uploadedFileName: string | null = null;
-      if (selectedFile) {
-        uploadedFileName = await handleFileUpload(selectedFile);
-      }
+      if (selectedFile) uploadedFileName = await handleFileUpload(selectedFile);
 
-      if (typePost === 'normal') {
+      if (isEditMode) {
+        // Edit mode — PUT /ticket/updateAnalisis/:id
         await axios.put(
-          urlNormal,
+          `${import.meta.env.VITE_API_LINK}/ticket/updateAnalisis/${idTiket}`,
           {
             id_proses: idProses,
-            kode_analisis_mtc: selectedKodeAnalisis.kode_analisis,
-            nama_analisis_mtc: selectedKodeAnalisis.nama_analisis,
-            jenis_analisis_mtc: selectedKodeAnalisis.bagian_analisis,
+            kode_analisis_mtc: selectedKodeAnalisis?.kode_analisis,
+            nama_analisis_mtc: selectedKodeAnalisis?.nama_analisis,
+            jenis_analisis_mtc: selectedKodeAnalisis?.bagian_analisis,
+            note_analisis: '',
+            skor_mtc: selectedSkorPerbaikan?.skor,
+            cara_perbaikan: selectedSkorPerbaikan?.nama_skor,
+            note_mtc: noteMaintenance,
+            nama_mesin: namaMesin,
+            unit: unitMaintenance,
+            bagian_mesin: bagianMaintenance,
+            file: uploadedFileName ?? editInitialData?.file,
+          },
+          { withCredentials: true },
+        );
+      } else if (typePost === 'normal') {
+        await axios.put(
+          `${import.meta.env.VITE_API_LINK}/ticket/analisis/${idTiket}`,
+          {
+            id_proses: idProses,
+            kode_analisis_mtc: selectedKodeAnalisis?.kode_analisis,
+            nama_analisis_mtc: selectedKodeAnalisis?.nama_analisis,
+            jenis_analisis_mtc: selectedKodeAnalisis?.bagian_analisis,
             note_analisis: '',
             masalah_sparepart: kebutuhanSparepart,
-            skor_mtc: selectedSkorPerbaikan.skor,
-            cara_perbaikan: selectedSkorPerbaikan.nama_skor,
+            skor_mtc: selectedSkorPerbaikan?.skor,
+            cara_perbaikan: selectedSkorPerbaikan?.nama_skor,
             note_mtc: noteMaintenance,
             unit: unitMaintenance,
             bagian_mesin: bagianMaintenance,
@@ -249,7 +390,7 @@ const ModalStockCheck1 = ({
         );
       } else {
         await axios.put(
-          urlPending,
+          `${import.meta.env.VITE_API_LINK}/ticket/pending/${idTiket}`,
           {
             id_proses: idProses,
             note_mtc: noteMaintenance,
@@ -260,34 +401,34 @@ const ModalStockCheck1 = ({
         );
       }
 
-      setIsLoading(false);
       onClose();
       onFinish();
-    } catch (error: any) {
-      console.log(error);
+    } catch (err: unknown) {
+      console.error(err);
+      const error = err as { response?: { data?: { msg?: string } } };
+      alert(error?.response?.data?.msg ?? 'Terjadi kesalahan');
+    } finally {
       setIsLoading(false);
     }
   }
 
-  async function deleteExit(id_ticket: any, id_proses: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket/delete/${id_ticket}`;
+  async function deleteExit(idTicket: number, idProses: number) {
     try {
-      const res = await axios.put(
-        url,
-        { id_proses: id_proses },
+      await axios.put(
+        `${import.meta.env.VITE_API_LINK}/ticket/delete/${idTicket}`,
+        { id_proses: idProses },
         { withCredentials: true },
       );
       onFinish();
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error);
+    } catch (err) {
+      console.error(err);
     }
   }
 
-  // ─── Sparepart Handlers ───
-  const handleAddPoint = () => {
-    setKebutuhanSparepart([
-      ...kebutuhanSparepart,
+  // ─── Sparepart helpers ───
+  const handleAddSparepart = () => {
+    setKebutuhanSparepart((prev) => [
+      ...prev,
       {
         id_stok: null,
         detail_stok: {
@@ -312,201 +453,109 @@ const ModalStockCheck1 = ({
     ]);
   };
 
-  const handleDeletePoint = (i: number) => {
-    const deleteVal: any = [...kebutuhanSparepart];
-    deleteVal.splice(i, 1);
-    setKebutuhanSparepart(deleteVal);
+  const handleDeleteSparepart = (i: number) => {
+    setKebutuhanSparepart((prev) => prev.filter((_, idx) => idx !== i));
   };
-
-  const [info, setInfo] = useState<{ [key: number]: boolean }>({});
-  const toggleInfo = (index: number) => {
-    setInfo((prev) => ({ ...prev, [index]: !prev[index] }));
-  };
-
-  const [infoPengganti, setInfoPengganti] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const toggleInfoPengganti = (index: number) => {
-    setInfoPengganti((prev) => ({ ...prev, [index]: !prev[index] }));
-  };
-
-  const [showModalStok, setShowModalStok] = useState(false);
-  const [showModalMsStok, setShowModalMsStok] = useState(false);
-
-  const [stokSparepart, setStokSparepart] = useState<any[]>([]);
-  const [displayedStokSparepart, setDisplayedStokSparepart] = useState<any[]>(
-    [],
-  );
-  const [masterSparepart, setMasterSparepart] = useState<any[]>([]);
-  const [displayedMasterSparepart, setDisplayedMasterSparepart] = useState<
-    any[]
-  >([]);
-
-  async function getStokSparepart(idMesin: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
-    try {
-      const res = await axios.get(url, {
-        params: { id_mesin: idMesin },
-        withCredentials: true,
-      });
-      setStokSparepart(res.data);
-      setDisplayedStokSparepart(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-
-  async function getMasterSparepart(id_mesin: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
-    try {
-      const res = await axios.get(url, {
-        params: { id_mesin },
-        withCredentials: true,
-      });
-      setMasterSparepart(res.data);
-      setDisplayedMasterSparepart(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
 
   const handleSearch = (
-    searchTerm: string,
+    term: string,
     type: 'masterSparepart' | 'stokSparepart',
   ) => {
+    const q = term.toLowerCase();
     if (type === 'masterSparepart') {
-      if (!masterSparepart || masterSparepart.length === 0) return;
-      if (!searchTerm) {
-        setDisplayedMasterSparepart(masterSparepart);
-        return;
-      }
       setDisplayedMasterSparepart(
-        masterSparepart.filter(
-          (item: any) =>
-            item.nama_sparepart
-              ?.toLowerCase()
-              .includes(searchTerm.toLowerCase()) ||
-            item.kode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.posisi_part?.toLowerCase().includes(searchTerm.toLowerCase()),
-        ),
+        !term
+          ? masterSparepart
+          : masterSparepart.filter(
+              (it) =>
+                it.nama_sparepart?.toLowerCase().includes(q) ||
+                it.kode?.toLowerCase().includes(q) ||
+                it.posisi_part?.toLowerCase().includes(q),
+            ),
       );
     } else {
-      if (!stokSparepart || stokSparepart.length === 0) return;
-      if (!searchTerm) {
-        setDisplayedStokSparepart(stokSparepart);
-        return;
-      }
       setDisplayedStokSparepart(
-        stokSparepart.filter(
-          (item: any) =>
-            item.nama_sparepart
-              ?.toLowerCase()
-              .includes(searchTerm.toLowerCase()) ||
-            item.kode?.toLowerCase().includes(searchTerm.toLowerCase()),
-        ),
+        !term
+          ? stokSparepart
+          : stokSparepart.filter(
+              (it) =>
+                it.nama_sparepart?.toLowerCase().includes(q) ||
+                it.kode?.toLowerCase().includes(q),
+            ),
       );
     }
   };
 
-  // ─── Reusable Upload Zone Component ───
+  // ─── Upload Zone ───
   const UploadZone = ({ id }: { id: string }) => (
-    <div className="flex flex-col gap-2">
-      {/* Drop Zone */}
-      <div
-        className={`relative border-2 border-dashed rounded-lg p-4 text-center transition-all cursor-pointer ${
-          dragActive
-            ? 'border-blue-400 bg-blue-50'
-            : selectedFile
-            ? 'border-green-400 bg-green-50'
-            : 'border-gray-300 hover:border-blue-300 hover:bg-blue-50'
-        }`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <input
-          type="file"
-          id={id}
-          accept="image/*"
-          onChange={handleFileChange}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        />
-
-        {selectedFile ? (
-          <div className="flex items-center gap-3">
-            {/* Green check circle */}
-            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M3 8l4 4 6-6"
-                  stroke="#16a34a"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <div className="flex-1 text-left min-w-0">
-              <p className="text-xs font-semibold text-gray-800 truncate">
-                {selectedFile.name}
-              </p>
-              <p className="text-xs text-gray-500">
-                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                removeFile();
-              }}
-              className="w-6 h-6 bg-red-500 hover:bg-red-600 transition-colors rounded-full flex items-center justify-center flex-shrink-0"
-            >
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path
-                  d="M1.5 1.5l7 7M8.5 1.5l-7 7"
-                  stroke="white"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
+    <div
+      className={`relative border-2 border-dashed rounded-xl p-4 text-center transition-all cursor-pointer ${
+        dragActive
+          ? 'border-blue-400 bg-blue-50'
+          : selectedFile
+          ? 'border-emerald-400 bg-emerald-50'
+          : 'border-slate-300 hover:border-blue-300 hover:bg-blue-50'
+      }`}
+      onDragEnter={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(true);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files?.[0])
+          validateAndSetFile(e.dataTransfer.files[0]);
+      }}
+    >
+      <input
+        type="file"
+        id={id}
+        accept="image/*"
+        onChange={(e) => {
+          if (e.target.files?.[0]) validateAndSetFile(e.target.files[0]);
+        }}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+      />
+      {selectedFile ? (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M3 8l4 4 6-6"
+                stroke="#16a34a"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
-        ) : (
-          <div className="space-y-1">
-            <div className="w-8 h-8 mx-auto rounded-full bg-gray-100 flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M8 2v8M5 5l3-3 3 3M3 12h10"
-                  stroke="#6b7280"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-            <p className="text-xs text-gray-500">
-              <span className="font-semibold text-blue-600">Klik</span> atau
-              drag & drop
+          <div className="flex-1 text-left min-w-0">
+            <p className="text-xs font-semibold text-slate-800 truncate">
+              {selectedFile.name}
             </p>
-            <p className="text-xs text-gray-400">PNG, JPG hingga 2MB</p>
+            <p className="text-xs text-slate-500">
+              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+            </p>
           </div>
-        )}
-      </div>
-
-      {/* Image Preview */}
-      {previewUrl && (
-        <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
-          <img
-            src={previewUrl}
-            alt="Preview foto"
-            className="w-full h-36 object-contain"
-          />
           <button
             type="button"
-            onClick={removeFile}
-            className="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 transition-colors rounded-full flex items-center justify-center"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeFile();
+            }}
+            className="w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center flex-shrink-0"
           >
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
               <path
@@ -518,51 +567,88 @@ const ModalStockCheck1 = ({
             </svg>
           </button>
         </div>
+      ) : (
+        <div className="space-y-1">
+          <div className="w-8 h-8 mx-auto rounded-full bg-slate-100 flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M8 2v8M5 5l3-3 3 3M3 12h10"
+                stroke="#6b7280"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <p className="text-xs text-slate-500">
+            <span className="font-semibold text-blue-600">Klik</span> atau drag
+            & drop
+          </p>
+          <p className="text-xs text-slate-400">PNG, JPG hingga 2MB</p>
+        </div>
       )}
     </div>
   );
 
-  // ─── Render ───
+  if (!isOpen) return null;
+
+  const modalTitle = isEditMode
+    ? 'Edit Analisis Maintenance'
+    : 'Form Respon Maintenance';
+  const tanggalPeriksa = formatDateTime(tgl);
+  const waktuPeriksa = formatTime(tgl);
+
   return (
-    <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
-      <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
-        {/* Header */}
-        <div className="flex w-full items-center pt-4 px-3">
-          <svg
-            className="flex w-12"
-            width="20"
-            height="19"
-            viewBox="0 0 20 19"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M4.55799 4.51474L8.56073 8.46883M4.55799 4.51474H1.8895L1 1.87869L1.8895 1L4.55799 1.87869V4.51474ZM16.3518 1.65111L14.0146 3.95997C13.6623 4.30794 13.4861 4.48192 13.4202 4.68255C13.3621 4.85904 13.3621 5.04913 13.4202 5.22562C13.4861 5.42625 13.6623 5.60023 14.0146 5.94821L14.2256 6.15668C14.5778 6.50466 14.754 6.67864 14.9571 6.74383C15.1357 6.80117 15.3282 6.80117 15.5068 6.74383C15.7099 6.67864 15.8861 6.50466 16.2383 6.15668L18.4246 3.99695C18.6601 4.56297 18.7899 5.18289 18.7899 5.83277C18.7899 8.50187 16.5996 10.6655 13.8977 10.6655C13.572 10.6655 13.2536 10.6341 12.9458 10.5741C12.5133 10.4899 12.2971 10.4477 12.166 10.4606C12.0267 10.4743 11.958 10.495 11.8345 10.5603C11.7184 10.6217 11.6019 10.7367 11.3689 10.9669L5.00274 17.2557C4.26585 17.9836 3.07113 17.9836 2.33425 17.2557C1.59736 16.5278 1.59736 15.3475 2.33425 14.6196L8.70038 8.33088C8.93343 8.10066 9.04986 7.9856 9.11204 7.87088C9.17813 7.7489 9.19903 7.68106 9.21291 7.54341C9.22598 7.41392 9.18329 7.20034 9.09807 6.77318C9.03732 6.46899 9.00548 6.15456 9.00548 5.83277C9.00548 3.1637 11.1958 1 13.8977 1C14.7921 1 15.6305 1.23709 16.3518 1.65111ZM9.89506 12.4228L14.7872 17.2556C15.5241 17.9835 16.7188 17.9835 17.4557 17.2556C18.1926 16.5277 18.1926 15.3474 17.4557 14.6195L13.431 10.6438C13.1461 10.6172 12.8683 10.5664 12.5998 10.4936C12.2537 10.3997 11.874 10.4679 11.6203 10.7185L9.89506 12.4228Z"
-              stroke="#0065DE"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <label className="flex w-11/12 text-blue-700 text-sm font-bold">
-            Form Respon Maintenance
-          </label>
-          <button
-            type="button"
-            onClick={() => {
-              if (skor_mtc != 0 && jenis_perbaikan == null)
-                deleteExit(idTiket, idProses);
-              onClose();
-            }}
-            className="text-gray-400 focus:outline-none"
+    <div className="fixed z-50 inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl max-h-[95vh] overflow-y-auto">
+        {isLoading && <Loading />}
+
+        {/* ── Header ── */}
+        <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center gap-3 z-10 rounded-t-2xl">
+          <div
+            className={`p-2 rounded-xl ${
+              isEditMode ? 'bg-amber-100' : 'bg-blue-100'
+            }`}
           >
             <svg
-              width="22"
-              height="22"
-              viewBox="0 0 22 22"
+              width="18"
+              height="18"
+              viewBox="0 0 20 19"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
+              <path
+                d="M4.55799 4.51474L8.56073 8.46883M4.55799 4.51474H1.8895L1 1.87869L1.8895 1L4.55799 1.87869V4.51474ZM16.3518 1.65111L14.0146 3.95997C13.6623 4.30794 13.4861 4.48192 13.4202 4.68255C13.3621 4.85904 13.3621 5.04913 13.4202 5.22562C13.4861 5.42625 13.6623 5.60023 14.0146 5.94821L14.2256 6.15668C14.5778 6.50466 14.754 6.67864 14.9571 6.74383C15.1357 6.80117 15.3282 6.80117 15.5068 6.74383C15.7099 6.67864 15.8861 6.50466 16.2383 6.15668L18.4246 3.99695C18.6601 4.56297 18.7899 5.18289 18.7899 5.83277C18.7899 8.50187 16.5996 10.6655 13.8977 10.6655C13.572 10.6655 13.2536 10.6341 12.9458 10.5741C12.5133 10.4899 12.2971 10.4477 12.166 10.4606C12.0267 10.4743 11.958 10.495 11.8345 10.5603C11.7184 10.6217 11.6019 10.7367 11.3689 10.9669L5.00274 17.2557C4.26585 17.9836 3.07113 17.9836 2.33425 17.2557C1.59736 16.5278 1.59736 15.3475 2.33425 14.6196L8.70038 8.33088C8.93343 8.10066 9.04986 7.9856 9.11204 7.87088C9.17813 7.7489 9.19903 7.68106 9.21291 7.54341C9.22598 7.41392 9.18329 7.20034 9.09807 6.77318C9.03732 6.46899 9.00548 6.15456 9.00548 5.83277C9.00548 3.1637 11.1958 1 13.8977 1C14.7921 1 15.6305 1.23709 16.3518 1.65111ZM9.89506 12.4228L14.7872 17.2556C15.5241 17.9835 16.7188 17.9835 17.4557 17.2556C18.1926 16.5277 18.1926 15.3474 17.4557 14.6195L13.431 10.6438C13.1461 10.6172 12.8683 10.5664 12.5998 10.4936C12.2537 10.3997 11.874 10.4679 11.6203 10.7185L9.89506 12.4228Z"
+                stroke={isEditMode ? '#d97706' : '#0065DE'}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h2 className="text-sm font-bold text-slate-800">{modalTitle}</h2>
+            {isEditMode && (
+              <p className="text-xs text-amber-600">
+                Mode Edit — mengubah data proses yang sudah ada
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                !isEditMode &&
+                skor_mtc !== 0 &&
+                jenis_perbaikan == null &&
+                idProses
+              )
+                deleteExit(idTiket, idProses);
+              onClose();
+            }}
+            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
               <circle cx="11" cy="11" r="11" fill="#0065DE" />
               <rect
                 x="6.03955"
@@ -586,925 +672,685 @@ const ModalStockCheck1 = ({
           </button>
         </div>
 
-        <div className="px-4 pb-4">
-          {/* Machine & Kendala Info */}
-          <div className="flex w-full pt-4 gap-5">
-            <div className="w-6/12">
-              <label
-                htmlFor="namamesin"
-                className="form-label block text-black text-xs font-extrabold"
-              >
-                NAMA MESIN
-              </label>
-              <span
-                id="namamesin"
-                className="text-neutral-500 text-xl font-normal"
-              >
+        <div className="px-6 py-4 space-y-5">
+          {/* ── Info Grid ── */}
+          <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+                Nama Mesin
+              </p>
+              <p className="text-base font-semibold text-slate-800">
                 {machineName}
-              </span>
-              <div className="pt-2">
-                <label
-                  htmlFor="kendala"
-                  className="form-label block text-black text-xs font-extrabold"
-                >
-                  KENDALA
-                </label>
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+                Tanggal Pemeriksaan
+              </p>
+              <p className="text-base font-semibold text-slate-800">
+                {tanggalPeriksa}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+                Kendala
+              </p>
+              <p className="text-sm text-slate-700">
+                {kodeLkh} — {kendala}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+                Jam Pemeriksaan
+              </p>
+              <p className="text-base font-semibold text-slate-800">
+                {waktuPeriksa}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+                Nama Pemeriksa
+              </p>
+              <p className="text-sm text-slate-700">{namaPemeriksa ?? '-'}</p>
+            </div>
+            <div className="flex gap-4">
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+                  Unit
+                </p>
+                <p className="text-sm text-slate-700">{unit ?? '-'}</p>
               </div>
               <div>
-                <span
-                  id="kendala"
-                  className="text-neutral-500 text-xl font-normal"
-                >
-                  {kodeLkh} - {kendala}
-                </span>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">
+                  Bagian
+                </p>
+                <p className="text-sm text-slate-700">{bagian ?? '-'}</p>
               </div>
-            </div>
-            <div className="w-6/12 justify-end justify-items-end">
-              <label
-                htmlFor="tgl"
-                className="form-label block text-black text-xs font-extrabold"
-              >
-                TANGGAL PEMERIKSAAN
-              </label>
-              <span id="tgl" className="text-neutral-500 text-xl font-normal">
-                {tanggalPeriksa}
-              </span>
-              <label
-                htmlFor="jam"
-                className="form-label block text-black text-xs font-extrabold mt-2"
-              >
-                JAM PEMERIKSAAN
-              </label>
-              <span id="jam" className="text-neutral-500 text-xl font-normal">
-                {waktuPeriksa}
-              </span>
-              <label
-                htmlFor="namaPemeriksa"
-                className="form-label block text-black text-xs font-extrabold mt-2"
-              >
-                NAMA PEMERIKSAAN
-              </label>
-              <span
-                id="namaPemeriksa"
-                className="text-neutral-500 text-xl font-normal"
-              >
-                {namaPemeriksa}
-              </span>
-              <label
-                htmlFor="unit"
-                className="form-label block text-black text-xs font-extrabold mt-2"
-              >
-                UNIT
-              </label>
-              <span id="unit" className="text-neutral-500 text-xl font-normal">
-                {unit}
-              </span>
-              <label
-                htmlFor="bagian"
-                className="form-label block text-black text-xs font-extrabold mt-2"
-              >
-                BAGIAN
-              </label>
-              <span
-                id="bagian"
-                className="text-neutral-500 text-xl font-normal"
-              >
-                {bagian}
-              </span>
             </div>
           </div>
 
-          {/* KODE MTC + UPLOAD FOTO — Desktop: side by side */}
-          <div className="flex w-full pt-1 gap-4">
-            {/* KODE MTC */}
-            <div className="flex flex-col lg:w-6/12 w-full">
-              <label className="form-label block text-black text-xs font-extrabold mt-2">
-                KODE MTC
+          {/* ── Kode MTC + Upload ── */}
+          <div
+            className={`grid gap-4 ${
+              !isMobile ? 'grid-cols-2' : 'grid-cols-1'
+            }`}
+          >
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                Kode MTC
               </label>
-              <div className="relative z-20 bg-white dark:bg-form-input lg:w-[400px] w-full mt-1">
-                <select
-                  onChange={(e) => {
-                    const selectedOption = kodeAnalisis.find(
-                      (kode: any) => kode.kode_analisis === e.target.value,
-                    );
-                    setSelectedKodeAnalisis(selectedOption);
-                    changeTextColor();
-                  }}
-                  className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                    isOptionSelected ? 'text-black dark:text-white' : ''
-                  }`}
-                >
-                  <option
-                    value=""
-                    disabled
-                    selected
-                    className="text-body dark:text-bodydark"
-                  >
-                    KODE - NAMA PENYEBAB
+              <select
+                value={selectedKodeAnalisis?.kode_analisis ?? ''}
+                onChange={(e) => {
+                  const found = kodeAnalisisList.find(
+                    (k) => k.kode_analisis === e.target.value,
+                  );
+                  setSelectedKodeAnalisis(found ?? null);
+                }}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
+              >
+                <option value="" disabled>
+                  Pilih kode penyebab...
+                </option>
+                {kodeAnalisisList.map((k) => (
+                  <option key={k.kode_analisis} value={k.kode_analisis}>
+                    {k.kode_analisis} — {k.nama_analisis}
                   </option>
-                  {kodeAnalisis != null &&
-                    kodeAnalisis.map((data: any, i: number) => (
-                      <option
-                        key={i}
-                        value={data.kode_analisis}
-                        className="text-body dark:text-bodydark"
-                      >
-                        {data.kode_analisis} - {data.nama_analisis}
-                      </option>
-                    ))}
-                </select>
-                <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g opacity="0.8">
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                        fill="#637381"
-                      />
-                    </g>
-                  </svg>
-                </span>
-              </div>
+                ))}
+              </select>
             </div>
-
-            {/* UPLOAD FOTO — Desktop */}
-            {!isMobile && (
-              <div className="flex flex-col lg:w-6/12 w-full">
-                <label className="form-label block text-black text-xs font-extrabold mt-2">
-                  UPLOAD FOTO
-                </label>
-                <div className="mt-1 lg:w-[389px] w-full">
-                  <UploadZone id="modal-file-upload" />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* UNIT */}
-          <div className="flex w-6/12">
-            <label className="form-label block text-black text-xs font-extrabold mt-3">
-              UNIT
-            </label>
-          </div>
-          <input
-            type="text"
-            onChange={(e) => setUnitMaintenance(e.target.value)}
-            className="lg:w-[400px] rounded-md border border-stroke px-2 py-2"
-            required
-          />
-
-          {/* BAGIAN */}
-          <div className="flex w-6/12">
-            <label className="form-label block text-black text-xs font-extrabold mt-3">
-              BAGIAN
-            </label>
-          </div>
-          <input
-            type="text"
-            onChange={(e) => setBagianMaintenance(e.target.value)}
-            className="lg:w-[400px] rounded-md border border-stroke px-2 py-2"
-          />
-
-          {/* UPLOAD FOTO — Mobile */}
-          {isMobile && (
-            <div className="flex flex-col gap-2 w-full mt-3">
-              <label className="form-label block text-black text-xs font-extrabold">
-                UPLOAD FOTO
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                Upload Foto
               </label>
-              <UploadZone id="modal-file-upload-mobile" />
+              <UploadZone
+                id={isMobile ? 'modal-file-upload-mobile' : 'modal-file-upload'}
+              />
+            </div>
+          </div>
+
+          {/* Preview */}
+          {previewUrl && (
+            <div className="relative rounded-xl overflow-hidden border border-slate-200">
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="w-full h-48 object-contain bg-slate-50"
+              />
+              <button
+                onClick={removeFile}
+                className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center shadow"
+              >
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path
+                    d="M1.5 1.5l7 7M8.5 1.5l-7 7"
+                    stroke="white"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
             </div>
           )}
 
-          {/* KEBUTUHAN SPAREPART */}
-          <div className="flex w-full pt-2">
-            <label className="form-label block text-black text-xs font-extrabold mt-3">
-              KEBUTUHAN SPAREPART
-            </label>
+          {/* ── Unit + Bagian ── */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                Unit <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={unitMaintenance}
+                onChange={(e) => setUnitMaintenance(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
+                placeholder="Masukkan unit..."
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+                Bagian Mesin
+              </label>
+              <input
+                type="text"
+                value={bagianMaintenance}
+                onChange={(e) => setBagianMaintenance(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
+                placeholder="Masukkan bagian mesin..."
+              />
+            </div>
           </div>
 
-          <div className="mx-auto">
-            <div className="pb-2">
-              {kebutuhanSparepart.map((data: any, i: number) => (
-                <div key={i}>
-                  <div className="md:flex mb-2 px-3 py-2 bg-[#D8EAFF] rounded-md shadow-sm">
-                    <span className="hidden sm:flex text-blue-700 text-xs font-bold items-center px-2">
+          {/* ── Sparepart (create mode only) ── */}
+          {!isEditMode && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                  Kebutuhan Sparepart
+                </label>
+                <button
+                  onClick={handleAddSparepart}
+                  className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M6 1v10M1 6h10"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  Tambah
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {kebutuhanSparepart.map((sp, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-2 p-3 bg-blue-50 rounded-xl border border-blue-100"
+                  >
+                    <span className="text-xs font-bold text-blue-600 w-5">
                       {i + 1}
                     </span>
 
-                    {/* Sparepart Rusak */}
-                    <div className="flex md:w-[35%] w-full">
-                      {data.id_ms_sparepart == null ? (
-                        <button
-                          onClick={() => setShowModalMsStok(true)}
-                          name="rusak"
-                          className="flex-grow bg-blue-700 hover:bg-blue-800 transition-colors h-9 rounded text-white text-xs font-semibold"
-                        >
-                          PILIH SPAREPART RUSAK
-                        </button>
-                      ) : (
-                        <button
-                          name="rusak"
-                          onClick={() => setShowModalMsStok(true)}
-                          className="flex-grow bg-white border border-blue-200 h-9 rounded text-[#0065DE] text-xs font-semibold"
-                        >
-                          {data.detail_ms_sparepart.nama_sparepart}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => toggleInfo(i)}
-                        className="bg-primary hover:bg-blue-800 transition-colors px-2 rounded-md mx-2 h-9 flex items-center justify-center"
-                        title="Info Sparepart Rusak"
-                      >
-                        <img src={Info} alt="Info" />
-                      </button>
-                    </div>
+                    {/* Sparepart rusak */}
+                    <button
+                      onClick={() => {
+                        setActiveSparepartIndex(i);
+                        setShowModalMsStok(true);
+                      }}
+                      className={`flex-1 text-xs font-semibold h-9 px-3 rounded-lg transition-colors ${
+                        sp.id_ms_sparepart
+                          ? 'bg-white border border-blue-200 text-blue-700'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      {sp.id_ms_sparepart
+                        ? sp.detail_ms_sparepart.nama_sparepart
+                        : 'Pilih Sparepart Rusak'}
+                    </button>
 
-                    {/* Arrow icon */}
-                    <div className="flex items-center justify-center mx-2 md:mx-4">
+                    <button
+                      onClick={() => setInfo((p) => ({ ...p, [i]: !p[i] }))}
+                      className="p-1.5 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                      title="Info"
+                    >
                       <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 39 39"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="white"
                       >
-                        <path
-                          d="M14.625 25.1875H30.875V4.0625"
-                          stroke="#777777"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                        <circle
+                          cx="6"
+                          cy="6"
+                          r="5"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          fill="none"
                         />
                         <path
-                          d="M24.375 17.0625H8.125V34.9375"
-                          stroke="#777777"
-                          strokeWidth="3"
+                          d="M6 5.5v3M6 4h.01"
+                          stroke="white"
+                          strokeWidth="1.5"
                           strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M35.75 8.9375L30.875 4.0625L26 8.9375"
-                          stroke="#777777"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M13 30.0625L8.125 34.9375L3.25 30.0625"
-                          stroke="#777777"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
                         />
                       </svg>
-                    </div>
+                    </button>
 
-                    {/* Sparepart Pengganti */}
-                    <div className="flex md:w-[35%] w-full">
-                      {data.id_stok == null ? (
-                        <button
-                          name="pengganti"
-                          onClick={() => setShowModalStok(true)}
-                          className="flex-grow bg-blue-700 hover:bg-blue-800 transition-colors h-9 rounded text-white text-xs font-semibold"
-                        >
-                          PILIH PENGGANTI
-                        </button>
-                      ) : (
-                        <button
-                          name="pengganti"
-                          onClick={() => setShowModalStok(true)}
-                          className="flex-grow bg-white border border-blue-200 h-9 rounded text-[#0065DE] text-xs font-semibold"
-                        >
-                          {data.detail_stok.nama_sparepart}
-                        </button>
-                      )}
-                      <button
-                        title="Info Sparepart Pengganti"
-                        onClick={() => toggleInfoPengganti(i)}
-                        className="bg-primary hover:bg-blue-800 transition-colors px-2 rounded-md mx-2 h-9 flex items-center justify-center"
-                      >
-                        <img src={Info} alt="Info" />
-                      </button>
-                    </div>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      className="text-slate-400 flex-shrink-0"
+                    >
+                      <path
+                        d="M2 8h12M8 2v12"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
 
-                    {/* Grade + Delete */}
-                    <div className="flex md:w-2/12 w-full md:mt-0 mt-2">
-                      <div className="flex-grow h-9 bg-[#EDF5FF] rounded flex items-center justify-center text-[#0065DE] text-xs font-semibold">
-                        {data.detail_stok.grade || '-'}
-                      </div>
-                      <button
-                        name="delete"
-                        onClick={() => handleDeletePoint(i)}
-                        className="ml-2 w-9 h-9 bg-[#DE0000] hover:bg-red-700 transition-colors rounded flex items-center justify-center"
-                        title="Delete"
+                    {/* Sparepart pengganti */}
+                    <button
+                      onClick={() => {
+                        setActiveSparepartIndex(i);
+                        setShowModalStok(true);
+                      }}
+                      className={`flex-1 text-xs font-semibold h-9 px-3 rounded-lg transition-colors ${
+                        sp.id_stok
+                          ? 'bg-white border border-blue-200 text-blue-700'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      {sp.id_stok
+                        ? sp.detail_stok.nama_sparepart
+                        : 'Pilih Pengganti'}
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setInfoPengganti((p) => ({ ...p, [i]: !p[i] }))
+                      }
+                      className="p-1.5 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                      title="Info"
+                    >
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 12 12"
+                        fill="white"
                       >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 14 14"
+                        <circle
+                          cx="6"
+                          cy="6"
+                          r="5"
+                          stroke="white"
+                          strokeWidth="1.5"
                           fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <rect
-                            x="1.61621"
-                            width="16.5722"
-                            height="2.28582"
-                            rx="1.14291"
-                            transform="rotate(45 1.61621 0)"
-                            fill="white"
-                          />
-                          <rect
-                            y="11.7183"
-                            width="16.5722"
-                            height="2.28582"
-                            rx="1.14291"
-                            transform="rotate(-45 0 11.7183)"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
+                        />
+                        <path
+                          d="M6 5.5v3M6 4h.01"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
 
-                  {/* Info tooltips */}
-                  <div className="grid grid-cols-2 gap-10">
+                    {/* Grade */}
+                    <div className="text-xs font-semibold text-blue-700 bg-white border border-blue-200 rounded-lg px-2 h-9 flex items-center min-w-10">
+                      {sp.detail_stok.grade || '—'}
+                    </div>
+
+                    <button
+                      onClick={() => handleDeleteSparepart(i)}
+                      className="p-1.5 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                    >
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 10 10"
+                        fill="none"
+                      >
+                        <path
+                          d="M1.5 1.5l7 7M8.5 1.5l-7 7"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+
+                    {/* Info tooltips */}
                     {info[i] && (
-                      <div className="w-80 mt-1 mb-3 rounded-md border border-blue-200 bg-white shadow-md">
-                        <div className="bg-blue-100">
-                          <p className="text-xs font-bold text-primary p-2">
-                            Info Sparepart Rusak
-                          </p>
-                          <div className="p-2">
-                            <p className="text-xs font-semibold">Umur</p>
-                            <p className="text-xs">
-                              {data.detail_ms_sparepart.sisa_umur}
-                            </p>
-                            <div className="mt-2">
-                              <p className="font-semibold text-xs">Grade</p>
-                              <p className="text-xs">
-                                {data.detail_ms_sparepart.grade}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="absolute z-20 mt-2 w-52 bg-white border border-blue-200 rounded-xl shadow-lg p-3 text-xs">
+                        <p className="font-bold text-blue-700 mb-1">
+                          Sparepart Rusak
+                        </p>
+                        <p>
+                          <span className="text-slate-500">Umur:</span>{' '}
+                          {sp.detail_ms_sparepart.sisa_umur ?? '-'}
+                        </p>
+                        <p>
+                          <span className="text-slate-500">Grade:</span>{' '}
+                          {sp.detail_ms_sparepart.grade || '-'}
+                        </p>
                       </div>
                     )}
                     {infoPengganti[i] && (
-                      <div className="w-80 mt-1 mb-3 rounded-md border border-blue-200 bg-white shadow-md">
-                        <div className="bg-blue-100">
-                          <p className="text-xs font-bold text-primary p-2">
-                            Info Sparepart Pengganti
-                          </p>
-                          <div className="p-2">
-                            <p className="text-xs font-semibold">Umur</p>
-                            <p className="text-xs">{data.detail_stok.umur}</p>
-                            <div className="mt-2">
-                              <p className="font-semibold text-xs">Grade</p>
-                              <p className="text-xs">
-                                {data.detail_stok.grade}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="absolute z-20 mt-2 w-52 bg-white border border-blue-200 rounded-xl shadow-lg p-3 text-xs">
+                        <p className="font-bold text-blue-700 mb-1">
+                          Sparepart Pengganti
+                        </p>
+                        <p>
+                          <span className="text-slate-500">Umur:</span>{' '}
+                          {sp.detail_stok.umur ?? '-'}
+                        </p>
+                        <p>
+                          <span className="text-slate-500">Grade:</span>{' '}
+                          {sp.detail_stok.grade || '-'}
+                        </p>
                       </div>
                     )}
                   </div>
-
-                  {/* Modal Sparepart Rusak (Master) */}
-                  {showModalMsStok && (
-                    <div className="fixed z-50 inset-0 backdrop-blur-sm bg-black/30 p-4 md:p-8 flex justify-center items-center">
-                      <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg h-full overflow-y-auto">
-                        <div className="flex items-center justify-between p-4 border-b">
-                          <h3 className="text-blue-700 text-sm font-bold">
-                            Sparepart Master Check
-                          </h3>
-                          <button
-                            type="button"
-                            onClick={() => setShowModalMsStok(false)}
-                            className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                          >
-                            <svg
-                              width="22"
-                              height="22"
-                              viewBox="0 0 22 22"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <circle cx="11" cy="11" r="11" fill="#0065DE" />
-                              <rect
-                                x="6.03955"
-                                y="4.23242"
-                                width="17"
-                                height="3"
-                                rx="1.5"
-                                transform="rotate(42.8321 6.03955 4.23242)"
-                                fill="white"
-                              />
-                              <rect
-                                x="4.18213"
-                                y="16.0609"
-                                width="17"
-                                height="3"
-                                rx="1.5"
-                                transform="rotate(-45 4.18213 16.0609)"
-                                fill="white"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="p-4">
-                          <div className="flex gap-4 mb-4">
-                            <select
-                              onChange={(e) => {
-                                getMasterSparepart(e.target.value);
-                                changeTextColor();
-                              }}
-                              className={`flex-grow appearance-none rounded-md text-xs bg-blue-100 py-2 px-3 outline-none focus:ring-2 focus:ring-blue-500 ${
-                                isOptionSelected ? 'text-gray-800' : ''
-                              }`}
-                            >
-                              <option
-                                value=""
-                                selected
-                                disabled
-                                className="text-gray-500"
-                              >
-                                SELECT MESIN
-                              </option>
-                              {masterMesin?.map((data: any, i: number) => (
-                                <option value={data.id} key={i}>
-                                  {data.nama_mesin}
-                                </option>
-                              ))}
-                            </select>
-                            <div className="relative flex-grow">
-                              <input
-                                type="text"
-                                className="w-full py-2 px-3 text-sm bg-blue-100 rounded-md pl-10"
-                                placeholder="Search Sparepart..."
-                                onChange={(e) =>
-                                  handleSearch(
-                                    e.target.value,
-                                    'masterSparepart',
-                                  )
-                                }
-                              />
-                              <div className="absolute inset-y-0 left-3 flex items-center">
-                                <svg
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 16 18"
-                                  fill="none"
-                                >
-                                  <path
-                                    d="M15.7231 14.5835L11.2285 9.98926L8.90283 12.3648L13.4007 16.959C13.7698 17.3361 14.3774 17.3361 14.7465 16.959L15.7231 15.9614C16.0923 15.5811 16.0923 14.9572 15.7231 14.5835Z"
-                                    fill="#0065DE"
-                                  />
-                                  <path
-                                    d="M9.00432 11.3404L10.2227 10.0959L8.83447 8.67793C10.1476 6.74614 9.96465 4.07033 8.27917 2.34874C6.38791 0.416956 3.3142 0.416956 1.41967 2.34874C-0.474857 4.28053 -0.47159 7.4201 1.41967 9.35522C3.10515 11.0768 5.72482 11.2637 7.61609 9.92241L9.00432 11.3404ZM2.3604 8.38099C0.988503 6.97969 0.988503 4.70759 2.3604 3.30963C3.7323 1.90833 5.95674 1.90833 7.32537 3.30963C8.69727 4.71093 8.69727 6.98303 7.32537 8.38099C5.95674 9.78228 3.7323 9.78228 2.3604 8.38099Z"
-                                    fill="#0065DE"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="border rounded-md overflow-hidden">
-                            <table className="w-full">
-                              <thead className="bg-gray-50 border-b">
-                                <tr>
-                                  <th className="text-left text-xs font-semibold text-gray-600 p-3 w-12">
-                                    No
-                                  </th>
-                                  <th className="text-left text-xs font-semibold text-gray-600 p-3">
-                                    Kode
-                                  </th>
-                                  <th className="text-left text-xs font-semibold text-gray-600 p-3">
-                                    Sparepart Name
-                                  </th>
-                                  <th className="text-left text-xs font-semibold text-gray-600 p-3">
-                                    Posisi Part
-                                  </th>
-                                  <th className="w-24"></th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-200">
-                                {displayedMasterSparepart.map(
-                                  (SparepartMaster: any, ii: number) => (
-                                    <tr key={ii} className="hover:bg-gray-50">
-                                      <td className="p-3 text-xs">{ii + 1}</td>
-                                      <td className="p-3 text-xs">
-                                        {SparepartMaster.kode}
-                                      </td>
-                                      <td className="p-3 text-xs">
-                                        {SparepartMaster.nama_sparepart}
-                                      </td>
-                                      <td className="p-3 text-xs">
-                                        {SparepartMaster.posisi_part}
-                                      </td>
-                                      <td className="p-3">
-                                        <button
-                                          className="bg-primary hover:bg-blue-700 transition-colors text-white text-xs py-1 px-3 rounded w-full"
-                                          onClick={() => {
-                                            const onchangeVal: any = [
-                                              ...kebutuhanSparepart,
-                                            ];
-                                            onchangeVal[i]['id_ms_sparepart'] =
-                                              SparepartMaster.id;
-                                            onchangeVal[i][
-                                              'detail_ms_sparepart'
-                                            ] = {
-                                              kode: SparepartMaster.kode,
-                                              nama_sparepart:
-                                                SparepartMaster.nama_sparepart,
-                                              nama_mesin:
-                                                SparepartMaster.nama_mesin,
-                                              posisi_part:
-                                                SparepartMaster.posisi_part,
-                                              sisa_umur:
-                                                SparepartMaster.sisa_umur,
-                                              grade: SparepartMaster.grade_2,
-                                            };
-                                            setKebutuhanSparepart(onchangeVal);
-                                            setShowModalMsStok(false);
-                                          }}
-                                        >
-                                          Select
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  ),
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Modal Sparepart Pengganti (Stok) */}
-                  {showModalStok && (
-                    <div className="fixed z-50 inset-0 backdrop-blur-sm bg-black/30 p-4 md:p-8 flex justify-center items-center">
-                      <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg h-full overflow-y-auto">
-                        <div className="flex items-center justify-between p-4 border-b">
-                          <h3 className="text-blue-700 text-sm font-bold">
-                            Sparepart Stok Check
-                          </h3>
-                          <button
-                            type="button"
-                            onClick={() => setShowModalStok(false)}
-                            className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                          >
-                            <svg
-                              width="22"
-                              height="22"
-                              viewBox="0 0 22 22"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <circle cx="11" cy="11" r="11" fill="#0065DE" />
-                              <rect
-                                x="6.03955"
-                                y="4.23242"
-                                width="17"
-                                height="3"
-                                rx="1.5"
-                                transform="rotate(42.8321 6.03955 4.23242)"
-                                fill="white"
-                              />
-                              <rect
-                                x="4.18213"
-                                y="16.0609"
-                                width="17"
-                                height="3"
-                                rx="1.5"
-                                transform="rotate(-45 4.18213 16.0609)"
-                                fill="white"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="p-4">
-                          <div className="flex gap-4 mb-4">
-                            <select
-                              onChange={(e) => {
-                                getStokSparepart(e.target.value);
-                                changeTextColor();
-                              }}
-                              className={`flex-grow appearance-none rounded-md text-xs bg-blue-100 py-2 px-3 outline-none focus:ring-2 focus:ring-blue-500 ${
-                                isOptionSelected ? 'text-gray-800' : ''
-                              }`}
-                            >
-                              <option
-                                value=""
-                                selected
-                                disabled
-                                className="text-gray-500"
-                              >
-                                SELECT MESIN
-                              </option>
-                              {masterMesin?.map((data: any, i: number) => (
-                                <option value={data.id} key={i}>
-                                  {data.nama_mesin}
-                                </option>
-                              ))}
-                            </select>
-                            <div className="relative flex-grow">
-                              <input
-                                type="text"
-                                className="w-full py-2 px-3 text-sm bg-blue-100 rounded-md pl-10"
-                                placeholder="Search Sparepart..."
-                                onChange={(e) =>
-                                  handleSearch(e.target.value, 'stokSparepart')
-                                }
-                              />
-                              <div className="absolute inset-y-0 left-3 flex items-center">
-                                <svg
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 16 18"
-                                  fill="none"
-                                >
-                                  <path
-                                    d="M15.7231 14.5835L11.2285 9.98926L8.90283 12.3648L13.4007 16.959C13.7698 17.3361 14.3774 17.3361 14.7465 16.959L15.7231 15.9614C16.0923 15.5811 16.0923 14.9572 15.7231 14.5835Z"
-                                    fill="#0065DE"
-                                  />
-                                  <path
-                                    d="M9.00432 11.3404L10.2227 10.0959L8.83447 8.67793C10.1476 6.74614 9.96465 4.07033 8.27917 2.34874C6.38791 0.416956 3.3142 0.416956 1.41967 2.34874C-0.474857 4.28053 -0.47159 7.4201 1.41967 9.35522C3.10515 11.0768 5.72482 11.2637 7.61609 9.92241L9.00432 11.3404ZM2.3604 8.38099C0.988503 6.97969 0.988503 4.70759 2.3604 3.30963C3.7323 1.90833 5.95674 1.90833 7.32537 3.30963C8.69727 4.71093 8.69727 6.98303 7.32537 8.38099C5.95674 9.78228 3.7323 9.78228 2.3604 8.38099Z"
-                                    fill="#0065DE"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="border rounded-md overflow-hidden">
-                            <table className="w-full">
-                              <thead className="bg-gray-50 border-b">
-                                <tr>
-                                  <th className="text-left text-xs font-semibold text-gray-600 p-3 w-12">
-                                    No
-                                  </th>
-                                  <th className="text-left text-xs font-semibold text-gray-600 p-3">
-                                    Kode
-                                  </th>
-                                  <th className="text-left text-xs font-semibold text-gray-600 p-3">
-                                    Sparepart Name
-                                  </th>
-                                  <th className="text-center text-xs font-semibold text-gray-600 p-3 w-16">
-                                    Qty
-                                  </th>
-                                  <th className="text-center text-xs font-semibold text-gray-600 p-3 w-16">
-                                    Umur
-                                  </th>
-                                  <th className="text-center text-xs font-semibold text-gray-600 p-3 w-16">
-                                    Grade
-                                  </th>
-                                  <th className="w-24"></th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-200">
-                                {displayedStokSparepart?.map(
-                                  (SparepartStok: any, ii: number) => (
-                                    <tr key={ii} className="hover:bg-gray-50">
-                                      <td className="p-3 text-xs">{ii + 1}</td>
-                                      <td className="p-3 text-xs">
-                                        {SparepartStok.kode}
-                                      </td>
-                                      <td className="p-3 text-xs">
-                                        {SparepartStok.nama_sparepart}
-                                      </td>
-                                      <td className="p-3 text-xs text-center">
-                                        {SparepartStok.stok}
-                                      </td>
-                                      <td className="p-3 text-xs text-center">
-                                        {SparepartStok.umur_sparepart}
-                                      </td>
-                                      <td className="p-3 text-xs text-center">
-                                        {SparepartStok.grade}
-                                      </td>
-                                      <td className="p-3">
-                                        {SparepartStok.stok > 0 ? (
-                                          <button
-                                            className="bg-primary hover:bg-blue-700 transition-colors text-white text-xs py-1 px-3 rounded w-full"
-                                            onClick={() => {
-                                              const onchangeVal: any = [
-                                                ...kebutuhanSparepart,
-                                              ];
-                                              onchangeVal[i]['id_stok'] =
-                                                SparepartStok.id;
-                                              onchangeVal[i]['detail_stok'] = {
-                                                kode: SparepartStok.kode,
-                                                part_number:
-                                                  SparepartStok.part_number,
-                                                nama_sparepart:
-                                                  SparepartStok.nama_sparepart,
-                                                nama_mesin:
-                                                  SparepartStok.nama_mesin,
-                                                lokasi: SparepartStok.lokasi,
-                                                umur: SparepartStok.umur_sparepart,
-                                                grade: SparepartStok.grade,
-                                              };
-                                              setKebutuhanSparepart(
-                                                onchangeVal,
-                                              );
-                                              setShowModalStok(false);
-                                            }}
-                                          >
-                                            Select
-                                          </button>
-                                        ) : (
-                                          <span className="text-xs text-gray-400">
-                                            Out of Stock
-                                          </span>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ),
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Add Sparepart Button */}
-          <div className="flex gap-10 pt-1">
-            <button
-              onClick={handleAddPoint}
-              className="lg:w-60 w-30 h-12 bg-blue-700 rounded text-center text-white text-xs font-bold"
-            >
-              +
-            </button>
-          </div>
-
-          {/* TIPE MAINTENANCE */}
-          <div className="flex w-full pt-1">
-            <label className="form-label block text-black text-xs font-extrabold mt-3">
-              TIPE MAINTENANCE
-            </label>
-          </div>
-          <div className="flex w-full pt-1">
-            <div className="flex lg:w-6/12 w-full">
-              <div className="relative z-20 bg-white dark:bg-form-input lg:w-[400px] w-[325px]">
-                <select
-                  onChange={async (e) => {
-                    if (e.target.value !== 'pending') {
-                      const selectedOptionSkor = skorPerbaikan.find(
-                        (perbaikan: any) =>
-                          perbaikan.nama_skor === e.target.value,
-                      );
-                      setSelectedSkorPerbaikan(selectedOptionSkor);
-                      setTypePost('normal');
-                    } else {
-                      setTypePost('pending');
-                    }
-                    changeTextColor();
-                  }}
-                  className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                    isOptionSelected ? 'text-black dark:text-white' : ''
-                  }`}
-                >
-                  <option
-                    value=""
-                    selected
-                    className="text-body dark:text-bodydark"
-                  >
-                    pilih
-                  </option>
-                  {skorPerbaikan != null &&
-                    skorPerbaikan.map((data: any, i: number) => (
-                      <option
-                        value={data.nama_skor}
-                        key={i}
-                        className="text-body dark:text-bodydark"
-                      >
-                        {data.skor}% - {data.nama_skor}
-                      </option>
-                    ))}
-                  <option
-                    value="pending"
-                    className="text-body dark:text-bodydark"
-                  >
-                    0% - Pending
-                  </option>
-                </select>
-                <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <g opacity="0.8">
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                        fill="#637381"
-                      />
-                    </g>
-                  </svg>
-                </span>
+                ))}
               </div>
-            </div>
-          </div>
-
-          {/* TIPE PENDING */}
-          {typePost === 'pending' && (
-            <div className="flex w-full pt-1">
-              <label className="form-label block text-black text-xs font-extrabold mt-3">
-                <h2>TIPE PENDING</h2>
-                <div className="flex gap-5 mt-5">
-                  <div className="flex gap-2">
-                    <input
-                      onChange={(e) => setAlasanPending(e.target.value)}
-                      type="radio"
-                      id="man"
-                      name="option"
-                      value="man"
-                    />
-                    <label htmlFor="man">Man</label>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      onChange={(e) => setAlasanPending(e.target.value)}
-                      type="radio"
-                      id="sparepart"
-                      name="option"
-                      value="sparepart"
-                    />
-                    <label htmlFor="sparepart">Sparepart</label>
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      onChange={(e) => setAlasanPending(e.target.value)}
-                      type="radio"
-                      id="time"
-                      name="option"
-                      value="time"
-                    />
-                    <label htmlFor="time">Time</label>
-                  </div>
-                </div>
-              </label>
             </div>
           )}
 
-          {/* ANALISIS */}
-          <div className="flex w-full pt-1">
-            <label className="form-label block text-black text-xs font-extrabold mt-3">
-              ANALISIS PENYEBAB DAN DETAIL TINDAKAN
+          {/* ── Tipe Maintenance ── */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+              Tipe Maintenance
             </label>
+            <select
+              value={
+                isEditMode
+                  ? selectedSkorPerbaikan?.nama_skor ?? ''
+                  : typePost === 'pending'
+                  ? 'pending'
+                  : selectedSkorPerbaikan?.nama_skor ?? ''
+              }
+              onChange={(e) => {
+                if (e.target.value === 'pending') {
+                  setTypePost('pending');
+                  setSelectedSkorPerbaikan(null);
+                } else {
+                  const found = skorPerbaikanList.find(
+                    (s) => s.nama_skor === e.target.value,
+                  );
+                  setSelectedSkorPerbaikan(found ?? null);
+                  setTypePost('normal');
+                }
+              }}
+              className="w-full md:w-96 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition"
+            >
+              <option value="">Pilih tipe...</option>
+              {skorPerbaikanList.map((s) => (
+                <option key={s.nama_skor} value={s.nama_skor}>
+                  {s.skor}% — {s.nama_skor}
+                </option>
+              ))}
+              {!isEditMode && <option value="pending">0% — Pending</option>}
+            </select>
           </div>
-          <div className="relative w-full min-w-[200px] pt-1">
+
+          {/* ── Pending reason ── */}
+          {!isEditMode && typePost === 'pending' && (
+            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200">
+              <p className="text-xs font-semibold text-amber-700 mb-3 uppercase tracking-wide">
+                Alasan Pending
+              </p>
+              <div className="flex gap-6">
+                {['man', 'sparepart', 'time'].map((val) => (
+                  <label
+                    key={val}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      name="alasan"
+                      value={val}
+                      onChange={(e) => setAlasanPending(e.target.value)}
+                      className="accent-amber-500"
+                    />
+                    <span className="text-sm capitalize text-slate-700">
+                      {val}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Analisis ── */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+              Analisis Penyebab & Detail Tindakan{' '}
+              <span className="text-red-500">*</span>
+            </label>
             <textarea
               value={noteMaintenance}
               onChange={(e) => setNoteMaintenance(e.target.value)}
-              className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+              rows={4}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition resize-none"
+              placeholder="Jelaskan analisis penyebab dan tindakan yang dilakukan..."
             />
           </div>
 
-          {/* SIMPAN */}
-          <div className="pt-5">
-            <button
-              disabled={isLoading}
-              onClick={postAnalisis}
-              className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md disabled:opacity-60"
-            >
-              {isLoading ? 'Loading...' : 'SIMPAN'}
-            </button>
-            {isLoading && <Loading />}
-          </div>
+          {/* ── Submit ── */}
+          <button
+            disabled={isLoading}
+            onClick={postAnalisis}
+            className={`w-full h-12 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-60 ${
+              isEditMode
+                ? 'bg-amber-500 hover:bg-amber-600'
+                : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {isLoading
+              ? 'Menyimpan...'
+              : isEditMode
+              ? 'Simpan Perubahan'
+              : 'Simpan'}
+          </button>
         </div>
 
-        <button
-          title="button"
-          type="button"
-          onClick={() => {
-            if (skor_mtc != 0 && jenis_perbaikan == null)
-              deleteExit(idTiket, idProses);
-            onClose();
-          }}
-          className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
-        />
+        {/* ── Sparepart Rusak Modal ── */}
+        {showModalMsStok && (
+          <SparepartModal
+            title="Pilih Sparepart Rusak"
+            masterMesin={masterMesin}
+            data={displayedMasterSparepart}
+            columns={['Kode', 'Sparepart', 'Posisi Part']}
+            onMesinChange={(id) => getMasterSparepart(id)}
+            onSearch={(q) => handleSearch(q, 'masterSparepart')}
+            onClose={() => setShowModalMsStok(false)}
+            renderRow={(item: MasterSparepart) => [
+              item.kode,
+              item.nama_sparepart,
+              item.posisi_part,
+            ]}
+            onSelect={(item: MasterSparepart) => {
+              setKebutuhanSparepart((prev) => {
+                const copy = [...prev];
+                copy[activeSparepartIndex] = {
+                  ...copy[activeSparepartIndex],
+                  id_ms_sparepart: item.id,
+                  detail_ms_sparepart: {
+                    kode: item.kode,
+                    nama_sparepart: item.nama_sparepart,
+                    nama_mesin: item.nama_mesin,
+                    posisi_part: item.posisi_part,
+                    sisa_umur: item.sisa_umur,
+                    grade: item.grade_2,
+                  },
+                };
+                return copy;
+              });
+              setShowModalMsStok(false);
+            }}
+          />
+        )}
+
+        {/* ── Sparepart Pengganti Modal ── */}
+        {showModalStok && (
+          <SparepartModal
+            title="Pilih Sparepart Pengganti"
+            masterMesin={masterMesin}
+            data={displayedStokSparepart}
+            columns={['Kode', 'Sparepart', 'Qty', 'Umur', 'Grade']}
+            onMesinChange={(id) => getStokSparepart(id)}
+            onSearch={(q) => handleSearch(q, 'stokSparepart')}
+            onClose={() => setShowModalStok(false)}
+            renderRow={(item: SparepartStok) => [
+              item.kode,
+              item.nama_sparepart,
+              item.stok,
+              item.umur_sparepart ?? '-',
+              item.grade,
+            ]}
+            onSelect={(item: SparepartStok) => {
+              if (!item.stok) return;
+              setKebutuhanSparepart((prev) => {
+                const copy = [...prev];
+                copy[activeSparepartIndex] = {
+                  ...copy[activeSparepartIndex],
+                  id_stok: item.id,
+                  detail_stok: {
+                    kode: item.kode,
+                    part_number: item.part_number,
+                    nama_sparepart: item.nama_sparepart,
+                    nama_mesin: item.nama_mesin,
+                    lokasi: item.lokasi,
+                    umur: item.umur_sparepart,
+                    grade: item.grade,
+                  },
+                };
+                return copy;
+              });
+              setShowModalStok(false);
+            }}
+          />
+        )}
+
         {children}
       </div>
     </div>
   );
 };
+
+// ─── Sparepart Modal ──────────────────────────────────────────────────────────
+
+interface SparepartModalProps<T> {
+  title: string;
+  masterMesin: MasterMesin[];
+  data: T[];
+  columns: string[];
+  onMesinChange: (id: string) => void;
+  onSearch: (q: string) => void;
+  onClose: () => void;
+  renderRow: (item: T) => (string | number | null | undefined)[];
+  onSelect: (item: T) => void;
+}
+
+function SparepartModal<T extends { id: number; stok?: number }>({
+  title,
+  masterMesin,
+  data,
+  columns,
+  onMesinChange,
+  onSearch,
+  onClose,
+  renderRow,
+  onSelect,
+}: SparepartModalProps<T>) {
+  return (
+    <div className="fixed z-50 inset-0 backdrop-blur-sm bg-black/40 flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <h3 className="text-sm font-bold text-blue-700">{title}</h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 22 22" fill="none">
+              <circle cx="11" cy="11" r="11" fill="#0065DE" />
+              <rect
+                x="6.03955"
+                y="4.23242"
+                width="17"
+                height="3"
+                rx="1.5"
+                transform="rotate(42.8321 6.03955 4.23242)"
+                fill="white"
+              />
+              <rect
+                x="4.18213"
+                y="16.0609"
+                width="17"
+                height="3"
+                rx="1.5"
+                transform="rotate(-45 4.18213 16.0609)"
+                fill="white"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="px-5 py-3 flex gap-3 border-b border-slate-100">
+          <select
+            onChange={(e) => onMesinChange(e.target.value)}
+            className="flex-1 rounded-xl bg-slate-50 border border-slate-200 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          >
+            <option value="" disabled selected>
+              Pilih Mesin
+            </option>
+            {masterMesin.map((m) => (
+              <option key={m.id} value={String(m.id)}>
+                {m.nama_mesin}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            className="flex-1 rounded-xl bg-slate-50 border border-slate-200 text-sm px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            placeholder="Cari sparepart..."
+            onChange={(e) => onSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="overflow-auto flex-1">
+          <table className="w-full text-xs">
+            <thead className="bg-slate-50 sticky top-0">
+              <tr>
+                <th className="text-left px-4 py-2.5 font-semibold text-slate-600">
+                  No
+                </th>
+                {columns.map((col) => (
+                  <th
+                    key={col}
+                    className="text-left px-4 py-2.5 font-semibold text-slate-600"
+                  >
+                    {col}
+                  </th>
+                ))}
+                <th className="w-20"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {data.map((item, idx) => {
+                const cells = renderRow(item);
+                const isOutOfStock =
+                  'stok' in item && (item as { stok: number }).stok <= 0;
+                return (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-blue-50 transition-colors"
+                  >
+                    <td className="px-4 py-2.5 text-slate-500">{idx + 1}</td>
+                    {cells.map((cell, ci) => (
+                      <td key={ci} className="px-4 py-2.5 text-slate-700">
+                        {cell ?? '-'}
+                      </td>
+                    ))}
+                    <td className="px-4 py-2.5">
+                      {isOutOfStock ? (
+                        <span className="text-xs text-slate-400 italic">
+                          Habis
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => onSelect(item)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors w-full"
+                        >
+                          Pilih
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {data.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={columns.length + 2}
+                    className="px-4 py-8 text-center text-slate-400 text-xs"
+                  >
+                    Pilih mesin terlebih dahulu
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default ModalStockCheck1;
