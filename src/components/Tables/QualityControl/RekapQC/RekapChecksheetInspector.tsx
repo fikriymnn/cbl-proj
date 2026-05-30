@@ -147,6 +147,21 @@ function capitalize(str: string) {
 
 // ─── Recap Summary ────────────────────────────────────────────────────────────
 
+// Sum lama_pengerjaan from all process entries in a JO, ignoring negatives/nulls
+function calcJoDurasi(jo: JoData): number {
+  return PROCESS_KEYS.reduce((sum, { key }) => {
+    const entries = jo[key] as ProcessEntry[];
+    if (!Array.isArray(entries)) return sum;
+    return (
+      sum +
+      entries.reduce((s, e) => {
+        const v = e.lama_pengerjaan ?? 0;
+        return s + (v > 0 ? v : 0);
+      }, 0)
+    );
+  }, 0);
+}
+
 function RecapSection({ data }: { data: InspectorData[] }) {
   // Build per-inspector summary rows
   const rows = data.map((ins, idx) => {
@@ -160,15 +175,38 @@ function RecapSection({ data }: { data: InspectorData[] }) {
       );
       processCounts[label] = total;
     });
+
+    // Compute real total durasi by summing valid entries across all JOs
+    const realDurasi = ins.jos.reduce((sum, jo) => sum + calcJoDurasi(jo), 0);
+    // Count JOs that contributed no duration at all
+    const josWithNoDurasi = ins.jos.filter(
+      (jo) =>
+        calcJoDurasi(jo) === 0 &&
+        PROCESS_KEYS.some(
+          ({ key }) =>
+            Array.isArray(jo[key]) && (jo[key] as ProcessEntry[]).length > 0,
+        ),
+    );
+    const hasDurasi = realDurasi > 0;
+    const hasPartialMissing = josWithNoDurasi.length > 0;
+
     return {
       inspektor: ins.inspektor,
       totalJo: ins.jos.length,
       totalPekerjaan: ins.total_pekerjaan,
-      totalDurasi: ins.total_lama_pengerjaan,
+      totalDurasi: realDurasi,
+      hasDurasi,
+      hasPartialMissing,
+      josWithNoDurasi: josWithNoDurasi.map((jo) => jo.no_jo),
       processCounts,
       color: BAR_COLORS[idx % BAR_COLORS.length],
     };
   });
+
+  const missingDurasi = rows
+    .filter((r) => !r.hasDurasi)
+    .map((r) => capitalize(r.inspektor));
+  const partialMissing = rows.filter((r) => r.hasDurasi && r.hasPartialMissing);
 
   const chartPekerjaan = rows.map((r) => ({
     name: capitalize(r.inspektor),
@@ -176,13 +214,13 @@ function RecapSection({ data }: { data: InspectorData[] }) {
     color: r.color,
   }));
 
-  const chartDurasi = rows
-    .filter((r) => r.totalDurasi > 0)
-    .map((r) => ({
-      name: capitalize(r.inspektor),
-      value: Math.round(r.totalDurasi / 60), // minutes
-      color: r.color,
-    }));
+  // Include all inspectors, treat missing/negative as 0
+  const chartDurasi = rows.map((r) => ({
+    name: capitalize(r.inspektor),
+    value: r.hasDurasi ? Math.round(r.totalDurasi / 60) : 0,
+    color: r.color,
+    missing: !r.hasDurasi,
+  }));
 
   const CustomTooltipPekerjaan = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -255,6 +293,37 @@ function RecapSection({ data }: { data: InspectorData[] }) {
           <h4 className="text-sm font-semibold text-gray-700 mb-3">
             Total Durasi per Inspektor (menit)
           </h4>
+          {(missingDurasi.length > 0 || partialMissing.length > 0) && (
+            <div className="flex items-start gap-2 mb-3 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16"
+                className="shrink-0 mt-0.5"
+              >
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+              </svg>
+              <div className="flex flex-col gap-1">
+                {missingDurasi.length > 0 && (
+                  <span>
+                    Durasi tidak tersedia sama sekali untuk:{' '}
+                    <strong>{missingDurasi.join(', ')}</strong>. Ditampilkan
+                    sebagai 0.
+                  </span>
+                )}
+                {partialMissing.map((r) => (
+                  <span key={r.inspektor}>
+                    <strong>{capitalize(r.inspektor)}</strong>:{' '}
+                    {r.josWithNoDurasi.length} JO tanpa durasi (
+                    {r.josWithNoDurasi.join(', ')}). Total durasi dihitung dari
+                    JO yang tersedia saja.
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           <ResponsiveContainer width="100%" height={220}>
             <BarChart
               data={chartDurasi}
@@ -274,10 +343,29 @@ function RecapSection({ data }: { data: InspectorData[] }) {
                 <LabelList
                   dataKey="value"
                   position="top"
-                  style={{ fontSize: 11, fill: '#374151', fontWeight: 600 }}
+                  content={(props: any) => {
+                    const { x, y, width, value, index } = props;
+                    const entry = chartDurasi[index];
+                    if (!entry || entry.missing) return null;
+                    return (
+                      <text
+                        x={x + width / 2}
+                        y={y - 4}
+                        textAnchor="middle"
+                        fontSize={11}
+                        fontWeight={600}
+                        fill="#374151"
+                      >
+                        {value}
+                      </text>
+                    );
+                  }}
                 />
                 {chartDurasi.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
+                  <Cell
+                    key={i}
+                    fill={entry.missing ? '#d1d5db' : entry.color}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -342,7 +430,44 @@ function RecapSection({ data }: { data: InspectorData[] }) {
                     {row.totalPekerjaan.toLocaleString('id-ID')}
                   </td>
                   <td className="px-3 py-2 text-right text-gray-700 whitespace-nowrap">
-                    {formatDuration(row.totalDurasi)}
+                    {row.hasDurasi ? (
+                      <span>
+                        {formatDuration(row.totalDurasi)}
+                        {row.hasPartialMissing && (
+                          <span
+                            title={`${
+                              row.josWithNoDurasi.length
+                            } JO tanpa durasi: ${row.josWithNoDurasi.join(
+                              ', ',
+                            )}`}
+                            className="inline-flex items-center ml-1 text-yellow-500 cursor-help"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="11"
+                              height="11"
+                              fill="currentColor"
+                              viewBox="0 0 16 16"
+                            >
+                              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                            </svg>
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center justify-end gap-1 text-yellow-600">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          fill="currentColor"
+                          viewBox="0 0 16 16"
+                        >
+                          <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                        </svg>
+                        <span className="text-xs">Tidak tersedia</span>
+                      </span>
+                    )}
                   </td>
                   {PROCESS_KEYS.map(({ label }) => (
                     <td
@@ -372,9 +497,14 @@ function RecapSection({ data }: { data: InspectorData[] }) {
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   {formatDuration(
                     rows.reduce(
-                      (s, r) => s + (r.totalDurasi > 0 ? r.totalDurasi : 0),
+                      (s, r) => s + (r.hasDurasi ? r.totalDurasi : 0),
                       0,
                     ),
+                  )}
+                  {missingDurasi.length > 0 && (
+                    <span className="block text-xs text-yellow-600 font-normal">
+                      *sebagian data tidak tersedia
+                    </span>
                   )}
                 </td>
                 {PROCESS_KEYS.map(({ label }) => (
@@ -524,6 +654,28 @@ function JoCard({ jo, searchTerm }: { jo: JoData; searchTerm: string }) {
               {activeSections.length}
             </span>{' '}
             proses
+            <span className="mx-1.5">·</span>
+            {(() => {
+              const joRealDurasi = calcJoDurasi(jo);
+              return joRealDurasi > 0 ? (
+                <span className="font-medium text-gray-700">
+                  {formatDuration(joRealDurasi)}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-yellow-600 font-medium">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="10"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                  </svg>
+                  durasi tidak tersedia
+                </span>
+              );
+            })()}
           </div>
           <button
             onClick={() => setExpanded((v) => !v)}
