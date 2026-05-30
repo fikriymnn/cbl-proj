@@ -212,8 +212,7 @@ function TableOS() {
   const role = localStorage.getItem('userRole') ?? '';
   const bagian = localStorage.getItem('userBagian') ?? '';
   const { checkEdit } = usePermissions(role, bagian);
-  const canEdit = checkEdit('/os2'); // adjust path as needed
-
+  const canEdit = checkEdit('/maintenance/corrective');
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
