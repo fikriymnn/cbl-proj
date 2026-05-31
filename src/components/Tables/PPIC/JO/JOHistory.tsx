@@ -70,6 +70,7 @@ interface JOData {
   status_jo: string;
   tipe_jo: string;
   is_active: boolean;
+  is_open_label: boolean;
   createdAt: string;
   jo_mounting: JOMounting[];
   tiket_jadwal_produksi: TiketJadwalProduksi[];
@@ -152,11 +153,9 @@ const ExpandedTiketRow: React.FC<{
                   <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
                     No
                   </th>
-
                   <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
                     No Booking
                   </th>
-
                   <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">
                     Tgl Mulai Produksi
                   </th>
@@ -183,13 +182,11 @@ const ExpandedTiketRow: React.FC<{
                     <td className="px-3 py-2 whitespace-nowrap text-slate-500">
                       {idx + 1}
                     </td>
-
                     <td className="px-3 py-2 whitespace-nowrap text-slate-700">
                       {tiket.no_booking || (
                         <span className="text-slate-400 italic">-</span>
                       )}
                     </td>
-
                     <td className="px-3 py-2 whitespace-nowrap text-slate-700">
                       {tiket.tgl_mulai_produksi
                         ? new Date(tiket.tgl_mulai_produksi).toLocaleDateString(
@@ -261,6 +258,11 @@ const JOHistory: React.FC = () => {
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [printJOId, setPrintJOId] = useState<number | null>(null);
 
+  // Loading state per-row for open label action
+  const [openLabelLoadingId, setOpenLabelLoadingId] = useState<number | null>(
+    null,
+  );
+
   // Expanded rows set
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
@@ -309,6 +311,38 @@ const JOHistory: React.FC = () => {
       setJOData([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ── Open Label ──────────────────────────────────────────────────────────────
+  const handleOpenLabel = async (item: JOData) => {
+    const action = item.is_open_label ? 'menutup' : 'membuka';
+    const endpoint = item.is_open_label ? 'closeLabel' : 'openLabel';
+
+    if (
+      !window.confirm(`Apakah Anda yakin ingin ${action} label untuk JO ini?`)
+    )
+      return;
+
+    setOpenLabelLoadingId(item.id);
+    try {
+      const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${endpoint}/${
+        item.id
+      }`;
+      await axios.put(url, {}, { withCredentials: true });
+      // Optimistically update local state so user sees immediate feedback
+      setJOData((prev) =>
+        prev.map((jo) =>
+          jo.id === item.id ? { ...jo, is_open_label: !jo.is_open_label } : jo,
+        ),
+      );
+    } catch (error: any) {
+      alert(
+        `Gagal ${action} label. Silakan coba lagi. Error: ` +
+          (error?.response?.data?.msg ?? error?.message ?? 'Unknown error'),
+      );
+    } finally {
+      setOpenLabelLoadingId(null);
     }
   };
 
@@ -645,7 +679,6 @@ const JOHistory: React.FC = () => {
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   NOMOR
                 </th>
-
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   CUSTOMER
                 </th>
@@ -667,7 +700,10 @@ const JOHistory: React.FC = () => {
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   STATUS PROSES
                 </th>
-                {/* New expand column */}
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  LABEL
+                </th>
+                {/* Expand column */}
                 <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                   TIKET
                 </th>
@@ -701,6 +737,7 @@ const JOHistory: React.FC = () => {
                   const isJadwalBlocked = jadwalBlockReasons.length > 0;
                   const isExpanded = expandedRows.has(item.id);
                   const tiketCount = item.tiket_jadwal_produksi?.length ?? 0;
+                  const isOpenLabelLoading = openLabelLoadingId === item.id;
 
                   return (
                     <React.Fragment key={item.id}>
@@ -713,6 +750,8 @@ const JOHistory: React.FC = () => {
                         <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
                           {(page - 1) * limit + index + 1}
                         </td>
+
+                        {/* ── Action buttons ── */}
                         <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
                           <div className="flex flex-col gap-1">
                             <button
@@ -761,16 +800,64 @@ const JOHistory: React.FC = () => {
                             >
                               PRINT
                             </button>
+
+                            {/* ── Open / Close Label button ── */}
+                            <button
+                              onClick={() => handleOpenLabel(item)}
+                              disabled={isOpenLabelLoading}
+                              className={`px-3 py-1 rounded text-xs font-medium transition-colors text-white ${
+                                isOpenLabelLoading
+                                  ? 'bg-gray-300 cursor-not-allowed'
+                                  : item.is_open_label
+                                  ? 'bg-red-500 hover:bg-red-600'
+                                  : 'bg-teal-500 hover:bg-teal-600'
+                              }`}
+                              title={
+                                item.is_open_label
+                                  ? 'Tutup Label'
+                                  : 'Buka Label'
+                              }
+                            >
+                              {isOpenLabelLoading ? (
+                                <span className="flex items-center justify-center gap-1">
+                                  <svg
+                                    className="animate-spin w-3 h-3"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    />
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8v8H4z"
+                                    />
+                                  </svg>
+                                  ...
+                                </span>
+                              ) : item.is_open_label ? (
+                                'CLOSE LABEL'
+                              ) : (
+                                'OPEN LABEL'
+                              )}
+                            </button>
                           </div>
                         </td>
+
                         <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900 justify-between flex flex-col gap-1">
-                          <div className="max-w-xs " title={item.no_jo}>
+                          <div className="max-w-xs" title={item.no_jo}>
                             {truncateText(item.no_jo, 30)}
                           </div>
-                          <div className="max-w-xs " title={item.no_so}>
+                          <div className="max-w-xs" title={item.no_so}>
                             {truncateText(item.no_so, 30)}
                           </div>
-                          <div className="max-w-xs " title={item.no_io}>
+                          <div className="max-w-xs" title={item.no_io}>
                             {truncateText(item.no_io, 30)}
                           </div>
                         </td>
@@ -819,6 +906,27 @@ const JOHistory: React.FC = () => {
                           </span>
                         </td>
 
+                        {/* ── is_open_label status badge ── */}
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full ${
+                              item.is_open_label
+                                ? 'bg-teal-100 text-teal-800'
+                                : 'bg-gray-100 text-gray-500'
+                            }`}
+                          >
+                            {/* Dot indicator */}
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                item.is_open_label
+                                  ? 'bg-teal-500'
+                                  : 'bg-gray-400'
+                              }`}
+                            />
+                            {item.is_open_label ? 'Open' : 'Closed'}
+                          </span>
+                        </td>
+
                         {/* ── Expand / Collapse button ── */}
                         <td className="px-3 py-3 whitespace-nowrap text-center">
                           <button
@@ -834,7 +942,6 @@ const JOHistory: React.FC = () => {
                                 : 'bg-white border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-500'
                             }`}
                           >
-                            {/* Chevron icon — rotates when expanded */}
                             <svg
                               className={`w-3.5 h-3.5 transition-transform duration-200 ${
                                 isExpanded ? 'rotate-180' : ''
