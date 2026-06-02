@@ -298,8 +298,9 @@ const buildPrintHTML = (
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const PrintLabel: React.FC = () => {
+const PrintLabelJO: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const [closingLabel, setClosingLabel] = useState(false);
   const [joList, setJoList] = useState<JOData[]>([]);
   const [selectedJO, setSelectedJO] = useState<JOData | null>(null);
 
@@ -341,10 +342,12 @@ const PrintLabel: React.FC = () => {
   const fetchJOList = useCallback(async () => {
     setLoading(true);
     try {
+      // Only fetch JOs where is_open_label = true
       const res = await axios.get(`${API_BASE}/ppic/jo`, {
-        params: { status_proses: 'done' },
+        params: { is_open_label: true },
         withCredentials: true,
       });
+      console.log('Fetched JO List:', res.data.data);
       setJoList(res.data.data || []);
     } catch {
       toast.error('Gagal mengambil data JO');
@@ -415,8 +418,39 @@ const PrintLabel: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // ── Close label after printing ──────────────────────────────────────────────
+  const closeLabelAfterPrint = useCallback(async (joId: number) => {
+    setClosingLabel(true);
+    try {
+      await axios.put(
+        `${API_BASE}/ppic/jo/closeLabel/${joId}`,
+        {},
+        { withCredentials: true },
+      );
+      toast.success('Label berhasil ditutup');
+      // Remove this JO from the list and reset form
+      setJoList((prev) => prev.filter((jo) => jo.id !== joId));
+      setSelectedJO(null);
+      setFormData((prev) => ({
+        ...prev,
+        no_jo: '',
+        no_io: '',
+        customer: '',
+        produk: '',
+        qty_po: '',
+      }));
+    } catch (error: any) {
+      toast.error(
+        'Gagal menutup label: ' +
+          (error?.response?.data?.msg ?? error?.message ?? 'Unknown error'),
+      );
+    } finally {
+      setClosingLabel(false);
+    }
+  }, []);
+
   const handlePrint = () => {
-    if (!formData.no_jo) {
+    if (!formData.no_jo || !selectedJO) {
       toast.error('Pilih Nomor JO terlebih dahulu');
       return;
     }
@@ -429,6 +463,8 @@ const PrintLabel: React.FC = () => {
       logoBase64 || LogoSrc,
       angkaDari,
     );
+
+    const joId = selectedJO.id;
 
     const iframe = document.createElement('iframe');
     iframe.style.cssText =
@@ -454,6 +490,8 @@ const PrintLabel: React.FC = () => {
         setTimeout(() => {
           document.body.removeChild(iframe);
           window.focus();
+          // Close label after printing
+          closeLabelAfterPrint(joId);
         }, 1000);
       }
     };
@@ -491,7 +529,7 @@ const PrintLabel: React.FC = () => {
               }
               onChange={handleJOSelect}
               styles={selectStyles}
-              placeholder="Pilih Data"
+              placeholder="Pilih Data (Open Label)"
               isDisabled={loading}
               isClearable
               isSearchable
@@ -501,6 +539,22 @@ const PrintLabel: React.FC = () => {
                 SingleValue: JOSingleValue,
               }}
             />
+            {!loading && joList.length === 0 && (
+              <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                <svg
+                  className="w-3 h-3"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Tidak ada JO dengan label terbuka
+              </p>
+            )}
           </div>
           <div>
             <FL>Nomor IO</FL>
@@ -635,33 +689,82 @@ const PrintLabel: React.FC = () => {
         </div>
 
         {/* Print Button */}
-        <button
-          onClick={handlePrint}
-          disabled={!formData.no_jo || loading}
-          className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm shadow-sm"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handlePrint}
+            disabled={!formData.no_jo || loading || closingLabel}
+            className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm shadow-sm"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-            />
-          </svg>
-          + Print Label
-        </button>
+            {closingLabel ? (
+              <>
+                <svg
+                  className="animate-spin w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                Menutup Label...
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                  />
+                </svg>
+                + Print Label
+              </>
+            )}
+          </button>
+
+          {/* Info note */}
+          {formData.no_jo && (
+            <p className="text-xs text-gray-500 flex items-center gap-1">
+              <svg
+                className="w-3.5 h-3.5 text-amber-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Label akan otomatis ditutup setelah print
+            </p>
+          )}
+        </div>
       </div>
 
-      {loading && (
+      {(loading || closingLabel) && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white p-5 rounded-xl shadow-xl flex flex-col items-center gap-3">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
-            <p className="text-sm text-gray-600 font-medium">Memuat data...</p>
+            <p className="text-sm text-gray-600 font-medium">
+              {closingLabel ? 'Menutup label...' : 'Memuat data...'}
+            </p>
           </div>
         </div>
       )}
@@ -669,4 +772,4 @@ const PrintLabel: React.FC = () => {
   );
 };
 
-export default PrintLabel;
+export default PrintLabelJO;
