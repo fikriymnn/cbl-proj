@@ -91,7 +91,7 @@ const OKPPrintModal: React.FC<OKPPrintModalProps> = ({ okpId, onClose }) => {
       pekerjaanArray.push('DP');
     if (isChecked(data?.jenis_pekerjaan, 'Dummy Artwork'))
       pekerjaanArray.push('DA');
-    if (isChecked(data?.jenis_pekerjaan, 'Proof Digital'))
+    if (isChecked(data?.jenis_pekerjaan, 'Print Digital'))
       pekerjaanArray.push('PD');
     return pekerjaanArray.join(', ');
   };
