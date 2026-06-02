@@ -1057,11 +1057,37 @@ function SOMonitoring() {
         {dataRekap && (
           <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 mb-4">
             <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-1 text-xs sm:text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-1 text-xs sm:text-sm">
                 <div>
                   <span className="text-gray-500">Total Qty:</span>{' '}
                   <span className="font-bold text-gray-800">
                     {fmtQty(dataRekap.totalQtyKeseluruhan)} Pcs
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500">OTS:</span>{' '}
+                  <span className="font-bold text-blue-700">
+                    {fmtRp(dataRekap.ots)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Qty Terkirim:</span>{' '}
+                  <span className="font-bold text-green-600">
+                    {fmtQty(dataRekap.qtyTerkirim)} Pcs
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">Qty Close:</span>{' '}
+                  <span className="font-bold text-red-600">
+                    {fmtQty(dataRekap.qtyClose)} Pcs
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">Omset:</span>{' '}
+                  <span className="font-bold text-gray-800">
+                    {fmtRp(dataRekap.omset)}
                   </span>
                 </div>
                 <div>
@@ -1071,27 +1097,16 @@ function SOMonitoring() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Qty Terkirim:</span>{' '}
-                  <span className="font-bold text-green-600">
-                    {fmtQty(dataRekap.qtyTerkirim)} Pcs
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">OTS:</span>{' '}
-                  <span className="font-bold text-indigo-700">
-                    {fmtRp(dataRekap.ots)}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500">Omset:</span>{' '}
-                  <span className="font-bold text-gray-800">
-                    {fmtRp(dataRekap.omset)}
-                  </span>
-                </div>
-                <div>
                   <span className="text-gray-500">Realisasi:</span>{' '}
                   <span className="font-bold text-green-600">
                     {fmtRp(dataRekap.realisasi)}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">Omset Close:</span>{' '}
+                  <span className="font-bold text-red-600">
+                    {fmtRp(dataRekap.omsetClose)}
                   </span>
                 </div>
               </div>

@@ -152,6 +152,18 @@ const IconDollar = () => (
     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
   </svg>
 );
+const IconFilter = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </svg>
+);
 
 // ─── Status Badge ──────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }: { status: string }) => {
@@ -210,8 +222,7 @@ const Spinner = () => (
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const Toast = ({ msg, type }: { msg: string; type: 'success' | 'error' }) => (
   <div
-    className={`fixed top-5 right-5 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium
-    ${
+    className={`fixed top-5 right-5 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium ${
       type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-500 text-white'
     }`}
   >
@@ -220,7 +231,7 @@ const Toast = ({ msg, type }: { msg: string; type: 'success' | 'error' }) => (
   </div>
 );
 
-// ─── Add/Edit Item Form (for detail_payroll) ──────────────────────────────────
+// ─── Add/Edit Item Form ───────────────────────────────────────────────────────
 interface AddItemFormProps {
   idPayrollMingguan: number;
   onSuccess: () => void;
@@ -270,7 +281,6 @@ function AddItemForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Tipe toggle */}
       <div>
         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
           Tipe
@@ -289,13 +299,11 @@ function AddItemForm({
                   : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
               }`}
             >
-              {t === 'bayaran' ? '＋ Bayaran' : '－ Potongan'}
+              {t === 'bayaran' ? '＋ Pendapatan' : '－ Potongan'}
             </button>
           ))}
         </div>
       </div>
-
-      {/* Label */}
       <div>
         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
           Label / Keterangan
@@ -308,7 +316,6 @@ function AddItemForm({
           className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
-
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
@@ -338,11 +345,8 @@ function AddItemForm({
           />
         </div>
       </div>
-
-      {/* Total preview */}
       <div
-        className={`rounded-xl px-4 py-3 flex justify-between items-center border
-        ${
+        className={`rounded-xl px-4 py-3 flex justify-between items-center border ${
           form.tipe === 'bayaran'
             ? 'bg-emerald-50 border-emerald-200'
             : 'bg-red-50 border-red-200'
@@ -357,13 +361,11 @@ function AddItemForm({
           {form.tipe === 'potongan' ? '−' : '+'} Rp {formatInteger(total)}
         </span>
       </div>
-
       {err && (
         <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
           {err}
         </p>
       )}
-
       <div className="flex gap-2">
         <button
           type="button"
@@ -375,12 +377,11 @@ function AddItemForm({
         <button
           type="submit"
           disabled={loading}
-          className={`flex-1 flex items-center justify-center gap-2 text-white text-sm font-semibold py-2.5 rounded-xl transition disabled:opacity-60
-            ${
-              form.tipe === 'bayaran'
-                ? 'bg-emerald-600 hover:bg-emerald-700'
-                : 'bg-red-500 hover:bg-red-600'
-            }`}
+          className={`flex-1 flex items-center justify-center gap-2 text-white text-sm font-semibold py-2.5 rounded-xl transition disabled:opacity-60 ${
+            form.tipe === 'bayaran'
+              ? 'bg-emerald-600 hover:bg-emerald-700'
+              : 'bg-red-500 hover:bg-red-600'
+          }`}
         >
           {loading ? 'Menyimpan…' : 'Simpan'}
         </button>
@@ -391,8 +392,8 @@ function AddItemForm({
 
 // ─── Level 3: Employee Detail Modal ──────────────────────────────────────────
 interface EmployeeDetailModalProps {
-  employee: any; // one item from payroll_detail
-  periodeData: any; // parent period object (for periode_dari/sampai, status)
+  employee: any;
+  periodeData: any;
   onClose: () => void;
   onRefresh: () => void;
   showToast: (msg: string, type?: 'success' | 'error') => void;
@@ -406,20 +407,15 @@ function EmployeeDetailModal({
 }: EmployeeDetailModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [addItemOpen, setAddItemOpen] = useState(false);
-  // Own a local copy so we can update the detail list without closing the modal
   const [employeeData, setEmployeeData] = useState<any>(employee);
   const biodata = employeeData.karyawan?.biodata_karyawan?.[0];
   const isDraft = periodeData.status?.toLowerCase() === 'draft';
 
   async function refreshEmployee() {
-    // Re-fetch the period and pull out the updated employee record
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarMingguanPeriode`,
-        {
-          params: { page: 1, limit: 100 },
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
       const periods: any[] = res.data?.data ?? [];
       for (const p of periods) {
@@ -431,10 +427,9 @@ function EmployeeDetailModal({
           break;
         }
       }
-      // Also update the parent modal list in background
       onRefresh();
     } catch {
-      // silently fail — parent onRefresh is still called on success paths
+      /* silently fail */
     }
   }
 
@@ -474,7 +469,6 @@ function EmployeeDetailModal({
         onClick={onClose}
       />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-200 flex-shrink-0">
           <div>
             <h3 className="font-bold text-slate-800 text-base">
@@ -485,6 +479,18 @@ function EmployeeDetailModal({
               {biodata?.department?.nama_department ?? employee.nama_department}{' '}
               / {employee.nama_divisi}
             </p>
+            <div className="flex items-center gap-2 mt-1">
+              {employeeData.tipe_penggajian && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-200 capitalize">
+                  {employeeData.tipe_penggajian}
+                </span>
+              )}
+              {employeeData.tipe_karyawan && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 capitalize">
+                  {employeeData.tipe_karyawan}
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -495,7 +501,6 @@ function EmployeeDetailModal({
         </div>
 
         <div className="overflow-y-auto flex-1 p-6 space-y-5">
-          {/* Summary cards */}
           <div className="grid grid-cols-3 gap-3">
             {[
               {
@@ -522,8 +527,6 @@ function EmployeeDetailModal({
               </div>
             ))}
           </div>
-
-          {/* Info row */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
               <InfoRow
@@ -534,7 +537,7 @@ function EmployeeDetailModal({
               />
               <InfoRow
                 label="Tipe Penggajian"
-                value={employee.tipe_penggajian}
+                value={employee.tipe_penggajian ?? '—'}
               />
               <InfoRow
                 label="Yang Menyetujui"
@@ -556,10 +559,7 @@ function EmployeeDetailModal({
               />
             </div>
           </div>
-
-          {/* Detail payroll tables */}
           <div className="grid grid-cols-2 gap-4">
-            {/* PENDAPATAN */}
             <DetailTable
               title="Pendapatan"
               color="emerald"
@@ -567,7 +567,6 @@ function EmployeeDetailModal({
               canDelete={isDraft}
               onDelete={deleteDetail}
             />
-            {/* POTONGAN */}
             <DetailTable
               title="Potongan"
               color="red"
@@ -576,8 +575,6 @@ function EmployeeDetailModal({
               onDelete={deleteDetail}
             />
           </div>
-
-          {/* Add item button (only draft) */}
           {isDraft &&
             (addItemOpen ? (
               <div className="border border-slate-200 rounded-2xl p-5">
@@ -607,7 +604,7 @@ function EmployeeDetailModal({
                 onClick={() => setAddItemOpen(true)}
                 className="w-full flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 hover:border-blue-400 hover:bg-blue-50 text-slate-500 hover:text-blue-600 text-sm font-semibold py-3 rounded-xl transition-all"
               >
-                <IconPlus /> Tambah Bayaran / Potongan
+                <IconPlus /> Tambah Pendapatan / Potongan
               </button>
             ))}
         </div>
@@ -622,7 +619,6 @@ function EmployeeDetailModal({
   );
 }
 
-// Small helpers for EmployeeDetailModal
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -699,7 +695,7 @@ function DetailTable({
   );
 }
 
-// ─── Level 2: Period Detail Modal (employee list) ─────────────────────────────
+// ─── Level 2: Period Detail Modal ─────────────────────────────────────────────
 interface PeriodDetailModalProps {
   periode: any;
   onClose: () => void;
@@ -718,27 +714,44 @@ function PeriodDetailModal({
 }: PeriodDetailModalProps) {
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [search, setSearch] = useState('');
-  // Own a local copy of the period data so we can refresh it without closing the modal
   const [localPeriode, setLocalPeriode] = useState<any>(periode);
   const [isFetching, setIsFetching] = useState(false);
+
+  // ── Filters (moved from main page into modal) ──────────────────────────────
+  const [filterTipePenggajian, setFilterTipePenggajian] = useState('');
+  const [filterTipeKaryawan, setFilterTipeKaryawan] = useState('');
+
+  // Derive unique filter options from this period's employees
+  const tipePenggajianOptions: string[] = [
+    ...new Set(
+      (localPeriode.payroll_detail ?? [])
+        .map((d: any) => d.tipe_penggajian)
+        .filter(Boolean),
+    ),
+  ] as string[];
+
+  const tipeKaryawanOptions: string[] = [
+    ...new Set(
+      (localPeriode.payroll_detail ?? [])
+        .map((d: any) => d.tipe_karyawan)
+        .filter(Boolean),
+    ),
+  ] as string[];
+
+  const hasActiveFilter = filterTipePenggajian || filterTipeKaryawan;
 
   async function refreshLocalPeriode() {
     setIsFetching(true);
     try {
-      // Re-fetch the full list and find the matching period by id
       const res = await axios.get(
         `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarMingguanPeriode`,
-        {
-          params: { page: 1, limit: 100 },
-          withCredentials: true,
-        },
+        { withCredentials: true },
       );
       const fresh = (res.data?.data ?? []).find(
         (p: any) => p.id === localPeriode.id,
       );
       if (fresh) {
         setLocalPeriode(fresh);
-        // If an employee modal is open, sync it with fresh data too
         if (selectedEmployee) {
           const freshEmp = fresh.payroll_detail?.find(
             (e: any) => e.id === selectedEmployee.id,
@@ -746,7 +759,7 @@ function PeriodDetailModal({
           if (freshEmp) setSelectedEmployee(freshEmp);
         }
       }
-      onRefresh(); // also update the Level 1 list in the background
+      onRefresh();
     } catch {
       showToast('Gagal memperbarui data', 'error');
     } finally {
@@ -754,11 +767,17 @@ function PeriodDetailModal({
     }
   }
 
+  // Apply search + both filters to the employee list
   const filtered = (localPeriode.payroll_detail ?? []).filter((d: any) => {
     const name = d.karyawan?.name?.toLowerCase() ?? '';
     const nik = d.karyawan?.biodata_karyawan?.[0]?.nik ?? '';
     const q = search.toLowerCase();
-    return name.includes(q) || nik.includes(q);
+    const matchSearch = name.includes(q) || nik.includes(q);
+    const matchPenggajian =
+      !filterTipePenggajian || d.tipe_penggajian === filterTipePenggajian;
+    const matchKaryawan =
+      !filterTipeKaryawan || d.tipe_karyawan === filterTipeKaryawan;
+    return matchSearch && matchPenggajian && matchKaryawan;
   });
 
   const totalKaryawan = localPeriode.payroll_detail?.length ?? 0;
@@ -772,7 +791,7 @@ function PeriodDetailModal({
           className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-7xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -825,8 +844,9 @@ function PeriodDetailModal({
             </div>
           </div>
 
-          {/* Search */}
-          <div className="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50">
+          {/* Search + Filter bar (now inside the modal) */}
+          <div className="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50 space-y-2">
+            {/* Search */}
             <div className="relative max-w-sm">
               <svg
                 width="14"
@@ -848,6 +868,88 @@ function PeriodDetailModal({
                 className="pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl bg-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            {/* Filters */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Tipe Penggajian */}
+              {tipePenggajianOptions.length > 0 && (
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipePenggajian}
+                    onChange={(e) => setFilterTipePenggajian(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Penggajian</option>
+                    {tipePenggajianOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Tipe Karyawan */}
+              {tipeKaryawanOptions.length > 0 && (
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipeKaryawan}
+                    onChange={(e) => setFilterTipeKaryawan(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Karyawan</option>
+                    {tipeKaryawanOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Active filter badges */}
+              {filterTipePenggajian && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200">
+                  <span className="capitalize">{filterTipePenggajian}</span>
+                  <button
+                    onClick={() => setFilterTipePenggajian('')}
+                    className="hover:text-violet-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+              {filterTipeKaryawan && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">
+                  <span className="capitalize">{filterTipeKaryawan}</span>
+                  <button
+                    onClick={() => setFilterTipeKaryawan('')}
+                    className="hover:text-cyan-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+
+              {/* Reset */}
+              {hasActiveFilter && (
+                <button
+                  onClick={() => {
+                    setFilterTipePenggajian('');
+                    setFilterTipeKaryawan('');
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
+                >
+                  <IconX /> Reset Filter
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Employee table */}
@@ -855,33 +957,34 @@ function PeriodDetailModal({
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-slate-200 sticky top-0">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 w-8">
-                    #
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
-                    NIK
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
-                    Nama
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
-                    Department
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
-                    Divisi
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
-                    Total Upah
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
-                    Potongan
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
-                    Sub Total
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-slate-500">
-                    Aksi
-                  </th>
+                  {[
+                    '#',
+                    'NIK',
+                    'Nama',
+                    'Department',
+                    'Divisi',
+                    'Tipe Penggajian',
+                    'Tipe Karyawan',
+                    'Total Upah',
+                    'Potongan',
+                    'Sub Total',
+                    'Aksi',
+                  ].map((h, i) => (
+                    <th
+                      key={h}
+                      className={`px-4 py-3 text-xs font-bold text-slate-500 ${
+                        i === 0
+                          ? 'text-left w-8'
+                          : i >= 5 && i <= 7
+                          ? 'text-left'
+                          : i === 8
+                          ? 'text-left'
+                          : 'text-left'
+                      }`}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -910,6 +1013,12 @@ function PeriodDetailModal({
                       </td>
                       <td className="px-4 py-3 text-slate-400 text-xs">
                         {emp.nama_divisi ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 text-xs">
+                        {emp.tipe_penggajian ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 text-xs">
+                        {emp.tipe_karyawan ?? '—'}
                       </td>
                       <td className="px-4 py-3 text-right text-xs text-emerald-700 font-semibold">
                         Rp {formatInteger(emp.total_upah)}
@@ -949,7 +1058,7 @@ function PeriodDetailModal({
             </table>
           </div>
 
-          {/* Footer summary */}
+          {/* Footer */}
           <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between flex-shrink-0">
             <span className="text-xs text-slate-500">
               {filtered.length} dari {totalKaryawan} karyawan ditampilkan
@@ -964,7 +1073,6 @@ function PeriodDetailModal({
         </div>
       </div>
 
-      {/* Level 3 modal */}
       {selectedEmployee && (
         <EmployeeDetailModal
           employee={selectedEmployee}
@@ -978,7 +1086,7 @@ function PeriodDetailModal({
   );
 }
 
-// ─── Main Component (Level 1: Period List) ────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────────
 function PengajuanPayrollMinggu() {
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -1003,10 +1111,7 @@ function PengajuanPayrollMinggu() {
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarMingguanPeriode`,
-        {
-          params: { page, limit: 10 },
-          withCredentials: true,
-        },
+        { params: { page, limit: 10 }, withCredentials: true },
       );
       setPayWeek(res.data);
     } catch {
@@ -1029,7 +1134,6 @@ function PengajuanPayrollMinggu() {
       );
       showToast('Payroll berhasil diajukan!');
       fetchPayroll();
-      // Refresh selected periode if open
       setSelectedPeriode((prev: any) => (prev?.id === id ? null : prev));
     } catch {
       showToast('Gagal mengajukan', 'error');
@@ -1085,18 +1189,32 @@ function PengajuanPayrollMinggu() {
         </div>
       </div>
 
-      <div className="px-6 py-5  mx-auto">
+      <div className="px-6 py-5 mx-auto">
         {isLoading && <Spinner />}
 
         {!isLoading && periodeList.length > 0 && (
           <>
-            {/* Period cards */}
+            {/* Period cards — no filter bar here anymore */}
             <div className="space-y-3">
               {periodeList.map((periode: any, i: number) => {
                 const totalKaryawan = periode.payroll_detail?.length ?? 0;
                 const isDraft = periode.status?.toLowerCase() === 'draft';
                 const isIncomingPay =
                   periode.status?.toLowerCase() === 'incoming pay';
+                const tipePenggajianSet = [
+                  ...new Set(
+                    (periode.payroll_detail ?? [])
+                      .map((d: any) => d.tipe_penggajian)
+                      .filter(Boolean),
+                  ),
+                ] as string[];
+                const tipeKaryawanSet = [
+                  ...new Set(
+                    (periode.payroll_detail ?? [])
+                      .map((d: any) => d.tipe_karyawan)
+                      .filter(Boolean),
+                  ),
+                ] as string[];
 
                 return (
                   <div
@@ -1104,12 +1222,9 @@ function PengajuanPayrollMinggu() {
                     className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                   >
                     <div className="flex items-center gap-4 px-5 py-4">
-                      {/* Period number / index */}
                       <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {(page - 1) * 10 + i + 1}
                       </div>
-
-                      {/* Period info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-slate-800 text-sm">
@@ -1119,7 +1234,7 @@ function PengajuanPayrollMinggu() {
                           </span>
                           <StatusBadge status={periode.status} />
                         </div>
-                        <div className="flex items-center gap-3 mt-1">
+                        <div className="flex items-center gap-3 mt-1 flex-wrap">
                           <span className="text-xs text-slate-400 flex items-center gap-1">
                             <IconUsers /> {totalKaryawan} karyawan
                           </span>
@@ -1138,17 +1253,34 @@ function PengajuanPayrollMinggu() {
                             </>
                           )}
                         </div>
+                        {(tipePenggajianSet.length > 0 ||
+                          tipeKaryawanSet.length > 0) && (
+                          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                            {tipePenggajianSet.map((t) => (
+                              <span
+                                key={t}
+                                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-200 capitalize"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                            {tipeKaryawanSet.map((t) => (
+                              <span
+                                key={t}
+                                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 capitalize"
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-
-                      {/* Total */}
                       <div className="text-right flex-shrink-0">
                         <div className="text-xs text-slate-400">Total Gaji</div>
                         <div className="font-bold text-slate-800">
                           Rp {formatInteger(periode.total)}
                         </div>
                       </div>
-
-                      {/* Actions */}
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {isDraft && (
                           <button
@@ -1174,8 +1306,6 @@ function PengajuanPayrollMinggu() {
                         </button>
                       </div>
                     </div>
-
-                    {/* Mini progress bar per status */}
                     <div className="h-0.5 w-full bg-slate-100">
                       <div
                         className={`h-full transition-all ${
@@ -1229,7 +1359,6 @@ function PengajuanPayrollMinggu() {
           </>
         )}
 
-        {/* Empty state */}
         {!isLoading && periodeList.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-slate-400">
             <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-2xl">
@@ -1245,15 +1374,11 @@ function PengajuanPayrollMinggu() {
         )}
       </div>
 
-      {/* Level 2 modal */}
       {selectedPeriode && (
         <PeriodDetailModal
           periode={selectedPeriode}
           onClose={() => setSelectedPeriode(null)}
-          onRefresh={() => {
-            fetchPayroll();
-            // Re-sync the open periode from fresh data
-          }}
+          onRefresh={fetchPayroll}
           onPay={handlePay}
           onSubmit={handleSubmit}
           showToast={showToast}

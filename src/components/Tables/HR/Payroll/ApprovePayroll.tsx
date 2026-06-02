@@ -122,6 +122,18 @@ const IconReject = () => (
     <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
   </svg>
 );
+const IconFilter = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </svg>
+);
 
 // ─── Status Badge ──────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }: { status: string }) => {
@@ -186,8 +198,7 @@ const Spinner = () => (
 // ─── Toast ────────────────────────────────────────────────────────────────────
 const Toast = ({ msg, type }: { msg: string; type: 'success' | 'error' }) => (
   <div
-    className={`fixed top-5 right-5 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium
-    ${
+    className={`fixed top-5 right-5 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-sm font-medium ${
       type === 'success' ? 'bg-emerald-600 text-white' : 'bg-red-500 text-white'
     }`}
   >
@@ -328,7 +339,6 @@ function EmployeeDetailModal({
         onClick={onClose}
       />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-200 flex-shrink-0">
           <div>
             <h3 className="font-bold text-slate-800 text-base">
@@ -345,9 +355,7 @@ function EmployeeDetailModal({
             <IconX />
           </button>
         </div>
-
         <div className="overflow-y-auto flex-1 p-6 space-y-5">
-          {/* Summary cards */}
           <div className="grid grid-cols-3 gap-3">
             {[
               {
@@ -376,8 +384,6 @@ function EmployeeDetailModal({
               </div>
             ))}
           </div>
-
-          {/* Info rows */}
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
               <InfoRow
@@ -410,8 +416,6 @@ function EmployeeDetailModal({
               />
             </div>
           </div>
-
-          {/* Detail tables */}
           <div className="grid grid-cols-2 gap-4">
             <DetailTable
               title="Pendapatan"
@@ -443,14 +447,43 @@ function PeriodDetailModal({
 }: PeriodDetailModalProps) {
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [search, setSearch] = useState('');
+
+  // ── Filters (inside modal) ────────────────────────────────────────────────
+  const [filterTipePenggajian, setFilterTipePenggajian] = useState('');
+  const [filterTipeKaryawan, setFilterTipeKaryawan] = useState('');
+
+  const tipePenggajianOptions: string[] = [
+    ...new Set(
+      (periode.payroll_detail ?? [])
+        .map((d: any) => d.tipe_penggajian)
+        .filter(Boolean),
+    ),
+  ] as string[];
+
+  const tipeKaryawanOptions: string[] = [
+    ...new Set(
+      (periode.payroll_detail ?? [])
+        .map((d: any) => d.tipe_karyawan)
+        .filter(Boolean),
+    ),
+  ] as string[];
+
+  const hasActiveFilter = filterTipePenggajian || filterTipeKaryawan;
+
   const isIncomingApproved =
     periode.status?.toLowerCase() === 'incoming approved';
 
+  // Apply search + both filters
   const filtered = (periode.payroll_detail ?? []).filter((d: any) => {
     const name = d.karyawan?.name?.toLowerCase() ?? '';
     const nik = d.karyawan?.biodata_karyawan?.[0]?.nik ?? '';
     const q = search.toLowerCase();
-    return name.includes(q) || nik.includes(q);
+    const matchSearch = name.includes(q) || nik.includes(q);
+    const matchPenggajian =
+      !filterTipePenggajian || d.tipe_penggajian === filterTipePenggajian;
+    const matchKaryawan =
+      !filterTipeKaryawan || d.tipe_karyawan === filterTipeKaryawan;
+    return matchSearch && matchPenggajian && matchKaryawan;
   });
 
   const totalKaryawan = periode.payroll_detail?.length ?? 0;
@@ -462,7 +495,7 @@ function PeriodDetailModal({
           className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-7xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -512,8 +545,9 @@ function PeriodDetailModal({
             </div>
           </div>
 
-          {/* Search */}
-          <div className="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50">
+          {/* Search + Filter bar (inside modal) */}
+          <div className="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50 space-y-2">
+            {/* Search */}
             <div className="relative max-w-sm">
               <svg
                 width="14"
@@ -535,6 +569,81 @@ function PeriodDetailModal({
                 className="pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl bg-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+
+            {/* Filters */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {tipePenggajianOptions.length > 0 && (
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipePenggajian}
+                    onChange={(e) => setFilterTipePenggajian(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Penggajian</option>
+                    {tipePenggajianOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {tipeKaryawanOptions.length > 0 && (
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipeKaryawan}
+                    onChange={(e) => setFilterTipeKaryawan(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Karyawan</option>
+                    {tipeKaryawanOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {filterTipePenggajian && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200">
+                  <span className="capitalize">{filterTipePenggajian}</span>
+                  <button
+                    onClick={() => setFilterTipePenggajian('')}
+                    className="hover:text-violet-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+              {filterTipeKaryawan && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">
+                  <span className="capitalize">{filterTipeKaryawan}</span>
+                  <button
+                    onClick={() => setFilterTipeKaryawan('')}
+                    className="hover:text-cyan-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+              {hasActiveFilter && (
+                <button
+                  onClick={() => {
+                    setFilterTipePenggajian('');
+                    setFilterTipeKaryawan('');
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
+                >
+                  <IconX /> Reset Filter
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Employee table */}
@@ -547,6 +656,9 @@ function PeriodDetailModal({
                     'NIK',
                     'Nama',
                     'Department',
+                    'Divisi',
+                    'Tipe Penggajian',
+                    'Tipe Karyawan',
                     'Total Upah',
                     'Potongan',
                     'Sub Total',
@@ -557,10 +669,10 @@ function PeriodDetailModal({
                       className={`px-4 py-3 text-xs font-bold text-slate-500 ${
                         i === 0
                           ? 'text-left w-8'
-                          : i >= 4 && i <= 6
-                          ? 'text-right'
-                          : i === 7
-                          ? 'text-center'
+                          : i >= 5 && i <= 7
+                          ? 'text-left'
+                          : i === 8
+                          ? 'text-left'
                           : 'text-left'
                       }`}
                     >
@@ -590,6 +702,15 @@ function PeriodDetailModal({
                       </td>
                       <td className="px-4 py-3 text-slate-500 text-xs">
                         {bio?.department?.nama_department ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 text-xs">
+                        {emp.nama_divisi ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 text-xs">
+                        {emp.tipe_penggajian ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 text-xs">
+                        {emp.tipe_karyawan ?? '—'}
                       </td>
                       <td className="px-4 py-3 text-right text-xs text-emerald-700 font-semibold">
                         Rp {formatInteger(emp.sub_total_upah)}
@@ -770,19 +891,15 @@ function ApprovePayroll() {
                 const totalKaryawan = periode.payroll_detail?.length ?? 0;
                 const isIncomingApproved =
                   periode.status?.toLowerCase() === 'incoming approved';
-
                 return (
                   <div
                     key={periode.id ?? i}
                     className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
                   >
                     <div className="flex items-center gap-4 px-5 py-4">
-                      {/* Index */}
                       <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {(page - 1) * 10 + i + 1}
                       </div>
-
-                      {/* Period info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-slate-800 text-sm">
@@ -803,16 +920,12 @@ function ApprovePayroll() {
                           </span>
                         </div>
                       </div>
-
-                      {/* Total */}
                       <div className="text-right flex-shrink-0">
                         <div className="text-xs text-slate-400">Total Gaji</div>
                         <div className="font-bold text-slate-800">
                           Rp {formatInteger(periode.total)}
                         </div>
                       </div>
-
-                      {/* Actions */}
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {isIncomingApproved && (
                           <>
@@ -838,8 +951,6 @@ function ApprovePayroll() {
                         </button>
                       </div>
                     </div>
-
-                    {/* Status progress bar */}
                     <div className="h-0.5 w-full bg-slate-100">
                       <div
                         className={`h-full transition-all ${
@@ -860,7 +971,6 @@ function ApprovePayroll() {
               })}
             </div>
 
-            {/* Pagination */}
             {totalPage > 1 && (
               <div className="flex items-center justify-center gap-2 mt-6">
                 <button
@@ -895,7 +1005,6 @@ function ApprovePayroll() {
           </>
         )}
 
-        {/* Empty state */}
         {!isLoading && periodeList.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-slate-400">
             <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4 text-2xl">
@@ -909,7 +1018,6 @@ function ApprovePayroll() {
         )}
       </div>
 
-      {/* Level 2 modal */}
       {selectedPeriode && (
         <PeriodDetailModal
           periode={selectedPeriode}
@@ -920,7 +1028,6 @@ function ApprovePayroll() {
         />
       )}
 
-      {/* Reject reason modal */}
       {rejectTarget !== null && (
         <RejectModal
           onConfirm={handleRejectConfirm}

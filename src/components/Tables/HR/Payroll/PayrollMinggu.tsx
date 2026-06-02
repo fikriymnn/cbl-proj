@@ -145,6 +145,10 @@ function PayrollMinggu() {
   const [filteredData, setFilteredData] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('');
+  // ── NEW FILTERS ──
+  const [filterTipePenggajian, setFilterTipePenggajian] = useState('');
+  const [filterTipeKaryawan, setFilterTipeKaryawan] = useState('');
+  // ─────────────────
   const [openModal, setOpenModal] = useState<number | null>(null);
   const [showDetailAbsen, setShowDetailAbsen] = useState(false);
   const [showDetailRincian, setShowDetailRincian] = useState(false);
@@ -161,15 +165,35 @@ function PayrollMinggu() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // ── Derived lists ──────────────────────────────────────────────────────────
-  const departments = payWeek
-    ? [
+  // ── Derived option lists (unique values from data) ─────────────────────────
+  const departments: string[] = payWeek
+    ? ([
         ...new Set(
           (payWeek.detail as any[])
             .map((d) => d.summaryPayroll?.department)
             .filter(Boolean),
         ),
-      ]
+      ] as string[])
+    : [];
+
+  const tipePenggajianOptions: string[] = payWeek
+    ? ([
+        ...new Set(
+          (payWeek.detail as any[])
+            .map((d) => d.summaryPayroll?.tipe_penggajian)
+            .filter(Boolean),
+        ),
+      ] as string[])
+    : [];
+
+  const tipeKaryawanOptions: string[] = payWeek
+    ? ([
+        ...new Set(
+          (payWeek.detail as any[])
+            .map((d) => d.summaryPayroll?.tipe_karyawan)
+            .filter(Boolean),
+        ),
+      ] as string[])
     : [];
 
   useEffect(() => {
@@ -188,8 +212,22 @@ function PayrollMinggu() {
     }
     if (filterDept)
       list = list.filter((d) => d.summaryPayroll?.department === filterDept);
+    if (filterTipePenggajian)
+      list = list.filter(
+        (d) => d.summaryPayroll?.tipe_penggajian === filterTipePenggajian,
+      );
+    if (filterTipeKaryawan)
+      list = list.filter(
+        (d) => d.summaryPayroll?.tipe_karyawan === filterTipeKaryawan,
+      );
     setFilteredData(list);
-  }, [payWeek, searchQuery, filterDept]);
+  }, [
+    payWeek,
+    searchQuery,
+    filterDept,
+    filterTipePenggajian,
+    filterTipeKaryawan,
+  ]);
 
   // ── API calls ──────────────────────────────────────────────────────────────
   async function checkAndFetch() {
@@ -199,6 +237,11 @@ function PayrollMinggu() {
     }
     setPeriodStatus('checking');
     setIsLoading(true);
+    // Reset filters when loading new data
+    setFilterDept('');
+    setFilterTipePenggajian('');
+    setFilterTipeKaryawan('');
+    setSearchQuery('');
     try {
       await axios.get(
         `${import.meta.env.VITE_API_LINK}/hr/payroll/checkBayarMingguanPeriode`,
@@ -215,12 +258,12 @@ function PayrollMinggu() {
           withCredentials: true,
         },
       );
+      console.log(res.data);
       setPayWeek(res.data.data);
       showToast('Data payroll berhasil dimuat');
     } catch (err: any) {
       if (err.response?.status === 404) {
         setPeriodStatus('exists');
-
         showToast('Periode ini sudah pernah dibuat sebelumnya', 'error');
       } else {
         showToast('Gagal memuat data', 'error');
@@ -355,7 +398,7 @@ function PayrollMinggu() {
         {/* ── Results ── */}
         {!isLoading && payWeek && (
           <>
-            {/* Period info bar */}
+            {/* Period info bar + filters */}
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-2">
                 <IconCalendar />
@@ -368,8 +411,9 @@ function PayrollMinggu() {
                 </span>
               </div>
 
-              {/* Filters */}
+              {/* ── Filters ── */}
               <div className="flex items-center gap-2 flex-wrap">
+                {/* Search */}
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                     <IconSearch />
@@ -382,6 +426,8 @@ function PayrollMinggu() {
                     className="pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl bg-white w-48 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+
+                {/* Department */}
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                     <IconFilter />
@@ -392,13 +438,69 @@ function PayrollMinggu() {
                     className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Semua Department</option>
-                    {(departments as string[]).map((d) => (
+                    {departments.map((d) => (
                       <option key={d} value={d}>
                         {d}
                       </option>
                     ))}
                   </select>
                 </div>
+
+                {/* Tipe Penggajian — NEW */}
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipePenggajian}
+                    onChange={(e) => setFilterTipePenggajian(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Penggajian</option>
+                    {tipePenggajianOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Tipe Karyawan — NEW */}
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipeKaryawan}
+                    onChange={(e) => setFilterTipeKaryawan(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Karyawan</option>
+                    {tipeKaryawanOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Clear filters chip — shown when any filter is active */}
+                {(filterDept ||
+                  filterTipePenggajian ||
+                  filterTipeKaryawan ||
+                  searchQuery) && (
+                  <button
+                    onClick={() => {
+                      setFilterDept('');
+                      setFilterTipePenggajian('');
+                      setFilterTipeKaryawan('');
+                      setSearchQuery('');
+                    }}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
+                  >
+                    <IconX /> Reset Filter
+                  </button>
+                )}
               </div>
             </div>
 
@@ -422,6 +524,13 @@ function PayrollMinggu() {
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                         Divisi
+                      </th>
+                      {/* NEW columns */}
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Tipe Penggajian
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Tipe Karyawan
                       </th>
                       <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
                         Total Gaji
@@ -461,6 +570,25 @@ function PayrollMinggu() {
                         <td className="px-4 py-3 text-slate-500 text-xs">
                           {data.summaryPayroll?.divisi}
                         </td>
+                        {/* NEW cells */}
+                        <td className="px-4 py-3">
+                          {data.summaryPayroll?.tipe_penggajian ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-50 text-violet-700 border border-violet-200 capitalize">
+                              {data.summaryPayroll.tipe_penggajian}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300 text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {data.summaryPayroll?.tipe_karyawan ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 capitalize">
+                              {data.summaryPayroll.tipe_karyawan}
+                            </span>
+                          ) : (
+                            <span className="text-slate-300 text-xs">—</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-right">
                           <span className="font-semibold text-slate-800">
                             Rp {formatInteger(data.summaryPayroll?.sub_total)}
@@ -493,7 +621,7 @@ function PayrollMinggu() {
             {/* Sticky bottom summary */}
             <div className="mt-4 flex items-center justify-between bg-blue-700 rounded-2xl px-5 py-3 text-white">
               <span className="text-sm opacity-80">
-                {filteredData.length} karyawan •{' '}
+                {filteredData.length} karyawan ·{' '}
                 {convertTimeStampToDate(payWeek.periode_dari)} —{' '}
                 {convertTimeStampToDate(payWeek.periode_sampai)}
               </span>
@@ -547,6 +675,19 @@ function PayrollMinggu() {
                   {selectedEmployee.summaryPayroll?.department} /{' '}
                   {selectedEmployee.summaryPayroll?.divisi}
                 </p>
+                {/* NEW: show tipe badges in modal header */}
+                <div className="flex items-center gap-2 mt-1">
+                  {selectedEmployee.summaryPayroll?.tipe_penggajian && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-200 capitalize">
+                      {selectedEmployee.summaryPayroll.tipe_penggajian}
+                    </span>
+                  )}
+                  {selectedEmployee.summaryPayroll?.tipe_karyawan && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 capitalize">
+                      {selectedEmployee.summaryPayroll.tipe_karyawan}
+                    </span>
+                  )}
+                </div>
               </div>
               <button
                 onClick={() => setOpenModal(null)}
@@ -641,7 +782,6 @@ function PayrollMinggu() {
               {/* Rincian Payroll */}
               {showDetailRincian && (
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Rincian */}
                   {selectedEmployee.summaryPayroll?.rincian?.length > 0 && (
                     <DetailSection title="Rincian Payroll" color="blue">
                       {selectedEmployee.summaryPayroll.rincian.map(
@@ -655,7 +795,6 @@ function PayrollMinggu() {
                       )}
                     </DetailSection>
                   )}
-                  {/* Potongan */}
                   {selectedEmployee.summaryPayroll?.potongan?.length > 0 && (
                     <DetailSection title="Detail Potongan" color="red">
                       {selectedEmployee.summaryPayroll.potongan.map(
@@ -669,7 +808,6 @@ function PayrollMinggu() {
                       )}
                     </DetailSection>
                   )}
-                  {/* Potongan Terlambat */}
                   {selectedEmployee.summaryPayroll?.potongan_terlambat?.length >
                     0 && (
                     <DetailSection title="Potongan Terlambat" color="amber">
@@ -684,7 +822,6 @@ function PayrollMinggu() {
                       )}
                     </DetailSection>
                   )}
-                  {/* Upah Sakit */}
                   {selectedEmployee.summaryPayroll?.upahHarianSakit?.length >
                     0 && (
                     <DetailSection title="Upah Harian Sakit" color="emerald">
