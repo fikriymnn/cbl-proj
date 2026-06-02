@@ -386,6 +386,9 @@ const PrintLabelJO: React.FC = () => {
     (option: any) => {
       if (!option) {
         setSelectedJO(null);
+
+        setCopiesStr('1');
+
         setFormData((prev) => ({
           ...prev,
           no_jo: '',
@@ -393,11 +396,26 @@ const PrintLabelJO: React.FC = () => {
           customer: '',
           produk: '',
           qty_po: '',
+          qty_label: '',
+          keterangan_qty_label: '',
+          tanggal_produksi: '',
         }));
+
         return;
       }
       const jo = joList.find((j) => j.id === parseInt(option.value));
       if (!jo) return;
+      const qtyLabel = jo.jo_mounting?.[0]?.io_mounting?.isi_dalam_1_pack || 0;
+      const tanggalProduksi = jo.produksi_lkh_proses?.[0]?.waktu_mulai
+        ? new Date(jo.produksi_lkh_proses[0].waktu_mulai)
+            .toISOString()
+            .split('T')[0]
+        : '';
+
+      const jumlahCopies =
+        qtyLabel > 0 ? Math.ceil(Number(jo.po_qty) / qtyLabel) : 1;
+
+      setCopiesStr(String(jumlahCopies));
       setSelectedJO(jo);
       setFormData((prev) => ({
         ...prev,
@@ -406,6 +424,8 @@ const PrintLabelJO: React.FC = () => {
         customer: jo.customer,
         produk: jo.produk,
         qty_po: jo.po_qty,
+        qty_label: String(qtyLabel),
+        tanggal_produksi: tanggalProduksi,
       }));
     },
     [joList],
@@ -603,11 +623,10 @@ const PrintLabelJO: React.FC = () => {
           <div>
             <FL>Qty Label</FL>
             <input
-              type="number"
+              type="text"
               value={formData.qty_label}
-              onChange={(e) => handleChange('qty_label', e.target.value)}
-              className={manualInput}
-              placeholder="Masukkan qty label"
+              readOnly
+              className={readonlyInput}
             />
           </div>
           <div>
@@ -627,8 +646,8 @@ const PrintLabelJO: React.FC = () => {
             <input
               type="date"
               value={formData.tanggal_produksi}
-              onChange={(e) => handleChange('tanggal_produksi', e.target.value)}
-              className={manualInput}
+              readOnly
+              className={readonlyInput}
             />
           </div>
         </div>
@@ -658,15 +677,10 @@ const PrintLabelJO: React.FC = () => {
           <div>
             <FL>Jumlah Copies</FL>
             <input
-              type="number"
+              type="text"
               value={copiesStr}
-              min={1}
-              onChange={(e) => setCopiesStr(e.target.value)}
-              onBlur={(e) => {
-                const parsed = parseInt(e.target.value);
-                setCopiesStr(String(isNaN(parsed) || parsed < 1 ? 1 : parsed));
-              }}
-              className={manualInput}
+              readOnly
+              className={readonlyInput}
             />
           </div>
           <div>

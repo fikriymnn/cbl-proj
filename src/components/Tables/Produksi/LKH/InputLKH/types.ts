@@ -1,4 +1,5 @@
 export interface JOData {
+  produksi_lkh_proses: any;
   po_qty: any;
   spesifikasi: string;
   status_proses: string;
@@ -28,6 +29,12 @@ export interface JOMounting {
   ukuran_cetak_isi_2: number;
   ukuran_cetak_bagian_1: number;
   ukuran_cetak_bagian_2: number;
+  nama_mounting: string;
+  io_mounting: {
+    id: number;
+    nama_mounting: string;
+    isi_dalam_1_pack: number;
+  };
 }
 
 export interface TahapanData {
