@@ -805,7 +805,8 @@ function ApprovePayroll() {
         { params: { page, limit: 10 }, withCredentials: true },
       );
       setPayWeek(res.data);
-    } catch {
+    } catch (error) {
+      console.error(error);
       showToast('Gagal memuat data', 'error');
     } finally {
       setIsLoading(false);

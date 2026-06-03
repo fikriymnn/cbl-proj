@@ -1198,7 +1198,9 @@ function PengajuanPayrollMinggu() {
             <div className="space-y-3">
               {periodeList.map((periode: any, i: number) => {
                 const totalKaryawan = periode.payroll_detail?.length ?? 0;
-                const isDraft = periode.status?.toLowerCase() === 'draft';
+                const isDraft =
+                  periode.status?.toLowerCase() === 'draft' ||
+                  periode.status?.toLowerCase() === 'rejected';
                 const isIncomingPay =
                   periode.status?.toLowerCase() === 'incoming pay';
                 const tipePenggajianSet = [
