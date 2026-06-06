@@ -149,7 +149,13 @@ function ListJOProduksi() {
   );
   const [selectedTahapan, setSelectedTahapan] = useState<string | null>(null);
   const [selectedData, setSelectedData] = useState<JadwalPerJam | null>(null);
-
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelNote, setCancelNote] = useState('');
+  const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
+  const [pendingCancelJOInfo, setPendingCancelJOInfo] = useState<{
+    no_jo: string;
+    item: string;
+  } | null>(null);
   // Handle column sort toggle
   const handleSort = useCallback((key: SortKey) => {
     setSortConfig((prev) => {
@@ -313,27 +319,49 @@ function ListJOProduksi() {
     [API_BASE, fetchAPI, getJOList],
   );
 
-  const cancelJobOrder = useCallback(
-    async (id: string) => {
-      if (!window.confirm('Apakah Anda yakin ingin membatalkan Job Order ini?'))
-        return false;
-      const url = `${API_BASE}/ppic/jadwalProduksi/cancel/${id}`;
-      try {
-        setIsLoading(true);
-        const res = await axios.delete(url, { withCredentials: true });
-        await Promise.all([getInitialJadwalView(), getJOList()]);
-        setIsLoading(false);
-        alert('Job Order cancelled successfully!');
-        return res.data;
-      } catch (error: any) {
-        setIsLoading(false);
-        console.error('Error cancelling job order:', error);
-        alert('Failed to cancel job order. Please try again.');
-        throw error;
-      }
-    },
-    [API_BASE, getInitialJadwalView, getJOList],
-  );
+  // Step 1: open modal instead of window.confirm
+  const handleCancelClick = useCallback((jo: JOData) => {
+    setPendingCancelId(jo.id);
+    setPendingCancelJOInfo({ no_jo: jo.no_jo, item: jo.item });
+    setCancelNote('');
+    setCancelModalOpen(true);
+  }, []);
+
+  // Step 2: actual API call with body
+  const cancelJobOrder = useCallback(async () => {
+    if (!pendingCancelId) return;
+    if (!cancelNote.trim()) {
+      alert('Note cancel wajib diisi.');
+      return;
+    }
+
+    const url = `${API_BASE}/ppic/jadwalProduksi/cancel/${pendingCancelId}`;
+    try {
+      setIsLoading(true);
+      const tglCancel = new Date().toISOString().split('T')[0];
+
+      await axios.delete(url, {
+        data: {
+          note_cancel: cancelNote,
+          tgl_cancel: tglCancel,
+        },
+        withCredentials: true,
+      });
+
+      await Promise.all([getInitialJadwalView(), getJOList()]);
+      setIsLoading(false);
+
+      setCancelModalOpen(false);
+      setPendingCancelId(null);
+      setPendingCancelJOInfo(null);
+      setCancelNote('');
+      alert('Job Order cancelled successfully!');
+    } catch (error: any) {
+      setIsLoading(false);
+      console.error('Error cancelling job order:', error);
+      alert('Failed to cancel job order. Please try again.');
+    }
+  }, [API_BASE, pendingCancelId, cancelNote, getInitialJadwalView, getJOList]);
 
   const handleViewCalculation = useCallback(
     async (id: string, index: number) => {
@@ -729,7 +757,7 @@ function ListJOProduksi() {
                                 VIEW
                               </button>
                               <button
-                                onClick={() => cancelJobOrder(jo.id)}
+                                onClick={() => handleCancelClick(jo)}
                                 className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
                               >
                                 CANCEL
@@ -746,7 +774,7 @@ function ListJOProduksi() {
                                 CALCULATE
                               </button>
                               <button
-                                onClick={() => cancelJobOrder(jo.id)}
+                                onClick={() => handleCancelClick(jo)}
                                 className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
                               >
                                 CANCEL
@@ -1034,6 +1062,68 @@ function ListJOProduksi() {
           </div>
         </div>
       </div>
+      {/* Cancel confirmation modal */}
+      {cancelModalOpen && pendingCancelJOInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-base font-semibold">Cancel Job Order</h2>
+              <button
+                onClick={() => setCancelModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700 text-xl font-bold leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-4">
+              {/* Summary */}
+              <div className="bg-gray-50 rounded-md p-3 mb-4 text-sm">
+                <div className="grid grid-cols-2 gap-1">
+                  <span className="text-gray-500">No JO</span>
+                  <span className="font-medium">
+                    {pendingCancelJOInfo.no_jo}
+                  </span>
+                  <span className="text-gray-500">Item</span>
+                  <span>{pendingCancelJOInfo.item}</span>
+                  <span className="text-gray-500">Tgl cancel</span>
+                  <span>{new Date().toLocaleDateString('id-ID')}</span>
+                </div>
+              </div>
+
+              {/* Note textarea */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1 text-gray-700">
+                  Note cancel <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={cancelNote}
+                  onChange={(e) => setCancelNote(e.target.value)}
+                  placeholder="Masukkan alasan pembatalan..."
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-vertical"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setCancelModalOpen(false)}
+                  className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={cancelJobOrder}
+                  disabled={isLoading}
+                  className="px-4 py-2 text-sm rounded-md bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isLoading ? 'Loading...' : 'Konfirmasi cancel'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

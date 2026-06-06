@@ -33,7 +33,10 @@ function JOTerjadwalTable() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailVisible, setIsDetailVisible] = useState(false);
   const [listJO1, setJo1] = useState<any>();
-
+  // Add these states inside JOTerjadwalTable
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelNote, setCancelNote] = useState('');
+  const [pendingCancelJO, setPendingCancelJO] = useState<JobOrder | null>(null);
   // Load initial data when component mounts
   useEffect(() => {
     const loadInitialData = async () => {
@@ -62,52 +65,53 @@ function JOTerjadwalTable() {
     }
   }
 
-  // Handle cancel with confirmation
-  const handleCancelJobOrder = async (jobOrder: JobOrder) => {
-    const confirmMessage = `Apa anda yakin ingin membatalkan Job Order "${jobOrder.no_jo}" untuk item "${jobOrder.item}"?`;
-
-    if (window.confirm(confirmMessage)) {
-      await cancelJobOrder(jobOrder.id);
-    }
+  const handleCancelJobOrder = (jobOrder: JobOrder) => {
+    setPendingCancelJO(jobOrder);
+    setCancelNote('');
+    setCancelModalOpen(true);
   };
 
-  // New cancel function
-  async function cancelJobOrder(id: number) {
+  const handleConfirmCancel = async () => {
+    if (!pendingCancelJO) return;
+    if (!cancelNote.trim()) {
+      alert('Note cancel wajib diisi.');
+      return;
+    }
+    await cancelJobOrder(pendingCancelJO.id, cancelNote);
+    setCancelModalOpen(false);
+    setPendingCancelJO(null);
+    setCancelNote('');
+  };
+
+  async function cancelJobOrder(id: number, noteCancel: string) {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/ppic/jadwalProduksi/cancel/${id}`;
     try {
       setIsLoading(true);
 
-      const res = await axios.delete(
-        url,
+      const tglCancel = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
 
-        {
-          withCredentials: true,
+      const res = await axios.delete(url, {
+        data: {
+          note_cancel: noteCancel,
+          tgl_cancel: tglCancel,
         },
-      );
+        withCredentials: true,
+      });
 
-      console.log('Job Order cancelled successfully:', res.data);
-
-      // Refresh the data after successful cancellation
       await Promise.all([
         getmasterKategori('history'),
         getmasterKategori('penjadwalan'),
+        getmasterKategori('canceled'),
       ]);
 
       setIsLoading(false);
-
-      // Show success message
       alert('Job Order cancelled successfully!');
-
       return res.data;
     } catch (error: any) {
       setIsLoading(false);
-      console.error('Error cancelling job order:', error);
-
-      // Show error message
       alert('Failed to cancel job order. Please try again.');
-
       throw error;
     }
   }
@@ -209,6 +213,66 @@ function JOTerjadwalTable() {
           />
         </div>
       </div>
+      {/* Cancel confirmation modal */}
+      {cancelModalOpen && pendingCancelJO && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md mx-4">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-base font-semibold">Cancel Job Order</h2>
+              <button
+                onClick={() => setCancelModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700 text-xl font-bold leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-4">
+              {/* Job order summary */}
+              <div className="bg-gray-50 rounded-md p-3 mb-4 text-sm">
+                <div className="grid grid-cols-2 gap-1">
+                  <span className="text-gray-500">No JO</span>
+                  <span className="font-medium">{pendingCancelJO.no_jo}</span>
+                  <span className="text-gray-500">Item</span>
+                  <span>{pendingCancelJO.item}</span>
+                  <span className="text-gray-500">Tgl cancel</span>
+                  <span>{new Date().toLocaleDateString('id-ID')}</span>
+                </div>
+              </div>
+
+              {/* Note textarea */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1 text-gray-700">
+                  Note cancel <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={cancelNote}
+                  onChange={(e) => setCancelNote(e.target.value)}
+                  placeholder="Masukkan alasan pembatalan..."
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-vertical"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setCancelModalOpen(false)}
+                  className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleConfirmCancel}
+                  disabled={isLoading}
+                  className="px-4 py-2 text-sm rounded-md bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-50"
+                >
+                  {isLoading ? 'Loading...' : 'Konfirmasi cancel'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

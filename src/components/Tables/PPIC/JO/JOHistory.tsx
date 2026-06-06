@@ -82,7 +82,24 @@ interface APIResponse<T> {
   total_page?: number;
   message?: string;
 }
+// Add to interfaces
+interface CanceledJO {
+  id: number;
+  no_jo: string;
+  no_io: string;
+  item: string;
+  qty_druk: number;
+  qty_pcs: number;
+  tgl_kirim: string;
+  note_cancel: string;
+  tgl_cancel: string;
+  status_tiket: string;
+}
 
+interface CanceledJOResponse {
+  data: CanceledJO[];
+  total_page: number;
+}
 // ─── Helper: Tiket Status Badge ───────────────────────────────────────────────
 
 const getTiketStatusColor = (status: string): string => {
@@ -280,6 +297,20 @@ const JOHistory: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
 
+  // Add inside JOHistory component, alongside existing states
+  const [showCanceledModal, setShowCanceledModal] = useState(false);
+  const [canceledJOData, setCanceledJOData] = useState<CanceledJO[]>([]);
+  const [canceledLoading, setCanceledLoading] = useState(false);
+  const [canceledPage, setCanceledPage] = useState(1);
+  const [canceledLimit, setCanceledLimit] = useState(10);
+  const [canceledTotalPages, setCanceledTotalPages] = useState(1);
+  const [canceledSearch, setCanceledSearch] = useState('');
+  const [canceledSearchInput, setCanceledSearchInput] = useState('');
+  const [canceledStartDateInput, setCanceledStartDateInput] = useState('');
+  const [canceledEndDateInput, setCanceledEndDateInput] = useState('');
+  const [canceledStartDate, setCanceledStartDate] = useState('');
+  const [canceledEndDate, setCanceledEndDate] = useState('');
+
   useEffect(() => {
     fetchJOData();
   }, [page, limit, searchTerm, startDate, endDate, sortOrder]);
@@ -313,7 +344,55 @@ const JOHistory: React.FC = () => {
       setLoading(false);
     }
   };
+  const fetchCanceledJO = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi`;
+    try {
+      setCanceledLoading(true);
+      const res = await axios.get(url, {
+        params: {
+          status_tiket: 'canceled',
+          page: canceledPage,
+          limit: canceledLimit,
+          search: canceledSearch || undefined,
+          start_date: canceledStartDate || undefined,
+          end_date: canceledEndDate || undefined,
+        },
+        withCredentials: true,
+      });
 
+      const raw = res.data;
+      // normalize same as getmasterKategori pattern
+      let normalized: CanceledJOResponse;
+      if (Array.isArray(raw)) {
+        normalized = { data: raw, total_page: 1 };
+      } else if (raw?.data) {
+        normalized = { data: raw.data, total_page: raw.total_page ?? 1 };
+      } else {
+        normalized = { data: [], total_page: 1 };
+      }
+
+      setCanceledJOData(normalized.data);
+      setCanceledTotalPages(normalized.total_page);
+    } catch (error) {
+      console.error('Error fetching canceled JO:', error);
+      setCanceledJOData([]);
+    } finally {
+      setCanceledLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showCanceledModal) {
+      fetchCanceledJO();
+    }
+  }, [
+    showCanceledModal,
+    canceledPage,
+    canceledLimit,
+    canceledSearch,
+    canceledStartDate,
+    canceledEndDate,
+  ]);
   // ── Open Label ──────────────────────────────────────────────────────────────
   const handleOpenLabel = async (item: JOData) => {
     const action = item.is_open_label ? 'menutup' : 'membuka';
@@ -645,7 +724,31 @@ const JOHistory: React.FC = () => {
             </div>
           </div>
         </div>
-
+        {/* ── Canceled JO trigger button ── */}
+        <div className="flex  mb-4 mt-4">
+          <button
+            onClick={() => {
+              setShowCanceledModal(true);
+              setCanceledPage(1);
+            }}
+            className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+              />
+            </svg>
+            Canceled JO
+          </button>
+        </div>
         {/* Active filter badges */}
         {isDateFilterActive && (
           <div className="mt-2 flex items-center gap-2 flex-wrap">
@@ -1035,6 +1138,291 @@ const JOHistory: React.FC = () => {
           setPrintJOId(null);
         }}
       />
+      {/* ── Canceled JO Modal ── */}
+      {showCanceledModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 pt-8 px-4">
+          <div className="bg-white rounded-xl w-full max-w-6xl max-h-[90vh] flex flex-col shadow-2xl">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-red-500 inline-block" />
+                <h2 className="text-base font-semibold text-gray-900">
+                  Daftar Job Order Canceled
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowCanceledModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold leading-none transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Filters inside modal */}
+            <div className="px-6 py-4 border-b border-gray-100 flex-shrink-0 bg-gray-50">
+              <div className="flex flex-wrap gap-3 items-end">
+                {/* Search */}
+                <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
+                  <label className="text-xs font-medium text-gray-600">
+                    Pencarian
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={canceledSearchInput}
+                      onChange={(e) => setCanceledSearchInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          setCanceledSearch(canceledSearchInput);
+                          setCanceledPage(1);
+                        }
+                      }}
+                      placeholder="Cari No JO, Item..."
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    <button
+                      onClick={() => {
+                        setCanceledSearch(canceledSearchInput);
+                        setCanceledPage(1);
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                    >
+                      Cari
+                    </button>
+                    {canceledSearch && (
+                      <button
+                        onClick={() => {
+                          setCanceledSearchInput('');
+                          setCanceledSearch('');
+                          setCanceledPage(1);
+                        }}
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm transition-colors"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Date range */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-gray-600">
+                    Tgl Cancel Mulai
+                  </label>
+                  <input
+                    type="date"
+                    value={canceledStartDateInput}
+                    onChange={(e) => setCanceledStartDateInput(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-medium text-gray-600">
+                    Tgl Cancel Akhir
+                  </label>
+                  <input
+                    type="date"
+                    value={canceledEndDateInput}
+                    min={canceledStartDateInput || undefined}
+                    onChange={(e) => setCanceledEndDateInput(e.target.value)}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                  />
+                </div>
+                <div className="flex gap-2 self-end">
+                  <button
+                    onClick={() => {
+                      setCanceledStartDate(canceledStartDateInput);
+                      setCanceledEndDate(canceledEndDateInput);
+                      setCanceledPage(1);
+                    }}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Apply
+                  </button>
+                  {(canceledStartDate || canceledEndDate) && (
+                    <button
+                      onClick={() => {
+                        setCanceledStartDateInput('');
+                        setCanceledEndDateInput('');
+                        setCanceledStartDate('');
+                        setCanceledEndDate('');
+                        setCanceledPage(1);
+                      }}
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors border border-gray-300"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="flex-1 overflow-auto">
+              <table className="min-w-full text-xs">
+                <thead className="bg-red-600 text-white sticky top-0 z-10">
+                  <tr>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap">
+                      No
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap">
+                      No JO
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap">
+                      No IO
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap">
+                      Item
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap">
+                      Qty Druk
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap">
+                      Qty PCS
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap">
+                      Tgl Kirim
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap">
+                      Tgl Cancel
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider whitespace-nowrap min-w-[200px]">
+                      Note Cancel
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {canceledLoading ? (
+                    <tr>
+                      <td colSpan={9} className="px-3 py-10 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-red-500" />
+                          <span className="text-sm text-gray-500">
+                            Memuat data...
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : canceledJOData.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-3 py-10 text-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <svg
+                            className="w-10 h-10 text-gray-300"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                          <p className="text-sm text-gray-400">
+                            Tidak ada data canceled
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    canceledJOData.map((jo, index) => (
+                      <tr
+                        key={jo.id}
+                        className={`hover:bg-red-50 transition-colors ${
+                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                        }`}
+                      >
+                        <td className="px-3 py-3 whitespace-nowrap text-gray-500">
+                          {(canceledPage - 1) * canceledLimit + index + 1}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap font-medium text-gray-900">
+                          {jo.no_jo || '-'}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-gray-700">
+                          {jo.no_io || '-'}
+                        </td>
+                        <td className="px-3 py-3 text-gray-700">
+                          {jo.item || '-'}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-gray-700 font-mono">
+                          {jo.qty_druk?.toLocaleString() || '0'}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-gray-700 font-mono">
+                          {jo.qty_pcs?.toLocaleString() || '0'}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap text-gray-700">
+                          {jo.tgl_kirim ? formatDate(jo.tgl_kirim) : '-'}
+                        </td>
+                        <td className="px-3 py-3 whitespace-nowrap">
+                          {jo.tgl_cancel ? (
+                            <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 text-xs px-2 py-1 rounded-full border border-red-200 font-medium">
+                              {formatDate(jo.tgl_cancel)}
+                            </span>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+                        <td className="px-3 py-3 text-gray-700">
+                          {jo.note_cancel ? (
+                            <span className="inline-block bg-yellow-50 border border-yellow-200 text-yellow-800 text-xs rounded-md px-2 py-1 max-w-xs break-words">
+                              {jo.note_cancel}
+                            </span>
+                          ) : (
+                            <span className="text-gray-300 italic">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal pagination */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">Rows per page:</span>
+                <div className="flex gap-1">
+                  {[10, 25, 50].map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => {
+                        setCanceledLimit(size);
+                        setCanceledPage(1);
+                      }}
+                      className={`px-2.5 py-1 text-xs rounded transition-colors ${
+                        canceledLimit === size
+                          ? 'bg-red-500 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-xs text-gray-400 ml-2">
+                  {canceledJOData.length > 0 &&
+                    `${(canceledPage - 1) * canceledLimit + 1}–${Math.min(
+                      canceledPage * canceledLimit,
+                      canceledTotalPages * canceledLimit,
+                    )} data`}
+                </span>
+              </div>
+              <Stack spacing={2}>
+                <Pagination
+                  count={canceledTotalPages}
+                  page={canceledPage}
+                  color="primary"
+                  size="small"
+                  onChange={(_, i) => setCanceledPage(i)}
+                />
+              </Stack>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
