@@ -162,48 +162,86 @@ const TahapanPopup: React.FC<TahapanPopupProps> = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white">
-                  {tahapanData?.map((tahapan, idx) => {
-                    const missingFields = getMissingFields(tahapan.id);
-                    const hasIssue = missingFields.length > 0;
-                    const missingDrying = missingFields.includes('Drying Time');
-                    const missingKapasitas =
-                      missingFields.includes('Setting Kapasitas');
+                  {tahapanData
+                    ?.slice()
+                    .sort((a, b) => a.index - b.index)
+                    .map((tahapan, idx) => {
+                      const missingFields = getMissingFields(tahapan.id);
+                      const hasIssue = missingFields.length > 0;
+                      const missingDrying =
+                        missingFields.includes('Drying Time');
+                      const missingKapasitas =
+                        missingFields.includes('Setting Kapasitas');
 
-                    return (
-                      <tr
-                        key={tahapan.id}
-                        className={
-                          hasIssue
-                            ? 'bg-red-50 border-l-4 border-l-red-500'
-                            : idx % 2 === 0
-                            ? 'bg-gray-50'
-                            : 'bg-white'
-                        }
-                      >
-                        {/* Index */}
-                        <td className="px-4 py-3 border border-gray-300 text-center">
-                          <div
-                            className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm text-white ${
-                              hasIssue ? 'bg-red-500' : 'bg-purple-600'
+                      return (
+                        <tr
+                          key={tahapan.id}
+                          className={
+                            hasIssue
+                              ? 'bg-red-50 border-l-4 border-l-red-500'
+                              : idx % 2 === 0
+                              ? 'bg-gray-50'
+                              : 'bg-white'
+                          }
+                        >
+                          {/* Index */}
+                          <td className="px-4 py-3 border border-gray-300 text-center">
+                            <div
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm text-white ${
+                                hasIssue ? 'bg-red-500' : 'bg-purple-600'
+                              }`}
+                            >
+                              {tahapan.index}
+                            </div>
+                          </td>
+
+                          {/* Nama Proses */}
+                          <td className="px-4 py-3 border border-gray-300 font-medium text-gray-800">
+                            <div className="flex items-center gap-2">
+                              {tahapan.nama_proses}
+                              {hasIssue && (
+                                <span
+                                  title={`Belum diset: ${missingFields.join(
+                                    ', ',
+                                  )}`}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded"
+                                >
+                                  <svg
+                                    className="w-3 h-3"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                                    />
+                                  </svg>
+                                  Belum lengkap
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Mesin */}
+                          <td className="px-4 py-3 border border-gray-300">
+                            <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
+                              {tahapan.nama_mesin}
+                            </span>
+                          </td>
+
+                          {/* Drying Time */}
+                          <td
+                            className={`px-4 py-3 border border-gray-300 ${
+                              missingDrying ? 'bg-red-100' : ''
                             }`}
                           >
-                            {tahapan.index}
-                          </div>
-                        </td>
-
-                        {/* Nama Proses */}
-                        <td className="px-4 py-3 border border-gray-300 font-medium text-gray-800">
-                          <div className="flex items-center gap-2">
-                            {tahapan.nama_proses}
-                            {hasIssue && (
-                              <span
-                                title={`Belum diset: ${missingFields.join(
-                                  ', ',
-                                )}`}
-                                className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded"
-                              >
+                            {missingDrying ? (
+                              <div className="flex items-center gap-1.5">
                                 <svg
-                                  className="w-3 h-3"
+                                  className="w-4 h-4 text-red-500 flex-shrink-0"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -212,98 +250,64 @@ const TahapanPopup: React.FC<TahapanPopupProps> = ({
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth={2}
-                                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
                                   />
                                 </svg>
-                                Belum lengkap
-                              </span>
+                                <span className="text-red-600 font-semibold text-xs">
+                                  Belum diset
+                                </span>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="text-gray-800 font-medium">
+                                  {tahapan.nama_drying_time}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Value: {tahapan.value_drying_time}
+                                </div>
+                              </>
                             )}
-                          </div>
-                        </td>
+                          </td>
 
-                        {/* Mesin */}
-                        <td className="px-4 py-3 border border-gray-300">
-                          <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
-                            {tahapan.nama_mesin}
-                          </span>
-                        </td>
-
-                        {/* Drying Time */}
-                        <td
-                          className={`px-4 py-3 border border-gray-300 ${
-                            missingDrying ? 'bg-red-100' : ''
-                          }`}
-                        >
-                          {missingDrying ? (
-                            <div className="flex items-center gap-1.5">
-                              <svg
-                                className="w-4 h-4 text-red-500 flex-shrink-0"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                                />
-                              </svg>
-                              <span className="text-red-600 font-semibold text-xs">
-                                Belum diset
-                              </span>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="text-gray-800 font-medium">
-                                {tahapan.nama_drying_time}
+                          {/* Setting Kapasitas */}
+                          <td
+                            className={`px-4 py-3 border border-gray-300 ${
+                              missingKapasitas ? 'bg-red-100' : ''
+                            }`}
+                          >
+                            {missingKapasitas ? (
+                              <div className="flex items-center gap-1.5">
+                                <svg
+                                  className="w-4 h-4 text-red-500 flex-shrink-0"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                                  />
+                                </svg>
+                                <span className="text-red-600 font-semibold text-xs">
+                                  Belum diset
+                                </span>
                               </div>
-                              <div className="text-xs text-gray-500">
-                                Value: {tahapan.value_drying_time}
-                              </div>
-                            </>
-                          )}
-                        </td>
-
-                        {/* Setting Kapasitas */}
-                        <td
-                          className={`px-4 py-3 border border-gray-300 ${
-                            missingKapasitas ? 'bg-red-100' : ''
-                          }`}
-                        >
-                          {missingKapasitas ? (
-                            <div className="flex items-center gap-1.5">
-                              <svg
-                                className="w-4 h-4 text-red-500 flex-shrink-0"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                                />
-                              </svg>
-                              <span className="text-red-600 font-semibold text-xs">
-                                Belum diset
-                              </span>
-                            </div>
-                          ) : (
-                            <>
-                              <div className="text-gray-800 font-medium">
-                                {tahapan.nama_setting_kapasitas}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Value: {tahapan.value_setting_kapasitas}
-                              </div>
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                            ) : (
+                              <>
+                                <div className="text-gray-800 font-medium">
+                                  {tahapan.nama_setting_kapasitas}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Value: {tahapan.value_setting_kapasitas}
+                                </div>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
