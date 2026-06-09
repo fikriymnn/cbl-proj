@@ -344,7 +344,7 @@ const PrintLabelJO: React.FC = () => {
     try {
       // Only fetch JOs where is_open_label = true
       const res = await axios.get(`${API_BASE}/ppic/jo`, {
-        params: { is_open_label: true },
+        params: { is_open_label: true, is_get_label: true },
         withCredentials: true,
       });
       console.log('Fetched JO List:', res.data.data);
@@ -408,6 +408,10 @@ const PrintLabelJO: React.FC = () => {
       const qtyLabel = jo.jo_mounting?.[0]?.io_mounting?.isi_dalam_1_pack || 0;
       const tanggalProduksi = jo.produksi_lkh_proses?.[0]?.waktu_mulai
         ? new Date(jo.produksi_lkh_proses[0].waktu_mulai)
+            .toISOString()
+            .split('T')[0]
+        : jo.produksi_lkh_proses_awal?.[0]?.waktu_mulai
+        ? new Date(jo.produksi_lkh_proses_awal[0].waktu_mulai)
             .toISOString()
             .split('T')[0]
         : '';

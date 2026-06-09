@@ -301,6 +301,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       const res: AxiosResponse = await axios.get(url, {
         params: {
           is_jo_done: false,
+          is_so_kanban: false,
           ...(tipeJO === 'JO PROOF' && { status_produk: 'proof' }),
         },
         withCredentials: true,

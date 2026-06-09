@@ -1,5 +1,6 @@
 export interface JOData {
   produksi_lkh_proses: any;
+  produksi_lkh_proses_awal: any;
   po_qty: any;
   spesifikasi: string;
   status_proses: string;

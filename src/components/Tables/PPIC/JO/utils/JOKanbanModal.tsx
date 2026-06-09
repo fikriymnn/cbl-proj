@@ -1418,7 +1418,7 @@ const JOKanbanModal: React.FC<JOKanbanModalProps> = ({
       const res: AxiosResponse = await axios.get(
         `${import.meta.env.VITE_API_LINK}/marketing/so`,
         {
-          params: { is_jo_done: false, is_so_kanban: true },
+          params: { is_jo_done: false },
           withCredentials: true,
         },
       );

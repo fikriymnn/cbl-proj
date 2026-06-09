@@ -1065,11 +1065,12 @@ function SOMonitoring() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">OTS:</span>{' '}
+                  <span className="text-gray-500">OTS Qty:</span>{' '}
                   <span className="font-bold text-blue-700">
-                    {fmtRp(dataRekap.ots)}
+                    {fmtQty(dataRekap.otsQty)} Pcs
                   </span>
                 </div>
+
                 <div>
                   <span className="text-gray-500">Qty Terkirim:</span>{' '}
                   <span className="font-bold text-green-600">
@@ -1091,9 +1092,9 @@ function SOMonitoring() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500">OTS Qty:</span>{' '}
+                  <span className="text-gray-500">OTS:</span>{' '}
                   <span className="font-bold text-blue-700">
-                    {fmtQty(dataRekap.otsQty)} Pcs
+                    {fmtRp(dataRekap.ots)}
                   </span>
                 </div>
                 <div>
