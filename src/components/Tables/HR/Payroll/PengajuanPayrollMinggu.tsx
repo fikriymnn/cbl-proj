@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
+import LogoSrc from '../../../../images/logo/logo-cbl 1.svg';
 
 // ─── Icons ─────────────────────────────────────────────────────────────────────
 const IconCalendar = () => (
@@ -164,6 +165,321 @@ const IconFilter = () => (
     <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
   </svg>
 );
+const IconPrinter = () => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <polyline points="6 9 6 2 18 2 18 9" />
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+    <rect x="6" y="14" width="12" height="8" />
+  </svg>
+);
+
+// ─── Build Slip Gaji HTML ──────────────────────────────────────────────────────
+/**
+ * Membangun dokumen HTML siap cetak berisi slip gaji mingguan.
+ * Format: 2 kartu per baris, A4 portrait, mirip format PDF contoh.
+ *
+ * @param periodeData  - object periode dari API (berisi payroll_detail[])
+ * @param logoDataUri  - base64 data URI logo perusahaan (kosongkan '' jika belum siap)
+ */
+const buildSlipGajiHTML = (
+  periodeData: any,
+  logoDataUri: string = '',
+): string => {
+  const employees: any[] = periodeData.payroll_detail ?? [];
+
+  // Format angka ke string lokal tanpa simbol "Rp"
+  const fmt = (val: any): string => {
+    const n = Number(val);
+    if (!n || isNaN(n)) return '-';
+    return n.toLocaleString('id-ID');
+  };
+
+  // Format tanggal dari ISO string / timestamp
+  const fmtDate = (val: any): string => {
+    if (!val) return '';
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return String(val);
+    return d.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const periode = `${fmtDate(periodeData.periode_dari)} - ${fmtDate(
+    periodeData.periode_sampai,
+  )}`;
+
+  // Logo: gunakan data URI jika tersedia, atau kotak placeholder abu-abu
+  const logoImg = logoDataUri
+    ? `<img src="${logoDataUri}" width="30" height="30" style="display:block;object-fit:contain;" alt=""/>`
+    : `<div style="width:30px;height:30px;background:#cbd5e1;border-radius:3px;"></div>`;
+
+  // ── Render satu kartu slip karyawan ──────────────────────────────────────────
+  const renderCard = (emp: any): string => {
+    const bio = emp.karyawan?.biodata_karyawan?.[0];
+    const nik = bio?.nik ?? '';
+    const name = emp.karyawan?.name ?? '';
+    const jabatan = emp.jabatan.nama_jabatan ?? '';
+    const namaDepartment =
+      bio?.department?.nama_department ?? emp.nama_department ?? '';
+
+    const bayaranItems: any[] =
+      emp.detail_payroll?.filter((d: any) => d.tipe === 'bayaran') ?? [];
+    const potonganItems: any[] =
+      emp.detail_payroll?.filter((d: any) => d.tipe === 'potongan') ?? [];
+
+    const labelMap: Record<string, string> = {
+      tunjanganKopi: 'Tunjangan Kopi',
+      uangHadir: 'Uang Hadir',
+      uangLembur: 'Uang Lembur',
+      uangMakanLembur: 'Uang Makan Lembur',
+      // tambah mapping lain di sini sesuai kebutuhan
+    };
+
+    const fmtLabel = (raw: string): string => {
+      if (labelMap[raw]) return labelMap[raw];
+      // fallback: pisah camelCase dengan spasi jika tidak ada di map
+      return raw
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (c) => c.toUpperCase())
+        .trim();
+    };
+
+    // Baris data: isi sisi kosong dengan &nbsp; agar tinggi seragam
+    const maxRows = Math.max(bayaranItems.length, potonganItems.length, 1);
+    let dataRows = '';
+    for (let i = 0; i < maxRows; i++) {
+      const b = bayaranItems[i];
+      const p = potonganItems[i];
+      const leftCells = b
+        ? `<td style="padding:1.5px 5px;font-size:9.5px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;">${
+            b.label
+          }</td>
+           <td style="padding:1.5px 2px;font-size:9.5px;">:</td>
+           <td style="padding:1.5px 5px;font-size:9.5px;text-align:right;white-space:nowrap;">${fmt(
+             b.total,
+           )}</td>`
+        : `<td colspan="3" style="padding:1.5px 5px;">&nbsp;</td>`;
+      const rightCells = p
+        ? `<td style="padding:1.5px 5px;font-size:9.5px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;">${
+            p.label
+          }</td>
+           <td style="padding:1.5px 2px;font-size:9.5px;">:</td>
+           <td style="padding:1.5px 5px;font-size:9.5px;text-align:right;white-space:nowrap;">${fmt(
+             p.total,
+           )}</td>`
+        : `<td colspan="3" style="padding:1.5px 5px;">&nbsp;</td>`;
+      dataRows += `<tr style="vertical-align:top;">${leftCells}${rightCells}</tr>`;
+    }
+
+    return `
+<div style="
+  flex:0 0 49%;
+  max-width:49%;
+  display:flex;
+  flex-direction:column;
+  border:1.5px solid #1a1a1a;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:9.5px;
+  margin-bottom:0;
+  page-break-inside:avoid;
+  background:#fff;
+">
+
+  <!-- HEADER PERUSAHAAN -->
+  <div style="display:flex;align-items:center;gap:5px;">
+    <div style="flex:1;text-align:center;line-height:1.4;">
+      <div style="font-size:9px;font-weight:bold;letter-spacing:0.2px;">PT. Cahaya Berlian Lestari Offset</div>
+    </div>
+  </div>
+
+  <!-- INFO KARYAWAN (2 kolom) -->
+  <div style="display:flex;border-bottom:1px solid #bbb;">
+    <!-- kiri -->
+    <div style="width:60%;padding:3px 5px;">
+      <table style="border-collapse:collapse;width:100%;">
+        <tr>
+          <td style="padding:1px 0;white-space:nowrap;font-size:8.5px;color:#444;">NIK / Nama</td>
+          <td style="padding:1px 3px;font-size:8.5px;">:</td>
+          <td style="padding:1px 0;font-size:8.5px;">${nik} - ${name}</td>
+        </tr>
+        <tr>
+          <td style="padding:1px 0;white-space:nowrap;font-size:8.5px;color:#444;">Nama Departement</td>
+          <td style="padding:1px 3px;font-size:8.5px;">:</td>
+          <td style="padding:1px 0;font-size:8.5px;">${namaDepartment}</td>
+        </tr>
+      </table>
+    </div>
+    <!-- kanan -->
+    <div style="width:40%;padding:3px 3px;">
+      <table style="border-collapse:collapse;width:100%;">
+        <tr>
+          <td style="padding:1px 0;white-space:nowrap;font-size:8.5px;color:#444;">Jabatan</td>
+          <td style="padding:1px 3px;font-size:8.5px;">:</td>
+          <td style="padding:1px 0;font-size:8.5px;">${jabatan}</td>
+        </tr>
+        <tr>
+          <td style="padding:1px 0;white-space:nowrap;font-size:8.5px;color:#444;">Periode</td>
+          <td style="padding:1px 3px;font-size:8.5px;">:</td>
+          <td style="padding:1px 0;font-size:8.5px;">${periode}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- HEADER KOLOM -->
+  <div style="display:flex;border-bottom:1px solid #bbb;background:#f8fafc;">
+    <div style="flex:1;padding:2px 5px;font-size:8px;font-weight:bold;text-align:center;border-right:1px solid #bbb;text-decoration:underline;letter-spacing:0.5px;">PENDAPATAN</div>
+    <div style="flex:1;padding:2px 5px;font-size:8px;font-weight:bold;text-align:center;text-decoration:underline;letter-spacing:0.5px;">POTONGAN</div>
+  </div>
+
+  <!-- DATA BARIS -->
+  <div style="display:flex;min-height:100px;flex-grow:1;">
+    <!-- pendapatan -->
+    <div style="flex:1;border-right:1px solid #bbb;padding:2px 0;">
+      <table style="border-collapse:collapse;width:100%;">
+        ${
+          bayaranItems.length === 0
+            ? `<tr><td style="padding:2px 5px;font-size:9px;color:#aaa;font-style:italic;">-</td></tr>`
+            : bayaranItems
+                .map(
+                  (b) => `
+        <tr>
+          <td style="padding:1.5px 5px;font-size:9.5px;white-space:nowrap;">${fmtLabel(
+            b.label,
+          )}</td>
+          <td style="padding:1.5px 2px;font-size:9.5px;">:</td>
+          <td style="padding:1.5px 5px;font-size:9.5px;text-align:right;white-space:nowrap;">${fmt(
+            b.total,
+          )}</td>
+        </tr>`,
+                )
+                .join('')
+        }
+      </table>
+    </div>
+    <!-- potongan -->
+    <div style="flex:1;padding:2px 0;">
+      <table style="border-collapse:collapse;width:100%;">
+        ${
+          potonganItems.length === 0
+            ? `<tr><td style="padding:2px 5px;font-size:9px;color:#aaa;font-style:italic;">-</td></tr>`
+            : potonganItems
+                .map(
+                  (p) => `
+        <tr>
+          <td style="padding:1.5px 5px;font-size:9.5px;white-space:nowrap;">${
+            p.label
+          }</td>
+          <td style="padding:1.5px 2px;font-size:9.5px;">:</td>
+          <td style="padding:1.5px 5px;font-size:9.5px;text-align:right;white-space:nowrap;">${fmt(
+            p.total,
+          )}</td>
+        </tr>`,
+                )
+                .join('')
+        }
+      </table>
+    </div>
+  </div>
+
+  <!-- ROW JUMLAH -->
+  <div style="display:flex;border-top:1.5px solid #1a1a1a;">
+    <div style="flex:1;display:flex;justify-content:space-between;padding:2px 5px;border-right:1.5px solid #1a1a1a;">
+      <span style="font-size:9px;font-weight:bold;">JUMLAH</span>
+      <span style="font-size:9px;font-weight:bold;">${fmt(
+        emp.total_upah,
+      )}</span>
+    </div>
+    <div style="flex:1;display:flex;justify-content:space-between;padding:2px 5px;">
+      <span style="font-size:9px;font-weight:bold;">JUMLAH</span>
+      <span style="font-size:9px;font-weight:bold;">${fmt(
+        emp.total_potongan,
+      )}</span>
+    </div>
+  </div>
+
+  <!-- TOTAL TNJ -->
+  <div style="display:flex;border-top:1px solid #ccc;background:#f1f5f9;">
+  <div style="flex:1;display:flex;justify-content:space-between;padding:2px 5px;">
+    <span style="font-size:9px;font-weight:bold;">Total TNJ</span>
+    <span style="font-size:10px;font-weight:900;">${fmt(
+      emp.sub_total_upah,
+    )}</span>
+  </div>
+  <div style="flex:1;padding:2px 5px;">
+    <!-- kosong, sejajar kolom potongan -->
+  </div>
+</div>
+
+</div>`;
+  };
+
+  // ── Susun kartu 2 per baris ──────────────────────────────────────────────────
+  const cards = employees.map(renderCard);
+  const rows: string[] = [];
+  for (let i = 0; i < cards.length; i += 2) {
+    const pair = cards.slice(i, i + 2).join('\n');
+    rows.push(
+      `<div style="width:100%;display:flex;align-items:stretch;justify-content:flex-start;gap:2%;page-break-inside:avoid;margin-bottom:4mm;">${pair}</div>`,
+    );
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>Slip Gaji Mingguan</title>
+  <style>
+    @page { size: A4 portrait; margin: 10mm 8mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, Helvetica, sans-serif; background: white; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  ${rows.join('\n')}
+</body>
+</html>`;
+};
+
+// ─── Trigger Print ke iframe ───────────────────────────────────────────────────
+function triggerPrintSlip(periodeData: any, logoDataUri: string = '') {
+  const html = buildSlipGajiHTML(periodeData, logoDataUri);
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText =
+    'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;';
+  document.body.appendChild(iframe);
+  const iDoc = iframe.contentDocument || iframe.contentWindow?.document;
+  if (!iDoc) {
+    document.body.removeChild(iframe);
+    return;
+  }
+  iDoc.open();
+  iDoc.write(html);
+  iDoc.close();
+  iframe.onload = () => {
+    try {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+    } finally {
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        window.focus();
+      }, 1000);
+    }
+  };
+}
 
 // ─── Status Badge ──────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }: { status: string }) => {
@@ -409,7 +725,9 @@ function EmployeeDetailModal({
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [employeeData, setEmployeeData] = useState<any>(employee);
   const biodata = employeeData.karyawan?.biodata_karyawan?.[0];
-  const isDraft = periodeData.status?.toLowerCase() === 'draft';
+  const isDraft =
+    periodeData.status?.toLowerCase() === 'draft' ||
+    periodeData.status?.toLowerCase() === 'rejected';
 
   async function refreshEmployee() {
     try {
@@ -716,12 +1034,27 @@ function PeriodDetailModal({
   const [search, setSearch] = useState('');
   const [localPeriode, setLocalPeriode] = useState<any>(periode);
   const [isFetching, setIsFetching] = useState(false);
-
-  // ── Filters (moved from main page into modal) ──────────────────────────────
   const [filterTipePenggajian, setFilterTipePenggajian] = useState('');
   const [filterTipeKaryawan, setFilterTipeKaryawan] = useState('');
+  const [logoBase64, setLogoBase64] = useState<string>('');
 
-  // Derive unique filter options from this period's employees
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        setLogoBase64(canvas.toDataURL('image/png'));
+      }
+    };
+    img.onerror = () => setLogoBase64(LogoSrc);
+    img.src = LogoSrc;
+  }, []);
+
   const tipePenggajianOptions: string[] = [
     ...new Set(
       (localPeriode.payroll_detail ?? [])
@@ -767,7 +1100,6 @@ function PeriodDetailModal({
     }
   }
 
-  // Apply search + both filters to the employee list
   const filtered = (localPeriode.payroll_detail ?? []).filter((d: any) => {
     const name = d.karyawan?.name?.toLowerCase() ?? '';
     const nik = d.karyawan?.biodata_karyawan?.[0]?.nik ?? '';
@@ -779,9 +1111,19 @@ function PeriodDetailModal({
       !filterTipeKaryawan || d.tipe_karyawan === filterTipeKaryawan;
     return matchSearch && matchPenggajian && matchKaryawan;
   });
+  // ── Tombol print slip untuk periode ini ────────────────────────────────────
+  function handlePrintSlip() {
+    const filteredPeriode = {
+      ...localPeriode,
+      payroll_detail: filtered,
+    };
+    triggerPrintSlip(filteredPeriode, logoBase64 || LogoSrc);
+  }
 
   const totalKaryawan = localPeriode.payroll_detail?.length ?? 0;
-  const isDraft = localPeriode.status?.toLowerCase() === 'draft';
+  const isDraft =
+    localPeriode.status?.toLowerCase() === 'draft' ||
+    localPeriode.status?.toLowerCase() === 'rejected';
   const isIncomingPay = localPeriode.status?.toLowerCase() === 'incoming pay';
 
   return (
@@ -819,6 +1161,14 @@ function PeriodDetailModal({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* ── [NEW] Tombol Print Slip – selalu tampil ── */}
+              <button
+                onClick={handlePrintSlip}
+                className="flex items-center gap-1.5 bg-violet-50 hover:bg-violet-600 hover:text-white text-violet-700 text-xs font-bold px-3 py-2 rounded-xl border border-violet-200 hover:border-violet-600 transition-all active:scale-95"
+              >
+                <IconPrinter /> Print Slip
+              </button>
+
               {isDraft && (
                 <button
                   onClick={() => onSubmit(localPeriode.id)}
@@ -844,9 +1194,8 @@ function PeriodDetailModal({
             </div>
           </div>
 
-          {/* Search + Filter bar (now inside the modal) */}
+          {/* Search + Filter bar */}
           <div className="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50 space-y-2">
-            {/* Search */}
             <div className="relative max-w-sm">
               <svg
                 width="14"
@@ -868,10 +1217,7 @@ function PeriodDetailModal({
                 className="pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl bg-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-
-            {/* Filters */}
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Tipe Penggajian */}
               {tipePenggajianOptions.length > 0 && (
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
@@ -891,8 +1237,6 @@ function PeriodDetailModal({
                   </select>
                 </div>
               )}
-
-              {/* Tipe Karyawan */}
               {tipeKaryawanOptions.length > 0 && (
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
@@ -912,8 +1256,6 @@ function PeriodDetailModal({
                   </select>
                 </div>
               )}
-
-              {/* Active filter badges */}
               {filterTipePenggajian && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200">
                   <span className="capitalize">{filterTipePenggajian}</span>
@@ -936,8 +1278,6 @@ function PeriodDetailModal({
                   </button>
                 </span>
               )}
-
-              {/* Reset */}
               {hasActiveFilter && (
                 <button
                   onClick={() => {
@@ -972,15 +1312,7 @@ function PeriodDetailModal({
                   ].map((h, i) => (
                     <th
                       key={h}
-                      className={`px-4 py-3 text-xs font-bold text-slate-500 ${
-                        i === 0
-                          ? 'text-left w-8'
-                          : i >= 5 && i <= 7
-                          ? 'text-left'
-                          : i === 8
-                          ? 'text-left'
-                          : 'text-left'
-                      }`}
+                      className="px-4 py-3 text-xs font-bold text-slate-500 text-left"
                     >
                       {h}
                     </th>
@@ -1047,7 +1379,7 @@ function PeriodDetailModal({
                 {filtered.length === 0 && (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={11}
                       className="text-center py-12 text-slate-400 text-sm"
                     >
                       Tidak ada data
@@ -1194,7 +1526,6 @@ function PengajuanPayrollMinggu() {
 
         {!isLoading && periodeList.length > 0 && (
           <>
-            {/* Period cards — no filter bar here anymore */}
             <div className="space-y-3">
               {periodeList.map((periode: any, i: number) => {
                 const totalKaryawan = periode.payroll_detail?.length ?? 0;
@@ -1284,6 +1615,14 @@ function PengajuanPayrollMinggu() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* ── [NEW] Tombol Print Slip di card ── */}
+                        <button
+                          onClick={() => triggerPrintSlip(periode, '')}
+                          className="flex items-center gap-1.5 bg-violet-50 hover:bg-violet-600 hover:text-white text-violet-700 text-xs font-bold px-3 py-2 rounded-xl border border-violet-200 hover:border-violet-600 transition-all active:scale-95"
+                        >
+                          <IconPrinter /> Print Slip
+                        </button>
+
                         {isDraft && (
                           <button
                             onClick={() => handleSubmit(periode.id)}
