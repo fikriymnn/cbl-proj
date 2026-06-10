@@ -183,8 +183,8 @@ function TampilanMonthlyJO() {
 
   // Overtime states
   const [dateRange, setDateRange] = useState({
-    startDate: '2025-04-22',
-    endDate: '2025-04-23',
+    startDate: '',
+    endDate: '',
   });
   const [lemburData, setLemburData] = useState<any[]>([]);
 

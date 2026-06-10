@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
@@ -211,6 +211,9 @@ const buildSlipGajiHTML = (
       uangHadir: 'Uang Hadir',
       uangLembur: 'Uang Lembur',
       uangMakanLembur: 'Uang Makan Lembur',
+      upahHarian: 'Upah Harian',
+      tunjanganKerjaMalam: 'Tunjangan Kerja Malam',
+      upahHarianSakit: 'Upah Harian Sakit',
       // tambah mapping lain di sini sesuai kebutuhan
     };
 
@@ -813,6 +816,37 @@ function PeriodDetailModal({
 
   const totalKaryawan = periode.payroll_detail?.length ?? 0;
 
+  // Kumpulkan semua label bayaran unik dari karyawan yang terfilter
+  const allBayaranLabels: string[] = useMemo(() => {
+    const labelSet = new Set<string>();
+    filtered.forEach((emp: any) => {
+      (emp.detail_payroll ?? [])
+        .filter((d: any) => d.tipe === 'bayaran')
+        .forEach((d: any) => labelSet.add(d.label));
+    });
+    return Array.from(labelSet);
+  }, [filtered]);
+
+  const labelMap: Record<string, string> = {
+    tunjanganKopi: 'Tunjangan Kopi',
+    uangHadir: 'Uang Hadir',
+    uangLembur: 'Uang Lembur',
+    uangMakanLembur: 'Uang Makan Lembur',
+    upahHarian: 'Upah Harian',
+    tunjanganKerjaMalam: 'Tunjangan Kerja Malam',
+    upahHarianSakit: 'Upah Harian Sakit',
+    // tambah mapping lain di sini sesuai kebutuhan
+  };
+
+  const fmtLabel = (raw: string): string => {
+    if (labelMap[raw]) return labelMap[raw];
+    // fallback: pisah camelCase dengan spasi jika tidak ada di map
+    return raw
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (c) => c.toUpperCase())
+      .trim();
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -978,34 +1012,50 @@ function PeriodDetailModal({
           </div>
 
           {/* Employee table */}
-          <div className="overflow-y-auto flex-1">
+          <div className="overflow-y-auto overflow-x-auto flex-1">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200 sticky top-0">
+              <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-20">
                 <tr>
+                  {/* Kolom # */}
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap sticky left-0 z-20 bg-slate-50">
+                    #
+                  </th>
+                  {/* NIK */}
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap sticky left-[52px] z-20 bg-slate-50 border-r border-slate-200">
+                    NIK
+                  </th>
+                  {/* Nama */}
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap sticky left-[115px] z-20 bg-slate-50 border-r border-slate-200">
+                    Nama
+                  </th>
+
                   {[
-                    '#',
-                    'NIK',
-                    'Nama',
                     'Department',
                     'Divisi',
                     'Tipe Penggajian',
                     'Tipe Karyawan',
-                    'Total Upah',
-                    'Potongan',
-                    'Sub Total',
-                    'Aksi',
-                  ].map((h, i) => (
+                  ].map((h) => (
                     <th
                       key={h}
-                      className={`px-4 py-3 text-xs font-bold text-slate-500 ${
-                        i === 0
-                          ? 'text-left w-8'
-                          : i >= 5 && i <= 7
-                          ? 'text-left'
-                          : i === 8
-                          ? 'text-left'
-                          : 'text-left'
-                      }`}
+                      className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  ))}
+
+                  {allBayaranLabels.map((label) => (
+                    <th
+                      key={label}
+                      className="px-4 py-3 text-xs font-bold text-emerald-600 text-right whitespace-nowrap"
+                    >
+                      {fmtLabel(label)}
+                    </th>
+                  ))}
+
+                  {['Potongan', 'Sub Total', 'Aksi'].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap"
                     >
                       {h}
                     </th>
@@ -1015,24 +1065,39 @@ function PeriodDetailModal({
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((emp: any, i: number) => {
                   const bio = emp.karyawan?.biodata_karyawan?.[0];
+
+                  const bayaranMap: Record<string, number> = {};
+                  (emp.detail_payroll ?? [])
+                    .filter((d: any) => d.tipe === 'bayaran')
+                    .forEach((d: any) => {
+                      bayaranMap[d.label] =
+                        (bayaranMap[d.label] ?? 0) + Number(d.total);
+                    });
+
                   return (
                     <tr
                       key={emp.id ?? i}
-                      className="hover:bg-slate-50 transition-colors"
+                      className="hover:bg-slate-50 transition-colors group"
                     >
-                      <td className="px-4 py-3 text-slate-400 text-xs">
+                      {/* # */}
+                      <td className="px-4 py-3 text-slate-400 text-xs sticky left-0 z-10 bg-white group-hover:bg-slate-50">
                         {i + 1}
                       </td>
-                      <td className="px-4 py-3">
+                      {/* NIK */}
+                      <td className="px-4 py-3 sticky left-[52px] z-10 bg-white group-hover:bg-slate-50 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         <span className="font-mono text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                           {bio?.nik ?? '—'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-medium text-slate-800 text-xs">
+                      {/* Nama */}
+                      <td className="px-4 py-3 font-medium text-slate-800 text-xs sticky left-[115px] z-10 bg-white group-hover:bg-slate-50 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         {emp.karyawan?.name ?? '—'}
                       </td>
+
                       <td className="px-4 py-3 text-slate-500 text-xs">
-                        {bio?.department?.nama_department ?? '—'}
+                        {bio?.department?.nama_department ??
+                          emp.nama_department ??
+                          '—'}
                       </td>
                       <td className="px-4 py-3 text-slate-400 text-xs">
                         {emp.nama_divisi ?? '—'}
@@ -1043,11 +1108,22 @@ function PeriodDetailModal({
                       <td className="px-4 py-3 text-slate-400 text-xs">
                         {emp.tipe_karyawan ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-right text-xs text-emerald-700 font-semibold">
-                        Rp {formatInteger(emp.sub_total_upah)}
-                      </td>
+
+                      {allBayaranLabels.map((label) => (
+                        <td
+                          key={label}
+                          className="px-4 py-3 text-right text-xs text-emerald-700 font-semibold"
+                        >
+                          {bayaranMap[label] != null ? (
+                            `Rp ${formatInteger(bayaranMap[label])}`
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                      ))}
+
                       <td className="px-4 py-3 text-right text-xs text-red-600 font-semibold">
-                        {(emp.total_potongan ?? 0) > 0 ? (
+                        {emp.total_potongan > 0 ? (
                           `Rp ${formatInteger(emp.total_potongan)}`
                         ) : (
                           <span className="text-slate-300">—</span>
@@ -1070,7 +1146,7 @@ function PeriodDetailModal({
                 {filtered.length === 0 && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={10 + allBayaranLabels.length}
                       className="text-center py-12 text-slate-400 text-sm"
                     >
                       Tidak ada data
