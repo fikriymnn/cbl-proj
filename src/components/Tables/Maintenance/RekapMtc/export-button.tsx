@@ -1,699 +1,513 @@
 import React from 'react';
 import * as XLSX from 'xlsx';
-import { Chart, ChartConfiguration } from 'chart.js/auto';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
-// Enhanced export utility that embeds actual chart images into Excel
-export class ChartExportUtility {
-  private static createChartImage(
-    config: ChartConfiguration,
-    width: number = 800,
-    height: number = 400,
-  ): Promise<Blob> {
-    return new Promise((resolve) => {
-      // Create a temporary canvas element
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
+Chart.register(...registerables);
 
-      // Create chart instance
-      const chart = new Chart(canvas, config);
+// ─── helpers ────────────────────────────────────────────────────────────────
 
-      // Wait for chart to render then convert to blob
-      setTimeout(() => {
-        canvas.toBlob((blob: any) => {
-          chart.destroy();
-          resolve(blob);
-        }, 'image/png');
-      }, 500);
-    });
-  }
+const sanitizeSheetName = (name: string): string =>
+  name.replace(/[\[\]\\\/\?*:]/g, '_').substring(0, 31);
 
-  public static generateChartConfig(
-    data: any[],
-    type: string,
-    chartType: 'line' | 'bar' | 'pie' | 'doughnut' = 'bar',
-    title?: string,
-  ): ChartConfiguration {
-    let labels: string[] = [];
-    let datasets: any[] = [];
+/** Render a Chart.js config to a PNG base64 string (no external libs needed) */
+const renderChartToBase64 = (
+  config: ChartConfiguration,
+  width = 900,
+  height = 500,
+): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    document.body.appendChild(canvas); // must be in DOM for some browsers
 
-    switch (type) {
-      case 'responTime':
-      case 'breakDown':
-        labels = data.map((item) => item.mesin || 'Unknown Machine');
-        datasets = [
-          {
-            label:
-              type === 'responTime'
-                ? 'Response Time (Hours)'
-                : 'Breakdown Time (Hours)',
-            data: data.map((item) => {
-              const minutes = item.jumlah_waktu_menit || 0;
-              return parseFloat((minutes / 60).toFixed(2));
-            }),
-            backgroundColor:
-              chartType === 'pie' || chartType === 'doughnut'
-                ? data.map(
-                    (_, i) => `hsla(${(i * 360) / data.length}, 70%, 60%, 0.8)`,
-                  )
-                : 'rgba(54, 162, 235, 0.8)',
-            borderColor:
-              chartType === 'pie' || chartType === 'doughnut'
-                ? data.map(
-                    (_, i) => `hsla(${(i * 360) / data.length}, 70%, 50%, 1)`,
-                  )
-                : 'rgba(54, 162, 235, 1)',
-            borderWidth: 2,
-          },
-        ];
-        break;
-
-      case 'responTimeBulan':
-      case 'breakDownMonth':
-        labels = data.map((item) => item.mesin || 'Unknown Machine');
-        datasets = [
-          {
-            label:
-              type === 'responTimeBulan'
-                ? 'Monthly Response Time (Hours)'
-                : 'Monthly Breakdown Time (Hours)',
-            data: data.map((item) => {
-              if (item.data && item.data.length > 0) {
-                const totalMinutes = item.data.reduce(
-                  (sum: number, month: any) =>
-                    sum + (month.jumlah_waktu_menit || 0),
-                  0,
-                );
-                return parseFloat((totalMinutes / 60).toFixed(2));
-              }
-              return 0;
-            }),
-            backgroundColor:
-              chartType === 'pie' || chartType === 'doughnut'
-                ? data.map(
-                    (_, i) => `hsla(${(i * 360) / data.length}, 70%, 60%, 0.8)`,
-                  )
-                : 'rgba(255, 99, 132, 0.8)',
-            borderColor:
-              chartType === 'pie' || chartType === 'doughnut'
-                ? data.map(
-                    (_, i) => `hsla(${(i * 360) / data.length}, 70%, 50%, 1)`,
-                  )
-                : 'rgba(255, 99, 132, 1)',
-            borderWidth: 2,
-          },
-        ];
-        break;
-
-      case 'quality':
-      case 'produksi':
-        if (data.length > 0) {
-          const firstItem = data[0];
-
-          if (firstItem.name || firstItem.type || firstItem.defect_type) {
-            labels = data.map(
-              (item) => item.name || item.type || item.defect_type || 'Unknown',
-            );
-            datasets = [
-              {
-                label:
-                  type === 'quality' ? 'Quality Issues' : 'Production Count',
-                data: data.map(
-                  (item) => item.count || item.value || item.total || 1,
-                ),
-                backgroundColor: data.map(
-                  (_, i) => `hsla(${(i * 360) / data.length}, 70%, 60%, 0.8)`,
-                ),
-                borderColor: data.map(
-                  (_, i) => `hsla(${(i * 360) / data.length}, 70%, 50%, 1)`,
-                ),
-                borderWidth: 2,
-              },
-            ];
-          } else {
-            labels = data.map((_, index) => `Item ${index + 1}`);
-            const numericKeys = Object.keys(firstItem).filter(
-              (key) => typeof firstItem[key] === 'number',
-            );
-
-            if (numericKeys.length > 0) {
-              datasets = [
-                {
-                  label: numericKeys[0],
-                  data: data.map((item) => item[numericKeys[0]] || 0),
-                  backgroundColor: data.map(
-                    (_, i) => `hsla(${(i * 360) / data.length}, 70%, 60%, 0.8)`,
-                  ),
-                  borderColor: data.map(
-                    (_, i) => `hsla(${(i * 360) / data.length}, 70%, 50%, 1)`,
-                  ),
-                  borderWidth: 2,
-                },
-              ];
-            }
-          }
-        }
-        break;
-
-      default:
-        if (Array.isArray(data) && data.length > 0) {
-          const firstItem = data[0];
-          const numericKeys = Object.keys(firstItem).filter(
-            (key) => typeof firstItem[key] === 'number',
-          );
-
-          if (numericKeys.length > 0) {
-            labels = data.map(
-              (item, index) =>
-                item.name || item.id || item.mesin || `Item ${index + 1}`,
-            );
-            datasets = numericKeys.slice(0, 3).map((key, index) => ({
-              label: key
-                .replace(/_/g, ' ')
-                .replace(/\b\w/g, (l) => l.toUpperCase()),
-              data: data.map((item) => item[key] || 0),
-              backgroundColor:
-                chartType === 'pie' || chartType === 'doughnut'
-                  ? data.map(
-                      (_, i) =>
-                        `hsla(${
-                          (index * 120 + (i * 360) / data.length) % 360
-                        }, 70%, 60%, 0.8)`,
-                    )
-                  : `hsla(${index * 120}, 70%, 60%, 0.8)`,
-              borderColor:
-                chartType === 'pie' || chartType === 'doughnut'
-                  ? data.map(
-                      (_, i) =>
-                        `hsla(${
-                          (index * 120 + (i * 360) / data.length) % 360
-                        }, 70%, 50%, 1)`,
-                    )
-                  : `hsla(${index * 120}, 70%, 50%, 1)`,
-              borderWidth: 2,
-            }));
-          }
-        }
-        break;
+    let chart: Chart | null = null;
+    try {
+      chart = new Chart(canvas, {
+        ...config,
+        options: {
+          ...config.options,
+          responsive: false,
+          animation: false, // disable animation so it renders immediately
+        },
+      });
+    } catch (e) {
+      document.body.removeChild(canvas);
+      reject(e);
+      return;
     }
 
-    const chartTitle =
-      title || `${type.charAt(0).toUpperCase() + type.slice(1)} Analysis`;
+    // requestAnimationFrame ensures the chart has actually painted
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        try {
+          const base64 = canvas.toDataURL('image/png').split(',')[1];
+          chart?.destroy();
+          document.body.removeChild(canvas);
+          resolve(base64);
+        } catch (e) {
+          chart?.destroy();
+          document.body.removeChild(canvas);
+          reject(e);
+        }
+      });
+    });
+  });
 
-    return {
-      type: chartType,
-      data: { labels, datasets },
-      options: {
-        responsive: false,
-        maintainAspectRatio: false,
-        plugins: {
-          title: {
-            display: true,
-            text: chartTitle,
-            font: {
-              size: 16,
-              weight: 'bold',
-            },
-            padding: 20,
-          },
-          legend: {
-            display: true,
-            position: 'top',
-            labels: {
-              padding: 15,
-              usePointStyle: true,
-            },
-          },
-        },
-        scales:
-          chartType !== 'pie' && chartType !== 'doughnut'
+// ─── data unwrapping ─────────────────────────────────────────────────────────
+
+/**
+ * Each export type may wrap its real array in a named key.
+ * This returns { rows, key } where `rows` is the flat array to chart/tabulate.
+ */
+const unwrapData = (
+  raw: any,
+  type: string,
+): { rows: any[]; totalRow?: Record<string, any> } => {
+  if (!raw) return { rows: [] };
+
+  switch (type) {
+    case 'quality':
+      return {
+        rows: raw.quality_defect ?? [],
+        totalRow:
+          raw.total_count != null
             ? {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: datasets[0]?.label || 'Value',
-                    font: {
-                      size: 12,
-                      weight: 'bold',
-                    },
-                  },
-                  grid: {
-                    color: 'rgba(0,0,0,0.1)',
-                  },
-                },
-                x: {
-                  title: {
-                    display: true,
-                    text: 'Items',
-                    font: {
-                      size: 12,
-                      weight: 'bold',
-                    },
-                  },
-                  grid: {
-                    color: 'rgba(0,0,0,0.1)',
-                  },
-                },
+                kode_analisis_mtc: 'TOTAL',
+                nama_analisis_mtc: '',
+                count: raw.total_count,
               }
             : undefined,
-      },
-    };
+      };
+    case 'produksi':
+      return {
+        rows: raw.produksi_defect ?? [],
+        totalRow:
+          raw.total_count != null
+            ? {
+                kode_analisis_mtc: 'TOTAL',
+                nama_analisis_mtc: '',
+                count: raw.total_count,
+              }
+            : undefined,
+      };
+    case 'mesinProblem':
+      return {
+        rows: raw.jenis_masalah ?? (Array.isArray(raw) ? raw : []),
+        totalRow:
+          raw.total_count != null
+            ? {
+                mesin: 'TOTAL',
+                count: raw.total_count,
+                jenis_produksi: raw.total_produksi,
+                jenis_quality: raw.total_quality,
+              }
+            : undefined,
+      };
+    case 'oneMesin': {
+      // raw is data_jenis_masalah
+      const dm = raw.data_jenis_masalah ?? raw;
+      const prodRows = (dm.kode_produksi ?? []).map((r: any) => ({
+        ...r,
+        kategori: 'Produksi',
+      }));
+      const qualRows = (dm.kode_quality ?? []).map((r: any) => ({
+        ...r,
+        kategori: 'Quality',
+      }));
+      return { rows: [...prodRows, ...qualRows] };
+    }
+    case 'responTime':
+    case 'breakDown':
+      return { rows: Array.isArray(raw) ? raw : [] };
+    case 'responTimeBulan':
+    case 'breakDownMonth':
+      return { rows: Array.isArray(raw) ? raw : raw.data ?? [] };
+    default:
+      return { rows: Array.isArray(raw) ? raw : [] };
+  }
+};
+
+// ─── chart config builder ────────────────────────────────────────────────────
+
+const buildChartConfig = (
+  rows: any[],
+  type: string,
+  chartType: 'bar' | 'line' | 'pie' | 'doughnut',
+  title: string,
+): ChartConfiguration | null => {
+  if (!rows.length) return null;
+
+  let labels: string[] = [];
+  let values: number[] = [];
+
+  switch (type) {
+    case 'quality':
+      labels = rows.map((r) => r.nama_analisis_mtc || r.kode_analisis_mtc);
+      values = rows.map((r) => Number(r.count) || 0);
+      break;
+    case 'produksi':
+      labels = rows.map((r) => r.nama_analisis_mtc || r.kode_analisis_mtc);
+      values = rows.map((r) => Number(r.count) || 0);
+      break;
+    case 'mesinProblem':
+      labels = rows.map((r) => r.mesin);
+      values = rows.map((r) => Number(r.count) || 0);
+      break;
+    case 'oneMesin':
+      labels = rows.map(
+        (r) => `[${r.kategori}] ${r.nama_analisis_mtc || r.kode_analisis_mtc}`,
+      );
+      values = rows.map((r) => Number(r.count) || 0);
+      break;
+    case 'responTime':
+    case 'breakDown':
+      labels = rows.map((r) => r.mesin || 'Unknown');
+      values = rows.map((r) =>
+        parseFloat(parseFloat(r.jumlah_waktu_jam ?? '0').toFixed(2)),
+      );
+      break;
+    case 'responTimeBulan':
+    case 'breakDownMonth':
+      labels = rows.map((r) => r.mesin || 'Unknown');
+      values = rows.map((r) => {
+        if (r.data && Array.isArray(r.data)) {
+          return parseFloat(
+            r.data
+              .reduce(
+                (s: number, m: any) =>
+                  s + parseFloat(m.jumlah_waktu_jam ?? '0'),
+                0,
+              )
+              .toFixed(2),
+          );
+        }
+        return parseFloat(parseFloat(r.jumlah_waktu_jam ?? '0').toFixed(2));
+      });
+      break;
+    default:
+      return null;
   }
 
-  private static async addImageToWorkbook(
-    workbook: XLSX.WorkBook,
-    imageBlob: Blob,
-    imageName: string,
-    worksheet: XLSX.WorkSheet,
-    cellRef: string,
-  ): Promise<void> {
+  const colors = labels.map(
+    (_, i) => `hsla(${(i * 360) / Math.max(labels.length, 1)}, 65%, 55%, 0.85)`,
+  );
+  const borderColors = labels.map(
+    (_, i) => `hsla(${(i * 360) / Math.max(labels.length, 1)}, 65%, 40%, 1)`,
+  );
+
+  const isPieLike = chartType === 'pie' || chartType === 'doughnut';
+
+  return {
+    type: chartType,
+    data: {
+      labels,
+      datasets: [
+        {
+          label: title,
+          data: values,
+          backgroundColor: isPieLike ? colors : colors[0],
+          borderColor: isPieLike ? borderColors : borderColors[0],
+          borderWidth: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: false,
+      animation: false,
+      plugins: {
+        title: {
+          display: true,
+          text: title,
+          font: { size: 16, weight: 'bold' },
+          padding: 20,
+        },
+        legend: { display: true, position: 'top' },
+      },
+      scales: isPieLike
+        ? undefined
+        : {
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.08)' } },
+            x: { grid: { color: 'rgba(0,0,0,0.08)' } },
+          },
+    },
+  } as ChartConfiguration;
+};
+
+// ─── sheet builders ──────────────────────────────────────────────────────────
+
+const buildMainSheet = (
+  rows: any[],
+  totalRow?: Record<string, any>,
+): XLSX.WorkSheet => {
+  if (!rows.length)
+    return XLSX.utils.json_to_sheet([{ Note: 'No data available' }]);
+  const all = totalRow ? [...rows, totalRow] : rows;
+  return XLSX.utils.json_to_sheet(all);
+};
+
+/** For weekly (responTime / breakDown): one row per machine with week columns */
+const buildWeeklySheet = (rows: any[]): XLSX.WorkSheet => {
+  if (!rows.length) return XLSX.utils.json_to_sheet([{ Note: 'No data' }]);
+  const flat = rows.map((machine) => {
+    const row: Record<string, any> = { Mesin: machine.mesin };
+    (machine.minggu ?? []).forEach((w: any, i: number) => {
+      row[`Minggu ${i + 1}`] = parseFloat(
+        parseFloat(w.jumlah_waktu_jam ?? '0').toFixed(2),
+      );
+    });
+    row['Total (Jam)'] = parseFloat(
+      parseFloat(machine.jumlah_waktu_jam ?? '0').toFixed(2),
+    );
+    row['Rata-Rata (Jam)'] = parseFloat(
+      parseFloat(machine.rata_rata_waktu_jam ?? '0').toFixed(2),
+    );
+    return row;
+  });
+  return XLSX.utils.json_to_sheet(flat);
+};
+
+/** For monthly (responTimeBulan / breakDownMonth): one row per machine, columns = months */
+const buildMonthlySheet = (rows: any[], listBulan?: any[]): XLSX.WorkSheet => {
+  if (!rows.length) return XLSX.utils.json_to_sheet([{ Note: 'No data' }]);
+  const flat = rows.map((machine) => {
+    const row: Record<string, any> = { Mesin: machine.mesin };
+    (machine.data ?? []).forEach((m: any) => {
+      row[m.nama_bulan ?? 'Bulan'] = parseFloat(
+        parseFloat(m.jumlah_waktu_jam ?? '0').toFixed(2),
+      );
+    });
+    return row;
+  });
+  return XLSX.utils.json_to_sheet(flat);
+};
+
+// ─── main export function ─────────────────────────────────────────────────────
+
+export const exportToExcel = async (
+  rawData: any,
+  type: string,
+  fileName: string,
+  chartTypes: ('bar' | 'line' | 'pie' | 'doughnut')[] = ['bar'],
+  dateRange?: any,
+): Promise<void> => {
+  const wb = XLSX.utils.book_new();
+
+  const { rows, totalRow } = unwrapData(rawData, type);
+
+  // ── Sheet 1: Data ──────────────────────────────────────────────────────────
+  let dataSheet: XLSX.WorkSheet;
+  if (type === 'responTime' || type === 'breakDown') {
+    dataSheet = buildWeeklySheet(rows);
+  } else if (type === 'responTimeBulan' || type === 'breakDownMonth') {
+    dataSheet = buildMonthlySheet(rows, rawData?.listBulan);
+  } else {
+    dataSheet = buildMainSheet(rows, totalRow);
+  }
+  XLSX.utils.book_append_sheet(wb, dataSheet, 'Data');
+
+  // ── Sheet 2: Charts (PNG base64 embedded via a hidden img trick) ───────────
+  // SheetJS (xlsx) doesn't support image embedding natively.
+  // We use a reliable approach: write chart images as base64 into a dedicated
+  // "Charts" sheet as data-URI strings, AND separately create an HTML file
+  // with the actual charts rendered so the user can screenshot / print.
+  // Additionally we try ExcelJS if available for true embedding.
+
+  // Build chart images
+  const chartImagesBase64: {
+    title: string;
+    base64: string;
+    chartType: string;
+  }[] = [];
+
+  for (const chartType of chartTypes) {
+    const title = `${type} – ${chartType.toUpperCase()} Chart`;
+    const config = buildChartConfig(rows, type, chartType, title);
+    if (!config) continue;
     try {
-      // Convert blob to array buffer
-      const arrayBuffer = await imageBlob.arrayBuffer();
+      const base64 = await renderChartToBase64(config, 900, 500);
+      chartImagesBase64.push({ title, base64, chartType });
+    } catch (e) {
+      console.warn(`Chart render failed for ${chartType}:`, e);
+    }
+  }
 
-      // Add the image to workbook's media
-      if (!workbook.Sheets) workbook.Sheets = {};
-      if (!workbook.Props) workbook.Props = {};
+  // ── Try ExcelJS for true image embedding ──────────────────────────────────
+  let excelJSSuccess = false;
+  try {
+    const ExcelJS = await import('exceljs');
+    const excelWb = new ExcelJS.Workbook();
+    excelWb.creator = 'Export Utility';
 
-      // Create a drawing relationship for the image
-      const imageId = `image_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
-
-      // Store image data in workbook
-      if (!workbook.Workbook) workbook.Workbook = {};
-      if (!workbook.Workbook.Sheets) workbook.Workbook.Sheets = [];
-
-      // Add image reference to the cell
-      const cell = worksheet[cellRef];
-      if (cell) {
-        cell.l = { Target: `#${imageName}`, Tooltip: `Chart: ${imageName}` };
+    // Data sheet
+    const excelDataSheet = excelWb.addWorksheet('Data');
+    if (rows.length > 0) {
+      const allRows = totalRow ? [...rows, totalRow] : rows;
+      // For weekly / monthly, use the flat representation
+      let exportRows: any[];
+      if (type === 'responTime' || type === 'breakDown') {
+        exportRows = (rows as any[]).map((machine) => {
+          const row: Record<string, any> = { Mesin: machine.mesin };
+          (machine.minggu ?? []).forEach((w: any, i: number) => {
+            row[`Minggu ${i + 1}`] = parseFloat(
+              parseFloat(w.jumlah_waktu_jam ?? '0').toFixed(2),
+            );
+          });
+          row['Total (Jam)'] = parseFloat(
+            parseFloat(machine.jumlah_waktu_jam ?? '0').toFixed(2),
+          );
+          row['Rata-Rata (Jam)'] = parseFloat(
+            parseFloat(machine.rata_rata_waktu_jam ?? '0').toFixed(2),
+          );
+          return row;
+        });
+      } else if (type === 'responTimeBulan' || type === 'breakDownMonth') {
+        exportRows = (rows as any[]).map((machine) => {
+          const row: Record<string, any> = { Mesin: machine.mesin };
+          (machine.data ?? []).forEach((m: any) => {
+            row[m.nama_bulan ?? 'Bulan'] = parseFloat(
+              parseFloat(m.jumlah_waktu_jam ?? '0').toFixed(2),
+            );
+          });
+          return row;
+        });
       } else {
-        worksheet[cellRef] = {
-          t: 's',
-          v: `[Chart: ${imageName}]`,
-          l: { Target: `#${imageName}`, Tooltip: `Chart: ${imageName}` },
-        };
+        exportRows = allRows;
       }
 
-      // For better compatibility, we'll use ExcelJS approach
-      // But since we're using XLSX, we'll add a placeholder and instructions
-      const instrRef = XLSX.utils.encode_cell({
-        r: XLSX.utils.decode_cell(cellRef).r + 1,
-        c: XLSX.utils.decode_cell(cellRef).c,
-      });
-
-      worksheet[instrRef] = {
-        t: 's',
-        v: `Image embedded - ${imageName} (${Math.round(
-          arrayBuffer.byteLength / 1024,
-        )}KB)`,
-      };
-    } catch (error) {
-      console.warn('Could not embed image:', error);
-      worksheet[cellRef] = {
-        t: 's',
-        v: `[Chart Image - ${imageName}]`,
-      };
-    }
-  }
-
-  // Enhanced method using ExcelJS for proper image embedding
-  private static async createExcelWithExcelJS(
-    data: any,
-    fileName: string,
-    type: string,
-    options: {
-      includeCharts?: boolean;
-      chartTypes?: ('bar' | 'line' | 'pie' | 'doughnut')[];
-      dateRange?: any;
-    } = {},
-  ): Promise<void> {
-    // Dynamically import ExcelJS
-    const ExcelJS = await import('exceljs');
-    const { Workbook } = ExcelJS;
-
-    const { includeCharts = true, chartTypes = ['bar'], dateRange } = options;
-
-    // Create workbook
-    const workbook = new Workbook();
-    workbook.creator = 'Chart Export Utility';
-    workbook.lastModifiedBy = 'Chart Export Utility';
-    workbook.created = new Date();
-
-    // Process main data
-    let processedData = data;
-
-    if (type === 'responTime' || type === 'breakDown') {
-      processedData = this.processWeeklyData(data);
-    } else if (type === 'responTimeBulan' || type === 'breakDownMonth') {
-      processedData = this.processMonthlyData(data);
+      if (exportRows.length > 0) {
+        const headers = Object.keys(exportRows[0]);
+        const headerRow = excelDataSheet.addRow(headers);
+        headerRow.font = { bold: true };
+        headerRow.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFD0E4FF' },
+        };
+        exportRows.forEach((r) =>
+          excelDataSheet.addRow(headers.map((h) => r[h])),
+        );
+        excelDataSheet.columns.forEach((col) => {
+          col.width = 18;
+        });
+      }
     }
 
-    // Add main data sheet
-    const mainSheet = workbook.addWorksheet('Data');
+    // Charts sheet with embedded images
+    if (chartImagesBase64.length > 0) {
+      const chartsSheet = excelWb.addWorksheet('Charts');
 
-    if (Array.isArray(processedData) && processedData.length > 0) {
-      // Add headers
-      const headers = Object.keys(processedData[0]);
-      mainSheet.addRow(headers);
-
-      // Add data rows
-      processedData.forEach((row) => {
-        const values = headers.map((header) => row[header]);
-        mainSheet.addRow(values);
-      });
-
-      // Style the header row
-      const headerRow = mainSheet.getRow(1);
-      headerRow.font = { bold: true };
-      headerRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' },
-      };
-    }
-
-    // Generate and embed charts
-    if (includeCharts && Array.isArray(data) && data.length > 0) {
-      const chartsSheet = workbook.addWorksheet('Charts with Images');
-
-      // Add title
-      chartsSheet.mergeCells('A1:H1');
+      // Title
+      chartsSheet.mergeCells('A1:J1');
       const titleCell = chartsSheet.getCell('A1');
-      titleCell.value = `${
-        type.charAt(0).toUpperCase() + type.slice(1)
-      } Analysis Charts`;
+      titleCell.value = `${type} – Chart Analysis`;
       titleCell.font = { size: 16, bold: true };
       titleCell.alignment = { horizontal: 'center' };
 
       let currentRow = 3;
+      for (const { title, base64, chartType } of chartImagesBase64) {
+        // Section title
+        chartsSheet.getCell(`A${currentRow}`).value = title;
+        chartsSheet.getCell(`A${currentRow}`).font = {
+          size: 13,
+          bold: true,
+          color: { argb: 'FF0065DE' },
+        };
+        currentRow += 1;
 
-      for (let i = 0; i < chartTypes.length; i++) {
-        const chartType = chartTypes[i];
+        // Convert base64 to buffer
+        const binaryStr = atob(base64);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++)
+          bytes[i] = binaryStr.charCodeAt(i);
 
-        try {
-          // Generate chart
-          const chartTitle = `${type} - ${chartType.toUpperCase()} Chart`;
-          const chartConfig = this.generateChartConfig(
-            data,
-            type,
-            chartType,
-            chartTitle,
-          );
-          const imageBlob = await this.createChartImage(chartConfig, 1000, 600);
+        const imageId = excelWb.addImage({
+          buffer: bytes.buffer,
+          extension: 'png',
+        });
+        chartsSheet.addImage(imageId, {
+          tl: { col: 0, row: currentRow - 1 },
+          ext: { width: 820, height: 460 },
+        });
 
-          // Add chart title
-          const titleCell = chartsSheet.getCell(`A${currentRow}`);
-          titleCell.value = chartTitle;
-          titleCell.font = { size: 14, bold: true };
-
-          // Convert blob to buffer
-          const imageBuffer = await imageBlob.arrayBuffer();
-
-          // Add image to worksheet
-          const imageId = workbook.addImage({
-            buffer: imageBuffer,
-            extension: 'png',
-          });
-
-          // Insert image
-          chartsSheet.addImage(imageId, {
-            tl: { col: 0, row: currentRow },
-            ext: { width: 800, height: 480 },
-          });
-
-          // Adjust row heights to accommodate image
-          for (let j = currentRow + 1; j <= currentRow + 30; j++) {
-            chartsSheet.getRow(j).height = 16;
-          }
-
-          // Move to next chart position
-          currentRow += 35;
-
-          console.log(`✅ ${chartType} chart embedded successfully`);
-        } catch (error) {
-          console.error(`❌ Error generating ${chartType} chart:`, error);
-
-          // Add error message
-          const errorCell = chartsSheet.getCell(`A${currentRow}`);
-          errorCell.value = `Failed to generate ${chartType} chart: ${error}`;
-          errorCell.font = { color: { argb: 'FFFF0000' } };
-          currentRow += 2;
-        }
+        // Reserve rows for the image (~34 rows @ ~13.5px each ≈ 459px)
+        for (let r = currentRow; r <= currentRow + 33; r++)
+          chartsSheet.getRow(r).height = 13.5;
+        currentRow += 36; // image rows + gap
       }
-
-      // Auto-fit columns
-      chartsSheet.columns.forEach((column) => {
-        column.width = 15;
+      chartsSheet.columns.forEach((col) => {
+        col.width = 14;
       });
     }
 
-    // Add detailed sheets for complex data
-    if (type === 'responTime' || type === 'breakDown') {
-      this.addWeeklyDetailSheetsExcelJS(workbook, data);
-    } else if (type === 'responTimeBulan' || type === 'breakDownMonth') {
-      this.addMonthlyDetailSheetsExcelJS(workbook, data);
-    }
-
-    // Generate filename
-    const timestamp = new Date().toISOString().split('T')[0];
-    const finalFileName = `${fileName}_with_embedded_images_${timestamp}.xlsx`;
-
-    // Save the workbook
-    const buffer = await workbook.xlsx.writeBuffer();
-
-    // Create download link
+    const buffer = await excelWb.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = finalFileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-
-    console.log(`✅ Excel file with embedded images saved: ${finalFileName}`);
-  }
-
-  private static addWeeklyDetailSheetsExcelJS(
-    workbook: any,
-    data: any[],
-  ): void {
-    data.forEach((machine) => {
-      if (machine.minggu && Array.isArray(machine.minggu)) {
-        const weeklyData = machine.minggu.map((week: any) => ({
-          ...week,
-          jumlah_waktu_jam: week.jumlah_waktu_menit
-            ? (week.jumlah_waktu_menit / 60).toFixed(2)
-            : '0.00',
-          rata_rata_waktu_jam: week.rata_rata_waktu_menit
-            ? (week.rata_rata_waktu_menit / 60).toFixed(2)
-            : '0.00',
-        }));
-
-        const sheetName = this.sanitizeSheetName(machine.mesin || 'Machine');
-        const worksheet = workbook.addWorksheet(sheetName);
-
-        if (weeklyData.length > 0) {
-          const headers = Object.keys(weeklyData[0]);
-          worksheet.addRow(headers);
-
-          weeklyData.forEach((row: any) => {
-            const values = headers.map((header) => row[header]);
-            worksheet.addRow(values);
-          });
-
-          // Style header
-          const headerRow = worksheet.getRow(1);
-          headerRow.font = { bold: true };
-          headerRow.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFE0E0E0' },
-          };
-        }
-      }
-    });
-  }
-
-  private static addMonthlyDetailSheetsExcelJS(
-    workbook: any,
-    data: any[],
-  ): void {
-    data.forEach((machine) => {
-      if (machine.data && Array.isArray(machine.data)) {
-        const monthlyData = machine.data.map((month: any) => ({
-          ...month,
-          jumlah_waktu_jam: month.jumlah_waktu_menit
-            ? (month.jumlah_waktu_menit / 60).toFixed(2)
-            : '0.00',
-          rata_rata_waktu_jam: month.rata_rata_waktu_menit
-            ? (month.rata_rata_waktu_menit / 60).toFixed(2)
-            : '0.00',
-        }));
-
-        const sheetName = this.sanitizeSheetName(machine.mesin || 'Machine');
-        const worksheet = workbook.addWorksheet(sheetName);
-
-        if (monthlyData.length > 0) {
-          const headers = Object.keys(monthlyData[0]);
-          worksheet.addRow(headers);
-
-          monthlyData.forEach((row: any) => {
-            const values = headers.map((header) => row[header]);
-            worksheet.addRow(values);
-          });
-
-          // Style header
-          const headerRow = worksheet.getRow(1);
-          headerRow.font = { bold: true };
-          headerRow.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFE0E0E0' },
-          };
-        }
-      }
-    });
-  }
-
-  // Main export method - uses ExcelJS for proper image embedding
-  static async createExcelWithEmbeddedCharts(
-    data: any,
-    fileName: string,
-    type: string,
-    options: {
-      includeCharts?: boolean;
-      chartTypes?: ('bar' | 'line' | 'pie' | 'doughnut')[];
-      dateRange?: any;
-    } = {},
-  ): Promise<void> {
-    try {
-      // Use ExcelJS for proper image embedding
-      await this.createExcelWithExcelJS(data, fileName, type, options);
-    } catch (error) {
-      console.error(
-        'ExcelJS not available, falling back to XLSX with references:',
-        error,
-      );
-
-      // Fallback to original XLSX method
-      await this.createExcelWithXLSXFallback(data, fileName, type, options);
-    }
-  }
-
-  // Fallback method using XLSX (original implementation)
-  private static async createExcelWithXLSXFallback(
-    data: any,
-    fileName: string,
-    type: string,
-    options: {
-      includeCharts?: boolean;
-      chartTypes?: ('bar' | 'line' | 'pie' | 'doughnut')[];
-      dateRange?: any;
-    } = {},
-  ): Promise<void> {
-    const { includeCharts = true, chartTypes = ['bar'], dateRange } = options;
-
-    // Create workbook
-    const workbook = XLSX.utils.book_new();
-
-    // Process main data
-    let processedData = data;
-
-    if (type === 'responTime' || type === 'breakDown') {
-      processedData = this.processWeeklyData(data);
-    } else if (type === 'responTimeBulan' || type === 'breakDownMonth') {
-      processedData = this.processMonthlyData(data);
-    }
-
-    // Add main data sheet
-    const mainSheet = XLSX.utils.json_to_sheet(
-      Array.isArray(processedData) ? processedData : [processedData],
+    excelJSSuccess = true;
+    console.log('✅ Excel with embedded charts exported via ExcelJS');
+  } catch (err) {
+    console.warn(
+      'ExcelJS embedding failed, falling back to XLSX + separate HTML:',
+      err,
     );
-    XLSX.utils.book_append_sheet(workbook, mainSheet, 'Data');
+  }
 
-    // Add charts sheet with references
-    if (includeCharts && Array.isArray(data) && data.length > 0) {
-      const chartsSheetData = [
-        {
-          Notice:
-            'For images embedded directly in Excel, please use the ExcelJS version',
-          Alternative:
-            'Charts are referenced below with base64 data in separate sheet',
-          Instruction:
-            'Copy base64 data and use online converter to view charts',
-        },
-      ];
+  // ── Fallback: plain XLSX + standalone HTML with charts ─────────────────────
+  if (!excelJSSuccess) {
+    // Add a Charts-Info sheet with base64 note
+    const infoSheet = XLSX.utils.json_to_sheet([
+      { Info: 'Chart images were generated but could not be embedded.' },
+      { Info: 'Open the accompanying HTML file to view the charts.' },
+    ]);
+    XLSX.utils.book_append_sheet(wb, infoSheet, 'Charts Info');
 
-      const chartsSheet = XLSX.utils.json_to_sheet(chartsSheetData);
-      XLSX.utils.book_append_sheet(workbook, chartsSheet, 'Charts Info');
+    const ts = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `${fileName}_${ts}.xlsx`);
+
+    // Export standalone HTML with charts embedded as <img> tags
+    if (chartImagesBase64.length > 0) {
+      const imgTags = chartImagesBase64
+        .map(
+          ({ title, base64 }) =>
+            `<div style="margin-bottom:40px">
+              <h3 style="font-family:Arial;color:#0065DE">${title}</h3>
+              <img src="data:image/png;base64,${base64}" style="max-width:100%;border:1px solid #ccc;border-radius:8px"/>
+            </div>`,
+        )
+        .join('');
+
+      const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>${fileName} Charts</title>
+        <style>body{font-family:Arial,sans-serif;padding:32px;background:#f8fafc}h1{color:#0065DE}</style>
+        </head><body><h1>${fileName} – Charts</h1>${imgTags}</body></html>`;
+
+      const htmlBlob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(htmlBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${fileName}_charts_${new Date()
+        .toISOString()
+        .slice(0, 10)}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
-
-    // Generate filename with timestamp
-    const timestamp = new Date().toISOString().split('T')[0];
-    const finalFileName = `${fileName}_fallback_${timestamp}`;
-
-    // Save the workbook
-    XLSX.writeFile(workbook, `${finalFileName}.xlsx`);
-
-    console.log(`⚠️ Fallback Excel file saved: ${finalFileName}.xlsx`);
-    console.log(`💡 For embedded images, ensure ExcelJS library is available`);
   }
+};
 
-  private static processWeeklyData(data: any[]): any[] {
-    return data.map((machine) => {
-      const processed = { ...machine };
+// ─── Export Button Component ──────────────────────────────────────────────────
 
-      if (machine.jumlah_waktu_menit) {
-        processed.jumlah_waktu_jam = (machine.jumlah_waktu_menit / 60).toFixed(
-          2,
-        );
-      }
-
-      if (machine.rata_rata_waktu_menit) {
-        processed.rata_rata_waktu_jam = (
-          machine.rata_rata_waktu_menit / 60
-        ).toFixed(2);
-      }
-
-      return processed;
-    });
-  }
-
-  private static processMonthlyData(data: any[]): any[] {
-    return data.map((machine) => {
-      const processed = { ...machine };
-
-      if (machine.data && Array.isArray(machine.data)) {
-        const totalMinutes = machine.data.reduce(
-          (sum: number, month: any) => sum + (month.jumlah_waktu_menit || 0),
-          0,
-        );
-        processed.total_jam = (totalMinutes / 60).toFixed(2);
-        processed.total_bulan = machine.data.length;
-      }
-
-      return processed;
-    });
-  }
-
-  private static sanitizeSheetName(name: string): string {
-    let sanitized = name.replace(/[\[\]\\\/\?*:]/g, '_');
-    if (sanitized.length > 31) {
-      sanitized = sanitized.substring(0, 31);
-    }
-    return sanitized;
-  }
-}
-
-// Enhanced Export Button Component with Real Embedded Images
 interface EnhancedExportButtonProps {
   data: any;
   type:
@@ -720,82 +534,50 @@ interface EnhancedExportButtonProps {
   chartTypes?: ('bar' | 'line' | 'pie' | 'doughnut')[];
 }
 
+const TYPE_FILENAME_MAP: Record<string, string> = {
+  mesinProblem: 'mesin_problem',
+  quality: 'quality_defect',
+  produksi: 'produksi_defect',
+  responTime: 'respon_time_minggu',
+  responTimeBulan: 'respon_time_bulan',
+  oneMesin: 'one_mesin',
+  allMesin: 'all_mesin',
+  breakDown: 'breakdown_minggu',
+  breakDownMonth: 'breakdown_month',
+};
+
 export const EnhancedExportButton: React.FC<EnhancedExportButtonProps> = ({
   data,
   type,
-  label = 'Export with Embedded Images',
+  label = 'Export',
   dateRange,
   mesinName,
   className = '',
   includeCharts = true,
-  chartTypes = ['bar', 'line'],
+  chartTypes = ['bar'],
 }) => {
   const [isExporting, setIsExporting] = React.useState(false);
 
-  const generateFilename = (): string => {
-    let baseFilename = '';
-
-    switch (type) {
-      case 'mesinProblem':
-        baseFilename = 'mesin_problem';
-        break;
-      case 'quality':
-        baseFilename = 'quality_defect';
-        break;
-      case 'produksi':
-        baseFilename = 'produksi_defect';
-        break;
-      case 'responTime':
-        baseFilename = 'respon_time_minggu';
-        break;
-      case 'responTimeBulan':
-        baseFilename = 'respon_time_bulan';
-        break;
-      case 'oneMesin':
-        baseFilename = mesinName
-          ? `mesin_${mesinName.replace(/\s+/g, '_').toLowerCase()}`
-          : 'one_mesin';
-        break;
-      case 'allMesin':
-        baseFilename = 'all_mesin';
-        break;
-      case 'breakDown':
-        baseFilename = 'breakdown_minggu';
-        break;
-      case 'breakDownMonth':
-        baseFilename = 'breakdown_month';
-        break;
-      default:
-        baseFilename = 'data_export';
-    }
-
-    return baseFilename;
-  };
-
-  const handleExport = async (): Promise<void> => {
+  const handleExport = async () => {
     if (!data) {
-      console.error('No data available to export');
+      alert('No data available to export.');
       return;
     }
-
     setIsExporting(true);
-    const filename = generateFilename();
-
     try {
-      await ChartExportUtility.createExcelWithEmbeddedCharts(
-        data,
-        filename,
-        type,
-        {
-          includeCharts,
-          chartTypes,
-          dateRange,
-        },
-      );
+      const filename = mesinName
+        ? `mesin_${mesinName.replace(/\s+/g, '_').toLowerCase()}`
+        : TYPE_FILENAME_MAP[type] ?? 'data_export';
 
-      console.log('✅ Export with embedded images completed successfully');
-    } catch (error) {
-      console.error('❌ Error exporting data with embedded images:', error);
+      await exportToExcel(
+        data,
+        type,
+        filename,
+        includeCharts ? chartTypes : [],
+        dateRange,
+      );
+    } catch (err) {
+      console.error('Export error:', err);
     } finally {
       setIsExporting(false);
     }
@@ -809,8 +591,8 @@ export const EnhancedExportButton: React.FC<EnhancedExportButtonProps> = ({
     >
       {isExporting ? (
         <>
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-          Embedding Images...
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+          Exporting…
         </>
       ) : (
         <>🖼️ {label}</>
@@ -819,7 +601,8 @@ export const EnhancedExportButton: React.FC<EnhancedExportButtonProps> = ({
   );
 };
 
-// Chart Preview Component
+// ─── Chart Preview ────────────────────────────────────────────────────────────
+
 export const ChartPreview: React.FC<{
   data: any[];
   type: string;
@@ -829,31 +612,23 @@ export const ChartPreview: React.FC<{
   const chartRef = React.useRef<Chart | null>(null);
 
   React.useEffect(() => {
-    if (canvasRef.current && data.length > 0) {
-      // Destroy existing chart
-      if (chartRef.current) {
-        chartRef.current.destroy();
-      }
-
-      // Create new chart
-      const config = ChartExportUtility.generateChartConfig(
-        data,
-        type,
-        chartType,
-      );
-      chartRef.current = new Chart(canvasRef.current, config);
-    }
-
+    if (!canvasRef.current || !data?.length) return;
+    chartRef.current?.destroy();
+    const config = buildChartConfig(
+      data,
+      type,
+      chartType,
+      `${type} – ${chartType}`,
+    );
+    if (config) chartRef.current = new Chart(canvasRef.current, config);
     return () => {
-      if (chartRef.current) {
-        chartRef.current.destroy();
-      }
+      chartRef.current?.destroy();
     };
   }, [data, type, chartType]);
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4 border rounded-lg bg-white shadow-sm">
-      <canvas ref={canvasRef} className="max-w-full h-auto"></canvas>
+      <canvas ref={canvasRef} />
     </div>
   );
 };
