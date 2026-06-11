@@ -262,6 +262,7 @@ const buildSlipGajiHTML = (
     for (let i = 0; i < maxRows; i++) {
       const b = bayaranItems[i];
       const p = potonganItems[i];
+
       const leftCells = b
         ? `<td style="padding:1.5px 5px;font-size:9.5px;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis;">${
             b.label
@@ -282,6 +283,16 @@ const buildSlipGajiHTML = (
         : `<td colspan="3" style="padding:1.5px 5px;">&nbsp;</td>`;
       dataRows += `<tr style="vertical-align:top;">${leftCells}${rightCells}</tr>`;
     }
+
+    const totalBayaran = bayaranItems.reduce(
+      (sum, item) => sum + Number(item.total || 0),
+      0,
+    );
+
+    const totalPotongan = potonganItems.reduce(
+      (sum, item) => sum + Number(item.total || 0),
+      0,
+    );
 
     return `
 <div style="
@@ -398,15 +409,11 @@ const buildSlipGajiHTML = (
   <div style="display:flex;border-top:1.5px solid #1a1a1a;">
     <div style="flex:1;display:flex;justify-content:space-between;padding:2px 5px;border-right:1.5px solid #1a1a1a;">
       <span style="font-size:9px;font-weight:bold;">JUMLAH</span>
-      <span style="font-size:9px;font-weight:bold;">${fmt(
-        emp.total_upah,
-      )}</span>
+      <span style="font-size:9px;font-weight:bold;">${fmt(totalBayaran)}</span>
     </div>
     <div style="flex:1;display:flex;justify-content:space-between;padding:2px 5px;">
       <span style="font-size:9px;font-weight:bold;">JUMLAH</span>
-      <span style="font-size:9px;font-weight:bold;">${fmt(
-        emp.total_potongan,
-      )}</span>
+      <span style="font-size:9px;font-weight:bold;">${fmt(totalPotongan)}</span>
     </div>
   </div>
 
