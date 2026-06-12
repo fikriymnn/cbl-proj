@@ -263,6 +263,7 @@ import MutasiBarangPage from './pages/GudangFG/MutasiBarangPage';
 import ApproveStandarWarnaPageMarketing from './pages/Marketing/ApproveStandarWarnaPageMarketing';
 import LaporanRekapLKHPage from './pages/Monitoring/LaporanRekapLKHPage';
 import LabelJOPage from './pages/Print/LabelJOPage';
+import JODetailStandalone from './components/Tables/Print/Jodetailstandalone';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2521,6 +2522,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <Cobain />
+            </>
+          }
+        />
+        <Route
+          path="/print/jo-detail"
+          element={
+            <>
+              <PageTitle title="Detail JO - PT CBL" />
+              <JODetailStandalone />
             </>
           }
         />
