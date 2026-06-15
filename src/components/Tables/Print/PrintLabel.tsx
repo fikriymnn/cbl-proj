@@ -172,11 +172,185 @@ const getQRDataUri = async (
   });
 };
 
+// const buildPrintHTML = (
+//   data: PrintLabelFormData,
+//   copies: number,
+//   logoDataUri: string,
+//   qrDataUri: string,
+//   angkaDari: number = 1,
+// ): string => {
+//   const now = new Date();
+//   const dateStr = `${String(now.getDate()).padStart(2, '0')}/${String(
+//     now.getMonth() + 1,
+//   ).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(
+//     2,
+//     '0',
+//   )}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+//   const qtyPoFormatted = data.qty_po
+//     ? `${Number(data.qty_po).toLocaleString('id-ID')} PCS`
+//     : '';
+//   const qtyLabelFormatted = data.qty_label
+//     ? `${data.qty_label} PCS${
+//         data.keterangan_qty_label ? ' ' + data.keterangan_qty_label : ''
+//       }`
+//     : '';
+
+//   const formatTanggal = (val: string) => {
+//     if (!val) return '';
+//     const d = new Date(val);
+//     return isNaN(d.getTime()) ? val : d.toLocaleDateString('id-ID');
+//   };
+
+//   const LABEL_H = '62mm';
+//   const HEADER_H = '16mm';
+//   const PAGE_H = '186mm';
+
+//   const singleLabel = (copyIndex: number) => {
+//     const rowCount = data.tanda_retur ? 7 : 6;
+//     const dataAreaMm = 44;
+//     const unitMm = dataAreaMm / rowCount;
+//     const rowH = `${unitMm.toFixed(2)}mm`;
+
+//     // QR floated absolutely — sits on the right, spanning multiple rows freely
+//     const qrBlock = qrDataUri
+//       ? `<div style="position:absolute;top:0;right:2.5mm;height:100%;display:flex;align-items:center;pointer-events:none;">
+//         <img src="${qrDataUri}" width="52" height="52" style="display:block;image-rendering:pixelated;" alt="QR"/>
+//        </div>`
+//       : '';
+
+//     return `
+//   <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; height:${LABEL_H}; max-height:${LABEL_H}; overflow:hidden;">
+
+//     <!-- HEADER -->
+//     <div style="height:${HEADER_H}; max-height:${HEADER_H}; overflow:hidden; display:flex; align-items:stretch; border-bottom:1.5px solid #111;">
+//       <div style="width:42px; flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:2mm;">
+//         <img src="${logoDataUri}" width="32" height="32" style="display:block;object-fit:contain;" alt=""/>
+//       </div>
+//       <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2mm 2mm 2mm 0; text-align:center;">
+//         <div style="font-size:13px;font-weight:bold;font-family:Arial,sans-serif;text-decoration:underline;line-height:1.3;">PT. CAHAYA BERLIAN LESTARI</div>
+//         <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Jl. Paralon II No. 5, Cigondewah Kaler, Bandung Kulon</div>
+//         <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Bandung 40214 Telp: ( 022 ) 6033823</div>
+//       </div>
+//     </div>
+
+//     <!-- DATA ROWS — position:relative so QR can be absolutely placed -->
+//     <div style="font-family:Arial,sans-serif;font-size:10.5px;padding:0 2.5mm;position:relative;">
+
+//       ${qrBlock}
+
+//       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+//         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NO JO</div>
+//         <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;padding-right:60px;">
+//           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
+//             data.no_jo || ''
+//           }</span>
+//           <span style="font-size:9.5px;color:#555;font-weight:normal;white-space:nowrap;margin-left:4px;">${dateStr}</span>
+//         </div>
+//       </div>
+
+//       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+//         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">PEMESAN</div>
+//         <div style="flex:1;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:60px;">: ${
+//           data.customer || ''
+//         }</div>
+//       </div>
+
+//       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+//         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NAMA PRODUK</div>
+//         <div style="flex:1;font-weight:bold;padding-right:60px;">: ${
+//           data.produk || ''
+//         }</div>
+//       </div>
+
+//       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+//         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY LABEL</div>
+//         <div style="flex:1;font-weight:bold;padding-right:60px;">: ${qtyLabelFormatted}</div>
+//       </div>
+
+//       ${
+//         data.tanda_retur
+//           ? `
+//       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+//         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANDA RETUR</div>
+//         <div style="flex:1;font-weight:900;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:60px;">: ${data.tanda_retur}</div>
+//       </div>`
+//           : ''
+//       }
+
+//       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+//         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANGGAL PRODUKSI</div>
+//         <div style="flex:1;display:flex;align-items:center;justify-content:space-between;padding-right:60px;">
+//           <span style="font-weight:bold;">: ${formatTanggal(
+//             data.tanggal_produksi,
+//           )}</span>
+//           <span style="border:2px solid #111;border-radius:999px;padding:2px 10px;font-size:10.5px;font-weight:900;white-space:nowrap;"> ${
+//             data.no_io || ''
+//           }</span>
+//         </div>
+//       </div>
+
+//       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+//         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">OPERATOR</div>
+//         <div style="flex:1;font-weight:bold;overflow:hidden;padding-right:60px;">
+//           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
+//             data.operator || ''
+//           } - ${copyIndex}</span>
+//         </div>
+//       </div>
+
+//     </div>
+//   </td>`;
+//   };
+
+//   // ... rest of the function (pages loop) stays unchanged
+//   const pages: string[] = [];
+//   for (let p = 0; p * 6 < copies; p++) {
+//     const pageRows: string[] = [];
+//     for (let r = 0; r < 3; r++) {
+//       const li = p * 6 + r * 2;
+//       const ri = li + 1;
+//       const left =
+//         li < copies
+//           ? singleLabel(angkaDari + li)
+//           : `<td style="width:50%;height:${LABEL_H};background:white;border:none;padding:0;"></td>`;
+//       const right =
+//         ri < copies
+//           ? singleLabel(angkaDari + ri)
+//           : `<td style="width:50%;height:${LABEL_H};background:white;border:none;padding:0;"></td>`;
+//       pageRows.push(`<tr style="height:${LABEL_H};">${left}${right}</tr>`);
+//     }
+//     pages.push(`
+//       <table width="100%" cellspacing="10" cellpadding="0" style="border-collapse:separate; border:none; table-layout:fixed; height:${PAGE_H}; page-break-after:always;">
+//         ${pageRows.join('')}
+//       </table>
+//     `);
+//   }
+
+//   return `<!DOCTYPE html>
+// <html>
+// <head>
+//   <meta charset="UTF-8"/>
+//   <title>Print Label - ${data.no_jo}</title>
+//   <style>
+//     @page { size: A4 landscape; margin: 8mm; }
+//     * { box-sizing: border-box; margin: 0; padding: 0; }
+//     body { font-family: Arial, sans-serif; background: white; }
+//     @media print {
+//       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+//     }
+//   </style>
+// </head>
+// <body>
+//   ${pages.join('')}
+// </body>
+// </html>`;
+// };
+
 const buildPrintHTML = (
   data: PrintLabelFormData,
   copies: number,
   logoDataUri: string,
-  qrDataUri: string,
   angkaDari: number = 1,
 ): string => {
   const now = new Date();
@@ -190,6 +364,7 @@ const buildPrintHTML = (
   const qtyPoFormatted = data.qty_po
     ? `${Number(data.qty_po).toLocaleString('id-ID')} PCS`
     : '';
+
   const qtyLabelFormatted = data.qty_label
     ? `${data.qty_label} PCS${
         data.keterangan_qty_label ? ' ' + data.keterangan_qty_label : ''
@@ -212,98 +387,81 @@ const buildPrintHTML = (
     const unitMm = dataAreaMm / rowCount;
     const rowH = `${unitMm.toFixed(2)}mm`;
 
-    // QR floated absolutely — sits on the right, spanning multiple rows freely
-    const qrBlock = qrDataUri
-      ? `<div style="position:absolute;top:0;right:2.5mm;height:100%;display:flex;align-items:center;pointer-events:none;">
-        <img src="${qrDataUri}" width="52" height="52" style="display:block;image-rendering:pixelated;" alt="QR"/>
-       </div>`
-      : '';
-
     return `
-  <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; height:${LABEL_H}; max-height:${LABEL_H}; overflow:hidden;">
+    <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; height:${LABEL_H}; max-height:${LABEL_H}; overflow:hidden;">
 
-    <!-- HEADER -->
-    <div style="height:${HEADER_H}; max-height:${HEADER_H}; overflow:hidden; display:flex; align-items:stretch; border-bottom:1.5px solid #111;">
-      <div style="width:42px; flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:2mm;">
-        <img src="${logoDataUri}" width="32" height="32" style="display:block;object-fit:contain;" alt=""/>
-      </div>
-      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2mm 2mm 2mm 0; text-align:center;">
-        <div style="font-size:13px;font-weight:bold;font-family:Arial,sans-serif;text-decoration:underline;line-height:1.3;">PT. CAHAYA BERLIAN LESTARI</div>
-        <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Jl. Paralon II No. 5, Cigondewah Kaler, Bandung Kulon</div>
-        <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Bandung 40214 Telp: ( 022 ) 6033823</div>
-      </div>
-    </div>
-
-    <!-- DATA ROWS — position:relative so QR can be absolutely placed -->
-    <div style="font-family:Arial,sans-serif;font-size:10.5px;padding:0 2.5mm;position:relative;">
-
-      ${qrBlock}
-
-      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NO JO</div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;padding-right:60px;">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
-            data.no_jo || ''
-          }</span>
-          <span style="font-size:9.5px;color:#555;font-weight:normal;white-space:nowrap;margin-left:4px;">${dateStr}</span>
+      <!-- HEADER -->
+      <div style="height:${HEADER_H}; max-height:${HEADER_H}; overflow:hidden; display:flex; align-items:stretch; border-bottom:1.5px solid #111;">
+        <div style="width:42px; flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:2mm;">
+          <img src="${logoDataUri}" width="32" height="32" style="display:block;object-fit:contain;" alt=""/>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2mm 2mm 2mm 0; text-align:center;">
+          <div style="font-size:13px;font-weight:bold;font-family:Arial,sans-serif;text-decoration:underline;line-height:1.3;">PT. CAHAYA BERLIAN LESTARI</div>
+          <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Jl. Paralon II No. 5, Cigondewah Kaler, Bandung Kulon</div>
+          <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Bandung 40214 Telp: ( 022 ) 6033823</div>
         </div>
       </div>
 
-      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">PEMESAN</div>
-        <div style="flex:1;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:60px;">: ${
-          data.customer || ''
-        }</div>
-      </div>
+      <!-- DATA ROWS -->
+      <div style="font-family:Arial,sans-serif;font-size:10.5px;padding:0 2.5mm;">
 
-      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NAMA PRODUK</div>
-        <div style="flex:1;font-weight:bold;padding-right:60px;">: ${
-          data.produk || ''
-        }</div>
-      </div>
+        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NO JO</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
+              data.no_jo || ''
+            }</span>
+            <span style="font-size:9.5px;color:#555;font-weight:normal;white-space:nowrap;margin-left:4px;">${dateStr}</span>
+          </div>
+        </div>
 
+        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">PEMESAN</div>
+          <div style="flex:1;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">: ${
+            data.customer || ''
+          }</div>
+        </div>
+
+        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NAMA PRODUK</div>
+          <div style="flex:1;font-weight:bold">: ${data.produk || ''}</div>
+        </div>
+       
       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY LABEL</div>
-        <div style="flex:1;font-weight:bold;padding-right:60px;">: ${qtyLabelFormatted}</div>
-      </div>
-
-      ${
-        data.tanda_retur
-          ? `
-      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANDA RETUR</div>
-        <div style="flex:1;font-weight:900;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:60px;">: ${data.tanda_retur}</div>
-      </div>`
-          : ''
-      }
-
-      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANGGAL PRODUKSI</div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;padding-right:60px;">
-          <span style="font-weight:bold;">: ${formatTanggal(
-            data.tanggal_produksi,
-          )}</span>
-          <span style="border:2px solid #111;border-radius:999px;padding:2px 10px;font-size:10.5px;font-weight:900;white-space:nowrap;"> ${
-            data.no_io || ''
+        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-weight:bold;">: ${qtyLabelFormatted}</span>
+          <span style="font-size:23px;font-weight:900;line-height:1;">${
+            data.tanda_retur || ''
           }</span>
         </div>
       </div>
 
-      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">OPERATOR</div>
-        <div style="flex:1;font-weight:bold;overflow:hidden;padding-right:60px;">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
-            data.operator || ''
-          } - ${copyIndex}</span>
+        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANGGAL PRODUKSI</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-weight:bold;">: ${formatTanggal(
+              data.tanggal_produksi,
+            )}</span>
+            <span style="border:2px solid #111;border-radius:999px;padding:2px 10px;font-size:10.5px;font-weight:900;white-space:nowrap;"> ${
+              data.no_io || ''
+            }</span>
+          </div>
         </div>
-      </div>
 
-    </div>
-  </td>`;
+        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">OPERATOR</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
+              data.operator || ''
+            } - ${copyIndex}</span>
+          </div>
+        </div>
+
+      </div>
+    </td>`;
   };
 
-  // ... rest of the function (pages loop) stays unchanged
   const pages: string[] = [];
   for (let p = 0; p * 6 < copies; p++) {
     const pageRows: string[] = [];
@@ -679,7 +837,7 @@ const PrintLabel: React.FC = () => {
       formData,
       copiesNum,
       logoBase64 || LogoSrc,
-      qrDataUri,
+      //qrDataUri,
       angkaDari,
     );
 
@@ -912,7 +1070,7 @@ const PrintLabel: React.FC = () => {
           </button>
 
           {/* Scan QR Button */}
-          <button
+          {/* <button
             onClick={() => setShowScanner(true)}
             className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm shadow-sm"
           >
@@ -930,10 +1088,10 @@ const PrintLabel: React.FC = () => {
               />
             </svg>
             Scan QR Label
-          </button>
+          </button> */}
 
           {/* Quick preview link when JO is selected */}
-          {selectedJO && (
+          {/* {selectedJO && (
             <a
               href={`/print/jo-detail?id=${selectedJO.id}`}
               target="_blank"
@@ -955,7 +1113,7 @@ const PrintLabel: React.FC = () => {
               </svg>
               Preview Detail JO
             </a>
-          )}
+          )} */}
         </div>
       </div>
 
