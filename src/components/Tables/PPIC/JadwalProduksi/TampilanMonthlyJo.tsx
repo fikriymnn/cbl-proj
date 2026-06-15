@@ -187,6 +187,7 @@ function TampilanMonthlyJO() {
     endDate: '',
   });
   const [lemburData, setLemburData] = useState<any[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   // Memoized calculations
   const monthDates = useMemo(() => {
@@ -547,6 +548,18 @@ function TampilanMonthlyJO() {
     },
     [lemburData],
   );
+
+  const handleSelectAll = (checked: boolean) => {
+    setSelectAll(checked);
+
+    setLemburData((prev) =>
+      prev.map((item) => ({
+        ...item,
+        shift_1: checked,
+        shift_2: checked,
+      })),
+    );
+  };
 
   const handleSearch = useCallback(() => {
     if (searchJO.trim() === '') {
@@ -1166,7 +1179,19 @@ function TampilanMonthlyJO() {
                   />
                 </div>
                 <div className="mb-4 max-h-60 overflow-y-auto">
-                  <h4 className="font-medium mb-2">Select Shifts:</h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium">Select Shifts:</h4>
+
+                    <label className="flex items-center text-sm">
+                      <input
+                        type="checkbox"
+                        checked={selectAll}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                        className="mr-1"
+                      />
+                      Select All
+                    </label>
+                  </div>
                   {lemburData.map((data, index) => (
                     <div
                       key={index}

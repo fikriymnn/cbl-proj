@@ -291,6 +291,10 @@ const JOHistory: React.FC = () => {
 
   // Sort order state
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  // Sort order state jo cancel
+  const [canceledSortOrder, setCanceledSortOrder] = useState<
+    'newest' | 'oldest'
+  >('newest');
 
   // Pagination states
   const [page, setPage] = useState<number>(1);
@@ -351,11 +355,13 @@ const JOHistory: React.FC = () => {
       const res = await axios.get(url, {
         params: {
           status_tiket: 'canceled',
+          is_send_again: false,
           page: canceledPage,
           limit: canceledLimit,
           search: canceledSearch || undefined,
-          start_date: canceledStartDate || undefined,
-          end_date: canceledEndDate || undefined,
+          start_date_cancel: canceledStartDate || undefined,
+          end_date_cancel: canceledEndDate || undefined,
+          sort_cancel: canceledSortOrder,
         },
         withCredentials: true,
       });
@@ -392,6 +398,7 @@ const JOHistory: React.FC = () => {
     canceledSearch,
     canceledStartDate,
     canceledEndDate,
+    canceledSortOrder,
   ]);
   // ── Open Label ──────────────────────────────────────────────────────────────
   const handleOpenLabel = async (item: JOData) => {
@@ -463,6 +470,10 @@ const JOHistory: React.FC = () => {
   const handleSortOrderChange = (order: 'newest' | 'oldest'): void => {
     setSortOrder(order);
     setPage(1);
+  };
+  const handleCanceledSortOrderChange = (order: 'newest' | 'oldest'): void => {
+    setCanceledSortOrder(order);
+    setCanceledPage(1);
   };
   const handlePrintJO = (item: JOData) => {
     setPrintJOId(item.id);
@@ -1201,6 +1212,60 @@ const JOHistory: React.FC = () => {
                         ×
                       </button>
                     )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1 sm:ml-auto">
+                  <label className="text-xs font-medium text-gray-600">
+                    Sort Tanggal Cancel
+                  </label>
+                  <div className="flex rounded-lg overflow-hidden border border-gray-300">
+                    <button
+                      onClick={() => handleCanceledSortOrderChange('newest')}
+                      className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${
+                        canceledSortOrder === 'newest'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                        />
+                      </svg>
+                      Newest
+                    </button>
+                    <button
+                      onClick={() => handleCanceledSortOrderChange('oldest')}
+                      className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 border-l border-gray-300 ${
+                        canceledSortOrder === 'oldest'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <svg
+                        className="w-3.5 h-3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"
+                        />
+                      </svg>
+                      Oldest
+                    </button>
                   </div>
                 </div>
 

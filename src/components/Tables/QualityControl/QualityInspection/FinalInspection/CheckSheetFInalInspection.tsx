@@ -22,6 +22,7 @@ function ChecksheetFinalInspection() {
   const [noPacking, setnoPacking] = useState<any>();
   const [status, setStatus] = useState<any>();
   const [noBarcode, setnoBarcode] = useState<any>();
+  const [qtyKirimFg, setQtyKirimFg] = useState<any>();
 
   useEffect(() => {
     getFinalInspection();
@@ -79,6 +80,7 @@ function ChecksheetFinalInspection() {
             qty_packing: qtyPacking,
             jumlah_packing: jumlahPacking,
             status: status,
+            quantity_kirim_fg: qtyKirimFg,
             inspeksi_final_point: FinalInspection?.inspeksi_final_point,
             inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
           },
@@ -98,6 +100,7 @@ function ChecksheetFinalInspection() {
             qty_packing: qtyPacking,
             jumlah_packing: jumlahPacking,
             status: status,
+            quantity_kirim_fg: qtyKirimFg,
             inspeksi_final_point: FinalInspection?.inspeksi_final_point,
             inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
           },
@@ -633,6 +636,11 @@ function ChecksheetFinalInspection() {
                     <p>
                       <span className="font-semibold">Nomor Barcode:</span>{' '}
                       {FinalInspection?.no_barcode}
+                    </p>
+
+                    <p>
+                      <span className="font-semibold">QTY Kirim FG:</span>{' '}
+                      {FinalInspection?.quantity_kirim_fg}
                     </p>
                     <p className="mt-2">
                       <span className="font-semibold">Catatan:</span>
@@ -1391,6 +1399,36 @@ function ChecksheetFinalInspection() {
                     defaultValue={FinalInspection?.no_barcode}
                     onChange={(e) => {
                       setnoBarcode(e.target.value);
+                    }}
+                    className="w-full border rounded px-2"
+                  ></input>
+                )}
+              </div>
+
+              <div className="w-[40%]">
+                <p className="">QTY Kirim FG :</p>
+                {FinalInspection?.status == 'incoming' ? (
+                  <input
+                    type="text"
+                    required
+                    name=""
+                    id=""
+                    onChange={(e) => {
+                      const qtyKirimFgChange = parseInt(e.target.value);
+                      setQtyKirimFg(qtyKirimFgChange);
+                    }}
+                    className="w-full border rounded px-2"
+                  ></input>
+                ) : (
+                  <input
+                    type="text"
+                    name=""
+                    id=""
+                    disabled
+                    defaultValue={FinalInspection?.quantity_kirim_fg}
+                    onChange={(e) => {
+                      const qtyKirimFgChange = parseInt(e.target.value);
+                      setQtyKirimFg(qtyKirimFgChange);
                     }}
                     className="w-full border rounded px-2"
                   ></input>
