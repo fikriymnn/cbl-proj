@@ -264,6 +264,7 @@ import ApproveStandarWarnaPageMarketing from './pages/Marketing/ApproveStandarWa
 import LaporanRekapLKHPage from './pages/Monitoring/LaporanRekapLKHPage';
 import LabelJOPage from './pages/Print/LabelJOPage';
 import JODetailStandalone from './components/Tables/Print/Jodetailstandalone';
+import FGBookingJo from './pages/GudangFG/FGBookingJo';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2485,6 +2486,14 @@ function App() {
           element={
             <P>
               <MutasiBarangPage />
+            </P>
+          }
+        />
+        <Route
+          path="/gudang-fg/booking-jo"
+          element={
+            <P>
+              <FGBookingJo />
             </P>
           }
         />
