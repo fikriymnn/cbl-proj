@@ -556,7 +556,7 @@ function FgItemPicker({
         ) : (
           fgData.map((item) => {
             const isSelected = selectedIds.has(item.id);
-            const outOfStock = (item.jumlah_qty_sisa ?? 0) <= 0;
+            const outOfStock = (item.jumlah_qty ?? 0) <= 0;
             const isBooked = item.status === 'booking';
 
             return (
@@ -628,7 +628,7 @@ function FgItemPicker({
                   {/* Qty stats */}
                   <div className="flex-shrink-0 text-right space-y-0.5">
                     <p className="text-sm font-bold text-emerald-600">
-                      {fmt(item.jumlah_qty_sisa)}
+                      {fmt(item.jumlah_qty)}
                     </p>
                     <p className="text-[10px] text-slate-400">sisa</p>
                     <p className="text-[10px] text-slate-300">
@@ -976,10 +976,7 @@ const FGBooking: React.FC = () => {
                 </p>
                 <h1 className="text-base font-bold text-white">Booking FG</h1>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs text-slate-400">Live</span>
-              </div>
+              <div className="flex items-center gap-2"></div>
             </div>
             {/* Tabs */}
             <div className="flex">

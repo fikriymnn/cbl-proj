@@ -25,6 +25,8 @@ interface DataBarang {
   produk: string;
   customer: string;
   toleransi_pengiriman: string;
+  tgl_masuk: string | null;
+  status: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -60,6 +62,56 @@ interface SendDoItem {
 function fmtQty(val: number | null | undefined) {
   if (val == null) return '-';
   return val.toLocaleString('id-ID');
+}
+
+const BULAN_ID = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
+];
+
+/** Format a date string/value as "20-Desember-2026" */
+function fmtTglMasuk(val: string | null | undefined): string {
+  if (!val) return '-';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return String(val);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = BULAN_ID[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+/** Number of days between tgl_masuk and today */
+function lifetimeDays(val: string | null | undefined): string {
+  if (!val) return '-';
+  const start = new Date(val);
+  if (isNaN(start.getTime())) return '-';
+  const now = new Date();
+  const startUtc = Date.UTC(
+    start.getFullYear(),
+    start.getMonth(),
+    start.getDate(),
+  );
+  const nowUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const days = Math.floor((nowUtc - startUtc) / (1000 * 60 * 60 * 24));
+  return `${days} hari`;
+}
+
+/** Color classes for status badge: Keep = green, Booking = amber, else = gray */
+function statusBadgeClass(status: string | null | undefined): string {
+  const s = (status ?? '').toLowerCase();
+  if (s === 'keep') return 'bg-green-100 text-green-700';
+  if (s === 'booking') return 'bg-amber-100 text-amber-700';
+  return 'bg-gray-100 text-gray-600';
 }
 
 // ─── Async Searchable Select ──────────────────────────────────────────────────
@@ -988,6 +1040,7 @@ const GudangFG: React.FC = () => {
           withCredentials: true,
         },
       );
+      console.log('Fetched data:', res.data);
       setData(Array.isArray(res.data?.data) ? res.data.data : []);
       setTotalPages(res.data?.total_page || 1);
     } catch (err) {
@@ -1158,10 +1211,10 @@ const GudangFG: React.FC = () => {
                     'No IO',
                     'Produk',
                     'Customer',
-
                     'PO Qty',
-                    'Jml Masuk',
-                    'Jml Keluar',
+                    'Tgl Masuk',
+                    'Status',
+                    'Lifetime',
                     'Sisa Stok',
                   ].map((h) => (
                     <th
@@ -1188,38 +1241,16 @@ const GudangFG: React.FC = () => {
                     <React.Fragment key={`${group.id_io}-${group.id_produk}`}>
                       <tr className="bg-violet-50 border-b border-violet-100">
                         <td colSpan={10} className="p-2 px-4">
-                          <div className="flex items-center justify-between flex-wrap gap-2">
-                            <div className="flex items-center gap-3">
-                              <span className="text-xs font-bold text-violet-700">
-                                {group.no_io}
-                              </span>
-                              <span className="text-xs text-gray-600 font-medium max-w-xs">
-                                {group.produk}
-                              </span>
-                              <span className="text-[10px] text-gray-500">
-                                {group.customer}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-4 text-[10px] text-gray-500">
-                              <span>
-                                Total Masuk:{' '}
-                                <strong className="text-green-700">
-                                  {fmtQty(group.jumlah_qty)}
-                                </strong>
-                              </span>
-                              <span>
-                                Total Keluar:{' '}
-                                <strong className="text-red-600">
-                                  {fmtQty(group.jumlah_qty_keluar)}
-                                </strong>
-                              </span>
-                              <span>
-                                Sisa:{' '}
-                                <strong className="text-indigo-700">
-                                  {fmtQty(group.jumlah_qty_sisa)}
-                                </strong>
-                              </span>
-                            </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold text-violet-700">
+                              {group.no_io}
+                            </span>
+                            <span className="text-xs text-gray-600 font-medium max-w-xs">
+                              {group.produk}
+                            </span>
+                            <span className="text-[10px] text-gray-500">
+                              {group.customer}
+                            </span>
                           </div>
                         </td>
                       </tr>
@@ -1233,6 +1264,7 @@ const GudangFG: React.FC = () => {
                             ) +
                           bi +
                           1;
+
                         return (
                           <tr
                             key={barang.id}
@@ -1255,18 +1287,26 @@ const GudangFG: React.FC = () => {
                             <td className="p-2 sm:p-3 text-xs text-gray-700">
                               {barang.customer || '-'}
                             </td>
-
                             <td className="p-2 sm:p-3 text-xs text-right font-medium">
                               {fmtQty(barang.po_qty)}
                             </td>
-                            <td className="p-2 sm:p-3 text-xs text-right font-bold text-green-700">
-                              {fmtQty(barang.jumlah_qty)}
+                            <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
+                              {fmtTglMasuk(barang.tgl_masuk)}
                             </td>
-                            <td className="p-2 sm:p-3 text-xs text-right font-bold text-red-600">
-                              {fmtQty(barang.jumlah_qty_keluar)}
+                            <td className="p-2 sm:p-3 text-xs">
+                              <span
+                                className={`inline-block px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${statusBadgeClass(
+                                  barang.status,
+                                )}`}
+                              >
+                                {barang.status || '-'}
+                              </span>
+                            </td>
+                            <td className="p-2 sm:p-3 text-xs text-gray-700 whitespace-nowrap">
+                              {lifetimeDays(barang.tgl_masuk)}
                             </td>
                             <td className="p-2 sm:p-3 text-xs text-right font-bold text-indigo-700">
-                              {fmtQty(barang.jumlah_qty_sisa)}
+                              {fmtQty(barang.jumlah_qty)}
                             </td>
                           </tr>
                         );
