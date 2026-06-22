@@ -265,6 +265,7 @@ import LaporanRekapLKHPage from './pages/Monitoring/LaporanRekapLKHPage';
 import LabelJOPage from './pages/Print/LabelJOPage';
 import JODetailStandalone from './components/Tables/Print/Jodetailstandalone';
 import FGBookingJo from './pages/GudangFG/FGBookingJo';
+import AbsensiDivisiPage from './pages/UserMenu/AbsensiDivisiPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2376,6 +2377,14 @@ function App() {
           element={
             <P>
               <UserMenuAbsensi />
+            </P>
+          }
+        />
+        <Route
+          path="/user-menu/absensi-divisi"
+          element={
+            <P>
+              <AbsensiDivisiPage />
             </P>
           }
         />
