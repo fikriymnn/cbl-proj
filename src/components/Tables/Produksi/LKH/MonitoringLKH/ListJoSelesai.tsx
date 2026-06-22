@@ -225,6 +225,12 @@ const ListJoSelesai: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [limit, setLimit] = useState<number>(10);
 
+  // ── NEW: expand state ───────────────────────────────────────────────────
+  const [expandedJoId, setExpandedJoId] = useState<number | null>(null);
+  const [expandingJoId, setExpandingJoId] = useState<number | null>(null);
+  const [expandedData, setExpandedData] = useState<any>(null);
+  // ─────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     fetchJoDoneData();
   }, [page, searchTerm, limit]);
@@ -290,6 +296,47 @@ const ListJoSelesai: React.FC = () => {
     } finally {
       setOpeningJoId(null);
     }
+  };
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // ── NEW: Expand row — fetch by id for final inspection detail ───────────────
+  const handleExpandClick = async (item: JoDoneItem) => {
+    // collapse if clicking the same row again
+    if (expandedJoId === item.id) {
+      setExpandedJoId(null);
+      setExpandedData(null);
+      return;
+    }
+
+    setExpandedJoId(item.id);
+    setExpandedData(null);
+
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/joDone/${item.id}`;
+
+    try {
+      setExpandingJoId(item.id);
+      const res = await axios.get(url, { withCredentials: true });
+      console.log('JO Done detail (id:', item.id, '):', res.data);
+      setExpandedData(res.data);
+    } catch (error) {
+      console.error('Error fetching JO Done detail:', error);
+    } finally {
+      setExpandingJoId(null);
+    }
+  };
+  const formatDuration = (seconds: number | null | undefined): string => {
+    if (seconds === null || seconds === undefined) return '-';
+
+    const jam = Math.floor(seconds / 3600);
+    const menit = Math.floor((seconds % 3600) / 60);
+    const detik = seconds % 60;
+
+    const parts: string[] = [];
+    if (jam > 0) parts.push(`${jam} jam`);
+    if (menit > 0) parts.push(`${menit} menit`);
+    if (detik > 0 || parts.length === 0) parts.push(`${detik} detik`);
+
+    return parts.join(' ');
   };
   // ─────────────────────────────────────────────────────────────────────────────
 
@@ -359,6 +406,131 @@ const ListJoSelesai: React.FC = () => {
     return <>-</>;
   };
 
+  /** Render the expanded detail row content — final inspection list */
+  const renderExpandedRow = (item: JoDoneItem) => {
+    if (expandingJoId === item.id) {
+      return (
+        <div className="flex justify-center items-center py-4">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+        </div>
+      );
+    }
+
+    const finalInspeksiList = expandedData?.data_final_inspeksi || [];
+
+    if (!expandedData) {
+      return <div className="text-xs text-gray-500 py-2">No data yet.</div>;
+    }
+
+    if (finalInspeksiList.length === 0) {
+      return (
+        <div className="text-xs text-gray-500 py-2">
+          No final inspection data available.
+        </div>
+      );
+    }
+
+    return (
+      <div className="py-2 overflow-x-auto">
+        <div className="text-xs font-semibold text-gray-700 mb-2">
+          Final Inspection History
+        </div>
+        <table className="min-w-full text-xs border border-gray-200">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Tanggal
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Jam
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Quantity
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                No Packing
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Qty Packing
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Jumlah Packing
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                No Barcode
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Status JO
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Status
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Qty Kirim FG
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
+                Lama Pengerjaan
+              </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 min-w-[150px]">
+                Catatan
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-100">
+            {finalInspeksiList.map((fi: any) => (
+              <tr key={fi.id} className="hover:bg-gray-50">
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {fi.tanggal || '-'}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {fi.jam || '-'}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {formatNumber(fi.quantity)}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {fi.no_packing || '-'}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {formatNumber(fi.qty_packing)}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {formatNumber(fi.jumlah_packing)}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {fi.no_barcode || '-'}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900 capitalize">
+                  {fi.status_jo || '-'}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      fi.status === 'bisa kirim'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}
+                  >
+                    {fi.status || '-'}
+                  </span>
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {fi.quantity_kirim_fg !== null
+                    ? formatNumber(fi.quantity_kirim_fg)
+                    : '-'}
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900">
+                  {formatDuration(fi.lama_pengerjaan)}
+                </td>
+                <td className="px-2 py-1 text-gray-900">{fi.catatan || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div className="">
       {/* Header Section */}
@@ -425,12 +597,16 @@ const ListJoSelesai: React.FC = () => {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   JO Done
                 </th>
+                {/* NEW: Expand column on the right */}
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  Detail
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="px-3 py-4 text-center">
+                  <td colSpan={10} className="px-3 py-4 text-center">
                     <div className="flex justify-center items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
@@ -439,7 +615,7 @@ const ListJoSelesai: React.FC = () => {
               ) : joDoneData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={9}
+                    colSpan={10}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -447,41 +623,77 @@ const ListJoSelesai: React.FC = () => {
                 </tr>
               ) : (
                 joDoneData.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 whitespace-nowrap text-xs">
-                      {renderActionCell(item)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
-                      {item.no_jo || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {item.no_io || '-'}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {truncateText(item.customer, 20)}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-gray-900 max-w-xs">
-                      {truncateText(item.produk, 30)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {formatNumber(item.so?.po_qty)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {formatNumber(item.qty_kirim)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs">
-                      {getStatusBadge(item.status_proses)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs">
-                      {item.is_jo_done ? (
-                        <span className="text-green-600 font-medium">
-                          ✓ Yes
-                        </span>
-                      ) : (
-                        <span className="text-gray-400">✗ No</span>
-                      )}
-                    </td>
-                  </tr>
+                  <React.Fragment key={item.id}>
+                    <tr className="hover:bg-gray-50">
+                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                        {renderActionCell(item)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
+                        {item.no_jo || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                        {item.no_io || '-'}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                        {truncateText(item.customer, 20)}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-gray-900 max-w-xs">
+                        {truncateText(item.produk, 30)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                        {formatNumber(item.so?.po_qty)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                        {formatNumber(item.qty_kirim)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                        {getStatusBadge(item.status_proses)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                        {item.is_jo_done ? (
+                          <span className="text-green-600 font-medium">
+                            ✓ Yes
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">✗ No</span>
+                        )}
+                      </td>
+                      {/* NEW: Expand button cell */}
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-center">
+                        <button
+                          onClick={() => handleExpandClick(item)}
+                          disabled={expandingJoId === item.id}
+                          className="text-gray-500 hover:text-gray-800 disabled:opacity-50"
+                          aria-label="Expand"
+                        >
+                          <svg
+                            className={`w-4 h-4 transition-transform ${
+                              expandedJoId === item.id ? 'rotate-180' : ''
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* NEW: Expanded detail row */}
+                    {expandedJoId === item.id && (
+                      <tr>
+                        <td colSpan={10} className="px-6 py-2 bg-gray-50">
+                          {renderExpandedRow(item)}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))
               )}
             </tbody>
@@ -545,7 +757,32 @@ const ListJoSelesai: React.FC = () => {
                     {item.customer || '-'}
                   </div>
                 </div>
-                {renderActionCell(item)}
+                <div className="flex items-center gap-2">
+                  {renderActionCell(item)}
+                  {/* NEW: Expand button on the right, mobile */}
+                  <button
+                    onClick={() => handleExpandClick(item)}
+                    disabled={expandingJoId === item.id}
+                    className="text-gray-500 hover:text-gray-800 disabled:opacity-50"
+                    aria-label="Expand"
+                  >
+                    <svg
+                      className={`w-4 h-4 transition-transform ${
+                        expandedJoId === item.id ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2 text-sm">
@@ -612,6 +849,13 @@ const ListJoSelesai: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* NEW: Expanded detail block, mobile */}
+                {expandedJoId === item.id && (
+                  <div className="mt-2 border-t border-gray-200 pt-2">
+                    {renderExpandedRow(item)}
+                  </div>
+                )}
               </div>
             </div>
           ))

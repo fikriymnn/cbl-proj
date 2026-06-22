@@ -92,15 +92,28 @@ const PPICPerubahanTglKirim: React.FC = () => {
     direction: 'asc' | 'desc';
   }>({ key: null, direction: 'asc' });
 
+  // Search by No JO
+  const [noJoInput, setNoJoInput] = useState<string>('');
+  const [noJoSearch, setNoJoSearch] = useState<string>('');
+
   const [selectedItem, setSelectedItem] =
     useState<PerubahanTglKirimData | null>(null);
   const [isRejectPopupOpen, setIsRejectPopupOpen] = useState<boolean>(false);
   const [rejectNote, setRejectNote] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  // Debounce the No JO input so we don't fire a request on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setNoJoSearch(noJoInput.trim());
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [noJoInput]);
+
   useEffect(() => {
     fetchData();
-  }, [page, limit, statusFilter]);
+  }, [page, limit, statusFilter, noJoSearch]);
 
   const fetchData = async (): Promise<void> => {
     const url = `${
@@ -114,6 +127,9 @@ const PPICPerubahanTglKirim: React.FC = () => {
       };
       if (statusFilter !== 'all') {
         params.status = statusFilter;
+      }
+      if (noJoSearch) {
+        params.no_jo = noJoSearch;
       }
 
       const res: AxiosResponse<APIResponse<PerubahanTglKirimData[]>> =
@@ -275,27 +291,77 @@ const PPICPerubahanTglKirim: React.FC = () => {
     setPage(1);
   };
 
+  const handleNoJoInputChange = (value: string): void => {
+    setNoJoInput(value);
+  };
+
+  const handleClearNoJoSearch = (): void => {
+    setNoJoInput('');
+    setNoJoSearch('');
+    setPage(1);
+  };
+
   return (
     <div className="">
-      {/* Status Filter */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="text-sm text-gray-600 font-medium">
-          Filter Status:
-        </span>
-        <div className="flex flex-wrap gap-2">
-          {STATUS_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => handleStatusFilterChange(opt.value)}
-              className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
-                statusFilter === opt.value
-                  ? `${opt.activeColor} border-transparent`
-                  : `${opt.color} border-gray-200`
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
+      {/* Filters */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        {/* Status Filter */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-gray-600 font-medium">
+            Filter Status:
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handleStatusFilterChange(opt.value)}
+                className={`px-3 py-1 text-xs font-medium rounded-full border transition-colors ${
+                  statusFilter === opt.value
+                    ? `${opt.activeColor} border-transparent`
+                    : `${opt.color} border-gray-200`
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Search No JO */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600 font-medium whitespace-nowrap">
+            Cari No JO:
+          </span>
+          <div className="relative">
+            <input
+              type="text"
+              value={noJoInput}
+              onChange={(e) => handleNoJoInputChange(e.target.value)}
+              placeholder="Masukkan No JO..."
+              className="w-56 pl-3 pr-8 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {noJoInput && (
+              <button
+                onClick={handleClearNoJoSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                title="Hapus pencarian"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
