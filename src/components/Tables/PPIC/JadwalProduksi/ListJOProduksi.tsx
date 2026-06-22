@@ -307,6 +307,7 @@ function ListJOProduksi() {
 
   const submitToSchedule = useCallback(
     async (id: string) => {
+      if (!window.confirm(`Masukkan JO ini ke jadwal?`)) return false;
       const url = `${API_BASE}/ppic/jadwalProduksi/submit/${id}`;
       const data = await fetchAPI(url, {}, 'put');
       if (data) {

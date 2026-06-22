@@ -629,44 +629,13 @@ function AbsensiDivisi() {
               Rekap Absensi Divisi
             </h2>
           </div>
-          <div className="p-6 md:p-8">
-            <div className="flex flex-col items-center justify-center py-8 md:py-12">
-              <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 md:p-8 max-w-md w-full mx-4 text-center">
-                <div className="flex items-center justify-center mb-4">
-                  <svg
-                    className="w-12 h-12 md:w-16 md:h-16 text-yellow-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">
-                  Akses Terbatas
-                </h3>
-                <p className="text-sm md:text-base text-gray-600 mb-2">
-                  Divisi Bawahan belum di-set
-                </p>
-                <p className="text-xs md:text-sm text-gray-500 mt-4">
-                  Silakan hubungi administrator untuk mengatur divisi bawahan
-                  pada akun Anda agar dapat mengakses halaman ini.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       {/* Loading Indicator */}
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -679,9 +648,6 @@ function AbsensiDivisi() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Rekap Absensi Divisi
-        </h1>
         <p className="text-gray-600">
           {isMonthlyView
             ? 'Analisis kehadiran karyawan per bulan'

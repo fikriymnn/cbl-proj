@@ -62,6 +62,22 @@ interface MonthRangeData {
   data: ApiResponse;
 }
 
+// Columns that the "Detail Pemakaian" table can be sorted by
+type DetailSortKey =
+  | 'no_jo'
+  | 'item'
+  | 'tahapan'
+  | 'jenis'
+  | 'qty_pcs'
+  | 'qty_druk'
+  | 'qty_dipakai'
+  | 'tanggal';
+
+interface SortConfig {
+  key: DetailSortKey;
+  direction: 'asc' | 'desc';
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const MONTH_NAMES = [
@@ -98,6 +114,44 @@ const capacityColor = (pct: number) => {
   return 'text-green-600';
 };
 
+const DETAIL_COLUMNS: {
+  key: DetailSortKey;
+  label: string;
+  align: 'left' | 'right';
+}[] = [
+  { key: 'no_jo', label: 'No. JO', align: 'left' },
+  { key: 'item', label: 'Item', align: 'left' },
+  { key: 'tahapan', label: 'Tahapan', align: 'left' },
+  { key: 'jenis', label: 'Jenis', align: 'left' },
+  { key: 'qty_pcs', label: 'Qty PCS', align: 'right' },
+  { key: 'qty_druk', label: 'Qty Druk', align: 'right' },
+  { key: 'qty_dipakai', label: 'Qty Dipakai', align: 'right' },
+  { key: 'tanggal', label: 'Tanggal', align: 'left' },
+];
+
+function sortDetail(detail: DetailItem[], sort: SortConfig): DetailItem[] {
+  const { key, direction } = sort;
+  const sorted = [...detail].sort((a, b) => {
+    let cmp = 0;
+    if (key === 'tanggal') {
+      cmp = new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime();
+    } else if (
+      key === 'qty_pcs' ||
+      key === 'qty_druk' ||
+      key === 'qty_dipakai'
+    ) {
+      cmp = a[key] - b[key];
+    } else {
+      cmp = String(a[key]).localeCompare(String(b[key]), 'id', {
+        numeric: true,
+        sensitivity: 'base',
+      });
+    }
+    return direction === 'asc' ? cmp : -cmp;
+  });
+  return sorted;
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 function ReportKapasitas() {
@@ -112,6 +166,21 @@ function ReportKapasitas() {
   const [showMonthlyDetail, setShowMonthlyDetail] = useState<
     Record<string, boolean>
   >({});
+  // Per-machine sort state for the "Detail Pemakaian" table.
+  // Defaults to tanggal ascending (matches previous fixed behavior).
+  const [detailSort, setDetailSort] = useState<Record<string, SortConfig>>({});
+
+  const getDetailSort = (namaMesin: string): SortConfig =>
+    detailSort[namaMesin] || { key: 'tanggal', direction: 'asc' };
+
+  const handleSortClick = (namaMesin: string, key: DetailSortKey) => {
+    setDetailSort((prev) => {
+      const current = prev[namaMesin] || { key: 'tanggal', direction: 'asc' };
+      const direction: 'asc' | 'desc' =
+        current.key === key && current.direction === 'asc' ? 'desc' : 'asc';
+      return { ...prev, [namaMesin]: { key, direction } };
+    });
+  };
 
   // ── Date range helpers ────────────────────────────────────────────────────
 
@@ -466,97 +535,112 @@ function ReportKapasitas() {
                   </tr>
                 </thead>
                 <tbody>
-                  {aggregated.map((item, idx) => (
-                    <React.Fragment key={item.nama_mesin}>
-                      <tr className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="py-3 px-4 border-b font-medium">
-                          {item.nama_mesin}
-                        </td>
-                        <td className="py-3 px-4 border-b text-right">
-                          {formatNumber(item.totalKapasitas)}
-                        </td>
-                        <td className="py-3 px-4 border-b text-right">
-                          {formatNumber(item.totalTerpakai)}
-                        </td>
-                        <td className="py-3 px-4 border-b text-right">
-                          {formatNumber(item.totalSisa)}
-                        </td>
-                        <td
-                          className={`py-3 px-4 border-b text-right font-bold ${capacityColor(
-                            item.sisaPct,
-                          )}`}
+                  {aggregated.map((item, idx) => {
+                    const sort = getDetailSort(item.nama_mesin);
+                    const sortedDetail = sortDetail(item.allDetail, sort);
+                    return (
+                      <React.Fragment key={item.nama_mesin}>
+                        <tr
+                          className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                         >
-                          {item.sisaPct.toFixed(1)}%
-                        </td>
-                        <td className="py-3 px-4 border-b text-center">
-                          {item.allDetail.length > 0 ? (
-                            <button
-                              onClick={() =>
-                                setShowMonthlyDetail((prev) => ({
-                                  ...prev,
-                                  [item.nama_mesin]: !prev[item.nama_mesin],
-                                }))
-                              }
-                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
-                            >
-                              {showMonthlyDetail[item.nama_mesin]
-                                ? 'Tutup'
-                                : `Detail (${item.allDetail.length})`}
-                            </button>
-                          ) : (
-                            <span className="text-gray-400 text-xs">–</span>
-                          )}
-                        </td>
-                      </tr>
+                          <td className="py-3 px-4 border-b font-medium">
+                            {item.nama_mesin}
+                          </td>
+                          <td className="py-3 px-4 border-b text-right">
+                            {formatNumber(item.totalKapasitas)}
+                          </td>
+                          <td className="py-3 px-4 border-b text-right">
+                            {formatNumber(item.totalTerpakai)}
+                          </td>
+                          <td className="py-3 px-4 border-b text-right">
+                            {formatNumber(item.totalSisa)}
+                          </td>
+                          <td
+                            className={`py-3 px-4 border-b text-right font-bold ${capacityColor(
+                              item.sisaPct,
+                            )}`}
+                          >
+                            {item.sisaPct.toFixed(1)}%
+                          </td>
+                          <td className="py-3 px-4 border-b text-center">
+                            {item.allDetail.length > 0 ? (
+                              <button
+                                onClick={() =>
+                                  setShowMonthlyDetail((prev) => ({
+                                    ...prev,
+                                    [item.nama_mesin]: !prev[item.nama_mesin],
+                                  }))
+                                }
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+                              >
+                                {showMonthlyDetail[item.nama_mesin]
+                                  ? 'Tutup'
+                                  : `Detail (${item.allDetail.length})`}
+                              </button>
+                            ) : (
+                              <span className="text-gray-400 text-xs">–</span>
+                            )}
+                          </td>
+                        </tr>
 
-                      {/* Inline detail rows */}
-                      {showMonthlyDetail[item.nama_mesin] &&
-                        item.allDetail.length > 0 && (
-                          <tr>
-                            <td colSpan={6} className="p-0 border-b">
-                              <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
-                                <h4 className="font-semibold text-blue-800 mb-2 text-sm">
-                                  Detail Pemakaian – {item.nama_mesin}
-                                </h4>
-                                <div className="overflow-x-auto">
-                                  <table className="min-w-full bg-white border border-gray-200 rounded text-xs">
-                                    <thead>
-                                      <tr className="bg-blue-100 text-blue-800">
-                                        <th className="py-2 px-3 border-b text-left">
-                                          No. JO
-                                        </th>
-                                        <th className="py-2 px-3 border-b text-left">
-                                          Item
-                                        </th>
-                                        <th className="py-2 px-3 border-b text-left">
-                                          Tahapan
-                                        </th>
-                                        <th className="py-2 px-3 border-b text-left">
-                                          Jenis
-                                        </th>
-                                        <th className="py-2 px-3 border-b text-right">
-                                          Qty PCS
-                                        </th>
-                                        <th className="py-2 px-3 border-b text-right">
-                                          Qty Druk
-                                        </th>
-                                        <th className="py-2 px-3 border-b text-right">
-                                          Qty Dipakai
-                                        </th>
-                                        <th className="py-2 px-3 border-b text-left">
-                                          Tanggal
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {item.allDetail
-                                        .slice()
-                                        .sort(
-                                          (a, b) =>
-                                            new Date(a.tanggal).getTime() -
-                                            new Date(b.tanggal).getTime(),
-                                        )
-                                        .map((d, i) => (
+                        {/* Inline detail rows */}
+                        {showMonthlyDetail[item.nama_mesin] &&
+                          item.allDetail.length > 0 && (
+                            <tr>
+                              <td colSpan={6} className="p-0 border-b">
+                                <div className="bg-blue-50 border-l-4 border-blue-500 p-4">
+                                  <h4 className="font-semibold text-blue-800 mb-2 text-sm">
+                                    Detail Pemakaian – {item.nama_mesin}
+                                  </h4>
+                                  <div className="overflow-x-auto">
+                                    <table className="min-w-full bg-white border border-gray-200 rounded text-xs">
+                                      <thead>
+                                        <tr className="bg-blue-100 text-blue-800">
+                                          {DETAIL_COLUMNS.map((col) => {
+                                            const isActive =
+                                              sort.key === col.key;
+                                            const arrow = isActive
+                                              ? sort.direction === 'asc'
+                                                ? '▲'
+                                                : '▼'
+                                              : '↕';
+                                            return (
+                                              <th
+                                                key={col.key}
+                                                onClick={() =>
+                                                  handleSortClick(
+                                                    item.nama_mesin,
+                                                    col.key,
+                                                  )
+                                                }
+                                                className={`py-2 px-3 border-b cursor-pointer select-none hover:bg-blue-200 transition-colors ${
+                                                  col.align === 'right'
+                                                    ? 'text-right'
+                                                    : 'text-left'
+                                                } ${
+                                                  isActive ? 'bg-blue-200' : ''
+                                                }`}
+                                                title="Klik untuk mengurutkan"
+                                              >
+                                                <span className="inline-flex items-center gap-1">
+                                                  {col.label}
+                                                  <span
+                                                    className={`text-[10px] ${
+                                                      isActive
+                                                        ? 'text-blue-900'
+                                                        : 'text-blue-400'
+                                                    }`}
+                                                  >
+                                                    {arrow}
+                                                  </span>
+                                                </span>
+                                              </th>
+                                            );
+                                          })}
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {sortedDetail.map((d, i) => (
                                           <tr
                                             key={d.id}
                                             className={
@@ -591,15 +675,16 @@ function ReportKapasitas() {
                                             </td>
                                           </tr>
                                         ))}
-                                    </tbody>
-                                  </table>
+                                      </tbody>
+                                    </table>
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                    </React.Fragment>
-                  ))}
+                              </td>
+                            </tr>
+                          )}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
                 {/* Totals row */}
                 <tfoot>
