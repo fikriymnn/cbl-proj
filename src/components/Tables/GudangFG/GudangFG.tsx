@@ -1281,9 +1281,6 @@ const GudangFG: React.FC = () => {
                                 {' '}
                                 {barang.no_jo || '-'}{' '}
                               </span>
-                              <span>
-                                JO BOOKING : {barang.jo_booking?.no_jo || '-'}{' '}
-                              </span>
                             </td>
                             <td className="p-2 sm:p-3 text-xs text-gray-600 whitespace-nowrap">
                               {barang.no_io || '-'}
@@ -1302,14 +1299,15 @@ const GudangFG: React.FC = () => {
                             <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
                               {fmtTglMasuk(barang.tgl_masuk)}
                             </td>
-                            <td className="p-2 sm:p-3 text-xs">
+                            <td className="p-2 sm:p-3 text-xs flex flex-wrap flex-col gap-1 ">
                               <span
-                                className={`inline-block px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${statusBadgeClass(
+                                className={`inline-block text-center px-2 py-0.5 rounded-full font-semibold max-w-16 whitespace-nowrap ${statusBadgeClass(
                                   barang.status,
                                 )}`}
                               >
                                 {barang.status || '-'}
                               </span>
+                              {barang.jo_booking?.no_jo || '-'}{' '}
                             </td>
                             <td className="p-2 sm:p-3 text-xs text-gray-700 whitespace-nowrap">
                               {lifetimeDays(barang.tgl_masuk)}
