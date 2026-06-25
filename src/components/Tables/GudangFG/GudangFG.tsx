@@ -18,6 +18,9 @@ interface DataBarang {
   jumlah_qty_sisa: number;
   no_io: string;
   no_jo: string;
+  jo_booking: {
+    no_jo?: string;
+  };
   no_po_customer: string;
   no_so: string;
   note: string | null;
@@ -1273,8 +1276,14 @@ const GudangFG: React.FC = () => {
                             <td className="p-2 sm:p-3 text-xs text-gray-400 pl-8">
                               {rowIdx}
                             </td>
-                            <td className="p-2 sm:p-3 text-xs font-bold text-violet-600 whitespace-nowrap">
-                              {barang.no_jo || '-'}
+                            <td className="p-2 sm:p-3 text-xs font-bold  whitespace-nowrap flex flex-col gap-1">
+                              <span className="text-violet-600">
+                                {' '}
+                                {barang.no_jo || '-'}{' '}
+                              </span>
+                              <span>
+                                JO BOOKING : {barang.jo_booking?.no_jo || '-'}{' '}
+                              </span>
                             </td>
                             <td className="p-2 sm:p-3 text-xs text-gray-600 whitespace-nowrap">
                               {barang.no_io || '-'}

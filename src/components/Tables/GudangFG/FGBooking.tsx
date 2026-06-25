@@ -780,7 +780,7 @@ function JoListPanel({
                 Qty
               </th>
               <th className="px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                Stok FG
+                QTY Booking
               </th>
               <th className="px-4 py-2.5 text-center text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Tgl Kirim
