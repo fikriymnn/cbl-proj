@@ -106,6 +106,14 @@ const InputLKH: React.FC = () => {
       pallet: 0,
       note: '',
     },
+    'Perawatan Mesin': {
+      detail: '',
+      baik: 0,
+      rusak_sebagian: 0,
+      rusak_total: 0,
+      pallet: 0,
+      note: '',
+    },
   });
 
   const [wasteProcessData, setWasteProcessData] = useState<WasteProcessData>({

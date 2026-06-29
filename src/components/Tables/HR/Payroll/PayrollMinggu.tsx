@@ -145,6 +145,7 @@ function PayrollMinggu() {
   const [filteredData, setFilteredData] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('');
+  const [filterDiv, setFilterDiv] = useState('');
   // ── NEW FILTERS ──
   const [filterTipePenggajian, setFilterTipePenggajian] = useState('');
   const [filterTipeKaryawan, setFilterTipeKaryawan] = useState('');
@@ -171,6 +172,17 @@ function PayrollMinggu() {
         ...new Set(
           (payWeek.detail as any[])
             .map((d) => d.summaryPayroll?.department)
+            .filter(Boolean),
+        ),
+      ] as string[])
+    : [];
+
+  // ── Derived option lists (unique values from data) ─────────────────────────
+  const divisions: string[] = payWeek
+    ? ([
+        ...new Set(
+          (payWeek.detail as any[])
+            .map((d) => d.summaryPayroll?.divisi)
             .filter(Boolean),
         ),
       ] as string[])
@@ -212,6 +224,8 @@ function PayrollMinggu() {
     }
     if (filterDept)
       list = list.filter((d) => d.summaryPayroll?.department === filterDept);
+    if (filterDiv)
+      list = list.filter((d) => d.summaryPayroll?.divisi === filterDiv);
     if (filterTipePenggajian)
       list = list.filter(
         (d) => d.summaryPayroll?.tipe_penggajian === filterTipePenggajian,
@@ -225,6 +239,7 @@ function PayrollMinggu() {
     payWeek,
     searchQuery,
     filterDept,
+    filterDiv,
     filterTipePenggajian,
     filterTipeKaryawan,
   ]);
@@ -239,6 +254,7 @@ function PayrollMinggu() {
     setIsLoading(true);
     // Reset filters when loading new data
     setFilterDept('');
+    setFilterDiv('');
     setFilterTipePenggajian('');
     setFilterTipeKaryawan('');
     setSearchQuery('');
@@ -338,7 +354,7 @@ function PayrollMinggu() {
         )}
       </div>
 
-      <div className="px-6 py-5 max-w-7xl mx-auto">
+      <div className="px-6 py-5  mx-auto">
         {/* ── Period Picker ── */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-5">
           <div className="flex flex-wrap items-end gap-4">
@@ -445,7 +461,24 @@ function PayrollMinggu() {
                     ))}
                   </select>
                 </div>
-
+                {/* Divisi */}
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterDiv}
+                    onChange={(e) => setFilterDiv(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Divisi</option>
+                    {divisions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 {/* Tipe Penggajian — NEW */}
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -492,6 +525,7 @@ function PayrollMinggu() {
                   <button
                     onClick={() => {
                       setFilterDept('');
+                      setFilterDiv('');
                       setFilterTipePenggajian('');
                       setFilterTipeKaryawan('');
                       setSearchQuery('');

@@ -101,7 +101,14 @@ const MasterTableKodeProduksi: React.FC = () => {
     target_department: [] as number[],
   });
 
-  const prosesOptions = ['Setting', 'Produksi', 'Kendala', 'Pending', 'Off'];
+  const prosesOptions = [
+    'Setting',
+    'Produksi',
+    'Kendala',
+    'Pending',
+    'Off',
+    'Perawatan Mesin',
+  ];
 
   // Limit options as buttons
   const limitOptions = [10, 25, 50, 100];

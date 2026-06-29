@@ -217,11 +217,6 @@ const buildSlipGajiHTML = (
     periodeData.periode_sampai,
   )}`;
 
-  // Logo: gunakan data URI jika tersedia, atau kotak placeholder abu-abu
-  const logoImg = logoDataUri
-    ? `<img src="${logoDataUri}" width="30" height="30" style="display:block;object-fit:contain;" alt=""/>`
-    : `<div style="width:30px;height:30px;background:#cbd5e1;border-radius:3px;"></div>`;
-
   // ── Render satu kartu slip karyawan ──────────────────────────────────────────
   const renderCard = (emp: any): string => {
     const bio = emp.karyawan?.biodata_karyawan?.[0];
@@ -1046,6 +1041,8 @@ function PeriodDetailModal({
   const [isFetching, setIsFetching] = useState(false);
   const [filterTipePenggajian, setFilterTipePenggajian] = useState('');
   const [filterTipeKaryawan, setFilterTipeKaryawan] = useState('');
+  const [filterDepartment, setFilterDepartment] = useState('');
+  const [filterDivisi, setFilterDivisi] = useState('');
   const [logoBase64, setLogoBase64] = useState<string>('');
 
   useEffect(() => {
@@ -1072,7 +1069,25 @@ function PeriodDetailModal({
         .filter(Boolean),
     ),
   ] as string[];
+  const departmentOptions: string[] = [
+    ...new Set(
+      (localPeriode.payroll_detail ?? [])
+        .map(
+          (d: any) =>
+            d.karyawan?.biodata_karyawan?.[0]?.department?.nama_department ??
+            d.nama_department,
+        )
+        .filter(Boolean),
+    ),
+  ] as string[];
 
+  const divisiOptions: string[] = [
+    ...new Set(
+      (localPeriode.payroll_detail ?? [])
+        .map((d: any) => d.nama_divisi)
+        .filter(Boolean),
+    ),
+  ] as string[];
   const tipeKaryawanOptions: string[] = [
     ...new Set(
       (localPeriode.payroll_detail ?? [])
@@ -1081,7 +1096,11 @@ function PeriodDetailModal({
     ),
   ] as string[];
 
-  const hasActiveFilter = filterTipePenggajian || filterTipeKaryawan;
+  const hasActiveFilter =
+    filterTipePenggajian ||
+    filterTipeKaryawan ||
+    filterDepartment ||
+    filterDivisi;
 
   async function refreshLocalPeriode() {
     setIsFetching(true);
@@ -1113,13 +1132,29 @@ function PeriodDetailModal({
   const filtered = (localPeriode.payroll_detail ?? []).filter((d: any) => {
     const name = d.karyawan?.name?.toLowerCase() ?? '';
     const nik = d.karyawan?.biodata_karyawan?.[0]?.nik ?? '';
+    const department =
+      d.karyawan?.biodata_karyawan?.[0]?.department?.nama_department ??
+      d.nama_department ??
+      '';
+    const divisi = d.nama_divisi ?? '';
     const q = search.toLowerCase();
+
     const matchSearch = name.includes(q) || nik.includes(q);
     const matchPenggajian =
       !filterTipePenggajian || d.tipe_penggajian === filterTipePenggajian;
     const matchKaryawan =
       !filterTipeKaryawan || d.tipe_karyawan === filterTipeKaryawan;
-    return matchSearch && matchPenggajian && matchKaryawan;
+    const matchDepartment =
+      !filterDepartment || department === filterDepartment;
+    const matchDivisi = !filterDivisi || divisi === filterDivisi;
+
+    return (
+      matchSearch &&
+      matchPenggajian &&
+      matchKaryawan &&
+      matchDepartment &&
+      matchDivisi
+    );
   });
   // ── Tombol print slip untuk periode ini ────────────────────────────────────
   function handlePrintSlip() {
@@ -1258,6 +1293,45 @@ function PeriodDetailModal({
               />
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              {departmentOptions.length > 0 && (
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterDepartment}
+                    onChange={(e) => setFilterDepartment(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Department</option>
+                    {departmentOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {divisiOptions.length > 0 && (
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterDivisi}
+                    onChange={(e) => setFilterDivisi(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Divisi</option>
+                    {divisiOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {tipePenggajianOptions.length > 0 && (
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
@@ -1296,6 +1370,28 @@ function PeriodDetailModal({
                   </select>
                 </div>
               )}
+              {filterDepartment && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  <span>{filterDepartment}</span>
+                  <button
+                    onClick={() => setFilterDepartment('')}
+                    className="hover:text-blue-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+              {filterDivisi && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                  <span>{filterDivisi}</span>
+                  <button
+                    onClick={() => setFilterDivisi('')}
+                    className="hover:text-amber-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
               {filterTipePenggajian && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200">
                   <span className="capitalize">{filterTipePenggajian}</span>
@@ -1323,6 +1419,8 @@ function PeriodDetailModal({
                   onClick={() => {
                     setFilterTipePenggajian('');
                     setFilterTipeKaryawan('');
+                    setFilterDepartment('');
+                    setFilterDivisi('');
                   }}
                   className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
                 >
