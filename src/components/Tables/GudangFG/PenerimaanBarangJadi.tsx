@@ -38,6 +38,9 @@ interface UserItem {
   uuid: string;
 }
 
+// Filter values for the status_ticket filter
+type StatusTicket = 'progress' | 'history';
+
 interface IncomingItem {
   id: number;
   id_customer: number;
@@ -59,6 +62,9 @@ interface IncomingItem {
   produk: string;
   customer: string;
   status: string;
+  // Coarse lifecycle bucket for this ticket — "progress" while it still needs action,
+  // "history" once it has been approved/rejected and is just a record.
+  status_ticket?: StatusTicket;
   toleransi_pengiriman: string;
   createdAt: string;
   updatedAt: string;
@@ -287,10 +293,13 @@ const IncomingBarangJadi: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
+  // Status filter — "progress" (still needs action) vs "history" (already resolved)
+  const [statusTicket, setStatusTicket] = useState<StatusTicket>('progress');
+
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
-  }, [page, limit, searchTerm]);
+  }, [page, limit, searchTerm, statusTicket]);
 
   const fetchData = async (): Promise<void> => {
     try {
@@ -298,7 +307,12 @@ const IncomingBarangJadi: React.FC = () => {
       const res: AxiosResponse<IncomingResponse> = await axios.get(
         `${import.meta.env.VITE_API_LINK}/fg/incomingBarangJadi`,
         {
-          params: { page, limit, search: searchTerm || undefined },
+          params: {
+            page,
+            limit,
+            search: searchTerm || undefined,
+            status_ticket: statusTicket,
+          },
           withCredentials: true,
         },
       );
@@ -341,6 +355,16 @@ const IncomingBarangJadi: React.FC = () => {
     setPage(1);
   };
 
+  const handleStatusTicketChange = (next: StatusTicket): void => {
+    if (next === statusTicket) return;
+    setStatusTicket(next);
+    setPage(1);
+  };
+
+  // Approve/Reject only make sense while a ticket is still in progress.
+  // Once it's history (already approved/rejected) there's nothing left to action.
+  const canAction = statusTicket === 'progress';
+
   return (
     <>
       <main>
@@ -375,7 +399,7 @@ const IncomingBarangJadi: React.FC = () => {
               Penerimaan Barang Jadi
             </h2>
           </div>
-          <div className="p-3 sm:p-4">
+          <div className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="relative w-full sm:w-96">
               <input
                 type="text"
@@ -400,6 +424,33 @@ const IncomingBarangJadi: React.FC = () => {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
+            </div>
+
+            {/* Status Ticket Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 whitespace-nowrap">
+                Status:
+              </span>
+              <div className="inline-flex rounded-lg border border-gray-200 bg-gray-100 p-1">
+                {(
+                  [
+                    { value: 'progress', label: 'Progress' },
+                    { value: 'history', label: 'History' },
+                  ] as { value: StatusTicket; label: string }[]
+                ).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleStatusTicketChange(opt.value)}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${
+                      statusTicket === opt.value
+                        ? 'bg-violet-600 text-white shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -505,50 +556,54 @@ const IncomingBarangJadi: React.FC = () => {
                         {fmtDate(row.createdAt)}
                       </td>
                       <td className="p-2 sm:p-3 text-xs">
-                        <div className="flex items-center flex-col gap-2">
-                          <button
-                            onClick={() =>
-                              setActionModal({ row, type: 'approve' })
-                            }
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-[10px] font-semibold rounded-lg transition-colors whitespace-nowrap"
-                          >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                        {canAction ? (
+                          <div className="flex items-center flex-col gap-2">
+                            <button
+                              onClick={() =>
+                                setActionModal({ row, type: 'approve' })
+                              }
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-[10px] font-semibold rounded-lg transition-colors whitespace-nowrap"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            Approve
-                          </button>
-                          <button
-                            onClick={() =>
-                              setActionModal({ row, type: 'reject' })
-                            }
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-semibold rounded-lg transition-colors whitespace-nowrap"
-                          >
-                            <svg
-                              className="w-3 h-3"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              Approve
+                            </button>
+                            <button
+                              onClick={() =>
+                                setActionModal({ row, type: 'reject' })
+                              }
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-[10px] font-semibold rounded-lg transition-colors whitespace-nowrap"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                            Reject
-                          </button>
-                        </div>
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">-</span>
+                        )}
                       </td>
                     </tr>
                   ))
