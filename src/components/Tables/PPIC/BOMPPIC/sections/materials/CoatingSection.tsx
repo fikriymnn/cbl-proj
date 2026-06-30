@@ -1,8 +1,10 @@
+// CoatingSection.tsx
 import React from 'react';
 import { BOMPPICCoating } from '../../Types/bompiic.types';
 
 interface CoatingSectionProps {
   items: BOMPPICCoating[];
+  qtyRatio: number; // NEW
   onItemChange: (
     index: number,
     field: keyof BOMPPICCoating,
@@ -20,6 +22,7 @@ interface CoatingSectionProps {
 
 const CoatingSection: React.FC<CoatingSectionProps> = ({
   items,
+  qtyRatio,
   onItemChange,
   formatNumber,
   getInputDisplayValue,
@@ -87,6 +90,8 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
               const qtyFields = getQtyFields(item.tipe_coating);
               const qtyBeliValue = item[qtyFields.qtyBeli] as number;
               const qtyStokValue = item[qtyFields.qtyStok] as number;
+              // NEW: production-need qty for this coating item
+              const adjustedQtyCoating = item.qty_coating * qtyRatio;
 
               return (
                 <tr key={index} className="hover:bg-gray-50 transition-colors">
@@ -109,7 +114,7 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-sm font-semibold text-gray-900">
-                      {formatNumber(item.qty_coating)}
+                      {formatNumber(adjustedQtyCoating)}
                     </span>
                   </td>
                   <td className="px-4 py-3">

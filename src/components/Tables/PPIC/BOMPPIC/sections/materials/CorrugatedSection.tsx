@@ -1,9 +1,11 @@
+// CorrugatedSection.tsx
 import React from 'react';
 import { BOMPPICCorrugated } from '../../Types/bompiic.types';
 import { MaterialTable } from '../common/MaterialTable';
 
 interface CorrugatedSectionProps {
   items: BOMPPICCorrugated[];
+  qtyRatio: number; // NEW
   onItemChange: (
     index: number,
     field: keyof BOMPPICCorrugated,
@@ -21,6 +23,7 @@ interface CorrugatedSectionProps {
 
 const CorrugatedSection: React.FC<CorrugatedSectionProps> = ({
   items,
+  qtyRatio,
   onItemChange,
   formatNumber,
   getInputDisplayValue,
@@ -55,9 +58,10 @@ const CorrugatedSection: React.FC<CorrugatedSectionProps> = ({
       header: 'Qty',
       accessor: 'qty_corrugated',
       align: 'right' as const,
+      // NEW: production-need qty
       render: (value: number) => (
         <span className="font-semibold text-gray-900">
-          {formatNumber(value)}
+          {formatNumber(value * qtyRatio)}
         </span>
       ),
     },

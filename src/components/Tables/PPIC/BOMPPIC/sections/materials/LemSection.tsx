@@ -1,9 +1,11 @@
+// LemSection.tsx
 import React from 'react';
 import { BOMPPICLem } from '../../Types/bompiic.types';
 import { MaterialTable } from '../common/MaterialTable';
 
 interface LemSectionProps {
   items: BOMPPICLem[];
+  qtyRatio: number; // NEW
   onItemChange: (
     index: number,
     field: keyof BOMPPICLem,
@@ -21,6 +23,7 @@ interface LemSectionProps {
 
 const LemSection: React.FC<LemSectionProps> = ({
   items,
+  qtyRatio,
   onItemChange,
   formatNumber,
   getInputDisplayValue,
@@ -60,8 +63,11 @@ const LemSection: React.FC<LemSectionProps> = ({
       header: 'Qty (Kg)',
       accessor: 'qty_lem',
       align: 'right' as const,
+      // NEW: production-need qty
       render: (value: number) => (
-        <span className="font-semibold text-gray-900">{value}</span>
+        <span className="font-semibold text-gray-900">
+          {formatNumber(value * qtyRatio)}
+        </span>
       ),
     },
     {

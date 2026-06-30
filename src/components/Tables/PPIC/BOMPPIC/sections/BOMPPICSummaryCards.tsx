@@ -15,6 +15,10 @@ interface BOMPPICSummaryCardsProps {
   polibanItems: BOMPPICPoliban[];
   coatingItems: BOMPPICCoating[];
   lemItems: BOMPPICLem[];
+  qtyPo: number;
+  qtyFgDisplayValue: string;
+  onQtyFgChange: (value: string) => void;
+  onQtyFgBlur: () => void;
 }
 
 const formatNumber = (value: number | string): string => {
@@ -33,6 +37,10 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
   polibanItems,
   coatingItems,
   lemItems,
+  qtyPo,
+  qtyFgDisplayValue,
+  onQtyFgBlur,
+  onQtyFgChange,
 }) => {
   const totalItems =
     kertasItems.length +
@@ -154,6 +162,25 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
               />
             </svg>
           </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3 pb-2 col-span-3">
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-2 rounded-md border border-gray-300 shadow-sm">
+          <p className="text-xs text-gray-600 font-medium">Qty PO</p>
+          <p className="text-lg font-bold text-gray-900">
+            {formatNumber(qtyPo)}
+          </p>
+        </div>
+        <div className="bg-gradient-to-br from-rose-50 to-rose-100 p-2 rounded-md border border-rose-300 shadow-sm">
+          <p className="text-xs text-rose-600 font-medium mb-1">Qty FG</p>
+          <input
+            type="text"
+            value={qtyFgDisplayValue}
+            onChange={(e) => onQtyFgChange(e.target.value)}
+            onBlur={onQtyFgBlur}
+            className="w-full px-2 py-1 border border-rose-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm font-bold bg-white text-rose-900"
+            placeholder="0"
+          />
         </div>
       </div>
     </div>

@@ -1,9 +1,11 @@
+// PolibanSection.tsx
 import React from 'react';
 import { BOMPPICPoliban } from '../../Types/bompiic.types';
 import { MaterialTable } from '../common/MaterialTable';
 
 interface PolibanSectionProps {
   items: BOMPPICPoliban[];
+  qtyRatio: number; // NEW
   onItemChange: (
     index: number,
     field: keyof BOMPPICPoliban,
@@ -21,6 +23,7 @@ interface PolibanSectionProps {
 
 const PolibanSection: React.FC<PolibanSectionProps> = ({
   items,
+  qtyRatio,
   onItemChange,
   formatNumber,
   getInputDisplayValue,
@@ -45,6 +48,7 @@ const PolibanSection: React.FC<PolibanSectionProps> = ({
       header: 'Isi Satu Ikat',
       accessor: 'isi_satu_ikat',
       align: 'right' as const,
+      // Packaging-unit constant — not scaled by qtyRatio
       render: (value: number) => (
         <span className="font-semibold text-gray-900">
           {formatNumber(value)}
@@ -55,6 +59,7 @@ const PolibanSection: React.FC<PolibanSectionProps> = ({
       header: 'Lembar Poliban',
       accessor: 'lembar_poliban',
       align: 'right' as const,
+      // Packaging-unit constant — not scaled by qtyRatio
       render: (value: number) => (
         <span className="font-semibold text-gray-900">
           {formatNumber(value)}
@@ -65,9 +70,10 @@ const PolibanSection: React.FC<PolibanSectionProps> = ({
       header: 'Qty',
       accessor: 'qty_poliban',
       align: 'right' as const,
+      // NEW: production-need qty
       render: (value: number) => (
         <span className="font-semibold text-gray-900">
-          {formatNumber(value)}
+          {formatNumber(value * qtyRatio)}
         </span>
       ),
     },

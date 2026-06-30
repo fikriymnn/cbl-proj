@@ -1,9 +1,11 @@
+// KertasSection.tsx
 import React from 'react';
 import { BOMPPICKertas } from '../../Types/bompiic.types';
 import { MaterialTable } from '../common/MaterialTable';
 
 interface KertasSectionProps {
   items: BOMPPICKertas[];
+  qtyRatio: number; // NEW — (qty_po - qty_fg) / qty_po
   onItemChange: (
     index: number,
     field: keyof BOMPPICKertas,
@@ -21,6 +23,7 @@ interface KertasSectionProps {
 
 const KertasSection: React.FC<KertasSectionProps> = ({
   items,
+  qtyRatio,
   onItemChange,
   formatNumber,
   getInputDisplayValue,
@@ -45,9 +48,10 @@ const KertasSection: React.FC<KertasSectionProps> = ({
       header: 'Qty Lembar Plano',
       accessor: 'qty_lembar_plano',
       align: 'right' as const,
+      // NEW: shows the production-need qty (raw qty scaled by qtyRatio), not the raw BOM qty
       render: (value: number) => (
         <span className="font-semibold text-gray-900">
-          {formatNumber(value)}
+          {formatNumber(value * qtyRatio)}
         </span>
       ),
     },

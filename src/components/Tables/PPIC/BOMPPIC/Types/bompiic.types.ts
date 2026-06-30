@@ -294,6 +294,10 @@ export interface BOMData {
   bom_ppic_coating?: BOMPPICCoating[];
   bom_ppic_lem?: BOMPPICLem[];
   bom_ppic_lain_lain?: BOMLainLain[];
+  so?: {
+    po_qty?: number;
+    [key: string]: any;
+  };
 }
 
 // BOM PPIC Item for list view
@@ -368,4 +372,6 @@ export interface BOMPPICCreatePayload {
     qty_stok: number;
   }>;
   lain_lain?: BOMLainLain[];
+  qty_po: number;
+  qty_fg: number;
 }
