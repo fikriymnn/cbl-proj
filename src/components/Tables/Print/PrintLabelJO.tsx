@@ -138,11 +138,48 @@ interface PrintLabelFormData {
   tanda_retur: string;
 }
 
+// ─── QR Code generator (pure JS, no lib needed) ──────────────────────────────
+// Uses the qrserver.com free API to get a QR as a data URI via canvas
+const getQRDataUri = async (
+  text: string,
+  size: number = 80,
+): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, size, size);
+        resolve(canvas.toDataURL('image/png'));
+      } else {
+        resolve(
+          `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(
+            text,
+          )}`,
+        );
+      }
+    };
+    img.onerror = () => {
+      resolve('');
+    };
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(
+      text,
+    )}`;
+  });
+};
+
 // ─── Build isolated print HTML (table-based 2-up layout, zero CSS bleed) ─────
+// NOTE: This mirrors PrintLabel.tsx's buildPrintHTML exactly (placement,
+// row structure, QR block) so both pages print identically.
 const buildPrintHTML = (
   data: PrintLabelFormData,
   copies: number,
   logoDataUri: string,
+  qrDataUri: string,
   angkaDari: number = 1,
 ): string => {
   const now = new Date();
@@ -156,7 +193,6 @@ const buildPrintHTML = (
   const qtyPoFormatted = data.qty_po
     ? `${Number(data.qty_po).toLocaleString('id-ID')} PCS`
     : '';
-
   const qtyLabelFormatted = data.qty_label
     ? `${data.qty_label} PCS${
         data.keterangan_qty_label ? ' ' + data.keterangan_qty_label : ''
@@ -179,79 +215,95 @@ const buildPrintHTML = (
     const unitMm = dataAreaMm / rowCount;
     const rowH = `${unitMm.toFixed(2)}mm`;
 
-    return `
-    <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; height:${LABEL_H}; max-height:${LABEL_H}; overflow:hidden;">
+    // QR floated absolutely — sits on the right, spanning multiple rows freely
+    const qrBlock = qrDataUri
+      ? `<div style="position:absolute;top:0;right:2.5mm;height:100%;display:flex;align-items:center;pointer-events:none;">
+        <img src="${qrDataUri}" width="52" height="52" style="display:block;image-rendering:pixelated;" alt="QR"/>
+       </div>`
+      : '';
 
-      <!-- HEADER -->
-      <div style="height:${HEADER_H}; max-height:${HEADER_H}; overflow:hidden; display:flex; align-items:stretch; border-bottom:1.5px solid #111;">
-        <div style="width:42px; flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:2mm;">
-          <img src="${logoDataUri}" width="32" height="32" style="display:block;object-fit:contain;" alt=""/>
-        </div>
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2mm 2mm 2mm 0; text-align:center;">
-          <div style="font-size:13px;font-weight:bold;font-family:Arial,sans-serif;text-decoration:underline;line-height:1.3;">PT. CAHAYA BERLIAN LESTARI</div>
-          <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Jl. Paralon II No. 5, Cigondewah Kaler, Bandung Kulon</div>
-          <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Bandung 40214 Telp: ( 022 ) 6033823</div>
+    return `
+  <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; height:${LABEL_H}; max-height:${LABEL_H}; overflow:hidden;">
+
+    <!-- HEADER -->
+    <div style="height:${HEADER_H}; max-height:${HEADER_H}; overflow:hidden; display:flex; align-items:stretch; border-bottom:1.5px solid #111;">
+      <div style="width:42px; flex-shrink:0; display:flex; align-items:center; justify-content:center; padding:2mm;">
+        <img src="${logoDataUri}" width="32" height="32" style="display:block;object-fit:contain;" alt=""/>
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2mm 2mm 2mm 0; text-align:center;">
+        <div style="font-size:13px;font-weight:bold;font-family:Arial,sans-serif;text-decoration:underline;line-height:1.3;">PT. CAHAYA BERLIAN LESTARI</div>
+        <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Jl. Paralon II No. 5, Cigondewah Kaler, Bandung Kulon</div>
+        <div style="font-size:9px;color:#333;font-family:Arial,sans-serif;line-height:1.4;">Bandung 40214 Telp: ( 022 ) 6033823</div>
+      </div>
+    </div>
+
+    <!-- DATA ROWS — position:relative so QR can be absolutely placed -->
+    <div style="font-family:Arial,sans-serif;font-size:10.5px;padding:0 2.5mm;position:relative;">
+
+      ${qrBlock}
+
+      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NO JO</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;padding-right:60px;">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
+            data.no_jo || ''
+          }</span>
+          <span style="font-size:9.5px;color:#555;font-weight:normal;white-space:nowrap;margin-left:4px;">${dateStr}</span>
         </div>
       </div>
 
-      <!-- DATA ROWS -->
-      <div style="font-family:Arial,sans-serif;font-size:10.5px;padding:0 2.5mm;">
+      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">PEMESAN</div>
+        <div style="flex:1;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:60px;">: ${
+          data.customer || ''
+        }</div>
+      </div>
 
-        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NO JO</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;">
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
-              data.no_jo || ''
-            }</span>
-            <span style="font-size:9.5px;color:#555;font-weight:normal;white-space:nowrap;margin-left:4px;">${dateStr}</span>
-          </div>
-        </div>
+      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NAMA PRODUK</div>
+        <div style="flex:1;font-weight:bold;padding-right:60px;">: ${
+          data.produk || ''
+        }</div>
+      </div>
 
-        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">PEMESAN</div>
-          <div style="flex:1;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">: ${
-            data.customer || ''
-          }</div>
-        </div>
-
-        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NAMA PRODUK</div>
-          <div style="flex:1;font-weight:bold">: ${data.produk || ''}</div>
-        </div>
-       
       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY LABEL</div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-weight:bold;">: ${qtyLabelFormatted}</span>
-          <span style="font-size:23px;font-weight:900;line-height:1;">${
-            data.tanda_retur || ''
+        <div style="flex:1;font-weight:bold;padding-right:60px;">: ${qtyLabelFormatted}</div>
+      </div>
+
+      ${
+        data.tanda_retur
+          ? `
+      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANDA RETUR</div>
+        <div style="flex:1;font-weight:900;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:60px;">: ${data.tanda_retur}</div>
+      </div>`
+          : ''
+      }
+
+      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANGGAL PRODUKSI</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;padding-right:60px;">
+          <span style="font-weight:bold;">: ${formatTanggal(
+            data.tanggal_produksi,
+          )}</span>
+          <span style="border:2px solid #111;border-radius:999px;padding:2px 10px;font-size:10.5px;font-weight:900;white-space:nowrap;"> ${
+            data.no_io || ''
           }</span>
         </div>
       </div>
 
-        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANGGAL PRODUKSI</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-weight:bold;">: ${formatTanggal(
-              data.tanggal_produksi,
-            )}</span>
-            <span style="border:2px solid #111;border-radius:999px;padding:2px 10px;font-size:10.5px;font-weight:900;white-space:nowrap;"> ${
-              data.no_io || ''
-            }</span>
-          </div>
+      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">OPERATOR</div>
+        <div style="flex:1;font-weight:bold;overflow:hidden;padding-right:60px;">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
+            data.operator || ''
+          } - ${copyIndex}</span>
         </div>
-
-        <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-          <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">OPERATOR</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;">
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
-              data.operator || ''
-            } - ${copyIndex}</span>
-          </div>
-        </div>
-
       </div>
-    </td>`;
+
+    </div>
+  </td>`;
   };
 
   const pages: string[] = [];
@@ -473,7 +525,7 @@ const PrintLabelJO: React.FC = () => {
     }
   }, []);
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     if (!formData.no_jo || !selectedJO) {
       toast.error('Pilih Nomor JO terlebih dahulu');
       return;
@@ -481,10 +533,18 @@ const PrintLabelJO: React.FC = () => {
 
     const copiesNum = Math.max(1, parseInt(copiesStr) || 1);
     const angkaDari = Math.max(1, parseInt(angkaDariStr) || 1);
+
+    // Build the QR URL pointing to the standalone JO detail page
+    const qrUrl = `${window.location.origin}/print/jo-detail?id=${selectedJO.id}`;
+
+    toast.info('Membuat QR code...', { autoClose: 1500 });
+    const qrDataUri = await getQRDataUri(qrUrl, 100);
+
     const html = buildPrintHTML(
       formData,
       copiesNum,
       logoBase64 || LogoSrc,
+      qrDataUri,
       angkaDari,
     );
 

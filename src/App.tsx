@@ -266,6 +266,7 @@ import LabelJOPage from './pages/Print/LabelJOPage';
 import JODetailStandalone from './components/Tables/Print/Jodetailstandalone';
 import FGBookingJo from './pages/GudangFG/FGBookingJo';
 import AbsensiDivisiPage from './pages/UserMenu/AbsensiDivisiPage';
+import QRScanPage from './pages/Print/qrscanpage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2520,6 +2521,14 @@ function App() {
           element={
             <P>
               <LabelJOPage />
+            </P>
+          }
+        />
+        <Route
+          path="/print/qr-scan"
+          element={
+            <P>
+              <QRScanPage />
             </P>
           }
         />

@@ -465,12 +465,16 @@ const ListJoSelesai: React.FC = () => {
               <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
                 Status
               </th>
+              <th className="px-2 py-1 text-left font-medium text-gray-600 min-w-[150px]">
+                Status FG
+              </th>
               <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
                 Qty Kirim FG
               </th>
               <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
                 Lama Pengerjaan
               </th>
+
               <th className="px-2 py-1 text-left font-medium text-gray-600 min-w-[150px]">
                 Catatan
               </th>
@@ -503,6 +507,7 @@ const ListJoSelesai: React.FC = () => {
                 <td className="px-2 py-1 whitespace-nowrap text-gray-900 capitalize">
                   {fi.status_jo || '-'}
                 </td>
+
                 <td className="px-2 py-1 whitespace-nowrap">
                   <span
                     className={`px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -513,6 +518,9 @@ const ListJoSelesai: React.FC = () => {
                   >
                     {fi.status || '-'}
                   </span>
+                </td>
+                <td className="px-2 py-1 whitespace-nowrap text-gray-900 capitalize">
+                  {fi.status_fg || '-'}
                 </td>
                 <td className="px-2 py-1 whitespace-nowrap text-gray-900">
                   {fi.quantity_kirim_fg !== null

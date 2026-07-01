@@ -90,16 +90,22 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         throw new Error('BOM data not found');
       }
 
-      console.log('Fetched latest BOM data:', latestBomData);
+      console.log('Fetched latest BOM data:', latestBomData, bomId);
       setBomDetails(latestBomData);
       setQtyPo(latestBomData?.so?.po_qty || 0);
       // STEP 2: Try to fetch BOM PPIC data
       try {
         const bomPPICResponse = await axios.get(
-          `${import.meta.env.VITE_API_LINK}/ppic/bomppic/${bomId}`,
+          `${import.meta.env.VITE_API_LINK}/ppic/bomppic/${
+            latestBomData.bom_ppic.id
+          }`,
           { withCredentials: true },
         );
-
+        console.log(
+          'Fetched BOM PPIC data:',
+          bomPPICResponse.data,
+          latestBomData.bom_ppic.id,
+        );
         const ppicData = bomPPICResponse.data?.data || bomPPICResponse.data;
 
         if (ppicData && hasBOMPPICData(ppicData)) {
