@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import Loading from '../../Loading';
 
@@ -55,6 +56,7 @@ interface RekapMesin {
   total_waktu_produksi_jam: number;
   total_waktu_kendala_jam: number;
   total_waktu_off_jam: number;
+  total_waktu_perawatan_mesin_jam: number;
   net_output: number;
   total_jam: number;
   total_jo: number;
@@ -68,6 +70,7 @@ interface RekapMesin {
   detail_produksi: KendalaItem[];
   detail_kendala: KendalaItem[];
   detail_off: KendalaItem[];
+  detail_perawatan_mesin: KendalaItem[];
 }
 
 interface OperatorRekap {
@@ -168,7 +171,9 @@ function SearchableSelect<T>({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return options;
@@ -180,7 +185,8 @@ function SearchableSelect<T>({
     function handleClick(e: MouseEvent) {
       if (
         containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
+        !containerRef.current.contains(e.target as Node) &&
+        !(e.target as HTMLElement).closest('[data-searchable-select-menu]')
       ) {
         setOpen(false);
         setSearch('');
@@ -190,13 +196,31 @@ function SearchableSelect<T>({
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    function updateCoords() {
+      const rect = buttonRef.current?.getBoundingClientRect();
+      if (rect) {
+        setCoords({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+      }
+    }
+    updateCoords();
+    window.addEventListener('scroll', updateCoords, true);
+    window.addEventListener('resize', updateCoords);
+    return () => {
+      window.removeEventListener('scroll', updateCoords, true);
+      window.removeEventListener('resize', updateCoords);
+    };
+  }, [open]);
+
   return (
-    <div className="flex flex-col gap-1.5 " ref={containerRef}>
+    <div className="flex flex-col gap-1.5 w-full" ref={containerRef}>
       <label className="text-xs font-medium text-gray-500">
         {label} {required && <span className="text-red-400">*</span>}
       </label>
-      <div className=" absolute mt-6">
+      <div className="relative w-full">
         <button
+          ref={buttonRef}
           type="button"
           disabled={disabled}
           onClick={() => {
@@ -205,15 +229,19 @@ function SearchableSelect<T>({
               setSearch('');
             }
           }}
-          className={`w-[300px] rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm text-left flex items-center justify-between transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-50 ${
+          className={`w-full rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm text-left flex items-center justify-between transition-all focus:outline-none focus:ring-2 focus:ring-violet-400 disabled:opacity-50 ${
             open ? 'ring-2 ring-violet-400' : ''
           }`}
         >
-          <span className={value ? 'text-gray-800' : 'text-gray-400'}>
+          <span
+            className={
+              value ? 'text-gray-800 truncate' : 'text-gray-400 truncate'
+            }
+          >
             {loading ? 'Memuat...' : value ? getLabel(value) : placeholder}
           </span>
           <svg
-            className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ${
+            className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ml-2 ${
               open ? 'rotate-180' : ''
             }`}
             fill="none"
@@ -228,74 +256,84 @@ function SearchableSelect<T>({
             />
           </svg>
         </button>
-        {open && (
-          <div className="absolute z-30 mt-1 w-full bg-white border border-violet-200 rounded-xl shadow-xl overflow-hidden">
-            <div className="p-2 border-b border-gray-100">
-              <div className="relative">
-                <svg
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        {open &&
+          createPortal(
+            <div
+              data-searchable-select-menu
+              className="fixed z-[9999] bg-white border border-violet-200 rounded-xl shadow-xl overflow-hidden"
+              style={{
+                top: coords.top,
+                left: coords.left,
+                width: coords.width,
+              }}
+            >
+              <div className="p-2 border-b border-gray-100">
+                <div className="relative">
+                  <svg
+                    className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    autoFocus
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Cari..."
+                    className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-1 focus:ring-violet-400"
                   />
-                </svg>
-                <input
-                  autoFocus
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Cari..."
-                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-gray-50 border border-gray-200 focus:outline-none focus:ring-1 focus:ring-violet-400"
-                />
+                </div>
               </div>
-            </div>
-            <div className="max-h-52 overflow-y-auto">
-              {!required && value && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange(null);
-                    setOpen(false);
-                    setSearch('');
-                  }}
-                  className="w-full text-left px-4 py-2.5 text-xs text-gray-400 hover:bg-gray-50 italic"
-                >
-                  — Tidak dipilih (opsional)
-                </button>
-              )}
-              {filtered.length === 0 ? (
-                <p className="text-center text-gray-400 text-xs py-6">
-                  Tidak ditemukan
-                </p>
-              ) : (
-                filtered.map((opt) => (
+              <div className="max-h-52 overflow-y-auto">
+                {!required && value && (
                   <button
-                    key={getKey(opt)}
                     type="button"
                     onClick={() => {
-                      onChange(opt);
+                      onChange(null);
                       setOpen(false);
                       setSearch('');
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-xs hover:bg-violet-50 transition-colors ${
-                      value && getKey(value) === getKey(opt)
-                        ? 'bg-violet-50 text-violet-700 font-semibold'
-                        : 'text-gray-700'
-                    }`}
+                    className="w-full text-left px-4 py-2.5 text-xs text-gray-400 hover:bg-gray-50 italic"
                   >
-                    {getLabel(opt)}
+                    — Tidak dipilih (opsional)
                   </button>
-                ))
-              )}
-            </div>
-          </div>
-        )}
+                )}
+                {filtered.length === 0 ? (
+                  <p className="text-center text-gray-400 text-xs py-6">
+                    Tidak ditemukan
+                  </p>
+                ) : (
+                  filtered.map((opt) => (
+                    <button
+                      key={getKey(opt)}
+                      type="button"
+                      onClick={() => {
+                        onChange(opt);
+                        setOpen(false);
+                        setSearch('');
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-xs hover:bg-violet-50 transition-colors ${
+                        value && getKey(value) === getKey(opt)
+                          ? 'bg-violet-50 text-violet-700 font-semibold'
+                          : 'text-gray-700'
+                      }`}
+                    >
+                      {getLabel(opt)}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>,
+            document.body,
+          )}
       </div>
     </div>
   );
@@ -316,23 +354,27 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-xl border p-4 flex flex-col gap-1 ${
+      className={`rounded-xl border p-3 sm:p-4 flex flex-col gap-1 min-w-0 ${
         accent
           ? 'bg-violet-50 border-violet-200'
           : 'bg-white border-gray-100 shadow-sm'
       }`}
     >
-      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+      <p className="text-[10px] sm:text-xs text-gray-400 font-medium uppercase tracking-wide truncate">
         {label}
       </p>
       <p
-        className={`text-lg font-bold ${
+        className={`text-base sm:text-lg font-bold truncate ${
           accent ? 'text-violet-700' : 'text-gray-800'
         }`}
       >
         {value}
       </p>
-      {sub && <p className="text-[11px] text-gray-400">{sub}</p>}
+      {sub && (
+        <p className="text-[10px] sm:text-[11px] text-gray-400 truncate">
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
@@ -349,9 +391,11 @@ function PctBar({
   jam: number;
 }) {
   return (
-    <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-      <span className="text-xs text-gray-500 w-20 shrink-0">{label}</span>
-      <div className="flex-1 min-w-[80px] bg-gray-100 rounded-full h-2">
+    <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+      <span className="text-xs text-gray-500 w-16 sm:w-20 shrink-0">
+        {label}
+      </span>
+      <div className="flex-1 min-w-[60px] bg-gray-100 rounded-full h-2">
         <div
           className={`${colorClass} h-2 rounded-full transition-all`}
           style={{ width: `${Math.min(pct, 100)}%` }}
@@ -455,7 +499,7 @@ function DetailTable({ items }: { items: KendalaItem[] }) {
           Tidak ada data{search ? ' yang sesuai pencarian' : ''}
         </p>
       ) : (
-        <div className="overflow-auto">
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <table className="w-full text-xs min-w-[1200px]">
             <thead className="bg-gray-50 sticky top-0">
               <tr>
@@ -562,21 +606,21 @@ function DetailListModal({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col">
-        <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-6 py-4 text-white rounded-t-2xl flex justify-between items-center shrink-0">
-          <h3 className="text-base font-bold">{title}</h3>
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+        <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-4 sm:px-6 py-3 sm:py-4 text-white rounded-t-2xl flex justify-between items-center shrink-0">
+          <h3 className="text-sm sm:text-base font-bold pr-2">{title}</h3>
           <button
             onClick={onClose}
-            className="text-white hover:text-purple-200 text-2xl font-bold leading-none"
+            className="text-white hover:text-purple-200 text-2xl font-bold leading-none shrink-0"
           >
             ×
           </button>
         </div>
-        <div className="overflow-auto p-4">
+        <div className="overflow-auto p-3 sm:p-4">
           <DetailTable items={items} />
         </div>
-        <div className="px-6 py-3 bg-gray-50 rounded-b-2xl flex justify-end shrink-0">
+        <div className="px-4 sm:px-6 py-3 bg-gray-50 rounded-b-2xl flex justify-end shrink-0">
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold rounded-lg"
@@ -605,6 +649,8 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
   const pctKendala =
     totalJam > 0 ? (data.total_waktu_kendala_jam / totalJam) * 100 : 0;
   const pctOff = totalJam > 0 ? (data.total_waktu_off_jam / totalJam) * 100 : 0;
+  const pctPerawatan =
+    totalJam > 0 ? (data.total_waktu_perawatan_mesin_jam / totalJam) * 100 : 0;
 
   return (
     <>
@@ -621,7 +667,7 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
             Waktu & JO
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
             <StatCard
               label="Total Jam"
               value={fmtDurasi(data.total_jam)}
@@ -648,6 +694,11 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
               sub={`${pctOff.toFixed(1)}% dari total`}
             />
             <StatCard
+              label="Waktu Perawatan Mesin"
+              value={fmtDurasi(data.total_waktu_perawatan_mesin_jam)}
+              sub={`${pctPerawatan.toFixed(1)}% dari total`}
+            />
+            <StatCard
               label="Total JO"
               value={fmtNum(data.total_jo)}
               sub={`${fmtNum(data.total_jo_produksi)} produksi / ${fmtNum(
@@ -663,7 +714,7 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
             Kuantitas
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             <StatCard
               label="Qty Baik"
               value={fmtNum(data.total_qty_baik)}
@@ -685,7 +736,7 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
         </div>
 
         {/* Time distribution */}
-        <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+        <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5 shadow-sm">
           <h4 className="text-sm font-semibold text-gray-700 mb-4">
             Distribusi Waktu Mesin
           </h4>
@@ -709,6 +760,12 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
               jam={data.total_waktu_kendala_jam}
             />
             <PctBar
+              label="Perawatan"
+              pct={pctPerawatan}
+              colorClass="bg-indigo-400"
+              jam={data.total_waktu_perawatan_mesin_jam}
+            />
+            <PctBar
               label="Off"
               pct={pctOff}
               colorClass="bg-gray-300"
@@ -718,7 +775,7 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
         </div>
 
         {/* Detail buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
           {[
             {
               label: 'Detail Setting',
@@ -741,6 +798,13 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
               dot: 'bg-red-400',
             },
             {
+              label: 'Detail Perawatan Mesin',
+              items: data.detail_perawatan_mesin ?? [],
+              color:
+                'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100',
+              dot: 'bg-indigo-400',
+            },
+            {
               label: 'Detail Off',
               items: data.detail_off ?? [],
               color:
@@ -751,13 +815,13 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
             <button
               key={label}
               onClick={() => setDetailModal({ title: label, items })}
-              className={`border rounded-xl px-4 py-3 text-sm font-semibold transition-colors flex items-center gap-2 justify-between ${color}`}
+              className={`border rounded-xl px-3 sm:px-4 py-3 text-xs sm:text-sm font-semibold transition-colors flex items-center gap-2 justify-between ${color}`}
             >
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${dot}`} />
-                <span>{label}</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+                <span className="truncate">{label}</span>
               </div>
-              <span className="text-xs font-normal opacity-60 bg-white bg-opacity-60 px-1.5 py-0.5 rounded">
+              <span className="text-xs font-normal opacity-60 bg-white bg-opacity-60 px-1.5 py-0.5 rounded shrink-0">
                 {items.length}
               </span>
             </button>
@@ -817,14 +881,14 @@ function RekapKendalaSection({ data }: { data: RekapKendala[] }) {
             >
               <button
                 onClick={() => setExpanded(isOpen ? null : k.kategori_kendala)}
-                className="w-full px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors"
+                className="w-full px-3 sm:px-5 py-4 flex items-center gap-2 sm:gap-4 hover:bg-gray-50 transition-colors flex-wrap sm:flex-nowrap"
               >
                 <span
                   className={`text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 ${badge}`}
                 >
                   {k.kategori_kendala}
                 </span>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-[100px]">
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-gray-100 rounded-full h-1.5">
                       <div
@@ -862,7 +926,7 @@ function RekapKendalaSection({ data }: { data: RekapKendala[] }) {
                 </svg>
               </button>
               {isOpen && (
-                <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+                <div className="border-t border-gray-100 px-3 sm:px-5 py-4 space-y-3">
                   <div className="flex justify-end">
                     <button
                       onClick={() =>
@@ -898,6 +962,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
       | 'detail_produksi'
       | 'detail_setting'
       | 'detail_kendala'
+      | 'detail_perawatan_mesin'
       | 'detail_off'
     >
   >({});
@@ -912,6 +977,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
       | 'detail_produksi'
       | 'detail_setting'
       | 'detail_kendala'
+      | 'detail_perawatan_mesin'
       | 'detail_off';
     label: string;
   }[] = [
@@ -919,6 +985,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
     { key: 'detail_produksi', label: 'Produksi' },
     { key: 'detail_setting', label: 'Setting' },
     { key: 'detail_kendala', label: 'Kendala' },
+    { key: 'detail_perawatan_mesin', label: 'Perawatan' },
     { key: 'detail_off', label: 'Off' },
   ];
 
@@ -937,6 +1004,8 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
             ? m.detail_setting ?? []
             : tab === 'detail_kendala'
             ? m.detail_kendala ?? []
+            : tab === 'detail_perawatan_mesin'
+            ? m.detail_perawatan_mesin ?? []
             : tab === 'detail_off'
             ? m.detail_off ?? []
             : [];
@@ -949,7 +1018,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
             {/* Header */}
             <button
               onClick={() => setActiveOp(isOpen ? null : op.id_operator)}
-              className="w-full px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
+              className="w-full px-3 sm:px-5 py-4 flex items-center gap-3 sm:gap-4 hover:bg-gray-50 transition-colors text-left flex-wrap sm:flex-nowrap"
             >
               <div className="w-9 h-9 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-sm shrink-0">
                 {op.nama_operator
@@ -958,7 +1027,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                   .slice(0, 2)
                   .join('')}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-[120px]">
                 <p className="font-semibold text-gray-800 text-sm">
                   {op.nama_operator}
                 </p>
@@ -966,7 +1035,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                   {m.total_jo} JO · {fmtDurasi(m.total_jam)}
                 </p>
               </div>
-              <div className="text-right text-xs text-gray-500 space-y-0.5">
+              <div className="text-right text-xs text-gray-500 space-y-0.5 shrink-0">
                 <p>
                   <span className="text-green-600 font-bold">
                     {fmtNum(m.total_qty_baik)}
@@ -976,7 +1045,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                 <p>Net {fmtNum(m.net_output, 4)}</p>
               </div>
               <svg
-                className={`w-4 h-4 text-gray-400 transition-transform ${
+                className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ${
                   isOpen ? 'rotate-180' : ''
                 }`}
                 fill="none"
@@ -1004,6 +1073,8 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                         ? m.detail_setting?.length ?? 0
                         : key === 'detail_kendala'
                         ? m.detail_kendala?.length ?? 0
+                        : key === 'detail_perawatan_mesin'
+                        ? m.detail_perawatan_mesin?.length ?? 0
                         : key === 'detail_off'
                         ? m.detail_off?.length ?? 0
                         : null;
@@ -1016,7 +1087,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                             [op.id_operator]: key,
                           }))
                         }
-                        className={`px-4 py-2.5 text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5 border-b-2 ${
+                        className={`px-3 sm:px-4 py-2.5 text-xs font-semibold transition-colors whitespace-nowrap flex items-center gap-1.5 border-b-2 shrink-0 ${
                           tab === key
                             ? 'border-violet-600 text-violet-700 bg-violet-50'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -1039,7 +1110,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                   })}
                 </div>
 
-                <div className="p-5 space-y-4">
+                <div className="p-3 sm:p-5 space-y-4">
                   {tab === 'ringkasan' && (
                     <>
                       {/* Time stats */}
@@ -1047,7 +1118,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                           Waktu & JO
                         </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                           <StatCard
                             label="Total Jam"
                             value={fmtDurasi(m.total_jam)}
@@ -1068,6 +1139,10 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                             label="Waktu Kendala"
                             value={fmtDurasi(m.total_waktu_kendala_jam)}
                           />
+                          <StatCard
+                            label="Waktu Perawatan Mesin"
+                            value={fmtDurasi(m.total_waktu_perawatan_mesin_jam)}
+                          />
                         </div>
                       </div>
 
@@ -1076,7 +1151,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
                           Kuantitas
                         </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                           <StatCard
                             label="Qty Baik"
                             value={fmtNum(m.total_qty_baik)}
@@ -1098,7 +1173,7 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                       </div>
 
                       {/* Time distribution */}
-                      <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                      <div className="bg-gray-50 rounded-xl p-3 sm:p-4 space-y-3">
                         <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                           Distribusi Waktu
                         </h5>
@@ -1117,6 +1192,11 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                             label: 'Kendala',
                             jam: m.total_waktu_kendala_jam,
                             bar: 'bg-red-400',
+                          },
+                          {
+                            label: 'Perawatan',
+                            jam: m.total_waktu_perawatan_mesin_jam,
+                            bar: 'bg-indigo-400',
                           },
                           {
                             label: 'Off',
@@ -1144,9 +1224,9 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                             {op.rekap_kendala.map((k) => (
                               <div
                                 key={k.kategori_kendala}
-                                className="flex items-center gap-3 text-xs"
+                                className="flex items-center gap-2 sm:gap-3 text-xs"
                               >
-                                <span className="w-20 text-gray-500 shrink-0">
+                                <span className="w-16 sm:w-20 text-gray-500 shrink-0">
                                   {k.kategori_kendala}
                                 </span>
                                 <div className="flex-1 bg-gray-200 rounded-full h-1.5">
@@ -1275,6 +1355,7 @@ function LaporanRekapLKH() {
         `${import.meta.env.VITE_API_LINK}/produksi/lkhRekap`,
         { params, withCredentials: true },
       );
+      console.log('Rekap data fetched:', res.data);
       setRekapData(res.data?.data ?? res.data ?? null);
       setActiveTab('mesin');
     } catch (err) {
@@ -1295,12 +1376,12 @@ function LaporanRekapLKH() {
   return (
     <>
       {isLoading && <Loading />}
-      <main className="space-y-5">
+      <main className="space-y-4 sm:space-y-5 px-2 sm:px-0">
         {/* ── Filter Card ── */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="bg-gradient-to-r from-violet-50 to-purple-50 px-5 py-3 border-b border-violet-100 flex items-center gap-2">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+          <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-t-xl px-4 sm:px-5 py-3 border-b border-violet-100 flex items-center gap-2 flex-wrap">
             <svg
-              className="w-4 h-4 text-violet-500"
+              className="w-4 h-4 text-violet-500 shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1316,12 +1397,12 @@ function LaporanRekapLKH() {
               Filter Data
             </h2>
             {!selectedMesin && (
-              <span className="ml-auto text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full font-medium">
+              <span className="w-full sm:w-auto sm:ml-auto text-xs bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full font-medium text-center sm:text-left">
                 Pilih Mesin untuk memuat data
               </span>
             )}
           </div>
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-500">
@@ -1331,7 +1412,7 @@ function LaporanRekapLKH() {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all"
+                  className="rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all w-full"
                 />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -1342,7 +1423,7 @@ function LaporanRekapLKH() {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all"
+                  className="rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all w-full"
                 />
               </div>
               <SearchableSelect<MesinTahapan>
@@ -1374,14 +1455,14 @@ function LaporanRekapLKH() {
             <div className="flex flex-wrap gap-3 justify-end mt-4">
               <button
                 onClick={handleReset}
-                className="bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg px-4 py-2 text-sm font-medium text-gray-600"
+                className="flex-1 sm:flex-none bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg px-4 py-2 text-sm font-medium text-gray-600"
               >
                 Reset
               </button>
               <button
                 onClick={fetchRekap}
                 disabled={!canFetch || isLoading}
-                className={`rounded-lg px-5 py-2 text-sm font-semibold text-white transition-all ${
+                className={`flex-1 sm:flex-none rounded-lg px-5 py-2 text-sm font-semibold text-white transition-all ${
                   canFetch && !isLoading
                     ? 'bg-violet-600 hover:bg-violet-700 active:scale-95'
                     : 'bg-gray-300 cursor-not-allowed'
@@ -1395,7 +1476,7 @@ function LaporanRekapLKH() {
 
         {/* ── Empty State ── */}
         {!rekapData && !isLoading && (
-          <div className="bg-white rounded-xl border border-dashed border-gray-200 py-16 flex flex-col items-center gap-3 text-center">
+          <div className="bg-white rounded-xl border border-dashed border-gray-200 py-12 sm:py-16 flex flex-col items-center gap-3 text-center px-4">
             <svg
               className="w-12 h-12 text-gray-200"
               fill="none"
@@ -1431,7 +1512,7 @@ function LaporanRekapLKH() {
                   Semua Tahapan
                 </span>
               )}
-              <span className="text-gray-300">·</span>
+              <span className="text-gray-300 hidden sm:inline">·</span>
               {selectedMesin && (
                 <span className="bg-violet-100 text-violet-700 px-3 py-1 rounded-full font-medium border border-violet-200">
                   {selectedMesin.kode_mesin
@@ -1440,19 +1521,19 @@ function LaporanRekapLKH() {
                   {selectedMesin.nama_mesin}
                 </span>
               )}
-              <span className="text-gray-300">·</span>
+              <span className="text-gray-300 hidden sm:inline">·</span>
               <span className="text-gray-400">
                 {startDate} s/d {endDate}
               </span>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-0 rounded-xl overflow-hidden border border-violet-200 w-fit shadow-sm">
+            <div className="flex gap-0 rounded-xl overflow-x-auto border border-violet-200 w-full sm:w-fit shadow-sm">
               {TABS.map(({ key, label, icon }, idx) => (
                 <button
                   key={key}
                   onClick={() => setActiveTab(key)}
-                  className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold transition-all ${
+                  className={`flex items-center gap-2 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shrink-0 ${
                     idx > 0 ? 'border-l border-violet-200' : ''
                   } ${
                     activeTab === key
