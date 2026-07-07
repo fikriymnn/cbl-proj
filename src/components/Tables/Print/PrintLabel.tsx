@@ -187,9 +187,6 @@ const buildPrintHTML = (
     '0',
   )}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  const qtyPoFormatted = data.qty_po
-    ? `${Number(data.qty_po).toLocaleString('id-ID')} PCS`
-    : '';
   const qtyLabelFormatted = data.qty_label
     ? `${data.qty_label} PCS${
         data.keterangan_qty_label ? ' ' + data.keterangan_qty_label : ''
@@ -206,21 +203,56 @@ const buildPrintHTML = (
   const HEADER_H = '16mm';
   const PAGE_H = '186mm';
 
-  const singleLabel = (copyIndex: number) => {
-    const rowCount = data.tanda_retur ? 7 : 6;
-    const dataAreaMm = 44;
-    const unitMm = dataAreaMm / rowCount;
-    const rowH = `${unitMm.toFixed(2)}mm`;
+  // Everything that used to be scattered (date on the NO JO row, the IO badge
+  // on the TANGGAL PRODUKSI row, and a whole separate TANDA RETUR row) now
+  // lives in one right-aligned sidebar anchored at the same spot as the QR,
+  // so date / QR / IO / tanda-retur all sit in the same right-hand column.
+  const SIDEBAR_PAD = '62px'; // reserved right padding on every normal row
 
-    // QR floated absolutely — sits on the right, spanning multiple rows freely
-    const qrBlock = qrDataUri
-      ? `<div style="position:absolute;top:0;right:2.5mm;height:100%;display:flex;align-items:center;pointer-events:none;">
-        <img src="${qrDataUri}" width="52" height="52" style="display:block;image-rendering:pixelated;" alt="QR"/>
-       </div>`
-      : '';
+  const singleLabel = (copyIndex: number) => {
+    const hasRetur = !!data.tanda_retur;
+    // Fixed-height rows: NO JO, PEMESAN, QTY LABEL, TANGGAL PRODUKSI, OPERATOR
+    // NAMA PRODUK is excluded here — it gets a flexible, non-clipped height below.
+    // (TANDA RETUR is no longer its own row — it moved into the sidebar.)
+    const fixedRowCount = 5;
+    const dataAreaMm = 44;
+    const produkMinMm = 9;
+    const fixedAreaMm = dataAreaMm - produkMinMm;
+    const unitMm = fixedAreaMm / fixedRowCount;
+    const rowH = `${unitMm.toFixed(2)}mm`;
+    const produkMinH = `${produkMinMm}mm`;
+
+    // Auto-shrink the product name font only when it's long, so long
+    // product names never get visually cut off.
+    const produkLen = (data.produk || '').length;
+    const produkFontSize =
+      produkLen > 110 ? '8px' : produkLen > 75 ? '9px' : '10.5px';
+
+    // Right-hand sidebar: date on top, QR in the middle, tanda-retur flag +
+    // IO badge at the bottom. All raw values, no extra text labels, all
+    // right-justified in the same column as the QR.
+    const sidebar = `
+      <div style="position:absolute;top:0;right:2.5mm;height:100%;width:56px;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;pointer-events:none;">
+        <span style="font-size:8.5px;color:#555;white-space:nowrap;">${dateStr}</span>
+        ${
+          qrDataUri
+            ? `<img src="${qrDataUri}" width="50" height="50" style="display:block;image-rendering:pixelated;" alt="QR"/>`
+            : ''
+        }
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+          ${
+            hasRetur
+              ? `<span style="font-weight:900;font-size:10px;white-space:nowrap;">${data.tanda_retur}</span>`
+              : ''
+          }
+          <span style="border:2px solid #111;border-radius:999px;padding:1px 8px;font-size:9.5px;font-weight:900;white-space:nowrap;">${
+            data.no_io || ''
+          }</span>
+        </div>
+      </div>`;
 
     return `
-  <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; height:${LABEL_H}; max-height:${LABEL_H}; overflow:hidden;">
+  <td style="border:2px solid #111; padding:0; vertical-align:top; background:white; width:50%; min-height:${LABEL_H}; overflow:visible;">
 
     <!-- HEADER -->
     <div style="height:${HEADER_H}; max-height:${HEADER_H}; overflow:hidden; display:flex; align-items:stretch; border-bottom:1.5px solid #111;">
@@ -234,65 +266,47 @@ const buildPrintHTML = (
       </div>
     </div>
 
-    <!-- DATA ROWS — position:relative so QR can be absolutely placed -->
+    <!-- DATA ROWS — position:relative so the sidebar can be absolutely placed -->
     <div style="font-family:Arial,sans-serif;font-size:10.5px;padding:0 2.5mm;position:relative;">
 
-      ${qrBlock}
+      ${sidebar}
 
       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NO JO</div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;font-weight:bold;overflow:hidden;padding-right:60px;">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
-            data.no_jo || ''
-          }</span>
-          <span style="font-size:9.5px;color:#555;font-weight:normal;white-space:nowrap;margin-left:4px;">${dateStr}</span>
-        </div>
-      </div>
-
-      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">PEMESAN</div>
-        <div style="flex:1;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:60px;">: ${
-          data.customer || ''
+        <div style="flex:1;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:${SIDEBAR_PAD};">: ${
+          data.no_jo || ''
         }</div>
       </div>
 
       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">NAMA PRODUK</div>
-        <div style="flex:1;font-weight:bold;padding-right:60px;">: ${
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">PEMESAN</div>
+        <div style="flex:1;font-weight:bold;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:${SIDEBAR_PAD};">: ${
+          data.customer || ''
+        }</div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;min-height:${produkMinH};overflow:visible;padding:1mm 0;">
+        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;padding-top:1px;">NAMA PRODUK</div>
+        <div style="flex:1;font-weight:bold;font-size:${produkFontSize};line-height:1.3;padding-right:${SIDEBAR_PAD};white-space:normal;word-break:break-word;">: ${
           data.produk || ''
         }</div>
       </div>
 
       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">QTY LABEL</div>
-        <div style="flex:1;font-weight:bold;padding-right:60px;">: ${qtyLabelFormatted}</div>
+        <div style="flex:1;font-weight:bold;padding-right:${SIDEBAR_PAD};">: ${qtyLabelFormatted}</div>
       </div>
-
-      ${
-        data.tanda_retur
-          ? `
-      <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
-        <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANDA RETUR</div>
-        <div style="flex:1;font-weight:900;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:60px;">: ${data.tanda_retur}</div>
-      </div>`
-          : ''
-      }
 
       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">TANGGAL PRODUKSI</div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:space-between;padding-right:60px;">
-          <span style="font-weight:bold;">: ${formatTanggal(
-            data.tanggal_produksi,
-          )}</span>
-          <span style="border:2px solid #111;border-radius:999px;padding:2px 10px;font-size:10.5px;font-weight:900;white-space:nowrap;"> ${
-            data.no_io || ''
-          }</span>
-        </div>
+        <div style="flex:1;font-weight:bold;padding-right:${SIDEBAR_PAD};">: ${formatTanggal(
+          data.tanggal_produksi,
+        )}</div>
       </div>
 
       <div style="display:flex;align-items:center;height:${rowH};overflow:hidden;">
         <div style="width:130px;flex-shrink:0;color:#111;white-space:nowrap;">OPERATOR</div>
-        <div style="flex:1;font-weight:bold;overflow:hidden;padding-right:60px;">
+        <div style="flex:1;font-weight:bold;overflow:hidden;padding-right:${SIDEBAR_PAD};">
           <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">: ${
             data.operator || ''
           } - ${copyIndex}</span>
