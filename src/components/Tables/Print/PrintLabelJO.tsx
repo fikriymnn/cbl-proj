@@ -234,14 +234,15 @@ const buildPrintHTML = (
     // Right-hand sidebar: date on top, QR in the middle, tanda-retur flag +
     // IO badge at the bottom. All raw values, no extra text labels, all
     // right-justified in the same column as the QR.
+    //  ${
+    //       qrDataUri
+    //         ? `<img src="${qrDataUri}" width="50" height="50" style="display:block;image-rendering:pixelated;" alt="QR"/>`
+    //         : ''
+    //     }
     const sidebar = `
       <div style="position:absolute;top:0;right:2.5mm;height:100%;width:56px;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;pointer-events:none;">
         <span style="font-size:8.5px;color:#555;white-space:nowrap;">${dateStr}</span>
-        ${
-          qrDataUri
-            ? `<img src="${qrDataUri}" width="50" height="50" style="display:block;image-rendering:pixelated;" alt="QR"/>`
-            : ''
-        }
+       
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
           ${
             hasRetur
