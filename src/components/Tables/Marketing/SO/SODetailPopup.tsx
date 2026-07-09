@@ -235,7 +235,8 @@ const SODetailPopup: React.FC<SODetailPopupProps> = ({
           const biodata = karyawan.biodata_karyawan[0];
           return (
             biodata?.department?.nama_department ===
-            'Planning Production Inventory Control'
+              'Planning Production Inventory Control' ||
+            biodata?.department?.nama_department === 'PPIC'
           );
         })
         .map((karyawan: any) => ({
