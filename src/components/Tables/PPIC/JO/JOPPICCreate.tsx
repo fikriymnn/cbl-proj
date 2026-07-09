@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { JOTipeOption } from './types/jo.types';
 import JOPPICCreateModal from './utils/JOPPICCreateModal';
-import JOKanbanModal from './utils/Jokanbanmodal'; // NEW
+import JOKanbanModal from './utils/JOKanbanModal'; // NEW
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import JOPrintModal from './utils/JOPrintModal';

@@ -4,6 +4,8 @@ export interface LainLainItem {
   id?: number;
   nama_item: string;
   harga: number;
+  qty_beli: number;
+  qty_stok: number;
   is_active: boolean;
 }
 
@@ -30,8 +32,6 @@ interface LainLainSectionProps {
 const LainLainSection: React.FC<LainLainSectionProps> = ({
   items,
   onItemChange,
-  formatNumber,
-  parseFormattedNumber,
   getInputDisplayValue,
   handleInputBlur,
 }) => {
@@ -76,6 +76,12 @@ const LainLainSection: React.FC<LainLainSectionProps> = ({
               <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase">
                 Harga
               </th>
+              <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase bg-green-50">
+                Qty Stok
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase bg-orange-50">
+                Qty Beli
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -112,6 +118,44 @@ const LainLainSection: React.FC<LainLainSectionProps> = ({
                     className="w-full px-3 py-2 text-right border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 text-sm font-medium bg-white"
                     placeholder="0"
                     readOnly
+                  />
+                </td>
+                <td className="px-4 py-3 bg-green-50">
+                  <input
+                    type="text"
+                    value={getInputDisplayValue(
+                      'lainlain',
+                      index,
+                      'qty_stok',
+                      item.qty_stok,
+                    )}
+                    onChange={(e) =>
+                      onItemChange(index, 'qty_stok', e.target.value)
+                    }
+                    onBlur={() =>
+                      handleInputBlur('lainlain', index, 'qty_stok')
+                    }
+                    className="w-full px-3 py-2 text-right border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium bg-white"
+                    placeholder="0"
+                  />
+                </td>
+                <td className="px-4 py-3 bg-orange-50">
+                  <input
+                    type="text"
+                    value={getInputDisplayValue(
+                      'lainlain',
+                      index,
+                      'qty_beli',
+                      item.qty_beli,
+                    )}
+                    onChange={(e) =>
+                      onItemChange(index, 'qty_beli', e.target.value)
+                    }
+                    onBlur={() =>
+                      handleInputBlur('lainlain', index, 'qty_beli')
+                    }
+                    className="w-full px-3 py-2 text-right border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"
+                    placeholder="0"
                   />
                 </td>
               </tr>

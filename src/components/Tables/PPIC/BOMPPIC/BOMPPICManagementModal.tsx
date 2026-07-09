@@ -8,7 +8,6 @@ import {
   BOMPPICPoliban,
   BOMPPICCoating,
   BOMPPICLem,
-  BOMPPICCreatePayload,
 } from './Types/bompiic.types';
 import {
   initializeCreateMode,
@@ -26,12 +25,14 @@ import LainLainSection from './sections/materials/LainLainSection';
 
 interface BOMPPICManagementModalProps {
   bomId: number;
+  bomPPICId?: number;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
   bomId,
+  bomPPICId,
   onClose,
   onSuccess,
 }) => {
@@ -51,7 +52,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
   const [lemItems, setLemItems] = useState<BOMPPICLem[]>([]);
   const [lainLainItems, setLainLainItems] = useState<LainLainItem[]>([]);
 
-  // New state for tracking input display values
   const [inputDisplayValues, setInputDisplayValues] = useState<{
     [key: string]: string;
   }>({});
@@ -78,7 +78,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     try {
       setLoading(true);
 
-      // STEP 1: Always fetch the latest BOM data first
       const bomResponse = await axios.get(
         `${import.meta.env.VITE_API_LINK}/ppic/bom/${bomId}`,
         { withCredentials: true },
@@ -93,7 +92,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       console.log('Fetched latest BOM data:', latestBomData, bomId);
       setBomDetails(latestBomData);
       setQtyPo(latestBomData?.so?.po_qty || 0);
-      // STEP 2: Try to fetch BOM PPIC data
       try {
         const bomPPICResponse = await axios.get(
           `${import.meta.env.VITE_API_LINK}/ppic/bomppic/${
@@ -109,21 +107,15 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         const ppicData = bomPPICResponse.data?.data || bomPPICResponse.data;
 
         if (ppicData && hasBOMPPICData(ppicData)) {
-          console.log('BOM PPIC exists, entering edit mode', ppicData);
           setIsEditMode(true);
           setQtyFg(ppicData.qty_fg || 0);
-          // STEP 3: Initialize with latest BOM data structure but preserve qty_beli and qty_stok from PPIC
           initializeEditModeWithLatestBOM(latestBomData, ppicData);
         } else {
-          // No BOM PPIC found, initialize create mode with latest BOM data
-          console.log('No BOM PPIC found, entering create mode');
           setIsEditMode(false);
           setQtyFg(0);
           initializeCreateModeWithBOM(latestBomData);
         }
       } catch (ppicError: any) {
-        // BOM PPIC not found or error, initialize create mode with latest BOM data
-        console.log('BOM PPIC not found, entering create mode');
         setIsEditMode(false);
         setQtyFg(0);
         initializeCreateModeWithBOM(latestBomData);
@@ -152,11 +144,9 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     );
   };
 
-  // NEW FUNCTION: Initialize create mode with latest BOM data
   const initializeCreateModeWithBOM = (bomData: BOMData) => {
     const initializedData = initializeCreateMode(bomData);
 
-    // Initialize with default beli = qty
     const initializedKertas = initializedData.kertasItems.map((item) => ({
       ...item,
       qty_beli: item.qty_beli || item.qty_lembar_plano || 0,
@@ -186,12 +176,12 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       qty_stok: item.qty_stok || 0,
     }));
 
+    // Coating is already merged into one row per id_coating by
+    // initializeCreateMode — just default qty_beli to qty_coating.
     const initializedCoating = initializedData.coatingItems.map((item) => ({
       ...item,
-      qty_beli_coating_depan: item.qty_beli_coating_depan || 0,
-      qty_stok_coating_depan: item.qty_stok_coating_depan || 0,
-      qty_beli_coating_belakang: item.qty_beli_coating_belakang || 0,
-      qty_stok_coating_belakang: item.qty_stok_coating_belakang || 0,
+      qty_beli: item.qty_beli || item.qty_coating || 0,
+      qty_stok: item.qty_stok || 0,
     }));
 
     const initializedLem = initializedData.lemItems.map((item) => ({
@@ -213,25 +203,17 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     latestBomData: BOMData,
     ppicData: any,
   ) => {
-    console.log('Initializing edit mode with latest BOM structure');
-    console.log('Latest BOM Data:', latestBomData);
-    console.log('Existing PPIC Data:', ppicData);
-
-    // Get the latest BOM structure
     const latestBomStructure = initializeCreateMode(latestBomData);
 
-    // FIXED: Helper function to match items between BOM and BOM PPIC
     const mergeWithPPICData = <T extends { [key: string]: any }>(
       latestItems: T[],
       ppicItems: any[],
-      matchFields: string[], // Fields to match items (e.g., ['id_kertas', 'id_jenis_kertas'])
+      matchFields: string[],
       qtyFields: string[],
     ): T[] => {
       return latestItems.map((latestItem) => {
-        // Find matching PPIC item using multiple match fields
         const matchingPPIC = ppicItems?.find((ppicItem) => {
           return matchFields.every((field) => {
-            // Handle nested fields (e.g., 'id_coating' in coating items)
             if (field.includes('.')) {
               const [parent, child] = field.split('.');
               return latestItem[parent]?.[child] === ppicItem[parent]?.[child];
@@ -241,8 +223,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         });
 
         if (matchingPPIC) {
-          console.log(`Found matching PPIC for:`, latestItem, matchingPPIC);
-          // Preserve qty_beli and qty_stok from PPIC data
           const preservedValues: any = {};
           qtyFields.forEach((field) => {
             if (
@@ -255,17 +235,13 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
           return { ...latestItem, ...preservedValues };
         }
 
-        // If no match found, use default values from latest BOM
-        console.log(`No matching PPIC found for:`, latestItem);
         const defaultValues: any = {};
         qtyFields.forEach((field) => {
           if (field.includes('beli')) {
-            // Set beli to qty value from BOM
             const baseQtyField = field
               .replace('qty_beli_', 'qty_')
               .replace('qty_beli', 'qty_');
 
-            // Handle different naming conventions
             if (latestItem[baseQtyField] !== undefined) {
               defaultValues[field] = latestItem[baseQtyField] || 0;
             } else if (latestItem['qty_lembar_plano'] !== undefined) {
@@ -276,6 +252,10 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
               defaultValues[field] = latestItem['qty_poliban'] || 0;
             } else if (latestItem['qty_lem'] !== undefined) {
               defaultValues[field] = latestItem['qty_lem'] || 0;
+            } else if (latestItem['qty_coating'] !== undefined) {
+              // NEW: coating items now flow through this same generic
+              // merge helper, so give them a default beli value too.
+              defaultValues[field] = latestItem['qty_coating'] || 0;
             } else {
               defaultValues[field] = 0;
             }
@@ -290,15 +270,23 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     const initializedKertas = mergeWithPPICData(
       latestBomStructure.kertasItems,
       ppicData.bom_ppic_kertas || [],
-      ['id_kertas', 'id_jenis_kertas'], // Match fields
+      ['id_kertas', 'id_jenis_kertas'],
       ['qty_beli', 'qty_stok'],
     );
 
-    // Initialize Tinta (special case with nested tinta_detail)
+    // Tinta matching includes warna_tinta and id_jenis_warna_tinta.
+    // A single BOM can have several tinta rows (one per color) that all
+    // share id_jenis_tinta + id_jenis_kertas — differing only by
+    // warna_tinta / id_jenis_warna_tinta. Without those extra fields
+    // .find() always resolves to the first PPIC tinta record, so every
+    // color ends up reusing the same qty_beli/qty_stok/tinta_detail.
     const initializedTinta = latestBomStructure.tintaItems.map(
       (latestTinta) => {
         const matchingPPICTinta = ppicData.bom_ppic_tinta?.find(
           (ppicTinta: any) =>
+            ppicTinta.warna_tinta === latestTinta.warna_tinta &&
+            ppicTinta.id_jenis_warna_tinta ===
+              latestTinta.id_jenis_warna_tinta &&
             ppicTinta.id_jenis_tinta === latestTinta.id_jenis_tinta &&
             ppicTinta.id_jenis_kertas === latestTinta.id_jenis_kertas,
         );
@@ -312,7 +300,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
             );
 
             if (matchingPPICDetail) {
-              console.log('Found matching tinta detail:', matchingPPICDetail);
               return {
                 ...latestDetail,
                 qty_beli: matchingPPICDetail.qty_beli || 0,
@@ -329,6 +316,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         };
       },
     );
+
     const initializedCorrugated = mergeWithPPICData(
       latestBomStructure.corrugatedItems,
       ppicData.bom_ppic_corrugated || [],
@@ -336,7 +324,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       ['qty_beli', 'qty_stok'],
     );
 
-    // Initialize Poliban - match by id_poliban
     const initializedPoliban = mergeWithPPICData(
       latestBomStructure.polibanItems,
       ppicData.bom_ppic_poliban || [],
@@ -344,45 +331,17 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       ['qty_beli', 'qty_stok'],
     );
 
-    // Initialize Coating - match by id_coating and tipe_coating
-    const initializedCoating = latestBomStructure.coatingItems.map(
-      (latestItem) => {
-        const matchingPPIC = ppicData.bom_ppic_coating?.find(
-          (ppicItem: any) =>
-            ppicItem.id_coating === latestItem.id_coating &&
-            ppicItem.tipe_coating === latestItem.tipe_coating,
-        );
-
-        if (matchingPPIC) {
-          console.log('Found matching coating:', matchingPPIC);
-          return {
-            ...latestItem,
-            qty_beli_coating_depan: matchingPPIC.qty_beli_coating_depan || 0,
-            qty_stok_coating_depan: matchingPPIC.qty_stok_coating_depan || 0,
-            qty_beli_coating_belakang:
-              matchingPPIC.qty_beli_coating_belakang || 0,
-            qty_stok_coating_belakang:
-              matchingPPIC.qty_stok_coating_belakang || 0,
-          };
-        }
-
-        return {
-          ...latestItem,
-          qty_beli_coating_depan:
-            latestItem.tipe_coating === 'Depan'
-              ? latestItem.qty_coating || 0
-              : 0,
-          qty_stok_coating_depan: 0,
-          qty_beli_coating_belakang:
-            latestItem.tipe_coating === 'Belakang'
-              ? latestItem.qty_coating || 0
-              : 0,
-          qty_stok_coating_belakang: 0,
-        };
-      },
+    // Coating: both latestBomStructure.coatingItems (via initializeCreateMode)
+    // and ppicData.bom_ppic_coating (from the backend, per your payload) are
+    // already ONE flat row per id_coating — so this is now a plain merge,
+    // same as kertas/corrugated/poliban/lem. No depan/belakang bookkeeping.
+    const initializedCoating = mergeWithPPICData(
+      latestBomStructure.coatingItems,
+      ppicData.bom_ppic_coating || [],
+      ['id_coating'],
+      ['qty_beli', 'qty_stok'],
     );
 
-    // Initialize Lem - match by id_lem
     const initializedLem = mergeWithPPICData(
       latestBomStructure.lemItems,
       ppicData.bom_ppic_lem || [],
@@ -390,13 +349,8 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       ['qty_beli', 'qty_stok'],
     );
 
-    // Initialize Lain-lain - preserve from PPIC
     const initializedLainLain =
       ppicData.lain_lain || latestBomStructure.lainLainItems;
-
-    console.log('Initialized Kertas:', initializedKertas);
-    console.log('Initialized Tinta:', initializedTinta);
-    console.log('Initialized Coating:', initializedCoating);
 
     setKertasItems(initializedKertas);
     setTintaItems(initializedTinta);
@@ -406,11 +360,11 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setLemItems(initializedLem);
     setLainLainItems(initializedLainLain);
   };
-  // Ratio of "still needs producing" — clamped 0..1, defaults to 1 (no reduction) if po is 0/missing
+
   const qtyRatio = qtyPo > 0 ? Math.max((qtyPo - qtyFg) / qtyPo, 0) : 1;
 
-  // Helper: the adjusted "needs to be produced" qty for any raw BOM qty
   const getAdjustedQty = (rawQty: number): number => rawQty * qtyRatio;
+
   useEffect(() => {
     setKertasItems((prev) =>
       prev.map((item) => ({
@@ -446,26 +400,12 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       })),
     );
 
+    // Coating: single qty_beli/qty_stok pair now, same pattern as the others.
     setCoatingItems((prev) =>
-      prev.map((item) => {
-        const adjusted = getAdjustedQty(item.qty_coating);
-        const isDepan = item.tipe_coating?.toLowerCase() === 'depan';
-        return isDepan
-          ? {
-              ...item,
-              qty_beli_coating_depan: Math.max(
-                adjusted - item.qty_stok_coating_depan,
-                0,
-              ),
-            }
-          : {
-              ...item,
-              qty_beli_coating_belakang: Math.max(
-                adjusted - item.qty_stok_coating_belakang,
-                0,
-              ),
-            };
-      }),
+      prev.map((item) => ({
+        ...item,
+        qty_beli: Math.max(getAdjustedQty(item.qty_coating) - item.qty_stok, 0),
+      })),
     );
 
     setTintaItems((prev) =>
@@ -481,18 +421,17 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       })),
     );
 
-    // Clear any in-progress typed display strings for qty_beli so inputs
-    // re-render from the freshly computed actual values.
     setInputDisplayValues((prev) => {
       const next = { ...prev };
       Object.keys(next).forEach((key) => {
-        if (key.endsWith('qty_beli') || key.includes('-qty_beli_coating')) {
+        if (key.endsWith('qty_beli')) {
           delete next[key];
         }
       });
       return next;
     });
   }, [qtyPo, qtyFg]);
+
   const formatNumber = (value: number | string): string => {
     if (value === '' || value === null || value === undefined) return '';
     const num = typeof value === 'string' ? parseFloat(value) : value;
@@ -505,21 +444,16 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
 
   const parseFormattedNumber = (value: string): number => {
     if (!value || value === '') return 0;
-    // Remove thousand separators (.) and replace decimal comma (,) with dot
     const cleaned = value.replace(/\./g, '').replace(',', '.');
     const num = parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
   };
 
-  // Handle input formatting while typing
   const handleNumberInputFormat = (value: string): string => {
-    // Allow empty string
     if (value === '') return '';
 
-    // Remove all characters except digits, comma, and dot
     let cleaned = value.replace(/[^\d,.]/g, '');
 
-    // Handle multiple commas - keep only the first one
     const commaCount = (cleaned.match(/,/g) || []).length;
     if (commaCount > 1) {
       const firstCommaIndex = cleaned.indexOf(',');
@@ -528,15 +462,12 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         cleaned.substring(firstCommaIndex + 1).replace(/,/g, '');
     }
 
-    // Split by comma to handle integer and decimal parts
     const parts = cleaned.split(',');
 
     if (parts.length > 1) {
-      // Has decimal part
-      const integerPart = parts[0].replace(/\./g, ''); // Remove existing dots
-      const decimalPart = parts[1].substring(0, 9); // Max 9 decimal places
+      const integerPart = parts[0].replace(/\./g, '');
+      const decimalPart = parts[1].substring(0, 9);
 
-      // Format integer part with thousand separators
       const formattedInteger = integerPart.replace(
         /\B(?=(\d{3})+(?!\d))/g,
         '.',
@@ -544,13 +475,11 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
 
       return `${formattedInteger},${decimalPart}`;
     } else {
-      // No decimal part yet
       const integerPart = cleaned.replace(/\./g, '');
       return integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
   };
 
-  // Get input display value
   const getInputDisplayValue = (
     section: string,
     index: number,
@@ -563,7 +492,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       : formatNumber(actualValue);
   };
 
-  // Clear display value on blur
   const handleInputBlur = (section: string, index: number, field: string) => {
     const key = `${section}-${index}-${field}`;
     setInputDisplayValues((prev) => {
@@ -572,10 +500,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       return newState;
     });
   };
-
-  // ========================================
-  // MATERIAL CHANGE HANDLERS
-  // ========================================
 
   const handleKertasChange = (
     index: number,
@@ -609,6 +533,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setKertasItems(updatedItems);
     setHasUnsavedChanges(true);
   };
+
   const handleCorrugatedChange = (
     index: number,
     field: keyof BOMPPICCorrugated,
@@ -624,7 +549,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       const numericValue = parseFormattedNumber(formattedValue);
       updatedItems[index] = { ...updatedItems[index], [field]: numericValue };
 
-      // NEW: stok drives beli automatically
       if (field === 'qty_stok') {
         const adjusted = getAdjustedQty(updatedItems[index].qty_corrugated);
         updatedItems[index].qty_beli = Math.max(adjusted - numericValue, 0);
@@ -658,7 +582,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       const numericValue = parseFormattedNumber(formattedValue);
       updatedItems[index] = { ...updatedItems[index], [field]: numericValue };
 
-      // NEW: stok drives beli automatically
       if (field === 'qty_stok') {
         const adjusted = getAdjustedQty(updatedItems[index].qty_poliban);
         updatedItems[index].qty_beli = Math.max(adjusted - numericValue, 0);
@@ -677,6 +600,8 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setHasUnsavedChanges(true);
   };
 
+  // Coating handler is now a plain single-qty field like the others —
+  // qty_stok drives qty_beli, using item.qty_coating as the total.
   const handleCoatingChange = (
     index: number,
     field: keyof BOMPPICCoating,
@@ -692,22 +617,13 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       const numericValue = parseFormattedNumber(formattedValue);
       updatedItems[index] = { ...updatedItems[index], [field]: numericValue };
 
-      const isStokField =
-        field === 'qty_stok_coating_depan' ||
-        field === 'qty_stok_coating_belakang';
-
-      if (isStokField) {
-        const item = updatedItems[index];
-        const adjusted = getAdjustedQty(item.qty_coating);
-        const isDepan = field === 'qty_stok_coating_depan';
-        const beliField = isDepan
-          ? 'qty_beli_coating_depan'
-          : 'qty_beli_coating_belakang';
-        updatedItems[index][beliField] = Math.max(adjusted - numericValue, 0);
+      if (field === 'qty_stok') {
+        const adjusted = getAdjustedQty(updatedItems[index].qty_coating);
+        updatedItems[index].qty_beli = Math.max(adjusted - numericValue, 0);
 
         setInputDisplayValues((prev) => {
           const next = { ...prev };
-          delete next[`coating-${index}-${beliField}`];
+          delete next[`coating-${index}-qty_beli`];
           return next;
         });
       }
@@ -734,7 +650,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       const numericValue = parseFormattedNumber(formattedValue);
       updatedItems[index] = { ...updatedItems[index], [field]: numericValue };
 
-      // NEW: stok drives beli automatically
       if (field === 'qty_stok') {
         const adjusted = getAdjustedQty(updatedItems[index].qty_lem);
         updatedItems[index].qty_beli = Math.max(adjusted - numericValue, 0);
@@ -752,6 +667,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setLemItems(updatedItems);
     setHasUnsavedChanges(true);
   };
+
   const handleTintaDetailChange = (
     tintaIndex: number,
     detailIndex: number,
@@ -794,9 +710,13 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     value: string | number | boolean,
   ) => {
     const updatedItems = [...lainLainItems];
+    const numericFields: (keyof LainLainItem)[] = [
+      'harga',
+      'qty_beli',
+      'qty_stok',
+    ];
 
-    // Handle number fields with proper parsing
-    if (field === 'harga' && typeof value === 'string') {
+    if (numericFields.includes(field) && typeof value === 'string') {
       const key = `lainlain-${index}-${field}`;
       const formattedValue = handleNumberInputFormat(value);
 
@@ -824,6 +744,8 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     const newItem: LainLainItem = {
       nama_item: '',
       harga: 0,
+      qty_beli: 0,
+      qty_stok: 0,
       is_active: true,
     };
     setLainLainItems([...lainLainItems, newItem]);
@@ -835,6 +757,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setLainLainItems(updatedItems);
     setHasUnsavedChanges(true);
   };
+
   const handleQtyFgChange = (value: string) => {
     const key = `summary-0-qty_fg`;
     const formattedValue = handleNumberInputFormat(value);
@@ -842,76 +765,88 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setQtyFg(parseFormattedNumber(formattedValue));
     setHasUnsavedChanges(true);
   };
+
   const handleSaveBOMPPIC = async () => {
     if (!bomDetails) return;
 
     try {
       setLoading(true);
 
-      // FIXED: Clean the data before sending - remove BOM IDs, keep only PPIC-specific data
-      const cleanKertasItems = kertasItems.map(
-        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
-          id_kertas: item.id_kertas,
-          id_jenis_kertas: item.id_jenis_kertas,
-          qty_beli: item.qty_beli || 0,
-          qty_stok: item.qty_stok || 0,
-        }),
-      );
+      const cleanKertasItems = kertasItems.map((item) => ({
+        id_kertas: item.id_kertas,
+        nama_kertas: item.nama_kertas,
+        qty_lembar_plano: item.qty_lembar_plano || 0,
+        qty_beli: item.qty_beli || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
 
-      const cleanTintaItems = tintaItems.map(
-        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
-          id_jenis_tinta: item.id_jenis_tinta,
-          id_jenis_kertas: item.id_jenis_kertas,
-          tinta_detail: item.tinta_detail.map(
-            ({ id, id_bom_tinta, createdAt, updatedAt, ...detail }) => ({
-              id_item_tinta: detail.id_item_tinta,
-              qty_beli: detail.qty_beli || 0,
-              qty_stok: detail.qty_stok || 0,
-            }),
-          ),
-        }),
-      );
+      const cleanTintaItems = tintaItems.map((tinta) => ({
+        warna_tinta: tinta.warna_tinta,
+        id_jenis_tinta: tinta.id_jenis_tinta,
+        id_jenis_kertas: tinta.id_jenis_kertas,
+        id_jenis_warna_tinta: tinta.id_jenis_warna_tinta,
+        jenis_mesin_cetak: tinta.jenis_mesin_cetak,
+        area_cetak: tinta.area_cetak,
+        qty_tinta: tinta.qty_tinta,
+        tinta_detail: tinta.tinta_detail.map((detail) => ({
+          id_item_tinta: detail.id_item_tinta,
+          nama_item_tinta: detail.nama_item_tinta,
+          persentase_tinta: detail.persentase_tinta,
+          qty_tinta: detail.qty_tinta,
+          qty_beli: detail.qty_beli || 0,
+          qty_stok: detail.qty_stok || 0,
+        })),
+      }));
 
-      const cleanCorrugatedItems = corrugatedItems.map(
-        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
-          id_corrugated: item.id_corrugated,
-          qty_beli: item.qty_beli || 0,
-          qty_stok: item.qty_stok || 0,
-        }),
-      );
+      const cleanCorrugatedItems = corrugatedItems.map((item) => ({
+        id_corrugated: item.id_corrugated,
+        nama_corrugated: item.nama_corrugated,
+        isi_per_pack: item.isi_per_pack,
+        qty_corrugated: item.qty_corrugated,
+        qty_beli: item.qty_beli || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
 
-      const cleanPolibanItems = polibanItems.map(
-        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
-          id_poliban: item.id_poliban,
-          qty_beli: item.qty_beli || 0,
-          qty_stok: item.qty_stok || 0,
-        }),
-      );
+      const cleanPolibanItems = polibanItems.map((item) => ({
+        item_poliban: item.item_poliban,
+        isi_satu_ikat: item.isi_satu_ikat,
+        lembar_poliban: item.lembar_poliban,
+        qty_poliban: item.qty_poliban,
+        qty_beli: item.qty_beli || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
 
-      const cleanCoatingItems = coatingItems.map(
-        ({ id, id_bom, createdAt, updatedAt, ...item }) => {
-          const isDepan = item.tipe_coating?.toLowerCase() === 'depan';
+      // Coating: coatingItems is already one flat row per id_coating, so this
+      // is now a direct map — no grouping/merging needed at save time.
+      // nama_coating_belakang mirrors nama_coating since the user only ever
+      // edits one combined line; there is no separate front/back name shown.
+      const cleanCoatingItems = coatingItems.map((item) => ({
+        id_coating: item.id_coating,
+        nama_coating: item.nama_coating,
+        nama_coating_belakang: item.nama_coating,
+        qty_coating: item.qty_coating || 0,
+        uv_wb: item.uv_wb || 0,
+        varnish_doff: item.varnish_doff || 0,
+        qty_beli: item.qty_beli || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
 
-          return {
-            id_coating: item.id_coating,
-            tipe_coating: item.tipe_coating,
-            qty_beli: isDepan
-              ? item.qty_beli_coating_depan
-              : item.qty_beli_coating_belakang,
-            qty_stok: isDepan
-              ? item.qty_stok_coating_depan
-              : item.qty_stok_coating_belakang,
-          };
-        },
-      );
+      const cleanLemItems = lemItems.map((item) => ({
+        id_lem: item.id_lem,
+        nama_lem: item.nama_lem,
+        rumus_lem: item.rumus_lem,
+        qty_konstanta: item.qty_konstanta,
+        qty_lem: item.qty_lem,
+        qty_beli: item.qty_beli || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
 
-      const cleanLemItems = lemItems.map(
-        ({ id, id_bom, createdAt, updatedAt, ...item }) => ({
-          id_lem: item.id_lem,
-          qty_beli: item.qty_beli || 0,
-          qty_stok: item.qty_stok || 0,
-        }),
-      );
+      const cleanLainLainItems = lainLainItems.map((item) => ({
+        nama_item: item.nama_item,
+        harga: item.harga || 0,
+        qty_beli: item.qty_beli || 0,
+        qty_stok: item.qty_stok || 0,
+      }));
 
       const payload: any = {
         id_io: bomDetails.id_io,
@@ -922,9 +857,9 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         no_bom: bomDetails.no_bom,
         customer: bomDetails.customer,
         produk: bomDetails.produk,
+        tgl_kirim_customer: bomDetails.tgl_kirim_customer || '',
         qty_po: qtyPo,
         qty_fg: qtyFg,
-        tgl_kirim_customer: bomDetails.tgl_kirim_customer || '',
         bom_ppic_kertas:
           cleanKertasItems.length > 0 ? cleanKertasItems : undefined,
         bom_ppic_tinta:
@@ -936,13 +871,14 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         bom_ppic_coating:
           cleanCoatingItems.length > 0 ? cleanCoatingItems : undefined,
         bom_ppic_lem: cleanLemItems.length > 0 ? cleanLemItems : undefined,
-        lain_lain: lainLainItems.length > 0 ? lainLainItems : undefined,
+        lain_lain:
+          cleanLainLainItems.length > 0 ? cleanLainLainItems : undefined,
       };
 
       console.log('Clean Payload to be sent:', payload);
 
       const baseUrl = `${import.meta.env.VITE_API_LINK}/ppic/bomppic`;
-      const url = isEditMode ? `${baseUrl}/${bomId}` : baseUrl;
+      const url = isEditMode ? `${baseUrl}/${bomPPICId}` : baseUrl;
       const method = isEditMode ? 'put' : 'post';
 
       await axios({
@@ -1009,7 +945,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-screen flex flex-col">
-        {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-xl font-bold text-gray-800">
@@ -1041,7 +976,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
           </button>
         </div>
 
-        {/* Info and Summary Section */}
         <div className="px-6 py-2 border-b border-gray-200 flex-shrink-0 bg-gray-50">
           <BOMPPICInfoSection bomDetails={bomDetails} />
           <BOMPPICSummaryCards
@@ -1062,7 +996,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
             onQtyFgBlur={() => handleInputBlur('summary', 0, 'qty_fg')}
           />
         </div>
-        {/* Content Section */}
+
         <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
           {totalItems === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-500">
@@ -1152,7 +1086,6 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
           )}
         </div>
 
-        {/* Footer */}
         <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center flex-shrink-0 bg-gray-50">
           <div className="text-xs text-gray-500">
             {hasUnsavedChanges && (

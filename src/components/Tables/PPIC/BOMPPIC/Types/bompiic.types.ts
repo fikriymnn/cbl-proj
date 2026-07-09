@@ -79,25 +79,14 @@ export interface BOMPPICPoliban {
 
 // BOM PPIC Coating
 export interface BOMPPICCoating {
-  id?: number;
-  id_bom?: number;
   id_coating: number;
   nama_coating: string;
-  tipe_coating: 'Depan' | 'Belakang';
   qty_coating: number;
   uv_wb: number;
   varnish_doff: number;
-  qty_beli_coating_depan: number;
-  qty_stok_coating_depan: number;
-  qty_beli_coating_belakang: number;
-  qty_stok_coating_belakang: number;
-  tipe?: string;
-  is_selected?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  is_active?: boolean;
+  qty_beli: number;
+  qty_stok: number;
 }
-
 // BOM PPIC Lem
 export interface BOMPPICLem {
   id?: number;
@@ -286,6 +275,21 @@ export interface BOMData {
   bom_lem?: BOMLem[];
   lain_lain?: BOMLainLain[];
 
+  bom_ppic?: {
+    id?: number;
+    id_io?: number;
+    id_so?: number;
+    id_bom?: number;
+    no_bom_ppic?: string;
+    status_proses?: string;
+    bom_ppic_kertas?: BOMPPICKertas[];
+    bom_ppic_tinta?: BOMPPICTinta[];
+    bom_ppic_corrugated?: BOMPPICCorrugated[];
+    bom_ppic_poliban?: BOMPPICPoliban[];
+    bom_ppic_coating?: BOMPPICCoating[];
+    bom_ppic_lem?: BOMPPICLem[];
+    bom_ppic_lain_lain?: BOMLainLain[];
+  };
   // BOM PPIC Components (from BOM PPIC table)
   bom_ppic_kertas?: BOMPPICKertas[];
   bom_ppic_tinta?: BOMPPICTinta[];
@@ -301,6 +305,7 @@ export interface BOMData {
 }
 
 // BOM PPIC Item for list view
+// BOM PPIC Item for list view
 export interface BOMPPICItem {
   id: number;
   no_bom: string;
@@ -315,12 +320,17 @@ export interface BOMPPICItem {
   tgl_pembuatan_bom: string;
   is_active: boolean;
   is_bom_ppic_done?: boolean;
-  bom_ppic?: Array<{
+  bom_ppic?: {
     id: number;
+    id_bom?: number;
+    no_bom_ppic?: string;
     status_proses?: string;
-  }>; // Used for checking existence and status
+    status_bom_ppic?: string;
+    is_active?: boolean;
+    is_request_purchase?: boolean;
+    [key: string]: any;
+  } | null; // now a single object, not an array
 }
-
 // BOM PPIC Create/Update Payload (cleaned data for API)
 export interface BOMPPICCreatePayload {
   id_io: number;

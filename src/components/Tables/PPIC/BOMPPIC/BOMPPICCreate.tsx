@@ -173,33 +173,24 @@ const BOMPPICCreate: React.FC = () => {
 
   // Helper function to check if BOM PPIC exists
   const hasBOMPPIC = (item: BOMPPICItem): boolean => {
-    return (
-      item.bom_ppic !== undefined &&
-      item.bom_ppic !== null &&
-      Array.isArray(item.bom_ppic) &&
-      item.bom_ppic.length > 0
-    );
+    return item.bom_ppic !== undefined && item.bom_ppic !== null;
   };
 
-  // NEW: Helper function to check if BOM PPIC status is "kembali ke BOM"
+  // Helper function to check if BOM PPIC status is "kembali ke BOM"
   const isBOMPPICKembaliKeBOM = (item: BOMPPICItem): boolean => {
     if (!hasBOMPPIC(item)) return false;
-    return (
-      item.bom_ppic?.[0]?.status_proses?.toLowerCase() === 'kembali ke bom'
-    );
+    return item.bom_ppic?.status_proses?.toLowerCase() === 'kembali ke bom';
   };
 
-  // NEW: Helper function to check if actions are disabled
+  // Helper function to check if actions are disabled
   const areActionsDisabled = (item: BOMPPICItem): boolean => {
     return isBOMPPICKembaliKeBOM(item);
   };
 
-  // Helper function to get BOM PPIC status badge
   const getBOMPPICStatusBadge = (item: BOMPPICItem) => {
     if (hasBOMPPIC(item)) {
-      const ppicStatus = item.bom_ppic?.[0]?.status_proses?.toLowerCase();
+      const ppicStatus = item.bom_ppic?.status_proses?.toLowerCase();
 
-      // Check if status is "kembali ke BOM"
       if (ppicStatus === 'kembali ke bom') {
         return (
           <div className="flex flex-col gap-1">
@@ -207,7 +198,7 @@ const BOMPPICCreate: React.FC = () => {
               🔙 Kembali ke BOM
             </span>
             <span className="text-xs text-gray-600">
-              {(item.bom_ppic ?? []).length} items
+              {item.bom_ppic?.no_bom_ppic ?? '-'}
             </span>
           </div>
         );
@@ -219,7 +210,7 @@ const BOMPPICCreate: React.FC = () => {
             ✓ BOM PPIC Created
           </span>
           <span className="text-xs text-gray-600">
-            {(item.bom_ppic ?? []).length} items
+            {item.bom_ppic?.no_bom_ppic ?? '-'}
           </span>
         </div>
       );
@@ -256,7 +247,7 @@ const BOMPPICCreate: React.FC = () => {
 
     if (window.confirm('Apakah Anda yakin ingin Request BOM PPIC ini?')) {
       try {
-        const bomPpicId = item.bom_ppic?.[0]?.id;
+        const bomPpicId = item.bom_ppic?.id;
         if (!bomPpicId) {
           alert('BOM PPIC not found. Please create BOM PPIC first.');
           return;
@@ -286,7 +277,7 @@ const BOMPPICCreate: React.FC = () => {
 
     if (window.confirm('Apakah Anda yakin ingin mengembalikan ke BOM?')) {
       try {
-        const bomPpicId = item.bom_ppic?.[0]?.id;
+        const bomPpicId = item.bom_ppic?.id;
         if (!bomPpicId) {
           alert('BOM PPIC not found.');
           return;
@@ -705,6 +696,7 @@ const BOMPPICCreate: React.FC = () => {
       {showBOMModal && selectedBOM && (
         <BOMPPICManagementModal
           bomId={selectedBOM.id}
+          bomPPICId={selectedBOM.bom_ppic?.id}
           onClose={() => {
             setShowBOMModal(false);
             setSelectedBOM(null);

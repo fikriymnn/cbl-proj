@@ -4,7 +4,7 @@ import { BOMPPICCoating } from '../../Types/bompiic.types';
 
 interface CoatingSectionProps {
   items: BOMPPICCoating[];
-  qtyRatio: number; // NEW
+  qtyRatio: number;
   onItemChange: (
     index: number,
     field: keyof BOMPPICCoating,
@@ -30,21 +30,6 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
 }) => {
   if (items.length === 0) return null;
 
-  // Helper function to get the appropriate qty_beli and qty_stok field names based on tipe_coating
-  const getQtyFields = (tipeCoating: string) => {
-    if (tipeCoating?.toLowerCase() === 'depan') {
-      return {
-        qtyBeli: 'qty_beli_coating_depan' as keyof BOMPPICCoating,
-        qtyStok: 'qty_stok_coating_depan' as keyof BOMPPICCoating,
-      };
-    } else {
-      return {
-        qtyBeli: 'qty_beli_coating_belakang' as keyof BOMPPICCoating,
-        qtyStok: 'qty_stok_coating_belakang' as keyof BOMPPICCoating,
-      };
-    }
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="bg-pink-50 px-4 py-3 border-b border-pink-200">
@@ -66,9 +51,6 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                 Nama Coating
               </th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
-                Tipe
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
                 Qty Coating
               </th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
@@ -87,10 +69,7 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {items.map((item, index) => {
-              const qtyFields = getQtyFields(item.tipe_coating);
-              const qtyBeliValue = item[qtyFields.qtyBeli] as number;
-              const qtyStokValue = item[qtyFields.qtyStok] as number;
-              // NEW: production-need qty for this coating item
+              // production-need qty for this coating item
               const adjustedQtyCoating = item.qty_coating * qtyRatio;
 
               return (
@@ -100,17 +79,6 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900 font-medium">
                     {item.nama_coating}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.tipe_coating?.toLowerCase() === 'depan'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-purple-100 text-purple-800'
-                      }`}
-                    >
-                      {item.tipe_coating}
-                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-sm font-semibold text-gray-900">
@@ -133,14 +101,14 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                       value={getInputDisplayValue(
                         'coating',
                         index,
-                        qtyFields.qtyStok,
-                        qtyStokValue,
+                        'qty_stok',
+                        item.qty_stok,
                       )}
                       onChange={(e) =>
-                        onItemChange(index, qtyFields.qtyStok, e.target.value)
+                        onItemChange(index, 'qty_stok', e.target.value)
                       }
                       onBlur={() =>
-                        handleInputBlur('coating', index, qtyFields.qtyStok)
+                        handleInputBlur('coating', index, 'qty_stok')
                       }
                       className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium bg-white"
                       placeholder="0"
@@ -152,14 +120,14 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                       value={getInputDisplayValue(
                         'coating',
                         index,
-                        qtyFields.qtyBeli,
-                        qtyBeliValue,
+                        'qty_beli',
+                        item.qty_beli,
                       )}
                       onChange={(e) =>
-                        onItemChange(index, qtyFields.qtyBeli, e.target.value)
+                        onItemChange(index, 'qty_beli', e.target.value)
                       }
                       onBlur={() =>
-                        handleInputBlur('coating', index, qtyFields.qtyBeli)
+                        handleInputBlur('coating', index, 'qty_beli')
                       }
                       className="w-full px-3 py-2 border border-orange-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium bg-white"
                       placeholder="0"

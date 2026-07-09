@@ -267,6 +267,8 @@ import JODetailStandalone from './components/Tables/Print/Jodetailstandalone';
 import FGBookingJo from './pages/GudangFG/FGBookingJo';
 import AbsensiDivisiPage from './pages/UserMenu/AbsensiDivisiPage';
 import QRScanPage from './pages/Print/qrscanpage';
+import ListOTSPurchasePage from './pages/Purchasing/ListOTSPurchasePage';
+import PengajuanPurchasePage from './pages/Purchasing/PengajuanPurchasePage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2504,6 +2506,24 @@ function App() {
           element={
             <P>
               <FGBookingJo />
+            </P>
+          }
+        />
+
+        {/* ============== PURCHASING ROUTES ============== */}
+        <Route
+          path="/purchasing/list-ots"
+          element={
+            <P>
+              <ListOTSPurchasePage />
+            </P>
+          }
+        />
+        <Route
+          path="/purchasing/pengajuan"
+          element={
+            <P>
+              <PengajuanPurchasePage />
             </P>
           }
         />

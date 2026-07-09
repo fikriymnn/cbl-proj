@@ -12,6 +12,8 @@ export interface LainLainItem {
   id?: number;
   nama_item: string;
   harga: number;
+  qty_beli: number;
+  qty_stok: number;
   is_active: boolean;
 }
 
@@ -70,26 +72,39 @@ export const initializeCreateMode = (bomData: BOMData) => {
       qty_stok: 0,
     }));
 
-  // UPDATED: Coating now handles separate items based on tipe_coating
-  const coatingData: BOMPPICCoating[] = (bomData.bom_coating || [])
+  // Coating: raw bom_coating can contain MULTIPLE rows sharing the same
+  // id_coating (e.g. one "depan" row + one "belakang" row for the same
+  // physical coating material). The user never needs to see that split —
+  // group them right here, at data-init time, into a single line per
+  // id_coating. qty_coating is summed across the group; nama_coating /
+  // uv_wb / varnish_doff are taken from the first record in the group.
+  const coatingGroups = new Map<number, any[]>();
+  (bomData.bom_coating || [])
     .filter((coating: any) => coating.is_selected === true)
-    .map((coating: any) => {
-      const isDepan = coating.tipe_coating?.toLowerCase() === 'depan';
-
-      return {
-        id_coating: coating.id_coating,
-        nama_coating: coating.nama_coating || '',
-        tipe_coating: coating.tipe_coating,
-        qty_coating: coating.qty_coating || 0,
-        uv_wb: coating.uv_wb || 0,
-        varnish_doff: coating.varnish_doff || 0,
-        // Set the appropriate fields based on tipe_coating
-        qty_beli_coating_depan: isDepan ? coating.qty_coating || 0 : 0,
-        qty_stok_coating_depan: 0,
-        qty_beli_coating_belakang: !isDepan ? coating.qty_coating || 0 : 0,
-        qty_stok_coating_belakang: 0,
-      };
+    .forEach((coating: any) => {
+      const group = coatingGroups.get(coating.id_coating) || [];
+      group.push(coating);
+      coatingGroups.set(coating.id_coating, group);
     });
+
+  const coatingData: BOMPPICCoating[] = Array.from(coatingGroups.values()).map(
+    (group) => {
+      const first = group[0];
+      const totalQtyCoating = group.reduce(
+        (sum, c) => sum + (c.qty_coating || 0),
+        0,
+      );
+      return {
+        id_coating: first.id_coating,
+        nama_coating: first.nama_coating || '',
+        qty_coating: totalQtyCoating,
+        uv_wb: first.uv_wb || 0,
+        varnish_doff: first.varnish_doff || 0,
+        qty_beli: 0,
+        qty_stok: 0,
+      };
+    },
+  );
 
   const lemData: BOMPPICLem[] = (bomData.bom_lem || [])
     .filter((lem: any) => lem.is_selected === true)
@@ -108,6 +123,8 @@ export const initializeCreateMode = (bomData: BOMData) => {
       id: item.id,
       nama_item: item.nama_item || '',
       harga: item.harga || 0,
+      qty_beli: item.qty_beli || 0,
+      qty_stok: item.qty_stok || 0,
       is_active: item.is_active !== false,
     }),
   );
