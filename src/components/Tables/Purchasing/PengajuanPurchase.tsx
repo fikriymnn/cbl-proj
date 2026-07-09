@@ -95,6 +95,7 @@ const PengajuanPurchase: React.FC = () => {
         },
         withCredentials: true,
       });
+      console.log('Fetched pengajuan data:', res.data);
       const rows = res.data.data || [];
       setData(rows);
       if (res.data.total_page) setTotalPages(res.data.total_page);
