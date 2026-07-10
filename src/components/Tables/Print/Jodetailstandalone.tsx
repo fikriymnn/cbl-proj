@@ -177,7 +177,20 @@ const JODetailStandalone: React.FC = () => {
           year: 'numeric',
         });
   };
+  const getSelectedIsiDalam1Pack = (jo: JODetail | null): React.ReactNode => {
+    if (!jo) return null;
 
+    const mountings = jo.jo_mounting;
+    if (!Array.isArray(mountings) || mountings.length === 0)
+      return jo.so?.isi_dalam_1_pack ?? null;
+
+    const selected =
+      mountings.find((m: any) => m?.is_selected === true) ?? mountings[0];
+    const isi = selected?.io_mounting?.isi_dalam_1_pack;
+
+    return isi ?? jo.so?.isi_dalam_1_pack ?? null;
+  };
+  const isiDalam1Pack = getSelectedIsiDalam1Pack(jo);
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -273,6 +286,10 @@ const JODetailStandalone: React.FC = () => {
             <Row label="Customer" value={jo.customer} />
             <Row label="Nama Produk" value={jo.produk} />
             <Row label="No IO" value={jo.no_io} />
+            <Row
+              label="Isi Dalam 1 Pack"
+              value={formatValue('isi_dalam_1_pack', isiDalam1Pack)}
+            />
             <Row label="Tgl Kirim" value={formatDate(jo.tgl_kirim)} />
             <Row label="Tipe JO" value={jo.tipe_jo} />
             <Row

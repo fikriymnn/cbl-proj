@@ -33,10 +33,11 @@ function JOTerjadwalTable() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailVisible, setIsDetailVisible] = useState(false);
   const [listJO1, setJo1] = useState<any>();
-  // Add these states inside JOTerjadwalTable
+  // Cancel modal states
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelNote, setCancelNote] = useState('');
   const [pendingCancelJO, setPendingCancelJO] = useState<JobOrder | null>(null);
+
   // Load initial data when component mounts
   useEffect(() => {
     const loadInitialData = async () => {
@@ -58,7 +59,6 @@ function JOTerjadwalTable() {
       });
       setJo1(res.data);
       setIsLoading(false);
-      console.log('listJO 1', res.data);
     } catch (error: any) {
       setIsLoading(false);
       console.error('Error fetching single ticket:', error);
@@ -116,7 +116,7 @@ function JOTerjadwalTable() {
     }
   }
 
-  // Modified getmasterKategori function to handle both statuses
+  // Fetches job order data for a given status and updates the matching state
   async function getmasterKategori(
     statusTiket: string = 'history',
     startDate: string = '',
@@ -127,7 +127,6 @@ function JOTerjadwalTable() {
     try {
       setIsLoading(true);
 
-      // Prepare parameters with proper typing
       const params: {
         status_tiket: string;
         start_date?: string;
@@ -137,7 +136,6 @@ function JOTerjadwalTable() {
         status_tiket: statusTiket,
       };
 
-      // Add filter parameters if provided
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
       if (searchTerm) params.search = searchTerm;
@@ -147,31 +145,21 @@ function JOTerjadwalTable() {
         withCredentials: true,
       });
 
-      console.log(`getmasterKategori ${statusTiket} response:`, res.data);
-
-      // Handle different response data structures
       let responseData = res.data;
 
-      // If the response is not in the expected format, normalize it
+      // Normalize response shape if the API doesn't return { data: [...] }
       if (!responseData.data && Array.isArray(responseData)) {
         responseData = { data: responseData };
       } else if (!responseData.data) {
         responseData = { data: [] };
       }
 
-      // Set data to the appropriate state based on status_tiket
       if (statusTiket === 'history') {
         setHistoryListJO(responseData);
-        console.log('historyListJO set to:', responseData);
       } else if (statusTiket === 'penjadwalan') {
         setPenjadwalanListJO(responseData);
-        console.log('penjadwalanListJO set to:', responseData);
-      } else if (statusTiket === 'penjadwalan') {
-        setPenjadwalanListJO(responseData);
-        console.log('penjadwalanListJO set to:', responseData);
       } else if (statusTiket === 'canceled') {
         setCanceledListJO(responseData);
-        console.log('canceledListJO set to:', responseData);
       }
 
       setIsLoading(false);
@@ -179,12 +167,13 @@ function JOTerjadwalTable() {
       setIsLoading(false);
       console.error('Error fetching master kategori:', error);
 
-      // Set empty data on error
       const emptyData = { data: [] };
       if (statusTiket === 'history') {
         setHistoryListJO(emptyData);
       } else if (statusTiket === 'penjadwalan') {
         setPenjadwalanListJO(emptyData);
+      } else if (statusTiket === 'canceled') {
+        setCanceledListJO(emptyData);
       }
     }
   }
@@ -208,7 +197,7 @@ function JOTerjadwalTable() {
             title="Job Order List"
             getmasterKategori={getmasterKategori}
             listJO1={listJO1}
-            cancelJobOrder={handleCancelJobOrder} // Pass the handler function to the table component
+            cancelJobOrder={handleCancelJobOrder}
             canceledListJO={canceledListJO}
           />
         </div>

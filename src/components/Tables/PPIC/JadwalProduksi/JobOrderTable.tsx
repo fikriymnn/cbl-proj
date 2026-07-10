@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 interface JobOrder {
   id: number;
@@ -50,7 +50,7 @@ const ModalXL = ({
 const JobOrderTable = ({
   historyListJO,
   penjadwalanListJO,
-  canceledListJO, // Add canceled list prop
+  canceledListJO,
   get1Tiket,
   setSelectedJO,
   setSelectedIndex,
@@ -65,7 +65,7 @@ const JobOrderTable = ({
 }: {
   historyListJO: ListJOData;
   penjadwalanListJO: ListJOData;
-  canceledListJO: ListJOData; // Add canceled list prop type
+  canceledListJO: ListJOData;
   get1Tiket: (id: number, index: number) => void;
   setSelectedJO: (jo: JobOrder) => void;
   setSelectedIndex: (index: number) => void;
@@ -83,7 +83,7 @@ const JobOrderTable = ({
   listJO1?: any;
   cancelJobOrder?: (jobOrder: JobOrder) => void;
 }) => {
-  // State for filters - Updated to include canceled status
+  // State for filters
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,7 +91,7 @@ const JobOrderTable = ({
     'history' | 'penjadwalan' | 'canceled'
   >('history');
 
-  // Modal states - Fixed initialization
+  // Modal states
   const [isModalOpenLocal, setIsModalOpenLocal] = useState(false);
   const [selectedJOLocal, setSelectedJOLocal] = useState<JobOrder | null>(null);
   const [selectedIndexLocal, setSelectedIndexLocal] = useState<number>(0);
@@ -107,48 +107,12 @@ const JobOrderTable = ({
     return num ? num.toLocaleString() : '0';
   };
 
-  const formatCustomDate = (dateString: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString();
-  };
-
-  // Get the correct data based on activeStatus - Updated to include canceled
-  const getActiveData = () => {
-    switch (activeStatus) {
-      case 'history':
-        return historyListJO;
-      case 'penjadwalan':
-        return penjadwalanListJO;
-      case 'canceled':
-        return canceledListJO;
-      default:
-        return historyListJO;
-    }
-  };
-
-  const activeData = getActiveData();
-
-  // Debug: Log the data to see what we're getting
-  useEffect(() => {
-    console.log('Active Status:', activeStatus);
-    console.log('History Data:', historyListJO);
-    console.log('Penjadwalan Data:', penjadwalanListJO);
-    console.log('Canceled Data:', canceledListJO);
-    console.log('Active Data:', activeData);
-  }, [
-    activeStatus,
-    historyListJO,
-    penjadwalanListJO,
-    canceledListJO,
-    activeData,
-  ]);
-
   // Handler for search button click
   const handleSearch = () => {
     getmasterKategori(activeStatus, startDate, endDate, searchTerm);
   };
 
-  // Handler for status change - Updated to include canceled
+  // Handler for status change
   const handleStatusChange = (
     status: 'history' | 'penjadwalan' | 'canceled',
   ) => {
@@ -159,17 +123,15 @@ const JobOrderTable = ({
     getmasterKategori(status, '', '', '');
   };
 
-  // Handler for the detail button click - Fixed to properly set local state
+  // Handler for the detail button click
   const handleDetailClick = (jo: JobOrder, index: number) => {
     get1Tiket(jo.id, index);
     setSelectedJO(jo);
     setSelectedIndex(index);
-    // Set local state properly
     setSelectedJOLocal(jo);
     setSelectedIndexLocal(index);
     setIsModalOpen(true);
     setIsModalOpenLocal(true);
-    // Initialize showDetail array
     setShowDetail(new Array(listJO1?.data?.tahap?.length || 0).fill(false));
   };
 
@@ -180,7 +142,8 @@ const JobOrderTable = ({
     setShowDetail(newShowDetail);
   };
 
-  // Function to get data array safely - Updated to include canceled
+  // Get the correct data array for the active status, safely handling both
+  // { data: [...] } and raw array shapes
   const getDataArray = () => {
     let data;
     switch (activeStatus) {
@@ -207,20 +170,7 @@ const JobOrderTable = ({
   };
 
   const dataArray = getDataArray();
-
-  // Helper function to get status display name
-  const getStatusDisplayName = (status: string) => {
-    switch (status) {
-      case 'history':
-        return 'Jadwal';
-      case 'penjadwalan':
-        return 'Booking';
-      case 'canceled':
-        return 'Canceled';
-      default:
-        return status;
-    }
-  };
+  const totalRecords = dataArray.length;
 
   // Helper function to get status color
   const getStatusColor = (status: string) => {
@@ -236,11 +186,11 @@ const JobOrderTable = ({
     }
   };
 
-  // Filter UI - Updated to include canceled status
+  // Filter UI
   const renderFilters = () => (
     <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-        {/* Status Toggle - Updated to include canceled */}
+        {/* Status Toggle */}
         <div className="flex flex-col col-span-2">
           <label className="text-sm font-medium mb-1 text-gray-700">
             Status Tiket
@@ -334,11 +284,11 @@ const JobOrderTable = ({
     </div>
   );
 
-  // Render the table content - Updated header logic
+  // Render the table content
   const renderTable = () => (
     <div className="overflow-x-auto py-2">
       <table className="w-full border-collapse shadow-lg rounded-md overflow-hidden">
-        {/* Table Header - Updated to handle canceled status */}
+        {/* Table Header */}
         <thead className="bg-blue-500 text-white font-semibold">
           <tr>
             <th className="border border-blue-600 px-4 py-2">No</th>
@@ -358,7 +308,7 @@ const JobOrderTable = ({
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan={7} className="text-center py-8 text-gray-600">
+              <td colSpan={8} className="text-center py-8 text-gray-600">
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
                   Loading...
@@ -432,7 +382,7 @@ const JobOrderTable = ({
             ))
           ) : (
             <tr>
-              <td colSpan={7} className="text-center py-8 text-gray-600">
+              <td colSpan={8} className="text-center py-8 text-gray-600">
                 <div className="flex flex-col items-center">
                   <svg
                     className="w-12 h-12 text-gray-400 mb-2"
@@ -463,7 +413,7 @@ const JobOrderTable = ({
       {/* Data count display */}
       {!loading && dataArray.length > 0 && (
         <div className="mt-2 text-sm text-gray-600">
-          Showing {dataArray.length} {dataArray.length === 1 ? 'item' : 'items'}
+          Total: {totalRecords} {totalRecords === 1 ? 'record' : 'records'}
           {activeStatus === 'canceled' && ' (canceled)'}
         </div>
       )}
@@ -473,9 +423,16 @@ const JobOrderTable = ({
   return (
     <div>
       {renderFilters()}
+      <div className="flex justify-between items-center mb-4">
+        <span className="text-sm font-medium text-gray-700">
+          Total Data:{' '}
+          <span className="font-bold text-blue-600">{totalRecords}</span>{' '}
+          {totalRecords === 1 ? 'record' : 'records'}
+        </span>
+      </div>
       {renderTable()}
 
-      {/* Fixed Modal - Check both conditions and use proper state */}
+      {/* Detail Modal */}
       {isModalOpenLocal && selectedJOLocal && (
         <ModalXL
           isOpen={isModalOpenLocal}
