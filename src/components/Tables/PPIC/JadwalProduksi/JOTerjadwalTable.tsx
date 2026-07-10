@@ -16,6 +16,8 @@ interface JobOrder {
 
 interface ListJOData {
   data: JobOrder[];
+  total_data?: number;
+  total_page?: number;
 }
 
 function JOTerjadwalTable() {
@@ -42,8 +44,8 @@ function JOTerjadwalTable() {
   useEffect(() => {
     const loadInitialData = async () => {
       await Promise.all([
-        getmasterKategori('history'),
-        getmasterKategori('penjadwalan'),
+        getmasterKategori('history', '', '', '', 1, 10),
+        getmasterKategori('penjadwalan', '', '', '', 1, 10),
       ]);
     };
 
@@ -100,10 +102,12 @@ function JOTerjadwalTable() {
         withCredentials: true,
       });
 
+      // Refresh all three lists back to their first page after a cancel,
+      // since the underlying data (and therefore total_page) has changed.
       await Promise.all([
-        getmasterKategori('history'),
-        getmasterKategori('penjadwalan'),
-        getmasterKategori('canceled'),
+        getmasterKategori('history', '', '', '', 1, 10),
+        getmasterKategori('penjadwalan', '', '', '', 1, 10),
+        getmasterKategori('canceled', '', '', '', 1, 10),
       ]);
 
       setIsLoading(false);
@@ -116,12 +120,17 @@ function JOTerjadwalTable() {
     }
   }
 
-  // Fetches job order data for a given status and updates the matching state
+  // Fetches job order data for a given status and updates the matching state.
+  // page/limit are now real, caller-controlled pagination params (instead of
+  // being hardcoded), and the response's total_data/total_page are kept on
+  // state so the table can render an accurate pagination control.
   async function getmasterKategori(
     statusTiket: string = 'history',
     startDate: string = '',
     endDate: string = '',
     searchTerm: string = '',
+    page: number = 1,
+    limit: number = 10,
   ) {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi`;
     try {
@@ -132,8 +141,12 @@ function JOTerjadwalTable() {
         start_date?: string;
         end_date?: string;
         search?: string;
+        page?: number;
+        limit?: number;
       } = {
         status_tiket: statusTiket,
+        page,
+        limit,
       };
 
       if (startDate) params.start_date = startDate;
@@ -144,7 +157,7 @@ function JOTerjadwalTable() {
         params,
         withCredentials: true,
       });
-
+      console.log('Response from API:', res.data); // Log the response for debugging
       let responseData = res.data;
 
       // Normalize response shape if the API doesn't return { data: [...] }
@@ -154,12 +167,18 @@ function JOTerjadwalTable() {
         responseData = { data: [] };
       }
 
+      const normalized: ListJOData = {
+        data: responseData.data,
+        total_data: responseData.total_data,
+        total_page: responseData.total_page,
+      };
+
       if (statusTiket === 'history') {
-        setHistoryListJO(responseData);
+        setHistoryListJO(normalized);
       } else if (statusTiket === 'penjadwalan') {
-        setPenjadwalanListJO(responseData);
+        setPenjadwalanListJO(normalized);
       } else if (statusTiket === 'canceled') {
-        setCanceledListJO(responseData);
+        setCanceledListJO(normalized);
       }
 
       setIsLoading(false);
@@ -167,7 +186,7 @@ function JOTerjadwalTable() {
       setIsLoading(false);
       console.error('Error fetching master kategori:', error);
 
-      const emptyData = { data: [] };
+      const emptyData: ListJOData = { data: [] };
       if (statusTiket === 'history') {
         setHistoryListJO(emptyData);
       } else if (statusTiket === 'penjadwalan') {

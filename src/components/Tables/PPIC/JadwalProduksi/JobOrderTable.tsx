@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Pagination from '@mui/material/Pagination/Pagination';
+import Stack from '@mui/material/Stack';
 
 interface JobOrder {
   id: number;
@@ -13,6 +15,8 @@ interface JobOrder {
 
 interface ListJOData {
   data: JobOrder[];
+  total_data?: number;
+  total_page?: number;
 }
 
 // Add ModalXL component
@@ -79,6 +83,8 @@ const JobOrderTable = ({
     startDate: string,
     endDate: string,
     searchTerm: string,
+    page?: number,
+    limit?: number,
   ) => void;
   listJO1?: any;
   cancelJobOrder?: (jobOrder: JobOrder) => void;
@@ -90,6 +96,11 @@ const JobOrderTable = ({
   const [activeStatus, setActiveStatus] = useState<
     'history' | 'penjadwalan' | 'canceled'
   >('history');
+
+  // Pagination state (shared across the three status tabs; whichever tab is
+  // active drives what gets sent to the API).
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
 
   // Modal states
   const [isModalOpenLocal, setIsModalOpenLocal] = useState(false);
@@ -107,9 +118,10 @@ const JobOrderTable = ({
     return num ? num.toLocaleString() : '0';
   };
 
-  // Handler for search button click
+  // Handler for search button click - always resets back to page 1
   const handleSearch = () => {
-    getmasterKategori(activeStatus, startDate, endDate, searchTerm);
+    setPage(1);
+    getmasterKategori(activeStatus, startDate, endDate, searchTerm, 1, limit);
   };
 
   // Handler for status change
@@ -120,7 +132,35 @@ const JobOrderTable = ({
     setStartDate('');
     setEndDate('');
     setSearchTerm('');
-    getmasterKategori(status, '', '', '');
+    setPage(1);
+    getmasterKategori(status, '', '', '', 1, limit);
+  };
+
+  // Handler for page change (MUI Pagination is 1-indexed)
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    getmasterKategori(
+      activeStatus,
+      startDate,
+      endDate,
+      searchTerm,
+      newPage,
+      limit,
+    );
+  };
+
+  // Handler for rows-per-page change
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+    getmasterKategori(
+      activeStatus,
+      startDate,
+      endDate,
+      searchTerm,
+      1,
+      newLimit,
+    );
   };
 
   // Handler for the detail button click
@@ -142,10 +182,10 @@ const JobOrderTable = ({
     setShowDetail(newShowDetail);
   };
 
-  // Get the correct data array for the active status, safely handling both
+  // Get the correct data object for the active status, safely handling both
   // { data: [...] } and raw array shapes
-  const getDataArray = () => {
-    let data;
+  const getDataObj = (): ListJOData => {
+    let data: ListJOData | JobOrder[];
     switch (activeStatus) {
       case 'history':
         data = historyListJO;
@@ -161,16 +201,21 @@ const JobOrderTable = ({
     }
 
     if (Array.isArray(data)) {
-      return data;
+      return { data };
     } else if (data && Array.isArray(data.data)) {
-      return data.data;
+      return data;
     }
 
-    return [];
+    return { data: [] };
   };
 
-  const dataArray = getDataArray();
-  const totalRecords = dataArray.length;
+  const currentDataObj = getDataObj();
+  const dataArray = currentDataObj.data;
+  // total_data / total_page come straight from the API response for the
+  // active tab; fall back to the current page's row count / 1 page if the
+  // API didn't return them (e.g. older backend shape).
+  const totalData = currentDataObj.total_data ?? dataArray.length;
+  const totalPages = currentDataObj.total_page ?? 1;
 
   // Helper function to get status color
   const getStatusColor = (status: string) => {
@@ -326,7 +371,7 @@ const JobOrderTable = ({
                 }`}
               >
                 <td className="border border-blue-200 px-4 py-2 text-center">
-                  {index + 1}
+                  {(page - 1) * limit + index + 1}
                 </td>
                 <td className="border border-blue-200 px-4 py-2 text-center">
                   {activeStatus === 'penjadwalan'
@@ -410,11 +455,42 @@ const JobOrderTable = ({
         </tbody>
       </table>
 
-      {/* Data count display */}
+      {/* Pagination footer: rows-per-page selector + page control, driven by
+          total_data / total_page from the API response for the active tab. */}
       {!loading && dataArray.length > 0 && (
-        <div className="mt-2 text-sm text-gray-600">
-          Total: {totalRecords} {totalRecords === 1 ? 'record' : 'records'}
-          {activeStatus === 'canceled' && ' (canceled)'}
+        <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-3">
+          <div className="text-sm text-gray-600">
+            Total: {totalData} {totalData === 1 ? 'record' : 'records'}
+            {activeStatus === 'canceled' && ' (canceled)'}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Baris per halaman:</span>
+            <div className="flex gap-1.5">
+              {[10, 25, 50, 100].map((pageSize) => (
+                <button
+                  key={pageSize}
+                  onClick={() => handleLimitChange(pageSize)}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                    limit === pageSize
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {pageSize}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              color="primary"
+              onChange={(_, newPage) => handlePageChange(newPage)}
+            />
+          </Stack>
         </div>
       )}
     </div>
@@ -426,8 +502,8 @@ const JobOrderTable = ({
       <div className="flex justify-between items-center mb-4">
         <span className="text-sm font-medium text-gray-700">
           Total Data:{' '}
-          <span className="font-bold text-blue-600">{totalRecords}</span>{' '}
-          {totalRecords === 1 ? 'record' : 'records'}
+          <span className="font-bold text-blue-600">{totalData}</span>{' '}
+          {totalData === 1 ? 'record' : 'records'}
         </span>
       </div>
       {renderTable()}
