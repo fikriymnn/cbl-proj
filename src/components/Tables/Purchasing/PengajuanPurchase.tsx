@@ -477,19 +477,6 @@ const PengajuanPurchase: React.FC = () => {
     [rekapTipeBarang],
   );
 
-  // Dynamic dropdown options built straight from whatever tipe_barang values
-  // the rekap endpoint returns, so new categories show up automatically.
-  const kategoriOptions = useMemo(
-    () =>
-      rekapTipeBarang
-        .map((r) => ({
-          value: r.tipe_barang,
-          label: getKategoriLabel(r.tipe_barang),
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    [rekapTipeBarang],
-  );
-
   const handlePOCreated = () => {
     setShowPOModal(false);
     setSelected(new Set());
@@ -580,7 +567,7 @@ const PengajuanPurchase: React.FC = () => {
 
       {/* Filter card */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           <div className="xl:col-span-2">
             <label className="block text-xs font-medium text-slate-500 mb-1.5">
               Cari Nama Barang
@@ -615,27 +602,6 @@ const PengajuanPurchase: React.FC = () => {
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">
-              Kategori
-            </label>
-            <select
-              value={kategoriFilter}
-              onChange={(e) => {
-                setKategoriFilter(e.target.value);
-                setPage(1);
-              }}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-            >
-              <option value="">Semua Kategori</option>
-              {kategoriOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {activeFilterCount > 0 && (
@@ -667,6 +633,53 @@ const PengajuanPurchase: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Kategori tabs - sits directly above the table, replaces the old dropdown */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-2">
+        <nav className="flex gap-1 overflow-x-auto" aria-label="Kategori tabs">
+          <button
+            onClick={() => {
+              setKategoriFilter('');
+              setPage(1);
+            }}
+            className={`shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              kategoriFilter === ''
+                ? 'border-indigo-600 text-indigo-700'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+            }`}
+          >
+            Semua
+            <span className="ml-1.5 text-xs text-slate-400">
+              ({rekapTotal.toLocaleString('id-ID')})
+            </span>
+          </button>
+
+          {rekapTipeBarang.map((r) => {
+            const label = getKategoriLabel(r.tipe_barang);
+            const total = Number(r.total_data || 0);
+            const isActive = kategoriFilter === r.tipe_barang;
+            return (
+              <button
+                key={r.tipe_barang}
+                onClick={() => {
+                  setKategoriFilter(r.tipe_barang);
+                  setPage(1);
+                }}
+                className={`shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  isActive
+                    ? 'border-indigo-600 text-indigo-700'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                }`}
+              >
+                {label}
+                <span className="ml-1.5 text-xs text-slate-400">
+                  ({total.toLocaleString('id-ID')})
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
