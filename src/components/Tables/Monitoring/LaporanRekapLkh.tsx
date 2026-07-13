@@ -716,14 +716,12 @@ function RekapMesinCard({ data }: { data: RekapMesin }) {
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             <StatCard
-              label="Qty Baik"
-              value={fmtNum(data.total_qty_baik)}
-              accent
-            />
-            <StatCard
               label="Total Produksi"
               value={fmtNum(data.total_qty_produksi)}
+              accent
             />
+            <StatCard label="Qty Baik" value={fmtNum(data.total_qty_baik)} />
+
             <StatCard
               label="Rusak Sebagian"
               value={fmtNum(data.total_qty_rusak_sebagian)}
@@ -1153,13 +1151,13 @@ function RekapOperatorSection({ data }: { data: OperatorRekap[] }) {
                         </p>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                           <StatCard
-                            label="Qty Baik"
-                            value={fmtNum(m.total_qty_baik)}
+                            label="Total Produksi"
+                            value={fmtNum(m.total_qty_produksi)}
                             accent
                           />
                           <StatCard
-                            label="Total Produksi"
-                            value={fmtNum(m.total_qty_produksi)}
+                            label="Qty Baik"
+                            value={fmtNum(m.total_qty_baik)}
                           />
                           <StatCard
                             label="Rusak Sebagian"

@@ -269,6 +269,7 @@ import AbsensiDivisiPage from './pages/UserMenu/AbsensiDivisiPage';
 import QRScanPage from './pages/Print/qrscanpage';
 import ListOTSPurchasePage from './pages/Purchasing/ListOTSPurchasePage';
 import PengajuanPurchasePage from './pages/Purchasing/PengajuanPurchasePage';
+import MasterVendor from './pages/MasterData/Marketing/MasterVendor';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2331,7 +2332,14 @@ function App() {
             </P>
           }
         />
-
+        <Route
+          path="/master/marketing/vendor"
+          element={
+            <P>
+              <MasterVendor />
+            </P>
+          }
+        />
         {/* General Master */}
         <Route
           path="/master-data/general/access"

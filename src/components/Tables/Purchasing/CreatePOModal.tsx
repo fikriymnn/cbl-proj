@@ -1,11 +1,3 @@
-// CreatePOModal.tsx
-//
-// Modal used from Pengajuan.tsx to turn selected request-purchase lines (or a
-// blank manual entry) into a Purchase Order draft.
-//
-//   GET  {VITE_API_LINK}/purchasing/purchaseOrder/getNo/new
-//   POST {VITE_API_LINK}/purchasing/purchaseOrder
-
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
@@ -27,9 +19,6 @@ interface CreatePOModalProps {
 const todayISO = (): string => new Date().toISOString().slice(0, 10);
 
 const buildRowsFromSelection = (items: PengajuanItem[]): POBuilderRow[] => {
-  // Group strictly by id_item: two different items always stay as separate
-  // rows, and only lines sharing the same id_item (e.g. the same paper
-  // ordered for two different JOs) get combined into one, with their qty summed.
   const groups = new Map<string, POBuilderRow>();
   items.forEach((item) => {
     const key = String(item.id_item);

@@ -33,6 +33,7 @@ interface ModalDetailProps {
   unit: string | null;
   bagian: string | null;
   file?: string | null;
+  noteTindakan: string | null;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -48,6 +49,7 @@ const ModalDetail = ({
   namaPemeriksa,
   kodeLkh,
   analisisPenyebab,
+  noteTindakan,
   kebutuhanSparepart,
   tipeMaintenance,
   catatan,
@@ -56,7 +58,7 @@ const ModalDetail = ({
   file,
 }: ModalDetailProps) => {
   if (!isOpen) return null;
-
+  console.log('noteTindakan:', noteTindakan);
   const [isMobile, setIsMobile] = useState(false);
   const [imgError, setImgError] = useState(false);
 
@@ -365,7 +367,7 @@ const ModalDetail = ({
           {/* ── Analisis ── */}
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-              Analisis Penyebab & Detail Tindakan
+              Analisis Penyebab
             </p>
             <textarea
               value={catatan ?? ''}
@@ -374,7 +376,18 @@ const ModalDetail = ({
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 resize-none focus:outline-none"
             />
           </div>
-
+          {/* ── Analisis ── */}
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+              Detail Tindakan
+            </p>
+            <textarea
+              value={noteTindakan ?? ''}
+              readOnly
+              rows={4}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 resize-none focus:outline-none"
+            />
+          </div>
           {/* ── Close ── */}
           <button
             onClick={onClose}

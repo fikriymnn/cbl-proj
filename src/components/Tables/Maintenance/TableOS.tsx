@@ -51,6 +51,7 @@ interface ProsesMtc {
   nama_analisis_mtc: string | null;
   note_analisis: string | null;
   note_mtc: string | null;
+  note_tindakan: string | null;
   note_qc: string | null;
   skor_mtc: number;
   status_proses: string;
@@ -498,6 +499,7 @@ function TableOS() {
               'Kode Analisis MTC': process.kode_analisis_mtc ?? '-',
               'Nama Analisis MTC': process.nama_analisis_mtc ?? '-',
               'Note MTC': process.note_mtc ?? '-',
+              'Note Analisis': process.note_analisis ?? '-',
               'Note QC': process.note_qc ?? '-',
               'Skor MTC': process.skor_mtc,
               'Status Proses': process.status_proses,
@@ -1135,6 +1137,7 @@ function TableOS() {
                               unit={proses.unit}
                               bagian={proses.bagian_mesin}
                               file={proses.file}
+                              noteTindakan={proses.note_tindakan}
                             />
                           )}
                         </div>
@@ -1534,6 +1537,7 @@ function TableOS() {
                             unit={proses.unit}
                             bagian={proses.bagian_mesin}
                             file={proses.file}
+                            noteTindakan={proses.note_tindakan}
                           />
                         )}
                       </div>

@@ -5,6 +5,7 @@
 // Source: GET {VITE_API_LINK}/ppic/bom  params: { is_request_purchase: false }
 // ============================================================================
 export interface OTSItem {
+  tgl_kirim_customer: string | undefined;
   id: number; // BOM PPIC id -> used as id_bom_ppic when creating a pengajuan
   no_bom: string;
   no_so: string;
@@ -42,7 +43,6 @@ export type KategoriBarang =
   | 'Unknown Category';
 
 export interface PengajuanItem {
-  tgl_kirim(tgl_kirim: any): import('react').ReactNode;
   no_bom_ppic: string;
   nama_item: string;
   id: number; // request-purchase line id -> used in request_purchase_data when creating a PO
@@ -53,7 +53,7 @@ export interface PengajuanItem {
   no_jo: string;
   customer?: string;
   rencana_cetak: string;
-  tanggal_kirim: string;
+  tgl_kirim: string;
   qty: number;
   satuan?: string;
   tipe_barang?: string;
@@ -72,12 +72,6 @@ export interface PengajuanListResponse {
   rekap?: RekapPengajuan[];
 }
 
-// ============================================================================
-// Purchase Order
-// GET   {VITE_API_LINK}/purchasing/purchaseOrder   params: page, limit, search, status, status_tiket
-// GET#  {VITE_API_LINK}/purchasing/purchaseOrder/getNo/new
-// POST  {VITE_API_LINK}/purchasing/purchaseOrder
-// ============================================================================
 export type StatusPO =
   | 'draft'
   | 'request kabag'

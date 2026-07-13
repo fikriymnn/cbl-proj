@@ -131,7 +131,6 @@ function CheckSheetLemPeriode() {
       setDataDepartment(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Department, Coba Refresh Halaman!');
       console.log(error);
     }
   }

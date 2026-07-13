@@ -70,13 +70,14 @@ interface ProsesMtcInitial {
   nama_analisis_mtc: string | null;
   jenis_analisis_mtc?: string | null;
   note_mtc: string | null;
+  note_tindakan: string | null; // ← add this
+  note_analisis: string | null; // ← add this
   skor_mtc: number;
   cara_perbaikan: string | null;
   unit: string | null;
   bagian_mesin: string | null;
   file: string | null;
 }
-
 interface ModalStockCheck1Props {
   children: React.ReactNode;
   isOpen: boolean;
@@ -163,6 +164,7 @@ const ModalStockCheck1 = ({
   const [selectedSkorPerbaikan, setSelectedSkorPerbaikan] =
     useState<SkorPerbaikan | null>(null);
   const [noteMaintenance, setNoteMaintenance] = useState<string>('');
+  const [noteTindakan, setNoteTindakan] = useState<string>(''); // ← add this
   const [unitMaintenance, setUnitMaintenance] = useState<string>('');
   const [bagianMaintenance, setBagianMaintenance] = useState<string>('');
   const [alasanPending, setAlasanPending] = useState<string>('');
@@ -211,6 +213,7 @@ const ModalStockCheck1 = ({
     // Pre-fill in edit mode
     if (isEditMode && editInitialData) {
       setNoteMaintenance(editInitialData.note_mtc ?? '');
+      setNoteTindakan(editInitialData.note_tindakan ?? ''); // ← add this
       setUnitMaintenance(editInitialData.unit ?? '');
       setBagianMaintenance(editInitialData.bagian_mesin ?? '');
     }
@@ -338,6 +341,11 @@ const ModalStockCheck1 = ({
       alert('Catatan wajib diisi');
       return;
     }
+    if (!noteTindakan.trim()) {
+      // ← add this if required
+      alert('Note tindakan wajib diisi');
+      return;
+    }
     if (!unitMaintenance.trim()) {
       alert('Unit wajib diisi');
       return;
@@ -361,6 +369,7 @@ const ModalStockCheck1 = ({
             skor_mtc: selectedSkorPerbaikan?.skor,
             cara_perbaikan: selectedSkorPerbaikan?.nama_skor,
             note_mtc: noteMaintenance,
+            note_tindakan: noteTindakan,
             nama_mesin: namaMesin,
             unit: unitMaintenance,
             bagian_mesin: bagianMaintenance,
@@ -381,6 +390,7 @@ const ModalStockCheck1 = ({
             skor_mtc: selectedSkorPerbaikan?.skor,
             cara_perbaikan: selectedSkorPerbaikan?.nama_skor,
             note_mtc: noteMaintenance,
+            note_tindakan: noteTindakan, // ← add this
             unit: unitMaintenance,
             bagian_mesin: bagianMaintenance,
             nama_mesin: namaMesin,
@@ -395,6 +405,7 @@ const ModalStockCheck1 = ({
             id_proses: idProses,
             note_mtc: noteMaintenance,
             alasan_pending: alasanPending,
+
             file: uploadedFileName,
           },
           { withCredentials: true },
@@ -1086,12 +1097,10 @@ const ModalStockCheck1 = ({
               </div>
             </div>
           )}
-
           {/* ── Analisis ── */}
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-              Analisis Penyebab & Detail Tindakan{' '}
-              <span className="text-red-500">*</span>
+              Analisis Penyebab <span className="text-red-500">*</span>
             </label>
             <textarea
               value={noteMaintenance}
@@ -1099,6 +1108,20 @@ const ModalStockCheck1 = ({
               rows={4}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition resize-none"
               placeholder="Jelaskan analisis penyebab dan tindakan yang dilakukan..."
+            />
+          </div>
+
+          {/* ── Note Tindakan ── */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
+              Detail Tindakan <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={noteTindakan}
+              onChange={(e) => setNoteTindakan(e.target.value)}
+              rows={4}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none focus:border-transparent transition resize-none"
+              placeholder="Catatan tindakan tambahan..."
             />
           </div>
 

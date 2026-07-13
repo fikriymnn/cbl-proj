@@ -130,7 +130,7 @@ function CheckSheetCoatingPeriode() {
     } catch (error: any) {
       setIsLoading(false);
       setIsFailed(true);
-      alert('Gagal Memanggil Defect, Coba Refresh Halaman!');
+
       console.log(error.data.msg);
     }
   }
@@ -145,7 +145,7 @@ function CheckSheetCoatingPeriode() {
       setDataDepartment(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Department, Coba Refresh Halaman!');
+
       console.log(error);
     }
   }

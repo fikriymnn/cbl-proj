@@ -4,6 +4,13 @@ import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import {
   KategoriBarang,
   PengajuanItem,
@@ -102,7 +109,6 @@ const RekapDetailModal: React.FC<RekapDetailModalProps> = ({
   const fetchDetail = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/purchasing/request`;
     try {
-      setLoading(true);
       const res: AxiosResponse<PengajuanListResponse> = await axios.get(url, {
         params: {
           page,
@@ -112,6 +118,7 @@ const RekapDetailModal: React.FC<RekapDetailModalProps> = ({
         },
         withCredentials: true,
       });
+
       setData(res.data.data || []);
       if (res.data.total_page) setTotalPages(res.data.total_page);
     } catch (error) {
@@ -252,7 +259,7 @@ const RekapDetailModal: React.FC<RekapDetailModalProps> = ({
                       {formatDate(item.rencana_cetak)}
                     </td>
                     <td className="px-3 py-3 text-slate-600 whitespace-nowrap">
-                      {formatDate(item.tanggal_kirim)}
+                      {formatDate(item.tgl_kirim)}
                     </td>
                     <td className="px-3 py-3 text-slate-800 font-medium">
                       {item.nama_item}
@@ -316,8 +323,9 @@ const PengajuanPurchase: React.FC = () => {
   const [rencanaCetakTo, setRencanaCetakTo] = useState<string>('');
   const [tanggalKirimFrom, setTanggalKirimFrom] = useState<string>('');
   const [tanggalKirimTo, setTanggalKirimTo] = useState<string>('');
-  // Raw tipe_barang value (e.g. "coating"), sent straight to the API.
-  const [kategoriFilter, setKategoriFilter] = useState<string>('');
+  // Raw tipe_barang values (e.g. ["coating", "corrugated"]). Sent to the API
+  // as a comma-separated string, e.g. "coating, corrugated".
+  const [kategoriFilter, setKategoriFilter] = useState<string[]>([]);
   const [noJoFilter, setNoJoFilter] = useState<string>('');
 
   const [showPOModal, setShowPOModal] = useState<boolean>(false);
@@ -340,20 +348,23 @@ const PengajuanPurchase: React.FC = () => {
     const url = `${import.meta.env.VITE_API_LINK}/purchasing/request`;
     try {
       setLoading(true);
+      console.log('Fetching pengajuan data with params:', {
+        page,
+        limit,
+        search: searchTerm || undefined,
+        tipe_barang: kategoriFilter.length > 0 ? kategoriFilter : undefined,
+      });
       const res: AxiosResponse<PengajuanListResponse> = await axios.get(url, {
         params: {
           page,
           limit,
           search: searchTerm || undefined,
-          no_jo: noJoFilter || undefined,
-          tipe_barang: kategoriFilter || undefined,
-          rencana_cetak_from: rencanaCetakFrom || undefined,
-          rencana_cetak_to: rencanaCetakTo || undefined,
-          tanggal_kirim_from: tanggalKirimFrom || undefined,
-          tanggal_kirim_to: tanggalKirimTo || undefined,
+
+          tipe_barang: kategoriFilter.length > 0 ? kategoriFilter : undefined,
         },
         withCredentials: true,
       });
+      console.log('Fetched pengajuan data:', res.data);
       const rows = res.data.data || [];
       setData(rows);
       if (res.data.total_page) setTotalPages(res.data.total_page);
@@ -417,13 +428,21 @@ const PengajuanPurchase: React.FC = () => {
     setRencanaCetakTo('');
     setTanggalKirimFrom('');
     setTanggalKirimTo('');
-    setKategoriFilter('');
+    setKategoriFilter([]);
     setNoJoFilter('');
     setPage(1);
   };
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
+    setPage(1);
+  };
+
+  const handleKategoriChange = (event: SelectChangeEvent<string[]>) => {
+    const { value } = event.target;
+    // On autofill we get a stringified value.
+    const next = typeof value === 'string' ? value.split(',') : value;
+    setKategoriFilter(next);
     setPage(1);
   };
 
@@ -452,9 +471,8 @@ const PengajuanPurchase: React.FC = () => {
         rencanaCetakTo,
         tanggalKirimFrom,
         tanggalKirimTo,
-        kategoriFilter,
         noJoFilter,
-      ].filter(Boolean).length,
+      ].filter(Boolean).length + (kategoriFilter.length > 0 ? 1 : 0),
     [
       searchTerm,
       rencanaCetakFrom,
@@ -475,6 +493,26 @@ const PengajuanPurchase: React.FC = () => {
     () =>
       rekapTipeBarang.reduce((sum, r) => sum + Number(r.total_data || 0), 0),
     [rekapTipeBarang],
+  );
+
+  // Dynamic dropdown options built straight from whatever tipe_barang values
+  // the rekap endpoint returns, so new categories show up automatically.
+  const kategoriOptions = useMemo(
+    () =>
+      rekapTipeBarang
+        .map((r) => ({
+          value: r.tipe_barang,
+          label: getKategoriLabel(r.tipe_barang),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [rekapTipeBarang],
+  );
+
+  // Quick lookup so the Select can render human-friendly labels for the
+  // chips/menu even though the stored values are the raw tipe_barang values.
+  const kategoriLabelByValue = useMemo(
+    () => Object.fromEntries(kategoriOptions.map((o) => [o.value, o.label])),
+    [kategoriOptions],
   );
 
   const handlePOCreated = () => {
@@ -567,7 +605,7 @@ const PengajuanPurchase: React.FC = () => {
 
       {/* Filter card */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="xl:col-span-2">
             <label className="block text-xs font-medium text-slate-500 mb-1.5">
               Cari Nama Barang
@@ -602,6 +640,51 @@ const PengajuanPurchase: React.FC = () => {
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Kategori
+            </label>
+            <Select
+              multiple
+              displayEmpty
+              value={kategoriFilter}
+              onChange={handleKategoriChange}
+              input={<OutlinedInput className="w-full" />}
+              className="w-full bg-white"
+              sx={{
+                '& .MuiOutlinedInput-input': { padding: '8.5px 14px' },
+                fontSize: '0.875rem',
+              }}
+              renderValue={(selectedValues) => {
+                if (selectedValues.length === 0) {
+                  return <span className="text-slate-400">Semua Kategori</span>;
+                }
+                return (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selectedValues.map((value) => (
+                      <Chip
+                        key={value}
+                        label={kategoriLabelByValue[value] || value}
+                        size="small"
+                      />
+                    ))}
+                  </Box>
+                );
+              }}
+              MenuProps={{ PaperProps: { style: { maxHeight: 320 } } }}
+            >
+              {kategoriOptions.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  <Checkbox
+                    checked={kategoriFilter.indexOf(opt.value) > -1}
+                    size="small"
+                  />
+                  <ListItemText primary={opt.label} />
+                </MenuItem>
+              ))}
+            </Select>
+          </div>
         </div>
 
         {activeFilterCount > 0 && (
@@ -633,53 +716,6 @@ const PengajuanPurchase: React.FC = () => {
           </button>
         </div>
       )}
-
-      {/* Kategori tabs - sits directly above the table, replaces the old dropdown */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-2">
-        <nav className="flex gap-1 overflow-x-auto" aria-label="Kategori tabs">
-          <button
-            onClick={() => {
-              setKategoriFilter('');
-              setPage(1);
-            }}
-            className={`shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-              kategoriFilter === ''
-                ? 'border-indigo-600 text-indigo-700'
-                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-            }`}
-          >
-            Semua
-            <span className="ml-1.5 text-xs text-slate-400">
-              ({rekapTotal.toLocaleString('id-ID')})
-            </span>
-          </button>
-
-          {rekapTipeBarang.map((r) => {
-            const label = getKategoriLabel(r.tipe_barang);
-            const total = Number(r.total_data || 0);
-            const isActive = kategoriFilter === r.tipe_barang;
-            return (
-              <button
-                key={r.tipe_barang}
-                onClick={() => {
-                  setKategoriFilter(r.tipe_barang);
-                  setPage(1);
-                }}
-                className={`shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                  isActive
-                    ? 'border-indigo-600 text-indigo-700'
-                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                }`}
-              >
-                {label}
-                <span className="ml-1.5 text-xs text-slate-400">
-                  ({total.toLocaleString('id-ID')})
-                </span>
-              </button>
-            );
-          })}
-        </nav>
-      </div>
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -774,7 +810,7 @@ const PengajuanPurchase: React.FC = () => {
                         {formatDate(item.rencana_cetak)}
                       </td>
                       <td className="px-3 py-3 text-slate-600 whitespace-nowrap">
-                        {formatDate(item.tanggal_kirim)}
+                        {formatDate(item.tgl_kirim)}
                       </td>
                       <td className="px-3 py-3 text-slate-800 font-medium">
                         {item.nama_item}

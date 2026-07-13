@@ -386,7 +386,7 @@ const ListOTSPurchase: React.FC = () => {
                         {formatDate(item.tgl_cetak)}
                       </td>
                       <td className="px-3 py-3 text-slate-600 whitespace-nowrap">
-                        {formatDate(item.tgl_kirim)}
+                        {formatDate(item.tgl_kirim_customer)}
                       </td>
                       <td className="px-3 py-3">
                         <button

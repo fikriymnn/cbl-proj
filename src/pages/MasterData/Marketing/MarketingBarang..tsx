@@ -17,6 +17,7 @@ interface MasterBarang {
   panjang: number;
   lebar: number;
   harga: number;
+  is_include_tax: boolean;
   batas_harga: number | null;
   persentase: number;
   pajak: number;
@@ -42,6 +43,7 @@ interface MasterBarangForm {
   panjang: number | string;
   lebar: number | string;
   harga: number | string;
+  is_include_tax: boolean;
   batas_harga: number | string;
   persentase: number | string;
   pajak: number | string;
@@ -95,6 +97,7 @@ function MarketingBarang(): JSX.Element {
     panjang: '',
     lebar: '',
     harga: '',
+    is_include_tax: false,
     batas_harga: '',
     persentase: '',
     pajak: '',
@@ -217,6 +220,7 @@ function MarketingBarang(): JSX.Element {
       panjang: '',
       lebar: '',
       harga: '',
+      is_include_tax: false,
       batas_harga: '',
       persentase: '',
       pajak: '',
@@ -248,6 +252,7 @@ function MarketingBarang(): JSX.Element {
       panjang: barang.panjang,
       lebar: barang.lebar,
       harga: barang.harga,
+      is_include_tax: barang.is_include_tax ?? false,
       batas_harga: barang.batas_harga || '',
       persentase: barang.persentase,
       pajak: barang.pajak,
@@ -318,6 +323,7 @@ function MarketingBarang(): JSX.Element {
         panjang: Number(barangForm.panjang) || 0,
         lebar: Number(barangForm.lebar) || 0,
         harga: Number(barangForm.harga) || 0,
+        is_include_tax: barangForm.is_include_tax,
         batas_harga: barangForm.batas_harga
           ? Number(barangForm.batas_harga)
           : null,
@@ -521,6 +527,11 @@ function MarketingBarang(): JSX.Element {
                   </td>
                   <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                     Rp {barang.harga}
+                    {barang.is_include_tax && (
+                      <span className="ml-1 text-[10px] text-gray-500">
+                        (incl. tax)
+                      </span>
+                    )}
                   </td>
                   <td
                     className="px-2 py-2 text-xs text-gray-900 max-w-[100px] truncate"
@@ -809,17 +820,36 @@ function MarketingBarang(): JSX.Element {
                     <label className="block text-sm font-medium text-gray-700">
                       Harga
                     </label>
-                    <input
-                      type="number"
-                      placeholder="Enter harga"
-                      value={barangForm.harga}
-                      onChange={(e) =>
-                        setBarangForm({ ...barangForm, harga: e.target.value })
-                      }
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      min="0"
-                      step="0.00001"
-                    />
+                    <div className="mt-1 flex items-center gap-3">
+                      <input
+                        type="number"
+                        placeholder="Enter harga"
+                        value={barangForm.harga}
+                        onChange={(e) =>
+                          setBarangForm({
+                            ...barangForm,
+                            harga: e.target.value,
+                          })
+                        }
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        min="0"
+                        step="0.00001"
+                      />
+                      <label className="flex items-center gap-1 whitespace-nowrap text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={barangForm.is_include_tax}
+                          onChange={(e) =>
+                            setBarangForm({
+                              ...barangForm,
+                              is_include_tax: e.target.checked,
+                            })
+                          }
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        Incl. Tax
+                      </label>
+                    </div>
                   </div>
 
                   {/* Batas Harga */}

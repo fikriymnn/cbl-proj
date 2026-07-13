@@ -710,19 +710,21 @@ function MasterMenu() {
               {/* Auto-generated Path Display */}
               <div>
                 <label className="text-gray-700 text-sm font-semibold mb-2 block">
-                  Generated Path
+                  Path
                 </label>
-                <div className="w-full min-h-11 border-2 border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 flex items-center">
-                  {newMenu.path ? (
-                    <code className="text-sm text-gray-700 font-mono">
-                      {newMenu.path}
-                    </code>
-                  ) : (
-                    <span className="text-gray-400 italic text-sm">
-                      Enter menu name to generate path
-                    </span>
-                  )}
-                </div>
+                <input
+                  type="text"
+                  value={newMenu.path || ''}
+                  onChange={(e) =>
+                    setNewMenu({ ...newMenu, path: e.target.value || null })
+                  }
+                  className="w-full h-11 border-2 border-gray-300 rounded-lg px-4 focus:border-primary focus:outline-none transition-colors font-mono text-sm"
+                  placeholder="Enter menu name to auto-generate, or type your own path"
+                />
+                <p className="text-xs text-gray-500 mt-1.5">
+                  Auto-filled from the menu name — edit it directly if you need
+                  a custom path
+                </p>
               </div>
 
               {/* Level and Order Display */}
@@ -999,23 +1001,24 @@ function MasterMenu() {
                   </div>
                 )}
               </div>
-
               {/* Auto-generated Path Display */}
               <div>
                 <label className="text-gray-700 text-sm font-semibold mb-2 block">
-                  Generated Path
+                  Path
                 </label>
-                <div className="w-full min-h-11 border-2 border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 flex items-center">
-                  {editMenu.path ? (
-                    <code className="text-sm text-gray-700 font-mono">
-                      {editMenu.path}
-                    </code>
-                  ) : (
-                    <span className="text-gray-400 italic text-sm">
-                      Enter menu name to generate path
-                    </span>
-                  )}
-                </div>
+                <input
+                  type="text"
+                  value={editMenu.path || ''}
+                  onChange={(e) =>
+                    setEditMenu({ ...editMenu, path: e.target.value || null })
+                  }
+                  className="w-full h-11 border-2 border-gray-300 rounded-lg px-4 focus:border-primary focus:outline-none transition-colors font-mono text-sm"
+                  placeholder="Enter menu name to auto-generate, or type your own path"
+                />
+                <p className="text-xs text-gray-500 mt-1.5">
+                  Auto-filled from the menu name — edit it directly if you need
+                  a custom path
+                </p>
               </div>
 
               {/* Level and Order Display */}
