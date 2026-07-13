@@ -715,6 +715,7 @@ function MarketingBarang(): JSX.Element {
                       <option value="BC">BC</option>
                       <option value="DOORSLAG">DOORSLAG</option>
                       <option value="Tinta">Tinta</option>
+                      <option value="POLIBAN">POLIBAN</option>
                     </select>
                   </div>
                   {/*Sub Kategori */}

@@ -41,15 +41,17 @@ const BOMPolibanTab: React.FC<BOMPolibanTabProps> = ({
   };
 
   const handleSaveFromModal = (newData: {
-    item_poliban: string;
+    id_item_poliban: number | null;
+    nama_item_poliban: string;
     isi_satu_ikat: number;
     lembar_poliban: number;
     qty_poliban: number;
     tipe: string;
   }) => {
     const newItem: BOMPoliban = {
-      id: null, // ✅ Add this - explicitly set to null for new items
-      item_poliban: newData.item_poliban,
+      id: null,
+      id_item_poliban: newData.id_item_poliban,
+      nama_item_poliban: newData.nama_item_poliban,
       isi_satu_ikat: newData.isi_satu_ikat,
       lembar_poliban: newData.lembar_poliban,
       qty_poliban: newData.qty_poliban,
@@ -122,7 +124,7 @@ const BOMPolibanTab: React.FC<BOMPolibanTabProps> = ({
               Poliban Terpilih:{' '}
             </span>
             <span className="text-green-700">
-              {selectedPoliban.item_poliban}
+              {selectedPoliban.nama_item_poliban}
             </span>
           </div>
         )}
@@ -209,12 +211,9 @@ const BOMPolibanTab: React.FC<BOMPolibanTabProps> = ({
                       )}
                       <input
                         type="text"
-                        value={item.item_poliban}
-                        onChange={(e) =>
-                          handleUpdate(index, 'item_poliban', e.target.value)
-                        }
-                        className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="ya / tidak"
+                        value={item.nama_item_poliban}
+                        className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
+                        readOnly
                       />
                     </div>
                   </td>

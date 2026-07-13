@@ -60,11 +60,13 @@ export const initializeCreateMode = (bomData: BOMData) => {
       qty_stok: 0,
     }));
 
+  // ✅ Poliban now carries id_item_poliban / nama_item_poliban (master-selected
+  // item) instead of the old ya/tidak flag.
   const polibanData: BOMPPICPoliban[] = (bomData.bom_poliban || [])
     .filter((poliban: any) => poliban.is_selected === true)
     .map((poliban: any) => ({
-      id_poliban: poliban.id_poliban,
-      item_poliban: poliban.item_poliban || '',
+      id_item_poliban: poliban.id_item_poliban,
+      nama_item_poliban: poliban.nama_item_poliban || '',
       isi_satu_ikat: poliban.isi_satu_ikat || 0,
       lembar_poliban: poliban.lembar_poliban || 0,
       qty_poliban: poliban.qty_poliban || 0,
@@ -74,10 +76,12 @@ export const initializeCreateMode = (bomData: BOMData) => {
 
   // Coating: raw bom_coating can contain MULTIPLE rows sharing the same
   // id_coating (e.g. one "depan" row + one "belakang" row for the same
-  // physical coating material). The user never needs to see that split —
-  // group them right here, at data-init time, into a single line per
-  // id_coating. qty_coating is summed across the group; nama_coating /
-  // uv_wb / varnish_doff are taken from the first record in the group.
+  // physical coating material/brand). The user never needs to see that
+  // split — group them right here, at data-init time, into a single line
+  // per id_coating. qty_coating is summed across the group; nama_coating /
+  // id_brand / nama_brand / uv_wb / varnish_doff are taken from the first
+  // record in the group (brand is expected to be the same across
+  // depan/belakang for a given coating item).
   const coatingGroups = new Map<number, any[]>();
   (bomData.bom_coating || [])
     .filter((coating: any) => coating.is_selected === true)
@@ -97,6 +101,8 @@ export const initializeCreateMode = (bomData: BOMData) => {
       return {
         id_coating: first.id_coating,
         nama_coating: first.nama_coating || '',
+        id_brand: first.id_brand,
+        nama_brand: first.nama_brand || '',
         qty_coating: totalQtyCoating,
         uv_wb: first.uv_wb || 0,
         varnish_doff: first.varnish_doff || 0,

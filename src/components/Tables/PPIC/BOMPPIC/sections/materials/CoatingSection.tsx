@@ -51,6 +51,9 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                 Nama Coating
               </th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
+                Brand
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
                 Qty Coating
               </th>
               <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">
@@ -79,6 +82,9 @@ const CoatingSection: React.FC<CoatingSectionProps> = ({
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900 font-medium">
                     {item.nama_coating}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900">
+                    {item.nama_brand || '-'}
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-sm font-semibold text-gray-900">

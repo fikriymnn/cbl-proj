@@ -39,7 +39,7 @@ const PolibanSection: React.FC<PolibanSectionProps> = ({
     },
     {
       header: 'Item Poliban',
-      accessor: 'item_poliban',
+      accessor: 'nama_item_poliban', // ✅ CHANGED from item_poliban
       render: (value: string) => (
         <span className="text-gray-900 font-medium">{value}</span>
       ),
@@ -70,7 +70,7 @@ const PolibanSection: React.FC<PolibanSectionProps> = ({
       header: 'Qty',
       accessor: 'qty_poliban',
       align: 'right' as const,
-      // NEW: production-need qty
+      // production-need qty
       render: (value: number) => (
         <span className="font-semibold text-gray-900">
           {formatNumber(value * qtyRatio)}

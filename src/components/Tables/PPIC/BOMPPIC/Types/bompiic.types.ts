@@ -65,8 +65,8 @@ export interface BOMPPICCorrugated {
 export interface BOMPPICPoliban {
   id?: number;
   id_bom?: number;
-  id_poliban: number;
-  item_poliban: string;
+  id_item_poliban: number; // ✅ CHANGED from id_poliban
+  nama_item_poliban: string; // ✅ CHANGED from item_poliban ('ya'/'tidak')
   isi_satu_ikat: number;
   lembar_poliban: number;
   qty_poliban: number;
@@ -81,6 +81,8 @@ export interface BOMPPICPoliban {
 export interface BOMPPICCoating {
   id_coating: number;
   nama_coating: string;
+  id_brand: number; // ✅ NEW
+  nama_brand: string; // ✅ NEW
   qty_coating: number;
   uv_wb: number;
   varnish_doff: number;
@@ -156,30 +158,32 @@ export interface BOMCorrugated {
   is_active?: boolean;
 }
 
-// BOM Poliban Interface
+// BOM Poliban Interface (raw, as it comes off the BOM record)
 export interface BOMPoliban {
   id?: number;
   id_bom?: number;
-  id_poliban: number;
-  nama_poliban?: string;
-  item_poliban?: string;
+  id_item_poliban?: number; // ✅ CHANGED from id_poliban
+  nama_item_poliban?: string; // ✅ CHANGED from item_poliban / nama_poliban
   isi_satu_ikat?: number;
   lembar_poliban?: number;
   qty?: number | string;
   qty_poliban?: number;
   satuan?: string;
   harga_poliban?: number | string;
+  is_selected?: boolean;
   createdAt?: string;
   updatedAt?: string;
   is_active?: boolean;
 }
 
-// BOM Coating Interface
+// BOM Coating Interface (raw, as it comes off the BOM record)
 export interface BOMCoating {
   id?: number;
   id_bom?: number;
   id_coating: number;
   nama_coating: string;
+  id_brand?: number; // ✅ NEW
+  nama_brand?: string; // ✅ NEW
   tipe_coating?: 'Depan' | 'Belakang';
   qty?: number | string;
   qty_coating?: number;
@@ -259,6 +263,7 @@ export interface BOMData {
   tgl_pembuatan_bom?: string;
   tgl_approve_bom?: string | null;
   tgl_kirim_customer?: string;
+  tgl_rencana_cetak?: string;
   createdAt?: string;
   updatedAt?: string;
 
@@ -282,6 +287,7 @@ export interface BOMData {
     id_bom?: number;
     no_bom_ppic?: string;
     status_proses?: string;
+    tgl_rencana_cetak?: string;
     bom_ppic_kertas?: BOMPPICKertas[];
     bom_ppic_tinta?: BOMPPICTinta[];
     bom_ppic_corrugated?: BOMPPICCorrugated[];
@@ -304,7 +310,6 @@ export interface BOMData {
   };
 }
 
-// BOM PPIC Item for list view
 // BOM PPIC Item for list view
 export interface BOMPPICItem {
   id: number;
@@ -343,6 +348,7 @@ export interface BOMPPICCreatePayload {
   customer: string;
   produk: string;
   tgl_kirim_customer?: string;
+  tgl_rencana_cetak?: string;
   bom_ppic_kertas?: Array<{
     id_kertas: number;
     id_jenis_kertas?: number;
@@ -364,17 +370,15 @@ export interface BOMPPICCreatePayload {
     qty_stok: number;
   }>;
   bom_ppic_poliban?: Array<{
-    id_poliban: number;
+    id_item_poliban: number;
     qty_beli: number;
     qty_stok: number;
   }>;
   bom_ppic_coating?: Array<{
     id_coating: number;
-    tipe_coating: 'Depan' | 'Belakang';
-    qty_beli_coating_depan: number;
-    qty_stok_coating_depan: number;
-    qty_beli_coating_belakang: number;
-    qty_stok_coating_belakang: number;
+    id_brand: number;
+    qty_beli: number;
+    qty_stok: number;
   }>;
   bom_ppic_lem?: Array<{
     id_lem: number;

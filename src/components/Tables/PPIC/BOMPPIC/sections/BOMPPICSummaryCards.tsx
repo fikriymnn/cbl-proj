@@ -19,6 +19,8 @@ interface BOMPPICSummaryCardsProps {
   qtyFgDisplayValue: string;
   onQtyFgChange: (value: string) => void;
   onQtyFgBlur: () => void;
+  tglRencanaCetak: string;
+  onTglRencanaCetakChange: (value: string) => void;
 }
 
 const formatNumber = (value: number | string): string => {
@@ -41,6 +43,8 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
   qtyFgDisplayValue,
   onQtyFgBlur,
   onQtyFgChange,
+  tglRencanaCetak,
+  onTglRencanaCetakChange,
 }) => {
   const totalItems =
     kertasItems.length +
@@ -54,11 +58,9 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
     kertasItems.reduce((sum, item) => sum + item.qty_stok, 0) +
     corrugatedItems.reduce((sum, item) => sum + item.qty_stok, 0) +
     polibanItems.reduce((sum, item) => sum + item.qty_stok, 0) +
-    coatingItems.reduce(
-      (sum, item) =>
-        sum + item.qty_stok_coating_depan + item.qty_stok_coating_belakang,
-      0,
-    ) +
+    // ✅ FIXED: coating is now a single flat row per id_coating with
+    // qty_stok, same as every other material — no more depan/belakang split.
+    coatingItems.reduce((sum, item) => sum + item.qty_stok, 0) +
     lemItems.reduce((sum, item) => sum + item.qty_stok, 0) +
     tintaItems.reduce(
       (sum, tinta) =>
@@ -70,11 +72,8 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
     kertasItems.reduce((sum, item) => sum + item.qty_beli, 0) +
     corrugatedItems.reduce((sum, item) => sum + item.qty_beli, 0) +
     polibanItems.reduce((sum, item) => sum + item.qty_beli, 0) +
-    coatingItems.reduce(
-      (sum, item) =>
-        sum + item.qty_beli_coating_depan + item.qty_beli_coating_belakang,
-      0,
-    ) +
+    // ✅ FIXED: same as above, use the single qty_beli field.
+    coatingItems.reduce((sum, item) => sum + item.qty_beli, 0) +
     lemItems.reduce((sum, item) => sum + item.qty_beli, 0) +
     tintaItems.reduce(
       (sum, tinta) =>
@@ -164,7 +163,7 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 pb-2 col-span-3">
+      <div className="grid grid-cols-3 gap-3 pb-2 col-span-3">
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-2 rounded-md border border-gray-300 shadow-sm">
           <p className="text-xs text-gray-600 font-medium">Qty PO</p>
           <p className="text-lg font-bold text-gray-900">
@@ -180,6 +179,17 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
             onBlur={onQtyFgBlur}
             className="w-full px-2 py-1 border border-rose-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm font-bold bg-white text-rose-900"
             placeholder="0"
+          />
+        </div>
+        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-2 rounded-md border border-indigo-300 shadow-sm">
+          <p className="text-xs text-indigo-600 font-medium mb-1">
+            Tgl Rencana Cetak
+          </p>
+          <input
+            type="date"
+            value={tglRencanaCetak}
+            onChange={(e) => onTglRencanaCetakChange(e.target.value)}
+            className="w-full px-2 py-1 border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-white text-indigo-900"
           />
         </div>
       </div>

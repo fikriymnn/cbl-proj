@@ -23,6 +23,12 @@ import CoatingSection from './sections/materials/CoatingSection';
 import LemSection from './sections/materials/LemSection';
 import LainLainSection from './sections/materials/LainLainSection';
 
+const toDateInputValue = (value: string | null | undefined): string => {
+  if (!value) return '';
+  // Handles ISO datetime strings like "2026-07-16T00:00:00.000Z"
+  // <input type="date"> only accepts "YYYY-MM-DD"
+  return value.split('T')[0];
+};
 interface BOMPPICManagementModalProps {
   bomId: number;
   bomPPICId?: number;
@@ -42,6 +48,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [qtyPo, setQtyPo] = useState<number>(0);
   const [qtyFg, setQtyFg] = useState<number>(0);
+  const [tglRencanaCetak, setTglRencanaCetak] = useState<string>('');
   const [kertasItems, setKertasItems] = useState<BOMPPICKertas[]>([]);
   const [tintaItems, setTintaItems] = useState<BOMPPICTinta[]>([]);
   const [corrugatedItems, setCorrugatedItems] = useState<BOMPPICCorrugated[]>(
@@ -109,15 +116,19 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         if (ppicData && hasBOMPPICData(ppicData)) {
           setIsEditMode(true);
           setQtyFg(ppicData.qty_fg || 0);
+          setTglRencanaCetak(toDateInputValue(ppicData.tgl_rencana_cetak));
           initializeEditModeWithLatestBOM(latestBomData, ppicData);
         } else {
           setIsEditMode(false);
           setQtyFg(0);
+          setTglRencanaCetak('');
           initializeCreateModeWithBOM(latestBomData);
         }
       } catch (ppicError: any) {
         setIsEditMode(false);
+
         setQtyFg(0);
+        setTglRencanaCetak('');
         initializeCreateModeWithBOM(latestBomData);
       }
     } catch (error: any) {
@@ -253,8 +264,8 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
             } else if (latestItem['qty_lem'] !== undefined) {
               defaultValues[field] = latestItem['qty_lem'] || 0;
             } else if (latestItem['qty_coating'] !== undefined) {
-              // NEW: coating items now flow through this same generic
-              // merge helper, so give them a default beli value too.
+              // Coating items flow through this same generic merge helper,
+              // so give them a default beli value too.
               defaultValues[field] = latestItem['qty_coating'] || 0;
             } else {
               defaultValues[field] = 0;
@@ -324,21 +335,24 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       ['qty_beli', 'qty_stok'],
     );
 
+    // Poliban now matches on id_item_poliban (the master-selected item)
+    // instead of the old id_poliban / ya-tidak flag.
     const initializedPoliban = mergeWithPPICData(
       latestBomStructure.polibanItems,
       ppicData.bom_ppic_poliban || [],
-      ['id_poliban'],
+      ['id_item_poliban'],
       ['qty_beli', 'qty_stok'],
     );
 
     // Coating: both latestBomStructure.coatingItems (via initializeCreateMode)
-    // and ppicData.bom_ppic_coating (from the backend, per your payload) are
-    // already ONE flat row per id_coating — so this is now a plain merge,
-    // same as kertas/corrugated/poliban/lem. No depan/belakang bookkeeping.
+    // and ppicData.bom_ppic_coating (from the backend) are already ONE flat
+    // row per id_coating. Match on id_coating + id_brand so a brand change
+    // on the BOM side doesn't wrongly reuse a stale PPIC qty from a
+    // different brand of the same coating item.
     const initializedCoating = mergeWithPPICData(
       latestBomStructure.coatingItems,
       ppicData.bom_ppic_coating || [],
-      ['id_coating'],
+      ['id_coating', 'id_brand'],
       ['qty_beli', 'qty_stok'],
     );
 
@@ -766,6 +780,11 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
     setHasUnsavedChanges(true);
   };
 
+  const handleTglRencanaCetakChange = (value: string) => {
+    setTglRencanaCetak(value);
+    setHasUnsavedChanges(true);
+  };
+
   const handleSaveBOMPPIC = async () => {
     if (!bomDetails) return;
 
@@ -807,8 +826,11 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         qty_stok: item.qty_stok || 0,
       }));
 
+      // Poliban now sends id_item_poliban / nama_item_poliban (master item)
+      // instead of the old item_poliban ya/tidak flag.
       const cleanPolibanItems = polibanItems.map((item) => ({
-        item_poliban: item.item_poliban,
+        id_item_poliban: item.id_item_poliban,
+        nama_item_poliban: item.nama_item_poliban,
         isi_satu_ikat: item.isi_satu_ikat,
         lembar_poliban: item.lembar_poliban,
         qty_poliban: item.qty_poliban,
@@ -818,12 +840,12 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
 
       // Coating: coatingItems is already one flat row per id_coating, so this
       // is now a direct map — no grouping/merging needed at save time.
-      // nama_coating_belakang mirrors nama_coating since the user only ever
-      // edits one combined line; there is no separate front/back name shown.
+      // id_brand / nama_brand carried through from the BOM selection.
       const cleanCoatingItems = coatingItems.map((item) => ({
         id_coating: item.id_coating,
         nama_coating: item.nama_coating,
-        nama_coating_belakang: item.nama_coating,
+        id_brand: item.id_brand,
+        nama_brand: item.nama_brand,
         qty_coating: item.qty_coating || 0,
         uv_wb: item.uv_wb || 0,
         varnish_doff: item.varnish_doff || 0,
@@ -858,6 +880,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         customer: bomDetails.customer,
         produk: bomDetails.produk,
         tgl_kirim_customer: bomDetails.tgl_kirim_customer || '',
+        tgl_rencana_cetak: tglRencanaCetak || '',
         qty_po: qtyPo,
         qty_fg: qtyFg,
         bom_ppic_kertas:
@@ -994,6 +1017,8 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
             )}
             onQtyFgChange={handleQtyFgChange}
             onQtyFgBlur={() => handleInputBlur('summary', 0, 'qty_fg')}
+            tglRencanaCetak={tglRencanaCetak}
+            onTglRencanaCetakChange={handleTglRencanaCetakChange}
           />
         </div>
 

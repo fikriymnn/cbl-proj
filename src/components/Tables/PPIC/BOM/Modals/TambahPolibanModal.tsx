@@ -1,11 +1,13 @@
 // components/BOM/Modals/TambahPolibanModal.tsx
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 
 interface TambahPolibanModalProps {
   onClose: () => void;
   onSave: (data: {
-    item_poliban: string;
+    id_item_poliban: number | null;
+    nama_item_poliban: string;
     isi_satu_ikat: number;
     lembar_poliban: number;
     qty_poliban: number;
@@ -20,27 +22,53 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
   po_qty = 0,
 }) => {
   const [formData, setFormData] = useState({
-    item_poliban: '',
+    id_item_poliban: '',
+    nama_item_poliban: '',
     isi_satu_ikat: 0,
     lembar_poliban: 32, // Default value
     tipe: 'DRAFT',
   });
+  const [polibanOptions, setPolibanOptions] = useState<
+    Array<{ id: number; kode_barang: string; nama_barang: string }>
+  >([]);
+  const [loading, setLoading] = useState(false);
   const [calculatedQty, setCalculatedQty] = useState(0);
 
-  // Poliban options: ya atau tidak
-  const polibanOptions = [
-    { value: '', label: 'Pilih Data' },
-    { value: 'ya', label: 'Ya' },
-    { value: 'tidak', label: 'Tidak' },
-  ];
+  useEffect(() => {
+    fetchPolibanData();
+  }, []);
 
-  // Check if "tidak" is selected
-  const isTidakSelected = formData.item_poliban === 'tidak';
+  const fetchPolibanData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/barang`,
+        {
+          params: {
+            kategori: 'POLIBAN',
+          },
+          withCredentials: true,
+        },
+      );
+
+      const polibanData = response.data?.data || [];
+      setPolibanOptions(polibanData);
+    } catch (error) {
+      console.error('Error fetching poliban data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check if selected item is NON POLIBAN
+  const isNonPoliban = formData.nama_item_poliban
+    .toUpperCase()
+    .includes('NON POLIBAN');
 
   // Calculate qty_poliban whenever dependencies change
   // Formula: (po_qty / isi_satu_ikat) / lembar_poliban
   useEffect(() => {
-    if (isTidakSelected) {
+    if (isNonPoliban) {
       setCalculatedQty(0);
     } else if (
       formData.isi_satu_ikat > 0 &&
@@ -52,29 +80,40 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
     } else {
       setCalculatedQty(0);
     }
-  }, [
-    formData.isi_satu_ikat,
-    formData.lembar_poliban,
-    po_qty,
-    isTidakSelected,
-  ]);
+  }, [formData.isi_satu_ikat, formData.lembar_poliban, po_qty, isNonPoliban]);
 
-  const handlePolibanChange = (value: string | number) => {
-    const selectedValue = String(value);
+  const handleItemPolibanChange = (value: string | number) => {
+    const selectedItem = polibanOptions.find(
+      (item) => item.id.toString() === value.toString(),
+    );
 
-    // If "tidak" is selected, reset other fields to default values
-    if (selectedValue === 'tidak') {
-      setFormData({
-        item_poliban: selectedValue,
-        isi_satu_ikat: 0,
-        lembar_poliban: 0,
-        tipe: 'DRAFT',
-      });
+    if (selectedItem) {
+      const nonPoliban = selectedItem.nama_barang
+        .toUpperCase()
+        .includes('NON POLIBAN');
+
+      // If NON POLIBAN, reset other fields to default values
+      if (nonPoliban) {
+        setFormData({
+          id_item_poliban: value.toString(),
+          nama_item_poliban: selectedItem.nama_barang,
+          isi_satu_ikat: 0,
+          lembar_poliban: 0,
+          tipe: 'DRAFT',
+        });
+      } else {
+        setFormData({
+          ...formData,
+          id_item_poliban: value.toString(),
+          nama_item_poliban: selectedItem.nama_barang,
+          lembar_poliban: 32, // Reset to default when switching item
+        });
+      }
     } else {
       setFormData({
         ...formData,
-        item_poliban: selectedValue,
-        lembar_poliban: 32, // Reset to default when switching to "ya"
+        id_item_poliban: '',
+        nama_item_poliban: '',
       });
     }
   };
@@ -100,16 +139,17 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation: Only check item_poliban is selected
-    if (!formData.item_poliban) {
+    // Validation: Only check id_item_poliban is selected
+    if (!formData.id_item_poliban) {
       alert('Mohon pilih Item Poliban');
       return;
     }
 
-    // If "tidak" is selected, allow submission with 0 values
-    if (isTidakSelected) {
+    // If NON POLIBAN is selected, allow submission with 0 values
+    if (isNonPoliban) {
       onSave({
-        item_poliban: formData.item_poliban,
+        id_item_poliban: Number(formData.id_item_poliban),
+        nama_item_poliban: formData.nama_item_poliban,
         isi_satu_ikat: 0,
         lembar_poliban: 0,
         qty_poliban: 0,
@@ -119,14 +159,15 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
       return;
     }
 
-    // If "ya" is selected, validate other fields
+    // Otherwise validate other fields
     if (formData.isi_satu_ikat <= 0 || formData.lembar_poliban <= 0) {
       alert('Mohon lengkapi semua data');
       return;
     }
 
     onSave({
-      item_poliban: formData.item_poliban,
+      id_item_poliban: Number(formData.id_item_poliban),
+      nama_item_poliban: formData.nama_item_poliban,
       isi_satu_ikat: formData.isi_satu_ikat,
       lembar_poliban: formData.lembar_poliban,
       qty_poliban: calculatedQty,
@@ -155,7 +196,7 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6">
           {/* PO Qty Info */}
-          {po_qty > 0 && !isTidakSelected && (
+          {po_qty > 0 && !isNonPoliban && (
             <div className="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
               <div className="text-gray-700">
                 <span className="font-semibold">Qty:</span> {po_qty}
@@ -177,24 +218,35 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Item Poliban <span className="text-red-500">*</span>
             </label>
-            <SearchableSelect
-              options={polibanOptions}
-              value={formData.item_poliban}
-              onChange={handlePolibanChange}
-              placeholder="Pilih Item Poliban"
-              required
-            />
+            {loading ? (
+              <div className="text-sm text-gray-500">Loading data...</div>
+            ) : (
+              <SearchableSelect
+                options={[
+                  { value: '', label: 'Pilih Data' },
+                  ...polibanOptions.map((item) => ({
+                    value: item.id.toString(),
+                    label: `${item.kode_barang} - ${item.nama_barang}`,
+                  })),
+                ]}
+                value={formData.id_item_poliban}
+                onChange={handleItemPolibanChange}
+                placeholder="Pilih Item Poliban"
+                required
+              />
+            )}
           </div>
 
-          {/* Show message when "tidak" is selected */}
-          {isTidakSelected && (
+          {/* Show message when NON POLIBAN is selected */}
+          {isNonPoliban && (
             <div className="mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
-              ℹ️ Tidak perlu mengisi data lainnya untuk pilihan "Tidak"
+              ℹ️ Produk ini tidak menggunakan poliban. Semua nilai akan diset ke
+              0.
             </div>
           )}
 
-          {/* Only show other fields when "tidak" is NOT selected */}
-          {!isTidakSelected && formData.item_poliban && (
+          {/* Only show other fields when item is selected and NOT NON POLIBAN */}
+          {!isNonPoliban && formData.id_item_poliban && (
             <>
               {/* Isi 1 Ikat Poliban */}
               <div className="mb-4">
@@ -276,7 +328,7 @@ const TambahPolibanModal: React.FC<TambahPolibanModalProps> = ({
             <button
               type="submit"
               className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-              disabled={!formData.item_poliban}
+              disabled={!formData.id_item_poliban}
             >
               Simpan
             </button>

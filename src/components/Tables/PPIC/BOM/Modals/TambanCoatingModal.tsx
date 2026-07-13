@@ -8,6 +8,8 @@ interface TambahCoatingModalProps {
   onSave: (data: {
     id_coating: number | null;
     nama_coating: string;
+    id_brand: number | null;
+    nama_brand: string;
     tipe_coating: 'Depan' | 'Belakang';
     qty_coating: number;
     uv_wb: number;
@@ -28,19 +30,26 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
   const [formData, setFormData] = useState({
     id_coating: '',
     nama_coating: '',
+    id_brand: '',
+    nama_brand: '',
     tipe_coating: '',
     rumus_coating: '',
   });
   const [coatingOptions, setCoatingOptions] = useState<
     Array<{ id: number; kode_barang: string; nama_barang: string }>
   >([]);
+  const [brandOptions, setBrandOptions] = useState<
+    Array<{ id: number; kode_brand: string; nama_brand: string }>
+  >([]);
   const [loading, setLoading] = useState(false);
+  const [loadingBrand, setLoadingBrand] = useState(false);
   const [calculatedQty, setCalculatedQty] = useState(0);
   const [calculatedUVWB, setCalculatedUVWB] = useState(0);
   const [calculatedVarnishDoff, setCalculatedVarnishDoff] = useState(0);
 
   useEffect(() => {
     fetchCoatingData();
+    fetchBrandData();
   }, []);
 
   // Calculate quantities when data is available
@@ -69,6 +78,25 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
       console.error('Error fetching coating data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBrandData = async () => {
+    setLoadingBrand(true);
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/brand`,
+        {
+          withCredentials: true,
+        },
+      );
+
+      const brandData = response.data?.data || [];
+      setBrandOptions(brandData);
+    } catch (error) {
+      console.error('Error fetching brand data:', error);
+    } finally {
+      setLoadingBrand(false);
     }
   };
 
@@ -152,6 +180,26 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     }
   };
 
+  const handleBrandChange = (value: string | number) => {
+    const selectedBrand = brandOptions.find(
+      (item) => item.id.toString() === value.toString(),
+    );
+
+    if (selectedBrand) {
+      setFormData({
+        ...formData,
+        id_brand: value.toString(),
+        nama_brand: selectedBrand.nama_brand,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        id_brand: '',
+        nama_brand: '',
+      });
+    }
+  };
+
   const handleTipeCoatingChange = (value: string | number) => {
     setFormData({
       ...formData,
@@ -179,6 +227,11 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
       return;
     }
 
+    if (!formData.id_brand) {
+      alert('Mohon pilih brand coating');
+      return;
+    }
+
     if (!formData.tipe_coating) {
       alert('Mohon pilih tipe coating');
       return;
@@ -199,6 +252,8 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
     onSave({
       id_coating: Number(formData.id_coating),
       nama_coating: formData.nama_coating,
+      id_brand: Number(formData.id_brand),
+      nama_brand: formData.nama_brand,
       tipe_coating: formData.tipe_coating as 'Depan' | 'Belakang',
       qty_coating: calculatedQty,
       uv_wb: calculatedUVWB,
@@ -252,12 +307,13 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
       .toUpperCase()
       .includes('NON COATING');
 
+    const baseValid =
+      formData.id_coating && formData.id_brand && formData.tipe_coating;
+
     if (isNonCoating) {
-      return formData.id_coating && formData.tipe_coating; // NON COATING needs item and tipe
+      return baseValid; // NON COATING needs item, brand, and tipe
     }
-    return (
-      formData.rumus_coating && formData.id_coating && formData.tipe_coating
-    ); // Others need all three
+    return baseValid && formData.rumus_coating; // Others need rumus too
   };
 
   return (
@@ -356,6 +412,30 @@ const TambahCoatingModal: React.FC<TambahCoatingModalProps> = ({
                 value={formData.id_coating}
                 onChange={handleCoatingChange}
                 placeholder="Pilih Item Coating"
+                required
+              />
+            )}
+          </div>
+
+          {/* Brand Coating */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Brand Coating <span className="text-red-500">*</span>
+            </label>
+            {loadingBrand ? (
+              <div className="text-sm text-gray-500">Loading data...</div>
+            ) : (
+              <SearchableSelect
+                options={[
+                  { value: '', label: 'Pilih Brand' },
+                  ...brandOptions.map((brand) => ({
+                    value: brand.id.toString(),
+                    label: `${brand.kode_brand} - ${brand.nama_brand}`,
+                  })),
+                ]}
+                value={formData.id_brand}
+                onChange={handleBrandChange}
+                placeholder="Pilih Brand"
                 required
               />
             )}

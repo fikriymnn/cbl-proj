@@ -91,20 +91,12 @@ export interface BOMCorrugated {
   is_selected: boolean;
 }
 
-export interface BOMPoliban {
-  id?: any; // Add ID for existing records
-  item_poliban: string;
-  isi_satu_ikat: number;
-  lembar_poliban: number;
-  qty_poliban: number;
-  tipe: string;
-  is_selected: boolean;
-}
-
 export interface BOMCoating {
   id: number | null;
   id_coating: number | null;
   nama_coating: string;
+  id_brand: number | null;
+  nama_brand: string;
   tipe_coating: 'Depan' | 'Belakang' | '';
   qty_coating: number;
   uv_wb: number;
@@ -114,6 +106,16 @@ export interface BOMCoating {
   is_selected: boolean;
 }
 
+export interface BOMPoliban {
+  id?: any;
+  id_item_poliban: number | null;
+  nama_item_poliban: string;
+  isi_satu_ikat: number;
+  lembar_poliban: number;
+  qty_poliban: number;
+  tipe: string;
+  is_selected: boolean;
+}
 export interface BOMLem {
   id?: any; // ID from database if exists
   id_lem: number;

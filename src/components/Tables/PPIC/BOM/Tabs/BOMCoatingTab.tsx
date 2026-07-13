@@ -25,6 +25,8 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
   const handleSaveFromModal = (newData: {
     id_coating: number | null;
     nama_coating: string;
+    id_brand: number | null;
+    nama_brand: string;
     tipe_coating: 'Depan' | 'Belakang';
     qty_coating: number;
     uv_wb: number;
@@ -82,7 +84,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
               {selectedCoatings
                 .map(
                   (coating) =>
-                    `${coating.nama_coating} (${coating.tipe_coating})`,
+                    `${coating.nama_coating} - ${coating.nama_brand} (${coating.tipe_coating})`,
                 )
                 .join(', ')}
             </span>
@@ -105,6 +107,9 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
               </th>
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
                 Item Coating
+              </th>
+              <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
+                Brand
               </th>
               <th className="px-3 py-2 border-b text-left font-medium text-gray-700">
                 Tipe Coating
@@ -131,7 +136,7 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
           <tbody>
             {data?.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
                   Belum ada data coating
                 </td>
               </tr>
@@ -163,6 +168,14 @@ const BOMCoatingTab: React.FC<BOMCoatingTabProps> = ({
                         readOnly
                       />
                     </div>
+                  </td>
+                  <td className="px-3 py-2 border-b">
+                    <input
+                      type="text"
+                      value={item.nama_brand || '-'}
+                      className="w-full px-2 py-1 border border-gray-300 rounded bg-gray-100"
+                      readOnly
+                    />
                   </td>
                   <td className="px-3 py-2 border-b">
                     <input
