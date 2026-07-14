@@ -20,6 +20,7 @@ interface BOMPPICSummaryCardsProps {
   onQtyFgChange: (value: string) => void;
   onQtyFgBlur: () => void;
   tglRencanaCetak: string;
+  tglPengiriman: string;
   onTglRencanaCetakChange: (value: string) => void;
 }
 
@@ -44,6 +45,7 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
   onQtyFgBlur,
   onQtyFgChange,
   tglRencanaCetak,
+  tglPengiriman,
   onTglRencanaCetakChange,
 }) => {
   const totalItems =
@@ -179,6 +181,15 @@ const BOMPPICSummaryCards: React.FC<BOMPPICSummaryCardsProps> = ({
             onBlur={onQtyFgBlur}
             className="w-full px-2 py-1 border border-rose-300 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm font-bold bg-white text-rose-900"
             placeholder="0"
+          />
+        </div>
+        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-2 rounded-md border border-indigo-300 shadow-sm">
+          <p className="text-xs text-indigo-600 font-medium mb-1">Tgl Kirim</p>
+          <input
+            type="date"
+            value={tglPengiriman}
+            readOnly
+            className="w-full px-2 py-1 border border-indigo-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-white text-indigo-900"
           />
         </div>
         <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 p-2 rounded-md border border-indigo-300 shadow-sm">

@@ -305,6 +305,7 @@ export interface BOMData {
   bom_ppic_lem?: BOMPPICLem[];
   bom_ppic_lain_lain?: BOMLainLain[];
   so?: {
+    tgl_pengiriman?: string;
     po_qty?: number;
     [key: string]: any;
   };

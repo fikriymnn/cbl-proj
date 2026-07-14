@@ -358,6 +358,7 @@ const PengajuanPurchase: React.FC = () => {
         params: {
           page,
           limit,
+          status: 'incoming',
           search: searchTerm || undefined,
 
           tipe_barang: kategoriFilter.length > 0 ? kategoriFilter : undefined,

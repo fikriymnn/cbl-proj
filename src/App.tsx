@@ -270,6 +270,9 @@ import QRScanPage from './pages/Print/qrscanpage';
 import ListOTSPurchasePage from './pages/Purchasing/ListOTSPurchasePage';
 import PengajuanPurchasePage from './pages/Purchasing/PengajuanPurchasePage';
 import MasterVendor from './pages/MasterData/Marketing/MasterVendor';
+import POApprovalFinacePage from './pages/Finance/POApprovalFinancePage';
+import POApprovalPurchasePage from './pages/Purchasing/POApprovalPurhcasePage';
+import DraftPOPage from './pages/Purchasing/DraftPOPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2535,6 +2538,33 @@ function App() {
             </P>
           }
         />
+        <Route
+          path="/purchasing/draft-po"
+          element={
+            <P>
+              <DraftPOPage />
+            </P>
+          }
+        />
+        <Route
+          path="/purchasing/po-approval"
+          element={
+            <P>
+              <POApprovalPurchasePage />
+            </P>
+          }
+        />
+
+        {/* ============== Finance ROUTES ============== */}
+        <Route
+          path="/finance/po-approval"
+          element={
+            <P>
+              <POApprovalFinacePage />
+            </P>
+          }
+        />
+
         {/* ============== PRINT ROUTES ============== */}
         <Route
           path="/print/label"

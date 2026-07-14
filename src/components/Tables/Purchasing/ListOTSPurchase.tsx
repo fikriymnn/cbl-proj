@@ -380,10 +380,10 @@ const ListOTSPurchase: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-3 py-3 text-slate-600">
-                        {item.jenis_kertas || '-'}
+                        {item.bom_ppic_kertas[0]?.nama_kertas || '-'}
                       </td>
                       <td className="px-3 py-3 text-slate-600 whitespace-nowrap">
-                        {formatDate(item.tgl_cetak)}
+                        {formatDate(item.tgl_rencana_cetak)}
                       </td>
                       <td className="px-3 py-3 text-slate-600 whitespace-nowrap">
                         {formatDate(item.tgl_kirim_customer)}

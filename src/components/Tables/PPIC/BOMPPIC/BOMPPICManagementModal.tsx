@@ -49,6 +49,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
   const [qtyPo, setQtyPo] = useState<number>(0);
   const [qtyFg, setQtyFg] = useState<number>(0);
   const [tglRencanaCetak, setTglRencanaCetak] = useState<string>('');
+  const [tglPengiriman, setTglPengiriman] = useState<string>('');
   const [kertasItems, setKertasItems] = useState<BOMPPICKertas[]>([]);
   const [tintaItems, setTintaItems] = useState<BOMPPICTinta[]>([]);
   const [corrugatedItems, setCorrugatedItems] = useState<BOMPPICCorrugated[]>(
@@ -117,11 +118,13 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
           setIsEditMode(true);
           setQtyFg(ppicData.qty_fg || 0);
           setTglRencanaCetak(toDateInputValue(ppicData.tgl_rencana_cetak));
+          setTglPengiriman(toDateInputValue(ppicData.tgl_kirim_customer));
           initializeEditModeWithLatestBOM(latestBomData, ppicData);
         } else {
           setIsEditMode(false);
           setQtyFg(0);
           setTglRencanaCetak('');
+          setTglPengiriman(toDateInputValue(latestBomData?.so?.tgl_pengiriman));
           initializeCreateModeWithBOM(latestBomData);
         }
       } catch (ppicError: any) {
@@ -129,6 +132,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
 
         setQtyFg(0);
         setTglRencanaCetak('');
+        setTglPengiriman(toDateInputValue(latestBomData?.so?.tgl_pengiriman));
         initializeCreateModeWithBOM(latestBomData);
       }
     } catch (error: any) {
@@ -879,7 +883,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
         no_bom: bomDetails.no_bom,
         customer: bomDetails.customer,
         produk: bomDetails.produk,
-        tgl_kirim_customer: bomDetails.tgl_kirim_customer || '',
+        tgl_kirim_customer: bomDetails.so?.tgl_pengiriman || '',
         tgl_rencana_cetak: tglRencanaCetak || '',
         qty_po: qtyPo,
         qty_fg: qtyFg,
@@ -903,7 +907,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
       const baseUrl = `${import.meta.env.VITE_API_LINK}/ppic/bomppic`;
       const url = isEditMode ? `${baseUrl}/${bomPPICId}` : baseUrl;
       const method = isEditMode ? 'put' : 'post';
-
+      console.log(payload);
       await axios({
         method,
         url,
@@ -1018,6 +1022,7 @@ const BOMPPICManagementModal: React.FC<BOMPPICManagementModalProps> = ({
             onQtyFgChange={handleQtyFgChange}
             onQtyFgBlur={() => handleInputBlur('summary', 0, 'qty_fg')}
             tglRencanaCetak={tglRencanaCetak}
+            tglPengiriman={tglPengiriman}
             onTglRencanaCetakChange={handleTglRencanaCetakChange}
           />
         </div>
