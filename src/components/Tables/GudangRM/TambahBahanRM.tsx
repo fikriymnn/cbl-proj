@@ -5,19 +5,21 @@ import {
   APIResponse,
   StatusTiket,
   TambahBahanPersiapan,
-} from '../../Produksi/TambahBahan/types/Tambahbahan.types';
+} from '../Produksi/TambahBahan/types/Tambahbahan.types';
 import {
   formatDateTime,
   getStatusColor,
   statusLabel,
   truncateText,
-} from '../../Produksi/TambahBahan/Tambahbahanutils';
+} from '../Produksi/TambahBahan/Tambahbahanutils';
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
 type SortDirection = 'asc' | 'desc';
 
-const TambahBahanQC: React.FC = () => {
+// Gudang RM only acts on requests that have already passed QC
+// (status === 'approve qc'); everything else is view-only here.
+const TambahBahanRM: React.FC = () => {
   const [list, setList] = useState<TambahBahanPersiapan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [statusTiket, setStatusTiket] = useState<StatusTiket>('incoming');
@@ -28,11 +30,10 @@ const TambahBahanQC: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
 
-  // Respond modal
   const [activeItem, setActiveItem] = useState<TambahBahanPersiapan | null>(
     null,
   );
-  const [noteQc, setNoteQc] = useState<string>('');
+  const [noteGudang, setNoteGudang] = useState<string>('');
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   const fetchList = useCallback(async () => {
@@ -61,28 +62,31 @@ const TambahBahanQC: React.FC = () => {
 
   const openRespond = (item: TambahBahanPersiapan) => {
     setActiveItem(item);
-    setNoteQc(item.note_qc || '');
+    setNoteGudang(item.note_gudang || '');
   };
 
   const closeRespond = () => {
     setActiveItem(null);
-    setNoteQc('');
+    setNoteGudang('');
   };
+
+  const isActionable = (item: TambahBahanPersiapan) =>
+    item.status?.toLowerCase() === 'approve qc';
 
   const handleApprove = async () => {
     if (!activeItem) return;
     try {
       setActionLoading(true);
       await axios.put(
-        `${API_BASE}/gudangRM/tambahBahanPersiapan/approveQc/${activeItem.id}`,
-        { note_qc: noteQc },
+        `${API_BASE}/gudangRM/tambahBahanPersiapan/approveGudang/${activeItem.id}`,
+        { note_gudang: noteGudang },
         { withCredentials: true },
       );
-      toast.success('Permintaan berhasil disetujui QC');
+      toast.success('Permintaan berhasil disetujui Gudang');
       closeRespond();
       fetchList();
     } catch (error: any) {
-      console.error('Error approving QC:', error);
+      console.error('Error approving gudang:', error);
       toast.error(
         error.response?.data?.message || 'Gagal menyetujui permintaan',
       );
@@ -93,22 +97,22 @@ const TambahBahanQC: React.FC = () => {
 
   const handleReject = async () => {
     if (!activeItem) return;
-    if (!noteQc.trim()) {
+    if (!noteGudang.trim()) {
       toast.error('Mohon isi catatan alasan penolakan');
       return;
     }
     try {
       setActionLoading(true);
       await axios.put(
-        `${API_BASE}/gudangRM/tambahBahanPersiapan/rejectQc/${activeItem.id}`,
-        { note_qc: noteQc },
+        `${API_BASE}/gudangRM/tambahBahanPersiapan/rejectGudang/${activeItem.id}`,
+        { note_gudang: noteGudang },
         { withCredentials: true },
       );
       toast.success('Permintaan ditolak');
       closeRespond();
       fetchList();
     } catch (error: any) {
-      console.error('Error rejecting QC:', error);
+      console.error('Error rejecting gudang:', error);
       toast.error(error.response?.data?.message || 'Gagal menolak permintaan');
     } finally {
       setActionLoading(false);
@@ -318,7 +322,7 @@ const TambahBahanQC: React.FC = () => {
                   QTY
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  NOTE
+                  NOTE QC
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   TANGGAL
@@ -360,7 +364,7 @@ const TambahBahanQC: React.FC = () => {
                       {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
-                      {item.status?.toLowerCase() === 'request qc' ? (
+                      {isActionable(item) ? (
                         <button
                           onClick={() => openRespond(item)}
                           className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
@@ -389,8 +393,8 @@ const TambahBahanQC: React.FC = () => {
                       {item.qty_tambah_bahan?.toLocaleString() || 0}
                     </td>
                     <td className="px-3 py-3 text-xs text-gray-900">
-                      <div className="max-w-xs" title={item.note}>
-                        {truncateText(item.note, 500)}
+                      <div className="max-w-xs" title={item.note_qc || ''}>
+                        {truncateText(item.note_qc, 500)}
                       </div>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
@@ -460,7 +464,7 @@ const TambahBahanQC: React.FC = () => {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-stroke">
               <h3 className="text-base font-bold text-gray-800">
-                Respon Tambah Bahan Persiapan
+                Respon Gudang - Tambah Bahan Persiapan
               </h3>
               <button
                 onClick={closeRespond}
@@ -486,6 +490,9 @@ const TambahBahanQC: React.FC = () => {
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     Note
                   </p>
+                  <p className="text-slate-600 text-[14px] dark:text-white">
+                    Note QC
+                  </p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-slate-600 text-[14px] dark:text-white">
@@ -501,21 +508,24 @@ const TambahBahanQC: React.FC = () => {
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     : {activeItem.note}
                   </p>
+                  <p className="text-slate-600 text-[14px] dark:text-white">
+                    : {activeItem.note_qc || '-'}
+                  </p>
                 </div>
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-black text-xs font-bold">Note QC</label>
+                <label className="text-black text-xs font-bold">
+                  Note Gudang
+                </label>
                 <textarea
-                  value={noteQc}
-                  onChange={(e) => setNoteQc(e.target.value)}
+                  value={noteGudang}
+                  onChange={(e) => setNoteGudang(e.target.value)}
                   rows={3}
-                  readOnly={activeItem.status?.toLowerCase() !== 'request qc'}
-                  placeholder="Catatan QC"
+                  readOnly={!isActionable(activeItem)}
+                  placeholder="Catatan Gudang"
                   className={`w-full px-3 py-2 border-2 border-stroke rounded-md text-xs ${
-                    activeItem.status?.toLowerCase() !== 'request qc'
-                      ? 'bg-gray-50'
-                      : ''
+                    !isActionable(activeItem) ? 'bg-gray-50' : ''
                   }`}
                 />
               </div>
@@ -530,9 +540,17 @@ const TambahBahanQC: React.FC = () => {
                   {statusLabel(activeItem.status)}
                 </span>
               </div>
+
+              {!isActionable(activeItem) && (
+                <p className="text-xs text-gray-500">
+                  {activeItem.status?.toLowerCase() === 'request qc'
+                    ? 'Menunggu approval QC terlebih dahulu.'
+                    : 'Permintaan ini sudah tidak dapat diproses lagi.'}
+                </p>
+              )}
             </div>
 
-            {activeItem.status?.toLowerCase() === 'request qc' && (
+            {isActionable(activeItem) && (
               <div className="flex gap-2 px-5 py-4 border-t border-stroke">
                 <button
                   onClick={handleReject}
@@ -557,4 +575,4 @@ const TambahBahanQC: React.FC = () => {
   );
 };
 
-export default TambahBahanQC;
+export default TambahBahanRM;

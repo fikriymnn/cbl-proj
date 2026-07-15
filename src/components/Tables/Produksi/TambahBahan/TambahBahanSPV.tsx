@@ -1,23 +1,29 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import Select, { SingleValue } from 'react-select';
 import { toast } from 'react-toastify';
 import {
   APIResponse,
+  JOData,
+  Option,
   StatusTiket,
+  TambahBahanCreatePayload,
   TambahBahanPersiapan,
-} from '../../Produksi/TambahBahan/types/Tambahbahan.types';
+} from './types/Tambahbahan.types';
 import {
   formatDateTime,
+  getSelectedMounting,
   getStatusColor,
   statusLabel,
   truncateText,
-} from '../../Produksi/TambahBahan/Tambahbahanutils';
+} from './Tambahbahanutils';
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
 type SortDirection = 'asc' | 'desc';
 
-const TambahBahanQC: React.FC = () => {
+const TambahBahanSPV: React.FC = () => {
+  // Table state
   const [list, setList] = useState<TambahBahanPersiapan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [statusTiket, setStatusTiket] = useState<StatusTiket>('incoming');
@@ -28,12 +34,19 @@ const TambahBahanQC: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
 
-  // Respond modal
-  const [activeItem, setActiveItem] = useState<TambahBahanPersiapan | null>(
-    null,
-  );
-  const [noteQc, setNoteQc] = useState<string>('');
-  const [actionLoading, setActionLoading] = useState<boolean>(false);
+  // Request modal state
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [joList, setJoList] = useState<JOData[]>([]);
+  const [selectedJoOption, setSelectedJoOption] = useState<Option | null>(null);
+  // Basic info (no_jo/customer/produk) comes from the list used to populate
+  // the select. Kertas (id_kertas/nama_kertas) always comes from a fresh
+  // "get by id" call so it reflects the JO's current mounting, never from
+  // whatever happened to be embedded in the list response.
+  const [selectedJODetail, setSelectedJODetail] = useState<JOData | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
+  const [qty, setQty] = useState<string>('');
+  const [note, setNote] = useState<string>('');
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -59,59 +72,115 @@ const TambahBahanQC: React.FC = () => {
     fetchList();
   }, [fetchList]);
 
-  const openRespond = (item: TambahBahanPersiapan) => {
-    setActiveItem(item);
-    setNoteQc(item.note_qc || '');
-  };
-
-  const closeRespond = () => {
-    setActiveItem(null);
-    setNoteQc('');
-  };
-
-  const handleApprove = async () => {
-    if (!activeItem) return;
+  const fetchJOList = useCallback(async () => {
     try {
-      setActionLoading(true);
-      await axios.put(
-        `${API_BASE}/gudangRM/tambahBahanPersiapan/approveQc/${activeItem.id}`,
-        { note_qc: noteQc },
-        { withCredentials: true },
-      );
-      toast.success('Permintaan berhasil disetujui QC');
-      closeRespond();
-      fetchList();
-    } catch (error: any) {
-      console.error('Error approving QC:', error);
-      toast.error(
-        error.response?.data?.message || 'Gagal menyetujui permintaan',
-      );
+      const res = await axios.get(`${API_BASE}/ppic/jo`, {
+        params: { status_proses: 'done' },
+        withCredentials: true,
+      });
+      setJoList(res.data.data || []);
+    } catch (error) {
+      console.error('Error fetching JO list:', error);
+      toast.error('Gagal mengambil data JO');
+    }
+  }, []);
+
+  const openModal = () => {
+    setShowModal(true);
+    setSelectedJoOption(null);
+    setSelectedJODetail(null);
+    setQty('');
+    setNote('');
+    if (joList.length === 0) fetchJOList();
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedJoOption(null);
+    setSelectedJODetail(null);
+    setQty('');
+    setNote('');
+  };
+
+  const selectedMounting = useMemo(
+    () => getSelectedMounting(selectedJODetail),
+    [selectedJODetail],
+  );
+
+  // Options for the searchable select - search happens inside the select
+  // itself (react-select's built-in filter), no separate search box needed.
+  const joOptions: Option[] = useMemo(
+    () =>
+      joList.map((jo) => ({
+        value: String(jo.id),
+        label: `${jo.no_jo} - ${jo.customer} - ${jo.produk}`,
+      })),
+    [joList],
+  );
+
+  // Once a JO is picked, fetch it by id to get its current jo_mounting ->
+  // id_kertas / nama_kertas, rather than trusting whatever the list call
+  // happened to embed.
+  const handleSelectJO = async (option: SingleValue<Option>) => {
+    setSelectedJoOption(option);
+    setSelectedJODetail(null);
+
+    if (!option) return;
+
+    setLoadingDetail(true);
+    try {
+      const res = await axios.get(`${API_BASE}/ppic/jo/${option.value}`, {
+        withCredentials: true,
+      });
+      setSelectedJODetail(res.data.data || res.data);
+    } catch (error) {
+      console.error('Error fetching JO detail:', error);
+      toast.error('Gagal mengambil detail JO');
     } finally {
-      setActionLoading(false);
+      setLoadingDetail(false);
     }
   };
 
-  const handleReject = async () => {
-    if (!activeItem) return;
-    if (!noteQc.trim()) {
-      toast.error('Mohon isi catatan alasan penolakan');
+  const handleSubmit = async () => {
+    if (!selectedJoOption || !selectedJODetail) {
+      toast.error('Mohon pilih JO terlebih dahulu');
       return;
     }
+    if (!selectedMounting) {
+      toast.error('JO ini tidak memiliki data kertas (mounting)');
+      return;
+    }
+    const qtyNum = Number(qty);
+    if (!qty || qtyNum <= 0) {
+      toast.error('Qty tambah bahan harus lebih dari 0');
+      return;
+    }
+    if (!note.trim()) {
+      toast.error('Mohon isi catatan / note');
+      return;
+    }
+
+    const payload: TambahBahanCreatePayload = {
+      id_jo: selectedJODetail.id,
+      id_kertas: selectedMounting.id_kertas,
+      qty_tambah_bahan: qtyNum,
+      note: note.trim(),
+    };
+
     try {
-      setActionLoading(true);
-      await axios.put(
-        `${API_BASE}/gudangRM/tambahBahanPersiapan/rejectQc/${activeItem.id}`,
-        { note_qc: noteQc },
-        { withCredentials: true },
-      );
-      toast.success('Permintaan ditolak');
-      closeRespond();
+      setSubmitting(true);
+      await axios.post(`${API_BASE}/gudangRM/tambahBahanPersiapan`, payload, {
+        withCredentials: true,
+      });
+      toast.success('Permintaan tambah bahan berhasil dikirim');
+      closeModal();
+      setStatusTiket('incoming');
       fetchList();
     } catch (error: any) {
-      console.error('Error rejecting QC:', error);
-      toast.error(error.response?.data?.message || 'Gagal menolak permintaan');
+      console.error('Error submitting tambah bahan:', error);
+      toast.error(error.response?.data?.message || 'Gagal mengirim permintaan');
     } finally {
-      setActionLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -223,7 +292,7 @@ const TambahBahanQC: React.FC = () => {
 
   return (
     <div className="">
-      {/* Header */}
+      {/* Header Section */}
       <div className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div className="flex flex-col sm:flex-row gap-2 flex-1">
@@ -267,6 +336,13 @@ const TambahBahanQC: React.FC = () => {
               )}
             </div>
           </div>
+
+          <button
+            onClick={openModal}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+          >
+            + Request Tambah Bahan
+          </button>
         </div>
 
         {/* Status Tiket Tabs */}
@@ -300,9 +376,6 @@ const TambahBahanQC: React.FC = () => {
                   NO
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ACTION
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   <button
                     onClick={() => handleSort('no_jo')}
                     className="flex items-center hover:text-gray-700 focus:outline-none"
@@ -315,13 +388,23 @@ const TambahBahanQC: React.FC = () => {
                   KERTAS
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  QTY
+                  <button
+                    onClick={() => handleSort('qty_tambah_bahan')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    QTY {getSortIcon('qty_tambah_bahan')}
+                  </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   NOTE
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  TANGGAL
+                  <button
+                    onClick={() => handleSort('createdAt')}
+                    className="flex items-center hover:text-gray-700 focus:outline-none"
+                  >
+                    TANGGAL {getSortIcon('createdAt')}
+                  </button>
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   STATUS
@@ -331,7 +414,7 @@ const TambahBahanQC: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-3 py-8 text-center">
+                  <td colSpan={8} className="px-3 py-8 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                       <p className="mt-2 text-sm text-gray-600">
@@ -342,7 +425,7 @@ const TambahBahanQC: React.FC = () => {
                 </tr>
               ) : pagedData.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-3 py-8 text-center">
+                  <td colSpan={8} className="px-3 py-8 text-center">
                     <p className="text-sm text-gray-500">
                       {searchTerm
                         ? 'Tidak ada data yang sesuai dengan pencarian'
@@ -358,23 +441,6 @@ const TambahBahanQC: React.FC = () => {
                   >
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
                       {(page - 1) * limit + index + 1}
-                    </td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
-                      {item.status?.toLowerCase() === 'request qc' ? (
-                        <button
-                          onClick={() => openRespond(item)}
-                          className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
-                        >
-                          Respon
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => openRespond(item)}
-                          className="text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-xs transition-colors"
-                        >
-                          Detail
-                        </button>
-                      )}
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">
                       {item.no_jo || '-'}
@@ -454,16 +520,16 @@ const TambahBahanQC: React.FC = () => {
         </div>
       </div>
 
-      {/* Respond / Detail Modal */}
-      {activeItem && (
+      {/* Request Modal */}
+      {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-stroke">
               <h3 className="text-base font-bold text-gray-800">
-                Respon Tambah Bahan Persiapan
+                Request Tambah Bahan Persiapan
               </h3>
               <button
-                onClick={closeRespond}
+                onClick={closeModal}
                 className="text-gray-400 hover:text-gray-600 text-xl leading-none"
               >
                 &times;
@@ -471,85 +537,115 @@ const TambahBahanQC: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-3 px-5 py-4">
-              <div className="grid grid-cols-3 py-1">
-                <div>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Nomor JO
-                  </p>
+              <div className="flex flex-col gap-1">
+                <label className="text-black text-xs font-bold">
+                  Job Order
+                </label>
+                <Select<Option>
+                  value={selectedJoOption}
+                  onChange={handleSelectJO}
+                  options={joOptions}
+                  isClearable
+                  isSearchable
+                  placeholder="Cari No JO / Customer / Produk..."
+                  noOptionsMessage={() => 'JO tidak ditemukan'}
+                  classNamePrefix="jo-select"
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      minHeight: '36px',
+                      fontSize: '12px',
+                      borderWidth: 2,
+                      borderColor: state.isFocused ? '#3b82f6' : '#e2e8f0',
+                      boxShadow: 'none',
+                      '&:hover': { borderColor: '#3b82f6' },
+                    }),
+                    option: (base) => ({ ...base, fontSize: '12px' }),
+                    menu: (base) => ({ ...base, fontSize: '12px', zIndex: 20 }),
+                  }}
+                />
+              </div>
 
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Kertas
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Qty
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Note
-                  </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">
+                    Customer
+                  </label>
+                  <input
+                    readOnly
+                    value={selectedJODetail?.customer || ''}
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
+                  />
                 </div>
-                <div className="col-span-2">
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activeItem.no_jo}
-                  </p>
-
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activeItem.nama_kertas}
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activeItem.qty_tambah_bahan}
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activeItem.note}
-                  </p>
+                <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">Produk</label>
+                  <input
+                    readOnly
+                    value={selectedJODetail?.produk || ''}
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
+                  />
                 </div>
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-black text-xs font-bold">Note QC</label>
-                <textarea
-                  value={noteQc}
-                  onChange={(e) => setNoteQc(e.target.value)}
-                  rows={3}
-                  readOnly={activeItem.status?.toLowerCase() !== 'request qc'}
-                  placeholder="Catatan QC"
-                  className={`w-full px-3 py-2 border-2 border-stroke rounded-md text-xs ${
-                    activeItem.status?.toLowerCase() !== 'request qc'
-                      ? 'bg-gray-50'
-                      : ''
-                  }`}
+                <label className="text-black text-xs font-bold">
+                  Kertas (otomatis dari JO)
+                </label>
+                <input
+                  readOnly
+                  value={selectedMounting?.nama_kertas || ''}
+                  placeholder={
+                    loadingDetail
+                      ? 'Memuat data kertas...'
+                      : selectedJoOption
+                      ? 'JO ini tidak memiliki data kertas'
+                      : 'Pilih JO terlebih dahulu'
+                  }
+                  className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-600">Status:</span>
-                <span
-                  className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                    activeItem.status,
-                  )}`}
-                >
-                  {statusLabel(activeItem.status)}
-                </span>
+              <div className="flex flex-col gap-1">
+                <label className="text-black text-xs font-bold">
+                  Qty Tambah Bahan
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={qty}
+                  onChange={(e) => setQty(e.target.value)}
+                  placeholder="0"
+                  className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-black text-xs font-bold">Note</label>
+                <textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  rows={3}
+                  placeholder="Catatan tambah bahan"
+                  className="w-full px-3 py-2 border-2 border-stroke rounded-md text-xs"
+                />
               </div>
             </div>
 
-            {activeItem.status?.toLowerCase() === 'request qc' && (
-              <div className="flex gap-2 px-5 py-4 border-t border-stroke">
-                <button
-                  onClick={handleReject}
-                  disabled={actionLoading}
-                  className="flex-1 h-9 text-center text-white text-xs font-bold rounded-md bg-red-500 hover:bg-red-600 disabled:opacity-50"
-                >
-                  {actionLoading ? 'Memproses...' : 'Reject'}
-                </button>
-                <button
-                  onClick={handleApprove}
-                  disabled={actionLoading}
-                  className="flex-1 h-9 text-center text-white text-xs font-bold rounded-md bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                >
-                  {actionLoading ? 'Memproses...' : 'Approve'}
-                </button>
-              </div>
-            )}
+            <div className="flex gap-2 px-5 py-4 border-t border-stroke">
+              <button
+                onClick={closeModal}
+                className="flex-1 h-9 text-center text-gray-700 text-xs font-bold rounded-md bg-gray-100 hover:bg-gray-200"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="flex-1 h-9 text-center text-white text-xs font-bold rounded-md bg-[#0065DE] hover:bg-blue-700 disabled:opacity-50"
+              >
+                {submitting ? 'Mengirim...' : 'Kirim Request'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -557,4 +653,4 @@ const TambahBahanQC: React.FC = () => {
   );
 };
 
-export default TambahBahanQC;
+export default TambahBahanSPV;

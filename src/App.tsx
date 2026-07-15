@@ -273,6 +273,8 @@ import MasterVendor from './pages/MasterData/Marketing/MasterVendor';
 import POApprovalFinacePage from './pages/Finance/POApprovalFinancePage';
 import POApprovalPurchasePage from './pages/Purchasing/POApprovalPurhcasePage';
 import DraftPOPage from './pages/Purchasing/DraftPOPage';
+import TambahBahanSPVPage from './pages/Produksi/TambahBahanSPVPage';
+import TambahBahanRMPage from './pages/GudangRM/TambahBahanRMPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1681,7 +1683,14 @@ function App() {
             </P>
           }
         />
-
+        <Route
+          path="/production/tambah-bahan-spv"
+          element={
+            <P>
+              <TambahBahanSPVPage />
+            </P>
+          }
+        />
         {/* ============== MARKETING ROUTES ============== */}
         <Route
           path="/marketing/calculation/create"
@@ -2564,7 +2573,15 @@ function App() {
             </P>
           }
         />
-
+        {/* ============== Gudang RM ROUTES ============== */}
+        <Route
+          path="/gudang-rm/tambah-bahan-produksi"
+          element={
+            <P>
+              <TambahBahanRMPage />
+            </P>
+          }
+        />
         {/* ============== PRINT ROUTES ============== */}
         <Route
           path="/print/label"
