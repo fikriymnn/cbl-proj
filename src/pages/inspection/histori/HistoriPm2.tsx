@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import DefaultLayout from '../../../layout/DefaultLayout';
+import { useEffect, useState } from 'react';
 
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -7,14 +6,6 @@ import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
 import convertTimeStampToDate from '../../../utils/convertDate';
 import convertTimeStampToDateTime from '../../../utils/converDateTime';
-
-function convertTimeStampToTime(timestamp: string | null) {
-  if (!timestamp) return '-';
-  return new Date(timestamp).toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 function HistoriPm2() {
   const [page, setPage] = useState(1);
