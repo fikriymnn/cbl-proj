@@ -12,15 +12,26 @@ import {
   statusLabel,
   truncateText,
 } from '../../Produksi/TambahBahan/Tambahbahanutils';
+import TambahBahanDetailModal, {
+  TambahBahanDetailType,
+} from '../../Produksi/TambahBahan/TambahBahanDetailModal';
+import { TambahBahanPemakaian } from '../../Produksi/LKH/InputLKH/Tambahbahan.types';
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
 type SortDirection = 'asc' | 'desc';
+type TicketType = 'persiapan' | 'pemakaian';
 
-// PPIC only needs visibility (CC) into the tambah bahan flow - no approve /
-// reject actions here, just the request + note_qc / note_gudang trail.
+// PPIC only needs visibility (CC) into the tambah bahan flow - detail only,
+// for both persiapan and pemakaian tickets.
 const TambahBahanPPIC: React.FC = () => {
-  const [list, setList] = useState<TambahBahanPersiapan[]>([]);
+  const [ticketType, setTicketType] = useState<TicketType>('pemakaian');
+  const [listPersiapan, setListPersiapan] = useState<TambahBahanPersiapan[]>(
+    [],
+  );
+  const [listPemakaian, setListPemakaian] = useState<TambahBahanPemakaian[]>(
+    [],
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [statusTiket, setStatusTiket] = useState<StatusTiket>('incoming');
   const [searchInput, setSearchInput] = useState<string>('');
@@ -29,45 +40,64 @@ const TambahBahanPPIC: React.FC = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
-  const [detailItem, setDetailItem] = useState<TambahBahanPersiapan | null>(
-    null,
-  );
+
+  const [detailId, setDetailId] = useState<number | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [detailType, setDetailType] =
+    useState<TambahBahanDetailType>('pemakaian');
 
   const fetchList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get<APIResponse<TambahBahanPersiapan[]>>(
-        `${API_BASE}/gudangRM/tambahBahanPersiapan`,
-        {
-          params: { status_tiket: statusTiket },
-          withCredentials: true,
-        },
-      );
-      setList(res.data.data || []);
+      const endpoint =
+        ticketType === 'persiapan'
+          ? `${API_BASE}/gudangRM/tambahBahanPersiapan`
+          : `${API_BASE}/gudangRM/tambahBahanPemakaian`;
+      const res = await axios.get<APIResponse<any[]>>(endpoint, {
+        params: { status_tiket: statusTiket },
+        withCredentials: true,
+      });
+      if (ticketType === 'persiapan') setListPersiapan(res.data.data || []);
+      else setListPemakaian(res.data.data || []);
     } catch (error) {
       console.error('Error fetching tambah bahan list:', error);
       toast.error('Gagal mengambil data tambah bahan');
-      setList([]);
+      if (ticketType === 'persiapan') setListPersiapan([]);
+      else setListPemakaian([]);
     } finally {
       setLoading(false);
     }
-  }, [statusTiket]);
+  }, [statusTiket, ticketType]);
 
   useEffect(() => {
     fetchList();
   }, [fetchList]);
 
+  useEffect(() => {
+    setPage(1);
+    setSearchInput('');
+    setSearchTerm('');
+  }, [ticketType]);
+
+  const openDetail = (id: number) => {
+    setDetailType(ticketType);
+    setDetailId(id);
+    setShowDetail(true);
+  };
+  const closeDetail = () => {
+    setShowDetail(false);
+    setDetailId(null);
+  };
+
   const handleSearch = () => {
     setSearchTerm(searchInput);
     setPage(1);
   };
-
   const handleClearSearch = () => {
     setSearchInput('');
     setSearchTerm('');
     setPage(1);
   };
-
   const handleSort = (field: string) => {
     if (sortKey === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -76,7 +106,6 @@ const TambahBahanPPIC: React.FC = () => {
       setSortDirection('asc');
     }
   };
-
   const getSortIcon = (key: string) => {
     if (sortKey !== key) {
       return (
@@ -126,9 +155,11 @@ const TambahBahanPPIC: React.FC = () => {
     );
   };
 
+  const rawList = ticketType === 'persiapan' ? listPersiapan : listPemakaian;
+
   const filteredData = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    let data = [...list];
+    let data = [...rawList] as any[];
     if (term) {
       data = data.filter(
         (item) =>
@@ -139,8 +170,8 @@ const TambahBahanPPIC: React.FC = () => {
       );
     }
     data.sort((a, b) => {
-      const aValue = (a as any)[sortKey];
-      const bValue = (b as any)[sortKey];
+      const aValue = a[sortKey];
+      const bValue = b[sortKey];
       if (aValue === null || aValue === undefined) return 1;
       if (bValue === null || bValue === undefined) return -1;
       if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -153,7 +184,7 @@ const TambahBahanPPIC: React.FC = () => {
       return 0;
     });
     return data;
-  }, [list, searchTerm, sortKey, sortDirection]);
+  }, [rawList, searchTerm, sortKey, sortDirection]);
 
   const totalPages = Math.max(1, Math.ceil(filteredData.length / limit));
   const pagedData = filteredData.slice((page - 1) * limit, page * limit);
@@ -211,7 +242,27 @@ const TambahBahanPPIC: React.FC = () => {
           </div>
         </div>
 
-        {/* Status Tiket Tabs */}
+        <div className="flex gap-2 mb-2">
+          {(
+            [
+              { key: 'pemakaian', label: 'Pemakaian' },
+              { key: 'persiapan', label: 'Persiapan' },
+            ] as { key: TicketType; label: string }[]
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setTicketType(tab.key)}
+              className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+                ticketType === tab.key
+                  ? 'bg-cyan-700 text-white'
+                  : 'bg-cyan-50 text-cyan-700 hover:bg-cyan-100'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         <div className="flex gap-2">
           {(['incoming', 'history'] as StatusTiket[]).map((tab) => (
             <button
@@ -249,7 +300,6 @@ const TambahBahanPPIC: React.FC = () => {
                     NO JO {getSortIcon('no_jo')}
                   </button>
                 </th>
-
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   KERTAS
                 </th>
@@ -290,7 +340,7 @@ const TambahBahanPPIC: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                pagedData.map((item, index) => (
+                pagedData.map((item: any, index) => (
                   <tr
                     key={item.id}
                     className="hover:bg-gray-50 transition-colors"
@@ -301,7 +351,6 @@ const TambahBahanPPIC: React.FC = () => {
                     <td className="px-3 py-3 whitespace-nowrap text-xs font-medium text-gray-900">
                       {item.no_jo || '-'}
                     </td>
-
                     <td className="px-3 py-3 text-xs text-gray-900">
                       <div className="max-w-xs" title={item.nama_kertas}>
                         {truncateText(item.nama_kertas, 500)}
@@ -324,7 +373,7 @@ const TambahBahanPPIC: React.FC = () => {
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs">
                       <button
-                        onClick={() => setDetailItem(item)}
+                        onClick={() => openDetail(item.id)}
                         className="text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-xs transition-colors"
                       >
                         Detail
@@ -379,100 +428,12 @@ const TambahBahanPPIC: React.FC = () => {
         </div>
       </div>
 
-      {/* Read-only Detail Modal */}
-      {detailItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-stroke">
-              <h3 className="text-base font-bold text-gray-800">
-                Detail Tambah Bahan Persiapan
-              </h3>
-              <button
-                onClick={() => setDetailItem(null)}
-                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
-              >
-                &times;
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3 px-5 py-4">
-              <div className="grid grid-cols-3 py-1">
-                <div>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Nomor JO
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Customer
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Produk
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Kertas
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Qty
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    Note
-                  </p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {detailItem.no_jo}
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {detailItem.customer}
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {detailItem.produk}
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {detailItem.nama_kertas}
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {detailItem.qty_tambah_bahan}
-                  </p>
-                  <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {detailItem.note}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-black text-xs font-bold">Note QC</label>
-                <input
-                  readOnly
-                  value={detailItem.note_qc || '-'}
-                  className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
-                />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-black text-xs font-bold">
-                  Note Gudang
-                </label>
-                <input
-                  readOnly
-                  value={detailItem.note_gudang || '-'}
-                  className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
-                />
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-600">Status:</span>
-                <span
-                  className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(
-                    detailItem.status,
-                  )}`}
-                >
-                  {statusLabel(detailItem.status)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <TambahBahanDetailModal
+        show={showDetail}
+        type={detailType}
+        id={detailId}
+        onClose={closeDetail}
+      />
     </div>
   );
 };

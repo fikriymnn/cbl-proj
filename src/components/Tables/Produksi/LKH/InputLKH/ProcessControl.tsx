@@ -11,6 +11,7 @@ import {
 import { FIXED_PROCESSES } from './constants';
 import { selectStyles } from './styles';
 import WasteModal from './WasteModal';
+import TambahBahanModal from './TambahBahanModal';
 
 interface ProcessControlProps {
   selectedTahapan: number | null;
@@ -18,6 +19,7 @@ interface ProcessControlProps {
   loading: boolean;
   hasActiveProcess: boolean;
   isSortirProcess: boolean;
+  isCetakProcess: boolean;
   kodeProduksiByProcess: { [key: string]: KodeProduksi[] };
   wasteKendalaList: WasteData[];
   activeProcesses: { [key: string]: LKHProses };
@@ -46,6 +48,7 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
   loading,
   hasActiveProcess,
   isSortirProcess,
+  isCetakProcess,
   kodeProduksiByProcess,
   wasteKendalaList,
   activeProcesses,
@@ -59,6 +62,7 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
   onFinish,
 }) => {
   const [showWasteModal, setShowWasteModal] = useState(false);
+  const [showTambahBahanModal, setShowTambahBahanModal] = useState(false);
 
   const isProcessActive = (processName: string) => {
     return !!activeProcesses[processName];
@@ -131,6 +135,29 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
                   />
                 </svg>
                 Set Waste
+              </button>
+            )}
+            {/* Request Tambah Bahan Button - only visible on CETAK tahapan */}
+            {isCetakProcess && (
+              <button
+                onClick={() => setShowTambahBahanModal(true)}
+                disabled={loading || !selectedJO}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors shadow-sm"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Request Tambah Bahan
               </button>
             )}
           </div>
@@ -376,6 +403,21 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
         userId={userId}
         wasteKendalaList={wasteKendalaList}
         onClose={() => setShowWasteModal(false)}
+      />
+
+      {/* Tambah Bahan Modal */}
+      <TambahBahanModal
+        show={showTambahBahanModal}
+        idJo={selectedJO?.id ?? null}
+        noJo={selectedJO?.no_jo}
+        kendalaKodeOptions={(kodeProduksiByProcess['Kendala'] || []).map(
+          (k) => ({
+            id: k.id,
+            kode: k.kode,
+            deskripsi: k.deskripsi,
+          }),
+        )}
+        onClose={() => setShowTambahBahanModal(false)}
       />
     </>
   );

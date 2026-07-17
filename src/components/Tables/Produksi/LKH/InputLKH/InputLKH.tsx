@@ -309,6 +309,11 @@ const InputLKH: React.FC = () => {
     return selectedTahapanName.toLowerCase().includes('sortir');
   }, [selectedTahapanName]);
 
+  // Check if current tahapan is CETAK
+  const isCetakProcess = useCallback(() => {
+    return selectedTahapanName.toLowerCase().includes('cetak');
+  }, [selectedTahapanName]);
+
   // Handle JO Selection
   const handleJOSelect = useCallback(
     async (option: Option | null) => {
@@ -1034,6 +1039,7 @@ const InputLKH: React.FC = () => {
               loading={loading}
               hasActiveProcess={hasActiveProcess()}
               isSortirProcess={isSortirProcess()}
+              isCetakProcess={isCetakProcess()}
               kodeProduksiByProcess={kodeProduksiByProcess}
               wasteKendalaList={wasteKendalaList}
               activeProcesses={activeProcesses}

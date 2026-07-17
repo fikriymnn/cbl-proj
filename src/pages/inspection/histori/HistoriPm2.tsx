@@ -2,23 +2,21 @@ import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../../layout/DefaultLayout';
 
 import { Link } from 'react-router-dom';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import axios from 'axios';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
 import convertTimeStampToDate from '../../../utils/convertDate';
+import convertTimeStampToDateTime from '../../../utils/converDateTime';
+
+function convertTimeStampToTime(timestamp: string | null) {
+  if (!timestamp) return '-';
+  return new Date(timestamp).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 function HistoriPm2() {
-  const [showModal2, setShowModal2] = useState(false);
-  const [showModal4, setShowModal4] = useState(false);
-
-  const openModal2 = () => setShowModal2(true);
-  const closeModal2 = () => setShowModal2(false);
-  const openModal4 = () => setShowModal4(true);
-  const closeModal4 = () => setShowModal4(false);
-
   const [page, setPage] = useState(1);
 
   const [pm2, setPm2] = useState<any>();
@@ -105,6 +103,7 @@ function HistoriPm2() {
                       return (
                         <option
                           value={data.id}
+                          key={index}
                           className="text-body dark:text-bodydark"
                         >
                           {data.nama_mesin}
@@ -175,10 +174,14 @@ function HistoriPm2() {
           </div>
           <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
             <div className="w-2 h-full "></div>
-            <section className="grid grid-cols-6 w-full py-4  font-semibold text-[14px]">
+            <section className="grid grid-cols-8 w-full py-4  font-semibold text-[14px]">
               <p className="">Machine Name</p>
 
               <p className="sm:block hidden ">Tanggal</p>
+
+              <p className="sm:block hidden ">Waktu Mulai</p>
+
+              <p className="sm:block hidden ">Waktu Selesai</p>
 
               <p className="sm:block hidden col-span-2">Inspektor</p>
 
@@ -189,6 +192,8 @@ function HistoriPm2() {
           </div>
           {pm2?.data.map((data: any, index: number) => {
             const tgl = convertTimeStampToDate(data.tgl);
+            const waktuMulai = convertTimeStampToDateTime(data.waktu_mulai);
+            const waktuSelesai = convertTimeStampToDateTime(data.waktu_selesai);
 
             const inspectionPointsTotal = data.inspection_point_pm2s;
 
@@ -198,69 +203,62 @@ function HistoriPm2() {
 
             const count = inspectionPoints.length;
             return (
-              <>
-                <section
-                  key={index}
-                  className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
-                >
-                  <div
-                    className={`w-2 h-full sticky left-0 z-20 ${
-                      data.mesin.bagian_mesin == 'printing'
-                        ? 'bg-green-600'
-                        : data.mesin.bagian_mesin == 'water base'
-                        ? 'bg-yellow-600'
-                        : data.mesin.bagian_mesin == 'pond'
-                        ? 'bg-violet-900'
-                        : data.mesin.bagian_mesin == 'finishing'
-                        ? 'bg-red-900'
-                        : ''
-                    }`}
-                  ></div>
+              <section
+                key={index}
+                className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
+              >
+                <div
+                  className={`w-2 h-full sticky left-0 z-20 ${
+                    data.mesin.bagian_mesin == 'printing'
+                      ? 'bg-green-600'
+                      : data.mesin.bagian_mesin == 'water base'
+                      ? 'bg-yellow-600'
+                      : data.mesin.bagian_mesin == 'pond'
+                      ? 'bg-violet-900'
+                      : data.mesin.bagian_mesin == 'finishing'
+                      ? 'bg-red-900'
+                      : ''
+                  }`}
+                ></div>
 
-                  <div className=" w-full h-full flex flex-col justify-center relative">
-                    <div className="ps-7 w-full grid md:grid-cols-6 grid-cols-3">
-                      <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
-                        <p className="">{data.nama_mesin}</p>
-                      </div>
+                <div className=" w-full h-full flex flex-col justify-center relative">
+                  <div className="ps-7 w-full grid md:grid-cols-8 grid-cols-3">
+                    <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
+                      <p className="">{data.nama_mesin}</p>
+                    </div>
 
-                      <div className="sm:block flex-col justify-center hidden items-center my-auto">
-                        <p className="">{tgl}</p>
-                      </div>
-                      <div className="sm:block flex-col justify-center hidden items-center my-auto col-span-2">
-                        <p className="">
-                          {data.inspector != null ? data.inspector.nama : '-'}
-                        </p>
-                      </div>
-                      <div className=" flex-col justify-center  items-center my-auto">
-                        <p className="">
-                          {count} / {countTotal}
-                        </p>
-                      </div>
-                      <div className="flex justify-center">
-                        <>
-                          {data.waktu_selesai != null ? (
-                            <Link
-                              to={`/maintenance/preventive/pm2/form/${data.id}`}
-                              className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                            >
-                              DETAIL
-                            </Link>
-                          ) : null}
-                          {/* <Link
-                            to="/maintenance/inspection/pm_1_form"
-                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${
-                              brand.action !== 'begin mtc' && ''
-                            }`} // Dynamic class assignment
-                            onClick={openModal4}
-                          >
-                            DETAIL
-                          </Link> */}
-                        </>
-                      </div>
+                    <div className="sm:block flex-col justify-center hidden items-center my-auto">
+                      <p className="">{tgl}</p>
+                    </div>
+                    <div className="sm:block flex-col justify-center hidden items-center my-auto">
+                      <p className="">{waktuMulai}</p>
+                    </div>
+                    <div className="sm:block flex-col justify-center hidden items-center my-auto">
+                      <p className="">{waktuSelesai}</p>
+                    </div>
+                    <div className="sm:block flex-col justify-center hidden items-center my-auto col-span-2">
+                      <p className="">
+                        {data.inspector != null ? data.inspector.nama : '-'}
+                      </p>
+                    </div>
+                    <div className=" flex-col justify-center  items-center my-auto">
+                      <p className="">
+                        {count} / {countTotal}
+                      </p>
+                    </div>
+                    <div className="flex justify-center">
+                      {data.waktu_selesai != null ? (
+                        <Link
+                          to={`/maintenance/preventive/pm2/form/${data.id}`}
+                          className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`}
+                        >
+                          DETAIL
+                        </Link>
+                      ) : null}
                     </div>
                   </div>
-                </section>
-              </>
+                </div>
+              </section>
             );
           })}
         </div>
