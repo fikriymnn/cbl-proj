@@ -9,7 +9,12 @@ import {
   TambahBahanDefectItem,
   JOData,
 } from './Tambahbahan.types';
-import { getSelectedMounting } from '../../TambahBahan/Tambahbahanutils';
+import {
+  getSelectedMounting,
+  getIsiFromMounting,
+  lpToDruk,
+  drukToLp,
+} from '../../TambahBahan/Tambahbahanutils';
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
@@ -24,7 +29,8 @@ interface DefectLine {
   id_kode_produksi: number;
   kode: string;
   deskripsi: string;
-  qty_tambah_bahan: number | '';
+  qty_tambah_bahan_lp: number | '';
+  qty_tambah_bahan_druk: number | '';
 }
 
 type ModalTab = 'pemakaian' | 'persiapan';
@@ -92,7 +98,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     }
   }, [idJo]);
 
-  // ---- PERSIAPAN tab state (unchanged behavior) ----
+  // ---- PERSIAPAN tab state (qty split LP/Druk, Druk is the source of
+  // truth against the approved qty_tambah_bahan_druk) ----
   const [persiapanList, setPersiapanList] = useState<
     TambahBahanPersiapanRecord[]
   >([]);
@@ -102,7 +109,10 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
   >({});
 
   const getSisa = (item: TambahBahanPersiapanRecord) =>
-    Math.max(0, item.qty_tambah_bahan - (item.qty_pakai_tambah_bahan || 0));
+    Math.max(
+      0,
+      item.qty_tambah_bahan_druk - (item.qty_pakai_tambah_bahan_druk || 0),
+    );
 
   const fetchPersiapanList = useCallback(async () => {
     if (!idJo) return;
@@ -137,11 +147,23 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     const lines = selections[item.id]?.lines || [];
     const used = lines.reduce(
       (s, l) =>
-        l.uid === excludeUid ? s : s + (Number(l.qty_tambah_bahan) || 0),
+        l.uid === excludeUid ? s : s + (Number(l.qty_tambah_bahan_druk) || 0),
       0,
     );
     return Math.max(0, sisa - used);
   };
+
+  // ---- PEMAKAIAN tab state (used to derive `isi` for LP<->Druk
+  // conversion on both tabs) ----
+  const [joDetail, setJoDetail] = useState<JOData | null>(null);
+  const [loadingJoDetail, setLoadingJoDetail] = useState(false);
+  const [pemakaianNote, setPemakaianNote] = useState('');
+  const [pemakaianQtyLp, setPemakaianQtyLp] = useState<number | ''>('');
+  const [pemakaianQtyDruk, setPemakaianQtyDruk] = useState<number | ''>('');
+  const [pemakaianLines, setPemakaianLines] = useState<DefectLine[]>([]);
+
+  const selectedMounting = getSelectedMounting(joDetail);
+  const isi = getIsiFromMounting(selectedMounting);
 
   const addLine = (itemId: number, prefill?: KendalaHistoryItem) => {
     setSelections((prev) => {
@@ -156,7 +178,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
               id_kode_produksi: prefill?.id_kode_produksi || 0,
               kode: prefill?.kode || '',
               deskripsi: prefill?.deskripsi || '',
-              qty_tambah_bahan: '',
+              qty_tambah_bahan_lp: '',
+              qty_tambah_bahan_druk: '',
             },
           ],
         },
@@ -165,23 +188,32 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     setExpandedId(itemId);
   };
 
+  // Druk is the field the user edits directly (capped against sisa, which
+  // is tracked in Druk units); LP is derived automatically from `isi`,
+  // mirroring the top-level pemakaian LP/Druk conversion below.
   const updateLine = (
     item: TambahBahanPersiapanRecord,
     uid: string,
-    patch: Partial<DefectLine>,
+    patch: Partial<
+      Pick<
+        DefectLine,
+        'id_kode_produksi' | 'kode' | 'deskripsi' | 'qty_tambah_bahan_druk'
+      >
+    >,
   ) => {
     setSelections((prev) => ({
       ...prev,
       [item.id]: {
         lines: (prev[item.id]?.lines || []).map((l) => {
           if (l.uid !== uid) return l;
-          const next = { ...l, ...patch };
-          if (patch.qty_tambah_bahan !== undefined) {
+          const next: DefectLine = { ...l, ...patch };
+          if (patch.qty_tambah_bahan_druk !== undefined) {
             const cap = remainingFor(item, uid);
-            const raw = patch.qty_tambah_bahan;
-            if (raw !== '' && Number(raw) > cap) {
-              next.qty_tambah_bahan = cap;
-            }
+            const raw = patch.qty_tambah_bahan_druk;
+            const drukVal = raw !== '' && Number(raw) > cap ? cap : raw;
+            next.qty_tambah_bahan_druk = drukVal;
+            next.qty_tambah_bahan_lp =
+              drukVal !== '' && isi > 0 ? drukToLp(Number(drukVal), isi) : '';
           }
           return next;
         }),
@@ -202,14 +234,23 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     });
   };
 
-  // ---- PEMAKAIAN tab state (new) ----
-  const [joDetail, setJoDetail] = useState<JOData | null>(null);
-  const [loadingJoDetail, setLoadingJoDetail] = useState(false);
-  const [pemakaianNote, setPemakaianNote] = useState('');
-  const [pemakaianQtyTotal, setPemakaianQtyTotal] = useState<number | ''>('');
-  const [pemakaianLines, setPemakaianLines] = useState<DefectLine[]>([]);
+  const handlePemakaianLpChange = (value: number | '') => {
+    setPemakaianQtyLp(value);
+    if (value !== '' && isi > 0) {
+      setPemakaianQtyDruk(lpToDruk(Number(value), isi));
+    } else if (value === '') {
+      setPemakaianQtyDruk('');
+    }
+  };
 
-  const selectedMounting = getSelectedMounting(joDetail);
+  const handlePemakaianDrukChange = (value: number | '') => {
+    setPemakaianQtyDruk(value);
+    if (value !== '' && isi > 0) {
+      setPemakaianQtyLp(drukToLp(Number(value), isi));
+    } else if (value === '') {
+      setPemakaianQtyLp('');
+    }
+  };
 
   const fetchJoDetail = useCallback(async () => {
     if (!idJo) return;
@@ -235,7 +276,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
         id_kode_produksi: prefill?.id_kode_produksi || 0,
         kode: prefill?.kode || '',
         deskripsi: prefill?.deskripsi || '',
-        qty_tambah_bahan: '',
+        qty_tambah_bahan_lp: '',
+        qty_tambah_bahan_druk: '',
       },
     ]);
   };
@@ -252,7 +294,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
 
   const resetPemakaianForm = () => {
     setPemakaianNote('');
-    setPemakaianQtyTotal('');
+    setPemakaianQtyLp('');
+    setPemakaianQtyDruk('');
     setPemakaianLines([]);
   };
 
@@ -277,10 +320,12 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     onClose();
   };
 
-  // ---- submit: persiapan (unchanged) ----
+  // ---- submit: persiapan (LP/Druk split defect lines) ----
   const handleSubmitPersiapan = async () => {
     const entries = Object.entries(selections).filter(([, v]) =>
-      v.lines.some((l) => Number(l.qty_tambah_bahan) > 0 && l.id_kode_produksi),
+      v.lines.some(
+        (l) => Number(l.qty_tambah_bahan_druk) > 0 && l.id_kode_produksi,
+      ),
     );
 
     if (entries.length === 0) {
@@ -300,7 +345,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
       if (!item) continue;
       const sisa = getSisa(item);
       const total = v.lines.reduce(
-        (s, l) => s + (Number(l.qty_tambah_bahan) || 0),
+        (s, l) => s + (Number(l.qty_tambah_bahan_druk) || 0),
         0,
       );
       if (total > sisa) {
@@ -316,7 +361,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
         entries.map(([id, v]) => {
           const item = persiapanList.find((p) => p.id === Number(id));
           const lines = v.lines.filter(
-            (l) => Number(l.qty_tambah_bahan) > 0 && l.id_kode_produksi,
+            (l) => Number(l.qty_tambah_bahan_druk) > 0 && l.id_kode_produksi,
           );
 
           const payload: TambahBahanPemakaianSubmitPayload = {
@@ -324,7 +369,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
               id_kode_produksi: l.id_kode_produksi,
               kode: l.kode,
               deskripsi: l.deskripsi,
-              qty_tambah_bahan: Number(l.qty_tambah_bahan),
+              qty_tambah_bahan_lp: Number(l.qty_tambah_bahan_lp) || 0,
+              qty_tambah_bahan_druk: Number(l.qty_tambah_bahan_druk),
             })),
           };
           return axios.put(
@@ -350,7 +396,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     }
   };
 
-  // ---- submit: pemakaian (new) ----
+  // ---- submit: pemakaian (LP/Druk split) ----
   const handleSubmitPemakaian = async () => {
     if (!idJo) {
       toast.error('JO tidak ditemukan');
@@ -360,9 +406,10 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
       toast.error('JO ini tidak memiliki data kertas (mounting)');
       return;
     }
-    const qtyNum = Number(pemakaianQtyTotal);
-    if (!pemakaianQtyTotal || qtyNum <= 0) {
-      toast.error('Qty tambah bahan harus lebih dari 0');
+    const lpNum = Number(pemakaianQtyLp);
+    const drukNum = Number(pemakaianQtyDruk);
+    if (!pemakaianQtyLp || lpNum <= 0 || !pemakaianQtyDruk || drukNum <= 0) {
+      toast.error('Qty LP dan Druk harus lebih dari 0');
       return;
     }
     if (!pemakaianNote.trim()) {
@@ -371,20 +418,22 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     }
 
     const validLines = pemakaianLines.filter(
-      (l) => l.id_kode_produksi && Number(l.qty_tambah_bahan) > 0,
+      (l) => l.id_kode_produksi && Number(l.qty_tambah_bahan_druk) > 0,
     );
 
     const defects: TambahBahanDefectItem[] = validLines.map((l) => ({
       id_kode_produksi: l.id_kode_produksi,
       kode: l.kode,
       deskripsi: l.deskripsi,
-      qty_tambah_bahan: Number(l.qty_tambah_bahan),
+      qty_tambah_bahan_lp: Number(l.qty_tambah_bahan_lp) || 0,
+      qty_tambah_bahan_druk: Number(l.qty_tambah_bahan_druk),
     }));
 
     const payload: TambahBahanPemakaianCreatePayload = {
       id_jo: idJo,
       id_kertas: selectedMounting.id_kertas,
-      qty_tambah_bahan: qtyNum,
+      qty_tambah_bahan_lp: lpNum,
+      qty_tambah_bahan_druk: drukNum,
       note: pemakaianNote.trim(),
       tambah_bahan_defect: defects,
     };
@@ -425,7 +474,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
   const totalSelectedItems = Object.keys(selections).length;
   const canSubmitPemakaian =
     !!selectedMounting &&
-    Number(pemakaianQtyTotal) > 0 &&
+    Number(pemakaianQtyLp) > 0 &&
+    Number(pemakaianQtyDruk) > 0 &&
     pemakaianNote.trim() !== '';
 
   return (
@@ -475,32 +525,48 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {activeTab === 'pemakaian' && (
             <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-black text-xs font-bold">
+                  Kertas (otomatis dari JO)
+                </label>
+                <input
+                  readOnly
+                  value={selectedMounting?.nama_kertas || ''}
+                  placeholder={
+                    loadingJoDetail
+                      ? 'Memuat data kertas...'
+                      : 'JO ini tidak memiliki data kertas'
+                  }
+                  className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-black text-xs font-bold">
-                    Kertas (otomatis dari JO)
-                  </label>
+                  <label className="text-black text-xs font-bold">Qty LP</label>
                   <input
-                    readOnly
-                    value={selectedMounting?.nama_kertas || ''}
-                    placeholder={
-                      loadingJoDetail
-                        ? 'Memuat data kertas...'
-                        : 'JO ini tidak memiliki data kertas'
+                    type="number"
+                    min={1}
+                    value={pemakaianQtyLp}
+                    onChange={(e) =>
+                      handlePemakaianLpChange(
+                        e.target.value === '' ? '' : Number(e.target.value),
+                      )
                     }
-                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
+                    placeholder="0"
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-black text-xs font-bold">
-                    Qty Tambah Bahan
+                    Qty Druk
                   </label>
                   <input
                     type="number"
                     min={1}
-                    value={pemakaianQtyTotal}
+                    value={pemakaianQtyDruk}
                     onChange={(e) =>
-                      setPemakaianQtyTotal(
+                      handlePemakaianDrukChange(
                         e.target.value === '' ? '' : Number(e.target.value),
                       )
                     }
@@ -509,6 +575,12 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                   />
                 </div>
               </div>
+              {selectedMounting && isi === 0 && (
+                <p className="text-xs text-amber-600">
+                  JO ini tidak memiliki data isi cetak — konversi LP/Druk
+                  otomatis tidak tersedia, isi manual keduanya.
+                </p>
+              )}
 
               <div className="flex flex-col gap-1">
                 <label className="text-black text-xs font-bold">Note</label>
@@ -588,15 +660,28 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                     <input
                       type="number"
                       min={1}
-                      placeholder="Qty"
-                      value={line.qty_tambah_bahan}
-                      onChange={(e) =>
+                      placeholder="Qty Druk"
+                      value={line.qty_tambah_bahan_druk}
+                      onChange={(e) => {
+                        const val =
+                          e.target.value === '' ? '' : Number(e.target.value);
                         updatePemakaianLine(line.uid, {
-                          qty_tambah_bahan:
-                            e.target.value === '' ? '' : Number(e.target.value),
-                        })
-                      }
+                          qty_tambah_bahan_druk: val,
+                          qty_tambah_bahan_lp:
+                            val !== '' && isi > 0
+                              ? drukToLp(Number(val), isi)
+                              : '',
+                        });
+                      }}
                       className="w-full sm:w-24 h-9 px-2 border border-gray-300 rounded-md text-xs bg-white"
+                    />
+                    <input
+                      type="number"
+                      readOnly
+                      placeholder="Qty LP"
+                      value={line.qty_tambah_bahan_lp}
+                      title="Dihitung otomatis dari Qty Druk"
+                      className="w-full sm:w-24 h-9 px-2 border border-gray-200 rounded-md text-xs bg-gray-50"
                     />
                     <button
                       onClick={() => removePemakaianLine(line.uid)}
@@ -630,17 +715,17 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                     const sisa = getSisa(item);
                     const lines = selections[item.id]?.lines || [];
                     const used = lines.reduce(
-                      (s, l) => s + (Number(l.qty_tambah_bahan) || 0),
+                      (s, l) => s + (Number(l.qty_tambah_bahan_druk) || 0),
                       0,
                     );
                     const remaining = sisa - used;
                     const isExpanded = expandedId === item.id;
                     const progressPct =
-                      item.qty_tambah_bahan > 0
+                      item.qty_tambah_bahan_druk > 0
                         ? Math.min(
                             100,
-                            (item.qty_pakai_tambah_bahan /
-                              item.qty_tambah_bahan) *
+                            ((item.qty_pakai_tambah_bahan_druk || 0) /
+                              item.qty_tambah_bahan_druk) *
                               100,
                           )
                         : 0;
@@ -674,17 +759,25 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                               <span>
                                 Request:{' '}
                                 <b className="text-gray-900">
-                                  {item.qty_tambah_bahan.toLocaleString()}
+                                  {item.qty_tambah_bahan_lp?.toLocaleString()}{' '}
+                                  LP /{' '}
+                                  {item.qty_tambah_bahan_druk.toLocaleString()}{' '}
+                                  Druk
                                 </b>
                               </span>
                               <span>
                                 Terpakai:{' '}
                                 <b className="text-gray-900">
-                                  {item.qty_pakai_tambah_bahan.toLocaleString()}
+                                  {item.qty_pakai_tambah_bahan_lp?.toLocaleString() ||
+                                    0}{' '}
+                                  LP /{' '}
+                                  {item.qty_pakai_tambah_bahan_druk?.toLocaleString() ||
+                                    0}{' '}
+                                  Druk
                                 </b>
                               </span>
                               <span>
-                                Sisa:{' '}
+                                Sisa (Druk):{' '}
                                 <b className="text-green-600">
                                   {sisa.toLocaleString()}
                                 </b>
@@ -776,19 +869,26 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                                     type="number"
                                     min={1}
                                     max={cap}
-                                    placeholder="Qty"
-                                    value={line.qty_tambah_bahan}
+                                    placeholder="Qty Druk"
+                                    value={line.qty_tambah_bahan_druk}
                                     onChange={(e) => {
                                       const val =
                                         e.target.value === ''
                                           ? ''
                                           : Number(e.target.value);
                                       updateLine(item, line.uid, {
-                                        qty_tambah_bahan:
-                                          val !== '' && val > cap ? cap : val,
+                                        qty_tambah_bahan_druk: val,
                                       });
                                     }}
                                     className="w-full sm:w-24 h-9 px-2 border border-gray-300 rounded-md text-xs"
+                                  />
+                                  <input
+                                    type="number"
+                                    readOnly
+                                    placeholder="Qty LP"
+                                    value={line.qty_tambah_bahan_lp}
+                                    title="Dihitung otomatis dari Qty Druk"
+                                    className="w-full sm:w-24 h-9 px-2 border border-gray-200 rounded-md text-xs bg-gray-50"
                                   />
                                   <button
                                     onClick={() =>
@@ -818,7 +918,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                                     : 'text-gray-500'
                                 }`}
                               >
-                                Sisa setelah dipakai:{' '}
+                                Sisa setelah dipakai (Druk):{' '}
                                 {remaining.toLocaleString()}
                               </span>
                             </div>

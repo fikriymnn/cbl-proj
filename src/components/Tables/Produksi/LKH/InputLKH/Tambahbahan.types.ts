@@ -57,9 +57,11 @@ export interface TambahBahanPersiapan {
   produk?: string;
   id_kertas: number;
   nama_kertas?: string;
-  qty_tambah_bahan: number;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
   note: string;
   note_qc?: string | null;
+  note_qc_pemakaian?: string | null; // NEW
   note_gudang?: string | null;
   status: TambahBahanStatus | string;
   status_tiket?: StatusTiket | string;
@@ -67,7 +69,6 @@ export interface TambahBahanPersiapan {
   createdAt: string;
   updatedAt?: string;
 }
-
 export interface TambahBahanCreatePayload {
   id_jo: number;
   id_kertas: number;
@@ -91,61 +92,13 @@ export interface APIResponse<T> {
 }
 
 // ---- Tambah Bahan "Pemakaian" (used from InputLKH, Cetak tahapan) ----
-export interface TambahBahanPersiapanRecord {
-  id: number;
-  id_jo: number;
-  id_kertas: number;
-  id_user_gudang: number | null;
-  id_user_qc: number | null;
-  id_user_request: number;
-  is_active: boolean;
-  nama_kertas: string;
-  no_jo: string;
-  note: string;
-  note_gudang: string | null;
-  note_qc: string | null;
-  qty_pakai_tambah_bahan: number;
-  qty_tambah_bahan: number;
-  status: TambahBahanStatus | string;
-  status_tiket: StatusTiket | string;
-  tgl_request: string;
-  createdAt: string;
-  updatedAt: string;
-}
-export interface TambahBahanPemakaianItem {
-  id: number;
-  id_jo: number;
-  no_jo?: string;
-  id_kertas: number;
-  nama_kertas: string;
-  qty_tambah_bahan: number; // originally requested/approved qty
-  note_qc?: string | null;
-  qty_terpakai: number;
-  qty_sisa: number;
-}
-
+// (Definitions consolidated later in file to avoid duplicate declarations)
 export interface TambahBahanDefectItem {
   id_kode_produksi: number;
   kode: string;
   deskripsi: string;
-  qty_tambah_bahan: number;
-}
-
-export interface TambahBahanPemakaianSubmitPayload {
-  tambah_bahan_defect: TambahBahanDefectItem[];
-}
-
-export interface KendalaHistoryItem {
-  id_kode_produksi: number;
-  kode: string;
-  deskripsi: string;
-  frequency: number;
-}
-export interface TambahBahanDefectItem {
-  id_kode_produksi: number;
-  kode: string;
-  deskripsi: string;
-  qty_tambah_bahan: number;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
 }
 
 export interface TambahBahanPemakaianSubmitPayload {
@@ -166,7 +119,8 @@ export interface TambahBahanPemakaianDefect {
   id_kode_produksi: number;
   kode: string;
   deskripsi: string;
-  qty_tambah_bahan: number;
+  qty_tambah_bahan_druk: number;
+  qty_tambah_bahan_lp: number;
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -197,7 +151,8 @@ export interface TambahBahanPemakaian {
 export interface TambahBahanPemakaianCreatePayload {
   id_jo: number;
   id_kertas: number;
-  qty_tambah_bahan: number;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
   note: string;
   tambah_bahan_defect: TambahBahanDefectItem[];
 }
@@ -212,6 +167,178 @@ export interface TambahBahanPemakaianQcRejectPayload {
 export interface TambahBahanPemakaianGudangApprovePayload {
   note_gudang: string;
   qty_tambah_bahan_gudang: number;
+}
+export interface TambahBahanPemakaianGudangRejectPayload {
+  note_gudang: string;
+}
+
+// ---- Shared "get by id" detail shapes (persiapan + pemakaian) ----
+
+export interface TambahBahanPersiapanUsageDefect {
+  id: number;
+  id_tambah_bahan_persiapan: number;
+  id_kode_produksi: number;
+  kode: string;
+  deskripsi: string;
+  qty_tambah_bahan: number;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TambahBahanPersiapanDetail extends TambahBahanPersiapan {
+  qty_pakai_tambah_bahan_lp?: number;
+  qty_pakai_tambah_bahan_druk?: number;
+  job_order?: JobOrderDetailRef;
+  detail_kertas?: DetailKertasRef;
+  tgl_request?: string;
+  user_request?: UserRef;
+  user_qc?: UserRef;
+  user_gudang?: UserRef;
+  tambah_bahan_persiapan_defect?: TambahBahanPersiapanUsageDefect[];
+}
+
+export interface TambahBahanPemakaianDetail extends TambahBahanPemakaian {
+  job_order?: JobOrderDetailRef;
+  detail_kertas?: DetailKertasRef;
+  user_request?: UserRef;
+  user_qc?: UserRef;
+  user_gudang?: UserRef;
+  tambah_bahan_pemakaian_defect?: TambahBahanPemakaianDefect[];
+}
+// Shared types for the "Tambah Bahan Persiapan" flow
+// Endpoints (base assumed: import.meta.env.VITE_API_LINK):
+//   POST   /gudangRM/tambahBahanPersiapan
+//   PUT    /gudangRM/tambahBahanPersiapan/approveQc/:id     { note_qc }
+//   PUT    /gudangRM/tambahBahanPersiapan/rejectQc/:id      { note_qc }
+//   PUT    /gudangRM/tambahBahanPersiapan/approveGudang/:id { note_gudang }
+//   PUT    /gudangRM/tambahBahanPersiapan/rejectGudang/:id  { note_gudang }
+//   GET    /gudangRM/tambahBahanPemakaian?id_jo=<id>
+//   POST   /gudangRM/tambahBahanPemakaian                   { ...create }
+//   PUT    /gudangRM/tambahBahanPemakaian/approveQc/:id     { note_qc }
+//   PUT    /gudangRM/tambahBahanPemakaian/rejectQc/:id      { note_qc }
+//   PUT    /gudangRM/tambahBahanPemakaian/approveGudang/:id { note_gudang }
+//   PUT    /gudangRM/tambahBahanPemakaian/rejectGudang/:id  { note_gudang }
+//   PUT    /gudangRM/tambahBahanPersiapan/pakaiTambahBahan/:id { tambah_bahan_defect }
+//
+// NOTE: field names for the GET-list responses are inferred from context;
+// adjust to match your real API response if they differ.
+
+export interface TambahBahanPersiapanRecord {
+  id: number;
+  id_jo: number;
+  id_kertas: number;
+  id_user_gudang: number | null;
+  id_user_qc: number | null;
+  id_user_qc_pemakaian?: number | null; // NEW
+  id_user_request: number;
+  is_active: boolean;
+  nama_kertas: string;
+  no_jo: string;
+  note: string;
+  note_gudang: string | null;
+  note_qc: string | null;
+  note_qc_pemakaian?: string | null; // NEW
+  qty_pakai_tambah_bahan_druk?: any;
+  qty_pakai_tambah_bahan_lp?: any;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
+  status: TambahBahanStatus | string;
+  status_tiket: StatusTiket | string;
+  tgl_request: string;
+  tgl_qc?: string | null; // NEW
+  tgl_gudang?: string | null; // NEW
+  tgl_pakai?: string | null; // NEW
+  tgl_qc_pemakaian?: string | null; // NEW
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TambahBahanPemakaianItem {
+  id: number;
+  id_jo: number;
+  no_jo?: string;
+  id_kertas: number;
+  nama_kertas: string;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
+  note_qc?: string | null;
+  qty_terpakai: number;
+  qty_sisa: number;
+}
+
+export interface TambahBahanDefectItem {
+  id_kode_produksi: number;
+  kode: string;
+  deskripsi: string;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
+}
+
+export interface TambahBahanPemakaianSubmitPayload {
+  tambah_bahan_defect: TambahBahanDefectItem[];
+}
+
+export interface KendalaHistoryItem {
+  id_kode_produksi: number;
+  kode: string;
+  deskripsi: string;
+  frequency: number;
+}
+
+// ---- Tambah Bahan "Pemakaian" (new ticket type, request → QC → Gudang) ----
+
+export interface TambahBahanPemakaianDefect {
+  id: number;
+  id_tambah_bahan_pemakaian: number;
+  id_kode_produksi: number;
+  kode: string;
+  deskripsi: string;
+  qty_tambah_bahan: number;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TambahBahanPemakaian {
+  id: number;
+  id_jo: number;
+  id_kertas: number;
+  no_jo?: string;
+  customer?: string;
+  produk?: string;
+  nama_kertas?: string;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
+  note: string;
+  note_qc?: string | null;
+  note_gudang?: string | null;
+  status: TambahBahanStatus | string;
+  status_tiket?: StatusTiket | string;
+  tgl_request?: string;
+  createdAt: string;
+  updatedAt?: string;
+  tambah_bahan_pemakaian_defect?: TambahBahanPemakaianDefect[];
+}
+
+export interface TambahBahanPemakaianCreatePayload {
+  id_jo: number;
+  id_kertas: number;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
+  note: string;
+  tambah_bahan_defect: TambahBahanDefectItem[];
+}
+
+// QC and Gudang no longer set qty — note only.
+export interface TambahBahanPemakaianQcApprovePayload {
+  note_qc: string;
+}
+export interface TambahBahanPemakaianQcRejectPayload {
+  note_qc: string;
+}
+export interface TambahBahanPemakaianGudangApprovePayload {
+  note_gudang: string;
 }
 export interface TambahBahanPemakaianGudangRejectPayload {
   note_gudang: string;

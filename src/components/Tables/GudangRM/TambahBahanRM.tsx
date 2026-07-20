@@ -52,7 +52,6 @@ const TambahBahanRM: React.FC = () => {
     useState<TambahBahanPemakaianDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [notePemakaianGudang, setNotePemakaianGudang] = useState<string>('');
-  const [qtyGudang, setQtyGudang] = useState<string>('');
 
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
@@ -110,14 +109,6 @@ const TambahBahanRM: React.FC = () => {
   const openRespondPemakaian = async (item: TambahBahanPemakaian) => {
     setActivePemakaian(item);
     setNotePemakaianGudang(item.note_gudang || '');
-    setQtyGudang(
-      String(
-        item.qty_tambah_bahan_gudang ??
-          item.qty_tambah_bahan_qc ??
-          item.qty_tambah_bahan ??
-          '',
-      ),
-    );
     setActivePemakaianDetail(null);
     setLoadingDetail(true);
     try {
@@ -138,7 +129,6 @@ const TambahBahanRM: React.FC = () => {
     setActivePemakaian(null);
     setActivePemakaianDetail(null);
     setNotePemakaianGudang('');
-    setQtyGudang('');
   };
 
   // ---- Persiapan actions ----
@@ -191,16 +181,11 @@ const TambahBahanRM: React.FC = () => {
   // ---- Pemakaian actions ----
   const handleApprovePemakaian = async () => {
     if (!activePemakaian) return;
-    const qtyNum = Number(qtyGudang);
-    if (!qtyGudang || qtyNum <= 0) {
-      toast.error('Qty approve Gudang harus lebih dari 0');
-      return;
-    }
     try {
       setActionLoading(true);
       await axios.put(
         `${API_BASE}/gudangRM/tambahBahanPemakaian/approveGudang/${activePemakaian.id}`,
-        { note_gudang: notePemakaianGudang, qty_tambah_bahan_gudang: qtyNum },
+        { note_gudang: notePemakaianGudang },
         { withCredentials: true },
       );
       toast.success('Permintaan berhasil disetujui Gudang');
@@ -534,7 +519,12 @@ const TambahBahanRM: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                        {item.qty_tambah_bahan?.toLocaleString() || 0}
+                        {item.qty_tambah_bahan_lp?.toLocaleString() || 0} LP
+                        <br />
+                        <span className="text-gray-400 text-[10px]">
+                          {item.qty_tambah_bahan_druk?.toLocaleString() || 0}{' '}
+                          Druk
+                        </span>
                       </td>
                       <td className="px-3 py-3 text-xs text-gray-900">
                         <div className="max-w-xs" title={item.note_qc || ''}>
@@ -629,7 +619,10 @@ const TambahBahanRM: React.FC = () => {
                     Kertas
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    Qty
+                    Qty LP
+                  </p>
+                  <p className="text-slate-600 text-[14px] dark:text-white">
+                    Qty Druk
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     Note
@@ -646,7 +639,10 @@ const TambahBahanRM: React.FC = () => {
                     : {activePersiapan.nama_kertas}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activePersiapan.qty_tambah_bahan}
+                    : {activePersiapan.qty_tambah_bahan_lp}
+                  </p>
+                  <p className="text-slate-600 text-[14px] dark:text-white">
+                    : {activePersiapan.qty_tambah_bahan_druk}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     : {activePersiapan.note}
@@ -741,10 +737,10 @@ const TambahBahanRM: React.FC = () => {
                     Kertas
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    Qty Request
+                    Qty LP
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    Qty Approve QC
+                    Qty Druk
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     Note
@@ -761,10 +757,10 @@ const TambahBahanRM: React.FC = () => {
                     : {activePemakaian.nama_kertas}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activePemakaian.qty_tambah_bahan}
+                    : {activePemakaian.qty_tambah_bahan_lp}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activePemakaian.qty_tambah_bahan_qc ?? '-'}
+                    : {activePemakaian.qty_tambah_bahan_druk}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     : {activePemakaian.note}
@@ -791,28 +787,14 @@ const TambahBahanRM: React.FC = () => {
                     {activePemakaianDetail!.tambah_bahan_pemakaian_defect!.map(
                       (d) => (
                         <p key={d.id} className="text-xs text-gray-700">
-                          - {d.kode} ~ {d.deskripsi} ~ Qty {d.qty_tambah_bahan}
+                          - {d.kode} ~ {d.deskripsi} ~ Qty{' '}
+                          {d.qty_tambah_bahan_druk} Druk /{' '}
+                          {d.qty_tambah_bahan_lp} LP
                         </p>
                       ),
                     )}
                   </div>
                 )}
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-black text-xs font-bold">
-                  Qty Approve Gudang
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={qtyGudang}
-                  onChange={(e) => setQtyGudang(e.target.value)}
-                  readOnly={!isActionablePemakaian(activePemakaian)}
-                  className={`w-full h-9 px-3 border-2 border-stroke rounded-md text-xs ${
-                    !isActionablePemakaian(activePemakaian) ? 'bg-gray-50' : ''
-                  }`}
-                />
               </div>
 
               <div className="flex flex-col gap-1">
@@ -844,7 +826,9 @@ const TambahBahanRM: React.FC = () => {
 
               {!isActionablePemakaian(activePemakaian) && (
                 <p className="text-xs text-gray-500">
-                  {activePemakaian.status?.toLowerCase() === 'request qc'
+                  {activePemakaian.status?.toLowerCase() === 'request qc' ||
+                  activePemakaian.status?.toLowerCase() ===
+                    'request qc pemakaian'
                     ? 'Menunggu approval QC terlebih dahulu.'
                     : 'Permintaan ini sudah tidak dapat diproses lagi.'}
                 </p>

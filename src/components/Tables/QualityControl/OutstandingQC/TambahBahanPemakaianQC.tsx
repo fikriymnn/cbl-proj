@@ -39,7 +39,6 @@ const TambahBahanPemakaianQC: React.FC = () => {
     useState<TambahBahanPemakaianDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [noteQc, setNoteQc] = useState<string>('');
-  const [qtyQc, setQtyQc] = useState<string>('');
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   const fetchList = useCallback(async () => {
@@ -67,12 +66,11 @@ const TambahBahanPemakaianQC: React.FC = () => {
   }, [fetchList]);
 
   const isActionable = (item: TambahBahanPemakaian) =>
-    item.status?.toLowerCase() === 'request qc';
+    ['request qc', 'request qc pemakaian'].includes(item.status?.toLowerCase());
 
   const openRespond = async (item: TambahBahanPemakaian) => {
     setActiveItem(item);
     setNoteQc(item.note_qc || '');
-    setQtyQc(String(item.qty_tambah_bahan_qc ?? item.qty_tambah_bahan ?? ''));
     setActiveDetail(null);
     setLoadingDetail(true);
     try {
@@ -80,6 +78,7 @@ const TambahBahanPemakaianQC: React.FC = () => {
         `${API_BASE}/gudangRM/tambahBahanPemakaian/${item.id}`,
         { withCredentials: true },
       );
+      console.log(res);
       setActiveDetail(res.data.data || res.data);
     } catch (error) {
       console.error('Error fetching tambah bahan pemakaian detail:', error);
@@ -92,21 +91,15 @@ const TambahBahanPemakaianQC: React.FC = () => {
     setActiveItem(null);
     setActiveDetail(null);
     setNoteQc('');
-    setQtyQc('');
   };
 
   const handleApprove = async () => {
     if (!activeItem) return;
-    const qtyNum = Number(qtyQc);
-    if (!qtyQc || qtyNum <= 0) {
-      toast.error('Qty approve QC harus lebih dari 0');
-      return;
-    }
     try {
       setActionLoading(true);
       await axios.put(
         `${API_BASE}/gudangRM/tambahBahanPemakaian/approveQc/${activeItem.id}`,
-        { note_qc: noteQc, qty_tambah_bahan_qc: qtyNum },
+        { note_qc: noteQc },
         { withCredentials: true },
       );
       toast.success('Permintaan berhasil disetujui QC');
@@ -414,7 +407,11 @@ const TambahBahanPemakaianQC: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      {item.qty_tambah_bahan?.toLocaleString() || 0}
+                      {item.qty_tambah_bahan_lp?.toLocaleString() || 0} LP
+                      <br />
+                      <span className="text-gray-400 text-[10px]">
+                        {item.qty_tambah_bahan_druk?.toLocaleString() || 0} Druk
+                      </span>
                     </td>
                     <td className="px-3 py-3 text-xs text-gray-900">
                       <div className="max-w-xs" title={item.note}>
@@ -508,7 +505,10 @@ const TambahBahanPemakaianQC: React.FC = () => {
                     Kertas
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    Qty
+                    Qty LP
+                  </p>
+                  <p className="text-slate-600 text-[14px] dark:text-white">
+                    Qty Druk
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     Note
@@ -522,7 +522,10 @@ const TambahBahanPemakaianQC: React.FC = () => {
                     : {activeItem.nama_kertas}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activeItem.qty_tambah_bahan}
+                    : {activeItem.qty_tambah_bahan_lp}
+                  </p>
+                  <p className="text-slate-600 text-[14px] dark:text-white">
+                    : {activeItem.qty_tambah_bahan_druk}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     : {activeItem.note}
@@ -545,27 +548,13 @@ const TambahBahanPemakaianQC: React.FC = () => {
                   <div className="flex flex-col gap-1">
                     {activeDetail!.tambah_bahan_pemakaian_defect!.map((d) => (
                       <p key={d.id} className="text-xs text-gray-700">
-                        - {d.kode} ~ {d.deskripsi} ~ Qty {d.qty_tambah_bahan}
+                        - {d.kode} ~ {d.deskripsi} ~ Qty{' '}
+                        {d.qty_tambah_bahan_druk} Druk / {d.qty_tambah_bahan_lp}{' '}
+                        LP
                       </p>
                     ))}
                   </div>
                 )}
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-black text-xs font-bold">
-                  Qty Approve QC
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={qtyQc}
-                  onChange={(e) => setQtyQc(e.target.value)}
-                  readOnly={!isActionable(activeItem)}
-                  className={`w-full h-9 px-3 border-2 border-stroke rounded-md text-xs ${
-                    !isActionable(activeItem) ? 'bg-gray-50' : ''
-                  }`}
-                />
               </div>
 
               <div className="flex flex-col gap-1">

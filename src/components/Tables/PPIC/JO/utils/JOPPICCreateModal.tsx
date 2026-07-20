@@ -14,6 +14,13 @@ import {
   MountingSection,
   ProductionDetailsSection,
 } from './JOPPICFormSections';
+import {
+  calculateInsheetFromQty as calcInsheet,
+  applyManualTotalInsheet,
+  deriveQtyFromInsheet,
+  emptyInsheetValues,
+  InsheetValues,
+} from './insheetCalculation';
 
 // Extend MountingData to include the JO mounting reference
 interface ExtendedMountingData extends MountingData {
@@ -142,21 +149,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     useState<Partial<JOFormData>>(initialFormData);
   const [ketentuanInsheetData, setKetentuanInsheetData] = useState<any[]>([]);
   const [prosesInsheetData, setProsesInsheetData] = useState<any[]>([]);
-  const [insheetValues, setInsheetValues] = useState<{
-    jumlah_druk: number;
-    jumlah_insheet_cetak: number;
-    jumlah_insheet_pond: number;
-    jumlah_insheet_finishing: number;
-    total_insheet: number;
-    jumlah_lp: number;
-  }>({
-    jumlah_druk: 0,
-    jumlah_insheet_cetak: 0,
-    jumlah_insheet_pond: 0,
-    jumlah_insheet_finishing: 0,
-    total_insheet: 0,
-    jumlah_lp: 0,
-  });
+  // ── Insheet values now come from the shared dual/single formula util ──────
+  const [insheetValues, setInsheetValues] = useState<InsheetValues>(
+    emptyInsheetValues(),
+  );
 
   // ── Auto-calculate qty ────────────────────────────────────────────────────
   useEffect(() => {
@@ -212,61 +208,20 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isOpen, hasUnsavedChanges]);
 
-  // ── calculateInsheetFromQty ───────────────────────────────────────────────
+  // ── calculateInsheetFromQty (delegates to shared util; picks single/dual) ──
   const calculateInsheetFromQty = (qty: number, mounting: MountingData) => {
-    const isi1 = mounting.ukuran_cetak_isi_1 || 0;
-    const isi2 = mounting.ukuran_cetak_isi_2 || 0;
-    const totalIsi = isi1 + isi2 || 1;
-    const bagian = mounting.ukuran_cetak_bagian_1 || 1;
-    const rawJumlahDruk = Math.ceil(qty / totalIsi);
-    const ketentuanInsheet = getKetentuanInsheet(rawJumlahDruk);
-    const ketentuanValue =
-      typeof ketentuanInsheet === 'object'
-        ? ketentuanInsheet.is_persentase
-          ? (rawJumlahDruk * ketentuanInsheet.nilai) / 100
-          : ketentuanInsheet.nilai
-        : ketentuanInsheet;
-
-    const totalInsheet = Math.ceil(ketentuanValue);
-    const totalPercentage = prosesInsheetData.reduce(
-      (sum, p) => sum + p.persentase_insheet,
-      0,
+    const result = calcInsheet(
+      qty,
+      mounting,
+      ketentuanInsheetData,
+      prosesInsheetData,
     );
-
-    let cetak = 0,
-      pond = 0,
-      finishing = 0;
-    prosesInsheetData.forEach((proses) => {
-      const value = Math.ceil(
-        (totalInsheet * proses.persentase_insheet) / totalPercentage,
-      );
-      const prosesName = proses.proses.toUpperCase();
-      if (prosesName === 'CETAK') cetak = value;
-      else if (
-        prosesName === 'POND' ||
-        prosesName === 'PONDS' ||
-        prosesName === 'PONDING'
-      )
-        pond = value;
-      else if (prosesName === 'FINISHING') finishing = value;
-    });
-
-    const displayedDruk = rawJumlahDruk + totalInsheet;
-    const jumlahLP = Math.ceil(displayedDruk / bagian);
-
     setFormData((prev) => ({
       ...prev,
-      qty_druk: displayedDruk,
-      qty_lp: jumlahLP,
+      qty_druk: result.jumlah_druk,
+      qty_lp: result.jumlah_lp,
     }));
-    setInsheetValues({
-      jumlah_druk: rawJumlahDruk,
-      jumlah_insheet_cetak: cetak,
-      jumlah_insheet_pond: pond,
-      jumlah_insheet_finishing: finishing,
-      total_insheet: totalInsheet,
-      jumlah_lp: jumlahLP,
-    });
+    setInsheetValues(result);
   };
 
   useEffect(() => {
@@ -391,14 +346,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       if (res.data.data && res.data.data.io_mounting) {
         setMountingData(res.data.data.io_mounting || []);
         setSelectedMounting(null);
-        setInsheetValues({
-          jumlah_druk: 0,
-          jumlah_insheet_cetak: 0,
-          jumlah_insheet_pond: 0,
-          jumlah_insheet_finishing: 0,
-          total_insheet: 0,
-          jumlah_lp: 0,
-        });
+        setInsheetValues(emptyInsheetValues());
       }
     } catch (error) {
       console.error('Error fetching mounting data:', error);
@@ -609,19 +557,82 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             console.log('Selected JO mounting:', selectedJoMounting);
             if (selectedJoMounting) {
               setSelectedMounting(selectedJoMounting.id_io_mounting);
-              setInsheetValues({
-                jumlah_druk:
-                  selectedJoMounting.jumlah_druk_cetak -
-                    selectedJoMounting.total_insheet || 0,
-                jumlah_insheet_cetak:
-                  selectedJoMounting.jumlah_insheet_cetak || 0,
-                jumlah_insheet_pond:
-                  selectedJoMounting.jumlah_insheet_pond || 0,
-                jumlah_insheet_finishing:
-                  selectedJoMounting.jumlah_insheet_finishing || 0,
-                total_insheet: selectedJoMounting.total_insheet || 0,
-                jumlah_lp: selectedJoMounting.jumlah_kertas || 0,
-              });
+              // Rebuild insheetValues from stored jo_mounting data.
+              // If jumlah_cetak_1/2 or tambahan_insheet_1/2 are present (dual
+              // mode was used when this JO was created/edited), reconstruct
+              // the split view; otherwise fall back to single-mode shape.
+              const mountingRef = mergedMountings.find(
+                (m: any) => m.id === selectedJoMounting.id_io_mounting,
+              );
+              const dual =
+                mountingRef &&
+                !!(
+                  mountingRef.ukuran_cetak_bagian_2 &&
+                  mountingRef.ukuran_cetak_isi_2
+                ) &&
+                (selectedJoMounting.jumlah_cetak_1 ||
+                  selectedJoMounting.jumlah_cetak_2);
+
+              if (dual) {
+                setInsheetValues({
+                  jumlah_druk:
+                    (selectedJoMounting.jumlah_cetak_1 || 0) +
+                    (selectedJoMounting.jumlah_cetak_2 || 0),
+                  jumlah_insheet_cetak:
+                    selectedJoMounting.jumlah_insheet_cetak || 0,
+                  jumlah_insheet_pond:
+                    selectedJoMounting.jumlah_insheet_pond || 0,
+                  jumlah_insheet_finishing:
+                    selectedJoMounting.jumlah_insheet_finishing || 0,
+                  total_insheet: selectedJoMounting.total_insheet || 0,
+                  jumlah_lp: selectedJoMounting.jumlah_kertas || 0,
+                  formula_mode: 'dual',
+                  qty_lp_raw:
+                    (selectedJoMounting.jumlah_kertas || 0) -
+                    Math.round(
+                      (selectedJoMounting.tambahan_insheet_1 || 0) /
+                        (mountingRef?.ukuran_cetak_bagian_1 || 1),
+                    ),
+                  split: {
+                    a: {
+                      bagian: mountingRef?.ukuran_cetak_bagian_1 || 1,
+                      isi: mountingRef?.ukuran_cetak_isi_1 || 0,
+                      jumlah_druk: selectedJoMounting.jumlah_cetak_1 || 0,
+                      total_insheet: selectedJoMounting.tambahan_insheet_1 || 0,
+                      cetak: 0,
+                      pond: 0,
+                      finishing: 0,
+                    },
+                    b: {
+                      bagian: mountingRef?.ukuran_cetak_bagian_2 || 0,
+                      isi: mountingRef?.ukuran_cetak_isi_2 || 0,
+                      jumlah_druk: selectedJoMounting.jumlah_cetak_2 || 0,
+                      total_insheet: selectedJoMounting.tambahan_insheet_2 || 0,
+                      cetak: 0,
+                      pond: 0,
+                      finishing: 0,
+                    },
+                  },
+                });
+              } else {
+                setInsheetValues({
+                  jumlah_druk:
+                    selectedJoMounting.jumlah_druk_cetak -
+                      selectedJoMounting.total_insheet || 0,
+                  jumlah_insheet_cetak:
+                    selectedJoMounting.jumlah_insheet_cetak || 0,
+                  jumlah_insheet_pond:
+                    selectedJoMounting.jumlah_insheet_pond || 0,
+                  jumlah_insheet_finishing:
+                    selectedJoMounting.jumlah_insheet_finishing || 0,
+                  total_insheet: selectedJoMounting.total_insheet || 0,
+                  jumlah_lp: selectedJoMounting.jumlah_kertas || 0,
+                  formula_mode: 'single',
+                  qty_lp_raw:
+                    selectedJoMounting.jumlah_druk_cetak -
+                      selectedJoMounting.total_insheet || 0,
+                });
+              }
             }
           }
         }
@@ -646,14 +657,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     setFormData({ ...initialFormData, tipe_jo: tipeJO });
     setSelectedMounting(null);
     setMountingData([]);
-    setInsheetValues({
-      jumlah_druk: 0,
-      jumlah_insheet_cetak: 0,
-      jumlah_insheet_pond: 0,
-      jumlah_insheet_finishing: 0,
-      total_insheet: 0,
-      jumlah_lp: 0,
-    });
+    setInsheetValues(emptyInsheetValues());
     setHasUnsavedChanges(false);
     setIsInitialEditLoad(false);
     setOriginalQty(0);
@@ -668,17 +672,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       resetForm();
     }
   }, [isOpen, editMode, editJOId]);
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  const getKetentuanInsheet = (rawDruk: number): any => {
-    const ketentuan = ketentuanInsheetData.find((k) => {
-      const batasBawah = parseInt(k.batas_bawah);
-      const batasAtas =
-        k.batas_atas === '-' ? Infinity : parseInt(k.batas_atas);
-      return rawDruk >= batasBawah && rawDruk <= batasAtas;
-    });
-    return ketentuan || { nilai: 0, is_persentase: false };
-  };
 
   // ── SO change handler ─────────────────────────────────────────────────────
   const handleSOChange = (soId: number) => {
@@ -764,14 +757,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         qty_druk: 0,
         qty_lp: 0,
       }));
-      setInsheetValues({
-        jumlah_druk: 0,
-        jumlah_insheet_cetak: 0,
-        jumlah_insheet_pond: 0,
-        jumlah_insheet_finishing: 0,
-        total_insheet: 0,
-        jumlah_lp: 0,
-      });
+      setInsheetValues(emptyInsheetValues());
     } else {
       setSelectedMounting(mountingId);
       const mounting = mountingData.find((m) => m.id === mountingId);
@@ -793,6 +779,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
+  // ── handleTotalInsheetChange (delegates to shared util; single or dual) ───
   const handleTotalInsheetChange = (totalValue: number) => {
     if (!selectedMounting) return;
     setIsManualInsheetEdit(true);
@@ -800,52 +787,21 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     const mounting = mountingData.find((m) => m.id === selectedMounting);
     if (!mounting) return;
 
-    const isi1 = mounting.ukuran_cetak_isi_1 || 0;
-    const isi2 = mounting.ukuran_cetak_isi_2 || 0;
-    const totalIsi = isi1 + isi2 || 1;
-    const bagian = mounting.ukuran_cetak_bagian_1 || 1;
-    const totalPercentage = prosesInsheetData.reduce(
-      (sum, p) => sum + p.persentase_insheet,
-      0,
+    const result = applyManualTotalInsheet(
+      totalValue,
+      mounting,
+      insheetValues,
+      prosesInsheetData,
     );
-
-    let cetak = 0,
-      pond = 0,
-      finishing = 0;
-    prosesInsheetData.forEach((proses) => {
-      const value = Math.ceil(
-        (totalValue * proses.persentase_insheet) / totalPercentage,
-      );
-      const prosesName = proses.proses.toUpperCase();
-      if (prosesName === 'CETAK') cetak = value;
-      else if (
-        prosesName === 'POND' ||
-        prosesName === 'PONDS' ||
-        prosesName === 'PONDING'
-      )
-        pond = value;
-      else if (prosesName === 'FINISHING') finishing = value;
-    });
-
-    const currentRawDruk = insheetValues.jumlah_druk;
-    const displayedDruk = currentRawDruk + totalValue;
-    const calculatedQty = displayedDruk * totalIsi;
-    const jumlahLP = Math.ceil(displayedDruk / bagian);
+    const newQty = deriveQtyFromInsheet(mounting, result);
 
     setFormData((prev) => ({
       ...prev,
-      qty: calculatedQty,
-      qty_druk: displayedDruk,
-      qty_lp: jumlahLP,
+      qty: newQty,
+      qty_druk: result.jumlah_druk,
+      qty_lp: result.jumlah_lp,
     }));
-    setInsheetValues({
-      jumlah_druk: currentRawDruk,
-      jumlah_insheet_cetak: cetak,
-      jumlah_insheet_pond: pond,
-      jumlah_insheet_finishing: finishing,
-      total_insheet: totalValue,
-      jumlah_lp: jumlahLP,
-    });
+    setInsheetValues(result);
 
     if (editMode) setHasQtyBeenEdited(true);
   };
@@ -892,8 +848,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       return;
     }
 
-    const displayedJumlahDruk =
-      insheetValues.jumlah_druk + insheetValues.total_insheet;
+    const displayedJumlahDruk = insheetValues.jumlah_druk;
 
     const joMountingData = mountingData.map(
       (mounting: ExtendedMountingData) => {
@@ -916,14 +871,15 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             ukuran_cetak_lebar_1: mounting.ukuran_cetak_lebar_1,
             ukuran_cetak_bagian_1: mounting.ukuran_cetak_bagian_1,
             ukuran_cetak_isi_1: mounting.ukuran_cetak_isi_1,
-            jumlah_cetak_1: 0,
-            tambahan_insheet_1: 0,
+            // ── per-side druk/insheet (populated when formula_mode === 'dual') ──
+            jumlah_cetak_1: insheetValues.split?.a.jumlah_druk ?? 0,
+            tambahan_insheet_1: insheetValues.split?.a.total_insheet ?? 0,
             ukuran_cetak_panjang_2: mounting.ukuran_cetak_panjang_2 || 0,
             ukuran_cetak_lebar_2: mounting.ukuran_cetak_lebar_2 || 0,
             ukuran_cetak_bagian_2: mounting.ukuran_cetak_bagian_2 || 0,
             ukuran_cetak_isi_2: mounting.ukuran_cetak_isi_2 || 0,
-            jumlah_cetak_2: 0,
-            tambahan_insheet_2: 0,
+            jumlah_cetak_2: insheetValues.split?.b.jumlah_druk ?? 0,
+            tambahan_insheet_2: insheetValues.split?.b.total_insheet ?? 0,
             jumlah_druk_cetak: displayedJumlahDruk,
             jumlah_insheet_cetak: insheetValues.jumlah_insheet_cetak,
             jumlah_druk_pond: displayedJumlahDruk,
@@ -1166,8 +1122,6 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                   <InsheetCalculationSection
                     mounting={selectedMountingData}
                     qty={formData.qty || 0}
-                    ketentuanInsheetData={ketentuanInsheetData}
-                    prosesInsheetData={prosesInsheetData}
                     insheetValues={insheetValues}
                     onTotalInsheetChange={handleTotalInsheetChange}
                   />

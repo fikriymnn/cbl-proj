@@ -13,6 +13,9 @@ import {
 import {
   formatDateTime,
   getSelectedMounting,
+  getIsiFromMounting,
+  lpToDruk,
+  drukToLp,
   getStatusColor,
   statusLabel,
   truncateText,
@@ -59,7 +62,8 @@ const TambahBahanSPV: React.FC = () => {
   const [selectedJoOption, setSelectedJoOption] = useState<Option | null>(null);
   const [selectedJODetail, setSelectedJODetail] = useState<JOData | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
-  const [qty, setQty] = useState<string>('');
+  const [qtyLp, setQtyLp] = useState<string>('');
+  const [qtyDruk, setQtyDruk] = useState<string>('');
   const [note, setNote] = useState<string>('');
 
   const fetchList = useCallback(async () => {
@@ -102,6 +106,7 @@ const TambahBahanSPV: React.FC = () => {
         withCredentials: true,
       });
       setJoList(res.data.data || []);
+      console.log('Fetched JO list:', res.data.data);
     } catch (error) {
       console.error('Error fetching JO list:', error);
       toast.error('Gagal mengambil data JO');
@@ -112,7 +117,8 @@ const TambahBahanSPV: React.FC = () => {
     setShowModal(true);
     setSelectedJoOption(null);
     setSelectedJODetail(null);
-    setQty('');
+    setQtyLp('');
+    setQtyDruk('');
     setNote('');
     if (joList.length === 0) fetchJOList();
   };
@@ -121,7 +127,8 @@ const TambahBahanSPV: React.FC = () => {
     setShowModal(false);
     setSelectedJoOption(null);
     setSelectedJODetail(null);
-    setQty('');
+    setQtyLp('');
+    setQtyDruk('');
     setNote('');
   };
 
@@ -129,6 +136,31 @@ const TambahBahanSPV: React.FC = () => {
     () => getSelectedMounting(selectedJODetail),
     [selectedJODetail],
   );
+
+  const isi = useMemo(
+    () => getIsiFromMounting(selectedMounting),
+    [selectedMounting],
+  );
+
+  const handleQtyLpChange = (value: string) => {
+    setQtyLp(value);
+    const n = Number(value);
+    if (value && !Number.isNaN(n) && isi > 0) {
+      setQtyDruk(String(lpToDruk(n, isi)));
+    } else if (!value) {
+      setQtyDruk('');
+    }
+  };
+
+  const handleQtyDrukChange = (value: string) => {
+    setQtyDruk(value);
+    const n = Number(value);
+    if (value && !Number.isNaN(n) && isi > 0) {
+      setQtyLp(String(drukToLp(n, isi)));
+    } else if (!value) {
+      setQtyLp('');
+    }
+  };
 
   const joOptions: Option[] = useMemo(
     () =>
@@ -142,6 +174,8 @@ const TambahBahanSPV: React.FC = () => {
   const handleSelectJO = async (option: SingleValue<Option>) => {
     setSelectedJoOption(option);
     setSelectedJODetail(null);
+    setQtyLp('');
+    setQtyDruk('');
     if (!option) return;
 
     setLoadingDetail(true);
@@ -149,6 +183,7 @@ const TambahBahanSPV: React.FC = () => {
       const res = await axios.get(`${API_BASE}/ppic/jo/${option.value}`, {
         withCredentials: true,
       });
+      console.log('Fetched JO detail:', res.data.data);
       setSelectedJODetail(res.data.data || res.data);
     } catch (error) {
       console.error('Error fetching JO detail:', error);
@@ -167,9 +202,10 @@ const TambahBahanSPV: React.FC = () => {
       toast.error('JO ini tidak memiliki data kertas (mounting)');
       return;
     }
-    const qtyNum = Number(qty);
-    if (!qty || qtyNum <= 0) {
-      toast.error('Qty tambah bahan harus lebih dari 0');
+    const qtyLpNum = Number(qtyLp);
+    const qtyDrukNum = Number(qtyDruk);
+    if (!qtyLp || qtyLpNum <= 0 || !qtyDruk || qtyDrukNum <= 0) {
+      toast.error('Qty LP dan Druk harus lebih dari 0');
       return;
     }
     if (!note.trim()) {
@@ -180,7 +216,8 @@ const TambahBahanSPV: React.FC = () => {
     const payload: TambahBahanCreatePayload = {
       id_jo: selectedJODetail.id,
       id_kertas: selectedMounting.id_kertas,
-      qty_tambah_bahan: qtyNum,
+      qty_tambah_bahan_lp: qtyLpNum,
+      qty_tambah_bahan_druk: qtyDrukNum,
       note: note.trim(),
     };
 
@@ -435,12 +472,7 @@ const TambahBahanSPV: React.FC = () => {
                   KERTAS
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <button
-                    onClick={() => handleSort('qty_tambah_bahan')}
-                    className="flex items-center hover:text-gray-700 focus:outline-none"
-                  >
-                    QTY {getSortIcon('qty_tambah_bahan')}
-                  </button>
+                  QTY
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   NOTE
@@ -500,12 +532,11 @@ const TambahBahanSPV: React.FC = () => {
                         {truncateText(item.nama_kertas, 500)}
                       </div>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900 flex flex-col gap-1">
-                      {item.qty_tambah_bahan?.toLocaleString() || 0}
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                      {item.qty_tambah_bahan_lp?.toLocaleString() || 0} LP
+                      <br />
                       <span className="text-gray-400 text-[10px]">
-                        QC: {item.qty_tambah_bahan_qc?.toLocaleString() || 0} |{' '}
-                        Gudang:{' '}
-                        {item.qty_tambah_bahan_gudang?.toLocaleString() || 0}
+                        {item.qty_tambah_bahan_druk?.toLocaleString() || 0} Druk
                       </span>
                     </td>
                     <td className="px-3 py-3 text-xs text-gray-900">
@@ -667,19 +698,38 @@ const TambahBahanSPV: React.FC = () => {
                 />
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-black text-xs font-bold">
-                  Qty Tambah Bahan
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={qty}
-                  onChange={(e) => setQty(e.target.value)}
-                  placeholder="0"
-                  className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">Qty LP</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={qtyLp}
+                    onChange={(e) => handleQtyLpChange(e.target.value)}
+                    placeholder="0"
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">
+                    Qty Druk
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={qtyDruk}
+                    onChange={(e) => handleQtyDrukChange(e.target.value)}
+                    placeholder="0"
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs"
+                  />
+                </div>
               </div>
+              {selectedJoOption && isi === 0 && (
+                <p className="text-xs text-amber-600">
+                  JO ini tidak memiliki data isi cetak — Qty Druk tidak bisa
+                  dihitung otomatis, isi manual keduanya.
+                </p>
+              )}
 
               <div className="flex flex-col gap-1">
                 <label className="text-black text-xs font-bold">Note</label>

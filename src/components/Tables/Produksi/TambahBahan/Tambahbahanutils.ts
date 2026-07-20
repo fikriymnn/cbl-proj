@@ -25,12 +25,12 @@ export const truncateText = (text?: string | null, maxLength = 30): string => {
   return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
 };
 
-// Badge color shared by SPV / QC / PPIC / RM tables so status always looks
-// the same no matter which page you're on.
 export const getStatusColor = (status?: string): string => {
   switch (status?.toLowerCase()) {
     case 'request qc':
       return 'bg-yellow-100 text-yellow-800';
+    case 'request qc pemakaian':
+      return 'bg-indigo-100 text-indigo-800';
     case 'approve qc':
       return 'bg-blue-100 text-blue-800';
     case 'approve gudang':
@@ -48,9 +48,21 @@ export const getStatusColor = (status?: string): string => {
 export const statusLabel = (status?: string): string =>
   status ? status.toUpperCase() : '-';
 
-// Pull the id_kertas / nama_kertas the JO is actually using, so forms never
-// let the user edit it directly - it's always derived from the JO data.
 export const getSelectedMounting = (jo: JOData | null): JOMounting | null => {
   if (!jo || !jo.jo_mounting || jo.jo_mounting.length === 0) return null;
   return jo.jo_mounting.find((m) => m.is_selected) || jo.jo_mounting[0];
 };
+
+// isi = ukuran_cetak_isi_1 + ukuran_cetak_isi_2 from the selected mounting's
+// io_mounting. Returns 0 if unavailable (callers should guard div/0 with this).
+export const getIsiFromMounting = (mounting: JOMounting | null): number => {
+  return (
+    (mounting?.ukuran_cetak_isi_1 || 0) + (mounting?.ukuran_cetak_isi_2 || 0)
+  );
+};
+
+export const lpToDruk = (lp: number, isi: number): number =>
+  isi > 0 ? Math.round(lp * isi) : 0;
+
+export const drukToLp = (druk: number, isi: number): number =>
+  isi > 0 ? Math.round(druk / isi) : 0;

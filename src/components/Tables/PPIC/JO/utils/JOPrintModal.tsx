@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Logo from '../../../../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
+import { isDualUkuran, splitByProcess } from './insheetCalculation';
 
 interface JOPrintData {
   id: number;
@@ -142,12 +143,22 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
   const [logoBase64, setLogoBase64] = useState<string>('');
   // State to hold base64 of the mounting image for print
   const [mountingImageBase64, setMountingImageBase64] = useState<string>('');
+  // NEW: proses-insheet percentages (Cetak/Pond/Finishing splits), needed to
+  // rebuild the per-side (Sisi A / Sisi B) breakdown for 2-ukuran mountings.
+  const [prosesInsheetData, setProsesInsheetData] = useState<any[]>([]);
 
   useEffect(() => {
     if (isOpen && joId) {
       fetchJOData();
     }
   }, [isOpen, joId]);
+
+  // NEW: fetch proses-insheet percentages whenever the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchProsesInsheet();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     // Convert logo to base64 for better print quality
@@ -212,6 +223,21 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
       console.error('Error fetching JO data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // NEW: fetch proses-insheet percentages (Cetak/Pond/Finishing %) used to
+  // rebuild the per-side process breakdown for 2-ukuran mountings.
+  const fetchProsesInsheet = async () => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/master/prosesInsheet`,
+        { withCredentials: true },
+      );
+      setProsesInsheetData(res.data.data || []);
+    } catch (error) {
+      console.error('Error fetching proses insheet:', error);
+      setProsesInsheetData([]);
     }
   };
 
@@ -473,10 +499,114 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     `;
   };
 
+  // ── NEW: process (Cetak/Pond/Finishing) breakdown for the KERTAS POTONG box ──
+  // Single-ukuran mountings keep the original aggregate table.
+  // 2-ukuran (dual) mountings render a Sisi A / Sisi B side-by-side table,
+  // matching the reference layout (image 3): per side, Jml Druk + Insheet for
+  // Cetak / Pond / Finishing, rebuilt from the stored tambahan_insheet_1/2 and
+  // jumlah_cetak_1/2 using the same proses percentages used at JO creation.
+  const getProcessBreakdownHtml = (
+    mounting: NonNullable<ReturnType<typeof getSelectedMounting>>,
+  ): string => {
+    const dual = isDualUkuran(mounting);
+
+    if (!dual) {
+      return `
+        <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 4px;">
+          <thead>
+            <tr>
+              <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Proses</th>
+              <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Jml Druk</th>
+              <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Insheet</th>
+              <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid black; padding: 2px;">Cetak</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${mounting.jumlah_druk_cetak?.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${mounting.jumlah_insheet_cetak?.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px;">druk</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid black; padding: 2px;">Ponds</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${mounting.jumlah_druk_pond?.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${mounting.jumlah_insheet_pond?.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px;">druk</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid black; padding: 2px;">Finishing</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${mounting.jumlah_druk_finishing?.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${mounting.jumlah_insheet_finishing?.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px;">druk</td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+    }
+
+    const drukA = mounting.jumlah_cetak_1 || 0;
+    const drukB = mounting.jumlah_cetak_2 || 0;
+    const procA = splitByProcess(
+      mounting.tambahan_insheet_1 || 0,
+      prosesInsheetData,
+    );
+    const procB = splitByProcess(
+      mounting.tambahan_insheet_2 || 0,
+      prosesInsheetData,
+    );
+
+    const sideTable = (
+      label: string,
+      druk: number,
+      proc: { cetak: number; pond: number; finishing: number },
+    ) => `
+      <div style="flex: 1;">
+        <div style="font-size: 9px; font-weight: bold; margin-bottom: 2px; text-align: center;">Sisi ${label}</div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+          <thead>
+            <tr>
+              <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Proses</th>
+              <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Jml Druk</th>
+              <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Insheet</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid black; padding: 2px;">Cetak</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${druk.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${proc.cetak.toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid black; padding: 2px;">Pond</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${druk.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${proc.pond.toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td style="border: 1px solid black; padding: 2px;">Finishing</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${druk.toLocaleString()}</td>
+              <td style="border: 1px solid black; padding: 2px; text-align: center;">${proc.finishing.toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    return `
+      <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+        ${sideTable('A', drukA, procA)}
+        ${sideTable('B', drukB, procB)}
+      </div>
+    `;
+  };
+
   const getPrintContent = () => {
     const layout = calculateLayout();
     const selectedMounting = getSelectedMounting();
     const logoSrc = logoBase64 || Logo;
+    const dualMounting = selectedMounting
+      ? isDualUkuran(selectedMounting)
+      : false;
 
     return `
     <!DOCTYPE html>
@@ -665,6 +795,24 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             margin: 8px 0;
             font-size: 9px;
           }
+          .formula-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+          }
+          .formula-badge.dual {
+            border: 1px solid #6366f1;
+            color: #4338ca;
+            background-color: #eef2ff;
+          }
+          .formula-badge.single {
+            border: 1px solid #9ca3af;
+            color: #4b5563;
+            background-color: #f3f4f6;
+          }
         </style>
       </head>
       <body>
@@ -780,6 +928,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
         ${
           selectedMounting
             ? `
+      
         <!-- UK & WARNA and KERTAS Section -->
         <table class="warna-table">
           <tbody>
@@ -893,37 +1042,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               </td>
 
               <td style="padding: 4px; vertical-align: top; border: 1px solid black;">
-                <!-- Process table -->
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px; margin-bottom: 4px;">
-                  <thead>
-                    <tr>
-                      <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Proses</th>
-                      <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Jml Druk</th>
-                      <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;">Insheet</th>
-                      <th style="border: 1px solid black; padding: 2px; background-color: #f0f0f0;"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style="border: 1px solid black; padding: 2px;">Cetak</td>
-                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_cetak?.toLocaleString()}</td>
-                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_cetak?.toLocaleString()}</td>
-                      <td style="border: 1px solid black; padding: 2px;">druk</td>
-                    </tr>
-                    <tr>
-                      <td style="border: 1px solid black; padding: 2px;">Ponds</td>
-                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_pond?.toLocaleString()}</td>
-                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_pond?.toLocaleString()}</td>
-                      <td style="border: 1px solid black; padding: 2px;">druk</td>
-                    </tr>
-                    <tr>
-                      <td style="border: 1px solid black; padding: 2px;">Finishing</td>
-                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_druk_finishing?.toLocaleString()}</td>
-                      <td style="border: 1px solid black; padding: 2px; text-align: center;">${selectedMounting.jumlah_insheet_finishing?.toLocaleString()}</td>
-                      <td style="border: 1px solid black; padding: 2px;">druk</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <!-- Process table (aggregate for 1-ukuran, Sisi A / Sisi B for 2-ukuran) -->
+                ${getProcessBreakdownHtml(selectedMounting)}
 
                 <!-- Keterangan -->
                 <div style="border: 1px solid black; padding: 4px; font-size: 9px; margin-bottom: 4px;">

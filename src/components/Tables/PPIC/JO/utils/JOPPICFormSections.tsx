@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { MountingData } from '../types/jo.types';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 import TahapanPopup from './TahapanPopup';
+import { InsheetValues, isDualUkuran } from './insheetCalculation';
 
 interface BasicInfoSectionProps {
   formData: any;
@@ -366,14 +367,7 @@ interface MountingSectionProps {
   selectedMounting: number | null;
   onMountingSelect: (mountingId: number) => void;
   loadingMounting: boolean;
-  insheetValues: {
-    jumlah_druk: number;
-    jumlah_insheet_cetak: number;
-    jumlah_insheet_pond: number;
-    jumlah_insheet_finishing: number;
-    total_insheet: number;
-    jumlah_lp: number;
-  };
+  insheetValues: InsheetValues;
 }
 
 export const MountingSection: React.FC<MountingSectionProps> = ({
@@ -439,18 +433,10 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
       <div className="grid grid-cols-1 gap-3">
         {mountingData.map((mounting) => {
           const isSelected = selectedMounting === mounting.id;
-          console.log(
-            'Mounting:',
-            mounting.nama_mounting,
-            'Selected:',
-            isSelected,
-            mounting.id,
-            selectedMounting,
-          );
+          const dual = isDualUkuran(mounting);
           const ukuranCetakBagian = mounting.ukuran_cetak_bagian_1 || 1;
           const ukuranCetakIsi = mounting.ukuran_cetak_isi_1 || 1;
-          const displayedJumlahDruk =
-            insheetValues.jumlah_druk + insheetValues.total_insheet;
+          const displayedJumlahDruk = insheetValues.jumlah_druk;
 
           return (
             <div
@@ -480,9 +466,19 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
                         TERPILIH
                       </span>
                     )}
+                    {/* NEW: formula badge — tells the user which formula applies */}
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full font-semibold ${
+                        dual
+                          ? 'bg-indigo-100 text-indigo-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {dual ? '2 Ukuran Cetak' : '1 Ukuran Cetak'}
+                    </span>
                     <button
                       onClick={(e) => handleShowTahapan(mounting, e)}
-                      className="ml-2 px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-full font-semibold transition-colors flex items-center gap-1"
+                      className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white text-xs rounded-full font-semibold transition-colors flex items-center gap-1"
                       title="Lihat Tahapan Proses"
                     >
                       <svg
@@ -668,295 +664,281 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
 interface InsheetCalculationSectionProps {
   mounting: MountingData;
   qty: number;
-  ketentuanInsheetData: any[];
-  prosesInsheetData: any[];
-  insheetValues: {
-    jumlah_druk: number;
-    jumlah_insheet_cetak: number;
-    jumlah_insheet_pond: number;
-    jumlah_insheet_finishing: number;
-    total_insheet: number;
-    jumlah_lp: number;
-  };
+  insheetValues: InsheetValues;
   onTotalInsheetChange: (totalValue: number) => void;
 }
 
 export const InsheetCalculationSection: React.FC<
   InsheetCalculationSectionProps
-> = ({
-  mounting,
-  qty,
-  ketentuanInsheetData,
-  prosesInsheetData,
-  insheetValues,
-  onTotalInsheetChange,
-}) => {
-  const isi1 = mounting.ukuran_cetak_isi_1 || 0;
-  const isi2 = mounting.ukuran_cetak_isi_2 || 0;
-  const totalIsi = isi1 + isi2 || 1;
-  const bagian = mounting.ukuran_cetak_bagian_1 || 1;
+> = ({ mounting, qty, insheetValues, onTotalInsheetChange }) => {
+  const dual = insheetValues.formula_mode === 'dual';
+
+  const bagianA = mounting.ukuran_cetak_bagian_1 || 1;
+  const isiA = mounting.ukuran_cetak_isi_1 || 0;
+  const bagianB = mounting.ukuran_cetak_bagian_2 || 0;
+  const isiB = mounting.ukuran_cetak_isi_2 || 0;
+
+  // ── SINGLE-mode display numbers (kept identical to the original formula) ──
+  const totalIsi = isiA + isiB || 1;
   const calculatedRawJumlahDruk = Math.ceil(qty / totalIsi);
+  const calculatedJumlahLP = Math.ceil(insheetValues.jumlah_druk / bagianA);
 
-  const getKetentuanInsheet = (rawDruk: number): any => {
-    const ketentuan = ketentuanInsheetData.find((k) => {
-      const batasBawah = parseInt(k.batas_bawah);
-      const batasAtas =
-        k.batas_atas === '-' ? Infinity : parseInt(k.batas_atas);
-      return rawDruk >= batasBawah && rawDruk <= batasAtas;
-    });
-    return (
-      ketentuan || { nilai: 0, is_persentase: false, persentase_insheet: 0 }
-    );
-  };
+  // ── DUAL-mode edit field shows "Insheet (LP)", not raw insheet count ──────
+  const insheetLPValue = dual
+    ? Math.round(insheetValues.jumlah_lp - insheetValues.qty_lp_raw)
+    : 0;
 
-  const ketentuanInsheet = getKetentuanInsheet(calculatedRawJumlahDruk);
-  const expectedTotalInsheet = ketentuanInsheet.is_persentase
-    ? Math.ceil((calculatedRawJumlahDruk * ketentuanInsheet.nilai) / 100)
-    : ketentuanInsheet.nilai;
-
-  const displayedJumlahDruk =
-    insheetValues.jumlah_druk + insheetValues.total_insheet;
-  const calculatedJumlahLP = Math.ceil(
-    (insheetValues.jumlah_druk + insheetValues.total_insheet) / bagian,
-  );
-  const ukuranCetakBagian = mounting.ukuran_cetak_bagian_1 || 1;
-  const ukuranCetakIsi = mounting.ukuran_cetak_isi_1 || 1;
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
-        Perhitungan Insheet - {mounting.nama_mounting}
-      </h3>
+      <div className="flex items-center gap-2 border-b pb-2 flex-wrap">
+        <h3 className="text-lg font-semibold text-gray-700">
+          Perhitungan Insheet - {mounting.nama_mounting}
+        </h3>
+        {/* NEW: formula-mode indicator */}
+        <span
+          className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+            dual ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'
+          }`}
+        >
+          Formula: {dual ? '2 Ukuran Cetak (A & B)' : '1 Ukuran Cetak'}
+        </span>
+      </div>
 
-      {/* Formula explanation */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="text-sm space-y-2">
-          <div className="font-semibold text-blue-900 mb-2">
-            Formula Perhitungan:
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-            <div>
-              <span className="font-medium">1. RAW Jumlah Druk:</span>
-              <div className="ml-3 text-gray-700">
-                = Qty / (Isi A{isi2 ? ' + Isi B' : ''})
-                <br />= {qty.toLocaleString()} / ({isi1}
-                {isi2 ? ` + ${isi2}` : ''})
-                <br />={' '}
-                <span className="font-bold text-blue-700">
-                  {calculatedRawJumlahDruk.toLocaleString()}
-                </span>
+      {dual ? (
+        <>
+          {/* Formula explanation — dual */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="text-sm space-y-2">
+              <div className="font-semibold text-blue-900 mb-2">
+                Formula Perhitungan (2 Ukuran Cetak):
               </div>
-            </div>
-            <div>
-              <span className="font-medium">2. Ketentuan Insheet:</span>
-              <div className="ml-3 text-gray-700">
-                <span className="text-red-600">(Based on RAW Druk)</span>
-                <br />
-                {ketentuanInsheet.is_persentase ? (
-                  <>
-                    = RAW Druk × {ketentuanInsheet.nilai}%<br />={' '}
-                    {calculatedRawJumlahDruk.toLocaleString()} ×{' '}
-                    {ketentuanInsheet.nilai}%<br />={' '}
-                    <span className="font-bold text-orange-700">
-                      {expectedTotalInsheet.toLocaleString()}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    = Fixed Value
+              <div className="text-xs space-y-1.5">
+                <div>
+                  <span className="font-medium">1. Qty LP:</span>
+                  <div className="ml-3 text-gray-700">
+                    = Qty / (BagianA×IsiA + BagianB×IsiB)
+                    <br />= {qty.toLocaleString()} / ({bagianA}×{isiA} +{' '}
+                    {bagianB}×{isiB})
                     <br />={' '}
-                    <span className="font-bold text-orange-700">
-                      {ketentuanInsheet.nilai}
+                    <span className="font-bold text-blue-700">
+                      {insheetValues.qty_lp_raw.toLocaleString(undefined, {
+                        maximumFractionDigits: 3,
+                      })}
                     </span>
-                  </>
-                )}
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">
+                    2. Insheet (LP, diambil dari bagian terkecil):
+                  </span>
+                  <div className="ml-3 text-gray-700">
+                    Ketentuan insheet dihitung dari Qty LP, lalu dinyatakan
+                    dalam satuan LP menggunakan bagian terkecil (
+                    {Math.min(bagianA, bagianB) || 1}
+                    ).
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">3. Kebutuhan LP:</span>
+                  <div className="ml-3 text-gray-700">
+                    = Qty LP + Insheet LP
+                    <br />={' '}
+                    <span className="font-bold text-purple-700">
+                      {insheetValues.jumlah_lp.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">
+                    4. Keperluan Druk &amp; Insheet per sisi:
+                  </span>
+                  <div className="ml-3 text-gray-700">
+                    Druk sisi = Kebutuhan LP × Bagian sisi
+                    <br />
+                    Insheet sisi = Insheet LP × Bagian sisi
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <span className="font-medium">3. Displayed Jumlah Druk:</span>
-              <div className="ml-3 text-gray-700">
-                = RAW Druk + Total Insheet
-                <br />= {insheetValues.jumlah_druk.toLocaleString()} +{' '}
-                {insheetValues.total_insheet.toLocaleString()}
-                <br />={' '}
-                <span className="font-bold text-green-700">
-                  {displayedJumlahDruk.toLocaleString()}
-                </span>
+          </div>
+
+          {/* Current values (aggregate) */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-xs text-gray-600 mb-1">Quantity</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {qty.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-600 mb-1">
+                  Jumlah Druk (A+B)
+                </div>
+                <div className="text-2xl font-bold text-blue-700">
+                  {insheetValues.jumlah_druk.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-600 mb-1">
+                  Total Insheet (A+B)
+                </div>
+                <div className="text-2xl font-bold text-orange-700">
+                  {insheetValues.total_insheet.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-600 mb-1">Jumlah LP</div>
+                <div className="text-2xl font-bold text-purple-700">
+                  {insheetValues.jumlah_lp.toLocaleString()}
+                </div>
               </div>
             </div>
-            <div>
-              <span className="font-medium">4. Jumlah LP:</span>
-              <div className="ml-3 text-gray-700">
-                = (RAW Druk + Total Insheet) / Bagian
-                <br />= ({insheetValues.jumlah_druk.toLocaleString()} +{' '}
-                {insheetValues.total_insheet.toLocaleString()}) / {bagian}
-                <br />={' '}
-                <span className="font-bold text-purple-700">
-                  {calculatedJumlahLP.toLocaleString()}
-                </span>
-              </div>
-            </div>
           </div>
-          <div className="mt-3 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
-            <span className="font-semibold text-yellow-900">
-              Reverse Formula (saat edit Total Insheet):
-            </span>
-            <br />
-            Qty = (RAW Druk + Total Insheet) × Isi
-          </div>
-        </div>
-      </div>
 
-      {/* Current values */}
-      <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-          <div>
-            <div className="text-xs text-gray-600 mb-1">Quantity</div>
-            <div className="text-2xl font-bold text-gray-800">
-              {qty.toLocaleString()}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-600 mb-1">Jumlah Druk</div>
-            <div className="text-2xl font-bold text-blue-700">
-              {displayedJumlahDruk.toLocaleString()}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-600 mb-1">Total Insheet</div>
-            <div className="text-2xl font-bold text-orange-700">
-              {insheetValues.total_insheet.toLocaleString()}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-600 mb-1">Jumlah LP</div>
-            <div className="text-2xl font-bold text-purple-700">
-              {insheetValues.jumlah_lp.toLocaleString()}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Editable total insheet */}
-      <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Edit Total Insheet{' '}
-          <span className="text-xs font-normal text-gray-600">
-            (akan mengubah Qty dan distribusi proses)
-          </span>
-        </label>
-        <input
-          type="number"
-          value={insheetValues.total_insheet || 0}
-          onChange={(e) => onTotalInsheetChange(Number(e.target.value))}
-          className="w-full px-4 py-3 border-2 border-yellow-400 rounded-md text-center font-bold text-2xl text-orange-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-          min="0"
-        />
-        <p className="mt-2 text-xs text-gray-600">
-          Expected dari ketentuan:{' '}
-          <span className="font-bold">
-            {expectedTotalInsheet.toLocaleString()}
-          </span>
-        </p>
-      </div>
-
-      {/* Process distribution table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-sm border border-gray-300">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-2 border text-left font-medium text-gray-700">
-                Proses
-              </th>
-              <th className="px-4 py-2 border text-center font-medium text-gray-700">
-                Persentase
-              </th>
-              <th className="px-4 py-2 border text-center font-medium text-gray-700">
-                Jumlah Insheet
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white">
-            {prosesInsheetData.map((proses) => {
-              let normalizedProses = proses.proses.toUpperCase();
-              if (
-                normalizedProses === 'PONDS' ||
-                normalizedProses === 'PONDING'
-              )
-                normalizedProses = 'POND';
-
-              let value = 0;
-              if (normalizedProses === 'CETAK')
-                value = insheetValues.jumlah_insheet_cetak;
-              else if (normalizedProses === 'POND')
-                value = insheetValues.jumlah_insheet_pond;
-              else if (normalizedProses === 'FINISHING')
-                value = insheetValues.jumlah_insheet_finishing;
-
+          {/* Side-by-side A/B breakdown */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {(['a', 'b'] as const).map((side) => {
+              const s = insheetValues.split![side];
+              const label = side.toUpperCase();
               return (
-                <tr key={proses.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border font-medium">
-                    {proses.proses}
-                  </td>
-                  <td className="px-4 py-2 border text-center">
-                    {proses.persentase_insheet}%
-                  </td>
-                  <td className="px-4 py-2 border text-center font-semibold text-gray-700">
-                    {Math.ceil(value).toLocaleString()}
-                  </td>
-                </tr>
+                <div
+                  key={side}
+                  className="border-2 border-gray-300 rounded-lg p-4 bg-white"
+                >
+                  <p className="text-sm font-bold text-gray-800 mb-3">
+                    Sisi {label}{' '}
+                    <span className="font-normal text-gray-500 text-xs">
+                      (Bagian {s.bagian} / Isi {s.isi})
+                    </span>
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                    <div>
+                      <span className="text-gray-600 text-xs">Jml Druk</span>
+                      <p className="font-bold text-blue-700 text-lg">
+                        {s.jumlah_druk.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 text-xs">
+                        Total Insheet
+                      </span>
+                      <p className="font-bold text-orange-700 text-lg">
+                        {s.total_insheet.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <table className="w-full text-xs border border-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border px-2 py-1 text-left">Proses</th>
+                        <th className="border px-2 py-1 text-center">
+                          Jml Druk
+                        </th>
+                        <th className="border px-2 py-1 text-center">
+                          Insheet
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border px-2 py-1">Cetak</td>
+                        <td className="border px-2 py-1 text-center">
+                          {s.jumlah_druk.toLocaleString()}
+                        </td>
+                        <td className="border px-2 py-1 text-center font-semibold">
+                          {s.cetak.toLocaleString()}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="border px-2 py-1">Pond</td>
+                        <td className="border px-2 py-1 text-center">
+                          {s.jumlah_druk.toLocaleString()}
+                        </td>
+                        <td className="border px-2 py-1 text-center font-semibold">
+                          {s.pond.toLocaleString()}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="border px-2 py-1">Finishing</td>
+                        <td className="border px-2 py-1 text-center">
+                          {s.jumlah_druk.toLocaleString()}
+                        </td>
+                        <td className="border px-2 py-1 text-center font-semibold">
+                          {s.finishing.toLocaleString()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               );
             })}
-            <tr className="bg-gray-100 font-bold">
-              <td className="px-4 py-2 border" colSpan={2}>
-                Total
-              </td>
-              <td className="px-4 py-2 border text-center text-orange-700">
-                {insheetValues.total_insheet.toLocaleString()}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          </div>
 
-      {/* Mounting reference */}
-      <div className="bg-white border border-gray-300 rounded-lg p-4">
-        <h4 className="font-semibold text-gray-700 mb-3">Referensi Mounting</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div>
-            <span className="text-gray-600">Jenis Kertas:</span>
-            <p className="font-medium">{mounting.jenis_kertas || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-600">Gramature:</span>
-            <p className="font-medium">{mounting.gramature_kertas || '-'}</p>
-          </div>
-          <div>
-            <span className="text-gray-600">Ukuran Plano:</span>
-            <p className="font-medium">
-              {mounting.panjang_plano} x {mounting.lebar_plano}
+          {/* Editable Insheet (LP) — dual mode */}
+          <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Edit Insheet (LP){' '}
+              <span className="text-xs font-normal text-gray-600">
+                (akan mengubah Qty, Kebutuhan LP, dan Druk/Insheet sisi A &amp;
+                B)
+              </span>
+            </label>
+            <input
+              type="number"
+              value={insheetLPValue}
+              onChange={(e) => onTotalInsheetChange(Number(e.target.value))}
+              className="w-full px-4 py-3 border-2 border-yellow-400 rounded-md text-center font-bold text-2xl text-orange-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              min="0"
+            />
+            <p className="mt-2 text-xs text-gray-600">
+              Diambil dari bagian terkecil ({Math.min(bagianA, bagianB) || 1}).
+              Insheet total (A+B):{' '}
+              <span className="font-bold">
+                {insheetValues.total_insheet.toLocaleString()}
+              </span>
             </p>
           </div>
-          <div>
-            <span className="text-gray-600">UK Cetak A (P×L):</span>
-            <p className="font-medium">
-              {mounting.ukuran_cetak_panjang_1} x{' '}
-              {mounting.ukuran_cetak_lebar_1}
-            </p>
-          </div>
-          <div>
-            <span className="text-gray-600">Bagian A:</span>
-            <p className="font-semibold text-blue-600 text-lg">
-              {ukuranCetakBagian}
-            </p>
-          </div>
-          <div>
-            <span className="text-gray-600">Isi A:</span>
-            <p className="font-semibold text-blue-600 text-lg">
-              {ukuranCetakIsi}
-            </p>
-          </div>
-          {mounting.ukuran_cetak_panjang_2 || mounting.ukuran_cetak_lebar_2 ? (
-            <>
+
+          {/* Mounting reference */}
+          <div className="bg-white border border-gray-300 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-700 mb-3">
+              Referensi Mounting
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div>
+                <span className="text-gray-600">Jenis Kertas:</span>
+                <p className="font-medium">{mounting.jenis_kertas || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Gramature:</span>
+                <p className="font-medium">
+                  {mounting.gramature_kertas || '-'}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-600">Ukuran Plano:</span>
+                <p className="font-medium">
+                  {mounting.panjang_plano} x {mounting.lebar_plano}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-600">Format:</span>
+                <p className="font-medium">{mounting.format_data || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">UK Cetak A (P×L):</span>
+                <p className="font-medium">
+                  {mounting.ukuran_cetak_panjang_1} x{' '}
+                  {mounting.ukuran_cetak_lebar_1}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-600">Bagian A / Isi A:</span>
+                <p className="font-semibold text-blue-600">
+                  {bagianA} / {isiA}
+                </p>
+              </div>
               <div>
                 <span className="text-gray-600">UK Cetak B (P×L):</span>
                 <p className="font-medium">
@@ -965,29 +947,219 @@ export const InsheetCalculationSection: React.FC<
                 </p>
               </div>
               <div>
-                <span className="text-gray-600">Bagian B:</span>
-                <p className="font-semibold text-blue-600 text-lg">
-                  {mounting.ukuran_cetak_bagian_2 || 0}
+                <span className="text-gray-600">Bagian B / Isi B:</span>
+                <p className="font-semibold text-blue-600">
+                  {bagianB} / {isiB}
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Formula explanation — single (unchanged from original) */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="text-sm space-y-2">
+              <div className="font-semibold text-blue-900 mb-2">
+                Formula Perhitungan:
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="font-medium">1. RAW Jumlah Druk:</span>
+                  <div className="ml-3 text-gray-700">
+                    = Qty / (Isi A{isiB ? ' + Isi B' : ''})
+                    <br />= {qty.toLocaleString()} / ({isiA}
+                    {isiB ? ` + ${isiB}` : ''})
+                    <br />={' '}
+                    <span className="font-bold text-blue-700">
+                      {calculatedRawJumlahDruk.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">2. Ketentuan Insheet:</span>
+                  <div className="ml-3 text-gray-700">
+                    <span className="text-red-600">(Based on RAW Druk)</span>
+                    <br />
+                    Total Insheet ={' '}
+                    <span className="font-bold text-orange-700">
+                      {insheetValues.total_insheet.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">3. Displayed Jumlah Druk:</span>
+                  <div className="ml-3 text-gray-700">
+                    = RAW Druk + Total Insheet
+                    <br />= {insheetValues.qty_lp_raw.toLocaleString()} +{' '}
+                    {insheetValues.total_insheet.toLocaleString()}
+                    <br />={' '}
+                    <span className="font-bold text-green-700">
+                      {insheetValues.jumlah_druk.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-medium">4. Jumlah LP:</span>
+                  <div className="ml-3 text-gray-700">
+                    = (RAW Druk + Total Insheet) / Bagian
+                    <br />= ({insheetValues.qty_lp_raw.toLocaleString()} +{' '}
+                    {insheetValues.total_insheet.toLocaleString()}) / {bagianA}
+                    <br />={' '}
+                    <span className="font-bold text-purple-700">
+                      {calculatedJumlahLP.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
+                <span className="font-semibold text-yellow-900">
+                  Reverse Formula (saat edit Total Insheet):
+                </span>
+                <br />
+                Qty = (RAW Druk + Total Insheet) × Isi
+              </div>
+            </div>
+          </div>
+
+          {/* Current values */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-xs text-gray-600 mb-1">Quantity</div>
+                <div className="text-2xl font-bold text-gray-800">
+                  {qty.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-600 mb-1">Jumlah Druk</div>
+                <div className="text-2xl font-bold text-blue-700">
+                  {insheetValues.jumlah_druk.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-600 mb-1">Total Insheet</div>
+                <div className="text-2xl font-bold text-orange-700">
+                  {insheetValues.total_insheet.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-600 mb-1">Jumlah LP</div>
+                <div className="text-2xl font-bold text-purple-700">
+                  {insheetValues.jumlah_lp.toLocaleString()}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Editable total insheet */}
+          <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Edit Total Insheet{' '}
+              <span className="text-xs font-normal text-gray-600">
+                (akan mengubah Qty dan distribusi proses)
+              </span>
+            </label>
+            <input
+              type="number"
+              value={insheetValues.total_insheet || 0}
+              onChange={(e) => onTotalInsheetChange(Number(e.target.value))}
+              className="w-full px-4 py-3 border-2 border-yellow-400 rounded-md text-center font-bold text-2xl text-orange-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              min="0"
+            />
+          </div>
+
+          {/* Process distribution table */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm border border-gray-300">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 border text-left font-medium text-gray-700">
+                    Proses
+                  </th>
+                  <th className="px-4 py-2 border text-center font-medium text-gray-700">
+                    Jumlah Insheet
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white">
+                <tr className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border font-medium">Cetak</td>
+                  <td className="px-4 py-2 border text-center font-semibold text-gray-700">
+                    {insheetValues.jumlah_insheet_cetak.toLocaleString()}
+                  </td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border font-medium">Pond</td>
+                  <td className="px-4 py-2 border text-center font-semibold text-gray-700">
+                    {insheetValues.jumlah_insheet_pond.toLocaleString()}
+                  </td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border font-medium">Finishing</td>
+                  <td className="px-4 py-2 border text-center font-semibold text-gray-700">
+                    {insheetValues.jumlah_insheet_finishing.toLocaleString()}
+                  </td>
+                </tr>
+                <tr className="bg-gray-100 font-bold">
+                  <td className="px-4 py-2 border">Total</td>
+                  <td className="px-4 py-2 border text-center text-orange-700">
+                    {insheetValues.total_insheet.toLocaleString()}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mounting reference */}
+          <div className="bg-white border border-gray-300 rounded-lg p-4">
+            <h4 className="font-semibold text-gray-700 mb-3">
+              Referensi Mounting
+            </h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div>
+                <span className="text-gray-600">Jenis Kertas:</span>
+                <p className="font-medium">{mounting.jenis_kertas || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Gramature:</span>
+                <p className="font-medium">
+                  {mounting.gramature_kertas || '-'}
                 </p>
               </div>
               <div>
-                <span className="text-gray-600">Isi B:</span>
-                <p className="font-semibold text-blue-600 text-lg">
-                  {mounting.ukuran_cetak_isi_2 || 0}
+                <span className="text-gray-600">Ukuran Plano:</span>
+                <p className="font-medium">
+                  {mounting.panjang_plano} x {mounting.lebar_plano}
                 </p>
               </div>
-            </>
-          ) : null}
-          <div>
-            <span className="text-gray-600">Format:</span>
-            <p className="font-medium">{mounting.format_data || '-'}</p>
+              <div>
+                <span className="text-gray-600">UK Cetak A (P×L):</span>
+                <p className="font-medium">
+                  {mounting.ukuran_cetak_panjang_1} x{' '}
+                  {mounting.ukuran_cetak_lebar_1}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-600">Bagian A:</span>
+                <p className="font-semibold text-blue-600 text-lg">{bagianA}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Isi A:</span>
+                <p className="font-semibold text-blue-600 text-lg">{isiA}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Format:</span>
+                <p className="font-medium">{mounting.format_data || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-600">Jumlah Warna:</span>
+                <p className="font-medium">{mounting.jumlah_warna || '-'}</p>
+              </div>
+            </div>
           </div>
-          <div>
-            <span className="text-gray-600">Jumlah Warna:</span>
-            <p className="font-medium">{mounting.jumlah_warna || '-'}</p>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };

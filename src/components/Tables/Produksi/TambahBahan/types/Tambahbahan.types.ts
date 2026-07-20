@@ -1,19 +1,7 @@
-// Shared types for the "Tambah Bahan Persiapan" flow
-// Endpoints (base assumed: import.meta.env.VITE_API_LINK):
-//   POST   /gudangRM/tambahBahanPersiapan
-//   PUT    /gudangRM/tambahBahanPersiapan/approveQc/:id     { note_qc }
-//   PUT    /gudangRM/tambahBahanPersiapan/rejectQc/:id      { note_qc }
-//   PUT    /gudangRM/tambahBahanPersiapan/approveGudang/:id { note_gudang }
-//   PUT    /gudangRM/tambahBahanPersiapan/rejectGudang/:id  { note_gudang }
-//
-// NOTE: the exact shape of the GET-list response wasn't specified, so the
-// fields below are a reasonable superset inferred from the legacy
-// TambahBahanQC / TambahBahanPPIC pages plus the create payload you gave.
-// Adjust field names to match your real API response if they differ.
-
 export const TAMBAH_BAHAN_STATUS_LIST = [
   'request qc',
   'approve qc',
+  'request qc pemakaian',
   'approve gudang',
   'reject qc',
   'reject gudang',
@@ -25,12 +13,24 @@ export type TambahBahanStatus = (typeof TAMBAH_BAHAN_STATUS_LIST)[number];
 export const STATUS_TIKET_LIST = ['incoming', 'history'] as const;
 export type StatusTiket = (typeof STATUS_TIKET_LIST)[number];
 
+export interface IoMounting {
+  id: number;
+  isi_dalam_1_pack: number;
+  nama_mounting: string;
+  ukuran_cetak_isi_1: number;
+  ukuran_cetak_isi_2: number;
+}
+
 export interface JOMounting {
   id: number;
-  id_jo: number;
+  id_jo?: number;
+  id_io_mounting?: number;
   id_kertas: number;
   nama_kertas: string;
   is_selected: unknown;
+  io_mounting?: IoMounting;
+  ukuran_cetak_isi_1?: number;
+  ukuran_cetak_isi_2?: number;
 }
 
 export interface JOData {
@@ -57,9 +57,11 @@ export interface TambahBahanPersiapan {
   produk?: string;
   id_kertas: number;
   nama_kertas?: string;
-  qty_tambah_bahan: number;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
   note: string;
   note_qc?: string | null;
+  note_qc_pemakaian?: string | null;
   note_gudang?: string | null;
   status: TambahBahanStatus | string;
   status_tiket?: StatusTiket | string;
@@ -71,7 +73,8 @@ export interface TambahBahanPersiapan {
 export interface TambahBahanCreatePayload {
   id_jo: number;
   id_kertas: number;
-  qty_tambah_bahan: number;
+  qty_tambah_bahan_lp: number;
+  qty_tambah_bahan_druk: number;
   note: string;
 }
 

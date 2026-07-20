@@ -33,6 +33,7 @@ const TambahBahanQC: React.FC = () => {
     null,
   );
   const [noteQc, setNoteQc] = useState<string>('');
+  const [noteQcPemakaian, setNoteQcPemakaian] = useState<string>(''); // NEW
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   const fetchList = useCallback(async () => {
@@ -62,11 +63,13 @@ const TambahBahanQC: React.FC = () => {
   const openRespond = (item: TambahBahanPersiapan) => {
     setActiveItem(item);
     setNoteQc(item.note_qc || '');
+    setNoteQcPemakaian(item.note_qc_pemakaian || ''); // NEW
   };
 
   const closeRespond = () => {
     setActiveItem(null);
     setNoteQc('');
+    setNoteQcPemakaian(''); // NEW
   };
 
   const handleApprove = async () => {
@@ -90,7 +93,27 @@ const TambahBahanQC: React.FC = () => {
       setActionLoading(false);
     }
   };
-
+  const handleApprovePemakaian = async () => {
+    if (!activeItem) return;
+    try {
+      setActionLoading(true);
+      await axios.put(
+        `${API_BASE}/gudangRM/tambahBahanPersiapan/approveQcPemakaian/${activeItem.id}`,
+        { note_qc_pemakaian: noteQcPemakaian },
+        { withCredentials: true },
+      );
+      toast.success('Permintaan pemakaian berhasil disetujui QC');
+      closeRespond();
+      fetchList();
+    } catch (error: any) {
+      console.error('Error approving QC pemakaian:', error);
+      toast.error(
+        error.response?.data?.message || 'Gagal menyetujui permintaan',
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
   const handleReject = async () => {
     if (!activeItem) return;
     if (!noteQc.trim()) {
@@ -360,7 +383,9 @@ const TambahBahanQC: React.FC = () => {
                       {(page - 1) * limit + index + 1}
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-xs font-medium">
-                      {item.status?.toLowerCase() === 'request qc' ? (
+                      {['request qc', 'request qc pemakaian'].includes(
+                        item.status?.toLowerCase() || '',
+                      ) ? (
                         <button
                           onClick={() => openRespond(item)}
                           className="text-white bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded text-xs transition-colors"
@@ -386,7 +411,11 @@ const TambahBahanQC: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      {item.qty_tambah_bahan?.toLocaleString() || 0}
+                      {item.qty_tambah_bahan_lp?.toLocaleString() || 0} LP
+                      <br />
+                      <span className="text-gray-400 text-[10px]">
+                        {item.qty_tambah_bahan_druk?.toLocaleString() || 0} Druk
+                      </span>
                     </td>
                     <td className="px-3 py-3 text-xs text-gray-900">
                       <div className="max-w-xs" title={item.note}>
@@ -476,12 +505,14 @@ const TambahBahanQC: React.FC = () => {
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     Nomor JO
                   </p>
-
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     Kertas
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    Qty
+                    Qty LP
+                  </p>
+                  <p className="text-slate-600 text-[14px] dark:text-white">
+                    Qty Druk
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     Note
@@ -496,7 +527,10 @@ const TambahBahanQC: React.FC = () => {
                     : {activeItem.nama_kertas}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
-                    : {activeItem.qty_tambah_bahan}
+                    : {activeItem.qty_tambah_bahan_lp}
+                  </p>
+                  <p className="text-slate-600 text-[14px] dark:text-white">
+                    : {activeItem.qty_tambah_bahan_druk}
                   </p>
                   <p className="text-slate-600 text-[14px] dark:text-white">
                     : {activeItem.note}
@@ -504,21 +538,38 @@ const TambahBahanQC: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-black text-xs font-bold">Note QC</label>
-                <textarea
-                  value={noteQc}
-                  onChange={(e) => setNoteQc(e.target.value)}
-                  rows={3}
-                  readOnly={activeItem.status?.toLowerCase() !== 'request qc'}
-                  placeholder="Catatan QC"
-                  className={`w-full px-3 py-2 border-2 border-stroke rounded-md text-xs ${
-                    activeItem.status?.toLowerCase() !== 'request qc'
-                      ? 'bg-gray-50'
-                      : ''
-                  }`}
-                />
-              </div>
+              {activeItem.status?.toLowerCase() === 'request qc pemakaian' ? (
+                <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">
+                    Note QC Pemakaian
+                  </label>
+                  <textarea
+                    value={noteQcPemakaian}
+                    onChange={(e) => setNoteQcPemakaian(e.target.value)}
+                    rows={3}
+                    placeholder="Catatan QC Pemakaian"
+                    className="w-full px-3 py-2 border-2 border-stroke rounded-md text-xs"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">
+                    Note QC
+                  </label>
+                  <textarea
+                    value={noteQc}
+                    onChange={(e) => setNoteQc(e.target.value)}
+                    rows={3}
+                    readOnly={activeItem.status?.toLowerCase() !== 'request qc'}
+                    placeholder="Catatan QC"
+                    className={`w-full px-3 py-2 border-2 border-stroke rounded-md text-xs ${
+                      activeItem.status?.toLowerCase() !== 'request qc'
+                        ? 'bg-gray-50'
+                        : ''
+                    }`}
+                  />
+                </div>
+              )}
 
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-gray-600">Status:</span>
@@ -547,6 +598,18 @@ const TambahBahanQC: React.FC = () => {
                   className="flex-1 h-9 text-center text-white text-xs font-bold rounded-md bg-green-600 hover:bg-green-700 disabled:opacity-50"
                 >
                   {actionLoading ? 'Memproses...' : 'Approve'}
+                </button>
+              </div>
+            )}
+
+            {activeItem.status?.toLowerCase() === 'request qc pemakaian' && (
+              <div className="flex gap-2 px-5 py-4 border-t border-stroke">
+                <button
+                  onClick={handleApprovePemakaian}
+                  disabled={actionLoading}
+                  className="flex-1 h-9 text-center text-white text-xs font-bold rounded-md bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                >
+                  {actionLoading ? 'Memproses...' : 'Approve Pemakaian'}
                 </button>
               </div>
             )}

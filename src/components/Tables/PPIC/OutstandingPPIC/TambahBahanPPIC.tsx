@@ -357,7 +357,11 @@ const TambahBahanPPIC: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
-                      {item.qty_tambah_bahan?.toLocaleString() || 0}
+                      {item.qty_tambah_bahan_lp?.toLocaleString() || 0} LP
+                      <br />
+                      <span className="text-gray-400 text-[10px]">
+                        {item.qty_tambah_bahan_druk?.toLocaleString() || 0} Druk
+                      </span>
                     </td>
                     <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
                       {formatDateTime(item.createdAt)}

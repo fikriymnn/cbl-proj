@@ -6,7 +6,6 @@ import {
   getStatusColor,
   statusLabel,
 } from './Tambahbahanutils';
-import {} from './types/Tambahbahan.types';
 import {
   TambahBahanPemakaianDetail,
   TambahBahanPersiapanDetail,
@@ -71,6 +70,22 @@ const TambahBahanDetailModal: React.FC<Props> = ({
       : (data as TambahBahanPemakaianDetail)?.tambah_bahan_pemakaian_defect ||
         [];
 
+  // note_qc_pemakaian / tgl_* fields only exist on some records (they're
+  // populated progressively as a ticket moves through request → qc →
+  // gudang → pakai → qc pemakaian), so we read them loosely and only
+  // render a row when the value is actually present.
+  const noteQcPemakaian = (data as any)?.note_qc_pemakaian as
+    | string
+    | null
+    | undefined;
+  const tglQc = (data as any)?.tgl_qc as string | null | undefined;
+  const tglGudang = (data as any)?.tgl_gudang as string | null | undefined;
+  const tglPakai = (data as any)?.tgl_pakai as string | null | undefined;
+  const tglQcPemakaian = (data as any)?.tgl_qc_pemakaian as
+    | string
+    | null
+    | undefined;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -131,35 +146,30 @@ const TambahBahanDetailModal: React.FC<Props> = ({
                   {data.nama_kertas || data.detail_kertas?.nama_barang || '-'}
                 </div>
 
-                <div className="text-slate-500">Qty Request</div>
+                <div className="text-slate-500">Qty LP</div>
                 <div className="col-span-2 text-slate-800">
-                  {data.qty_tambah_bahan?.toLocaleString() || 0}
+                  {data.qty_tambah_bahan_lp?.toLocaleString() || 0}
+                </div>
+
+                <div className="text-slate-500">Qty Druk</div>
+                <div className="col-span-2 text-slate-800">
+                  {data.qty_tambah_bahan_druk?.toLocaleString() || 0}
                 </div>
 
                 {type === 'persiapan' && (
                   <>
-                    <div className="text-slate-500">Qty Terpakai</div>
+                    <div className="text-slate-500">Qty Terpakai LP</div>
                     <div className="col-span-2 text-slate-800">
                       {(
                         data as TambahBahanPersiapanDetail
-                      ).qty_pakai_tambah_bahan?.toLocaleString() || 0}
+                      ).qty_pakai_tambah_bahan_lp?.toLocaleString() || 0}
                     </div>
-                  </>
-                )}
 
-                {type === 'pemakaian' && (
-                  <>
-                    <div className="text-slate-500">Qty Approve QC</div>
+                    <div className="text-slate-500">Qty Terpakai Druk</div>
                     <div className="col-span-2 text-slate-800">
                       {(
-                        data as TambahBahanPemakaianDetail
-                      ).qty_tambah_bahan_qc?.toLocaleString() ?? '-'}
-                    </div>
-                    <div className="text-slate-500">Qty Approve Gudang</div>
-                    <div className="col-span-2 text-slate-800">
-                      {(
-                        data as TambahBahanPemakaianDetail
-                      ).qty_tambah_bahan_gudang?.toLocaleString() ?? '-'}
+                        data as TambahBahanPersiapanDetail
+                      ).qty_pakai_tambah_bahan_druk?.toLocaleString() || 0}
                     </div>
                   </>
                 )}
@@ -174,15 +184,60 @@ const TambahBahanDetailModal: React.FC<Props> = ({
                   {data.note_qc || '-'}
                 </div>
 
+                {noteQcPemakaian && (
+                  <>
+                    <div className="text-slate-500">Note QC Pemakaian</div>
+                    <div className="col-span-2 text-slate-800">
+                      {noteQcPemakaian}
+                    </div>
+                  </>
+                )}
+
                 <div className="text-slate-500">Note Gudang</div>
                 <div className="col-span-2 text-slate-800">
                   {data.note_gudang || '-'}
                 </div>
 
-                <div className="text-slate-500">Tanggal</div>
+                <div className="text-slate-500">Tanggal Request</div>
                 <div className="col-span-2 text-slate-800">
                   {formatDateTime(data.createdAt)}
                 </div>
+
+                {tglQc && (
+                  <>
+                    <div className="text-slate-500">Tanggal QC</div>
+                    <div className="col-span-2 text-slate-800">
+                      {formatDateTime(tglQc)}
+                    </div>
+                  </>
+                )}
+
+                {tglGudang && (
+                  <>
+                    <div className="text-slate-500">Tanggal Gudang</div>
+                    <div className="col-span-2 text-slate-800">
+                      {formatDateTime(tglGudang)}
+                    </div>
+                  </>
+                )}
+
+                {tglPakai && (
+                  <>
+                    <div className="text-slate-500">Tanggal Pakai</div>
+                    <div className="col-span-2 text-slate-800">
+                      {formatDateTime(tglPakai)}
+                    </div>
+                  </>
+                )}
+
+                {tglQcPemakaian && (
+                  <>
+                    <div className="text-slate-500">Tanggal QC Pemakaian</div>
+                    <div className="col-span-2 text-slate-800">
+                      {formatDateTime(tglQcPemakaian)}
+                    </div>
+                  </>
+                )}
               </div>
 
               <div>
@@ -206,17 +261,25 @@ const TambahBahanDetailModal: React.FC<Props> = ({
                             Deskripsi
                           </th>
                           <th className="px-2 py-1.5 text-right font-medium text-gray-500">
-                            Qty
+                            Qty LP
+                          </th>
+                          <th className="px-2 py-1.5 text-right font-medium text-gray-500">
+                            Qty Druk
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {defects.map((d) => (
+                        {defects.map((d: any) => (
                           <tr key={d.id}>
                             <td className="px-2 py-1.5">{d.kode}</td>
                             <td className="px-2 py-1.5">{d.deskripsi}</td>
                             <td className="px-2 py-1.5 text-right">
-                              {d.qty_tambah_bahan?.toLocaleString()}
+                              {d.qty_tambah_bahan_lp?.toLocaleString() ??
+                                d.qty_tambah_bahan?.toLocaleString() ??
+                                '-'}
+                            </td>
+                            <td className="px-2 py-1.5 text-right">
+                              {d.qty_tambah_bahan_druk?.toLocaleString() ?? '-'}
                             </td>
                           </tr>
                         ))}
