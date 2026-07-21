@@ -119,6 +119,38 @@ function fmtQty(val: number | null | undefined) {
   if (val == null) return '-';
   return val.toLocaleString('id-ID');
 }
+function fmtRp(val: number | null | undefined) {
+  if (val == null) return '-';
+  return 'Rp ' + val.toLocaleString('id-ID');
+}
+
+// ── sums total_qty across the delivery_order_group array ──
+function sumDeliveryQty(row: any): number {
+  const doGroup: any[] = Array.isArray(row.delivery_order_group)
+    ? row.delivery_order_group
+    : [];
+  return doGroup.reduce((sum: number, d: any) => sum + (d.total_qty ?? 0), 0);
+}
+
+// ── realisasi harga = qty terkirim (from delivery_order_group) × harga/pcs ──
+function calcRealisasiHarga(row: any): number {
+  const qty = sumDeliveryQty(row);
+  const hargaPcs = row.harga_jual ?? 0;
+  return qty * hargaPcs;
+}
+
+// ── counts unique job_order.status_jo across a dataset ──
+function getStatusJoSummary(data: any[]): { status: string; count: number }[] {
+  const counts = new Map<string, number>();
+  data.forEach((d: any) => {
+    const status = d.job_order?.status_jo;
+    if (status) counts.set(status, (counts.get(status) ?? 0) + 1);
+  });
+  return Array.from(counts.entries()).map(([status, count]) => ({
+    status,
+    count,
+  }));
+}
 
 function sisaWaktu(tglPengiriman: string | null | undefined): {
   label: string;
@@ -209,6 +241,23 @@ function StatusBadge({ status }: { status: string }) {
     >
       {status || '-'}
     </span>
+  );
+}
+
+function StatusJoSummary({ data }: { data: any[] }) {
+  const summary = useMemo(() => getStatusJoSummary(data), [data]);
+  if (summary.length === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {summary.map(({ status, count }) => (
+        <span
+          key={status}
+          className="text-[10px] sm:text-xs bg-white bg-opacity-20 text-white px-2.5 py-0.5 rounded-full font-semibold capitalize whitespace-nowrap"
+        >
+          {status} {count}
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -493,12 +542,15 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
                   ['No IO', row.no_io],
                   ['No PO Customer', row.no_po_customer],
                   ['Customer', row.customer],
+                  ['Marketing', row.kalkulasi?.nama_marketing],
                   ['PPIC', row.ppic],
                   ['Tgl Input SO', fmtDate(row.tgl_pembuatan_so)],
                   ['Tgl Kirim', fmtDate(row.tgl_pengiriman)],
                   ['PO Qty', fmtQty(row.po_qty)],
                   ['Qty Druk', fmtQty(jo?.qty_druk)],
                   ['Qty LP', fmtQty(jo?.qty_lp)],
+                  ['Harga/Pcs', fmtRp(row.harga_jual)],
+                  ['Total Harga', fmtRp(row.total_harga)],
                   ['Label', row.label],
                   ['Status JO', row.status_jo],
                   ['Status Proses', row.status_proses],
@@ -774,8 +826,10 @@ function JOMonitoring() {
   const [sortBy, setSortBy] = useState<any>(SORT_BY_OPTIONS[0]);
   const [statusPo, setStatusPo] = useState<any>(STATUS_PO_OPTIONS[0]);
   const [idCustomer, setIdCustomer] = useState<any>(null);
+  const [idMarketing, setIdMarketing] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [customerOptions, setCustomerOptions] = useState<any[]>([]);
+  const [marketingOptions, setMarketingOptions] = useState<any[]>([]);
 
   // Modals
   const [detailRow, setDetailRow] = useState<any>(null);
@@ -792,8 +846,26 @@ function JOMonitoring() {
       SORT_BY_OPTIONS[0].value,
       STATUS_PO_OPTIONS[0].value,
       null,
+      null,
     );
+    fetchMarketingList();
   }, []);
+
+  async function fetchMarketingList() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/marketing`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+      const list: any[] = Array.isArray(res.data?.data) ? res.data.data : [];
+      setMarketingOptions(
+        list.map((m) => ({
+          value: m.id,
+          label: `${m.kode} - ${m.data_karyawan?.name || 'Unknown'}`,
+        })),
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   const handleSort = useCallback((key: SortKey) => {
     setSortConfig((prev) => {
@@ -811,6 +883,7 @@ function JOMonitoring() {
     sort: string,
     status: string,
     customerId: any,
+    marketingId: any,
   ) {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/soMonitoring`;
     try {
@@ -822,6 +895,7 @@ function JOMonitoring() {
           sort_by: sort,
           status_po: status,
           id_customer: customerId || undefined,
+          id_marketing: marketingId || undefined,
         },
         withCredentials: true,
       });
@@ -848,6 +922,7 @@ function JOMonitoring() {
       sortBy?.value,
       statusPo?.value,
       idCustomer?.value ?? null,
+      idMarketing?.value ?? null,
     );
 
   const handleReset = () => {
@@ -858,12 +933,14 @@ function JOMonitoring() {
     setSortBy(SORT_BY_OPTIONS[0]);
     setStatusPo(STATUS_PO_OPTIONS[0]);
     setIdCustomer(null);
+    setIdMarketing(null);
     setSearchQuery('');
     fetchJO(
       start,
       end,
       SORT_BY_OPTIONS[0].value,
       STATUS_PO_OPTIONS[0].value,
+      null,
       null,
     );
   };
@@ -1037,6 +1114,22 @@ function JOMonitoring() {
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs sm:text-sm text-gray-600 font-medium">
+                  Marketing:
+                </label>
+                <Select
+                  options={marketingOptions}
+                  value={idMarketing}
+                  onChange={(sel) => setIdMarketing(sel)}
+                  isClearable
+                  placeholder="Semua Marketing"
+                  styles={customSelectStyles}
+                  className="text-xs sm:text-sm"
+                  menuPortalTarget={document.body}
+                  menuPosition="fixed"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs sm:text-sm text-gray-600 font-medium">
                   Cari:
                 </label>
                 <input
@@ -1072,7 +1165,7 @@ function JOMonitoring() {
 
         {/* ── Table ── */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-violet-500 to-purple-600 p-3 sm:p-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-violet-500 to-purple-600 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-white text-base sm:text-lg font-bold flex items-center gap-2">
               <svg
                 className="w-5 h-5 flex-shrink-0"
@@ -1089,13 +1182,16 @@ function JOMonitoring() {
               </svg>
               Data JO Monitoring
             </h3>
-            <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold">
-              {filtered.length} / {joData.length} Record
-            </span>
+            <div className="flex flex-wrap items-center gap-2 justify-end">
+              <StatusJoSummary data={filtered} />
+              <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold whitespace-nowrap">
+                {filtered.length} / {joData.length} Record
+              </span>
+            </div>
           </div>
 
           <div className="overflow-x-auto max-h-[650px] overflow-y-auto">
-            <table className="w-full text-xs sm:text-sm min-w-[1300px]">
+            <table className="w-full text-xs sm:text-sm min-w-[1500px]">
               <thead className="bg-white sticky top-0 z-10">
                 <tr>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
@@ -1105,6 +1201,12 @@ function JOMonitoring() {
                   <SortableTh label="Customer" column="customer" />
                   <SortableTh label="Produk" column="produk" />
                   <SortableTh label="Qty" column="po_qty" />
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Harga/Pcs
+                  </th>
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Total Harga
+                  </th>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
                     Progress Kirim
                   </th>
@@ -1128,7 +1230,7 @@ function JOMonitoring() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={15}
+                      colSpan={14}
                       className="p-8 text-center text-gray-500 text-sm"
                     >
                       Tidak ada data JO
@@ -1200,7 +1302,23 @@ function JOMonitoring() {
                           </span>
                         </td>
                         <td className="p-2 sm:p-3 text-xs text-right font-medium">
-                          {fmtQty(row.po_qty)}
+                          <div>{fmtQty(row.po_qty)}</div>
+                          <div className="text-[10px] text-green-600 font-semibold mt-0.5">
+                            {fmtQty(sumDeliveryQty(row))}
+                          </div>
+                        </td>
+
+                        {/* Harga/Pcs */}
+                        <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
+                          {fmtRp(row.harga_jual)}
+                        </td>
+
+                        {/* Total Harga */}
+                        <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
+                          <div>{fmtRp(row.total_harga)}</div>
+                          <div className="text-[10px] text-green-600 font-semibold mt-0.5">
+                            {fmtRp(calcRealisasiHarga(row))}
+                          </div>
                         </td>
 
                         {/* Progress Kirim */}

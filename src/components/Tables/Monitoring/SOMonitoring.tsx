@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import Loading from '../../Loading';
 import Select from 'react-select';
@@ -72,6 +72,34 @@ function fmtQty(val: number | null | undefined) {
   return val.toLocaleString('id-ID');
 }
 
+// ── sums total_qty across the delivery_order_group array ──
+function sumDeliveryQty(row: any): number {
+  const doGroup: any[] = Array.isArray(row.delivery_order_group)
+    ? row.delivery_order_group
+    : [];
+  return doGroup.reduce((sum: number, d: any) => sum + (d.total_qty ?? 0), 0);
+}
+
+// ── realisasi harga = qty terkirim (from delivery_order_group) × harga/pcs ──
+function calcRealisasiHarga(row: any): number {
+  const qty = sumDeliveryQty(row);
+  const hargaPcs = row.harga_jual ?? 0;
+  return qty * hargaPcs;
+}
+
+// ── counts unique job_order.status_jo across a dataset ──
+function getStatusJoSummary(data: any[]): { status: string; count: number }[] {
+  const counts = new Map<string, number>();
+  data.forEach((d: any) => {
+    const status = d.job_order?.status_jo;
+    if (status) counts.set(status, (counts.get(status) ?? 0) + 1);
+  });
+  return Array.from(counts.entries()).map(([status, count]) => ({
+    status,
+    count,
+  }));
+}
+
 // ── uses row.total_qty (pre-summed by API) as shipped qty ──
 function calcDeliveryProgress(row: any) {
   const shipped = row.total_qty ?? 0;
@@ -133,6 +161,23 @@ function StatusBadge({ status }: { status: string }) {
     >
       {status || '-'}
     </span>
+  );
+}
+
+function StatusJoSummary({ data }: { data: any[] }) {
+  const summary = useMemo(() => getStatusJoSummary(data), [data]);
+  if (summary.length === 0) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {summary.map(({ status, count }) => (
+        <span
+          key={status}
+          className="text-[10px] sm:text-xs bg-white bg-opacity-20 text-white px-2.5 py-0.5 rounded-full font-semibold capitalize whitespace-nowrap"
+        >
+          {status} {count}
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -723,6 +768,7 @@ function SOMonitoring() {
                         ['No IO', detailRow.no_io],
                         ['No PO Customer', detailRow.no_po_customer],
                         ['Customer', detailRow.customer],
+                        ['Marketing', detailRow.kalkulasi?.nama_marketing],
                         ['Produk', detailRow.produk],
                         ['PPIC', detailRow.ppic],
                         ['Label', detailRow.label],
@@ -734,9 +780,14 @@ function SOMonitoring() {
                         ['Tgl Input PO', fmtDate(detailRow.tgl_input_po)],
                         ['Tgl Pengiriman', fmtDate(detailRow.tgl_pengiriman)],
                         ['PO Qty', fmtQty(detailRow.po_qty)],
+                        ['Qty Terkirim', fmtQty(sumDeliveryQty(detailRow))],
                         ['Qty Druk', fmtQty(detailRow.job_order?.qty_druk)],
-                        ['Harga Jual', fmtRp(detailRow.harga_jual)],
+                        ['Harga/Pcs', fmtRp(detailRow.harga_jual)],
                         ['Total Harga', fmtRp(detailRow.total_harga)],
+                        [
+                          'Realisasi Harga',
+                          fmtRp(calcRealisasiHarga(detailRow)),
+                        ],
                         [
                           'Profit',
                           detailRow.profit != null
@@ -1157,7 +1208,7 @@ function SOMonitoring() {
 
         {/* ── Table ── */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-500 to-teal-600 p-3 sm:p-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-green-500 to-teal-600 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-white text-base sm:text-lg font-bold flex items-center gap-2">
               <svg
                 className="w-5 h-5 flex-shrink-0"
@@ -1174,13 +1225,16 @@ function SOMonitoring() {
               </svg>
               Data SO Monitoring
             </h3>
-            <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold">
-              {filtered.length} / {soData.length} Record
-            </span>
+            <div className="flex flex-wrap items-center gap-2 justify-end">
+              <StatusJoSummary data={filtered} />
+              <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold whitespace-nowrap">
+                {filtered.length} / {soData.length} Record
+              </span>
+            </div>
           </div>
 
           <div className="overflow-x-auto max-h-[650px] overflow-y-auto">
-            <table className="w-full text-xs sm:text-sm min-w-[1200px]">
+            <table className="w-full text-xs sm:text-sm min-w-[1300px]">
               <thead className="bg-white sticky top-0 z-10">
                 <tr>
                   {[
@@ -1189,7 +1243,8 @@ function SOMonitoring() {
                     'Nomor',
                     'Customer',
                     'Produk',
-                    'PO Qty',
+                    'Qty',
+                    'Harga/Pcs',
                     'Total Harga',
                     'Progress',
                     'Tahapan Terakhir',
@@ -1208,7 +1263,7 @@ function SOMonitoring() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11}
                       className="p-8 text-center text-gray-500 text-sm"
                     >
                       Tidak ada data SO
@@ -1276,10 +1331,19 @@ function SOMonitoring() {
                           </span>
                         </td>
                         <td className="p-2 sm:p-3 text-xs text-right font-medium">
-                          {fmtQty(row.po_qty)}
+                          <div>{fmtQty(row.po_qty)}</div>
+                          <div className="text-[10px] text-green-600 font-semibold mt-0.5">
+                            {fmtQty(sumDeliveryQty(row))}
+                          </div>
                         </td>
                         <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
-                          {fmtRp(row.total_harga)}
+                          {fmtRp(row.harga_jual)}
+                        </td>
+                        <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
+                          <div>{fmtRp(row.total_harga)}</div>
+                          <div className="text-[10px] text-green-600 font-semibold mt-0.5">
+                            {fmtRp(calcRealisasiHarga(row))}
+                          </div>
                         </td>
                         <td className="p-2 sm:p-3 text-xs min-w-[140px] flex flex-col gap-1">
                           {dp ? (
