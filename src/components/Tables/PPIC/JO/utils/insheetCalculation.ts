@@ -30,6 +30,7 @@ export interface InsheetValues {
   total_insheet: number; // aggregate
   jumlah_lp: number;
   formula_mode: 'single' | 'dual';
+  dual_insheet_raw?: number;
   qty_lp_raw: number; // raw LP/druk before insheet — needed for manual-edit reverse formula
   split?: { a: InsheetSideSplit; b: InsheetSideSplit }; // only present when formula_mode === 'dual'
 }
@@ -156,6 +157,7 @@ export const calculateInsheetFromQty = (
     jumlah_lp: kebutuhanLP,
     formula_mode: 'dual',
     qty_lp_raw: qtyLP,
+    dual_insheet_raw: totalInsheetRaw,
     split: {
       a: {
         bagian: bagianA,
@@ -207,8 +209,10 @@ export const applyManualTotalInsheet = (
       qty_lp_raw: current.qty_lp_raw,
     };
   }
+  const smallerBagian = Math.min(bagianA, bagianB) || 1;
+  const rawInsheet = newValue;
+  const insheetLP = Math.ceil(rawInsheet / smallerBagian);
 
-  const insheetLP = newValue;
   const kebutuhanLP = Math.round(current.qty_lp_raw + insheetLP);
   const drukA = kebutuhanLP * bagianA;
   const drukB = kebutuhanLP * bagianB;
@@ -226,6 +230,7 @@ export const applyManualTotalInsheet = (
     jumlah_lp: kebutuhanLP,
     formula_mode: 'dual',
     qty_lp_raw: current.qty_lp_raw,
+    dual_insheet_raw: rawInsheet,
     split: {
       a: {
         bagian: bagianA,

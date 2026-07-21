@@ -684,8 +684,8 @@ export const InsheetCalculationSection: React.FC<
   const calculatedJumlahLP = Math.ceil(insheetValues.jumlah_druk / bagianA);
 
   // ── DUAL-mode edit field shows "Insheet (LP)", not raw insheet count ──────
-  const insheetLPValue = dual
-    ? Math.round(insheetValues.jumlah_lp - insheetValues.qty_lp_raw)
+  const insheetRawValue = dual
+    ? Math.round(insheetValues.dual_insheet_raw ?? 0)
     : 0;
 
   return (
@@ -875,10 +875,9 @@ export const InsheetCalculationSection: React.FC<
             })}
           </div>
 
-          {/* Editable Insheet (LP) — dual mode */}
           <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Edit Insheet (LP){' '}
+              Edit Insheet{' '}
               <span className="text-xs font-normal text-gray-600">
                 (akan mengubah Qty, Kebutuhan LP, dan Druk/Insheet sisi A &amp;
                 B)
@@ -886,14 +885,20 @@ export const InsheetCalculationSection: React.FC<
             </label>
             <input
               type="number"
-              value={insheetLPValue}
+              value={insheetRawValue}
               onChange={(e) => onTotalInsheetChange(Number(e.target.value))}
               className="w-full px-4 py-3 border-2 border-yellow-400 rounded-md text-center font-bold text-2xl text-orange-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
               min="0"
             />
             <p className="mt-2 text-xs text-gray-600">
-              Diambil dari bagian terkecil ({Math.min(bagianA, bagianB) || 1}).
-              Insheet total (A+B):{' '}
+              Dibagi bagian terkecil ({Math.min(bagianA, bagianB) || 1}) →
+              Insheet (LP):{' '}
+              <span className="font-bold">
+                {Math.ceil(
+                  insheetRawValue / (Math.min(bagianA, bagianB) || 1),
+                ).toLocaleString()}
+              </span>
+              . Insheet total (A+B):{' '}
               <span className="font-bold">
                 {insheetValues.total_insheet.toLocaleString()}
               </span>
