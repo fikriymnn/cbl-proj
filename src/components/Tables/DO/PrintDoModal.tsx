@@ -61,9 +61,11 @@ interface DOPrintData {
     isi_3: number;
     po_qty: number;
     note: string;
+    so?: {
+      no_po_customer: string;
+    };
   }>;
 }
-
 interface PrintDoModalProps {
   isOpen: boolean;
   doGroupId: number | null;
@@ -421,7 +423,9 @@ const PrintDoModal: React.FC<PrintDoModalProps> = ({
                     } PCS</strong></td>
                     <td class="no-border-right">
                       <div class="product-name">${getValue(item.produk)}</div>
-                      <div class="po-number">PO: ${noPOCustomer}</div>
+                      <div class="po-number">PO: ${getValue(
+                        item?.so?.no_po_customer,
+                      )}</div>
                     </td>
                     <td class="text-center no-jo-red no-border-left">${
                       item?.no_jo || ''
