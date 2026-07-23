@@ -244,19 +244,42 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function StatusJoSummary({ data }: { data: any[] }) {
+// ── clickable recap chips: click a status to filter the table by it, click again to clear ──
+function StatusJoSummary({
+  data,
+  selected,
+  onSelect,
+}: {
+  data: any[];
+  selected: string | null;
+  onSelect: (status: string) => void;
+}) {
   const summary = useMemo(() => getStatusJoSummary(data), [data]);
   if (summary.length === 0) return null;
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {summary.map(({ status, count }) => (
-        <span
-          key={status}
-          className="text-[10px] sm:text-xs bg-white bg-opacity-20 text-white px-2.5 py-0.5 rounded-full font-semibold capitalize whitespace-nowrap"
-        >
-          {status} {count}
-        </span>
-      ))}
+      {summary.map(({ status, count }) => {
+        const isActive = selected === status;
+        return (
+          <button
+            key={status}
+            type="button"
+            onClick={() => onSelect(status)}
+            title={
+              isActive
+                ? 'Klik untuk hapus filter'
+                : `Filter status JO: ${status}`
+            }
+            className={`text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full font-semibold capitalize whitespace-nowrap transition-colors cursor-pointer ${
+              isActive
+                ? 'bg-white text-violet-700 ring-2 ring-white'
+                : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
+            }`}
+          >
+            {status} {count}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -831,6 +854,9 @@ function JOMonitoring() {
   const [customerOptions, setCustomerOptions] = useState<any[]>([]);
   const [marketingOptions, setMarketingOptions] = useState<any[]>([]);
 
+  // Status JO recap filter (clicking a chip beside the record count)
+  const [statusJoFilter, setStatusJoFilter] = useState<string | null>(null);
+
   // Modals
   const [detailRow, setDetailRow] = useState<any>(null);
   const [tahapanRow, setTahapanRow] = useState<any>(null);
@@ -875,6 +901,11 @@ function JOMonitoring() {
       }
       return { key, direction: 'asc' };
     });
+  }, []);
+
+  // toggles the Status JO recap filter: click again on the same chip clears it
+  const handleStatusJoFilter = useCallback((status: string) => {
+    setStatusJoFilter((prev) => (prev === status ? null : status));
   }, []);
 
   async function fetchJO(
@@ -935,6 +966,7 @@ function JOMonitoring() {
     setIdCustomer(null);
     setIdMarketing(null);
     setSearchQuery('');
+    setStatusJoFilter(null);
     fetchJO(
       start,
       end,
@@ -945,9 +977,12 @@ function JOMonitoring() {
     );
   };
 
-  const filtered = useMemo(() => {
-    let result = joData.filter((d) => {
-      const q = searchQuery.toLowerCase();
+  // search-only filter, used both for the table and as the base for the Status JO recap
+  // (recap chips always reflect all statuses present in the searched data, regardless of
+  // whether a status chip is currently selected)
+  const searchFiltered = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return joData.filter((d) => {
       return (
         !q ||
         d.no_so?.toLowerCase().includes(q) ||
@@ -958,6 +993,12 @@ function JOMonitoring() {
         d.ppic?.toLowerCase().includes(q)
       );
     });
+  }, [joData, searchQuery]);
+
+  const filtered = useMemo(() => {
+    let result = statusJoFilter
+      ? searchFiltered.filter((d) => d.job_order?.status_jo === statusJoFilter)
+      : searchFiltered;
 
     if (sortConfig.key && sortConfig.direction) {
       const { key, direction } = sortConfig;
@@ -988,7 +1029,7 @@ function JOMonitoring() {
       });
     }
     return result;
-  }, [joData, searchQuery, sortConfig]);
+  }, [searchFiltered, statusJoFilter, sortConfig]);
 
   const SortableTh = ({
     label,
@@ -1183,7 +1224,21 @@ function JOMonitoring() {
               Data JO Monitoring
             </h3>
             <div className="flex flex-wrap items-center gap-2 justify-end">
-              <StatusJoSummary data={filtered} />
+              <StatusJoSummary
+                data={searchFiltered}
+                selected={statusJoFilter}
+                onSelect={handleStatusJoFilter}
+              />
+              {statusJoFilter && (
+                <button
+                  type="button"
+                  onClick={() => setStatusJoFilter(null)}
+                  title="Hapus filter status JO"
+                  className="text-[10px] sm:text-xs bg-white bg-opacity-90 hover:bg-opacity-100 text-violet-700 px-2.5 py-0.5 rounded-full font-semibold whitespace-nowrap transition-colors"
+                >
+                  Clear ✕
+                </button>
+              )}
               <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold whitespace-nowrap">
                 {filtered.length} / {joData.length} Record
               </span>
@@ -1202,10 +1257,7 @@ function JOMonitoring() {
                   <SortableTh label="Produk" column="produk" />
                   <SortableTh label="Qty" column="po_qty" />
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
-                    Harga/Pcs
-                  </th>
-                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
-                    Total Harga
+                    Status JO
                   </th>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
                     Progress Kirim
@@ -1230,7 +1282,7 @@ function JOMonitoring() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={14}
+                      colSpan={13}
                       className="p-8 text-center text-gray-500 text-sm"
                     >
                       Tidak ada data JO
@@ -1308,17 +1360,9 @@ function JOMonitoring() {
                           </div>
                         </td>
 
-                        {/* Harga/Pcs */}
-                        <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
-                          {fmtRp(row.harga_jual)}
-                        </td>
-
-                        {/* Total Harga */}
-                        <td className="p-2 sm:p-3 text-xs text-right whitespace-nowrap">
-                          <div>{fmtRp(row.total_harga)}</div>
-                          <div className="text-[10px] text-green-600 font-semibold mt-0.5">
-                            {fmtRp(calcRealisasiHarga(row))}
-                          </div>
+                        {/* Status JO */}
+                        <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
+                          <StatusBadge status={jo?.status_jo} />
                         </td>
 
                         {/* Progress Kirim */}
