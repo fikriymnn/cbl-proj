@@ -13,7 +13,7 @@ import {
 import {
   formatDateTime,
   getSelectedMounting,
-  getIsiFromMounting,
+  getBagianFromMounting,
   lpToDruk,
   drukToLp,
   getStatusColor,
@@ -119,6 +119,7 @@ const TambahBahanSPV: React.FC = () => {
     setSelectedJODetail(null);
     setQtyLp('');
     setQtyDruk('');
+    setBagianValue('');
     setNote('');
     if (joList.length === 0) fetchJOList();
   };
@@ -129,6 +130,7 @@ const TambahBahanSPV: React.FC = () => {
     setSelectedJODetail(null);
     setQtyLp('');
     setQtyDruk('');
+    setBagianValue('');
     setNote('');
   };
 
@@ -137,16 +139,27 @@ const TambahBahanSPV: React.FC = () => {
     [selectedJODetail],
   );
 
-  const isi = useMemo(
-    () => getIsiFromMounting(selectedMounting),
-    [selectedMounting],
-  );
+  const bagianA = selectedMounting?.ukuran_cetak_bagian_1 || 0;
+  const bagianB = selectedMounting?.ukuran_cetak_bagian_2 || 0;
+  const defaultBagian = bagianA + bagianB;
+
+  // Editable LP<->Druk conversion factor. Defaults to Bagian A + Bagian B
+  // from the selected JO's mounting, but the user can change it.
+  const [bagianValue, setBagianValue] = useState<string>('');
+  const bagian = bagianValue === '' ? 0 : Number(bagianValue);
+
+  // Re-seed the default whenever a different JO (and therefore a different
+  // mounting / bagian_1 / bagian_2) is selected.
+  useEffect(() => {
+    setBagianValue(defaultBagian > 0 ? String(defaultBagian) : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultBagian]);
 
   const handleQtyLpChange = (value: string) => {
     setQtyLp(value);
     const n = Number(value);
-    if (value && !Number.isNaN(n) && isi > 0) {
-      setQtyDruk(String(lpToDruk(n, isi)));
+    if (value && !Number.isNaN(n) && bagian > 0) {
+      setQtyDruk(String(lpToDruk(n, bagian)));
     } else if (!value) {
       setQtyDruk('');
     }
@@ -155,10 +168,18 @@ const TambahBahanSPV: React.FC = () => {
   const handleQtyDrukChange = (value: string) => {
     setQtyDruk(value);
     const n = Number(value);
-    if (value && !Number.isNaN(n) && isi > 0) {
-      setQtyLp(String(drukToLp(n, isi)));
+    if (value && !Number.isNaN(n) && bagian > 0) {
+      setQtyLp(String(drukToLp(n, bagian)));
     } else if (!value) {
       setQtyLp('');
+    }
+  };
+
+  const handleBagianChange = (value: string) => {
+    setBagianValue(value);
+    const n = Number(value);
+    if (value && !Number.isNaN(n) && n > 0 && qtyLp) {
+      setQtyDruk(String(lpToDruk(Number(qtyLp), n)));
     }
   };
 
@@ -700,6 +721,47 @@ const TambahBahanSPV: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">
+                    Bagian A
+                  </label>
+                  <input
+                    readOnly
+                    value={bagianA}
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">
+                    Bagian B
+                  </label>
+                  <input
+                    readOnly
+                    value={bagianB}
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-black text-xs font-bold">
+                  Bagian (dipakai untuk konversi LP ↔ Druk)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={bagianValue}
+                  onChange={(e) => handleBagianChange(e.target.value)}
+                  placeholder="0"
+                  className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs"
+                />
+                <p className="text-[11px] text-gray-400">
+                  Default = Bagian A + Bagian B ({defaultBagian}). Bisa diubah
+                  manual bila perlu.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
                   <label className="text-black text-xs font-bold">Qty LP</label>
                   <input
                     type="number"
@@ -724,9 +786,9 @@ const TambahBahanSPV: React.FC = () => {
                   />
                 </div>
               </div>
-              {selectedJoOption && isi === 0 && (
+              {selectedJoOption && bagian === 0 && (
                 <p className="text-xs text-amber-600">
-                  JO ini tidak memiliki data isi cetak — Qty Druk tidak bisa
+                  JO ini tidak memiliki data bagian cetak — Qty Druk tidak bisa
                   dihitung otomatis, isi manual keduanya.
                 </p>
               )}

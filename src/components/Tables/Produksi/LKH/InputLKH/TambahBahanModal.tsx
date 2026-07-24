@@ -11,7 +11,7 @@ import {
 } from './Tambahbahan.types';
 import {
   getSelectedMounting,
-  getIsiFromMounting,
+  getBagianFromMounting,
   lpToDruk,
   drukToLp,
 } from '../../TambahBahan/Tambahbahanutils';
@@ -153,8 +153,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     return Math.max(0, sisa - used);
   };
 
-  // ---- PEMAKAIAN tab state (used to derive `isi` for LP<->Druk
-  // conversion on both tabs) ----
+  // ---- PEMAKAIAN tab state (JO detail also drives the shared "bagian"
+  // LP<->Druk conversion factor used on both tabs) ----
   const [joDetail, setJoDetail] = useState<JOData | null>(null);
   const [loadingJoDetail, setLoadingJoDetail] = useState(false);
   const [pemakaianNote, setPemakaianNote] = useState('');
@@ -163,7 +163,29 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
   const [pemakaianLines, setPemakaianLines] = useState<DefectLine[]>([]);
 
   const selectedMounting = getSelectedMounting(joDetail);
-  const isi = getIsiFromMounting(selectedMounting);
+  const bagianA = selectedMounting?.ukuran_cetak_bagian_1 || 0;
+  const bagianB = selectedMounting?.ukuran_cetak_bagian_2 || 0;
+  const defaultBagian = bagianA + bagianB;
+
+  // Editable LP<->Druk conversion factor. Defaults to Bagian A + Bagian B
+  // from the JO's selected mounting, but the user can change it.
+  const [bagianValue, setBagianValue] = useState<number | ''>('');
+  const bagian = bagianValue === '' ? 0 : Number(bagianValue);
+
+  // Re-seed the default whenever the JO's mounting (and therefore its
+  // bagian_1 / bagian_2) changes.
+  useEffect(() => {
+    setBagianValue(defaultBagian > 0 ? defaultBagian : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bagianA, bagianB]);
+
+  const handleBagianChange = (value: number | '') => {
+    setBagianValue(value);
+    const factor = value === '' ? 0 : Number(value);
+    if (pemakaianQtyLp !== '' && factor > 0) {
+      setPemakaianQtyDruk(lpToDruk(Number(pemakaianQtyLp), factor));
+    }
+  };
 
   const addLine = (itemId: number, prefill?: KendalaHistoryItem) => {
     setSelections((prev) => {
@@ -189,7 +211,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
   };
 
   // Druk is the field the user edits directly (capped against sisa, which
-  // is tracked in Druk units); LP is derived automatically from `isi`,
+  // is tracked in Druk units); LP is derived automatically from `bagian`,
   // mirroring the top-level pemakaian LP/Druk conversion below.
   const updateLine = (
     item: TambahBahanPersiapanRecord,
@@ -213,7 +235,9 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
             const drukVal = raw !== '' && Number(raw) > cap ? cap : raw;
             next.qty_tambah_bahan_druk = drukVal;
             next.qty_tambah_bahan_lp =
-              drukVal !== '' && isi > 0 ? drukToLp(Number(drukVal), isi) : '';
+              drukVal !== '' && bagian > 0
+                ? drukToLp(Number(drukVal), bagian)
+                : '';
           }
           return next;
         }),
@@ -236,8 +260,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
 
   const handlePemakaianLpChange = (value: number | '') => {
     setPemakaianQtyLp(value);
-    if (value !== '' && isi > 0) {
-      setPemakaianQtyDruk(lpToDruk(Number(value), isi));
+    if (value !== '' && bagian > 0) {
+      setPemakaianQtyDruk(lpToDruk(Number(value), bagian));
     } else if (value === '') {
       setPemakaianQtyDruk('');
     }
@@ -245,8 +269,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
 
   const handlePemakaianDrukChange = (value: number | '') => {
     setPemakaianQtyDruk(value);
-    if (value !== '' && isi > 0) {
-      setPemakaianQtyLp(drukToLp(Number(value), isi));
+    if (value !== '' && bagian > 0) {
+      setPemakaianQtyLp(drukToLp(Number(value), bagian));
     } else if (value === '') {
       setPemakaianQtyLp('');
     }
@@ -305,6 +329,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
       setActiveTab('pemakaian');
       setSelections({});
       setExpandedId(null);
+      setBagianValue('');
       resetPemakaianForm();
       fetchPersiapanList();
       fetchKendalaHistory();
@@ -316,6 +341,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
   const handleClose = () => {
     setSelections({});
     setExpandedId(null);
+    setBagianValue('');
     resetPemakaianForm();
     onClose();
   };
@@ -543,6 +569,51 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">
+                    Bagian A
+                  </label>
+                  <input
+                    readOnly
+                    value={bagianA}
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-black text-xs font-bold">
+                    Bagian B
+                  </label>
+                  <input
+                    readOnly
+                    value={bagianB}
+                    className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs bg-gray-50"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-black text-xs font-bold">
+                  Bagian (dipakai untuk konversi LP ↔ Druk)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={bagianValue}
+                  onChange={(e) =>
+                    handleBagianChange(
+                      e.target.value === '' ? '' : Number(e.target.value),
+                    )
+                  }
+                  placeholder="0"
+                  className="w-full h-9 px-3 border-2 border-stroke rounded-md text-xs"
+                />
+                <p className="text-[11px] text-gray-400">
+                  Default = Bagian A + Bagian B ({defaultBagian}). Bisa diubah
+                  manual bila perlu.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
                   <label className="text-black text-xs font-bold">Qty LP</label>
                   <input
                     type="number"
@@ -575,9 +646,9 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                   />
                 </div>
               </div>
-              {selectedMounting && isi === 0 && (
+              {selectedMounting && bagian === 0 && (
                 <p className="text-xs text-amber-600">
-                  JO ini tidak memiliki data isi cetak — konversi LP/Druk
+                  JO ini tidak memiliki data bagian cetak — konversi LP/Druk
                   otomatis tidak tersedia, isi manual keduanya.
                 </p>
               )}
@@ -668,8 +739,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                         updatePemakaianLine(line.uid, {
                           qty_tambah_bahan_druk: val,
                           qty_tambah_bahan_lp:
-                            val !== '' && isi > 0
-                              ? drukToLp(Number(val), isi)
+                            val !== '' && bagian > 0
+                              ? drukToLp(Number(val), bagian)
                               : '',
                         });
                       }}

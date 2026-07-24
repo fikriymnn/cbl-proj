@@ -31,6 +31,8 @@ export interface JOMounting {
   io_mounting?: IoMounting;
   ukuran_cetak_isi_1?: number;
   ukuran_cetak_isi_2?: number;
+  ukuran_cetak_bagian_1?: number;
+  ukuran_cetak_bagian_2?: number;
 }
 
 export interface JOData {
