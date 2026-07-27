@@ -152,6 +152,18 @@ const IconTrash = () => (
     <path d="M9 6V4h6v2" />
   </svg>
 );
+const IconFilter = () => (
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+  </svg>
+);
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }: { status: string }) => {
@@ -215,6 +227,35 @@ const Toast = ({ msg, type }: { msg: string; type: 'success' | 'error' }) => (
     <span>{type === 'success' ? '✓' : '✕'}</span> {msg}
   </div>
 );
+
+// ─── Potongan Otomatis (absensi-based deduction) helpers ──────────────────────
+// The payroll summary API returns several arrays of auto-generated deductions
+// derived from attendance, each shaped as { label, jumlah, nilai, total }.
+// `nilai` is a formula string (e.g. "10000000 / 26"), not a plain number.
+type PotonganItem = {
+  label?: string;
+  jumlah: number;
+  nilai: string | number;
+  total: number;
+};
+
+const POTONGAN_CATEGORIES: { key: string; label: string }[] = [
+  { key: 'potonganIzin', label: 'Izin' },
+  { key: 'potonganSakit', label: 'Sakit' },
+  { key: 'potonganMangkir', label: 'Mangkir' },
+  { key: 'potongan_terlambat', label: 'Terlambat' },
+  { key: 'potonganPinjaman', label: 'Pinjaman' },
+  { key: 'potongan', label: 'Lainnya' },
+];
+
+function getPotonganBreakdown(source: any) {
+  if (!source) return [];
+  return POTONGAN_CATEGORIES.map(({ key, label }) => {
+    const items: PotonganItem[] = Array.isArray(source[key]) ? source[key] : [];
+    const total = items.reduce((sum, it) => sum + Number(it.total || 0), 0);
+    return { key, label, items, total, count: items.length };
+  }).filter((cat) => cat.count > 0);
+}
 
 // ─── Add Item Form ────────────────────────────────────────────────────────────
 function AddItemForm({
@@ -440,6 +481,52 @@ function DetailTable({
   );
 }
 
+// ─── Rincian Potongan Otomatis (attendance-based deduction breakdown) ─────────
+function PotonganBreakdownGrid({ source }: { source: any }) {
+  const breakdown = getPotonganBreakdown(source);
+  if (breakdown.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+        Rincian Potongan Otomatis (Absensi)
+      </h4>
+      <div className="grid grid-cols-2 gap-3">
+        {breakdown.map((cat) => (
+          <div
+            key={cat.key}
+            className="rounded-xl overflow-hidden border border-red-200"
+          >
+            <div className="flex items-center justify-between bg-red-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-2">
+              <span>{cat.label}</span>
+              <span>{cat.count}x</span>
+            </div>
+            <div className="divide-y divide-red-100">
+              {cat.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-3 py-1.5 text-xs"
+                >
+                  <span className="text-slate-400">{item.nilai}</span>
+                  <span className="font-bold text-red-600">
+                    Rp {formatInteger(Number(item.total))}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between px-3 py-1.5 bg-red-50 border-t border-red-200 text-xs">
+              <span className="font-bold text-slate-500">Subtotal</span>
+              <span className="font-bold text-red-700">
+                Rp {formatInteger(cat.total)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Employee Detail Modal ────────────────────────────────────────────────────
 function EmployeeDetailModal({
   employee,
@@ -456,17 +543,8 @@ function EmployeeDetailModal({
 }) {
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isSavingAdj, setIsSavingAdj] = useState(false);
   const [localEmployee, setLocalEmployee] = useState<any>(employee);
   const isDraft = periodeData.status?.toLowerCase() === 'draft';
-
-  // Local state for adjustment fields (only relevant in draft)
-  const [adjNote, setAdjNote] = useState<string>(
-    employee.note_pengurangan_penambahan ?? '',
-  );
-  const [adjAmount, setAdjAmount] = useState<number>(
-    employee.pengurangan_penambahan ?? 0,
-  );
 
   const bayaranItems =
     localEmployee.detail_payroll?.filter((d: any) => d.tipe === 'bayaran') ??
@@ -475,12 +553,6 @@ function EmployeeDetailModal({
     localEmployee.detail_payroll?.filter((d: any) => d.tipe === 'potongan') ??
     [];
   const bio = localEmployee.karyawan?.biodata_karyawan?.[0];
-
-  // Derived sub total preview for draft editing
-  const baseSubTotal =
-    (localEmployee.sub_total_upah ?? 0) -
-    (localEmployee.pengurangan_penambahan ?? 0);
-  const previewSubTotal = baseSubTotal + adjAmount;
 
   async function refreshEmployee() {
     try {
@@ -500,28 +572,6 @@ function EmployeeDetailModal({
       }
       onRefresh();
     } catch {}
-  }
-
-  async function saveAdjustment() {
-    setIsSavingAdj(true);
-    try {
-      await axios.put(
-        `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarBulanan/adjustment/${
-          localEmployee.id
-        }`,
-        {
-          pengurangan_penambahan: adjAmount,
-          note_pengurangan_penambahan: adjNote,
-        },
-        { withCredentials: true },
-      );
-      showToast('Penyesuaian berhasil disimpan');
-      await refreshEmployee();
-    } catch {
-      showToast('Gagal menyimpan penyesuaian', 'error');
-    } finally {
-      setIsSavingAdj(false);
-    }
   }
 
   async function deleteDetail(idDetail: number) {
@@ -558,10 +608,13 @@ function EmployeeDetailModal({
         <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-200 flex-shrink-0">
           <div>
             <h3 className="font-bold text-slate-800 text-base">
-              {localEmployee.karyawan?.name}
+              {localEmployee.karyawan?.name ?? localEmployee.nama_karyawan}
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              NIK {bio?.nik} · {bio?.department?.nama_department ?? '—'}
+              NIK {bio?.nik ?? localEmployee.nik} ·{' '}
+              {bio?.department?.nama_department ??
+                localEmployee.department ??
+                '—'}
             </p>
           </div>
           <button
@@ -590,7 +643,9 @@ function EmployeeDetailModal({
               },
               {
                 label: 'Sub Total',
-                value: `Rp ${formatInteger(localEmployee.sub_total_upah)}`,
+                value: `Rp ${formatInteger(
+                  localEmployee.sub_total_upah ?? localEmployee.sub_total,
+                )}`,
                 cls: 'bg-blue-50 border-blue-200 text-blue-800',
               },
             ].map((c) => (
@@ -660,57 +715,10 @@ function EmployeeDetailModal({
             </div>
           </div>
 
-          {/* Adjustment inputs — draft only
-          {isDraft && (
-            <div className="border border-slate-200 rounded-xl p-4 space-y-3 bg-amber-50/40">
-              <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                Pengurangan / Penambahan
-              </h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">
-                    Catatan
-                  </label>
-                  <input
-                    type="text"
-                    value={adjNote}
-                    onChange={(e) => setAdjNote(e.target.value)}
-                    placeholder="Masukkan catatan…"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">
-                    Jumlah (Rp)
-                  </label>
-                  <input
-                    type="number"
-                    value={adjAmount}
-                    onChange={(e) => setAdjAmount(Number(e.target.value))}
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-2.5">
-                <span className="text-xs font-bold text-slate-500">
-                  TOTAL UPAH TERBARU
-                </span>
-                <span className="font-bold text-emerald-700">
-                  Rp {formatInteger(previewSubTotal)}
-                </span>
-              </div>
-              <button
-                onClick={saveAdjustment}
-                disabled={isSavingAdj}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold py-2 rounded-xl transition"
-              >
-                {isSavingAdj ? 'Menyimpan…' : 'Simpan Penyesuaian'}
-              </button>
-            </div>
-          )} */}
+          {/* Auto-generated (attendance-based) deduction breakdown */}
+          <PotonganBreakdownGrid source={localEmployee} />
 
-          {/* Detail tables */}
+          {/* Manual detail tables (items added via "Tambah Bayaran / Potongan") */}
           <div className="grid grid-cols-2 gap-4">
             <DetailTable
               title="Pendapatan"
@@ -720,7 +728,7 @@ function EmployeeDetailModal({
               onDelete={deleteDetail}
             />
             <DetailTable
-              title="Potongan"
+              title="Potongan Manual"
               color="red"
               items={potonganItems}
               canDelete={isDraft}
@@ -763,7 +771,7 @@ function EmployeeDetailModal({
             ))}
         </div>
 
-        {(isDeleting || isSavingAdj) && (
+        {isDeleting && (
           <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
             <div className="w-8 h-8 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin" />
           </div>
@@ -793,6 +801,10 @@ function PeriodDetailModal({
   const [search, setSearch] = useState('');
   const [localPeriode, setLocalPeriode] = useState<any>(periode);
   const [isFetching, setIsFetching] = useState(false);
+  const [filterDepartment, setFilterDepartment] = useState('');
+  const [filterDivisi, setFilterDivisi] = useState('');
+  const [filterTipePenggajian, setFilterTipePenggajian] = useState('');
+  const [filterTipeKaryawan, setFilterTipeKaryawan] = useState('');
 
   async function refreshLocalPeriode() {
     setIsFetching(true);
@@ -821,12 +833,71 @@ function PeriodDetailModal({
     }
   }
 
+  const departmentOptions: string[] = [
+    ...new Set(
+      (localPeriode.payroll_detail_bulanan ?? [])
+        .map(
+          (d: any) =>
+            d.karyawan?.biodata_karyawan?.[0]?.department?.nama_department ??
+            d.department,
+        )
+        .filter(Boolean),
+    ),
+  ] as string[];
+  const divisiOptions: string[] = [
+    ...new Set(
+      (localPeriode.payroll_detail_bulanan ?? [])
+        .map((d: any) => d.nama_divisi ?? d.divisi)
+        .filter(Boolean),
+    ),
+  ] as string[];
+  const tipePenggajianOptions: string[] = [
+    ...new Set(
+      (localPeriode.payroll_detail_bulanan ?? [])
+        .map((d: any) => d.tipe_penggajian)
+        .filter(Boolean),
+    ),
+  ] as string[];
+  const tipeKaryawanOptions: string[] = [
+    ...new Set(
+      (localPeriode.payroll_detail_bulanan ?? [])
+        .map((d: any) => d.tipe_karyawan)
+        .filter(Boolean),
+    ),
+  ] as string[];
+  const hasActiveFilter =
+    filterDepartment ||
+    filterDivisi ||
+    filterTipePenggajian ||
+    filterTipeKaryawan;
+
   const filtered = (localPeriode.payroll_detail_bulanan ?? []).filter(
     (d: any) => {
       const name = d.karyawan?.name?.toLowerCase() ?? '';
       const nik = d.karyawan?.biodata_karyawan?.[0]?.nik ?? '';
+      const department =
+        d.karyawan?.biodata_karyawan?.[0]?.department?.nama_department ??
+        d.department ??
+        '';
+      const divisi = d.nama_divisi ?? d.divisi ?? '';
       const q = search.toLowerCase();
-      return name.includes(q) || nik.includes(q);
+
+      const matchSearch = name.includes(q) || nik.includes(q);
+      const matchDepartment =
+        !filterDepartment || department === filterDepartment;
+      const matchDivisi = !filterDivisi || divisi === filterDivisi;
+      const matchPenggajian =
+        !filterTipePenggajian || d.tipe_penggajian === filterTipePenggajian;
+      const matchKaryawan =
+        !filterTipeKaryawan || d.tipe_karyawan === filterTipeKaryawan;
+
+      return (
+        matchSearch &&
+        matchDepartment &&
+        matchDivisi &&
+        matchPenggajian &&
+        matchKaryawan
+      );
     },
   );
 
@@ -841,7 +912,7 @@ function PeriodDetailModal({
           className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -894,8 +965,8 @@ function PeriodDetailModal({
             </div>
           </div>
 
-          {/* Search */}
-          <div className="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50">
+          {/* Search + Filter bar */}
+          <div className="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50 space-y-2">
             <div className="relative max-w-sm">
               <svg
                 width="14"
@@ -916,6 +987,127 @@ function PeriodDetailModal({
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl bg-white w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {departmentOptions.length > 0 && (
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconArrowLeft />
+                  </span>
+                  <select
+                    value={filterDepartment}
+                    onChange={(e) => setFilterDepartment(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ minWidth: 0 }}
+                  >
+                    <option value="">Semua Department</option>
+                    {departmentOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {divisiOptions.length > 0 && (
+                <select
+                  value={filterDivisi}
+                  onChange={(e) => setFilterDivisi(e.target.value)}
+                  className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Semua Divisi</option>
+                  {divisiOptions.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {/* {tipePenggajianOptions.length > 0 && (
+                <select
+                  value={filterTipePenggajian}
+                  onChange={(e) => setFilterTipePenggajian(e.target.value)}
+                  className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Semua Tipe Penggajian</option>
+                  {tipePenggajianOptions.map((t) => (
+                    <option key={t} value={t} className="capitalize">
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              )} */}
+              {tipeKaryawanOptions.length > 0 && (
+                <select
+                  value={filterTipeKaryawan}
+                  onChange={(e) => setFilterTipeKaryawan(e.target.value)}
+                  className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Semua Tipe Karyawan</option>
+                  {tipeKaryawanOptions.map((t) => (
+                    <option key={t} value={t} className="capitalize">
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {filterDepartment && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                  <span>{filterDepartment}</span>
+                  <button
+                    onClick={() => setFilterDepartment('')}
+                    className="hover:text-blue-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+              {filterDivisi && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                  <span>{filterDivisi}</span>
+                  <button
+                    onClick={() => setFilterDivisi('')}
+                    className="hover:text-amber-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+              {filterTipePenggajian && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200">
+                  <span className="capitalize">{filterTipePenggajian}</span>
+                  <button
+                    onClick={() => setFilterTipePenggajian('')}
+                    className="hover:text-violet-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+              {filterTipeKaryawan && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200">
+                  <span className="capitalize">{filterTipeKaryawan}</span>
+                  <button
+                    onClick={() => setFilterTipeKaryawan('')}
+                    className="hover:text-cyan-900 transition"
+                  >
+                    <IconX />
+                  </button>
+                </span>
+              )}
+              {hasActiveFilter && (
+                <button
+                  onClick={() => {
+                    setFilterDepartment('');
+                    setFilterDivisi('');
+                    setFilterTipePenggajian('');
+                    setFilterTipeKaryawan('');
+                  }}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
+                >
+                  <IconX /> Reset Filter
+                </button>
+              )}
             </div>
           </div>
 
@@ -942,6 +1134,9 @@ function PeriodDetailModal({
                   <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
                     Potongan
                   </th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
+                    Rincian Potongan
+                  </th>
                   <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
                     Sub Total
                   </th>
@@ -953,6 +1148,7 @@ function PeriodDetailModal({
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((emp: any, i: number) => {
                   const bio = emp.karyawan?.biodata_karyawan?.[0];
+                  const potonganBreakdown = getPotonganBreakdown(emp);
                   return (
                     <tr
                       key={emp.id ?? i}
@@ -963,14 +1159,16 @@ function PeriodDetailModal({
                       </td>
                       <td className="px-4 py-3">
                         <span className="font-mono text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
-                          {bio?.nik ?? '—'}
+                          {bio?.nik ?? emp.nik ?? '—'}
                         </span>
                       </td>
                       <td className="px-4 py-3 font-medium text-slate-800 text-xs">
-                        {emp.karyawan?.name ?? '—'}
+                        {emp.karyawan?.name ?? emp.nama_karyawan ?? '—'}
                       </td>
                       <td className="px-4 py-3 text-slate-500 text-xs">
-                        {bio?.department?.nama_department ?? '—'}
+                        {bio?.department?.nama_department ??
+                          emp.department ??
+                          '—'}
                       </td>
                       <td className="px-4 py-3 text-right text-xs text-emerald-700 font-semibold">
                         Rp {formatInteger(emp.total_upah ?? emp.sub_total_upah)}
@@ -980,6 +1178,25 @@ function PeriodDetailModal({
                           `Rp ${formatInteger(emp.total_potongan)}`
                         ) : (
                           <span className="text-slate-300">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {potonganBreakdown.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-w-[180px]">
+                            {potonganBreakdown.map((cat) => (
+                              <span
+                                key={cat.key}
+                                title={`${cat.label}: Rp ${formatInteger(
+                                  cat.total,
+                                )}`}
+                                className="inline-flex items-center text-[10px] font-semibold bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                              >
+                                {cat.label} {cat.count}x
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-slate-300 text-xs">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right text-xs font-bold text-slate-800">
@@ -999,7 +1216,7 @@ function PeriodDetailModal({
                 {filtered.length === 0 && (
                   <tr>
                     <td
-                      colSpan={8}
+                      colSpan={9}
                       className="text-center py-12 text-slate-400 text-sm"
                     >
                       Tidak ada data

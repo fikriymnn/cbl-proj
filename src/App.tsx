@@ -276,6 +276,7 @@ import DraftPOPage from './pages/Purchasing/DraftPOPage';
 import TambahBahanSPVPage from './pages/Produksi/TambahBahanSPVPage';
 import TambahBahanRMPage from './pages/GudangRM/TambahBahanRMPage';
 import HistoryTambahBahanPage from './pages/Produksi/HistoryTambahBahanPage';
+import MonitoringWIPPage from './pages/Monitoring/MonitoringWIPPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2459,6 +2460,14 @@ function App() {
           element={
             <P>
               <LaporanRekapLKHPage />
+            </P>
+          }
+        />
+        <Route
+          path="/monitoring/monitoring-wip"
+          element={
+            <P>
+              <MonitoringWIPPage />
             </P>
           }
         />

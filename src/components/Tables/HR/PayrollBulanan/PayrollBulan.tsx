@@ -162,6 +162,37 @@ const Toast = ({ msg, type }: { msg: string; type: 'success' | 'error' }) => (
   </div>
 );
 
+// ─── Potongan Otomatis (absensi-based deduction) helpers ──────────────────────
+// summaryPayroll returns several arrays of auto-generated deductions derived
+// from attendance, each shaped as { label, jumlah, nilai, total }.
+// `nilai` is a formula string (e.g. "10000000 / 26"), not a plain number.
+type PotonganItem = {
+  label?: string;
+  jumlah: number;
+  nilai: string | number;
+  total: number;
+};
+
+const POTONGAN_CATEGORIES: { key: string; label: string }[] = [
+  { key: 'potonganIzin', label: 'Izin' },
+  { key: 'potonganSakit', label: 'Sakit' },
+  { key: 'potonganMangkir', label: 'Mangkir' },
+  { key: 'potongan_terlambat', label: 'Terlambat' },
+  { key: 'potonganPinjaman', label: 'Pinjaman' },
+  { key: 'potongan', label: 'Lainnya' },
+];
+
+function getPotonganBreakdown(summaryPayroll: any) {
+  if (!summaryPayroll) return [];
+  return POTONGAN_CATEGORIES.map(({ key, label }) => {
+    const items: PotonganItem[] = Array.isArray(summaryPayroll[key])
+      ? summaryPayroll[key]
+      : [];
+    const total = items.reduce((sum, it) => sum + Number(it.total || 0), 0);
+    return { key, label, items, total, count: items.length };
+  }).filter((cat) => cat.count > 0);
+}
+
 // ─── Add Item Form ────────────────────────────────────────────────────────────
 interface AddItemFormProps {
   idPayrollBulanan: number;
@@ -389,41 +420,78 @@ function DetailTable({
   );
 }
 
+// ─── Rincian Potongan Otomatis (attendance-based deduction breakdown) ─────────
+function PotonganBreakdownGrid({ summaryPayroll }: { summaryPayroll: any }) {
+  const breakdown = getPotonganBreakdown(summaryPayroll);
+  if (breakdown.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+        Rincian Potongan Otomatis (Absensi)
+      </h4>
+      <div className="grid grid-cols-2 gap-3">
+        {breakdown.map((cat) => (
+          <div
+            key={cat.key}
+            className="rounded-xl overflow-hidden border border-red-200"
+          >
+            <div className="flex items-center justify-between bg-red-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-2">
+              <span>{cat.label}</span>
+              <span>{cat.count}x</span>
+            </div>
+            <div className="divide-y divide-red-100">
+              {cat.items.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-3 py-1.5 text-xs"
+                >
+                  <span className="text-slate-400">{item.nilai}</span>
+                  <span className="font-bold text-red-600">
+                    Rp {formatInteger(Number(item.total))}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between px-3 py-1.5 bg-red-50 border-t border-red-200 text-xs">
+              <span className="font-bold text-slate-500">Subtotal</span>
+              <span className="font-bold text-red-700">
+                Rp {formatInteger(cat.total)}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Employee Detail Modal ────────────────────────────────────────────────────
 interface EmployeeDetailModalProps {
   data: any; // one item from filteredData (has summaryPayroll, detailAbsensi)
-  index: number;
   payWeek: any;
   isDraft: boolean;
   onClose: () => void;
   onRefresh: () => void;
   showToast: (msg: string, type?: 'success' | 'error') => void;
-  // For adjustment
-  onInputChange: (index: number, value: number) => void;
-  onInputNote: (index: number, value: string) => void;
 }
 function EmployeeDetailModal({
   data,
-  index,
   payWeek,
   isDraft,
   onClose,
   onRefresh,
   showToast,
-  onInputChange,
-  onInputNote,
 }: EmployeeDetailModalProps) {
   const [showRincian, setShowRincian] = useState(false);
   const [showAbsen, setShowAbsen] = useState(false);
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // The id for add/delete is the payroll_detail_bulanan id
-  // In the old code, data.summaryPayroll doesn't have an id exposed directly.
-  // We use data.id if present (from payroll_detail_bulanan), otherwise we can only show.
+  // The id for add/delete is the payroll_detail_bulanan id.
+  // data.summaryPayroll doesn't expose an id directly, so fall back to data.id
+  // (present once the period has been saved as payroll_detail_bulanan).
   const payrollDetailId = data.id ?? data.summaryPayroll?.id;
-
-  const isDraftMode = isDraft;
 
   async function deleteDetail(idDetail: number) {
     if (!confirm('Hapus item ini?')) return;
@@ -448,19 +516,14 @@ function EmployeeDetailModal({
     }
   }
 
-  const bayaranItems = data.summaryPayroll?.rincian ?? [];
-  const potonganItems = [
-    ...(data.summaryPayroll?.potongan ?? []),
-    ...(data.summaryPayroll?.potongan_terlambat ?? []),
-  ];
-
-  // detail_payroll array (from saved/submitted periods) for add/delete
+  // detail_payroll array (manual items added post-save) for add/delete
   const detailPayrollBayaran =
     data.detail_payroll?.filter((d: any) => d.tipe === 'bayaran') ?? [];
   const detailPayrollPotongan =
     data.detail_payroll?.filter((d: any) => d.tipe === 'potongan') ?? [];
   const hasDetailPayroll =
     data.detail_payroll && data.detail_payroll.length > 0;
+  const hasRincianPendapatan = data.summaryPayroll?.rincian?.length > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -479,6 +542,18 @@ function EmployeeDetailModal({
               NIK {data.summaryPayroll?.nik} · {data.summaryPayroll?.department}{' '}
               / {data.summaryPayroll?.divisi}
             </p>
+            <div className="flex items-center gap-2 mt-1">
+              {data.summaryPayroll?.tipe_penggajian && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-violet-50 text-violet-700 border border-violet-200 capitalize">
+                  {data.summaryPayroll.tipe_penggajian}
+                </span>
+              )}
+              {data.summaryPayroll?.tipe_karyawan && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 capitalize">
+                  {data.summaryPayroll.tipe_karyawan}
+                </span>
+              )}
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -528,53 +603,6 @@ function EmployeeDetailModal({
             </span>
           </div>
 
-          {/* Adjustment inputs (only on draft/fresh data)
-          {isDraftMode && (
-            <div className="border border-slate-200 rounded-xl p-4 space-y-3 bg-amber-50/40">
-              <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">
-                Pengurangan / Penambahan
-              </h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">
-                    Catatan
-                  </label>
-                  <input
-                    type="text"
-                    value={
-                      data.summaryPayroll?.note_pengurangan_penambahan || ''
-                    }
-                    onChange={(e) => onInputNote(index, e.target.value)}
-                    placeholder="Masukkan catatan…"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-1">
-                    Jumlah (Rp)
-                  </label>
-                  <input
-                    type="number"
-                    value={data.summaryPayroll?.pengurangan_penambahan || 0}
-                    onChange={(e) =>
-                      onInputChange(index, Number(e.target.value))
-                    }
-                    placeholder="0"
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-4 py-2.5">
-                <span className="text-xs font-bold text-slate-500">
-                  TOTAL UPAH TERBARU
-                </span>
-                <span className="font-bold text-emerald-700">
-                  Rp {formatInteger(data.summaryPayroll?.sub_total)}
-                </span>
-              </div>
-            </div>
-          )} */}
-
           {/* Toggle buttons */}
           <div className="flex gap-2 flex-wrap">
             <button
@@ -605,106 +633,60 @@ function EmployeeDetailModal({
 
           {/* Rincian Payroll */}
           {showRincian && (
-            <div className="space-y-3">
-              {hasDetailPayroll ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <DetailTable
-                    title="Pendapatan"
-                    color="emerald"
-                    items={detailPayrollBayaran}
-                    canDelete={isDraftMode}
-                    onDelete={deleteDetail}
-                  />
-                  <DetailTable
-                    title="Potongan"
-                    color="red"
-                    items={detailPayrollPotongan}
-                    canDelete={isDraftMode}
-                    onDelete={deleteDetail}
-                  />
+            <div className="space-y-4">
+              {/* Auto-computed breakdown, straight from summaryPayroll */}
+              {hasRincianPendapatan && (
+                <div className="rounded-xl border border-slate-200 overflow-hidden">
+                  <div className="bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-2">
+                    Rincian Pendapatan
+                  </div>
+                  <div className="divide-y divide-slate-100">
+                    {data.summaryPayroll.rincian.map((r: any, ii: number) => (
+                      <div
+                        key={ii}
+                        className="flex justify-between px-3 py-2 text-xs"
+                      >
+                        <span className="text-slate-600">
+                          {r.label} × {r.jumlah}
+                        </span>
+                        <span className="font-semibold text-emerald-700">
+                          Rp {formatInteger(r.total)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Summary rincian (pre-save) */}
-                  {data.summaryPayroll?.rincian?.length > 0 && (
-                    <div className="rounded-xl border border-slate-200 overflow-hidden">
-                      <div className="bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-2">
-                        Rincian Payroll
-                      </div>
-                      <div className="divide-y divide-slate-100">
-                        {data.summaryPayroll.rincian.map(
-                          (r: any, ii: number) => (
-                            <div
-                              key={ii}
-                              className="flex justify-between px-3 py-2 text-xs"
-                            >
-                              <span className="text-slate-600">
-                                {r.label} × {r.jumlah}
-                              </span>
-                              <span className="font-semibold text-emerald-700">
-                                Rp {formatInteger(r.total)}
-                              </span>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  {(data.summaryPayroll?.potongan?.length > 0 ||
-                    data.summaryPayroll?.potongan_terlambat?.length > 0) && (
-                    <div className="rounded-xl border border-slate-200 overflow-hidden">
-                      <div className="bg-red-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-2">
-                        Potongan
-                      </div>
-                      <div className="divide-y divide-slate-100">
-                        {[
-                          ...(data.summaryPayroll?.potongan ?? []),
-                          ...(data.summaryPayroll?.potongan_terlambat ?? []),
-                        ].map((r: any, ii: number) => (
-                          <div
-                            key={ii}
-                            className="flex justify-between px-3 py-2 text-xs"
-                          >
-                            <span className="text-slate-600">
-                              {r.label} {r.jumlah ? `× ${r.jumlah}` : ''}
-                            </span>
-                            <span className="font-semibold text-red-600">
-                              Rp {formatInteger(r.total)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {data.summaryPayroll?.upahHarianSakit?.length > 0 && (
-                    <div className="rounded-xl border border-slate-200 overflow-hidden col-span-2">
-                      <div className="bg-amber-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-2">
-                        Upah Harian Sakit
-                      </div>
-                      <div className="divide-y divide-slate-100">
-                        {data.summaryPayroll.upahHarianSakit.map(
-                          (r: any, ii: number) => (
-                            <div
-                              key={ii}
-                              className="flex justify-between px-3 py-2 text-xs"
-                            >
-                              <span className="text-slate-600">
-                                {r.label} = {r.jumlah} × {r.nilai}
-                              </span>
-                              <span className="font-semibold text-amber-700">
-                                Rp {formatInteger(r.total)}
-                              </span>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  )}
+              )}
+
+              <PotonganBreakdownGrid summaryPayroll={data.summaryPayroll} />
+
+              {/* Manual items added via "Tambah Bayaran / Potongan" (post-save) */}
+              {hasDetailPayroll && (
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Item Manual
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <DetailTable
+                      title="Pendapatan"
+                      color="emerald"
+                      items={detailPayrollBayaran}
+                      canDelete={isDraft}
+                      onDelete={deleteDetail}
+                    />
+                    <DetailTable
+                      title="Potongan"
+                      color="red"
+                      items={detailPayrollPotongan}
+                      canDelete={isDraft}
+                      onDelete={deleteDetail}
+                    />
+                  </div>
                 </div>
               )}
 
               {/* Add item button */}
-              {isDraftMode &&
+              {isDraft &&
                 payrollDetailId &&
                 (addItemOpen ? (
                   <div className="border border-slate-200 rounded-2xl p-5">
@@ -842,12 +824,14 @@ function EmployeeDetailModal({
 function PayrollBulan() {
   const [isLoading, setIsLoading] = useState(false);
   const [payWeek, setPayWeek] = useState<any>(null);
-  const [editedPayWeek, setEditedPayWeek] = useState<any>(null);
   const [filteredData, setFilteredData] = useState<any[]>([]);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDept, setFilterDept] = useState('');
+  const [filterDiv, setFilterDiv] = useState('');
+  const [filterTipePenggajian, setFilterTipePenggajian] = useState('');
+  const [filterTipeKaryawan, setFilterTipeKaryawan] = useState('');
   const [openModal, setOpenModal] = useState<number | null>(null);
   const [periodStatus, setPeriodStatus] = useState<
     'idle' | 'checking' | 'ok' | 'exists'
@@ -862,26 +846,13 @@ function PayrollBulan() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // Sync editedPayWeek when payWeek changes
-  useEffect(() => {
-    if (payWeek) {
-      setEditedPayWeek({
-        ...payWeek,
-        detail: payWeek.detail.map((item: any) => ({
-          ...item,
-          originalSubTotal: item.summaryPayroll?.sub_total,
-        })),
-      });
-    }
-  }, [payWeek]);
-
   // Sync filtered data
   useEffect(() => {
-    if (!editedPayWeek?.detail) {
+    if (!payWeek?.detail) {
       setFilteredData([]);
       return;
     }
-    let list = editedPayWeek.detail as any[];
+    let list = payWeek.detail as any[];
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -892,17 +863,64 @@ function PayrollBulan() {
     }
     if (filterDept)
       list = list.filter((d) => d.summaryPayroll?.department === filterDept);
+    if (filterDiv)
+      list = list.filter((d) => d.summaryPayroll?.divisi === filterDiv);
+    if (filterTipePenggajian)
+      list = list.filter(
+        (d) => d.summaryPayroll?.tipe_penggajian === filterTipePenggajian,
+      );
+    if (filterTipeKaryawan)
+      list = list.filter(
+        (d) => d.summaryPayroll?.tipe_karyawan === filterTipeKaryawan,
+      );
     setFilteredData(list);
-  }, [editedPayWeek, searchQuery, filterDept]);
+  }, [
+    payWeek,
+    searchQuery,
+    filterDept,
+    filterDiv,
+    filterTipePenggajian,
+    filterTipeKaryawan,
+  ]);
 
-  const departments = payWeek
-    ? [
+  const departments: string[] = payWeek
+    ? ([
         ...new Set(
           (payWeek.detail as any[])
             .map((d) => d.summaryPayroll?.department)
             .filter(Boolean),
         ),
-      ]
+      ] as string[])
+    : [];
+
+  const divisions: string[] = payWeek
+    ? ([
+        ...new Set(
+          (payWeek.detail as any[])
+            .map((d) => d.summaryPayroll?.divisi)
+            .filter(Boolean),
+        ),
+      ] as string[])
+    : [];
+
+  const tipePenggajianOptions: string[] = payWeek
+    ? ([
+        ...new Set(
+          (payWeek.detail as any[])
+            .map((d) => d.summaryPayroll?.tipe_penggajian)
+            .filter(Boolean),
+        ),
+      ] as string[])
+    : [];
+
+  const tipeKaryawanOptions: string[] = payWeek
+    ? ([
+        ...new Set(
+          (payWeek.detail as any[])
+            .map((d) => d.summaryPayroll?.tipe_karyawan)
+            .filter(Boolean),
+        ),
+      ] as string[])
     : [];
 
   async function checkAndFetch() {
@@ -912,6 +930,12 @@ function PayrollBulan() {
     }
     setPeriodStatus('checking');
     setIsLoading(true);
+    // Reset filters when loading new data
+    setFilterDept('');
+    setFilterDiv('');
+    setFilterTipePenggajian('');
+    setFilterTipeKaryawan('');
+    setSearchQuery('');
     try {
       await axios.get(
         `${import.meta.env.VITE_API_LINK}/hr/payroll/checkBayarBulananPeriode`,
@@ -928,7 +952,6 @@ function PayrollBulan() {
           withCredentials: true,
         },
       );
-      console.log('payroll data', res.data.data);
       setPayWeek(res.data.data);
       showToast('Data payroll bulanan berhasil dimuat');
     } catch (err: any) {
@@ -944,12 +967,12 @@ function PayrollBulan() {
   }
 
   async function submitPayroll() {
-    if (!editedPayWeek) return;
+    if (!payWeek) return;
     setIsLoading(true);
     try {
       await axios.post(
         `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarBulananPeriode`,
-        { data_payroll: editedPayWeek },
+        { data_payroll: payWeek },
         { withCredentials: true },
       );
       showToast('Payroll berhasil disimpan sebagai draft!');
@@ -962,31 +985,7 @@ function PayrollBulan() {
     }
   }
 
-  const handleInputChange = (index: number, value: number) => {
-    const newDetail = [...editedPayWeek.detail];
-    newDetail[index].summaryPayroll.pengurangan_penambahan = value;
-    newDetail[index].summaryPayroll.sub_total =
-      newDetail[index].originalSubTotal + value;
-    const newTotal = newDetail.reduce(
-      (sum, item) => sum + item.summaryPayroll.sub_total,
-      0,
-    );
-    setEditedPayWeek({ ...editedPayWeek, detail: newDetail, total: newTotal });
-  };
-
-  const handleInputNote = (index: number, value: string) => {
-    const newDetail = [...editedPayWeek.detail];
-    newDetail[index].summaryPayroll.note_pengurangan_penambahan = value;
-    setEditedPayWeek({ ...editedPayWeek, detail: newDetail });
-  };
-
   const selectedData = openModal !== null ? filteredData[openModal] : null;
-  // Find the real index in editedPayWeek.detail for adjustment handlers
-  const realIndex =
-    openModal !== null && selectedData
-      ? editedPayWeek?.detail?.findIndex((d: any) => d === selectedData) ??
-        openModal
-      : openModal;
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -1002,12 +1001,12 @@ function PayrollBulan() {
             Generate & simpan payroll berdasarkan periode bulanan
           </p>
         </div>
-        {editedPayWeek && (
+        {payWeek && (
           <div className="flex items-center gap-3">
             <div className="text-right">
               <div className="text-xs text-slate-400">Total Gaji</div>
               <div className="text-base font-bold text-blue-700">
-                Rp {formatInteger(editedPayWeek.total)}
+                Rp {formatInteger(payWeek.total)}
               </div>
             </div>
             <button
@@ -1112,13 +1111,82 @@ function PayrollBulan() {
                     className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Semua Department</option>
-                    {(departments as string[]).map((d) => (
+                    {departments.map((d) => (
                       <option key={d} value={d}>
                         {d}
                       </option>
                     ))}
                   </select>
                 </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterDiv}
+                    onChange={(e) => setFilterDiv(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Divisi</option>
+                    {divisions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipePenggajian}
+                    onChange={(e) => setFilterTipePenggajian(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Penggajian</option>
+                    {tipePenggajianOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div> */}
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipeKaryawan}
+                    onChange={(e) => setFilterTipeKaryawan(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Karyawan</option>
+                    {tipeKaryawanOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {(filterDept ||
+                  filterDiv ||
+                  filterTipePenggajian ||
+                  filterTipeKaryawan ||
+                  searchQuery) && (
+                  <button
+                    onClick={() => {
+                      setFilterDept('');
+                      setFilterDiv('');
+                      setFilterTipePenggajian('');
+                      setFilterTipeKaryawan('');
+                      setSearchQuery('');
+                    }}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 bg-slate-100 hover:bg-red-50 border border-slate-200 hover:border-red-200 px-3 py-2 rounded-xl transition-all"
+                  >
+                    <IconX /> Reset Filter
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1143,6 +1211,18 @@ function PayrollBulan() {
                       <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                         Divisi
                       </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Tipe Penggajian
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Tipe Karyawan
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Potongan
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Rincian Potongan
+                      </th>
                       <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
                         Total Gaji
                       </th>
@@ -1152,50 +1232,101 @@ function PayrollBulan() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {filteredData.map((data: any, i: number) => (
-                      <tr
-                        key={i}
-                        className="hover:bg-slate-50 transition-colors"
-                      >
-                        <td className="px-4 py-3 text-slate-400 font-medium">
-                          {i + 1}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md">
-                            {data.summaryPayroll?.nik}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
-                              <IconUser />
-                            </div>
-                            <span className="font-medium text-slate-800">
-                              {data.summaryPayroll?.nama_karyawan}
+                    {filteredData.map((data: any, i: number) => {
+                      const potonganBreakdown = getPotonganBreakdown(
+                        data.summaryPayroll,
+                      );
+                      return (
+                        <tr
+                          key={i}
+                          className="hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="px-4 py-3 text-slate-400 font-medium">
+                            {i + 1}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-md">
+                              {data.summaryPayroll?.nik}
                             </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-slate-600 text-xs">
-                          {data.summaryPayroll?.department}
-                        </td>
-                        <td className="px-4 py-3 text-slate-500 text-xs">
-                          {data.summaryPayroll?.divisi}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <span className="font-semibold text-slate-800">
-                            Rp {formatInteger(data.summaryPayroll?.sub_total)}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => setOpenModal(i)}
-                            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                          >
-                            <IconEye /> Detail
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 flex-shrink-0">
+                                <IconUser />
+                              </div>
+                              <span className="font-medium text-slate-800">
+                                {data.summaryPayroll?.nama_karyawan}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-slate-600 text-xs">
+                            {data.summaryPayroll?.department}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500 text-xs">
+                            {data.summaryPayroll?.divisi}
+                          </td>
+                          <td className="px-4 py-3">
+                            {data.summaryPayroll?.tipe_penggajian ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-violet-50 text-violet-700 border border-violet-200 capitalize">
+                                {data.summaryPayroll.tipe_penggajian}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300 text-xs">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {data.summaryPayroll?.tipe_karyawan ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-cyan-50 text-cyan-700 border border-cyan-200 capitalize">
+                                {data.summaryPayroll.tipe_karyawan}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300 text-xs">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right text-xs text-red-600 font-semibold">
+                            {(data.summaryPayroll?.total_potongan ?? 0) > 0 ? (
+                              `Rp ${formatInteger(
+                                data.summaryPayroll.total_potongan,
+                              )}`
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {potonganBreakdown.length > 0 ? (
+                              <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                {potonganBreakdown.map((cat) => (
+                                  <span
+                                    key={cat.key}
+                                    title={`${cat.label}: Rp ${formatInteger(
+                                      cat.total,
+                                    )}`}
+                                    className="inline-flex items-center text-[10px] font-semibold bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                                  >
+                                    {cat.label} {cat.count}x
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-slate-300 text-xs">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span className="font-semibold text-slate-800">
+                              Rp {formatInteger(data.summaryPayroll?.sub_total)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => setOpenModal(i)}
+                              className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-blue-600 hover:text-white text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+                            >
+                              <IconEye /> Detail
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
                 {filteredData.length === 0 && (
@@ -1217,7 +1348,7 @@ function PayrollBulan() {
                 <div>
                   <div className="text-xs opacity-70">Total Seluruh Gaji</div>
                   <div className="text-xl font-bold">
-                    Rp {formatInteger(editedPayWeek?.total)}
+                    Rp {formatInteger(payWeek?.total)}
                   </div>
                 </div>
                 <button
@@ -1247,7 +1378,6 @@ function PayrollBulan() {
       {openModal !== null && selectedData && (
         <EmployeeDetailModal
           data={selectedData}
-          index={realIndex ?? openModal}
           payWeek={payWeek}
           isDraft={true}
           onClose={() => setOpenModal(null)}
@@ -1255,8 +1385,6 @@ function PayrollBulan() {
             /* re-fetch if needed */
           }}
           showToast={showToast}
-          onInputChange={handleInputChange}
-          onInputNote={handleInputNote}
         />
       )}
     </div>
