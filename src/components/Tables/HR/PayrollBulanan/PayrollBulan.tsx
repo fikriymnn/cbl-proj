@@ -789,7 +789,7 @@ function EmployeeDetailModal({
                           {ab.status_masuk}
                           {ab.menit_terlambat > 0 && (
                             <div className="text-red-500">
-                              {ab.menit_terlambat} mnt
+                              {ab.menit_terlambat} Jam
                             </div>
                           )}
                         </td>
@@ -928,6 +928,7 @@ function PayrollBulan() {
           withCredentials: true,
         },
       );
+      console.log('payroll data', res.data.data);
       setPayWeek(res.data.data);
       showToast('Data payroll bulanan berhasil dimuat');
     } catch (err: any) {

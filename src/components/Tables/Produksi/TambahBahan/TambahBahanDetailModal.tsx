@@ -49,6 +49,7 @@ const TambahBahanDetailModal: React.FC<Props> = ({
         const res = await axios.get(endpointFor(type, id), {
           withCredentials: true,
         });
+        console.log(res.data);
         setData(res.data.data || res.data);
       } catch (error) {
         console.error('Error fetching tambah bahan detail:', error);
@@ -83,6 +84,23 @@ const TambahBahanDetailModal: React.FC<Props> = ({
   const tglPakai = (data as any)?.tgl_pakai as string | null | undefined;
   const tglQcPemakaian = (data as any)?.tgl_qc_pemakaian as
     | string
+    | null
+    | undefined;
+
+  // User info for each step of the workflow (who requested / QC'd /
+  // released from gudang / QC'd the pemakaian). Read loosely for the same
+  // reason as the tgl_* fields above.
+  const userRequest = (data as any)?.user_request as
+    | { nama?: string }
+    | null
+    | undefined;
+  const userQc = (data as any)?.user_qc as { nama?: string } | null | undefined;
+  const userGudang = (data as any)?.user_gudang as
+    | { nama?: string }
+    | null
+    | undefined;
+  const userQcPemakaian = (data as any)?.user_qc_pemakaian as
+    | { nama?: string }
     | null
     | undefined;
 
@@ -198,25 +216,38 @@ const TambahBahanDetailModal: React.FC<Props> = ({
                   {data.note_gudang || '-'}
                 </div>
 
-                <div className="text-slate-500">Tanggal Request</div>
+                {/* --- User info trail (who did what, and when) --- */}
+                <div className="text-slate-500">Diminta Oleh</div>
                 <div className="col-span-2 text-slate-800">
-                  {formatDateTime(data.createdAt)}
+                  {userRequest?.nama || '-'}
+                  <span className="text-slate-400">
+                    {' '}
+                    · {formatDateTime(data.createdAt)}
+                  </span>
                 </div>
 
                 {tglQc && (
                   <>
-                    <div className="text-slate-500">Tanggal QC</div>
+                    <div className="text-slate-500">QC Oleh</div>
                     <div className="col-span-2 text-slate-800">
-                      {formatDateTime(tglQc)}
+                      {userQc?.nama || '-'}
+                      <span className="text-slate-400">
+                        {' '}
+                        · {formatDateTime(tglQc)}
+                      </span>
                     </div>
                   </>
                 )}
 
                 {tglGudang && (
                   <>
-                    <div className="text-slate-500">Tanggal Gudang</div>
+                    <div className="text-slate-500">Gudang Oleh</div>
                     <div className="col-span-2 text-slate-800">
-                      {formatDateTime(tglGudang)}
+                      {userGudang?.nama || '-'}
+                      <span className="text-slate-400">
+                        {' '}
+                        · {formatDateTime(tglGudang)}
+                      </span>
                     </div>
                   </>
                 )}
@@ -232,9 +263,13 @@ const TambahBahanDetailModal: React.FC<Props> = ({
 
                 {tglQcPemakaian && (
                   <>
-                    <div className="text-slate-500">Tanggal QC Pemakaian</div>
+                    <div className="text-slate-500">QC Pemakaian Oleh</div>
                     <div className="col-span-2 text-slate-800">
-                      {formatDateTime(tglQcPemakaian)}
+                      {userQcPemakaian?.nama || '-'}
+                      <span className="text-slate-400">
+                        {' '}
+                        · {formatDateTime(tglQcPemakaian)}
+                      </span>
                     </div>
                   </>
                 )}

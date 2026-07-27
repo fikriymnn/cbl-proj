@@ -275,6 +275,7 @@ import POApprovalPurchasePage from './pages/Purchasing/POApprovalPurhcasePage';
 import DraftPOPage from './pages/Purchasing/DraftPOPage';
 import TambahBahanSPVPage from './pages/Produksi/TambahBahanSPVPage';
 import TambahBahanRMPage from './pages/GudangRM/TambahBahanRMPage';
+import HistoryTambahBahanPage from './pages/Produksi/HistoryTambahBahanPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1688,6 +1689,14 @@ function App() {
           element={
             <P>
               <TambahBahanSPVPage />
+            </P>
+          }
+        />
+        <Route
+          path="/production/history-tambah-bahan"
+          element={
+            <P>
+              <HistoryTambahBahanPage />
             </P>
           }
         />

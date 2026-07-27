@@ -220,7 +220,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
     [vendors, vendorId],
   );
 
-  // --- Tanggal kirim: taken straight from the pengajuan data, not editable ---
+  // --- Tanggal kirim: defaults from the pengajuan data, but always editable ---
   const derivedTglKirim = useMemo(() => {
     if (mode !== 'from_selection' || selectedItems.length === 0) {
       return todayISO();
@@ -435,30 +435,31 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
               <label className="block text-xs font-medium text-slate-500 mb-1.5">
                 Tanggal Kirim
               </label>
-              {mode === 'from_selection' ? (
-                <input
-                  type="date"
-                  value={tglKirim}
-                  disabled
-                  readOnly
-                  title="Diambil otomatis dari tanggal kirim pengajuan terkait"
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed"
-                />
-              ) : (
-                <input
-                  type="date"
-                  value={tglKirim}
-                  onChange={(e) => setTglKirim(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              )}
+              <input
+                type="date"
+                value={tglKirim}
+                onChange={(e) => setTglKirim(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
             </div>
           </div>
 
           {/* Items table */}
           <div className="border border-slate-100 rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-sm table-fixed">
+                <colgroup>
+                  <col className="w-[14%]" />
+                  <col className="w-[26%]" />
+                  <col className="w-[16%]" />
+                  {mode === 'from_selection' && <col className="w-20" />}
+                  <col className="w-24" />
+                  <col className="w-20" />
+                  <col className="w-28" />
+                  <col className="w-28" />
+                  <col className="w-16" />
+                  <col className="w-10" />
+                </colgroup>
                 <thead className="bg-slate-50 border-b border-slate-100">
                   <tr>
                     <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
@@ -475,22 +476,22 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
                         Qty BOM
                       </th>
                     )}
-                    <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide w-28">
+                    <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Qty Beli
                     </th>
-                    <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-20">
+                    <th className="px-3 py-2.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Unit
                     </th>
-                    <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide w-32">
+                    <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Harga
                     </th>
-                    <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide w-32">
+                    <th className="px-3 py-2.5 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Total
                     </th>
-                    <th className="px-3 py-2.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide w-20">
+                    <th className="px-3 py-2.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide">
                       Pajak
                     </th>
-                    <th className="px-3 py-2.5 w-10"></th>
+                    <th className="px-3 py-2.5"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -505,7 +506,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
                               kode_barang: e.target.value,
                             })
                           }
-                          className="w-28 px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -518,7 +519,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
                             })
                           }
                           placeholder="Nama barang"
-                          className="w-52 px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                       </td>
                       <td className="px-3 py-2">
@@ -531,7 +532,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
                             })
                           }
                           placeholder="Brand"
-                          className="w-32 px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                       </td>
                       {mode === 'from_selection' && (

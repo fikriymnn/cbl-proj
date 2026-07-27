@@ -81,6 +81,7 @@ interface ProduksiLKHProses {
   id_produksi_lkh_tahapan: number;
   id_tahapan: number;
   id_mesin: number;
+  id_jo: number;
   id_operator: number;
   id_kode_produksi: number;
   kode: string;
@@ -206,7 +207,7 @@ const LKHAllData: React.FC = () => {
         },
         withCredentials: true,
       });
-
+      console.log(res.data);
       const responseData = Array.isArray(res.data.data)
         ? res.data.data
         : (res.data as any)?.rows || (res.data as any)?.result || [];
