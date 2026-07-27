@@ -65,6 +65,11 @@ interface DOItem {
   updatedAt: string;
 }
 
+// Mode used to decide how the popup should behave when opened from the table.
+// 'confirm' -> status === 'progress' -> user can edit qty and confirm the DO
+// 'detail'  -> status === 'done'     -> read-only view of the DO
+type PopupMode = 'confirm' | 'detail';
+
 const KonfirmasiDO: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [doGroupData, setDoGroupData] = useState<DOGroupItem[]>([]);
@@ -73,6 +78,7 @@ const KonfirmasiDO: React.FC = () => {
   );
   const [selectedDOItems, setSelectedDOItems] = useState<DOItem[]>([]);
   const [showConfirmPopup, setShowConfirmPopup] = useState<boolean>(false);
+  const [popupMode, setPopupMode] = useState<PopupMode>('confirm');
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -159,8 +165,18 @@ const KonfirmasiDO: React.FC = () => {
     }
   };
 
+  // Opens the popup in editable "Konfirmasi" mode — only used for status === 'progress'
   const handleKonfirmasi = async (doGroup: DOGroupItem) => {
     setSelectedDOGroup(doGroup);
+    setPopupMode('confirm');
+    await fetchDOGroupDetails(doGroup.id);
+    setShowConfirmPopup(true);
+  };
+
+  // Opens the popup in read-only "Detail" mode — only used for status === 'done'
+  const handleDetail = async (doGroup: DOGroupItem) => {
+    setSelectedDOGroup(doGroup);
+    setPopupMode('detail');
     await fetchDOGroupDetails(doGroup.id);
     setShowConfirmPopup(true);
   };
@@ -318,12 +334,22 @@ const KonfirmasiDO: React.FC = () => {
                       {getStatusBadge(item.status)}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-xs">
-                      <button
-                        onClick={() => handleKonfirmasi(item)}
-                        className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs"
-                      >
-                        Konfirmasi
-                      </button>
+                      {item.status === 'progress' && (
+                        <button
+                          onClick={() => handleKonfirmasi(item)}
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs"
+                        >
+                          Konfirmasi
+                        </button>
+                      )}
+                      {item.status === 'done' && (
+                        <button
+                          onClick={() => handleDetail(item)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs"
+                        >
+                          Detail
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -433,12 +459,22 @@ const KonfirmasiDO: React.FC = () => {
                 </div>
 
                 <div className="pt-2">
-                  <button
-                    onClick={() => handleKonfirmasi(item)}
-                    className="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm"
-                  >
-                    Konfirmasi
-                  </button>
+                  {item.status === 'progress' && (
+                    <button
+                      onClick={() => handleKonfirmasi(item)}
+                      className="w-full px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Konfirmasi
+                    </button>
+                  )}
+                  {item.status === 'done' && (
+                    <button
+                      onClick={() => handleDetail(item)}
+                      className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
+                    >
+                      Detail
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -480,12 +516,16 @@ const KonfirmasiDO: React.FC = () => {
         </div>
       </div>
 
-      {/* Confirmation Popup */}
+      {/* Confirmation / Detail Popup */}
       {showConfirmPopup && selectedDOGroup && (
         <CreateDOPopup
           selectedItems={selectedDOItems}
           doGroupId={selectedDOGroup.id}
           isConfirmationMode={true}
+          isReadOnly={
+            popupMode === 'detail' || selectedDOGroup.status === 'done'
+          }
+          status={selectedDOGroup.status}
           onClose={handleClosePopup}
           onSuccess={handleConfirmSuccess}
         />

@@ -78,6 +78,13 @@ interface CreateDOPopupProps {
   selectedItems: DOItem[];
   doGroupId?: number;
   isConfirmationMode?: boolean;
+  // When true, the whole form becomes read-only (used for "Detail" view on
+  // already-done DOs). Submitting a confirmation is blocked regardless of
+  // this flag if `status` is 'done'.
+  isReadOnly?: boolean;
+  // Current status of the DO Group, passed down so the popup can refuse to
+  // let the user confirm a DO that's already 'done'.
+  status?: string;
   existingData?: any;
   onClose: () => void;
   onSuccess: () => void;
@@ -119,6 +126,8 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
   selectedItems,
   doGroupId,
   isConfirmationMode = false,
+  isReadOnly = false,
+  status,
   existingData,
   onClose,
   onSuccess,
@@ -184,6 +193,12 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
       isi_3: item.isi_3 || 0,
     })),
   );
+
+  // ---- Tgl DO inline-edit state (separate PUT endpoint, edit-mode only) ----
+  const [isEditingTglDo, setIsEditingTglDo] = useState<boolean>(false);
+  const [tglDoDraft, setTglDoDraft] = useState<string>('');
+  const [isSavingTglDo, setIsSavingTglDo] = useState<boolean>(false);
+  const [tglDoError, setTglDoError] = useState<string>('');
 
   // Update alamat and kota when selectedItems change
   useEffect(() => {
@@ -451,6 +466,13 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
     e.preventDefault();
     setError('');
 
+    // Guard: never allow confirming a DO that's already Done, or when the
+    // popup was explicitly opened as read-only (Detail view).
+    if (isReadOnly || status === 'done') {
+      setError('DO ini sudah berstatus Done dan tidak bisa dikonfirmasi lagi');
+      return;
+    }
+
     // Validation
     if (!formData.no_do.trim()) {
       setError('No DO is required');
@@ -568,6 +590,52 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
     }
   };
 
+  // ---- Tgl DO inline-edit handlers -----------------------------------
+  // Calls the dedicated PUT /deliveryOrderGroup/:id endpoint with only the
+  // tgl_do field, independent from the main confirm/save submit flow.
+  const handleStartEditTglDo = () => {
+    setTglDoDraft(formData.tgl_do);
+    setTglDoError('');
+    setIsEditingTglDo(true);
+  };
+
+  const handleCancelEditTglDo = () => {
+    setIsEditingTglDo(false);
+    setTglDoDraft('');
+    setTglDoError('');
+  };
+
+  const handleUpdateTglDo = async () => {
+    if (!doGroupId) return;
+
+    if (!tglDoDraft) {
+      setTglDoError('Tanggal DO tidak boleh kosong');
+      return;
+    }
+
+    try {
+      setIsSavingTglDo(true);
+      setTglDoError('');
+
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/deliveryOrderGroup/${doGroupId}`;
+
+      await axios.put(url, { tgl_do: tglDoDraft }, { withCredentials: true });
+
+      setFormData((prev) => ({ ...prev, tgl_do: tglDoDraft }));
+      setIsEditingTglDo(false);
+      onSuccess(); // refresh the table behind the popup
+    } catch (err: any) {
+      console.error('Error updating tgl_do:', err);
+      setTglDoError(
+        err.response?.data?.message || 'Gagal memperbarui tanggal DO',
+      );
+    } finally {
+      setIsSavingTglDo(false);
+    }
+  };
+
   // Custom styles for react-select
   const selectStyles = {
     control: (base: any) => ({
@@ -592,7 +660,11 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
         <div className="px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-lg flex-shrink-0">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-white">
-              {isConfirmationMode ? 'Konfirmasi DO' : 'Create DO'}
+              {isReadOnly
+                ? 'Detail DO'
+                : isConfirmationMode
+                ? 'Konfirmasi DO'
+                : 'Create DO'}
             </h3>
             <button
               onClick={onClose}
@@ -700,21 +772,119 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         </label>
                       </div>
                     </div>
+
+                    {/* Tgl DO - editable independently via its own PUT endpoint
+                        when in confirmation mode and a doGroupId exists */}
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">
                         Tgl DO
                       </label>
-                      <input
-                        type="date"
-                        value={formData.tgl_do}
-                        onChange={(e) =>
-                          handleInputChange('tgl_do', e.target.value)
-                        }
-                        className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        disabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
-                        }
-                      />
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="date"
+                          value={isEditingTglDo ? tglDoDraft : formData.tgl_do}
+                          onChange={(e) => {
+                            if (isEditingTglDo) {
+                              setTglDoDraft(e.target.value);
+                            } else {
+                              handleInputChange('tgl_do', e.target.value);
+                            }
+                          }}
+                          className={`w-full px-2.5 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                            isEditingTglDo
+                              ? 'border-blue-400 bg-blue-50'
+                              : 'border-gray-300'
+                          }`}
+                          disabled={
+                            isSubmitting ||
+                            isLoadingData ||
+                            isSavingTglDo ||
+                            (isConfirmationMode && !isEditingTglDo)
+                          }
+                        />
+
+                        {/* Pencil icon: only shown in confirmation/edit mode
+                            (not on a brand-new, unsaved DO) and not read-only */}
+                        {isConfirmationMode && doGroupId && (
+                          <button
+                            type="button"
+                            onClick={handleStartEditTglDo}
+                            disabled={isSubmitting || isLoadingData}
+                            className="p-1.5 text-gray-500 hover:text-blue-600 transition-colors flex-shrink-0"
+                            title="Edit tanggal DO"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
+                            </svg>
+                          </button>
+                        )}
+
+                        {isEditingTglDo && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={handleUpdateTglDo}
+                              disabled={isSavingTglDo}
+                              className="p-1.5 text-green-600 hover:text-green-700 transition-colors flex-shrink-0"
+                              title="Simpan tanggal"
+                            >
+                              {isSavingTglDo ? (
+                                <div className="w-4 h-4 border-b-2 border-green-600 rounded-full animate-spin" />
+                              ) : (
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleCancelEditTglDo}
+                              disabled={isSavingTglDo}
+                              className="p-1.5 text-gray-500 hover:text-red-600 transition-colors flex-shrink-0"
+                              title="Batal"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      {tglDoError && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {tglDoError}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -747,7 +917,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         isSearchable
                         styles={selectStyles}
                         isDisabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                       />
                     </div>
@@ -774,7 +947,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         isSearchable
                         styles={selectStyles}
                         isDisabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                       />
                     </div>
@@ -801,7 +977,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         isSearchable
                         styles={selectStyles}
                         isDisabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                       />
                     </div>
@@ -828,7 +1007,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         isSearchable
                         styles={selectStyles}
                         isDisabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                       />
                     </div>
@@ -853,7 +1035,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         placeholder="ROHTO LABORATORIES"
                         disabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                       />
                     </div>
@@ -872,7 +1057,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         placeholder="Auto-filled from customer address"
                         required
                         disabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                         title="Auto-filled from customer's office address"
                       />
@@ -892,7 +1080,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         placeholder="Auto-filled from customer area"
                         required
                         disabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                         title="Auto-filled from customer's area name"
                       />
@@ -911,7 +1102,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         placeholder="Additional notes..."
                         rows={3}
                         disabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                       />
                     </div>
@@ -941,7 +1135,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         placeholder="4000375B_40005918"
                         disabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                       />
                     </div>
@@ -959,7 +1156,10 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                         className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         placeholder="JO-24-00219_JO-24-00500"
                         disabled={
-                          isSubmitting || isLoadingData || isConfirmationMode
+                          isSubmitting ||
+                          isLoadingData ||
+                          isConfirmationMode ||
+                          isReadOnly
                         }
                       />
                     </div>
@@ -1015,7 +1215,9 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                                   className="w-full px-1.5 py-1 text-xs border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   min="0"
                                   placeholder="0"
-                                  disabled={isSubmitting || isLoadingData}
+                                  disabled={
+                                    isSubmitting || isLoadingData || isReadOnly
+                                  }
                                 />
                                 <input
                                   type="number"
@@ -1030,7 +1232,9 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                                   className="w-full px-1.5 py-1 text-xs border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   min="0"
                                   placeholder="0"
-                                  disabled={isSubmitting || isLoadingData}
+                                  disabled={
+                                    isSubmitting || isLoadingData || isReadOnly
+                                  }
                                 />
                               </div>
                             </div>
@@ -1054,7 +1258,9 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                                   className="w-full px-1.5 py-1 text-xs border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   min="0"
                                   placeholder="0"
-                                  disabled={isSubmitting || isLoadingData}
+                                  disabled={
+                                    isSubmitting || isLoadingData || isReadOnly
+                                  }
                                 />
                                 <input
                                   type="number"
@@ -1069,7 +1275,9 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                                   className="w-full px-1.5 py-1 text-xs border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   min="0"
                                   placeholder="0"
-                                  disabled={isSubmitting || isLoadingData}
+                                  disabled={
+                                    isSubmitting || isLoadingData || isReadOnly
+                                  }
                                 />
                               </div>
                             </div>
@@ -1093,7 +1301,9 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                                   className="w-full px-1.5 py-1 text-xs border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   min="0"
                                   placeholder="0"
-                                  disabled={isSubmitting || isLoadingData}
+                                  disabled={
+                                    isSubmitting || isLoadingData || isReadOnly
+                                  }
                                 />
                                 <input
                                   type="number"
@@ -1108,7 +1318,9 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
                                   className="w-full px-1.5 py-1 text-xs border border-gray-300 rounded text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
                                   min="0"
                                   placeholder="0"
-                                  disabled={isSubmitting || isLoadingData}
+                                  disabled={
+                                    isSubmitting || isLoadingData || isReadOnly
+                                  }
                                 />
                               </div>
                             </div>
@@ -1150,16 +1362,20 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
               disabled={isSubmitting || isLoadingData}
               className="px-3 py-1.5 text-sm border border-gray-300 rounded text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Batal
+              {isReadOnly ? 'Tutup' : 'Batal'}
             </button>
-            <button
-              type="button"
-              onClick={handleClear}
-              disabled={isSubmitting || isLoadingData}
-              className="px-3 py-1.5 text-sm border border-gray-300 rounded text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Clear
-            </button>
+
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={handleClear}
+                disabled={isSubmitting || isLoadingData}
+                className="px-3 py-1.5 text-sm border border-gray-300 rounded text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Clear
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handlePrint}
@@ -1168,23 +1384,26 @@ const CreateDOPopup: React.FC<CreateDOPopupProps> = ({
             >
               Print
             </button>
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              disabled={isSubmitting || isLoadingData}
-              className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-            >
-              {(isSubmitting || isLoadingData) && (
-                <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-              )}
-              {isSubmitting
-                ? 'Menyimpan...'
-                : isLoadingData
-                ? 'Loading...'
-                : isConfirmationMode
-                ? 'Konfirmasi'
-                : 'Simpan'}
-            </button>
+
+            {!isReadOnly && (
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={isSubmitting || isLoadingData || status === 'done'}
+                className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              >
+                {(isSubmitting || isLoadingData) && (
+                  <div className="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                )}
+                {isSubmitting
+                  ? 'Menyimpan...'
+                  : isLoadingData
+                  ? 'Loading...'
+                  : isConfirmationMode
+                  ? 'Konfirmasi'
+                  : 'Simpan'}
+              </button>
+            )}
           </div>
         </div>
       </div>
