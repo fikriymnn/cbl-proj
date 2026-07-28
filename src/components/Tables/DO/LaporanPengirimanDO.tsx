@@ -624,12 +624,10 @@ const LaporanPengirimanDO: React.FC = () => {
 
   const calcStatus = (item: ReportDOItem): string => {
     if (item.total_jumlah_qty > item.po_qty) return 'Over Qty';
-    const p = calcProgress(item);
-    if (p >= 100) return 'Selesai';
-    if (p > 0) return 'Kurang Qty';
+    if (item.total_jumlah_qty === item.po_qty) return 'Selesai';
+    if (item.total_jumlah_qty > 0) return 'Kurang Qty';
     return 'Pending';
   };
-
   const sisaPO = (item: ReportDOItem) => item.po_qty - item.total_jumlah_qty;
   const getFirstDOG = (item: ReportDOItem) =>
     item.delivery_order_groups[0] ?? null;
