@@ -572,8 +572,7 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
                   ['PO Qty', fmtQty(row.po_qty)],
                   ['Qty Druk', fmtQty(jo?.qty_druk)],
                   ['Qty LP', fmtQty(jo?.qty_lp)],
-                  ['Harga/Pcs', fmtRp(row.harga_jual)],
-                  ['Total Harga', fmtRp(row.total_harga)],
+
                   ['Label', row.label],
                   ['Status JO', row.status_jo],
                   ['Status Proses', row.status_proses],
