@@ -177,7 +177,8 @@ const POTONGAN_CATEGORIES: { key: string; label: string }[] = [
   { key: 'potonganIzin', label: 'Izin' },
   { key: 'potonganSakit', label: 'Sakit' },
   { key: 'potonganMangkir', label: 'Mangkir' },
-  { key: 'potongan_terlambat', label: 'Terlambat' },
+  { key: 'potongan_terlambat', label: 'Pulang Cepat' },
+
   { key: 'potonganPinjaman', label: 'Pinjaman' },
   { key: 'potongan', label: 'Lainnya' },
 ];
@@ -952,6 +953,7 @@ function PayrollBulan() {
           withCredentials: true,
         },
       );
+      console.log('response', res.data);
       setPayWeek(res.data.data);
       showToast('Data payroll bulanan berhasil dimuat');
     } catch (err: any) {
