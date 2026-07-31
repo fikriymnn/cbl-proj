@@ -50,7 +50,7 @@ interface UserApprove {
 
 interface ProduksiLKHTahapan {
   id: number;
-  id_jo: number;
+  id_jo?: number;
   id_io: number;
   id_so: number;
   id_customer: number;
@@ -257,11 +257,12 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
   >([]);
   const [loadingTambahBahan, setLoadingTambahBahan] = useState<boolean>(false);
 
+  const firstProsesIdJo = lkhData.produksi_lkh_proses?.[0]?.id_jo;
+
   useEffect(() => {
     fetchTambahBahanData();
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lkhData.produksi_lkh_proses[0].id_jo]);
+  }, [firstProsesIdJo]);
 
   // Flow:
   // 1. Call the list endpoints (same ones HistoryTambahBahan uses) filtered
@@ -270,7 +271,9 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
   // 3. Call the get-by-id endpoint for each id to get full detail
   //    (defects + user info included).
   const fetchTambahBahanData = async (): Promise<void> => {
-    if (!lkhData.produksi_lkh_proses[0].id_jo) {
+    const idJo = lkhData.produksi_lkh_proses?.[0]?.id_jo;
+
+    if (!idJo) {
       setTambahBahanPemakaian([]);
       setTambahBahanPersiapan([]);
       return;
@@ -281,14 +284,14 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
       const [pemakaianListRes, persiapanListRes] = await Promise.all([
         axios.get(`${API_BASE}/gudangRM/tambahBahanPemakaian`, {
           params: {
-            id_jo: lkhData.produksi_lkh_proses[0].id_jo,
+            id_jo: idJo,
             status_tiket: 'history',
           },
           withCredentials: true,
         }),
         axios.get(`${API_BASE}/gudangRM/tambahBahanPersiapan`, {
           params: {
-            id_jo: lkhData.produksi_lkh_proses[0].id_jo,
+            id_jo: idJo,
             status_tiket: 'history',
           },
           withCredentials: true,

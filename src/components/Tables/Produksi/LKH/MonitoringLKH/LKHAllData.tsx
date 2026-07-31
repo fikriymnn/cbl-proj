@@ -81,7 +81,7 @@ interface ProduksiLKHProses {
   id_produksi_lkh_tahapan: number;
   id_tahapan: number;
   id_mesin: number;
-  id_jo: number;
+  id_jo?: number;
   id_operator: number;
   id_kode_produksi: number;
   kode: string;
@@ -786,7 +786,10 @@ const LKHAllData: React.FC = () => {
 
       {/* Detail Popup */}
       {showDetailPopup && selectedLKH && (
-        <LKHDetailPopup lkhData={selectedLKH} onClose={handleClosePopup} />
+        <LKHDetailPopup
+          lkhData={selectedLKH as any}
+          onClose={handleClosePopup}
+        />
       )}
     </div>
   );
