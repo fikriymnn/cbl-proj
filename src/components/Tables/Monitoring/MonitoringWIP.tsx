@@ -17,6 +17,22 @@ interface ProduksiLkhProses {
   rusak_total: number;
 }
 
+interface TambahBahanPersiapan {
+  id: number;
+  id_jo: number;
+  status: string;
+  status_tiket: string;
+  qty_pakai_tambah_bahan_druk: number;
+}
+
+interface TambahBahanPemakaian {
+  id: number;
+  id_jo: number;
+  status: string;
+  status_tiket: string;
+  qty_tambah_bahan_druk: number;
+}
+
 interface JOItem {
   id: number;
   id_jo: number;
@@ -44,6 +60,9 @@ interface JOItem {
   umur_pengerjaan_hari: number;
   total_qty_produksi: number;
   total_qty_produksi_target: number;
+  tambah_bahan_persiapan?: TambahBahanPersiapan[];
+  tambah_bahan_pemakaian?: TambahBahanPemakaian[];
+  total_qty_tambah_bahan_druk?: number;
   tahapan_sebelumnya: JOItem | null;
 }
 
@@ -54,12 +73,7 @@ interface TahapanGroup {
   data: JOItem[];
 }
 
-type StatusKey =
-  | 'achieved'
-  | 'progress'
-  | 'stale'
-  | 'not_started'
-  | 'no_target';
+type StatusKey = 'over' | 'achieved' | 'progress' | 'stale' | 'not_started';
 
 // ─── Status / color logic ───────────────────────────────────────────────────
 
@@ -75,6 +89,15 @@ const STATUS_META: Record<
     bar: string;
   }
 > = {
+  over: {
+    label: 'Lebih Target',
+    border: 'border-l-fuchsia-500',
+    headerBg: 'bg-fuchsia-50',
+    badgeBg: 'bg-fuchsia-100',
+    badgeText: 'text-fuchsia-700',
+    dot: 'bg-fuchsia-500',
+    bar: 'bg-fuchsia-500',
+  },
   achieved: {
     label: 'Tercapai',
     border: 'border-l-emerald-500',
@@ -91,7 +114,7 @@ const STATUS_META: Record<
     badgeBg: 'bg-blue-100',
     badgeText: 'text-blue-700',
     dot: 'bg-blue-500',
-    bar: 'bg-blue-500',
+    bar: 'bg-red-500',
   },
   stale: {
     label: 'Mandek',
@@ -111,15 +134,6 @@ const STATUS_META: Record<
     dot: 'bg-amber-400',
     bar: 'bg-amber-400',
   },
-  no_target: {
-    label: 'Tanpa Target',
-    border: 'border-l-gray-300',
-    headerBg: 'bg-gray-50',
-    badgeBg: 'bg-gray-100',
-    badgeText: 'text-gray-500',
-    dot: 'bg-gray-300',
-    bar: 'bg-gray-300',
-  },
 };
 
 const STALE_THRESHOLD_HARI = 3; // no output yet + this many days in stage => "Mandek"
@@ -129,8 +143,13 @@ function getStatus(item: JOItem): StatusKey {
   const produksi = item.total_qty_produksi ?? 0;
   const umur = item.umur_pengerjaan_hari ?? 0;
 
-  if (target <= 0) return 'no_target';
-  if (produksi >= target) return 'achieved';
+  if (target > 0) {
+    if (produksi > target) return 'over';
+    if (produksi === target) return 'achieved';
+    if (produksi > 0) return 'progress';
+    if (umur >= STALE_THRESHOLD_HARI) return 'stale';
+    return 'not_started';
+  }
   if (produksi > 0) return 'progress';
   if (umur >= STALE_THRESHOLD_HARI) return 'stale';
   return 'not_started';
@@ -198,6 +217,22 @@ function sumProses(list: ProduksiLkhProses[] | undefined) {
     { baik: 0, rusak_sebagian: 0, rusak_total: 0 },
   );
 }
+// Cards with a long product/customer name get a full single-card column
+// instead of sharing a 2-up stacked slot.
+function isLongCard(item: JOItem) {
+  return (item.produk?.length ?? 0) > 32 || (item.customer?.length ?? 0) > 24;
+}
+function qtyDiffLabel(produksi: number, target: number) {
+  if (target <= 0) return { status: 'not_started' as StatusKey, label: '' };
+  const diff = produksi - target;
+  if (diff > 0)
+    return { status: 'over' as StatusKey, label: `Lebih ${fmtNum(diff)}` };
+  if (diff === 0) return { status: 'achieved' as StatusKey, label: 'Tercapai' };
+  return {
+    status: 'progress' as StatusKey,
+    label: `Kurang ${fmtNum(Math.abs(diff))}`,
+  };
+}
 
 // ─── Small UI atoms ───────────────────────────────────────────────────────────
 
@@ -213,38 +248,22 @@ function StatusBadge({ status }: { status: StatusKey }) {
   );
 }
 
-function Legend() {
-  return (
-    <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-      {(Object.keys(STATUS_META) as StatusKey[]).map((key) => {
-        const meta = STATUS_META[key];
-        return (
-          <span
-            key={key}
-            className="flex items-center gap-1.5 text-xs text-gray-500"
-          >
-            <span className={`w-2.5 h-2.5 rounded-full ${meta.dot}`} />
-            {meta.label}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
-function SummaryPill({
+function MiniStat({
   label,
   value,
   tone,
+  dot,
 }: {
   label: string;
   value: number;
   tone: string;
+  dot?: string;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl bg-white border border-gray-100 shadow-sm px-3 sm:px-4 py-2.5 min-w-[84px]">
-      <span className={`text-lg sm:text-xl font-bold ${tone}`}>{value}</span>
-      <span className="text-[10px] sm:text-[11px] text-gray-400 font-medium uppercase tracking-wide text-center">
+    <div className="flex items-center gap-1.5 rounded-lg bg-white border border-gray-100 shadow-sm px-2 py-1">
+      {dot && <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />}
+      <span className={`text-xs font-bold leading-none ${tone}`}>{value}</span>
+      <span className="text-[9px] text-gray-400 font-medium uppercase tracking-wide leading-none">
         {label}
       </span>
     </div>
@@ -266,8 +285,7 @@ function ProgressBar({
     );
   }
   const pct = Math.min((produksi / target) * 100, 100);
-  const status =
-    produksi >= target ? 'achieved' : produksi > 0 ? 'progress' : 'not_started';
+  const { status, label } = qtyDiffLabel(produksi, target);
   const meta = STATUS_META[status];
   return (
     <div className="space-y-1">
@@ -275,7 +293,7 @@ function ProgressBar({
         <span>
           {fmtNum(produksi)} / {fmtNum(target)}
         </span>
-        <span className="font-semibold text-gray-600">{pct.toFixed(0)}%</span>
+        <span className={`font-semibold ${meta.badgeText}`}>{label}</span>
       </div>
       <div className="w-full bg-gray-100 rounded-full h-1.5">
         <div
@@ -289,54 +307,85 @@ function ProgressBar({
 
 // ─── JO Card ──────────────────────────────────────────────────────────────────
 
-function JOCard({ item, onClick }: { item: JOItem; onClick: () => void }) {
+function JOCard({
+  item,
+  isLong,
+  onClick,
+}: {
+  item: JOItem;
+  isLong: boolean;
+  onClick: () => void;
+}) {
   const status = getStatus(item);
   const meta = STATUS_META[status];
   const proses = sumProses(item.produksi_lkh_proses);
   const overdue = isOverdue(item);
   const hasRusak = proses.rusak_sebagian > 0 || proses.rusak_total > 0;
   const target = item.total_qty_produksi_target ?? 0;
-  const pct =
-    target > 0 ? Math.min((item.total_qty_produksi / target) * 100, 100) : 0;
+  const produksi = item.total_qty_produksi ?? 0;
+  const pct = target > 0 ? Math.min((produksi / target) * 100, 100) : 0;
+  const { status: barStatus } = qtyDiffLabel(produksi, target);
+  const barMeta = STATUS_META[barStatus];
+  const tambahBahan = item.total_qty_tambah_bahan_druk ?? 0;
 
   return (
     <button
       onClick={onClick}
-      className={`w-full h-[92px] flex flex-col justify-between text-left overflow-hidden bg-white rounded-md border border-gray-100 border-l-[3px] ${meta.border} shadow-sm hover:shadow-md transition-shadow px-2 py-1.5`}
+      className={`w-full h-full flex flex-col justify-between text-left overflow-hidden bg-white rounded-md border border-gray-100 border-l-[3px] ${meta.border} shadow-sm hover:shadow-md transition-shadow px-2 py-1.5`}
     >
-      {/* Header: no_jo + status dot, customer */}
-      <div>
-        <div className="flex items-center justify-between ">
+      {/* Header: no_jo + status dot, produk, customer */}
+      <div className="min-h-0">
+        <div className="flex items-center justify-between">
           <p className="text-[11px] font-bold text-violet-700 truncate">
             {item.no_jo}
           </p>
           <span
-            className={`w-2 h-2 rounded-full shrink-0 ${meta.dot}`}
+            className={`w-2 h-2 rounded-full shrink-0 ml-1 ${meta.dot}`}
             title={meta.label}
           />
         </div>
+        <p
+          className={`text-[10px] text-gray-600 font-medium leading-tight ${
+            isLong ? '' : ''
+          }`}
+        >
+          {item.produk}
+        </p>
+        <p
+          className={`text-[9px] text-gray-400 leading-tight ${
+            isLong ? '' : ''
+          }`}
+        >
+          {item.customer}
+        </p>
       </div>
 
       {/* Progress + badges */}
-      <div className="">
+      <div>
         {target > 0 ? (
           <div className="flex items-center gap-1.5">
             <div className="flex-1 bg-gray-100 rounded-full h-1">
               <div
-                className={`${meta.bar} h-1 rounded-full`}
+                className={`${barMeta.bar} h-1 rounded-full`}
                 style={{ width: `${pct}%` }}
               />
             </div>
-            <span className="text-[9px] font-semibold text-gray-500 shrink-0">
-              {pct.toFixed(0)}%
+            <span
+              className={`text-[9px] font-semibold shrink-0 ${barMeta.badgeText}`}
+            >
+              {produksi > target
+                ? `+${fmtNum(produksi - target)}`
+                : produksi === target
+                ? '100%'
+                : `-${fmtNum(target - produksi)}`}
             </span>
           </div>
         ) : (
-          <p className="text-[9px] text-gray-300 italic">tanpa target</p>
+          <p className="text-[9px] text-gray-300 italic"></p>
         )}
 
-        {(proses.baik > 0 || hasRusak) && (
-          <div className="flex  overflow-hidden">
+        {(proses.baik > 0 || hasRusak || tambahBahan > 0) && (
+          <div className="flex gap-1 flex-wrap overflow-hidden mt-0.5">
             {proses.baik > 0 && (
               <span className="text-[9px] font-semibold px-1 rounded bg-green-50 text-green-700 shrink-0">
                 B {fmtNum(proses.baik)}
@@ -350,6 +399,11 @@ function JOCard({ item, onClick }: { item: JOItem; onClick: () => void }) {
             {proses.rusak_total > 0 && (
               <span className="text-[9px] font-semibold px-1 rounded bg-red-50 text-red-600 shrink-0">
                 RT {fmtNum(proses.rusak_total)}
+              </span>
+            )}
+            {tambahBahan > 0 && (
+              <span className="text-[9px] font-semibold px-1 rounded bg-sky-50 text-sky-600 shrink-0">
+                TB {fmtNum(tambahBahan)}
               </span>
             )}
           </div>
@@ -462,6 +516,68 @@ function StageHistory({ item }: { item: JOItem }) {
   );
 }
 
+function TambahBahanSection({ item }: { item: JOItem }) {
+  const persiapan = item.tambah_bahan_persiapan ?? [];
+  const pemakaian = item.tambah_bahan_pemakaian ?? [];
+  const total = item.total_qty_tambah_bahan_druk ?? 0;
+
+  if (persiapan.length === 0 && pemakaian.length === 0 && total <= 0) {
+    return null;
+  }
+
+  return (
+    <div>
+      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+        Tambah Bahan Druk
+      </h4>
+      <div className="rounded-lg bg-sky-50 border border-sky-100 p-2.5 text-xs mb-2 flex justify-between items-center">
+        <span className="text-sky-600">Total Tambah Bahan</span>
+        <span className="font-bold text-sky-700">{fmtNum(total)}</span>
+      </div>
+      {persiapan.length > 0 && (
+        <div className="space-y-1 mb-2">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+            Persiapan
+          </p>
+          {persiapan.map((tb) => (
+            <div
+              key={tb.id}
+              className="flex justify-between text-[11px] bg-gray-50 rounded px-2 py-1"
+            >
+              <span className="text-gray-500">
+                {tb.status} · {tb.status_tiket}
+              </span>
+              <span className="font-semibold text-gray-700">
+                {fmtNum(tb.qty_pakai_tambah_bahan_druk)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      {pemakaian.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+            Pemakaian
+          </p>
+          {pemakaian.map((tb) => (
+            <div
+              key={tb.id}
+              className="flex justify-between text-[11px] bg-gray-50 rounded px-2 py-1"
+            >
+              <span className="text-gray-500">
+                {tb.status} · {tb.status_tiket}
+              </span>
+              <span className="font-semibold text-gray-700">
+                {fmtNum(tb.qty_tambah_bahan_druk)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function JODetailModal({
   item,
   onClose,
@@ -470,7 +586,6 @@ function JODetailModal({
   onClose: () => void;
 }) {
   const status = getStatus(item);
-  const meta = STATUS_META[status];
   const proses = sumProses(item.produksi_lkh_proses);
   const overdue = isOverdue(item);
 
@@ -556,6 +671,8 @@ function JODetailModal({
             </div>
           )}
 
+          <TambahBahanSection item={item} />
+
           <StageHistory item={item} />
         </div>
 
@@ -572,9 +689,125 @@ function JODetailModal({
   );
 }
 
-// ─── Tahapan Column ───────────────────────────────────────────────────────────
+// ─── Tahapan filter (multi-select, ordered by index) ───────────────────────────
 
-function TahapanColumn({
+interface TahapanOption {
+  id_tahapan: number;
+  nama: string;
+  index: number;
+}
+
+function TahapanFilter({
+  options,
+  selected,
+  onChange,
+}: {
+  options: TahapanOption[];
+  selected: number[];
+  onChange: (ids: number[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const sorted = useMemo(
+    () => [...options].sort((a, b) => a.index - b.index),
+    [options],
+  );
+
+  function toggle(id: number) {
+    if (selected.includes(id)) onChange(selected.filter((s) => s !== id));
+    else onChange([...selected, id]);
+  }
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1.5 rounded-lg bg-violet-50 border border-violet-200 px-3 py-2 text-sm text-gray-700 whitespace-nowrap"
+      >
+        Tahapan ({selected.length}/{options.length})
+        <svg
+          className={`w-3.5 h-3.5 transition-transform ${
+            open ? 'rotate-180' : ''
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute z-20 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-100 p-2 max-h-72 overflow-y-auto">
+            <div className="flex justify-between px-1 pb-1.5 mb-1 border-b border-gray-50">
+              <button
+                type="button"
+                className="text-[11px] text-violet-600 font-semibold"
+                onClick={() => onChange(sorted.map((o) => o.id_tahapan))}
+              >
+                Pilih Semua
+              </button>
+              <button
+                type="button"
+                className="text-[11px] text-gray-400 font-semibold"
+                onClick={() => onChange([])}
+              >
+                Hapus
+              </button>
+            </div>
+            {sorted.map((opt) => {
+              // idx reflects the order the tahapan was checked in, not its
+              // fixed pipeline position — this also drives the display order.
+              const selIdx = selected.indexOf(opt.id_tahapan);
+              const isSelected = selIdx !== -1;
+              return (
+                <label
+                  key={opt.id_tahapan}
+                  className="flex items-center justify-between gap-2 px-1.5 py-1 rounded hover:bg-violet-50 cursor-pointer text-sm"
+                >
+                  <span className="flex items-center gap-2 truncate">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggle(opt.id_tahapan)}
+                      className="accent-violet-600 shrink-0"
+                    />
+                    <span
+                      className={`truncate ${
+                        isSelected ? '' : 'text-gray-400'
+                      }`}
+                    >
+                      {opt.nama}
+                    </span>
+                  </span>
+                  <span
+                    className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${
+                      isSelected
+                        ? 'text-violet-500 bg-violet-50'
+                        : 'text-gray-300 bg-gray-50'
+                    }`}
+                  >
+                    {isSelected ? `idx ${selIdx + 1}` : '—'}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── Tahapan Row (horizontal layout) ───────────────────────────────────────────
+
+function TahapanRow({
   group,
   onSelectItem,
 }: {
@@ -583,11 +816,11 @@ function TahapanColumn({
 }) {
   const counts = useMemo(() => {
     const c: Record<StatusKey, number> = {
+      over: 0,
       achieved: 0,
       progress: 0,
       stale: 0,
       not_started: 0,
-      no_target: 0,
     };
     group.data.forEach((item) => {
       c[getStatus(item)] += 1;
@@ -596,29 +829,32 @@ function TahapanColumn({
   }, [group.data]);
 
   return (
-    <div className="flex flex-col w-[200px] sm:w-[220px] shrink-0 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
-      <div className="bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100 px-2.5 py-2 shrink-0">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="text-xs font-bold text-violet-700 truncate">
+    <div className="flex bg-gray-50 rounded-xl border border-gray-100 overflow-hidden">
+      {/* Left label column: tahapan name + counts */}
+      <div className="w-[110px] sm:w-[150px] shrink-0 bg-gradient-to-b from-violet-50 to-purple-50 border-r border-violet-100 p-2.5 flex flex-col justify-between">
+        <div>
+          <h3 className="text-xs font-bold text-violet-700 leading-tight">
             {group.tahapan?.nama_tahapan ?? '-'}
           </h3>
-          <span className="text-[10px] font-bold text-violet-600 bg-white px-1.5 py-0.5 rounded-full shrink-0">
-            {group.data.length}
+          <span className="inline-block mt-1 text-[10px] font-bold text-violet-600 bg-white px-1.5 py-0.5 rounded-full">
+            {group.data.length} JO
           </span>
         </div>
         {group.data.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          <div className="flex flex-col gap-0.5 mt-2">
             {(Object.keys(STATUS_META) as StatusKey[]).map((key) =>
               counts[key] > 0 ? (
                 <span
                   key={key}
-                  className={`flex items-center gap-0.5 text-[9px] font-semibold ${STATUS_META[key].badgeText}`}
+                  className={`flex items-center gap-1 text-[9px] font-semibold ${STATUS_META[key].badgeText}`}
                   title={STATUS_META[key].label}
                 >
                   <span
-                    className={`w-1.5 h-1.5 rounded-full ${STATUS_META[key].dot}`}
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_META[key].dot}`}
                   />
-                  {counts[key]}
+                  <span className="">
+                    {STATUS_META[key].label}: {counts[key]}
+                  </span>
                 </span>
               ) : null,
             )}
@@ -626,17 +862,30 @@ function TahapanColumn({
         )}
       </div>
 
-      <div className="flex-1 p-1.5 space-y-1 overflow-y-auto max-h-[75vh]">
+      {/* Cards flow horizontally, max 2 stacked per column slot */}
+      <div className="flex-1 overflow-x-auto p-2">
         {group.data.length === 0 ? (
-          <p className="text-center text-gray-300 text-xs py-8">Tidak ada JO</p>
+          <div className="flex items-center justify-center h-[100px]">
+            <p className="text-gray-300 text-xs">Tidak ada JO</p>
+          </div>
         ) : (
-          group.data.map((item) => (
-            <JOCard
-              key={item.id}
-              item={item}
-              onClick={() => onSelectItem(item)}
-            />
-          ))
+          <div
+            className="grid grid-flow-col grid-rows-2 gap-1.5"
+            style={{ gridAutoColumns: '190px', gridAutoRows: '96px' }}
+          >
+            {group.data.map((item) => {
+              const long = isLongCard(item);
+              return (
+                <div key={item.id} className={long ? 'row-span-2' : ''}>
+                  <JOCard
+                    item={item}
+                    isLong={long}
+                    onClick={() => onSelectItem(item)}
+                  />
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
@@ -650,6 +899,7 @@ function MonitoringWIP() {
   const [groups, setGroups] = useState<TahapanGroup[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusKey | 'all'>('all');
+  const [selectedTahapan, setSelectedTahapan] = useState<number[]>([]);
   const [selectedItem, setSelectedItem] = useState<JOItem | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -674,32 +924,61 @@ function MonitoringWIP() {
     fetchData();
   }, []);
 
+  // Whenever fresh groups arrive, default the tahapan filter to "select all".
+  useEffect(() => {
+    if (groups.length > 0) {
+      setSelectedTahapan(groups.map((g) => g.id_tahapan));
+    }
+  }, [groups]);
+
+  const tahapanOptions: TahapanOption[] = useMemo(
+    () =>
+      groups.map((g, i) => ({
+        id_tahapan: g.id_tahapan,
+        nama: g.tahapan?.nama_tahapan ?? '-',
+        // "index" on a JO item encodes the pipeline order of its tahapan;
+        // fall back to array position if no data is present yet.
+        index: g.data[0]?.index ?? i + 1,
+      })),
+    [groups],
+  );
+
   const filteredGroups = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return groups.map((g) => {
-      let data = g.data;
-      if (q) {
-        data = data.filter((item) =>
-          [item.no_jo, item.no_io, item.customer, item.produk]
-            .join(' ')
-            .toLowerCase()
-            .includes(q),
-        );
-      }
-      if (statusFilter !== 'all') {
-        data = data.filter((item) => getStatus(item) === statusFilter);
-      }
-      return { ...g, data };
-    });
-  }, [groups, search, statusFilter]);
+    // Display order follows the order tahapan were checked in the filter,
+    // not the fixed pipeline index.
+    const selectionOrder = new Map(selectedTahapan.map((id, i) => [id, i]));
+    return groups
+      .filter((g) => selectionOrder.has(g.id_tahapan))
+      .map((g) => {
+        let data = g.data;
+        if (q) {
+          data = data.filter((item) =>
+            [item.no_jo, item.no_io, item.customer, item.produk]
+              .join(' ')
+              .toLowerCase()
+              .includes(q),
+          );
+        }
+        if (statusFilter !== 'all') {
+          data = data.filter((item) => getStatus(item) === statusFilter);
+        }
+        return { ...g, data };
+      })
+      .sort(
+        (a, b) =>
+          (selectionOrder.get(a.id_tahapan) ?? 0) -
+          (selectionOrder.get(b.id_tahapan) ?? 0),
+      );
+  }, [groups, search, statusFilter, selectedTahapan]);
 
   const overallCounts = useMemo(() => {
     const c: Record<StatusKey, number> = {
+      over: 0,
       achieved: 0,
       progress: 0,
       stale: 0,
       not_started: 0,
-      no_target: 0,
     };
     let total = 0;
     groups.forEach((g) =>
@@ -731,38 +1010,78 @@ function MonitoringWIP() {
                 d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            <h2 className="font-semibold text-violet-700 text-sm">
+            <h2 className="font-semibold text-violet-700 text-sm shrink-0">
               Monitoring WIP
             </h2>
             {lastUpdated && (
-              <span className="text-[11px] text-gray-400 ml-1">
+              <span className="text-[11px] text-gray-400 shrink-0">
                 diperbarui {fmtDateTime(lastUpdated.toISOString())}
               </span>
             )}
-            <button
-              onClick={fetchData}
-              disabled={isLoading}
-              className="sm:ml-auto flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-800 bg-white border border-violet-200 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
-            >
-              <svg
-                className="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+
+            {/* Compact summary pills, sit right next to Refresh */}
+            <div className="flex items-center gap-1.5 flex-wrap ml-auto">
+              <MiniStat
+                label="Total"
+                value={overallCounts.total}
+                tone="text-gray-700"
+              />
+              <MiniStat
+                label="Lebih Target"
+                value={overallCounts.over}
+                tone="text-fuchsia-600"
+                dot={STATUS_META.over.dot}
+              />
+              <MiniStat
+                label="Tercapai"
+                value={overallCounts.achieved}
+                tone="text-emerald-600"
+                dot={STATUS_META.achieved.dot}
+              />
+              <MiniStat
+                label="Sedang Proses"
+                value={overallCounts.progress}
+                tone="text-blue-600"
+                dot={STATUS_META.progress.dot}
+              />
+              <MiniStat
+                label="Mandek"
+                value={overallCounts.stale}
+                tone="text-red-600"
+                dot={STATUS_META.stale.dot}
+              />
+              <MiniStat
+                label="Belum Diproses"
+                value={overallCounts.not_started}
+                tone="text-amber-600"
+                dot={STATUS_META.not_started.dot}
+              />
+
+              <button
+                onClick={fetchData}
+                disabled={isLoading}
+                className="flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-800 bg-white border border-violet-200 rounded-lg px-3 py-1.5 transition-colors disabled:opacity-50"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              Refresh
-            </button>
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                Refresh
+              </button>
+            </div>
           </div>
 
           <div className="p-4 sm:p-5 space-y-4">
-            {/* Search + status filter */}
+            {/* Search + tahapan filter + status filter */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <svg
@@ -786,6 +1105,11 @@ function MonitoringWIP() {
                   className="w-full pl-9 pr-4 py-2 text-sm rounded-lg bg-violet-50 border border-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-400"
                 />
               </div>
+              <TahapanFilter
+                options={tahapanOptions}
+                selected={selectedTahapan}
+                onChange={setSelectedTahapan}
+              />
               <select
                 value={statusFilter}
                 onChange={(e) =>
@@ -801,42 +1125,6 @@ function MonitoringWIP() {
                 ))}
               </select>
             </div>
-
-            {/* Summary pills */}
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              <SummaryPill
-                label="Total JO"
-                value={overallCounts.total}
-                tone="text-gray-700"
-              />
-              <SummaryPill
-                label="Tercapai"
-                value={overallCounts.achieved}
-                tone="text-emerald-600"
-              />
-              <SummaryPill
-                label="Proses"
-                value={overallCounts.progress}
-                tone="text-blue-600"
-              />
-              <SummaryPill
-                label="Mandek"
-                value={overallCounts.stale}
-                tone="text-red-600"
-              />
-              <SummaryPill
-                label="Belum Diproses"
-                value={overallCounts.not_started}
-                tone="text-amber-600"
-              />
-              <SummaryPill
-                label="Tanpa Target"
-                value={overallCounts.no_target}
-                tone="text-gray-400"
-              />
-            </div>
-
-            <Legend />
           </div>
         </div>
 
@@ -860,11 +1148,11 @@ function MonitoringWIP() {
           </div>
         )}
 
-        {/* ── Board ── */}
+        {/* ── Board: horizontal rows, one per tahapan ── */}
         {groups.length > 0 && (
-          <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2">
+          <div className="space-y-2.5">
             {filteredGroups.map((group) => (
-              <TahapanColumn
+              <TahapanRow
                 key={group.id_tahapan}
                 group={group}
                 onSelectItem={setSelectedItem}

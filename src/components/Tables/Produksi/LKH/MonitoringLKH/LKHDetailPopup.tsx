@@ -297,7 +297,8 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
           withCredentials: true,
         }),
       ]);
-
+      console.log('pemakaianListRes:', pemakaianListRes.data);
+      console.log('persiapanListRes:', persiapanListRes.data);
       const pemakaianIds: number[] = (pemakaianListRes.data?.data || []).map(
         (item: any) => item.id,
       );

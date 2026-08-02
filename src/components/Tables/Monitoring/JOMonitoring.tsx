@@ -218,6 +218,75 @@ function countWithDetail(tahapan: any[]) {
   return tahapan.filter((t) => t.produksi_lkh_proses?.length > 0).length;
 }
 
+// ── sums qty baik / rusak sebagian / rusak total across ALL produksi_lkh_proses
+//     entries nested inside produksi_lkh_tahapan ──
+function sumProduksiQty(tahapan: any[]): {
+  baik: number;
+  rs: number;
+  rt: number;
+} {
+  let baik = 0;
+  let rs = 0;
+  let rt = 0;
+  (tahapan ?? []).forEach((t: any) => {
+    (t.produksi_lkh_proses ?? []).forEach((p: any) => {
+      baik += p.baik ?? 0;
+      rs += p.rusak_sebagian ?? 0;
+      rt += p.rusak_total ?? 0;
+    });
+  });
+  return { baik, rs, rt };
+}
+
+// ── same as above, but broken down per tahapan (used in the JO detail modal) ──
+function getProduksiQtyByTahapan(tahapan: any[]) {
+  return (tahapan ?? [])
+    .map((t: any) => {
+      const sums = (t.produksi_lkh_proses ?? []).reduce(
+        (acc: any, p: any) => {
+          acc.baik += p.baik ?? 0;
+          acc.rs += p.rusak_sebagian ?? 0;
+          acc.rt += p.rusak_total ?? 0;
+          return acc;
+        },
+        { baik: 0, rs: 0, rt: 0 },
+      );
+      return {
+        index: t.index,
+        nama: t.tahapan?.nama_tahapan ?? '-',
+        hasData: (t.produksi_lkh_proses ?? []).length > 0,
+        ...sums,
+      };
+    })
+    .filter((t: any) => t.hasData)
+    .sort((a: any, b: any) => a.index - b.index);
+}
+
+// ── sums qty tambah bahan from job_order.tambah_bahan_persiapan
+//     (field qty_pakai_tambah_bahan_druk) and job_order.tambah_bahan_pemakaian
+//     (field qty_tambah_bahan_druk) ──
+function sumTambahBahan(jo: any): {
+  persiapan: number;
+  pemakaian: number;
+  total: number;
+} {
+  const persiapanList: any[] = Array.isArray(jo?.tambah_bahan_persiapan)
+    ? jo.tambah_bahan_persiapan
+    : [];
+  const pemakaianList: any[] = Array.isArray(jo?.tambah_bahan_pemakaian)
+    ? jo.tambah_bahan_pemakaian
+    : [];
+  const persiapan = persiapanList.reduce(
+    (sum: number, t: any) => sum + (t.qty_pakai_tambah_bahan_druk ?? 0),
+    0,
+  );
+  const pemakaian = pemakaianList.reduce(
+    (sum: number, t: any) => sum + (t.qty_tambah_bahan_druk ?? 0),
+    0,
+  );
+  return { persiapan, pemakaian, total: persiapan + pemakaian };
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
@@ -233,6 +302,7 @@ function StatusBadge({ status }: { status: string }) {
     close: 'bg-gray-100 text-gray-700 border-gray-200',
     repeat: 'bg-indigo-100 text-indigo-700 border-indigo-200',
     history: 'bg-slate-100 text-slate-700 border-slate-200',
+    'approve gudang': 'bg-teal-100 text-teal-700 border-teal-200',
   };
   const cls = map[s] ?? 'bg-blue-100 text-blue-700 border-blue-200';
   return (
@@ -335,6 +405,43 @@ function QtyDiffLabel({ shipped, total }: { shipped: number; total: number }) {
     <span className="text-xs font-bold text-red-500">
       -{fmtQty(Math.abs(diff))} kurang
     </span>
+  );
+}
+
+// ── compact Baik / RS / RT badges used in the table ──
+function ProduksiQtyBadges({
+  baik,
+  rs,
+  rt,
+}: {
+  baik: number;
+  rs: number;
+  rt: number;
+}) {
+  if (baik === 0 && rs === 0 && rt === 0) {
+    return <span className="text-gray-400 text-[10px] italic">Belum ada</span>;
+  }
+  return (
+    <div className="flex flex-wrap gap-1">
+      <span
+        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-green-700"
+        title="Qty Baik"
+      >
+        B: {fmtQty(baik)}
+      </span>
+      <span
+        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-orange-100 text-orange-700"
+        title="Rusak Sebagian"
+      >
+        RS: {fmtQty(rs)}
+      </span>
+      <span
+        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-700"
+        title="Rusak Total"
+      >
+        RT: {fmtQty(rt)}
+      </span>
+    </div>
   );
 }
 
@@ -492,6 +599,30 @@ function TahapanDetailModal({
                               {fmtDateTime(p.waktu_mulai)}
                             </span>
                           </div>
+                          <div>
+                            <p className="text-gray-400 font-medium mb-0.5">
+                              Qty Baik
+                            </p>
+                            <span className="text-[10px] font-bold text-green-600">
+                              {fmtQty(p.baik)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 font-medium mb-0.5">
+                              Rusak Sebagian
+                            </p>
+                            <span className="text-[10px] font-bold text-orange-600">
+                              {fmtQty(p.rusak_sebagian)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 font-medium mb-0.5">
+                              Rusak Total
+                            </p>
+                            <span className="text-[10px] font-bold text-red-600">
+                              {fmtQty(p.rusak_total)}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -528,6 +659,16 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
   const tahapanProg = calcTahapanProgress(row.produksi_lkh_tahapan);
   const do_group: any[] = Array.isArray(row.delivery_order_group)
     ? row.delivery_order_group
+    : [];
+
+  const produksiQtyTotal = sumProduksiQty(row.produksi_lkh_tahapan);
+  const produksiQtyDetail = getProduksiQtyByTahapan(row.produksi_lkh_tahapan);
+  const tambahBahan = sumTambahBahan(jo);
+  const tambahBahanPersiapan: any[] = Array.isArray(jo?.tambah_bahan_persiapan)
+    ? jo.tambah_bahan_persiapan
+    : [];
+  const tambahBahanPemakaian: any[] = Array.isArray(jo?.tambah_bahan_pemakaian)
+    ? jo.tambah_bahan_pemakaian
     : [];
 
   return (
@@ -651,6 +792,166 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
               </div>
             )}
           </div>
+
+          {/* ── Rekap Qty Produksi (Baik / Rusak Sebagian / Rusak Total) ── */}
+          {produksiQtyDetail.length > 0 && (
+            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+              <h4 className="text-xs font-semibold text-emerald-700 mb-3 flex items-center gap-1.5">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Rekap Qty Produksi
+              </h4>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                  Baik: {fmtQty(produksiQtyTotal.baik)}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700">
+                  Rusak Sebagian: {fmtQty(produksiQtyTotal.rs)}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                  Rusak Total: {fmtQty(produksiQtyTotal.rt)}
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {produksiQtyDetail.map((t: any) => (
+                  <div
+                    key={t.index}
+                    className="bg-white rounded-lg border border-emerald-200 grid grid-cols-2 sm:grid-cols-4 gap-2 px-3 py-2 text-xs"
+                  >
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Tahapan</p>
+                      <p className="font-semibold text-gray-800">
+                        {t.index}. {t.nama}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Baik</p>
+                      <p className="font-bold text-green-600">
+                        {fmtQty(t.baik)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Rusak Sebagian</p>
+                      <p className="font-bold text-orange-600">
+                        {fmtQty(t.rs)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Rusak Total</p>
+                      <p className="font-bold text-red-600">{fmtQty(t.rt)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── Tambah Bahan Druk ── */}
+          {(tambahBahanPersiapan.length > 0 ||
+            tambahBahanPemakaian.length > 0) && (
+            <div className="bg-sky-50 rounded-xl p-4 border border-sky-200">
+              <h4 className="text-xs font-semibold text-sky-700 mb-3 flex items-center gap-1.5">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Tambah Bahan Druk
+              </h4>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-sky-100 text-sky-700">
+                  Total: {fmtQty(tambahBahan.total)}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                  Persiapan: {fmtQty(tambahBahan.persiapan)}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700">
+                  Pemakaian: {fmtQty(tambahBahan.pemakaian)}
+                </span>
+              </div>
+
+              {tambahBahanPersiapan.length > 0 && (
+                <div className="mb-3">
+                  <p className="text-[10px] font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                    Persiapan
+                  </p>
+                  <div className="space-y-1.5">
+                    {tambahBahanPersiapan.map((t: any) => (
+                      <div
+                        key={t.id}
+                        className="bg-white rounded-lg border border-sky-200 grid grid-cols-3 gap-2 px-3 py-2 text-xs items-center"
+                      >
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Status</p>
+                          <StatusBadge status={t.status} />
+                        </div>
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Status Tiket</p>
+                          <StatusBadge status={t.status_tiket} />
+                        </div>
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Qty Pakai</p>
+                          <p className="font-bold text-blue-600">
+                            {fmtQty(t.qty_pakai_tambah_bahan_druk)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {tambahBahanPemakaian.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+                    Pemakaian
+                  </p>
+                  <div className="space-y-1.5">
+                    {tambahBahanPemakaian.map((t: any) => (
+                      <div
+                        key={t.id}
+                        className="bg-white rounded-lg border border-sky-200 grid grid-cols-3 gap-2 px-3 py-2 text-xs items-center"
+                      >
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Status</p>
+                          <StatusBadge status={t.status} />
+                        </div>
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Status Tiket</p>
+                          <StatusBadge status={t.status_tiket} />
+                        </div>
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Qty Tambah</p>
+                          <p className="font-bold text-indigo-600">
+                            {fmtQty(t.qty_tambah_bahan_druk)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── Delivery Order (array) ── */}
           {do_group.length > 0 && (
@@ -1245,7 +1546,7 @@ function JOMonitoring() {
           </div>
 
           <div className="overflow-x-auto max-h-[650px] overflow-y-auto">
-            <table className="w-full text-xs sm:text-sm min-w-[1500px]">
+            <table className="w-full text-xs sm:text-sm min-w-[1700px]">
               <thead className="bg-white sticky top-0 z-10">
                 <tr>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
@@ -1260,6 +1561,12 @@ function JOMonitoring() {
                   </th>
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
                     Progress Kirim
+                  </th>
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Qty Produksi
+                  </th>
+                  <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
+                    Tambah Bahan
                   </th>
                   <SortableTh label="Tgl Kirim" column="tgl_pengiriman" />
                   <th className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">
@@ -1281,7 +1588,7 @@ function JOMonitoring() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={13}
+                      colSpan={15}
                       className="p-8 text-center text-gray-500 text-sm"
                     >
                       Tidak ada data JO
@@ -1303,6 +1610,10 @@ function JOMonitoring() {
                     const latestTahapan = getLatestTahapan(
                       row.produksi_lkh_tahapan ?? [],
                     );
+                    const produksiQty = sumProduksiQty(
+                      row.produksi_lkh_tahapan,
+                    );
+                    const tambahBahan = sumTambahBahan(jo);
 
                     const rowBg = dp?.isOver
                       ? 'bg-purple-50'
@@ -1389,6 +1700,32 @@ function JOMonitoring() {
                             <span className="bg-red-100 text-red-800 text-xs px-1.5 py-0.5 rounded font-medium">
                               Status PO : CLOSED
                             </span>
+                          )}
+                        </td>
+
+                        {/* Qty Produksi (Baik / RS / RT) */}
+                        <td className="p-2 sm:p-3 text-xs min-w-[110px]">
+                          <ProduksiQtyBadges
+                            baik={produksiQty.baik}
+                            rs={produksiQty.rs}
+                            rt={produksiQty.rt}
+                          />
+                        </td>
+
+                        {/* Tambah Bahan */}
+                        <td className="p-2 sm:p-3 text-xs text-right min-w-[90px]">
+                          {tambahBahan.total > 0 ? (
+                            <div>
+                              <div className="font-bold text-blue-600">
+                                {fmtQty(tambahBahan.total)}
+                              </div>
+                              <div className="text-[9px] text-gray-400 whitespace-nowrap">
+                                P: {fmtQty(tambahBahan.persiapan)} · G:{' '}
+                                {fmtQty(tambahBahan.pemakaian)}
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
                           )}
                         </td>
 
