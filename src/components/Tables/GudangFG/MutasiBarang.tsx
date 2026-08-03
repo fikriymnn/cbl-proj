@@ -23,7 +23,9 @@ interface DataMutasi {
   produk: string;
   customer: string;
   type_mutasi: 'masuk' | 'keluar' | string;
-  type_mutasi_keluar: 'single' | 'group' | string;
+  type_mutasi_keluar: 'single' | 'group' | string | null;
+  sumber_mutasi: string | null;
+  note: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -131,6 +133,59 @@ function TypeKeluar({ type }: { type: string }) {
   );
 }
 
+/**
+ * Small pill showing where the mutasi came from (e.g. "Send DO", "Adjust Stock").
+ * Kept tiny/muted so it reads as metadata, not a competing badge.
+ */
+function SumberMutasiTag({ sumber }: { sumber: string | null }) {
+  if (!sumber) return null;
+  return (
+    <span className="inline-flex items-center gap-0.5 text-[9px] font-medium text-gray-400">
+      <svg
+        className="w-2.5 h-2.5 flex-shrink-0"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M7 7h.01M7 3h5.586a1 1 0 01.707.293l6.414 6.414a1 1 0 010 1.414l-7.586 7.586a1 1 0 01-1.414 0L3.293 12.293A1 1 0 013 11.586V6a3 3 0 013-3z"
+        />
+      </svg>
+      {sumber}
+    </span>
+  );
+}
+
+/**
+ * Hover/tap icon that reveals a mutasi's note in a small floating tooltip,
+ * so the note doesn't need its own table column.
+ */
+function NoteTooltip({ note }: { note: string | null }) {
+  if (!note) return null;
+  return (
+    <span className="relative inline-flex group/note ">
+      <svg
+        className="w-3 h-3 text-amber-500 cursor-help flex-shrink-0"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fillRule="evenodd"
+          d="M18 10A8 8 0 112 10a8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+          clipRule="evenodd"
+        />
+      </svg>
+      <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 z-20 hidden group-hover/note:block whitespace-normal max-w-[220px] rounded-lg  px-2.5 py-1.5 text-[10px] leading-snug text-black shadow-lg bg-white border border-gray-200">
+        {note}
+        <span className="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2  rotate-45" />
+      </span>
+    </span>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const MutasiBarang: React.FC = () => {
@@ -173,14 +228,6 @@ const MutasiBarang: React.FC = () => {
     setLimit(newLimit);
     setPage(1);
   };
-
-  // Summary across all loaded data
-  const totalMasuk = data.reduce((s, d) => s + (d.jumlah_qty_masuk ?? 0), 0);
-  const totalKeluar = data.reduce((s, d) => s + (d.jumlah_qty_keluar ?? 0), 0);
-  const totalTransaksi = data.reduce(
-    (s, d) => s + (d.data_mutasi?.length ?? 0),
-    0,
-  );
 
   return (
     <>
@@ -386,12 +433,23 @@ const MutasiBarang: React.FC = () => {
                               {fmtQty(mutasi.jumlah_qty)}
                             </td>
                             <td className="p-2 sm:p-3 text-xs">
-                              <TypeMutasiBadge type={mutasi.type_mutasi} />
+                              {/* Badge + sumber_mutasi + note, stacked so no extra column is needed */}
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <TypeMutasiBadge type={mutasi.type_mutasi} />
+                                  <NoteTooltip note={mutasi.note} />
+                                </div>
+                                <SumberMutasiTag
+                                  sumber={mutasi.sumber_mutasi}
+                                />
+                              </div>
                             </td>
                             <td className="p-2 sm:p-3 text-xs">
                               {mutasi.type_mutasi?.toLowerCase() ===
                               'keluar' ? (
-                                <TypeKeluar type={mutasi.type_mutasi_keluar} />
+                                <TypeKeluar
+                                  type={mutasi.type_mutasi_keluar ?? ''}
+                                />
                               ) : (
                                 <span className="text-gray-300 text-xs">-</span>
                               )}

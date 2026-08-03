@@ -3,6 +3,9 @@ import axios, { AxiosResponse } from 'axios';
 import Loading from '../../Loading';
 import { Pagination, Stack } from '@mui/material';
 
+import { usePermissions } from '../../../constant/usePermissions';
+import AdjustStockModal from './AdjustStockModal';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DataBarang {
@@ -1018,9 +1021,16 @@ function GroupDoModal({
 type DoModalState = 'none' | 'type-select' | 'single' | 'group';
 
 const GudangFG: React.FC = () => {
+  // ── Permissions ──
+  const role = localStorage.getItem('userRole') ?? '';
+  const bagian = localStorage.getItem('userBagian') ?? '';
+  const { checkEdit } = usePermissions(role, bagian);
+  const canEdit = checkEdit('/gudang-fg/gudang-fg');
+
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<GudangItem[]>([]);
   const [doModal, setDoModal] = useState<DoModalState>('none');
+  const [showAdjustStock, setShowAdjustStock] = useState(false);
 
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
@@ -1115,6 +1125,12 @@ const GudangFG: React.FC = () => {
             onConfirm={(payload) => handleSendDo('group', payload)}
           />
         )}
+        {showAdjustStock && (
+          <AdjustStockModal
+            onClose={() => setShowAdjustStock(false)}
+            onAdjusted={fetchData}
+          />
+        )}
 
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden mb-4">
@@ -1158,25 +1174,48 @@ const GudangFG: React.FC = () => {
                 />
               </svg>
             </div>
-            <button
-              onClick={() => setDoModal('type-select')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg shadow transition-all"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <div className="flex items-center gap-2 sm:ml-auto">
+              {canEdit && (
+                <button
+                  onClick={() => setShowAdjustStock(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow transition-all"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 3v2m6-2v2M4 7h16M4 7v13a1 1 0 001 1h14a1 1 0 001-1V7M4 7l1-3h14l1 3M9 11h6"
+                    />
+                  </svg>
+                  Adjust Stock
+                </button>
+              )}
+              <button
+                onClick={() => setDoModal('type-select')}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg shadow transition-all"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
-              </svg>
-              Send DO
-            </button>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  />
+                </svg>
+                Send DO
+              </button>
+            </div>
           </div>
         </div>
 
