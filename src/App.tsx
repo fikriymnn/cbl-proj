@@ -277,6 +277,7 @@ import TambahBahanSPVPage from './pages/Produksi/TambahBahanSPVPage';
 import TambahBahanRMPage from './pages/GudangRM/TambahBahanRMPage';
 import HistoryTambahBahanPage from './pages/Produksi/HistoryTambahBahanPage';
 import MonitoringWIPPage from './pages/Monitoring/MonitoringWIPPage';
+import BapPage from './pages/GudangFG/BapPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2536,6 +2537,14 @@ function App() {
           element={
             <P>
               <MutasiBarangPage />
+            </P>
+          }
+        />
+        <Route
+          path="/gudang-fg/bap"
+          element={
+            <P>
+              <BapPage />
             </P>
           }
         />
