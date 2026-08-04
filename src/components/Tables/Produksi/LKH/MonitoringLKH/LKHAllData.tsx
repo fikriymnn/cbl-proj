@@ -789,6 +789,7 @@ const LKHAllData: React.FC = () => {
         <LKHDetailPopup
           lkhData={selectedLKH as any}
           onClose={handleClosePopup}
+          onUpdated={fetchLKHData}
         />
       )}
     </div>

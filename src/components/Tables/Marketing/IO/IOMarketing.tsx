@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 
 import { MountingData } from './Mounting';
 import IOMarketingPrintModal from './IOMarketingPrintModal';
+import { usePermissions } from '../../../../constant/usePermissions';
 
 interface UserActionData {
   id: number;
@@ -82,6 +83,123 @@ interface OKPData {
 type SortField = keyof IOData;
 type SortDirection = 'asc' | 'desc';
 
+// ─── Edit No IO Modal ───────────────────────────────────────────────────────
+
+interface EditIOModalProps {
+  ioId: number;
+  currentNoIo: string;
+  currentProduk: string;
+  onClose: () => void;
+  onUpdated: () => void;
+}
+
+const EditIOModal: React.FC<EditIOModalProps> = ({
+  ioId,
+  currentNoIo,
+  currentProduk,
+  onClose,
+  onUpdated,
+}) => {
+  const [noIo, setNoIo] = useState(currentNoIo || '');
+  const [produk, setProduk] = useState(currentProduk || '');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!noIo.trim() && !produk.trim()) {
+      alert('Isi minimal salah satu field');
+      return;
+    }
+    const body: { no_io?: string; produk?: string } = {};
+    if (noIo.trim()) body.no_io = noIo.trim();
+    if (produk.trim()) body.produk = produk.trim();
+
+    try {
+      setSubmitting(true);
+      await axios.put(
+        `${import.meta.env.VITE_API_LINK}/marketing/noIoUpdate/${ioId}`,
+        body,
+        { withCredentials: true },
+      );
+      onUpdated();
+    } catch (err: unknown) {
+      console.error(err);
+      const error = err as {
+        response?: { data?: { msg?: string; message?: string } };
+      };
+      alert(
+        error?.response?.data?.msg ??
+          error?.response?.data?.message ??
+          'Gagal mengubah No IO',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div className="bg-blue-500 px-5 py-4 text-white rounded-t-lg flex justify-between items-center">
+          <h3 className="text-base font-bold">Ubah No IO</h3>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-blue-100 text-2xl font-bold leading-none"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              No IO
+            </label>
+            <input
+              type="text"
+              value={noIo}
+              onChange={(e) => setNoIo(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              placeholder="Contoh: 4628-1"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Produk
+            </label>
+            <input
+              type="text"
+              value={produk}
+              onChange={(e) => setProduk(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              placeholder="Nama produk"
+            />
+          </div>
+          <p className="text-xs text-gray-400">
+            Boleh isi salah satu saja — field yang dikosongkan tidak akan
+            diubah.
+          </p>
+        </div>
+        <div className="px-5 pb-5 flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-md text-sm transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-medium rounded-md text-sm transition-colors"
+          >
+            {submitting ? 'Menyimpan...' : 'Simpan'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ─────────────────────────────────────────────────────────
+
 const IOMarketing: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [ioData, setIOData] = useState<IOData[]>([]);
@@ -124,6 +242,16 @@ const IOMarketing: React.FC = () => {
   const [sendProofIOId, setSendProofIOId] = useState<number | null>(null);
   const [sendProofIONumber, setSendProofIONumber] = useState<string>('');
   const [sendProofQty, setSendProofQty] = useState<number>(400);
+
+  // Edit No IO states
+  const [showEditIoModal, setShowEditIoModal] = useState<boolean>(false);
+  const [editIoTarget, setEditIoTarget] = useState<IOData | null>(null);
+
+  // ── Permissions ──
+  const role = localStorage.getItem('userRole') ?? '';
+  const bagian = localStorage.getItem('userBagian') ?? '';
+  const { checkEdit } = usePermissions(role, bagian);
+  const canEditIO = checkEdit('/marketing/io/create');
 
   // Add sorting functions
   const handleSort = (field: SortField) => {
@@ -325,15 +453,6 @@ const IOMarketing: React.FC = () => {
     }
 
     // Parse the previous IO number to extract revision number
-    // Patterns:
-    // 1. IO-00333/12/25 (rev 0) -> IO-00333-1/12/25 (rev 1) - KEEPS ORIGINAL DATE
-    // 2. IO-00333-1/12/25 (rev 1) -> IO-00333-2/12/25 (rev 2) - KEEPS ORIGINAL DATE
-    // 3. 4498 (rev 0) -> 4498-1 (rev 1) - NO DATE
-    // 4. 4498-1 (rev 1) -> 4498-2 (rev 2) - NO DATE
-    // 5. 4158A (rev 0) -> 4158-1A (rev 1) - NO DATE, WITH LETTER SUFFIX
-    // 6. 4158-2A (rev 2) -> 4158-3A (rev 3) - NO DATE, WITH LETTER SUFFIX
-
-    // Pattern 1 & 2: With "IO-" prefix and date
     let ioMatch = previousIONumber.match(
       /^IO-(\d+)(?:-(\d+)([A-Z]?))?\/(\d{2})\/(\d{2,4})$/,
     );
@@ -341,56 +460,46 @@ const IOMarketing: React.FC = () => {
     if (ioMatch) {
       const baseNumber = ioMatch[1];
       const currentRevisionNum = ioMatch[2] ? parseInt(ioMatch[2]) : 0;
-      const suffix = ioMatch[3] || ''; // Letter suffix (A, B, etc.)
-      const prevMonth = ioMatch[4]; // PRESERVE ORIGINAL MONTH
-      const prevYear = ioMatch[5]; // PRESERVE ORIGINAL YEAR
+      const suffix = ioMatch[3] || '';
+      const prevMonth = ioMatch[4];
+      const prevYear = ioMatch[5];
 
       const nextRevision = currentRevisionNum + 1;
       const revisionPart = suffix ? `${nextRevision}${suffix}` : nextRevision;
 
-      // Return with ORIGINAL date (prevMonth/prevYear)
       return `IO-${baseNumber}-${revisionPart}/${prevMonth}/${prevYear}`;
     }
 
-    // Pattern 3 & 4: Without "IO-" prefix, with revision number, NO date
     ioMatch = previousIONumber.match(/^(\d+)-(\d+)([A-Z]?)$/);
 
     if (ioMatch) {
       const baseNumber = ioMatch[1];
       const currentRevisionNum = parseInt(ioMatch[2]);
-      const suffix = ioMatch[3] || ''; // Letter suffix (A, B, etc.)
+      const suffix = ioMatch[3] || '';
 
       const nextRevision = currentRevisionNum + 1;
       const revisionPart = suffix ? `${nextRevision}${suffix}` : nextRevision;
 
-      // Return without date
       return `${baseNumber}-${revisionPart}`;
     }
 
-    // Pattern 5: Without "IO-" prefix, NO revision number yet, with letter suffix
-    // Example: 4158A -> 4158-1A
     ioMatch = previousIONumber.match(/^(\d+)([A-Z]+)$/);
 
     if (ioMatch) {
       const baseNumber = ioMatch[1];
-      const suffix = ioMatch[2]; // Letter suffix (A, B, etc.)
+      const suffix = ioMatch[2];
 
-      // First revision
       return `${baseNumber}-1${suffix}`;
     }
 
-    // Pattern 6: Without "IO-" prefix, NO revision number, NO letter suffix
-    // Example: 4498 -> 4498-1
     ioMatch = previousIONumber.match(/^(\d+)$/);
 
     if (ioMatch) {
       const baseNumber = ioMatch[1];
 
-      // First revision
       return `${baseNumber}-1`;
     }
 
-    // Fallback if parsing fails
     const totalData = await fetchIOCount();
     const nextNumber = totalData + 1;
     const paddedNumber = String(nextNumber).padStart(5, '0');
@@ -495,7 +604,7 @@ const IOMarketing: React.FC = () => {
       console.log('Fetched IO detail for print:', res.data);
       if (res.data.succes && res.data.data) {
         setPrintData(res.data.data);
-        setSelectedMountingIndex(0); // Default to first mounting
+        setSelectedMountingIndex(0);
       }
     } catch (error) {
       console.error('Error fetching IO detail:', error);
@@ -523,7 +632,7 @@ const IOMarketing: React.FC = () => {
   const handleSendProof = (ioId: number, ioNumber: string): void => {
     setSendProofIOId(ioId);
     setSendProofIONumber(ioNumber);
-    setSendProofQty(400); // Reset to default value
+    setSendProofQty(400);
     setShowSendProofConfirm(true);
   };
 
@@ -531,13 +640,12 @@ const IOMarketing: React.FC = () => {
     setShowSendProofConfirm(false);
     setSendProofIOId(null);
     setSendProofIONumber('');
-    setSendProofQty(400); // Reset quantity
+    setSendProofQty(400);
   };
 
   const confirmSendProof = async (): Promise<void> => {
     if (!sendProofIOId) return;
 
-    // Validate quantity
     if (sendProofQty < 1) {
       alert('Quantity must be at least 1');
       return;
@@ -550,7 +658,7 @@ const IOMarketing: React.FC = () => {
       setLoading(true);
       const res: AxiosResponse = await axios.put(
         url,
-        { qty_send_proof: sendProofQty }, // Use the state value
+        { qty_send_proof: sendProofQty },
         {
           withCredentials: true,
         },
@@ -562,7 +670,7 @@ const IOMarketing: React.FC = () => {
         setShowSendProofConfirm(false);
         setSendProofIOId(null);
         setSendProofIONumber('');
-        setSendProofQty(400); // Reset quantity
+        setSendProofQty(400);
       } else {
         alert('Failed to send proof');
       }
@@ -692,6 +800,22 @@ const IOMarketing: React.FC = () => {
       setGeneratedIONumber('');
     }
   }, [formData.id_okp, okpData]);
+
+  // Edit No IO handlers
+  const handleEditIO = (item: IOData) => {
+    setEditIoTarget(item);
+    setShowEditIoModal(true);
+  };
+
+  const handleCloseEditIoModal = () => {
+    setShowEditIoModal(false);
+    setEditIoTarget(null);
+  };
+
+  const handleIoUpdated = () => {
+    handleCloseEditIoModal();
+    fetchIOData();
+  };
 
   return (
     <div className="">
@@ -887,6 +1011,15 @@ const IOMarketing: React.FC = () => {
                         >
                           {item.is_send_proof ? 'PROOF SENT' : 'SEND PROOF'}
                         </button>
+                        {canEditIO && (
+                          <button
+                            onClick={() => handleEditIO(item)}
+                            className="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            title="Ubah No IO"
+                          >
+                            UBAH NO IO
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -1228,6 +1361,16 @@ const IOMarketing: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+      {/* Edit No IO Modal */}
+      {showEditIoModal && editIoTarget && (
+        <EditIOModal
+          ioId={editIoTarget.id}
+          currentNoIo={editIoTarget.no_io}
+          currentProduk={editIoTarget.produk || ''}
+          onClose={handleCloseEditIoModal}
+          onUpdated={handleIoUpdated}
+        />
       )}
     </div>
   );

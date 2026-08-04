@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
+import { usePermissions } from '../../../../../constant/usePermissions';
 
 interface JoDoneItem {
   so: any;
@@ -214,6 +215,139 @@ const KirimPopup: React.FC<KirimPopupProps> = ({
   );
 };
 
+// ─── Edit Qty Kirim Modal (direct correction, separate from Kirim flow) ────
+
+interface EditQtyKirimModalProps {
+  item: JoDoneItem;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const EditQtyKirimModal: React.FC<EditQtyKirimModalProps> = ({
+  item,
+  onClose,
+  onSuccess,
+}) => {
+  const [qtyKirim, setQtyKirim] = useState<number>(item.qty_kirim || 0);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (qtyKirim < 0) {
+      setError('Quantity tidak boleh negatif');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const url = `${import.meta.env.VITE_API_LINK}/produksi/joDone/${item.id}`;
+
+      await axios.put(url, { qty_kirim: qtyKirim }, { withCredentials: true });
+
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      console.error('Error updating qty kirim:', err);
+      setError(
+        err?.response?.data?.msg ??
+          err?.response?.data?.message ??
+          'Gagal mengubah qty kirim',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div className="bg-amber-500 px-6 py-4 rounded-t-lg flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-white">Ubah Qty Kirim</h3>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-amber-100 text-2xl font-bold leading-none"
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                No JO
+              </label>
+              <input
+                type="text"
+                value={item.no_jo}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Qty Kirim Saat Ini
+              </label>
+              <input
+                type="text"
+                value={(item.qty_kirim || 0).toLocaleString('id-ID')}
+                disabled
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Qty Kirim Baru <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                value={qtyKirim}
+                onChange={(e) => {
+                  setQtyKirim(Number(e.target.value));
+                  setError('');
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                placeholder="Masukkan qty kirim"
+                min="0"
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const ListJoSelesai: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [joDoneData, setJoDoneData] = useState<JoDoneItem[]>([]);
@@ -230,6 +364,17 @@ const ListJoSelesai: React.FC = () => {
   const [expandingJoId, setExpandingJoId] = useState<number | null>(null);
   const [expandedData, setExpandedData] = useState<any>(null);
   // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Edit Qty Kirim state ──────────────────────────────────────────────────
+  const [showEditQtyModal, setShowEditQtyModal] = useState<boolean>(false);
+  const [editQtyTarget, setEditQtyTarget] = useState<JoDoneItem | null>(null);
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Permissions ──
+  const role = localStorage.getItem('userRole') ?? '';
+  const bagian = localStorage.getItem('userBagian') ?? '';
+  const { checkEdit } = usePermissions(role, bagian);
+  const canEditQty = checkEdit('/production/list-jo-selesai');
 
   useEffect(() => {
     fetchJoDoneData();
@@ -273,6 +418,22 @@ const ListJoSelesai: React.FC = () => {
   const handleKirimSuccess = () => {
     fetchJoDoneData();
   };
+
+  // ── Edit Qty Kirim handlers ─────────────────────────────────────────────
+  const handleEditQtyClick = (item: JoDoneItem) => {
+    setEditQtyTarget(item);
+    setShowEditQtyModal(true);
+  };
+
+  const handleCloseEditQtyModal = () => {
+    setShowEditQtyModal(false);
+    setEditQtyTarget(null);
+  };
+
+  const handleEditQtySuccess = () => {
+    fetchJoDoneData();
+  };
+  // ─────────────────────────────────────────────────────────────────────────
 
   // ── NEW: Open JO Done ────────────────────────────────────────────────────────
   const handleOpenJoDone = async (item: JoDoneItem) => {
@@ -370,40 +531,60 @@ const ListJoSelesai: React.FC = () => {
     );
   };
 
-  /** Render the action cell — Kirim or Open depending on is_jo_done */
+  /** Render the action cell — Kirim or Open depending on is_jo_done, plus Edit Qty */
   const renderActionCell = (item: JoDoneItem) => {
+    const buttons: React.ReactNode[] = [];
+
     // is_jo_done = true → show "Open JO" button
     if (item.is_jo_done === true) {
-      return (
+      buttons.push(
         <button
+          key="open"
           onClick={() => handleOpenJoDone(item)}
           disabled={openingJoId === item.id}
           className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {openingJoId === item.id ? 'Opening...' : 'Open JO'}
-        </button>
+        </button>,
       );
-    }
-
-    // is_jo_done = false/null + valid status → show "Kirim" button
-    if (
+    } else if (
       (item.status_proses === 'progress' ||
         item.status_proses === 'reject qc' ||
         item.status_proses === 'reject fg' ||
         item.status_proses === 'done') &&
       (item.is_jo_done === false || item.is_jo_done == null)
     ) {
-      return (
+      // is_jo_done = false/null + valid status → show "Kirim" button
+      buttons.push(
         <button
+          key="kirim"
           onClick={() => handleKirimClick(item)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs"
         >
           Kirim
-        </button>
+        </button>,
       );
     }
 
-    return <>-</>;
+    // Edit Qty Kirim — permission gated, available regardless of is_jo_done
+    if (canEditQty) {
+      buttons.push(
+        <button
+          key="edit-qty"
+          onClick={() => handleEditQtyClick(item)}
+          className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs"
+          title="Ubah Qty Kirim"
+        >
+          Edit Qty
+        </button>,
+      );
+    }
+
+    if (buttons.length === 0) {
+      return <>-</>;
+    }
+
+    return <div className="flex flex-col gap-1">{buttons}</div>;
   };
 
   /** Render the expanded detail row content — final inspection list */
@@ -908,6 +1089,15 @@ const ListJoSelesai: React.FC = () => {
           item={selectedItem}
           onClose={handleClosePopup}
           onSuccess={handleKirimSuccess}
+        />
+      )}
+
+      {/* Edit Qty Kirim Modal */}
+      {showEditQtyModal && editQtyTarget && (
+        <EditQtyKirimModal
+          item={editQtyTarget}
+          onClose={handleCloseEditQtyModal}
+          onSuccess={handleEditQtySuccess}
         />
       )}
     </div>

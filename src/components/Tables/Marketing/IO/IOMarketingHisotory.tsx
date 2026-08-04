@@ -8,6 +8,7 @@ import Stack from '@mui/material/Stack';
 
 import { MountingData, TahapanData } from './Mounting';
 import IOMarketingPrintModal from './IOMarketingPrintModal';
+import { usePermissions } from '../../../../constant/usePermissions';
 
 interface UserActionData {
   id: number;
@@ -84,6 +85,123 @@ interface OKPData {
 type SortOrder = 'newest' | 'oldest';
 type SortBy = 'tgl_approve_io' | 'createdAt';
 
+// ─── Edit No IO Modal ───────────────────────────────────────────────────────
+
+interface EditIOModalProps {
+  ioId: number;
+  currentNoIo: string;
+  currentProduk: string;
+  onClose: () => void;
+  onUpdated: () => void;
+}
+
+const EditIOModal: React.FC<EditIOModalProps> = ({
+  ioId,
+  currentNoIo,
+  currentProduk,
+  onClose,
+  onUpdated,
+}) => {
+  const [noIo, setNoIo] = useState(currentNoIo || '');
+  const [produk, setProduk] = useState(currentProduk || '');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!noIo.trim() && !produk.trim()) {
+      alert('Isi minimal salah satu field');
+      return;
+    }
+    const body: { no_io?: string; produk?: string } = {};
+    if (noIo.trim()) body.no_io = noIo.trim();
+    if (produk.trim()) body.produk = produk.trim();
+
+    try {
+      setSubmitting(true);
+      await axios.put(
+        `${import.meta.env.VITE_API_LINK}/marketing/noIoUpdate/${ioId}`,
+        body,
+        { withCredentials: true },
+      );
+      onUpdated();
+    } catch (err: unknown) {
+      console.error(err);
+      const error = err as {
+        response?: { data?: { msg?: string; message?: string } };
+      };
+      alert(
+        error?.response?.data?.msg ??
+          error?.response?.data?.message ??
+          'Gagal mengubah No IO',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div className="bg-blue-500 px-5 py-4 text-white rounded-t-lg flex justify-between items-center">
+          <h3 className="text-base font-bold">Ubah No IO</h3>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-blue-100 text-2xl font-bold leading-none"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              No IO
+            </label>
+            <input
+              type="text"
+              value={noIo}
+              onChange={(e) => setNoIo(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              placeholder="Contoh: 4628-1"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Produk
+            </label>
+            <input
+              type="text"
+              value={produk}
+              onChange={(e) => setProduk(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              placeholder="Nama produk"
+            />
+          </div>
+          <p className="text-xs text-gray-400">
+            Boleh isi salah satu saja — field yang dikosongkan tidak akan
+            diubah.
+          </p>
+        </div>
+        <div className="px-5 pb-5 flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-md text-sm transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-medium rounded-md text-sm transition-colors"
+          >
+            {submitting ? 'Menyimpan...' : 'Simpan'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ─────────────────────────────────────────────────────────
+
 const IOMarketingHistory: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [ioData, setIOData] = useState<IOData[]>([]);
@@ -121,6 +239,16 @@ const IOMarketingHistory: React.FC = () => {
   const [sendProofIOId, setSendProofIOId] = useState<number | null>(null);
   const [sendProofIONumber, setSendProofIONumber] = useState<string>('');
   const [sendProofQty, setSendProofQty] = useState<number>(400);
+
+  // Edit No IO states
+  const [showEditIoModal, setShowEditIoModal] = useState<boolean>(false);
+  const [editIoTarget, setEditIoTarget] = useState<IOData | null>(null);
+
+  // ── Permissions ──
+  const role = localStorage.getItem('userRole') ?? '';
+  const bagian = localStorage.getItem('userBagian') ?? '';
+  const { checkEdit } = usePermissions(role, bagian);
+  const canEditIO = checkEdit('/marketing/io/history');
 
   // Utility function to truncate text
   const truncateText = (text: string, maxLength: number) => {
@@ -361,6 +489,22 @@ const IOMarketingHistory: React.FC = () => {
     setShowDetailPopup(true);
   };
 
+  // Edit No IO handlers
+  const handleEditIO = (item: IOData) => {
+    setEditIoTarget(item);
+    setShowEditIoModal(true);
+  };
+
+  const handleCloseEditIoModal = () => {
+    setShowEditIoModal(false);
+    setEditIoTarget(null);
+  };
+
+  const handleIoUpdated = () => {
+    handleCloseEditIoModal();
+    fetchIOData();
+  };
+
   return (
     <div className="">
       {/* Header with Search and Filter */}
@@ -579,6 +723,15 @@ const IOMarketingHistory: React.FC = () => {
                         >
                           {item.is_send_proof ? 'PROOF SENT' : 'SEND PROOF'}
                         </button>
+                        {/* {canEditIO && (
+                          <button
+                            onClick={() => handleEditIO(item)}
+                            className="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                            title="Ubah No IO"
+                          >
+                            UBAH NO IO
+                          </button>
+                        )} */}
                       </div>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
@@ -786,6 +939,17 @@ const IOMarketingHistory: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Edit No IO Modal */}
+      {showEditIoModal && editIoTarget && (
+        <EditIOModal
+          ioId={editIoTarget.id}
+          currentNoIo={editIoTarget.no_io}
+          currentProduk={editIoTarget.produk || ''}
+          onClose={handleCloseEditIoModal}
+          onUpdated={handleIoUpdated}
+        />
       )}
     </div>
   );

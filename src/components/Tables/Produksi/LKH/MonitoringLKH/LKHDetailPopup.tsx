@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import WasteTable from './WasteTable';
+import { usePermissions } from '../../../../../constant/usePermissions';
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
@@ -174,6 +175,8 @@ interface LKHAllDataItem {
 interface LKHDetailPopupProps {
   lkhData: LKHAllDataItem;
   onClose: () => void;
+  /** Called after a row-level edit is successfully saved, so the parent list can refresh. */
+  onUpdated?: () => void;
 }
 
 interface ApprovalLog {
@@ -242,11 +245,192 @@ interface TambahBahanPersiapanDetailItem
   tambah_bahan_persiapan_defect?: TambahBahanDefect[];
 }
 
+// ─── Edit Proses Produksi Modal ─────────────────────────────────────────────
+
+interface EditLKHProsesModalProps {
+  proses: ProduksiLKHProses;
+  onClose: () => void;
+  onUpdated: (updated: {
+    id: number;
+    baik: number;
+    rusak_sebagian: number;
+    rusak_total: number;
+    pallet: number;
+    note: string;
+  }) => void;
+}
+
+const EditLKHProsesModal: React.FC<EditLKHProsesModalProps> = ({
+  proses,
+  onClose,
+  onUpdated,
+}) => {
+  const [baik, setBaik] = useState<number>(proses.baik ?? 0);
+  const [rusakSebagian, setRusakSebagian] = useState<number>(
+    proses.rusak_sebagian ?? 0,
+  );
+  const [rusakTotal, setRusakTotal] = useState<number>(proses.rusak_total ?? 0);
+  const [pallet, setPallet] = useState<number>(proses.pallet ?? 0);
+  const [note, setNote] = useState<string>(proses.note ?? '');
+  const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const handleSubmit = async () => {
+    const body = {
+      baik: Number(baik) || 0,
+      rusak_sebagian: Number(rusakSebagian) || 0,
+      rusak_total: Number(rusakTotal) || 0,
+      pallet: Number(pallet) || 0,
+      note: note.trim(),
+    };
+
+    try {
+      setSubmitting(true);
+      await axios.put(
+        `${API_BASE}/produksi/lkhProses/update/${proses.id}`,
+        body,
+        { withCredentials: true },
+      );
+      onUpdated({ id: proses.id, ...body });
+    } catch (err: unknown) {
+      console.error(err);
+      const error = err as {
+        response?: { data?: { msg?: string; message?: string } };
+      };
+      alert(
+        error?.response?.data?.msg ??
+          error?.response?.data?.message ??
+          'Gagal mengubah data proses produksi',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div className="bg-green-600 px-5 py-4 text-white rounded-t-lg flex justify-between items-center">
+          <div>
+            <h3 className="text-base font-bold">Edit Proses Produksi</h3>
+            <p className="text-green-100 text-xs mt-0.5">
+              {proses.tahapan?.nama_tahapan || '-'} · {proses.kode}{' '}
+              {proses.proses}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-green-100 text-2xl font-bold leading-none"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Baik
+              </label>
+              <input
+                type="number"
+                value={baik}
+                onChange={(e) => setBaik(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Pallet
+              </label>
+              <input
+                type="number"
+                value={pallet}
+                onChange={(e) => setPallet(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Rusak Sebagian
+              </label>
+              <input
+                type="number"
+                value={rusakSebagian}
+                onChange={(e) => setRusakSebagian(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Rusak Total
+              </label>
+              <input
+                type="number"
+                value={rusakTotal}
+                onChange={(e) => setRusakTotal(Number(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 text-sm"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Note
+            </label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 text-sm"
+              placeholder="Catatan..."
+            />
+          </div>
+        </div>
+        <div className="px-5 pb-5 flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-md text-sm transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium rounded-md text-sm transition-colors"
+          >
+            {submitting ? 'Menyimpan...' : 'Simpan'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ─────────────────────────────────────────────────────────
+
 const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
   lkhData,
   onClose,
+  onUpdated,
 }) => {
   const MAX_COLUMNS = 5; // Maximum 5 tahapan per row
+
+  // ── Permissions ──
+  const role = localStorage.getItem('userRole') ?? '';
+  const bagian = localStorage.getItem('userBagian') ?? '';
+  const { checkEdit } = usePermissions(role, bagian);
+  const canEditProses = checkEdit('/production/alldata-lkh');
+
+  // ---- Row-editable copy of the process list ----
+  const [prosesList, setProsesList] = useState<ProduksiLKHProses[]>(
+    lkhData.produksi_lkh_proses || [],
+  );
+  const [showEditProsesModal, setShowEditProsesModal] =
+    useState<boolean>(false);
+  const [editProsesTarget, setEditProsesTarget] =
+    useState<ProduksiLKHProses | null>(null);
+
+  useEffect(() => {
+    setProsesList(lkhData.produksi_lkh_proses || []);
+  }, [lkhData]);
 
   // ---- Tambah Bahan state ----
   const [tambahBahanPemakaian, setTambahBahanPemakaian] = useState<
@@ -449,7 +633,7 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
     >();
 
     // Sort by waktu_mulai
-    const sortedProses = [...lkhData.produksi_lkh_proses].sort(
+    const sortedProses = [...prosesList].sort(
       (a, b) =>
         new Date(a.waktu_mulai).getTime() - new Date(b.waktu_mulai).getTime(),
     );
@@ -509,6 +693,43 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
 
   const handlePrint = () => {
     window.print();
+  };
+
+  // ---- Edit Proses handlers ----
+  const handleEditProses = (proses: ProduksiLKHProses) => {
+    setEditProsesTarget(proses);
+    setShowEditProsesModal(true);
+  };
+
+  const handleCloseEditProsesModal = () => {
+    setShowEditProsesModal(false);
+    setEditProsesTarget(null);
+  };
+
+  const handleProsesUpdated = (updated: {
+    id: number;
+    baik: number;
+    rusak_sebagian: number;
+    rusak_total: number;
+    pallet: number;
+    note: string;
+  }) => {
+    setProsesList((prev) =>
+      prev.map((p) =>
+        p.id === updated.id
+          ? {
+              ...p,
+              baik: updated.baik,
+              rusak_sebagian: updated.rusak_sebagian,
+              rusak_total: updated.rusak_total,
+              pallet: updated.pallet,
+              note: updated.note,
+            }
+          : p,
+      ),
+    );
+    handleCloseEditProsesModal();
+    onUpdated?.();
   };
 
   const tahapanSummary = getTahapanSummary();
@@ -926,6 +1147,11 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
               <table className="min-w-full border-collapse border border-gray-300 text-xs">
                 <thead className="bg-gradient-to-r from-green-700 to-green-600 text-white">
                   <tr>
+                    {canEditProses && (
+                      <th className="border border-gray-300 px-3 py-2 text-center font-bold">
+                        Aksi
+                      </th>
+                    )}
                     <th className="border border-gray-300 px-3 py-2 text-left font-bold">
                       Tanggal
                     </th>
@@ -968,7 +1194,7 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {lkhData.produksi_lkh_proses
+                  {[...prosesList]
                     .sort(
                       (a, b) =>
                         new Date(b.waktu_mulai).getTime() -
@@ -976,6 +1202,17 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
                     )
                     .map((proses) => (
                       <tr key={proses.id} className="hover:bg-gray-50">
+                        {canEditProses && (
+                          <td className="border border-gray-300 px-2 py-1.5 text-center">
+                            <button
+                              onClick={() => handleEditProses(proses)}
+                              className="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs transition-colors whitespace-nowrap"
+                              title="Edit Proses Produksi"
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        )}
                         <td className="border border-gray-300 px-3 py-1.5">
                           {formatDateTime(proses.waktu_mulai).split(' ')[0]}
                         </td>
@@ -1176,6 +1413,15 @@ const LKHDetailPopup: React.FC<LKHDetailPopupProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Edit Proses Produksi Modal */}
+      {showEditProsesModal && editProsesTarget && (
+        <EditLKHProsesModal
+          proses={editProsesTarget}
+          onClose={handleCloseEditProsesModal}
+          onUpdated={handleProsesUpdated}
+        />
+      )}
     </div>
   );
 };

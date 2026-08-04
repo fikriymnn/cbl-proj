@@ -4,6 +4,7 @@ import OKPModal from './OKPModal';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import OKPPrintModal from './OKPPrintModal';
+import { usePermissions } from '../../../../constant/usePermissions';
 
 interface OKPItem {
   posisi_proses: string;
@@ -40,6 +41,123 @@ type SortKey = keyof OKPItem | 'index';
 type SortDirection = 'asc' | 'desc';
 type ModalMode = 'create' | 'detail' | 'marketing' | 'customer';
 
+// ─── Edit No OKP Modal ──────────────────────────────────────────────────────
+
+interface EditOKPModalProps {
+  okpId: number;
+  currentNoOkp: string;
+  currentProduk: string;
+  onClose: () => void;
+  onUpdated: () => void;
+}
+
+const EditOKPModal: React.FC<EditOKPModalProps> = ({
+  okpId,
+  currentNoOkp,
+  currentProduk,
+  onClose,
+  onUpdated,
+}) => {
+  const [noOkp, setNoOkp] = useState(currentNoOkp || '');
+  const [produk, setProduk] = useState(currentProduk || '');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!noOkp.trim() && !produk.trim()) {
+      alert('Isi minimal salah satu field');
+      return;
+    }
+    const body: { no_okp?: string; produk?: string } = {};
+    if (noOkp.trim()) body.no_okp = noOkp.trim();
+    if (produk.trim()) body.produk = produk.trim();
+
+    try {
+      setSubmitting(true);
+      await axios.put(
+        `${import.meta.env.VITE_API_LINK}/marketing/noOkpUpdate/${okpId}`,
+        body,
+        { withCredentials: true },
+      );
+      onUpdated();
+    } catch (err: unknown) {
+      console.error(err);
+      const error = err as {
+        response?: { data?: { msg?: string; message?: string } };
+      };
+      alert(
+        error?.response?.data?.msg ??
+          error?.response?.data?.message ??
+          'Gagal mengubah No OKP',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <div className="bg-blue-500 px-5 py-4 text-white rounded-t-lg flex justify-between items-center">
+          <h3 className="text-base font-bold">Ubah No OKP</h3>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-blue-100 text-2xl font-bold leading-none"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              No OKP
+            </label>
+            <input
+              type="text"
+              value={noOkp}
+              onChange={(e) => setNoOkp(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              placeholder="Contoh: OK-00566/06/26"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Produk
+            </label>
+            <input
+              type="text"
+              value={produk}
+              onChange={(e) => setProduk(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              placeholder="Nama produk"
+            />
+          </div>
+          <p className="text-xs text-gray-400">
+            Boleh isi salah satu saja — field yang dikosongkan tidak akan
+            diubah.
+          </p>
+        </div>
+        <div className="px-5 pb-5 flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-md text-sm transition-colors"
+          >
+            Batal
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-medium rounded-md text-sm transition-colors"
+          >
+            {submitting ? 'Menyimpan...' : 'Simpan'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ─────────────────────────────────────────────────────────
+
 const HistoryOKP: React.FC = () => {
   const [data, setData] = useState<OKPItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,6 +178,16 @@ const HistoryOKP: React.FC = () => {
   // Sort states
   const [sortKey, setSortKey] = useState<SortKey>('id');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  // Edit No OKP states
+  const [showEditOkpModal, setShowEditOkpModal] = useState<boolean>(false);
+  const [editOkpTarget, setEditOkpTarget] = useState<OKPItem | null>(null);
+
+  // ── Permissions ──
+  const role = localStorage.getItem('userRole') ?? '';
+  const bagian = localStorage.getItem('userBagian') ?? '';
+  const { checkEdit } = usePermissions(role, bagian);
+  const canEditOKP = checkEdit('/marketing/okp/history');
 
   useEffect(() => {
     fetchOKPData();
@@ -261,6 +389,22 @@ const HistoryOKP: React.FC = () => {
   const handleActionComplete = () => {
     fetchOKPData();
     handleCloseModal();
+  };
+
+  // Edit No OKP handlers
+  const handleEditOKP = (item: OKPItem) => {
+    setEditOkpTarget(item);
+    setShowEditOkpModal(true);
+  };
+
+  const handleCloseEditOkpModal = () => {
+    setShowEditOkpModal(false);
+    setEditOkpTarget(null);
+  };
+
+  const handleOkpUpdated = () => {
+    handleCloseEditOkpModal();
+    fetchOKPData();
   };
 
   const formatDate = (dateString: string) => {
@@ -473,6 +617,15 @@ const HistoryOKP: React.FC = () => {
                         >
                           Print
                         </button>
+                        {/* {canEditOKP && (
+                          <button
+                            onClick={() => handleEditOKP(item)}
+                            className="bg-amber-500 hover:bg-amber-600 text-white px-2 py-1 rounded text-xs transition-colors w-full"
+                            title="Ubah No OKP"
+                          >
+                            Ubah No OKP
+                          </button>
+                        )} */}
                       </div>
                     </td>
                     <td className="px-2 py-2">
@@ -675,6 +828,16 @@ const HistoryOKP: React.FC = () => {
       {/* Print Modal */}
       {showPrintModal && printOKPId && (
         <OKPPrintModal okpId={printOKPId} onClose={handleClosePrintModal} />
+      )}
+      {/* Edit No OKP Modal */}
+      {showEditOkpModal && editOkpTarget && (
+        <EditOKPModal
+          okpId={editOkpTarget.id || editOkpTarget.id_kalkulasi}
+          currentNoOkp={editOkpTarget.no_okp}
+          currentProduk={editOkpTarget.produk || ''}
+          onClose={handleCloseEditOkpModal}
+          onUpdated={handleOkpUpdated}
+        />
       )}
     </div>
   );

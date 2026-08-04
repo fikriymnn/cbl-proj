@@ -201,7 +201,7 @@ function LengkapiMasterKaryawanIsi() {
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      console.log(res.data);
+      console.log('karyawan', res.data);
       setbiodataKaryawan(res.data.data.biodata_karyawan[0].id);
     } catch (error: any) {
       console.error('Error fetching karyawan data:', error);
