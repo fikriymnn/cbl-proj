@@ -278,6 +278,7 @@ import TambahBahanRMPage from './pages/GudangRM/TambahBahanRMPage';
 import HistoryTambahBahanPage from './pages/Produksi/HistoryTambahBahanPage';
 import MonitoringWIPPage from './pages/Monitoring/MonitoringWIPPage';
 import BapPage from './pages/GudangFG/BapPage';
+import JadwalLemburPPIC from './pages/PPIC/JadwalPPIC/JadwalLemburPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1443,6 +1444,15 @@ function App() {
             </P>
           }
         />
+        <Route
+          path="  /ppic/kalender-jadwal-lembur"
+          element={
+            <P>
+              <JadwalLemburPPIC />
+            </P>
+          }
+        />
+
         <Route
           path="/ppic/scheduled-jo"
           element={
