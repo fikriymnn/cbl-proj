@@ -1445,7 +1445,7 @@ function App() {
           }
         />
         <Route
-          path="  /ppic/kalender-jadwal-lembur"
+          path="/ppic/kalender-jadwal-lembur"
           element={
             <P>
               <JadwalLemburPPIC />

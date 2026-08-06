@@ -1,6 +1,7 @@
 import React from 'react';
 import DefaultLayout from '../../../layout/DefaultLayout';
-import TabJadwalKirim from '../../../components/Tables/PPIC/JadwalKirim/TabJadwalKirim';
+
+import KalenderJadwalLembur from '../../../components/Tables/PPIC/KalenderJadwalLembur';
 
 function JadwalLemburPPIC() {
   return (
@@ -9,7 +10,7 @@ function JadwalLemburPPIC() {
         <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
           JADWAL LEMBUR
         </p>
-        <TabJadwalKirim />
+        <KalenderJadwalLembur />
       </>
     </DefaultLayout>
   );
