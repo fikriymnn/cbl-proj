@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Stack, Pagination } from '@mui/material';
 import DefaultLayout from '../../../layout/DefaultLayout';
-
+import UbahHargaKertasModal from './UbahHargaKertasModal';
 // Types
 interface MasterBarang {
   id: number;
@@ -119,7 +119,7 @@ function MarketingBarang(): JSX.Element {
     useState<boolean>(false);
   const [showInventoryUnitDropdown, setShowInventoryUnitDropdown] =
     useState<boolean>(false);
-
+  const [showHargaKertasModal, setShowHargaKertasModal] = useState(false);
   useEffect(() => {
     getMasterBarang();
     getMasterBrands();
@@ -459,14 +459,23 @@ function MarketingBarang(): JSX.Element {
               Reset
             </button>
           </div>
-          <button
-            onClick={handleAddBarang}
-            className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            + Barang
-          </button>
-        </div>
 
+          {/* Grouped action buttons, right-aligned */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowHargaKertasModal(true)}
+              className="px-3 py-1 text-sm bg-amber-500 text-white rounded hover:bg-amber-600"
+            >
+              Ubah Harga Kertas
+            </button>
+            <button
+              onClick={handleAddBarang}
+              className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              + Barang
+            </button>
+          </div>
+        </div>
         {/* Barang Table */}
         <div className="overflow-x-auto bg-white rounded shadow">
           <table className="min-w-full table-auto text-xs">
@@ -1100,6 +1109,11 @@ function MarketingBarang(): JSX.Element {
           </div>
         )}
       </div>
+      <UbahHargaKertasModal
+        isOpen={showHargaKertasModal}
+        onClose={() => setShowHargaKertasModal(false)}
+        onSuccess={getMasterBarang} // refresh the main table after save
+      />
     </DefaultLayout>
   );
 }
