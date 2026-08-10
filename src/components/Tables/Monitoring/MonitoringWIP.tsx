@@ -115,9 +115,9 @@ const STATUS_META: Record<
     badgeText: 'text-blue-700',
     dot: 'bg-blue-500',
     bar: 'bg-red-500',
-  },
+  },    
   stale: {
-    label: 'Mandek',
+    label: 'Terhenti',
     border: 'border-l-red-500',
     headerBg: 'bg-red-50',
     badgeBg: 'bg-red-100',
@@ -131,7 +131,7 @@ const STATUS_META: Record<
     headerBg: 'bg-amber-50',
     badgeBg: 'bg-amber-100',
     badgeText: 'text-amber-700',
-    dot: 'bg-amber-400',
+    dot: 'bg-amber-400',  
     bar: 'bg-amber-400',
   },
 };
@@ -1045,7 +1045,7 @@ function MonitoringWIP() {
                 dot={STATUS_META.progress.dot}
               />
               <MiniStat
-                label="Mandek"
+                label="Terhenti"
                 value={overallCounts.stale}
                 tone="text-red-600"
                 dot={STATUS_META.stale.dot}

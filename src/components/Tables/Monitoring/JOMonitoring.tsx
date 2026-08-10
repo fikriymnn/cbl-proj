@@ -218,23 +218,36 @@ function countWithDetail(tahapan: any[]) {
   return tahapan.filter((t) => t.produksi_lkh_proses?.length > 0).length;
 }
 
-// ── sums qty baik / rusak sebagian / rusak total across ALL produksi_lkh_proses
-//     entries nested inside produksi_lkh_tahapan ──
+// ── baik = latest tahapan (highest index) whose produksi_lkh_proses has qty baik > 0;
+//     if that tahapan's baik is 0, walk backward to earlier tahapan until non-zero is found.
+//     rs / rt remain summed across ALL tahapan (unchanged).
 function sumProduksiQty(tahapan: any[]): {
   baik: number;
   rs: number;
   rt: number;
 } {
-  let baik = 0;
   let rs = 0;
   let rt = 0;
   (tahapan ?? []).forEach((t: any) => {
     (t.produksi_lkh_proses ?? []).forEach((p: any) => {
-      baik += p.baik ?? 0;
       rs += p.rusak_sebagian ?? 0;
       rt += p.rusak_total ?? 0;
     });
   });
+
+  const sortedDesc = [...(tahapan ?? [])].sort((a, b) => b.index - a.index);
+  let baik = 0;
+  for (const t of sortedDesc) {
+    const tBaik = (t.produksi_lkh_proses ?? []).reduce(
+      (sum: number, p: any) => sum + (p.baik ?? 0),
+      0,
+    );
+    if (tBaik > 0) {
+      baik = tBaik;
+      break;
+    }
+  }
+
   return { baik, rs, rt };
 }
 
@@ -422,7 +435,7 @@ function ProduksiQtyBadges({
     return <span className="text-gray-400 text-[10px] italic">Belum ada</span>;
   }
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-col gap-1 ">
       <span
         className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-green-100 text-green-700"
         title="Qty Baik"

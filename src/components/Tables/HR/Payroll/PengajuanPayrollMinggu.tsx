@@ -179,7 +179,11 @@ const IconPrinter = () => (
     <rect x="6" y="14" width="12" height="8" />
   </svg>
 );
-
+const POTONGAN_PRESETS = [
+  'Koperasi Simpanan',
+  'Koperasi Pinjaman',
+  'Denda Keterlambatan',
+];
 // ─── Build Slip Gaji HTML ──────────────────────────────────────────────────────
 /**
  * Membangun dokumen HTML siap cetak berisi slip gaji mingguan.
@@ -573,6 +577,18 @@ function AddItemForm({
   const [err, setErr] = useState('');
   const total = Number(form.jumlah) * Number(form.nilai || 0);
 
+  const isPresetSelected =
+    form.tipe === 'potongan' && POTONGAN_PRESETS.includes(form.label);
+
+  function togglePreset(preset: string) {
+    if (form.label === preset) {
+      // klik lagi pada preset yang sudah aktif -> uncheck
+      setForm({ ...form, label: '' });
+    } else {
+      setForm({ ...form, label: preset });
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.label || !form.nilai) {
@@ -611,7 +627,14 @@ function AddItemForm({
             <button
               key={t}
               type="button"
-              onClick={() => setForm({ ...form, tipe: t })}
+              onClick={() =>
+                setForm({
+                  ...form,
+                  tipe: t,
+                  // reset label kalau pindah tipe supaya preset lama tidak nyangkut
+                  label: '',
+                })
+              }
               className={`py-2.5 rounded-xl text-sm font-semibold border-2 transition-all ${
                 form.tipe === t
                   ? t === 'bayaran'
@@ -625,6 +648,38 @@ function AddItemForm({
           ))}
         </div>
       </div>
+
+      {/* ── Preset Potongan (radio, toggle-able) ── */}
+      {form.tipe === 'potongan' && (
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+            Preset Potongan (klik lagi untuk batal pilih)
+          </label>
+          <div className="space-y-1.5">
+            {POTONGAN_PRESETS.map((preset) => (
+              <label
+                key={preset}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl border cursor-pointer text-sm transition-all ${
+                  form.label === preset
+                    ? 'bg-red-50 border-red-300 text-red-700 font-semibold'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="presetPotongan"
+                  checked={form.label === preset}
+                  onClick={() => togglePreset(preset)}
+                  onChange={() => {}}
+                  className="accent-red-500"
+                />
+                {preset}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
           Label / Keterangan
@@ -632,9 +687,16 @@ function AddItemForm({
         <input
           type="text"
           value={form.label}
-          onChange={(e) => setForm({ ...form, label: e.target.value })}
+          onChange={(e) =>
+            !isPresetSelected && setForm({ ...form, label: e.target.value })
+          }
+          readOnly={isPresetSelected}
           placeholder="cth: Bonus Kehadiran, Kasbon, dll"
-          className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            isPresetSelected
+              ? 'bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed'
+              : 'bg-slate-50 border-slate-200'
+          }`}
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -1180,7 +1242,39 @@ function PeriodDetailModal({
     });
     return Array.from(labelSet);
   }, [filtered]);
+  const allPotonganLabels: string[] = useMemo(() => {
+    const labelSet = new Set<string>();
+    filtered.forEach((emp: any) => {
+      (emp.detail_payroll ?? [])
+        .filter((d: any) => d.tipe === 'potongan')
+        .forEach((d: any) => labelSet.add(d.label));
+    });
+    return Array.from(labelSet);
+  }, [filtered]);
 
+  // totals for summary row
+  const columnTotals = useMemo(() => {
+    const bayaranTotals: Record<string, number> = {};
+    const potonganTotals: Record<string, number> = {};
+    let totalPotonganSum = 0;
+    let subTotalSum = 0;
+
+    filtered.forEach((emp: any) => {
+      (emp.detail_payroll ?? []).forEach((d: any) => {
+        if (d.tipe === 'bayaran') {
+          bayaranTotals[d.label] =
+            (bayaranTotals[d.label] ?? 0) + Number(d.total);
+        } else if (d.tipe === 'potongan') {
+          potonganTotals[d.label] =
+            (potonganTotals[d.label] ?? 0) + Number(d.total);
+        }
+      });
+      totalPotonganSum += Number(emp.total_potongan || 0);
+      subTotalSum += Number(emp.sub_total_upah || 0);
+    });
+
+    return { bayaranTotals, potonganTotals, totalPotonganSum, subTotalSum };
+  }, [filtered]);
   const labelMap: Record<string, string> = {
     tunjanganKopi: 'Tunjangan Kopi',
     uangHadir: 'Uang Hadir',
@@ -1471,7 +1565,16 @@ function PeriodDetailModal({
                     </th>
                   ))}
 
-                  {['Potongan', 'Sub Total', 'Aksi'].map((h) => (
+                  {allPotonganLabels.map((label) => (
+                    <th
+                      key={label}
+                      className="px-4 py-3 text-xs font-bold text-red-600 text-right whitespace-nowrap"
+                    >
+                      {fmtLabel(label)}
+                    </th>
+                  ))}
+
+                  {['Total Potongan', 'Sub Total', 'Aksi'].map((h) => (
                     <th
                       key={h}
                       className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap"
@@ -1486,13 +1589,16 @@ function PeriodDetailModal({
                   const bio = emp.karyawan?.biodata_karyawan?.[0];
 
                   const bayaranMap: Record<string, number> = {};
-                  (emp.detail_payroll ?? [])
-                    .filter((d: any) => d.tipe === 'bayaran')
-                    .forEach((d: any) => {
+                  const potonganMap: Record<string, number> = {};
+                  (emp.detail_payroll ?? []).forEach((d: any) => {
+                    if (d.tipe === 'bayaran') {
                       bayaranMap[d.label] =
                         (bayaranMap[d.label] ?? 0) + Number(d.total);
-                    });
-
+                    } else if (d.tipe === 'potongan') {
+                      potonganMap[d.label] =
+                        (potonganMap[d.label] ?? 0) + Number(d.total);
+                    }
+                  });
                   return (
                     <tr
                       key={emp.id ?? i}
@@ -1541,6 +1647,19 @@ function PeriodDetailModal({
                         </td>
                       ))}
 
+                      {allPotonganLabels.map((label) => (
+                        <td
+                          key={label}
+                          className="px-4 py-3 text-right text-xs text-red-600 font-semibold"
+                        >
+                          {potonganMap[label] != null ? (
+                            `Rp ${formatInteger(potonganMap[label])}`
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                      ))}
+
                       <td className="px-4 py-3 text-right text-xs text-red-600 font-semibold">
                         {emp.total_potongan > 0 ? (
                           `Rp ${formatInteger(emp.total_potongan)}`
@@ -1565,7 +1684,9 @@ function PeriodDetailModal({
                 {filtered.length === 0 && (
                   <tr>
                     <td
-                      colSpan={10 + allBayaranLabels.length}
+                      colSpan={
+                        10 + allBayaranLabels.length + allPotonganLabels.length
+                      }
                       className="text-center py-12 text-slate-400 text-sm"
                     >
                       Tidak ada data
@@ -1573,6 +1694,43 @@ function PeriodDetailModal({
                   </tr>
                 )}
               </tbody>
+              {filtered.length > 0 && (
+                <tfoot className="sticky bottom-0 z-20 bg-slate-100 border-t-2 border-slate-300">
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-4 py-3 text-xs font-bold text-slate-700 sticky left-0 bg-slate-100"
+                    >
+                      RINGKASAN ({filtered.length} karyawan)
+                    </td>
+                    {allBayaranLabels.map((label) => (
+                      <td
+                        key={label}
+                        className="px-4 py-3 text-right text-xs font-bold text-emerald-700"
+                      >
+                        Rp{' '}
+                        {formatInteger(columnTotals.bayaranTotals[label] ?? 0)}
+                      </td>
+                    ))}
+                    {allPotonganLabels.map((label) => (
+                      <td
+                        key={label}
+                        className="px-4 py-3 text-right text-xs font-bold text-red-700"
+                      >
+                        Rp{' '}
+                        {formatInteger(columnTotals.potonganTotals[label] ?? 0)}
+                      </td>
+                    ))}
+                    <td className="px-4 py-3 text-right text-xs font-bold text-red-700">
+                      Rp {formatInteger(columnTotals.totalPotonganSum)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs font-bold text-slate-900">
+                      Rp {formatInteger(columnTotals.subTotalSum)}
+                    </td>
+                    <td />
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
 
