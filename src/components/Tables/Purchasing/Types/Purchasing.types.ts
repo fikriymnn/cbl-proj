@@ -131,7 +131,12 @@ export type StatusTiket =
   | 'draft'
   | 'request kabag'
   | 'request finance'
-  | 'proses';
+  | 'proses'
+  | 'history'
+  | 'approve kabag'
+  | 'approve finance'
+  | 'reject kabag'
+  | 'reject finance';
 
 export interface PurchaseOrderNoResponse {
   status: number;

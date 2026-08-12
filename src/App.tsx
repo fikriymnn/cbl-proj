@@ -279,6 +279,10 @@ import HistoryTambahBahanPage from './pages/Produksi/HistoryTambahBahanPage';
 import MonitoringWIPPage from './pages/Monitoring/MonitoringWIPPage';
 import BapPage from './pages/GudangFG/BapPage';
 import JadwalLemburPPIC from './pages/PPIC/JadwalPPIC/JadwalLemburPage';
+import POHistoryPage from './pages/Purchasing/POHistoryPage';
+import ApprovalOpnameMRPage from './pages/MR/ApprovalOpnameMRPage';
+
+import StockOpnameFGPage from './pages/GudangFG/StockOpnameFGPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1248,7 +1252,14 @@ function App() {
             </P>
           }
         />
-
+        <Route
+          path="/mr/approval-opname"
+          element={
+            <P>
+              <ApprovalOpnameMRPage />
+            </P>
+          }
+        />
         {/* ============== HR ROUTES ============== */}
         <Route
           path="/hr/personnel/company"
@@ -2566,7 +2577,14 @@ function App() {
             </P>
           }
         />
-
+        <Route
+          path="/gudang-fg/stock-opname"
+          element={
+            <P>
+              <StockOpnameFGPage />
+            </P>
+          }
+        />
         {/* ============== PURCHASING ROUTES ============== */}
         <Route
           path="/purchasing/list-ots"
@@ -2597,6 +2615,14 @@ function App() {
           element={
             <P>
               <POApprovalPurchasePage />
+            </P>
+          }
+        />
+        <Route
+          path="/purchasing/po-history"
+          element={
+            <P>
+              <POHistoryPage />
             </P>
           }
         />

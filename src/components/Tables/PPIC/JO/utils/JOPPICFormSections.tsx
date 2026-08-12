@@ -215,11 +215,22 @@ interface ProductionDetailsSectionProps {
   formData: any;
   onChange: (field: string, value: any) => void;
   onQtyChange: (newQty: number) => void;
+  // NEW: gudang FG (finish good) stock info, keyed by id_io
+  gudangFGStock?: { total_qty: number; data: any[] } | null;
+  loadingGudangFG?: boolean;
+  onApplyGudangFGStock?: () => void;
 }
 
 export const ProductionDetailsSection: React.FC<
   ProductionDetailsSectionProps
-> = ({ formData, onChange, onQtyChange }) => {
+> = ({
+  formData,
+  onChange,
+  onQtyChange,
+  gudangFGStock = null,
+  loadingGudangFG = false,
+  onApplyGudangFGStock,
+}) => {
   return (
     <div className="space-y-3">
       <h3 className="text-base font-semibold text-gray-700 border-b pb-2">
@@ -252,6 +263,31 @@ export const ProductionDetailsSection: React.FC<
             className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             min="0"
           />
+          {/* NEW: gudang FG stock info + manual re-apply */}
+          {loadingGudangFG && (
+            <p className="mt-1 text-xs text-gray-400">
+              Mengecek stok gudang FG...
+            </p>
+          )}
+          {!loadingGudangFG && gudangFGStock && (
+            <div className="mt-1 flex items-center gap-2">
+              <p className="text-xs text-gray-500">
+                Stok Gudang FG:{' '}
+                <span className="font-semibold text-gray-700">
+                  {gudangFGStock.total_qty.toLocaleString()}
+                </span>
+              </p>
+              {onApplyGudangFGStock && (
+                <button
+                  type="button"
+                  onClick={onApplyGudangFGStock}
+                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                >
+                  Gunakan
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Quantity */}

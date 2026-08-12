@@ -38,6 +38,7 @@ interface AdjustGudangResponse {
 }
 
 interface AdjustStockHistoryItem {
+  user: any;
   id: number;
   id_gudang_finish_good: number;
   id_jo: number;
@@ -141,6 +142,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
             page: pageVal,
             limit: limitVal,
             search: searchVal || undefined,
+            status: 'keep',
           },
           withCredentials: true,
         },
@@ -254,6 +256,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
           withCredentials: true,
         },
       );
+      console.log('history res', res.data);
       setHistory(Array.isArray(res.data?.data) ? res.data.data : []);
       setHistoryTotalPages(res.data?.total_page ?? 1);
     } catch (err) {
@@ -526,6 +529,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
                         'Selisih',
                         'Status',
                         'Note',
+                        'User',
                       ].map((h) => (
                         <th
                           key={h}
@@ -618,6 +622,11 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
                             <td className="p-2 sm:p-3 max-w-[180px]">
                               <span className="block " title={h.note ?? ''}>
                                 {h.note || '-'}
+                              </span>
+                            </td>
+                            <td className="p-2 sm:p-3 max-w-[180px]">
+                              <span className="block" title={h.user.nama ?? ''}>
+                                {h.user.nama || '-'}
                               </span>
                             </td>
                           </tr>

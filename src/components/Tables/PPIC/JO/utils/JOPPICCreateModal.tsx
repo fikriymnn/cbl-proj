@@ -112,6 +112,13 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   // NEW: block reasons for create JO
   const [createBlockReasons, setCreateBlockReasons] = useState<string[]>([]);
 
+  // NEW: FG (Finish Good) warehouse stock info, fetched by id_io
+  const [gudangFGStock, setGudangFGStock] = useState<{
+    total_qty: number;
+    data: any[];
+  } | null>(null);
+  const [loadingGudangFG, setLoadingGudangFG] = useState(false);
+
   // Determine if this modal is in "IO proof" mode
   const isIOProofMode =
     tipeJO === 'JO PROOF' && proofSourceType === 'IO' && !editMode;
@@ -357,6 +364,44 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
+  // NEW: Fetch FG (Finish Good) warehouse stock by IO id — for stock checking
+  const fetchGudangFGByIdIO = async (idIO: number): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/fg/gudangFinishGoodByIdIo`;
+    try {
+      setLoadingGudangFG(true);
+      const res: AxiosResponse = await axios.get(url, {
+        params: { id_io: idIO },
+        withCredentials: true,
+      });
+      console.log('Gudang FG by ID IO response:', res.data);
+
+      const totalQty = res.data?.total_qty ?? 0;
+      setGudangFGStock({
+        total_qty: totalQty,
+        data: res.data?.data || [],
+      });
+
+      // Auto-fill Stock FG on create mode only — user can still edit it
+      // afterwards. In edit mode we leave the saved value untouched and let
+      // the user apply it manually via the "Gunakan" button.
+      if (!editMode) {
+        setFormData((prev) => ({ ...prev, stok_fg: totalQty }));
+      }
+    } catch (error) {
+      console.error('Error fetching gudang FG by ID IO:', error);
+      setGudangFGStock(null);
+    } finally {
+      setLoadingGudangFG(false);
+    }
+  };
+
+  // NEW: manually (re)apply the fetched gudang FG total_qty into Stock FG
+  const applyGudangFGStock = () => {
+    if (!gudangFGStock) return;
+    setFormData((prev) => ({ ...prev, stok_fg: gudangFGStock.total_qty }));
+    if (editMode) setHasQtyBeenEdited(true);
+  };
+
   const fetchCustomerData = async (idCus: number): Promise<void> => {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -465,6 +510,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         });
 
         if (joDetail.id_io) {
+          // NEW: check FG warehouse stock for this IO (edit mode)
+          fetchGudangFGByIdIO(joDetail.id_io);
+
           const ioMountingData = await fetchIOMountingWithTahapan(
             joDetail.id_io,
           );
@@ -663,6 +711,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     setOriginalQty(0);
     setHasQtyBeenEdited(false);
     setCreateBlockReasons([]);
+    setGudangFGStock(null);
   };
 
   useEffect(() => {
@@ -703,6 +752,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
       if (!editMode) fetchMountingData(selectedSO.id_io);
       fetchCustomerData(selectedSO.id_customer);
+      // NEW: check FG warehouse stock for this IO
+      fetchGudangFGByIdIO(selectedSO.id_io);
     } else {
       // Deselected
       setCreateBlockReasons([]);
@@ -738,6 +789,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
 
       fetchMountingData(selectedIO.id);
       fetchCustomerData(selectedIO.id_customer);
+      // NEW: check FG warehouse stock for this IO
+      fetchGudangFGByIdIO(selectedIO.id);
     } else {
       setCreateBlockReasons([]);
     }
@@ -1104,6 +1157,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                   formData={formData}
                   onChange={handleFieldChange}
                   onQtyChange={handleQtyChange}
+                  gudangFGStock={gudangFGStock}
+                  loadingGudangFG={loadingGudangFG}
+                  onApplyGudangFGStock={applyGudangFGStock}
                 />
               </div>
             </div>
