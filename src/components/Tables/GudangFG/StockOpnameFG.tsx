@@ -363,11 +363,7 @@ function TicketListTable({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const statusFilter =
-    mode === 'create'
-      ? 'draft,approved,rejected'
-      : monitorStatus === 'all'
-      ? ''
-      : monitorStatus;
+    mode === 'create' ? 'draft' : monitorStatus === 'all' ? '' : monitorStatus;
 
   useEffect(() => {
     fetchList();
@@ -760,7 +756,7 @@ function OpnameDetail({
     if (!ticket) return;
     try {
       setRequesting(true);
-      await axios.post(
+      await axios.put(
         `${import.meta.env.VITE_API_LINK}/fg/stockOpname/request/${ticket.id}`,
         {},
         { withCredentials: true },
@@ -1018,7 +1014,7 @@ function OpnameDetail({
                           {it.note_approve}
                         </p>
                       )}
-                      {isEditable && (
+                      {/* {isEditable && (
                         <button
                           onClick={() => saveItem(it.id)}
                           disabled={savingId === it.id}
@@ -1026,7 +1022,7 @@ function OpnameDetail({
                         >
                           {savingId === it.id ? 'Menyimpan...' : 'Simpan'}
                         </button>
-                      )}
+                      )} */}
                     </td>
                   </tr>
                 );

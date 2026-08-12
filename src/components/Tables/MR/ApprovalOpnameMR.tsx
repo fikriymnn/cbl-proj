@@ -119,6 +119,7 @@ const TICKET_STATUS_META: Record<string, { label: string; cls: string }> = {
   },
   approved: { label: 'Disetujui', cls: 'bg-green-100 text-green-700' },
   rejected: { label: 'Ditolak', cls: 'bg-red-100 text-red-700' },
+  history: { label: 'Riwayat', cls: 'bg-gray-100 text-gray-600' },
 };
 
 function TicketStatusBadge({ status }: { status: string }) {
@@ -197,6 +198,24 @@ function DiffCell({ real, sistem }: { real: number | null; sistem: number }) {
 }
 
 const RESOLVABLE_ITEM_STATUSES = ['saved'];
+
+// A ticket is considered "finalized" (no more actions possible) either when
+// its own status is directly approved/rejected, or when it has been moved
+// into "history" — in which case the real outcome lives in status_tiket.
+function isTicketFinalized(ticket: StockOpname | null): boolean {
+  if (!ticket) return false;
+  return (
+    ticket.status === 'approved' ||
+    ticket.status === 'rejected' ||
+    ticket.status === 'history'
+  );
+}
+
+// Resolves the status value that should actually be displayed to the user:
+// when the ticket is in "history", the real outcome is in status_tiket.
+function displayTicketStatus(ticket: StockOpname): string {
+  return ticket.status === 'history' ? ticket.status_tiket : ticket.status;
+}
 
 // ─── Confirm Modal ──────────────────────────────────────────────────────────────
 
@@ -419,7 +438,11 @@ function TicketListTable({
                     {fmtDate(t.tgl_create)}
                   </td>
                   <td className="p-2 sm:p-3">
-                    <TicketStatusBadge status={t.status} />
+                    <TicketStatusBadge
+                      status={
+                        t.status === 'history' ? t.status_tiket : t.status
+                      }
+                    />
                   </td>
 
                   <td className="p-2 sm:p-3">
@@ -509,6 +532,7 @@ function ApprovalDetail({
         `${import.meta.env.VITE_API_LINK}/fg/stockOpname/${ticketId}`,
         { withCredentials: true },
       );
+      console.log('fetchDetail res', res.data);
       setTicket(res.data.data);
       setChecked({});
     } catch (err) {
@@ -532,24 +556,22 @@ function ApprovalDetail({
   const approvedCount = items.filter((it) => it.status === 'approved').length;
   const rejectedCount = items.filter((it) => it.status === 'rejected').length;
 
-  // Ticket-level "Setujui" is only allowed once review is complete AND
-  // every single item ended up approved — a ticket with any rejected item
-  // cannot be approved as a whole.
-  const canApproveTicket =
-    ticket != null &&
-    ticket.status !== 'approved' &&
-    ticket.status !== 'rejected' &&
-    allItemsResolved &&
-    rejectedCount === 0;
+  // Once a ticket is finalized — either directly approved/rejected, or moved
+  // into "history" (with the real outcome living in status_tiket) — no more
+  // ticket-level actions are allowed.
+  const finalized = isTicketFinalized(ticket);
 
-  // Ticket-level "Tolak" just needs review to be complete — if review is
-  // done and at least one item was rejected (or even if all happen to be
-  // approved but MR still wants to reject the ticket), rejecting is allowed.
-  const canRejectTicket =
-    ticket != null &&
-    ticket.status !== 'approved' &&
-    ticket.status !== 'rejected' &&
-    allItemsResolved;
+  // Ticket-level "Setujui" is only allowed once review is complete, the
+  // ticket is not yet finalized, AND every single item ended up approved —
+  // a ticket with any rejected item cannot be approved as a whole.
+  const canApproveTicket =
+    ticket != null && !finalized && allItemsResolved && rejectedCount === 0;
+
+  // Ticket-level "Tolak" just needs review to be complete and the ticket to
+  // not already be finalized — if review is done and at least one item was
+  // rejected (or even if all happen to be approved but MR still wants to
+  // reject the ticket), rejecting is allowed.
+  const canRejectTicket = ticket != null && !finalized && allItemsResolved;
 
   function toggleCheckAll(val: boolean) {
     const next: Record<number, boolean> = {};
@@ -650,7 +672,7 @@ function ApprovalDetail({
           </h3>
         </div>
         <div className="flex items-center gap-2">
-          {ticket && <TicketStatusBadge status={ticket.status} />}
+          {ticket && <TicketStatusBadge status={displayTicketStatus(ticket)} />}
         </div>
       </div>
 
@@ -832,44 +854,45 @@ function ApprovalDetail({
         </table>
       </div>
 
-      {ticket &&
-        ticket.status !== 'approved' &&
-        ticket.status !== 'rejected' && (
-          <div className="m-4 flex items-center justify-between gap-3 flex-wrap bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-            <p className="text-xs text-gray-600">
-              {!allItemsResolved
-                ? 'Selesaikan review seluruh item sebelum menyetujui/menolak tiket.'
-                : rejectedCount > 0
-                ? 'Terdapat item yang ditolak, tiket ini hanya dapat ditolak.'
-                : 'Semua item disetujui. Anda dapat menyetujui tiket ini.'}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setConfirmTicketAction('reject')}
-                disabled={!canRejectTicket}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
-              >
-                Tolak Tiket
-              </button>
-              <button
-                onClick={() => setConfirmTicketAction('approve')}
-                disabled={!canApproveTicket}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
-              >
-                Setujui Tiket
-              </button>
-            </div>
+      {/* Action bar: only shown while the ticket is still actionable
+          (i.e. not approved/rejected directly, and not moved to "history"). */}
+      {ticket && !finalized && (
+        <div className="m-4 flex items-center justify-between gap-3 flex-wrap bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+          <p className="text-xs text-gray-600">
+            {!allItemsResolved
+              ? 'Selesaikan review seluruh item sebelum menyetujui/menolak tiket.'
+              : rejectedCount > 0
+              ? 'Terdapat item yang ditolak, tiket ini hanya dapat ditolak.'
+              : 'Semua item disetujui. Anda dapat menyetujui tiket ini.'}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setConfirmTicketAction('reject')}
+              disabled={!canRejectTicket}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
+            >
+              Tolak Tiket
+            </button>
+            <button
+              onClick={() => setConfirmTicketAction('approve')}
+              disabled={!canApproveTicket}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
+            >
+              Setujui Tiket
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-      {ticket &&
-        (ticket.status === 'approved' || ticket.status === 'rejected') && (
-          <div className="m-4 flex items-center gap-2 text-xs bg-gray-50 border border-gray-200 text-gray-600 rounded-lg px-3 py-2">
-            Tiket ini telah{' '}
-            {ticket.status === 'approved' ? 'disetujui' : 'ditolak'} pada{' '}
-            {fmtDate(ticket.tgl_approve)}.
-          </div>
-        )}
+      {/* Finalized banner: shown for direct approved/rejected tickets, and
+          for "history" tickets (using status_tiket for the real outcome). */}
+      {ticket && finalized && (
+        <div className="m-4 flex items-center gap-2 text-xs bg-gray-50 border border-gray-200 text-gray-600 rounded-lg px-3 py-2">
+          Tiket ini telah{' '}
+          {displayTicketStatus(ticket) === 'approved' ? 'disetujui' : 'ditolak'}{' '}
+          pada {fmtDate(ticket.tgl_approve)}.
+        </div>
+      )}
     </div>
   );
 }
