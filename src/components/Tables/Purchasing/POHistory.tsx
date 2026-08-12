@@ -60,7 +60,7 @@ const POHistory: React.FC = () => {
           page,
           limit,
           search: searchTerm || undefined,
-          //   status: 'done', // fixed to history/approved POs
+          status: 'approve finance', // fixed to history/approved POs
         },
         withCredentials: true,
       });
