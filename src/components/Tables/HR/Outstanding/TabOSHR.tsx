@@ -13,6 +13,7 @@ import OsKaryawan from './OsKaryawan';
 import OsKetidaksesuaianSPL from './OSKetidaksesuaianSPL';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import BAPHR from '../../GudangFG/BAPHR';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -191,6 +192,7 @@ export default function TabOSHR() {
               />
 
               <Tab label="History All Kendala" {...a11yProps(4)} />
+              <Tab label="BAP" {...a11yProps(5)} />
               {/* <Tab label="History Ketidaksesuaian SPL" {...a11yProps(5)} /> */}
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
@@ -214,6 +216,9 @@ export default function TabOSHR() {
         </TabPanel>
         <TabPanel value={value} index={4} dir={theme.direction}>
           <HistoryHRAllKendala />
+        </TabPanel>
+        <TabPanel value={value} index={5} dir={theme.direction}>
+          <BAPHR />
         </TabPanel>
       </Box>
     </>

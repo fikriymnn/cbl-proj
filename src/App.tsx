@@ -283,6 +283,7 @@ import POHistoryPage from './pages/Purchasing/POHistoryPage';
 import ApprovalOpnameMRPage from './pages/MR/ApprovalOpnameMRPage';
 
 import StockOpnameFGPage from './pages/GudangFG/StockOpnameFGPage';
+import BAPManagementPage from './pages/UserMenu/BAPManagementPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2416,6 +2417,14 @@ function App() {
           element={
             <P>
               <ApprovalManagementPage />
+            </P>
+          }
+        />
+        <Route
+          path="/management-menu/bap-management"
+          element={
+            <P>
+              <BAPManagementPage />
             </P>
           }
         />

@@ -4,76 +4,19 @@ import Loading from '../../Loading';
 import { Pagination, Stack } from '@mui/material';
 
 import { usePermissions } from '../../../constant/usePermissions';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface BapListItem {
-  id: number;
-  id_user: number;
-  no_bap: string;
-  tgl_create: string;
-  status: string;
-  is_active: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface BapListResponse {
-  status: number;
-  success: boolean;
-  data: BapListItem[];
-  total_page?: number;
-}
-
-interface UserRef {
-  id: number;
-  nama: string;
-  email?: string;
-  role?: string;
-}
-
-interface BapItem {
-  id: number;
-  id_bap: number;
-  id_gudang_finish_good: number;
-  id_jo: number;
-  id_io: number;
-  id_so: number;
-  id_customer: number;
-  id_produk: number;
-  id_user_create: number;
-  id_user_approve: number | null;
-  id_user_reject: number | null;
-  no_jo: string;
-  no_io: string;
-  no_so: string;
-  no_po_customer: string;
-  customer: string;
-  produk: string;
-  po_qty: number;
-  jumlah_qty: number;
-  tgl_masuk: string | null;
-  tgl_create: string;
-  tgl_respon: string | null;
-  status: string; // incoming | approve | reject
-  note: string | null;
-  is_active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  user_create?: UserRef | null;
-  user_approve?: UserRef | null;
-  user_reject?: UserRef | null;
-}
-
-interface BapDetail extends BapListItem {
-  bap_item: BapItem[];
-}
-
-interface BapDetailResponse {
-  status: number;
-  success: boolean;
-  data: BapDetail;
-}
+import {
+  BapDetail,
+  BapDetailResponse,
+  BapListItem,
+  BapListResponse,
+} from './types/BapTypes';
+import {
+  bapStatusBadgeClass,
+  fmtDateTime,
+  fmtQty,
+  itemStatusBadgeClass,
+  itemStatusLabel,
+} from './bapHelpers';
 
 // ─── Types reused from Gudang FG search ────────────────────────────────────────
 
@@ -111,48 +54,6 @@ interface GudangResponse {
   total_page?: number;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function fmtQty(val: number | null | undefined) {
-  if (val == null) return '-';
-  return val.toLocaleString('id-ID');
-}
-
-function fmtDateTime(val: string | null | undefined) {
-  if (!val) return '-';
-  const d = new Date(val);
-  if (isNaN(d.getTime())) return String(val);
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}`;
-}
-
-/** Badge classes for the BAP ticket-level status */
-function bapStatusBadgeClass(status: string | null | undefined): string {
-  const s = (status ?? '').toLowerCase();
-  if (s === 'done' || s === 'selesai') return 'bg-blue-100 text-blue-700';
-  if (s === 'incoming') return 'bg-amber-100 text-amber-700';
-  return 'bg-gray-100 text-gray-600';
-}
-
-/** Badge classes for a bap_item status */
-function itemStatusBadgeClass(status: string | null | undefined): string {
-  const s = (status ?? '').toLowerCase();
-  if (s === 'approve') return 'bg-green-100 text-green-700';
-  if (s === 'reject') return 'bg-red-100 text-red-600';
-  if (s === 'incoming') return 'bg-amber-100 text-amber-700';
-  return 'bg-gray-100 text-gray-600';
-}
-
-function itemStatusLabel(status: string | null | undefined): string {
-  const s = (status ?? '').toLowerCase();
-  if (s === 'approve') return 'Disetujui';
-  if (s === 'reject') return 'Ditolak';
-  if (s === 'incoming') return 'Menunggu';
-  return status || '-';
-}
-
 // ─── Async Searchable Select (finish good items for creating a BAP) ───────────
 
 const SELECT_LIMIT = 8;
@@ -185,7 +86,6 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
             withCredentials: true,
           },
         );
-        console.log('Fetched candidates:', res.data);
         const allBarang: DataBarang[] = (res.data?.data ?? []).flatMap(
           (g) => g.data_barang ?? [],
         );
@@ -626,24 +526,19 @@ function CreateBapModal({
   );
 }
 
-// ─── BAP Detail / Approval Modal ───────────────────────────────────────────────
+// ─── BAP Detail Modal (READ-ONLY — no approve/reject/finish here anymore) ─────
+// Approval now lives in BAPMarketing (stage 1) and BAPManagement (final).
+// Closing the ticket now lives in BAPPPIC. This screen is create + browse only.
 
 function BapDetailModal({
   bapId,
-  canApprove,
   onClose,
-  onChanged,
 }: {
   bapId: number;
-  canApprove: boolean;
   onClose: () => void;
-  onChanged: () => void;
 }) {
   const [detail, setDetail] = useState<BapDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [notes, setNotes] = useState<Record<number, string>>({});
-  const [acting, setActing] = useState<Record<number, boolean>>({});
-  const [finishing, setFinishing] = useState(false);
 
   const fetchDetail = useCallback(async () => {
     try {
@@ -652,6 +547,7 @@ function BapDetailModal({
         `${import.meta.env.VITE_API_LINK}/fg/bap/${bapId}`,
         { withCredentials: true },
       );
+      console.log('Fetched BAP detail:', res.data);
       setDetail(res.data?.data ?? null);
     } catch (err) {
       console.error(err);
@@ -665,95 +561,7 @@ function BapDetailModal({
     fetchDetail();
   }, [fetchDetail]);
 
-  function updateNote(id: number, val: string) {
-    setNotes((p) => ({ ...p, [id]: val }));
-  }
-
-  async function handleApprove(item: BapItem) {
-    const note = notes[item.id] ?? '';
-    if (!note.trim()) {
-      alert('Note wajib diisi');
-      return;
-    }
-    const confirmed = window.confirm(
-      `Setujui item ${item.no_jo} - ${item.produk}?`,
-    );
-    if (!confirmed) return;
-    try {
-      setActing((p) => ({ ...p, [item.id]: true }));
-      await axios.put(
-        `${import.meta.env.VITE_API_LINK}/fg/bapItem/approve/${item.id}`,
-        { note: note.trim() },
-        { withCredentials: true },
-      );
-      await fetchDetail();
-      onChanged();
-    } catch (err: unknown) {
-      console.error(err);
-      const error = err as { response?: { data?: { msg?: string } } };
-      alert(error?.response?.data?.msg ?? 'Gagal menyetujui item');
-    } finally {
-      setActing((p) => ({ ...p, [item.id]: false }));
-    }
-  }
-
-  async function handleReject(item: BapItem) {
-    const note = notes[item.id] ?? '';
-    if (!note.trim()) {
-      alert('Note wajib diisi');
-      return;
-    }
-    const confirmed = window.confirm(
-      `Tolak item ${item.no_jo} - ${item.produk}?`,
-    );
-    if (!confirmed) return;
-    try {
-      setActing((p) => ({ ...p, [item.id]: true }));
-      await axios.put(
-        `${import.meta.env.VITE_API_LINK}/fg/bapItem/reject/${item.id}`,
-        { note: note.trim() },
-        { withCredentials: true },
-      );
-      await fetchDetail();
-      onChanged();
-    } catch (err: unknown) {
-      console.error(err);
-      const error = err as { response?: { data?: { msg?: string } } };
-      alert(error?.response?.data?.msg ?? 'Gagal menolak item');
-    } finally {
-      setActing((p) => ({ ...p, [item.id]: false }));
-    }
-  }
-
   const items = detail?.bap_item ?? [];
-  const hasIncoming = items.some(
-    (it) => (it.status ?? '').toLowerCase() === 'incoming',
-  );
-  const canFinish = canApprove && items.length > 0 && !hasIncoming;
-
-  async function handleFinish() {
-    if (!detail) return;
-    const confirmed = window.confirm(
-      `Selesaikan BAP ${detail.no_bap}? Tindakan ini tidak dapat dibatalkan.`,
-    );
-    if (!confirmed) return;
-    try {
-      setFinishing(true);
-      await axios.put(
-        `${import.meta.env.VITE_API_LINK}/fg/bap/done/${detail.id}`,
-        {},
-        { withCredentials: true },
-      );
-      onChanged();
-      onClose();
-    } catch (err: unknown) {
-      console.error(err);
-      const error = err as { response?: { data?: { msg?: string } } };
-      alert(error?.response?.data?.msg ?? 'Gagal menyelesaikan BAP');
-    } finally {
-      setFinishing(false);
-    }
-  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
@@ -791,7 +599,7 @@ function BapDetailModal({
           </button>
         </div>
 
-        {/* Body */}
+        {/* Body — read only */}
         <div className="flex-1 overflow-y-auto p-4 relative min-h-[200px]">
           {loading && <Loading />}
           {!loading && items.length === 0 ? (
@@ -803,7 +611,6 @@ function BapDetailModal({
               {items.map((item) => {
                 const s = (item.status ?? '').toLowerCase();
                 const isIncoming = s === 'incoming';
-                const isActing = !!acting[item.id];
                 return (
                   <div
                     key={item.id}
@@ -851,41 +658,13 @@ function BapDetailModal({
                             {item.note ? ` — Catatan: ${item.note}` : ''}
                           </p>
                         )}
+                        {isIncoming && (
+                          <p className="text-[10px] text-amber-600 mt-1">
+                            Menunggu persetujuan marketing / management
+                          </p>
+                        )}
                       </div>
                     </div>
-
-                    {isIncoming && canApprove && (
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1 border-t border-gray-100">
-                        <input
-                          type="text"
-                          value={notes[item.id] ?? ''}
-                          onChange={(e) => updateNote(item.id, e.target.value)}
-                          placeholder="Catatan approve / reject..."
-                          className="flex-1 rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                        />
-                        <div className="flex gap-2 flex-shrink-0">
-                          <button
-                            onClick={() => handleApprove(item)}
-                            disabled={isActing}
-                            className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
-                          >
-                            Setujui
-                          </button>
-                          <button
-                            onClick={() => handleReject(item)}
-                            disabled={isActing}
-                            className="px-3 py-1.5 bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
-                          >
-                            Tolak
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {isIncoming && !canApprove && (
-                      <p className="text-[10px] text-amber-600 pt-1 border-t border-gray-100">
-                        Menunggu persetujuan
-                      </p>
-                    )}
                   </div>
                 );
               })}
@@ -901,15 +680,6 @@ function BapDetailModal({
           >
             Tutup
           </button>
-          {canFinish && (
-            <button
-              onClick={handleFinish}
-              disabled={finishing}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
-            >
-              {finishing ? 'Menyimpan...' : 'Selesaikan BAP'}
-            </button>
-          )}
         </div>
       </div>
     </div>
@@ -918,17 +688,13 @@ function BapDetailModal({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-type TabKey = 'list' | 'approval';
-
 const BAPFg: React.FC = () => {
   // ── Permissions ──
   const role = localStorage.getItem('userRole') ?? '';
   const bagian = localStorage.getItem('userBagian') ?? '';
-  const { checkCreate, checkEdit } = usePermissions(role, bagian);
+  const { checkCreate } = usePermissions(role, bagian);
   const canCreate = checkCreate('/gudang-fg/bap');
-  const canEdit = checkEdit('/gudang-fg/bap');
 
-  const [activeTab, setActiveTab] = useState<TabKey>('list');
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<BapListItem[]>([]);
   const [page, setPage] = useState(1);
@@ -967,23 +733,6 @@ const BAPFg: React.FC = () => {
     setPage(1);
   }
 
-  function handleTabChange(tab: TabKey) {
-    setActiveTab(tab);
-    setPage(1);
-  }
-
-  // Approval tab: surface tickets that still have something to review first
-  const displayedData =
-    activeTab === 'approval'
-      ? [...data].sort((a, b) => {
-          const aPending =
-            (a.status ?? '').toLowerCase() === 'incoming' ? 0 : 1;
-          const bPending =
-            (b.status ?? '').toLowerCase() === 'incoming' ? 0 : 1;
-          return aPending - bPending;
-        })
-      : data;
-
   return (
     <>
       <main>
@@ -1001,12 +750,7 @@ const BAPFg: React.FC = () => {
         )}
 
         {detailId != null && (
-          <BapDetailModal
-            bapId={detailId}
-            canApprove={activeTab === 'approval' && canEdit}
-            onClose={() => setDetailId(null)}
-            onChanged={fetchData}
-          />
+          <BapDetailModal bapId={detailId} onClose={() => setDetailId(null)} />
         )}
 
         {/* Header */}
@@ -1030,61 +774,29 @@ const BAPFg: React.FC = () => {
             </h2>
           </div>
 
-          {/* Tabs */}
-          <div className="flex border-b border-gray-200 px-3 sm:px-4 pt-3 gap-2">
-            <button
-              onClick={() => handleTabChange('list')}
-              className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${
-                activeTab === 'list'
-                  ? 'bg-cyan-50 text-cyan-700 border-b-2 border-cyan-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Daftar BAP
-            </button>
-            <button
-              onClick={() => handleTabChange('approval')}
-              className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${
-                activeTab === 'approval'
-                  ? 'bg-cyan-50 text-cyan-700 border-b-2 border-cyan-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Approval
-            </button>
-          </div>
-
-          {activeTab === 'list' && (
-            <div className="p-3 sm:p-4 flex items-center justify-end">
-              {canCreate && (
-                <button
-                  onClick={() => setShowCreate(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold rounded-lg shadow transition-all"
+          <div className="p-3 sm:p-4 flex items-center justify-end">
+            {canCreate && (
+              <button
+                onClick={() => setShowCreate(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold rounded-lg shadow transition-all"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Buat BAP
-                </button>
-              )}
-            </div>
-          )}
-          {activeTab === 'approval' && !canEdit && (
-            <div className="px-3 sm:px-4 py-3 text-xs text-amber-600 bg-amber-50 border-t border-amber-100">
-              Anda tidak memiliki akses untuk menyetujui atau menolak item BAP.
-              Anda tetap dapat melihat detailnya.
-            </div>
-          )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Buat BAP
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Table */}
@@ -1104,7 +816,7 @@ const BAPFg: React.FC = () => {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              {activeTab === 'list' ? 'Daftar BAP' : 'BAP Menunggu Persetujuan'}
+              Daftar BAP
             </h3>
             <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold">
               {data.length} Record
@@ -1128,7 +840,7 @@ const BAPFg: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {displayedData.length === 0 ? (
+                {data.length === 0 ? (
                   <tr>
                     <td
                       colSpan={5}
@@ -1138,7 +850,7 @@ const BAPFg: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  displayedData.map((bap, idx) => (
+                  data.map((bap, idx) => (
                     <tr
                       key={bap.id}
                       className="border-b hover:bg-blue-50 transition-colors"
@@ -1166,9 +878,7 @@ const BAPFg: React.FC = () => {
                           onClick={() => setDetailId(bap.id)}
                           className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
                         >
-                          {activeTab === 'approval' && canEdit
-                            ? 'Review'
-                            : 'Lihat Detail'}
+                          Lihat Detail
                         </button>
                       </td>
                     </tr>
