@@ -3,6 +3,11 @@
 // approve/reject per item (same endpoints as the original gudang flow),
 // with a value summary so management can see how much stock value
 // (qty x harga_jual) is sitting in rejected/"wasted" items.
+//
+// Bulk actions: same UX pattern as BAPMarketing — checkbox per actionable
+// item, "select all", one shared note field, and a bulk button that still
+// calls the existing per-item approve/reject endpoints one by one (no bulk
+// endpoint on the API).
 
 import React, { useCallback, useEffect, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
@@ -45,6 +50,10 @@ function ManagementBapDetailModal({
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [acting, setActing] = useState<Record<number, boolean>>({});
 
+  const [selected, setSelected] = useState<number[]>([]);
+  const [bulkNote, setBulkNote] = useState('');
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+
   const fetchDetail = useCallback(async () => {
     try {
       setLoading(true);
@@ -64,7 +73,10 @@ function ManagementBapDetailModal({
 
   useEffect(() => {
     fetchDetail();
-  }, [fetchDetail]);
+    setSelected([]);
+    setBulkNote('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bapId]);
 
   const items = detail?.bap_item ?? [];
   const totalValue = items.reduce((sum, it) => sum + itemValue(it), 0);
@@ -72,8 +84,42 @@ function ManagementBapDetailModal({
     .filter((it) => (it.status ?? '').toLowerCase() === 'reject')
     .reduce((sum, it) => sum + itemValue(it), 0);
 
+  const actionableItems = items.filter(
+    (it) => (it.status ?? '').toLowerCase() === 'approve marketing',
+  );
+
   function updateNote(id: number, val: string) {
     setNotes((p) => ({ ...p, [id]: val }));
+  }
+
+  function toggleSelect(id: number) {
+    setSelected((p) =>
+      p.includes(id) ? p.filter((x) => x !== id) : [...p, id],
+    );
+  }
+
+  function toggleSelectAll() {
+    if (selected.length === actionableItems.length) {
+      setSelected([]);
+    } else {
+      setSelected(actionableItems.map((it) => it.id));
+    }
+  }
+
+  async function approveOne(itemId: number, note: string) {
+    await axios.put(
+      `${import.meta.env.VITE_API_LINK}/fg/bapItem/approve/${itemId}`,
+      { note: note.trim() },
+      { withCredentials: true },
+    );
+  }
+
+  async function rejectOne(itemId: number, note: string) {
+    await axios.put(
+      `${import.meta.env.VITE_API_LINK}/fg/bapItem/reject/${itemId}`,
+      { note: note.trim() },
+      { withCredentials: true },
+    );
   }
 
   async function handleApprove(item: BapItem) {
@@ -88,11 +134,7 @@ function ManagementBapDetailModal({
     if (!confirmed) return;
     try {
       setActing((p) => ({ ...p, [item.id]: true }));
-      await axios.put(
-        `${import.meta.env.VITE_API_LINK}/fg/bapItem/approve/${item.id}`,
-        { note: note.trim() },
-        { withCredentials: true },
-      );
+      await approveOne(item.id, note);
       await fetchDetail();
       onChanged();
     } catch (err: unknown) {
@@ -116,11 +158,7 @@ function ManagementBapDetailModal({
     if (!confirmed) return;
     try {
       setActing((p) => ({ ...p, [item.id]: true }));
-      await axios.put(
-        `${import.meta.env.VITE_API_LINK}/fg/bapItem/reject/${item.id}`,
-        { note: note.trim() },
-        { withCredentials: true },
-      );
+      await rejectOne(item.id, note);
       await fetchDetail();
       onChanged();
     } catch (err: unknown) {
@@ -129,6 +167,66 @@ function ManagementBapDetailModal({
       alert(error?.response?.data?.msg ?? 'Gagal menolak item');
     } finally {
       setActing((p) => ({ ...p, [item.id]: false }));
+    }
+  }
+
+  async function handleBulkApprove() {
+    if (!bulkNote.trim()) {
+      alert('Note wajib diisi untuk approve terpilih');
+      return;
+    }
+    if (selected.length === 0) return;
+    const confirmed = window.confirm(
+      `Setujui ${selected.length} item terpilih dengan note yang sama?`,
+    );
+    if (!confirmed) return;
+    try {
+      setBulkSubmitting(true);
+      for (const id of selected) {
+        // hit one by one — no bulk endpoint
+        // eslint-disable-next-line no-await-in-loop
+        await approveOne(id, bulkNote);
+      }
+      setSelected([]);
+      setBulkNote('');
+      await fetchDetail();
+      onChanged();
+    } catch (err: unknown) {
+      console.error(err);
+      const error = err as { response?: { data?: { msg?: string } } };
+      alert(error?.response?.data?.msg ?? 'Gagal menyetujui sebagian item');
+    } finally {
+      setBulkSubmitting(false);
+    }
+  }
+
+  async function handleBulkReject() {
+    if (!bulkNote.trim()) {
+      alert('Note wajib diisi untuk tolak terpilih');
+      return;
+    }
+    if (selected.length === 0) return;
+    const confirmed = window.confirm(
+      `Tolak ${selected.length} item terpilih dengan note yang sama?`,
+    );
+    if (!confirmed) return;
+    try {
+      setBulkSubmitting(true);
+      for (const id of selected) {
+        // hit one by one — no bulk endpoint
+        // eslint-disable-next-line no-await-in-loop
+        await rejectOne(id, bulkNote);
+      }
+      setSelected([]);
+      setBulkNote('');
+      await fetchDetail();
+      onChanged();
+    } catch (err: unknown) {
+      console.error(err);
+      const error = err as { response?: { data?: { msg?: string } } };
+      alert(error?.response?.data?.msg ?? 'Gagal menolak sebagian item');
+    } finally {
+      setBulkSubmitting(false);
     }
   }
 
@@ -169,6 +267,50 @@ function ManagementBapDetailModal({
           </div>
         )}
 
+        {/* Bulk approve/reject bar */}
+        {actionableItems.length > 0 && (
+          <div className="px-5 pt-3 flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-cyan-50 border-b border-cyan-100 py-3">
+            <label className="flex items-center gap-2 text-xs font-semibold text-gray-600 flex-shrink-0">
+              <input
+                type="checkbox"
+                checked={
+                  selected.length > 0 &&
+                  selected.length === actionableItems.length
+                }
+                onChange={toggleSelectAll}
+              />
+              Pilih Semua ({selected.length}/{actionableItems.length})
+            </label>
+            <input
+              type="text"
+              value={bulkNote}
+              onChange={(e) => setBulkNote(e.target.value)}
+              placeholder="Note untuk item terpilih..."
+              className="flex-1 rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            />
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={handleBulkApprove}
+                disabled={selected.length === 0 || bulkSubmitting}
+                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
+              >
+                {bulkSubmitting
+                  ? 'Menyimpan...'
+                  : `Setujui Terpilih (${selected.length})`}
+              </button>
+              <button
+                onClick={handleBulkReject}
+                disabled={selected.length === 0 || bulkSubmitting}
+                className="px-3 py-1.5 bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
+              >
+                {bulkSubmitting
+                  ? 'Menyimpan...'
+                  : `Tolak Terpilih (${selected.length})`}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-4 relative min-h-[200px]">
           {loading && <Loading />}
@@ -180,7 +322,7 @@ function ManagementBapDetailModal({
             <div className="space-y-3">
               {items.map((item) => {
                 const s = (item.status ?? '').toLowerCase();
-                const isIncoming = s === 'incoming';
+                const isIncoming = s === 'approve marketing';
                 const isActing = !!acting[item.id];
                 return (
                   <div
@@ -188,6 +330,14 @@ function ManagementBapDetailModal({
                     className="rounded-xl border-2 border-gray-200 p-3 space-y-2"
                   >
                     <div className="flex items-start justify-between gap-2 flex-wrap">
+                      {isIncoming && (
+                        <input
+                          type="checkbox"
+                          className="mt-1"
+                          checked={selected.includes(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                        />
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-bold text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded">
