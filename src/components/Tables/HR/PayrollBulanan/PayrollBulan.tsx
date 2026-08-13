@@ -565,12 +565,17 @@ function EmployeeDetailModal({
 
         <div className="overflow-y-auto flex-1 p-6 space-y-5">
           {/* Summary cards */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {[
               {
                 label: 'Total Upah',
                 value: `Rp ${formatInteger(data.summaryPayroll?.total)}`,
                 cls: 'bg-blue-50 border-blue-200 text-blue-700',
+              },
+              {
+                label: 'TMK',
+                value: `Rp ${formatInteger(data.summaryPayroll?.tmk)}`,
+                cls: 'bg-amber-50 border-amber-200 text-amber-700',
               },
               {
                 label: 'Total Potongan',
@@ -1221,6 +1226,9 @@ function PayrollBulan() {
                       <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
                         Potongan
                       </th>
+                      <th className="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        TMK
+                      </th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
                         Rincian Potongan
                       </th>
@@ -1289,6 +1297,13 @@ function PayrollBulan() {
                               `Rp ${formatInteger(
                                 data.summaryPayroll.total_potongan,
                               )}`
+                            ) : (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right text-xs text-blue-700 font-semibold">
+                            {(data.summaryPayroll?.tmk ?? 0) > 0 ? (
+                              `Rp ${formatInteger(data.summaryPayroll.tmk)}`
                             ) : (
                               <span className="text-slate-300">—</span>
                             )}

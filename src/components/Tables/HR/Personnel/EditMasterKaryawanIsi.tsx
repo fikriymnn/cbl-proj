@@ -3,8 +3,6 @@ import axios from 'axios';
 import Loading from '../../../Loading';
 import Select from 'react-select';
 import { useParams } from 'react-router-dom';
-import convertTimeStampToDate from '../../../../utils/convertDate';
-import formatInteger from '../../../../utils/formaterInteger';
 import ModalAddPeriode from '../../../Modals/Qc/ModalAddPeriode';
 import LengkapiMasterKaryawanIsi from './LengkapiMasterKaryawanIsi';
 
@@ -129,6 +127,7 @@ function EditMasterKaryawanIsi() {
         ),
       );
       setGaji(res.data.data.biodata_karyawan[0]?.gaji);
+      setTahunMulaiTmk(res.data.data.biodata_karyawan[0]?.tahun_mulai_tmk);
 
       // Set existing photo if available
       if (res.data.data.biodata_karyawan[0]?.foto_karyawan) {
@@ -349,6 +348,7 @@ function EditMasterKaryawanIsi() {
   const [level, setlevel] = useState<any>();
   const [subLevel, setsubLevel] = useState<any>();
   const [gaji, setGaji] = useState<any>(0);
+  const [tahunMulaiTmk, setTahunMulaiTmk] = useState<any>();
   const [tipeKaryawan, seTipeKaryawan] = useState<any>();
 
   // Image handling functions
@@ -485,6 +485,7 @@ function EditMasterKaryawanIsi() {
           level: level,
           sub_level: subLevel,
           gaji: gaji,
+          tahun_mulai_tmk: tahunMulaiTmk,
           foto_karyawan: fotoFileName,
           kontrak_dari: null,
           kontrak_sampai: null,
@@ -1122,6 +1123,19 @@ function EditMasterKaryawanIsi() {
                   type="number"
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
                   placeholder="Masukkan gaji"
+                />
+              </div>
+
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tahun Mulai TMK
+                </label>
+                <input
+                  value={tahunMulaiTmk}
+                  onChange={(e) => setTahunMulaiTmk(e.target.value)}
+                  type="number"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  placeholder="Masukkan tahun mulai TMK"
                 />
               </div>
             </div>

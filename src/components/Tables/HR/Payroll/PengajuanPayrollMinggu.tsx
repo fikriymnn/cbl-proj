@@ -1789,6 +1789,7 @@ function PengajuanPayrollMinggu() {
         `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarMingguanPeriode`,
         { params: { page, limit: 10 }, withCredentials: true },
       );
+      console.log('fetchPayroll res:', res.data);
       setPayWeek(res.data);
     } catch {
       showToast('Gagal memuat data', 'error');

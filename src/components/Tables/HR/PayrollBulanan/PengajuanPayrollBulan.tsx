@@ -627,7 +627,7 @@ function EmployeeDetailModal({
 
         <div className="overflow-y-auto flex-1 p-6 space-y-5">
           {/* Summary */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {[
               {
                 label: 'Total Upah',
@@ -635,6 +635,11 @@ function EmployeeDetailModal({
                   localEmployee.total_upah ?? localEmployee.sub_total_upah,
                 )}`,
                 cls: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+              },
+              {
+                label: 'TMK',
+                value: `Rp ${formatInteger(localEmployee.tmk)}`,
+                cls: 'bg-amber-50 border-amber-200 text-amber-700',
               },
               {
                 label: 'Total Potongan',
@@ -813,6 +818,7 @@ function PeriodDetailModal({
         `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarBulananPeriode`,
         { params: { page: 1, limit: 100 }, withCredentials: true },
       );
+      console.log('refreshLocalPeriode', res.data?.data);
       const fresh = (res.data?.data ?? []).find(
         (p: any) => p.id === localPeriode.id,
       );
@@ -1134,6 +1140,9 @@ function PeriodDetailModal({
                   <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
                     Potongan
                   </th>
+                  <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
+                    TMK
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
                     Rincian Potongan
                   </th>
@@ -1180,6 +1189,13 @@ function PeriodDetailModal({
                           <span className="text-slate-300">—</span>
                         )}
                       </td>
+                      <td className="px-4 py-3 text-right text-xs text-blue-700 font-semibold">
+                        {(emp.tmk ?? 0) > 0 ? (
+                          `Rp ${formatInteger(emp.tmk)}`
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         {potonganBreakdown.length > 0 ? (
                           <div className="flex flex-wrap gap-1 max-w-[180px]">
@@ -1216,7 +1232,7 @@ function PeriodDetailModal({
                 {filtered.length === 0 && (
                   <tr>
                     <td
-                      colSpan={9}
+                      colSpan={10}
                       className="text-center py-12 text-slate-400 text-sm"
                     >
                       Tidak ada data
@@ -1282,6 +1298,7 @@ function PengajuanPayrollBulan() {
         `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarBulananPeriode`,
         { params: { page, limit: 10 }, withCredentials: true },
       );
+      console.log('fetchPayroll', res.data);
       setPayWeek(res.data);
     } catch {
       showToast('Gagal memuat data', 'error');
