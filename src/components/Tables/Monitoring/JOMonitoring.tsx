@@ -197,9 +197,18 @@ function calcDeliveryProgress(row: any) {
   return { shipped, total, pct, rawPct, status, isOver };
 }
 
+// ── whether a tahapan has been "touched" at all (used for done/checkmark
+//    state, progress %, and "latest tahapan" detection). This is checked
+//    from produksi_lkh_proses_last, NOT produksi_lkh_proses — a tahapan can
+//    have a "last process" record (e.g. a closing/JO-selesai entry) even when
+//    produksi_lkh_proses (the live/detail process list) is empty. ──
+function tahapanHasProcess(t: any): boolean {
+  return (t?.produksi_lkh_proses_last?.length ?? 0) > 0;
+}
+
 function calcTahapanProgress(tahapan: any[]) {
   if (!tahapan || tahapan.length === 0) return null;
-  const done = tahapan.filter((t) => t.produksi_lkh_proses?.length > 0).length;
+  const done = tahapan.filter((t) => tahapanHasProcess(t)).length;
   const pct = Math.round((done / tahapan.length) * 100);
   return { done, total: tahapan.length, pct };
 }
@@ -207,7 +216,7 @@ function calcTahapanProgress(tahapan: any[]) {
 function getLatestTahapan(tahapan: any[]): string | null {
   if (!tahapan || tahapan.length === 0) return null;
   const done = [...tahapan]
-    .filter((t) => t.produksi_lkh_proses?.length > 0)
+    .filter((t) => tahapanHasProcess(t))
     .sort((a, b) => b.index - a.index);
   if (done.length === 0) return null;
   return done[0].tahapan?.nama_tahapan ?? null;
@@ -215,12 +224,15 @@ function getLatestTahapan(tahapan: any[]): string | null {
 
 function countWithDetail(tahapan: any[]) {
   if (!tahapan) return 0;
-  return tahapan.filter((t) => t.produksi_lkh_proses?.length > 0).length;
+  return tahapan.filter((t) => tahapanHasProcess(t)).length;
 }
 
 // ── baik = latest tahapan (highest index) whose produksi_lkh_proses has qty baik > 0;
 //     if that tahapan's baik is 0, walk backward to earlier tahapan until non-zero is found.
 //     rs / rt remain summed across ALL tahapan (unchanged).
+//     NOTE: qty (baik/rs/rt) always comes from produksi_lkh_proses — never from
+//     produksi_lkh_proses_last, which is only used to detect "is this tahapan
+//     touched" (see tahapanHasProcess above). ──
 function sumProduksiQty(tahapan: any[]): {
   baik: number;
   rs: number;
@@ -251,7 +263,9 @@ function sumProduksiQty(tahapan: any[]): {
   return { baik, rs, rt };
 }
 
-// ── same as above, but broken down per tahapan (used in the JO detail modal) ──
+// ── same as above, but broken down per tahapan (used in the JO detail modal).
+//    Still driven by produksi_lkh_proses since this is qty data, not the
+//    "has this tahapan been touched" check. ──
 function getProduksiQtyByTahapan(tahapan: any[]) {
   return (tahapan ?? [])
     .map((t: any) => {
@@ -514,13 +528,20 @@ function TahapanDetailModal({
             </p>
           ) : (
             tahapan.map((t) => {
+              // proses = the actual detail rows (mesin/operator/waktu/qty) —
+              // still sourced from produksi_lkh_proses.
               const proses: any[] = t.produksi_lkh_proses ?? [];
               const hasDetail = proses.length > 0;
+              // hasProcess = "has this tahapan been touched at all" — sourced
+              // from produksi_lkh_proses_last, drives the done/checkmark
+              // visual state independently of whether detail rows exist.
+              const hasProcess = tahapanHasProcess(t);
+
               return (
                 <div
                   key={t.id}
                   className={`rounded-xl border-2 overflow-hidden ${
-                    hasDetail
+                    hasProcess
                       ? 'border-green-300 bg-green-50'
                       : 'border-gray-200 bg-gray-50'
                   }`}
@@ -529,7 +550,7 @@ function TahapanDetailModal({
                     <div className="flex items-center gap-3">
                       <span
                         className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold flex-shrink-0 ${
-                          hasDetail
+                          hasProcess
                             ? 'bg-green-500 text-white'
                             : 'bg-gray-300 text-gray-600'
                         }`}
@@ -539,21 +560,26 @@ function TahapanDetailModal({
                       <div>
                         <p
                           className={`text-sm font-semibold ${
-                            hasDetail ? 'text-green-800' : 'text-gray-600'
+                            hasProcess ? 'text-green-800' : 'text-gray-600'
                           }`}
                         >
                           {t.tahapan?.nama_tahapan ?? '-'}
                         </p>
-                        {!hasDetail && (
+                        {!hasProcess && (
                           <p className="text-[10px] text-gray-400 italic">
                             Belum ada data proses
                           </p>
                         )}
+                        {hasProcess && !hasDetail && (
+                          <p className="text-[10px] text-green-600 italic">
+                            Selesai — tanpa rincian proses
+                          </p>
+                        )}
                       </div>
                     </div>
-                    {hasDetail ? (
+                    {hasProcess ? (
                       <span className="text-[10px] bg-green-200 text-green-800 font-semibold px-2 py-0.5 rounded-full">
-                        {proses.length} proses ✓
+                        {hasDetail ? `${proses.length} proses ✓` : 'Selesai ✓'}
                       </span>
                     ) : (
                       <span className="text-[10px] bg-gray-200 text-gray-500 font-semibold px-2 py-0.5 rounded-full">
@@ -1118,7 +1144,9 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
                 {[...(row.produksi_lkh_tahapan ?? [])]
                   .sort((a: any, b: any) => a.index - b.index)
                   .map((t: any) => {
-                    const done = t.produksi_lkh_proses?.length > 0;
+                    // "done" (green + checkmark) is driven by
+                    // produksi_lkh_proses_last — see tahapanHasProcess.
+                    const done = tahapanHasProcess(t);
                     return (
                       <span
                         key={t.id}
