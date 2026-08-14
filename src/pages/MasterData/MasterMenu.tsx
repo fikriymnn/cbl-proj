@@ -1,7 +1,7 @@
 // pages/Master/MasterMenu.tsx
 
 import DefaultLayout from '../../layout/DefaultLayout';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Loading from '../../components/Loading';
 import ModalKosonganSmall from '../../components/Modals/ModalKosonganSmall';
 import { masterMenuApi } from './services/masterMenuApi';
@@ -74,6 +74,51 @@ const getAvailableIcons = () => {
   ];
 };
 
+/* ------------------------------------------------------------------ */
+/* Pure helpers                                                        */
+/* ------------------------------------------------------------------ */
+
+// Keep a node if its own name/path/icon matches, or any descendant matches.
+// If the node itself matches, keep its full subtree so context isn't lost.
+function filterMenuTree(menus: MenuNode[], query: string): MenuNode[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return menus;
+
+  const nodeMatches = (menu: MenuNode) =>
+    menu.name.toLowerCase().includes(q) ||
+    (menu.path ? menu.path.toLowerCase().includes(q) : false) ||
+    (menu.icon ? menu.icon.toLowerCase().includes(q) : false);
+
+  const filterNode = (menu: MenuNode): MenuNode | null => {
+    if (nodeMatches(menu)) return menu;
+
+    if (!menu.children || menu.children.length === 0) return null;
+
+    const filteredChildren = menu.children
+      .map(filterNode)
+      .filter((m): m is MenuNode => m !== null);
+
+    if (filteredChildren.length === 0) return null;
+    return { ...menu, children: filteredChildren };
+  };
+
+  return menus.map(filterNode).filter((m): m is MenuNode => m !== null);
+}
+
+function countSubtree(menu: MenuNode): number {
+  let count = 1;
+  if (menu.children) {
+    menu.children.forEach((child) => {
+      count += countSubtree(child);
+    });
+  }
+  return count;
+}
+
+/* ------------------------------------------------------------------ */
+/* Main component                                                      */
+/* ------------------------------------------------------------------ */
+
 function MasterMenu() {
   const [isLoading, setIsLoading] = useState(false);
   const [menus, setMenus] = useState<MenuNode[]>([]);
@@ -99,6 +144,11 @@ function MasterMenu() {
   const [selectedParent, setSelectedParent] = useState<MenuNode | null>(null);
   const [selectedEditParent, setSelectedEditParent] = useState<MenuNode | null>(
     null,
+  );
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [collapsedModules, setCollapsedModules] = useState<Set<number>>(
+    new Set(),
   );
 
   useEffect(() => {
@@ -407,11 +457,26 @@ function MasterMenu() {
     }
   };
 
+  const toggleModuleCollapsed = (menuId: number) => {
+    setCollapsedModules((prev) => {
+      const next = new Set(prev);
+      if (next.has(menuId)) next.delete(menuId);
+      else next.add(menuId);
+      return next;
+    });
+  };
+
+  const filteredMenus = useMemo(
+    () => filterMenuTree(menus, searchQuery),
+    [menus, searchQuery],
+  );
+  const isSearching = searchQuery.trim().length > 0;
+
   const renderMenuTree = (menu: MenuNode, level: number = 0) => {
     return (
       <React.Fragment key={menu.id}>
-        <tr className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-          <td className="py-4 px-6">
+        <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+          <td className="py-3 px-4">
             <div className="flex items-center gap-2">
               <span
                 style={{ marginLeft: `${level * 24}px` }}
@@ -420,18 +485,20 @@ function MasterMenu() {
                 {level > 0 && (
                   <span className="text-gray-400">{'└─ '.repeat(1)}</span>
                 )}
-                <IconComponent name={menu.icon} size={18} />
-                <span className="font-medium text-gray-900">{menu.name}</span>
+                <IconComponent name={menu.icon} size={16} />
+                <span className="font-medium text-sm text-gray-900">
+                  {menu.name}
+                </span>
               </span>
             </div>
           </td>
-          <td className="py-4 px-6">
+          <td className="py-3 px-4">
             <div className="flex items-center gap-2 text-gray-600">
-              <IconComponent name={menu.icon} size={16} />
-              <span className="text-sm">{menu.icon}</span>
+              <IconComponent name={menu.icon} size={14} />
+              <span className="text-xs">{menu.icon}</span>
             </div>
           </td>
-          <td className="py-4 px-6">
+          <td className="py-3 px-4">
             {menu.path ? (
               <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-700">
                 {menu.path}
@@ -442,9 +509,9 @@ function MasterMenu() {
               </span>
             )}
           </td>
-          <td className="py-4 px-6 text-center">
+          <td className="py-3 px-4 text-center">
             <span
-              className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold ${
+              className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold ${
                 menu.level === 1
                   ? 'bg-blue-100 text-blue-700'
                   : menu.level === 2
@@ -455,12 +522,12 @@ function MasterMenu() {
               {menu.level}
             </span>
           </td>
-          <td className="py-4 px-6 text-center">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
+          <td className="py-3 px-4 text-center">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
               {menu.order_index}
             </span>
           </td>
-          <td className="py-4 px-6 text-center">
+          <td className="py-3 px-4 text-center">
             <div className="flex items-center justify-center gap-2">
               <button
                 onClick={() => handleEditMenuClick(menu)}
@@ -573,7 +640,7 @@ function MasterMenu() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Top Level</p>
+                <p className="text-sm text-gray-600">Modules (Top Level)</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {menus.length}
                 </p>
@@ -1196,38 +1263,243 @@ function MasterMenu() {
           </ModalKosonganSmall>
         )}
 
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
-                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Menu Name
-                </th>
-                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Icon
-                </th>
-                <th className="py-4 px-6 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Path
-                </th>
-                <th className="py-4 px-6 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Level
-                </th>
-                <th className="py-4 px-6 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Order
-                </th>
-                <th className="py-4 px-6 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {menus.map((menu) => renderMenuTree(menu, 0))}
-            </tbody>
-          </table>
+        {/* Search */}
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="relative flex-1 max-w-md">
+            <svg
+              className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by menu name, path, or icon..."
+              className="w-full h-10 pl-9 pr-9 border-2 border-gray-200 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors bg-white"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label="Clear search"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
+          {menus.length > 0 && (
+            <div className="text-xs text-gray-500">
+              Showing{' '}
+              <span className="font-semibold text-gray-700">
+                {filteredMenus.length}
+              </span>{' '}
+              of{' '}
+              <span className="font-semibold text-gray-700">
+                {menus.length}
+              </span>{' '}
+              modules
+            </div>
+          )}
+        </div>
 
-          {menus.length === 0 && !isLoading && (
-            <div className="py-16 text-center">
+        {/* Modules grid */}
+        {filteredMenus.length > 0 ? (
+          <div
+            className="grid gap-4"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fill, minmax(740px, 1fr))',
+            }}
+          >
+            {filteredMenus.map((module) => {
+              const collapsed = collapsedModules.has(module.id);
+              const total = countSubtree(module) - 1; // exclude the module itself
+
+              return (
+                <div
+                  key={module.id}
+                  className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden shadow-sm flex flex-col"
+                >
+                  {/* Module header */}
+                  <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <button
+                      onClick={() => toggleModuleCollapsed(module.id)}
+                      className="text-gray-400 hover:text-gray-600 shrink-0"
+                      aria-label={collapsed ? 'Expand' : 'Collapse'}
+                    >
+                      <svg
+                        className={`w-4 h-4 transition-transform ${
+                          collapsed ? '-rotate-90' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+
+                    <IconComponent name={module.icon} size={18} />
+
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span
+                        className="font-semibold text-sm text-gray-900 truncate"
+                        title={module.name}
+                      >
+                        {module.name}
+                      </span>
+                      {module.path && (
+                        <code className="text-[10px] text-gray-500 truncate">
+                          {module.path}
+                        </code>
+                      )}
+                    </div>
+
+                    <span className="shrink-0 px-1.5 py-0.5 text-[9px] font-semibold rounded bg-blue-100 text-blue-700">
+                      L{module.level}
+                    </span>
+                    <span className="shrink-0 text-[10px] font-medium text-gray-500">
+                      {total} sub-menu{total === 1 ? '' : 's'}
+                    </span>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => handleEditMenuClick(module)}
+                        className="inline-flex items-center justify-center w-7 h-7 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                        aria-label={`Edit ${module.name}`}
+                        title="Edit module"
+                      >
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteMenu(module.id, module.name)}
+                        className="inline-flex items-center justify-center w-7 h-7 text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
+                        aria-label={`Delete ${module.name}`}
+                        title="Delete module"
+                      >
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Module body */}
+                  {!collapsed && (
+                    <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+                      {module.children && module.children.length > 0 ? (
+                        <table className="w-full">
+                          <thead>
+                            <tr className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                              <th className="py-2 px-4 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                                Menu Name
+                              </th>
+                              <th className="py-2 px-4 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                                Icon
+                              </th>
+                              <th className="py-2 px-4 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                                Path
+                              </th>
+                              <th className="py-2 px-4 text-center text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                                Level
+                              </th>
+                              <th className="py-2 px-4 text-center text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                                Order
+                              </th>
+                              <th className="py-2 px-4 text-center text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                                Actions
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {module.children.map((child) =>
+                              renderMenuTree(child, 0),
+                            )}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <div className="py-8 text-center text-xs text-gray-400 italic">
+                          No sub-menus yet
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : isSearching ? (
+          <div className="bg-white rounded-lg border border-gray-200 py-16 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+              <svg
+                className="w-8 h-8 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+                />
+              </svg>
+            </div>
+            <p className="text-lg font-medium text-gray-900 mb-1">
+              No menus match "{searchQuery}"
+            </p>
+            <p className="text-sm text-gray-500">Try a different search term</p>
+          </div>
+        ) : (
+          !isLoading && (
+            <div className="bg-white rounded-lg border border-gray-200 py-16 text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                 <svg
                   className="w-8 h-8 text-gray-400"
@@ -1272,8 +1544,8 @@ function MasterMenu() {
                 Create First Menu
               </button>
             </div>
-          )}
-        </div>
+          )
+        )}
       </>
     </DefaultLayout>
   );

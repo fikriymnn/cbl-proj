@@ -1,7 +1,7 @@
 // pages/Master/MasterHakAkses.tsx
 
 import DefaultLayout from '../../layout/DefaultLayout';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Loading from '../../components/Loading';
 import ModalKosonganSmall from '../../components/Modals/ModalKosonganSmall';
 import { masterMenuApi } from './services/masterMenuApi';
@@ -14,15 +14,221 @@ import {
 import { IconComponent } from '../../constant/icons';
 import ModalFullScreen from './ModalFullScreen';
 
+type PermissionFlags = {
+  is_active: boolean;
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+};
+
+/* ------------------------------------------------------------------ */
+/* Pure helpers (kept outside the component so they never re-allocate  */
+/* on every render, and so they're easy to unit test in isolation)     */
+/* ------------------------------------------------------------------ */
+
+// Immutably patch a single row's permissions anywhere in the tree by role_menu_id
+function updateTreePermission(
+  menus: MenuWithPermissions[],
+  roleMenuId: number,
+  updates: Partial<PermissionFlags>,
+): MenuWithPermissions[] {
+  return menus.map((menu) => {
+    let updatedMenu = menu;
+
+    if (menu.role_menu_id === roleMenuId && menu.permissions) {
+      updatedMenu = {
+        ...menu,
+        permissions: { ...menu.permissions, ...updates },
+      };
+    }
+
+    if (menu.children && menu.children.length > 0) {
+      const newChildren = updateTreePermission(
+        menu.children,
+        roleMenuId,
+        updates,
+      );
+      updatedMenu = { ...updatedMenu, children: newChildren };
+    }
+
+    return updatedMenu;
+  });
+}
+
+// Apply the same flags to a menu node and every descendant that has a permission row
+function applyBulkToSubtree(
+  menu: MenuWithPermissions,
+  updates: Partial<PermissionFlags>,
+): MenuWithPermissions {
+  return {
+    ...menu,
+    permissions: menu.permissions
+      ? { ...menu.permissions, ...updates }
+      : menu.permissions,
+    children: menu.children
+      ? menu.children.map((child) => applyBulkToSubtree(child, updates))
+      : menu.children,
+  };
+}
+
+function updateSubtreeBulk(
+  menus: MenuWithPermissions[],
+  targetId: number,
+  updates: Partial<PermissionFlags>,
+): MenuWithPermissions[] {
+  return menus.map((menu) =>
+    menu.id === targetId ? applyBulkToSubtree(menu, updates) : menu,
+  );
+}
+
+// Collect every {role_menu_id, permissions} pair under (and including) a node
+function collectPermissionEntries(
+  menu: MenuWithPermissions,
+): Array<{ roleMenuId: number; permission: PermissionFlags }> {
+  let entries: Array<{ roleMenuId: number; permission: PermissionFlags }> = [];
+
+  if (menu.permissions && menu.role_menu_id) {
+    entries.push({
+      roleMenuId: menu.role_menu_id,
+      permission: menu.permissions,
+    });
+  }
+  if (menu.children && menu.children.length > 0) {
+    menu.children.forEach((child) => {
+      entries = entries.concat(collectPermissionEntries(child));
+    });
+  }
+  return entries;
+}
+
+// Keep a node if its own name matches, OR if any descendant matches.
+// If the node itself matches, keep its full subtree (so context isn't lost).
+function filterMenuTree(
+  menus: MenuWithPermissions[],
+  query: string,
+): MenuWithPermissions[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return menus;
+
+  const filterNode = (
+    menu: MenuWithPermissions,
+  ): MenuWithPermissions | null => {
+    const nameMatches = menu.name.toLowerCase().includes(q);
+    if (nameMatches) return menu;
+
+    if (!menu.children || menu.children.length === 0) return null;
+
+    const filteredChildren = menu.children
+      .map(filterNode)
+      .filter((m): m is MenuWithPermissions => m !== null);
+
+    if (filteredChildren.length === 0) return null;
+    return { ...menu, children: filteredChildren };
+  };
+
+  return menus
+    .map(filterNode)
+    .filter((m): m is MenuWithPermissions => m !== null);
+}
+
+function countTotalMenus(menus: MenuWithPermissions[]): number {
+  let count = menus.length;
+  menus.forEach((menu) => {
+    if (menu.children && menu.children.length > 0) {
+      count += countTotalMenus(menu.children);
+    }
+  });
+  return count;
+}
+
+function countActivePermissions(menus: MenuWithPermissions[]): number {
+  let count = 0;
+  menus.forEach((menu) => {
+    if (menu.permissions && menu.permissions.can_view) count++;
+    if (menu.children && menu.children.length > 0) {
+      count += countActivePermissions(menu.children);
+    }
+  });
+  return count;
+}
+
+function groupStats(menu: MenuWithPermissions): {
+  enabled: number;
+  total: number;
+} {
+  const entries = collectPermissionEntries(menu);
+  const enabled = entries.filter(
+    (e) => e.permission.is_active && e.permission.can_view,
+  ).length;
+  return { enabled, total: entries.length };
+}
+
+function isSubtreeFullyEnabled(menu: MenuWithPermissions): boolean {
+  const entries = collectPermissionEntries(menu);
+  if (entries.length === 0) return false;
+  return entries.every(
+    (e) =>
+      e.permission.is_active &&
+      e.permission.can_view &&
+      e.permission.can_create &&
+      e.permission.can_edit &&
+      e.permission.can_delete,
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Small presentational bits                                           */
+/* ------------------------------------------------------------------ */
+
+const ToggleSwitch: React.FC<{
+  checked: boolean;
+  disabled?: boolean;
+  color: 'purple' | 'blue' | 'green' | 'yellow' | 'red';
+  onChange: (checked: boolean) => void;
+  label: string;
+}> = ({ checked, disabled, color, onChange, label }) => {
+  const ring: Record<string, string> = {
+    purple: 'peer-focus:ring-purple-300 peer-checked:bg-purple-600',
+    blue: 'peer-focus:ring-blue-300 peer-checked:bg-blue-600',
+    green: 'peer-focus:ring-green-300 peer-checked:bg-green-600',
+    yellow: 'peer-focus:ring-yellow-300 peer-checked:bg-yellow-500',
+    red: 'peer-focus:ring-red-300 peer-checked:bg-red-600',
+  };
+
+  return (
+    <label
+      className="relative inline-flex items-center cursor-pointer"
+      title={label}
+      aria-label={label}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        disabled={disabled}
+        className="sr-only peer"
+      />
+      <div
+        className={`w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all after:shadow-sm peer-disabled:opacity-40 peer-disabled:cursor-not-allowed transition-colors ${ring[color]}`}
+      ></div>
+    </label>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* Main component                                                      */
+/* ------------------------------------------------------------------ */
+
 function MasterHakAkses() {
   const [isLoading, setIsLoading] = useState(false);
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [menusWithPermissions, setMenusWithPermissions] = useState<
     MenuWithPermissions[]
   >([]);
 
-  // Form states
   const [newRole, setNewRole] = useState<CreateRoleDto>({
     name: '',
     description: '',
@@ -33,6 +239,13 @@ function MasterHakAkses() {
   const [updatingPermissions, setUpdatingPermissions] = useState<Set<number>>(
     new Set(),
   );
+  const [bulkUpdatingGroups, setBulkUpdatingGroups] = useState<Set<number>>(
+    new Set(),
+  );
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<number>>(
+    new Set(),
+  );
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadRoles();
@@ -51,27 +264,28 @@ function MasterHakAkses() {
     }
   };
 
-  const loadRolePermissions = async (roleId: number) => {
+  // `silent` = true skips the loading state so the grid never unmounts
+  // (this is what previously caused scroll position to reset on every toggle)
+  const loadRolePermissions = async (
+    roleId: number,
+    opts: { silent?: boolean } = {},
+  ) => {
     try {
-      setIsLoading(true);
+      if (!opts.silent) setPermissionsLoading(true);
       const response = await masterMenuApi.getRoleMenuByRoleId(roleId);
-      console.log('Role menu data loaded:', response);
 
-      // The API returns { role: Role, menus: MenuWithPermissions[] }
       if (response.menus) {
         setMenusWithPermissions(response.menus);
       }
-
-      // Update selected role with the role data from response
       if (response.role) {
         setSelectedRole(response.role);
       }
     } catch (error) {
       console.error('Error loading role permissions:', error);
       alert('Failed to load permissions');
-      setMenusWithPermissions([]);
+      if (!opts.silent) setMenusWithPermissions([]);
     } finally {
-      setIsLoading(false);
+      if (!opts.silent) setPermissionsLoading(false);
     }
   };
 
@@ -96,6 +310,8 @@ function MasterHakAkses() {
     }
   };
 
+  // Optimistic single-cell update: apply the change to local state immediately,
+  // fire the API call in the background, and only reload (silently) on failure.
   const handleUpdatePermission = async (
     roleMenuId: number,
     updates: Partial<UpdatePermissionDto>,
@@ -103,30 +319,73 @@ function MasterHakAkses() {
   ) => {
     if (!currentPermissions) return;
 
+    const updateData: UpdatePermissionDto = {
+      can_view: updates.can_view ?? currentPermissions.can_view,
+      can_create: updates.can_create ?? currentPermissions.can_create,
+      can_edit: updates.can_edit ?? currentPermissions.can_edit,
+      can_delete: updates.can_delete ?? currentPermissions.can_delete,
+      is_active: updates.is_active ?? currentPermissions.is_active,
+    };
+
+    // 1. Optimistic UI update — instant feedback, no remount, no scroll jump
+    setMenusWithPermissions((prev) =>
+      updateTreePermission(prev, roleMenuId, updateData),
+    );
+    setUpdatingPermissions((prev) => new Set(prev).add(roleMenuId));
+
     try {
-      setUpdatingPermissions((prev) => new Set(prev).add(roleMenuId));
-
-      const updateData: UpdatePermissionDto = {
-        can_view: updates.can_view ?? currentPermissions.can_view,
-        can_create: updates.can_create ?? currentPermissions.can_create,
-        can_edit: updates.can_edit ?? currentPermissions.can_edit,
-        can_delete: updates.can_delete ?? currentPermissions.can_delete,
-        is_active: updates.is_active ?? currentPermissions.is_active,
-      };
-
+      // 2. Persist in the background
       await masterMenuApi.updatePermission(roleMenuId, updateData);
-
-      // Reload permissions after update
-      if (selectedRole) {
-        await loadRolePermissions(selectedRole.id);
-      }
     } catch (error) {
       console.error('Error updating permission:', error);
-      alert('Failed to update permission');
+      alert('Failed to update permission. Reverting.');
+      // 3. Roll back by re-syncing from the server (silently, no spinner)
+      if (selectedRole)
+        await loadRolePermissions(selectedRole.id, { silent: true });
     } finally {
       setUpdatingPermissions((prev) => {
         const newSet = new Set(prev);
         newSet.delete(roleMenuId);
+        return newSet;
+      });
+    }
+  };
+
+  // Enable/disable every permission under one route menu in a single click
+  const handleCheckAllRoute = async (menu: MenuWithPermissions) => {
+    const entries = collectPermissionEntries(menu);
+    if (entries.length === 0) return;
+
+    const fullyEnabled = isSubtreeFullyEnabled(menu);
+    const targetValue = !fullyEnabled;
+    const updates: PermissionFlags = {
+      is_active: targetValue,
+      can_view: targetValue,
+      can_create: targetValue,
+      can_edit: targetValue,
+      can_delete: targetValue,
+    };
+
+    setMenusWithPermissions((prev) =>
+      updateSubtreeBulk(prev, menu.id, updates),
+    );
+    setBulkUpdatingGroups((prev) => new Set(prev).add(menu.id));
+
+    try {
+      await Promise.all(
+        entries.map((e) =>
+          masterMenuApi.updatePermission(e.roleMenuId, updates),
+        ),
+      );
+    } catch (error) {
+      console.error('Error bulk-updating permissions:', error);
+      alert('Some permissions failed to update. Refreshing this role.');
+      if (selectedRole)
+        await loadRolePermissions(selectedRole.id, { silent: true });
+    } finally {
+      setBulkUpdatingGroups((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(menu.id);
         return newSet;
       });
     }
@@ -141,6 +400,8 @@ function MasterHakAkses() {
   const openPermissionModal = async (role: Role) => {
     setSelectedRole(role);
     setShowPermissionModal(true);
+    setSearchQuery('');
+    setCollapsedGroups(new Set());
     await loadRolePermissions(role.id);
   };
 
@@ -148,61 +409,28 @@ function MasterHakAkses() {
     setShowPermissionModal(false);
     setSelectedRole(null);
     setMenusWithPermissions([]);
+    setSearchQuery('');
   };
 
-  // Helper to flatten menu hierarchy for display
-  const flattenMenus = (
-    menus: MenuWithPermissions[],
-    level: number = 0,
-    parentPermission?: MenuWithPermissions['permissions'],
-  ): Array<{ menu: MenuWithPermissions; level: number }> => {
-    let result: Array<{ menu: MenuWithPermissions; level: number }> = [];
-
-    menus.forEach((menu) => {
-      const shouldRenderChildren =
-        !parentPermission ||
-        (parentPermission.is_active && parentPermission.can_view);
-
-      if (level === 0 || shouldRenderChildren) {
-        result.push({ menu, level });
-
-        if (
-          menu.children &&
-          menu.children.length > 0 &&
-          menu.permissions &&
-          menu.permissions.is_active &&
-          menu.permissions.can_view
-        ) {
-          const childrenFlat = flattenMenus(
-            menu.children,
-            level + 1,
-            menu.permissions,
-          );
-          result = result.concat(childrenFlat);
-        }
-      }
+  const toggleGroupCollapsed = (menuId: number) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(menuId)) next.delete(menuId);
+      else next.add(menuId);
+      return next;
     });
-
-    return result;
   };
 
-  // Split menus into 3 columns
-  const splitMenusIntoColumns = (menus: MenuWithPermissions[]) => {
-    const flatMenus = flattenMenus(menus);
-    const totalMenus = flatMenus.length;
-    const itemsPerColumn = Math.ceil(totalMenus / 3);
+  const filteredMenus = useMemo(
+    () => filterMenuTree(menusWithPermissions, searchQuery),
+    [menusWithPermissions, searchQuery],
+  );
 
-    const column1 = flatMenus.slice(0, itemsPerColumn);
-    const column2 = flatMenus.slice(itemsPerColumn, itemsPerColumn * 2);
-    const column3 = flatMenus.slice(itemsPerColumn * 2);
-
-    return [column1, column2, column3];
-  };
+  const isSearching = searchQuery.trim().length > 0;
 
   const renderPermissionRow = (
     menu: MenuWithPermissions,
     level: number,
-    isCompact: boolean = true,
   ): React.ReactNode => {
     const permission = menu.permissions;
     const roleMenuId = menu.role_menu_id;
@@ -211,26 +439,26 @@ function MasterHakAkses() {
     return (
       <div
         key={menu.id}
-        className={`grid grid-cols-[1.5fr_repeat(5,0.5fr)] gap-1 py-1.5 px-2 border-b border-gray-200 hover:bg-gray-50 transition-colors text-xs ${
+        className={`grid grid-cols-[1.6fr_repeat(5,0.55fr)] items-center gap-1 py-2 px-3 border-b border-gray-100 hover:bg-gray-50 transition-colors text-xs ${
           isUpdating ? 'opacity-50' : ''
-        } ${!permission ? 'bg-red-50' : ''}`}
+        } ${!permission ? 'bg-red-50/60' : ''}`}
       >
-        {/* Menu Name */}
         <div
-          className="flex items-center gap-1 min-w-0"
-          style={{ paddingLeft: `${level * 12}px` }}
+          className="flex items-center gap-1.5 min-w-0"
+          style={{ paddingLeft: `${level * 14}px` }}
         >
           {level > 0 && (
-            <span className="text-gray-400 text-[10px]">{'└'}</span>
+            <span className="text-gray-300 text-[11px] shrink-0">{'└'}</span>
           )}
-          {menu.icon && <IconComponent name={menu.icon} size={12} />}
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className="font-medium text-[11px] text-gray-900 truncate">
-              {menu.name}
-            </span>
-          </div>
+          {menu.icon && <IconComponent name={menu.icon} size={13} />}
           <span
-            className={`px-1 py-0.5 text-[9px] font-medium rounded ${
+            className="font-medium text-[11.5px] text-gray-900 truncate"
+            title={menu.name}
+          >
+            {menu.name}
+          </span>
+          <span
+            className={`shrink-0 px-1.5 py-0.5 text-[9px] font-semibold rounded ${
               menu.level === 1
                 ? 'bg-blue-100 text-blue-700'
                 : menu.level === 2
@@ -244,260 +472,144 @@ function MasterHakAkses() {
 
         {permission && roleMenuId ? (
           <>
-            {/* Is Active */}
             <div className="flex items-center justify-center">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={permission.is_active}
-                  onChange={(e) =>
-                    handleUpdatePermission(
-                      roleMenuId,
-                      {
-                        is_active: e.target.checked,
-                        // If unchecking is_active, also uncheck can_view
-                        can_view: e.target.checked
-                          ? permission.can_view
-                          : false,
-                      },
-                      permission,
-                    )
-                  }
-                  disabled={isUpdating}
-                  className="sr-only peer"
-                />
-                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-purple-600"></div>
-              </label>
+              <ToggleSwitch
+                checked={permission.is_active}
+                disabled={isUpdating}
+                color="purple"
+                label="Active"
+                onChange={(checked) =>
+                  handleUpdatePermission(
+                    roleMenuId,
+                    {
+                      is_active: checked,
+                      can_view: checked ? permission.can_view : false,
+                    },
+                    permission,
+                  )
+                }
+              />
             </div>
-
-            {/* Can View */}
             <div className="flex items-center justify-center">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={permission.can_view}
-                  onChange={(e) =>
-                    handleUpdatePermission(
-                      roleMenuId,
-                      {
-                        can_view: e.target.checked,
-                        is_active: e.target.checked, // Auto-toggle is_active with can_view
-                      },
-                      permission,
-                    )
-                  }
-                  disabled={isUpdating}
-                  className="sr-only peer"
-                />
-                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-blue-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-              </label>
+              <ToggleSwitch
+                checked={permission.can_view}
+                disabled={isUpdating}
+                color="blue"
+                label="View"
+                onChange={(checked) =>
+                  handleUpdatePermission(
+                    roleMenuId,
+                    { can_view: checked, is_active: checked },
+                    permission,
+                  )
+                }
+              />
             </div>
-
-            {/* Can Create */}
             <div className="flex items-center justify-center">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={permission.can_create}
-                  onChange={(e) =>
-                    handleUpdatePermission(
-                      roleMenuId,
-                      { can_create: e.target.checked },
-                      permission,
-                    )
-                  }
-                  disabled={
-                    !permission.is_active || !permission.can_view || isUpdating
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-green-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-              </label>
+              <ToggleSwitch
+                checked={permission.can_create}
+                disabled={
+                  !permission.is_active || !permission.can_view || isUpdating
+                }
+                color="green"
+                label="Create"
+                onChange={(checked) =>
+                  handleUpdatePermission(
+                    roleMenuId,
+                    { can_create: checked },
+                    permission,
+                  )
+                }
+              />
             </div>
-
-            {/* Can Edit */}
             <div className="flex items-center justify-center">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={permission.can_edit}
-                  onChange={(e) =>
-                    handleUpdatePermission(
-                      roleMenuId,
-                      { can_edit: e.target.checked },
-                      permission,
-                    )
-                  }
-                  disabled={
-                    !permission.is_active || !permission.can_view || isUpdating
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-yellow-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-              </label>
+              <ToggleSwitch
+                checked={permission.can_edit}
+                disabled={
+                  !permission.is_active || !permission.can_view || isUpdating
+                }
+                color="yellow"
+                label="Edit"
+                onChange={(checked) =>
+                  handleUpdatePermission(
+                    roleMenuId,
+                    { can_edit: checked },
+                    permission,
+                  )
+                }
+              />
             </div>
-
-            {/* Can Delete */}
             <div className="flex items-center justify-center">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={permission.can_delete}
-                  onChange={(e) =>
-                    handleUpdatePermission(
-                      roleMenuId,
-                      { can_delete: e.target.checked },
-                      permission,
-                    )
-                  }
-                  disabled={
-                    !permission.is_active || !permission.can_view || isUpdating
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-6 h-3 bg-gray-200 peer-focus:outline-none peer-focus:ring-1 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-red-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-              </label>
+              <ToggleSwitch
+                checked={permission.can_delete}
+                disabled={
+                  !permission.is_active || !permission.can_view || isUpdating
+                }
+                color="red"
+                label="Delete"
+                onChange={(checked) =>
+                  handleUpdatePermission(
+                    roleMenuId,
+                    { can_delete: checked },
+                    permission,
+                  )
+                }
+              />
             </div>
           </>
         ) : (
-          <>
-            <div className="flex items-center justify-center">
-              <span className="text-[10px] text-gray-400">-</span>
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-center">
+              <span className="text-[10px] text-gray-300">—</span>
             </div>
-            <div className="flex items-center justify-center">
-              <span className="text-[10px] text-gray-400">-</span>
-            </div>
-            <div className="flex items-center justify-center">
-              <span className="text-[10px] text-gray-400">-</span>
-            </div>
-            <div className="flex items-center justify-center">
-              <span className="text-[10px] text-gray-400">-</span>
-            </div>
-            <div className="flex items-center justify-center">
-              <span className="text-[10px] text-gray-400">-</span>
-            </div>
-          </>
+          ))
         )}
       </div>
     );
   };
 
-  const renderColumnHeader = () => (
-    <div className="grid grid-cols-[1.5fr_repeat(5,0.5fr)] gap-1 py-2 px-2 bg-gradient-to-r from-gray-50 to-gray-100 font-semibold text-[10px] border-b-2 border-gray-200 sticky top-0 z-10">
-      <div className="flex items-center gap-1">
-        <svg
-          className="w-3 h-3 text-gray-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-        Menu
+  // While searching, ignore the "hide children when parent is inactive" gating
+  // so matched rows are never hidden from the person looking for them.
+  const renderMenuNode = (
+    menu: MenuWithPermissions,
+    level = 0,
+  ): React.ReactNode => {
+    const shouldShowChildren =
+      isSearching ||
+      (menu.permissions
+        ? menu.permissions.is_active && menu.permissions.can_view
+        : true);
+
+    return (
+      <React.Fragment key={menu.id}>
+        {renderPermissionRow(menu, level)}
+        {shouldShowChildren &&
+          menu.children &&
+          menu.children.map((child) => renderMenuNode(child, level + 1))}
+      </React.Fragment>
+    );
+  };
+
+  const columnHeader = (
+    <div className="grid grid-cols-[1.6fr_repeat(5,0.55fr)] gap-1 py-2 px-3 bg-gray-50 font-semibold text-[9.5px] uppercase tracking-wide text-gray-500 border-b border-gray-200 sticky top-0 z-10">
+      <div>Menu</div>
+      <div className="text-center" title="Active">
+        Active
       </div>
-      <div className="text-center flex items-center justify-center">
-        <svg
-          className="w-3 h-3 text-purple-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
+      <div className="text-center" title="View">
+        View
       </div>
-      <div className="text-center flex items-center justify-center">
-        <svg
-          className="w-3 h-3 text-blue-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-          />
-        </svg>
+      <div className="text-center" title="Create">
+        Create
       </div>
-      <div className="text-center flex items-center justify-center">
-        <svg
-          className="w-3 h-3 text-green-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
+      <div className="text-center" title="Edit">
+        Edit
       </div>
-      <div className="text-center flex items-center justify-center">
-        <svg
-          className="w-3 h-3 text-yellow-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-          />
-        </svg>
-      </div>
-      <div className="text-center flex items-center justify-center">
-        <svg
-          className="w-3 h-3 text-red-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-          />
-        </svg>
+      <div className="text-center" title="Delete">
+        Delete
       </div>
     </div>
   );
-
-  const countTotalMenus = (menus: MenuWithPermissions[]): number => {
-    let count = menus.length;
-    menus.forEach((menu) => {
-      if (menu.children && menu.children.length > 0) {
-        count += countTotalMenus(menu.children);
-      }
-    });
-    return count;
-  };
-
-  const countActivePermissions = (menus: MenuWithPermissions[]): number => {
-    let count = 0;
-    menus.forEach((menu) => {
-      if (menu.permissions && menu.permissions.can_view) count++;
-      if (menu.children && menu.children.length > 0) {
-        count += countActivePermissions(menu.children);
-      }
-    });
-    return count;
-  };
 
   return (
     <DefaultLayout>
@@ -827,7 +939,7 @@ function MasterHakAkses() {
           )}
         </div>
 
-        {/* Permissions Modal - Full Screen with 3 Columns */}
+        {/* Permissions Modal */}
         {showPermissionModal && selectedRole && (
           <ModalFullScreen
             isOpen={showPermissionModal}
@@ -835,29 +947,206 @@ function MasterHakAkses() {
             title={`Permission Management: ${selectedRole.name}`}
           >
             <div className="h-full flex flex-col">
-              {/* 3 Column Layout */}
-              <div className="flex-1 overflow-hidden px-4 pb-4">
-                {isLoading ? (
-                  <div className="flex items-center justify-center h-full">
+              {/* Toolbar: search + legend */}
+              <div className="px-4 pt-3 pb-3 flex flex-col sm:flex-row sm:items-center gap-3 border-b border-gray-200">
+                <div className="relative flex-1 max-w-md">
+                  <svg
+                    className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search menu name..."
+                    className="w-full h-10 pl-9 pr-9 border-2 border-gray-200 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      aria-label="Clear search"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-3 text-[11px] text-gray-500 flex-wrap">
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                    Active
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                    View
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                    Create
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                    Edit
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                    Delete
+                  </span>
+                </div>
+
+                {menusWithPermissions.length > 0 && (
+                  <div className="sm:ml-auto text-xs text-gray-500">
+                    <span className="font-semibold text-gray-700">
+                      {countActivePermissions(menusWithPermissions)}
+                    </span>{' '}
+                    / {countTotalMenus(menusWithPermissions)} menus with view
+                    access
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3">
+                {permissionsLoading ? (
+                  <div className="flex items-center justify-center h-full min-h-[300px]">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                   </div>
-                ) : menusWithPermissions.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-3 h-full">
-                    {splitMenusIntoColumns(menusWithPermissions).map(
-                      (column, colIndex) => (
+                ) : filteredMenus.length > 0 ? (
+                  <div
+                    className="grid gap-4"
+                    style={{
+                      gridTemplateColumns:
+                        'repeat(auto-fill, minmax(360px, 1fr))',
+                    }}
+                  >
+                    {filteredMenus.map((menu) => {
+                      const collapsed = collapsedGroups.has(menu.id);
+                      const stats = groupStats(menu);
+                      const fullyEnabled = isSubtreeFullyEnabled(menu);
+                      const bulkBusy = bulkUpdatingGroups.has(menu.id);
+
+                      return (
                         <div
-                          key={colIndex}
-                          className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden flex flex-col"
+                          key={menu.id}
+                          className="bg-white rounded-lg border-2 border-gray-200 overflow-hidden flex flex-col shadow-sm"
                         >
-                          {renderColumnHeader()}
-                          <div className="flex-1 overflow-y-auto">
-                            {column.map(({ menu, level }) =>
-                              renderPermissionRow(menu, level),
+                          {/* Group header */}
+                          <div className="flex items-center gap-2 px-3 py-2.5 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                            <button
+                              onClick={() => toggleGroupCollapsed(menu.id)}
+                              className="text-gray-400 hover:text-gray-600 shrink-0"
+                              aria-label={collapsed ? 'Expand' : 'Collapse'}
+                            >
+                              <svg
+                                className={`w-4 h-4 transition-transform ${
+                                  collapsed ? '-rotate-90' : ''
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+
+                            {menu.icon && (
+                              <IconComponent name={menu.icon} size={16} />
                             )}
+                            <span
+                              className="font-semibold text-sm text-gray-900 truncate flex-1"
+                              title={menu.name}
+                            >
+                              {menu.name}
+                            </span>
+
+                            <span className="text-[10px] font-medium text-gray-500 shrink-0">
+                              {stats.enabled}/{stats.total} on
+                            </span>
+
+                            <button
+                              onClick={() => handleCheckAllRoute(menu)}
+                              disabled={bulkBusy || stats.total === 0}
+                              className={`shrink-0 text-[10px] font-semibold px-2.5 py-1 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                                fullyEnabled
+                                  ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                  : 'bg-primary/10 text-primary hover:bg-primary/20'
+                              }`}
+                            >
+                              {bulkBusy
+                                ? '...'
+                                : fullyEnabled
+                                ? 'Disable All'
+                                : 'Enable All'}
+                            </button>
                           </div>
+
+                          {/* Group body */}
+                          {!collapsed && (
+                            <div className="flex flex-col">
+                              {columnHeader}
+                              <div className="max-h-[420px] overflow-y-auto">
+                                {menu.children && menu.children.length > 0
+                                  ? menu.children.map((child) =>
+                                      renderMenuNode(child, 0),
+                                    )
+                                  : renderPermissionRow(menu, 0)}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      ),
-                    )}
+                      );
+                    })}
+                  </div>
+                ) : isSearching ? (
+                  <div className="text-center py-16">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                      <svg
+                        className="w-8 h-8 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+                        />
+                      </svg>
+                    </div>
+                    <p className="text-lg font-medium text-gray-900 mb-1">
+                      No menus match "{searchQuery}"
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Try a different search term
+                    </p>
                   </div>
                 ) : (
                   <div className="text-center py-16">
@@ -889,9 +1178,9 @@ function MasterHakAkses() {
               {/* Footer */}
               <div className="border-t-2 border-gray-200 p-3 bg-gray-50 flex justify-between items-center">
                 <div className="text-xs text-gray-600">
-                  <span className="font-medium">Note:</span> Clicking "View"
-                  automatically enables "Active". Unchecking "Active" disables
-                  "View" and hides children.
+                  <span className="font-medium">Note:</span> Turning on "View"
+                  also turns on "Active". Turning off "Active" hides children.
+                  Changes save automatically.
                 </div>
                 <button
                   onClick={closePermissionModal}
