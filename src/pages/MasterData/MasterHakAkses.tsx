@@ -1112,11 +1112,24 @@ function MasterHakAkses() {
                             <div className="flex flex-col">
                               {columnHeader}
                               <div className="max-h-[420px] overflow-y-auto">
-                                {menu.children && menu.children.length > 0
-                                  ? menu.children.map((child) =>
-                                      renderMenuNode(child, 0),
-                                    )
-                                  : renderPermissionRow(menu, 0)}
+                                {/*
+                                  FIX: render the parent menu's own permission row
+                                  too (level 0), not just its children. Previously
+                                  this branched on menu.children.length and, when
+                                  children existed, skipped straight to mapping
+                                  over menu.children — so a parent like
+                                  "Delivery Order" that has its own is_active /
+                                  can_view permissions never showed a row for
+                                  itself inside the group card, even though the
+                                  flat/legacy view (and the underlying data) had
+                                  it. renderMenuNode already renders the node's
+                                  own row and then recurses into children with
+                                  the correct show/hide-children gating, so
+                                  calling it directly on `menu` covers both
+                                  cases (leaf menus and menus with children)
+                                  correctly and consistently.
+                                */}
+                                {renderMenuNode(menu, 0)}
                               </div>
                             </div>
                           )}
