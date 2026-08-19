@@ -56,6 +56,7 @@ interface StockOpname {
   id_user_approve: number | null;
   tgl_create: string;
   tgl_approve: string | null;
+  tgl_mutasi?: string | null;
   period_from: string;
   period_to: string;
   status: string;
@@ -136,6 +137,8 @@ function TicketStatusBadge({ status }: { status: string }) {
   );
 }
 
+// Item-status filter options for the detail table dropdown. Kept in one
+// place so the <select> and the meta lookup below can't drift apart.
 const ITEM_STATUS_META: Record<string, { label: string; cls: string }> = {
   incoming: { label: 'Belum Diisi', cls: 'bg-gray-100 text-gray-500' },
   saved: { label: 'Menunggu Review', cls: 'bg-blue-100 text-blue-700' },
@@ -227,6 +230,8 @@ function ConfirmModal({
   onConfirm,
   onClose,
   loading,
+  canConfirm = true,
+  children,
 }: {
   title: string;
   message: string;
@@ -235,6 +240,13 @@ function ConfirmModal({
   onConfirm: () => void;
   onClose: () => void;
   loading: boolean;
+  // Extra gate on top of `loading` — lets callers (e.g. the approve flow,
+  // which needs tgl_mutasi filled in first) block submission without
+  // duplicating the modal.
+  canConfirm?: boolean;
+  // Optional extra form content rendered between the message and the
+  // action buttons (e.g. the tgl_mutasi input for the approve action).
+  children?: React.ReactNode;
 }) {
   const colorCls =
     confirmColor === 'green'
@@ -245,6 +257,7 @@ function ConfirmModal({
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5">
         <h3 className="text-base font-bold text-gray-800">{title}</h3>
         <p className="text-sm text-gray-500 mt-2">{message}</p>
+        {children && <div className="mt-3">{children}</div>}
         <div className="flex gap-3 justify-end mt-5">
           <button
             onClick={onClose}
@@ -254,7 +267,7 @@ function ConfirmModal({
           </button>
           <button
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || !canConfirm}
             className={`px-4 py-2 text-white font-semibold rounded-lg text-sm transition-colors disabled:opacity-40 ${colorCls}`}
           >
             {loading ? 'Memproses...' : confirmLabel}
@@ -519,6 +532,14 @@ function ApprovalDetail({
     'approve' | 'reject' | null
   >(null);
   const [ticketActionLoading, setTicketActionLoading] = useState(false);
+  // Required only for the approve flow — the date stock actually moved.
+  // Reset whenever the confirm modal is opened/closed so a stale value
+  // from a previous attempt never silently carries over.
+  const [tglMutasi, setTglMutasi] = useState('');
+  // Item-status filter for the detail table. Display-only: it must NOT
+  // affect resolvableItems/allItemsResolved/approve-reject eligibility,
+  // which always need to see the full, unfiltered item list.
+  const [itemStatusFilter, setItemStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     fetchDetail();
@@ -555,6 +576,12 @@ function ApprovalDetail({
 
   const approvedCount = items.filter((it) => it.status === 'approved').length;
   const rejectedCount = items.filter((it) => it.status === 'rejected').length;
+
+  // Rows actually rendered in the table — filtered for display only.
+  const visibleItems =
+    itemStatusFilter === 'all'
+      ? items
+      : items.filter((it) => it.status === itemStatusFilter);
 
   // Once a ticket is finalized — either directly approved/rejected, or moved
   // into "history" (with the real outcome living in status_tiket) — no more
@@ -608,8 +635,22 @@ function ApprovalDetail({
     }
   }
 
+  function openTicketAction(action: 'approve' | 'reject') {
+    setTglMutasi('');
+    setConfirmTicketAction(action);
+  }
+
+  function closeTicketAction() {
+    setConfirmTicketAction(null);
+    setTglMutasi('');
+  }
+
   async function handleTicketAction() {
     if (!ticket || !confirmTicketAction) return;
+    // Extra guard on top of the disabled button: never let an approve
+    // request go out without tgl_mutasi, even if state gets out of sync.
+    if (confirmTicketAction === 'approve' && !tglMutasi) return;
+
     const endpoint =
       confirmTicketAction === 'approve'
         ? `/fg/stockOpname/approve/${ticket.id}`
@@ -618,10 +659,10 @@ function ApprovalDetail({
       setTicketActionLoading(true);
       await axios.put(
         `${import.meta.env.VITE_API_LINK}${endpoint}`,
-        {},
+        confirmTicketAction === 'approve' ? { tgl_mutasi: tglMutasi } : {},
         { withCredentials: true },
       );
-      setConfirmTicketAction(null);
+      closeTicketAction();
       await fetchDetail();
       onResolved();
     } catch (err) {
@@ -650,9 +691,30 @@ function ApprovalDetail({
           confirmLabel={confirmTicketAction === 'approve' ? 'Setujui' : 'Tolak'}
           confirmColor={confirmTicketAction === 'approve' ? 'green' : 'red'}
           onConfirm={handleTicketAction}
-          onClose={() => setConfirmTicketAction(null)}
+          onClose={closeTicketAction}
           loading={ticketActionLoading}
-        />
+          canConfirm={confirmTicketAction === 'approve' ? !!tglMutasi : true}
+        >
+          {confirmTicketAction === 'approve' && (
+            <div>
+              <label className="text-xs font-semibold text-gray-600">
+                Tanggal Mutasi <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={tglMutasi}
+                onChange={(e) => setTglMutasi(e.target.value)}
+                required
+                className="mt-1 w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              />
+              {!tglMutasi && (
+                <p className="text-[10px] text-red-500 mt-1">
+                  Tanggal mutasi wajib diisi sebelum menyetujui tiket.
+                </p>
+              )}
+            </div>
+          )}
+        </ConfirmModal>
       )}
 
       <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-3 sm:p-4 flex items-center justify-between gap-3 flex-wrap">
@@ -690,6 +752,11 @@ function ApprovalDetail({
           <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold">
             Menunggu: {resolvableItems.length}
           </span>
+          {ticket.tgl_mutasi && (
+            <span className="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-700 font-semibold">
+              Tgl Mutasi: {fmtDate(ticket.tgl_mutasi)}
+            </span>
+          )}
         </div>
       )}
 
@@ -731,6 +798,23 @@ function ApprovalDetail({
         </div>
       )}
 
+      <div className="mx-4 mt-4 flex items-center gap-2">
+        <label className="text-[10px] font-semibold text-gray-500">
+          Filter Status
+        </label>
+        <select
+          value={itemStatusFilter}
+          onChange={(e) => setItemStatusFilter(e.target.value)}
+          className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        >
+          <option value="all">Semua Status</option>
+          <option value="incoming">Belum Diisi</option>
+          <option value="saved">Menunggu Review</option>
+          <option value="approved">Disetujui</option>
+          <option value="rejected">Ditolak</option>
+        </select>
+      </div>
+
       <div className="overflow-x-auto mt-4">
         <table className="w-full text-xs sm:text-sm min-w-[1180px]">
           <thead className="bg-gray-100">
@@ -759,17 +843,19 @@ function ApprovalDetail({
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 ? (
+            {visibleItems.length === 0 ? (
               <tr>
                 <td
                   colSpan={12}
                   className="p-8 text-center text-gray-500 text-sm"
                 >
-                  Tidak ada data barang pada tiket ini
+                  {items.length === 0
+                    ? 'Tidak ada data barang pada tiket ini'
+                    : 'Tidak ada item dengan status ini'}
                 </td>
               </tr>
             ) : (
-              items.map((it) => {
+              visibleItems.map((it) => {
                 const resolvable = RESOLVABLE_ITEM_STATUSES.includes(it.status);
                 return (
                   <tr
@@ -867,14 +953,14 @@ function ApprovalDetail({
           </p>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setConfirmTicketAction('reject')}
+              onClick={() => openTicketAction('reject')}
               disabled={!canRejectTicket}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
             >
               Tolak Tiket
             </button>
             <button
-              onClick={() => setConfirmTicketAction('approve')}
+              onClick={() => openTicketAction('approve')}
               disabled={!canApproveTicket}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
             >
@@ -890,7 +976,11 @@ function ApprovalDetail({
         <div className="m-4 flex items-center gap-2 text-xs bg-gray-50 border border-gray-200 text-gray-600 rounded-lg px-3 py-2">
           Tiket ini telah{' '}
           {displayTicketStatus(ticket) === 'approved' ? 'disetujui' : 'ditolak'}{' '}
-          pada {fmtDate(ticket.tgl_approve)}.
+          pada {fmtDate(ticket.tgl_approve)}
+          {ticket.tgl_mutasi &&
+            displayTicketStatus(ticket) === 'approved' &&
+            ` (Tgl Mutasi: ${fmtDate(ticket.tgl_mutasi)})`}
+          .
         </div>
       )}
     </div>

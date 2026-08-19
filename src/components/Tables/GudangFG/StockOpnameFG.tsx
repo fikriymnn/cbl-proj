@@ -623,7 +623,7 @@ function OpnameDetail({
     total: number;
   } | null>(null);
   const [requesting, setRequesting] = useState(false);
-
+  const [itemStatusFilter, setItemStatusFilter] = useState<string>('all');
   useEffect(() => {
     fetchDetail();
     // eslint-disable-next-line
@@ -667,6 +667,12 @@ function OpnameDetail({
     ticket.status !== 'approved' &&
     ticket.status !== 'rejected' &&
     allFilled;
+
+  // Display-only filter — doesn't affect editableItems/allFilled/canRequest above.
+  const visibleItems =
+    itemStatusFilter === 'all'
+      ? items
+      : items.filter((it) => it.status === itemStatusFilter);
 
   async function saveItem(id: number) {
     const draft = drafts[id];
@@ -807,7 +813,22 @@ function OpnameDetail({
           )}
         </div>
       </div>
-
+      <div className="mx-4 mt-4 flex items-center gap-2">
+        <label className="text-[10px] font-semibold text-gray-500">
+          Filter Status
+        </label>
+        <select
+          value={itemStatusFilter}
+          onChange={(e) => setItemStatusFilter(e.target.value)}
+          className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-400"
+        >
+          <option value="all">Semua Status</option>
+          <option value="incoming">Belum Diisi</option>
+          <option value="saved">Tersimpan</option>
+          <option value="approved">Disetujui MR</option>
+          <option value="rejected">Ditolak MR</option>
+        </select>
+      </div>
       {mode === 'create' &&
         !allFilled &&
         ticket &&
@@ -898,17 +919,19 @@ function OpnameDetail({
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 ? (
+            {visibleItems.length === 0 ? (
               <tr>
                 <td
                   colSpan={showCheckboxColumn ? 9 : 8}
                   className="p-8 text-center text-gray-500 text-sm"
                 >
-                  Tidak ada data barang pada tiket ini
+                  {items.length === 0
+                    ? 'Tidak ada data barang pada tiket ini'
+                    : 'Tidak ada item dengan status ini'}
                 </td>
               </tr>
             ) : (
-              items.map((it) => {
+              visibleItems.map((it) => {
                 const isEditable = isItemEditable(
                   mode,
                   ticket?.status,

@@ -6,6 +6,7 @@ import { Pagination, Stack } from '@mui/material';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DataMutasi {
+  tgl_mutasi: string | null | undefined;
   id: number;
   id_customer: number;
   id_io: number;
@@ -197,11 +198,12 @@ const MutasiBarang: React.FC = () => {
   const [limit, setLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>('');
-
+  const [typeMutasi, setTypeMutasi] = useState<string>('');
+  const [sumberMutasi, setSumberMutasi] = useState<string>('');
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
-  }, [page, limit, searchTerm]);
+  }, [page, limit, searchTerm, typeMutasi, sumberMutasi]);
 
   const fetchData = async (): Promise<void> => {
     try {
@@ -209,7 +211,13 @@ const MutasiBarang: React.FC = () => {
       const res: AxiosResponse<MutasiResponse> = await axios.get(
         `${import.meta.env.VITE_API_LINK}/fg/mutasiBarangByJo`,
         {
-          params: { page, limit, search: searchTerm || undefined },
+          params: {
+            page,
+            limit,
+            search: searchTerm || undefined,
+            type_mutasi: typeMutasi || undefined,
+            sumber_mutasi: sumberMutasi || undefined,
+          },
           withCredentials: true,
         },
       );
@@ -255,7 +263,7 @@ const MutasiBarang: React.FC = () => {
             </h2>
           </div>
 
-          <div className="p-3 sm:p-4 space-y-4">
+          <div className="p-3 sm:p-4 space-y-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ">
             {/* Search */}
             <div className="relative w-full sm:w-96">
               <input
@@ -281,6 +289,35 @@ const MutasiBarang: React.FC = () => {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={typeMutasi}
+                onChange={(e) => {
+                  setTypeMutasi(e.target.value);
+                  setPage(1);
+                }}
+                className="px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400 bg-blue-50"
+              >
+                <option value="">Semua Tipe Mutasi</option>
+                <option value="masuk">Masuk</option>
+                <option value="keluar">Keluar</option>
+              </select>
+
+              <select
+                value={sumberMutasi}
+                onChange={(e) => {
+                  setSumberMutasi(e.target.value);
+                  setPage(1);
+                }}
+                className="px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400 bg-blue-50"
+              >
+                <option value="">Semua Sumber Mutasi</option>
+                <option value="normal">Normal</option>
+                <option value="adjust stock">Adjust Stock</option>
+                <option value="bap">BAP</option>
+                <option value="stock opname">Stock Opname</option>
+              </select>
             </div>
           </div>
         </div>
@@ -455,7 +492,7 @@ const MutasiBarang: React.FC = () => {
                               )}
                             </td>
                             <td className="p-2 sm:p-3 text-xs text-gray-500 whitespace-nowrap">
-                              {fmtDate(mutasi.createdAt)}
+                              {fmtDate(mutasi.tgl_mutasi)}
                             </td>
                           </tr>
                         );

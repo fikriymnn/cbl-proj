@@ -69,10 +69,12 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  // NEW: filter toggle — only show finish goods that have been sitting >90 days
+  const [moreThan90Days, setMoreThan90Days] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchCandidates = useCallback(
-    async (searchVal: string, pageVal: number) => {
+    async (searchVal: string, pageVal: number, moreThan90DaysVal: boolean) => {
       try {
         setLoading(true);
         const res: AxiosResponse<GudangResponse> = await axios.get(
@@ -82,6 +84,7 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
               page: pageVal,
               limit: SELECT_LIMIT,
               search: searchVal || undefined,
+              is_more_than_90_days: moreThan90DaysVal,
             },
             withCredentials: true,
           },
@@ -102,7 +105,7 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
   );
 
   useEffect(() => {
-    fetchCandidates('', 1);
+    fetchCandidates('', 1, moreThan90Days);
     // eslint-disable-next-line
   }, []);
 
@@ -111,13 +114,22 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
     setPage(1);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchCandidates(val, 1);
+      fetchCandidates(val, 1, moreThan90Days);
     }, 400);
   }
 
   function handlePageChange(newPage: number) {
     setPage(newPage);
-    fetchCandidates(search, newPage);
+    fetchCandidates(search, newPage, moreThan90Days);
+  }
+
+  // NEW: toggle handler for the >90 days filter
+  function handleMoreThan90DaysToggle() {
+    const next = !moreThan90Days;
+    setMoreThan90Days(next);
+    setPage(1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    fetchCandidates(search, 1, next);
   }
 
   const visibleCandidates = candidates.filter(
@@ -168,6 +180,19 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
           </button>
         )}
       </div>
+
+      {/* NEW: >90 days filter toggle */}
+      <label className="flex items-center gap-2 flex-shrink-0 select-none cursor-pointer">
+        <input
+          type="checkbox"
+          checked={moreThan90Days}
+          onChange={handleMoreThan90DaysToggle}
+          className="w-3.5 h-3.5 accent-cyan-600 cursor-pointer"
+        />
+        <span className="text-[11px] font-medium text-gray-600">
+          Tampilkan hanya stok &gt; 90 hari
+        </span>
+      </label>
 
       <div className="rounded-xl border border-gray-200 overflow-hidden flex flex-col flex-1">
         {loading ? (
