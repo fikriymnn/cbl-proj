@@ -1716,13 +1716,19 @@ function JOMonitoring() {
                     const hasEstimasiKurangQtyQc =
                       estimasiKurangQtyQc.items.length > 0;
 
-                    const rowBg = dp?.isOver
-                      ? 'bg-purple-50'
-                      : dp?.status === 'selesai'
-                      ? 'bg-green-50'
-                      : dp?.status === 'kurang qty'
-                      ? 'bg-orange-50'
-                      : '';
+                    // ── estimasi kurang qty QC (approved) takes priority over
+                    //    the other row-background conditions below — a light
+                    //    red so the row stands out but text stays readable ──
+                    const rowBg =
+                      estimasiKurangQtyQc.total > 0
+                        ? 'bg-red-200'
+                        : dp?.isOver
+                        ? 'bg-purple-100'
+                        : dp?.status === 'selesai'
+                        ? 'bg-green-100'
+                        : dp?.status === 'kurang qty'
+                        ? 'bg-orange-100'
+                        : '';
 
                     return (
                       <tr
