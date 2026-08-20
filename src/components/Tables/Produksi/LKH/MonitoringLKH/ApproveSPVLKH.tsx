@@ -147,7 +147,7 @@ const ApproveSPVLKH: React.FC = () => {
   const [lkhData, setLkhData] = useState<LKHTahapanData[]>([]);
   const [tahapanBawahan, setTahapanBawahan] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('');
-
+  const [qtyKurangQty, setQtyKurangQty] = useState<number>(0);
   const [actionLoading, setActionLoading] = useState<{
     [key: number]: boolean;
   }>({});
@@ -258,7 +258,7 @@ const ApproveSPVLKH: React.FC = () => {
         total_qty: waste.total_qty,
       })) || [];
     setEditableWasteData(initialEditableWasteData);
-
+    setQtyKurangQty(0);
     setShowApprovalModal(true);
   };
 
@@ -267,6 +267,7 @@ const ApproveSPVLKH: React.FC = () => {
     setSelectedLKHForApproval(null);
     setEditableData([]);
     setEditableWasteData([]);
+    setQtyKurangQty(0);
   };
 
   const handleEditChange = (
@@ -316,9 +317,11 @@ const ApproveSPVLKH: React.FC = () => {
       return;
     }
 
-    const url = `${
+    const approveUrl = `${
       import.meta.env.VITE_API_LINK
     }/produksi/lkhTahapan/approve/${id}`;
+
+    const estimasiUrl = `${import.meta.env.VITE_API_LINK}/qc/estimasiKurangQty`;
 
     try {
       setActionLoading((prev) => ({ ...prev, [id]: true }));
@@ -332,7 +335,16 @@ const ApproveSPVLKH: React.FC = () => {
       }
 
       console.log('Approve Payload:', body);
-      await axios.put(url, body, { withCredentials: true });
+      await axios.put(approveUrl, body, { withCredentials: true });
+
+      // Submit estimasi kurang qty (required, defaults to 0)
+      const estimasiBody = {
+        id_produksi_lkh_tahapan: id,
+        qty_kurang_qty: qtyKurangQty,
+      };
+      console.log('Estimasi Kurang Qty Payload:', estimasiBody);
+      await axios.post(estimasiUrl, estimasiBody, { withCredentials: true });
+
       alert('LKH approved successfully!');
       closeApprovalModal();
       fetchLKHData(tahapanBawahan);
@@ -1147,6 +1159,22 @@ const ApproveSPVLKH: React.FC = () => {
                     ) : null;
                   })()}
                 </div>
+              </div>
+              {/* Qty Kurang Input */}
+              <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Estimasi Qty Kurang <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  required
+                  value={qtyKurangQty}
+                  onChange={(e) =>
+                    setQtyKurangQty(parseInt(e.target.value) || 0)
+                  }
+                  className="w-40 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
             </div>
 

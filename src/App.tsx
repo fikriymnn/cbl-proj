@@ -284,6 +284,7 @@ import ApprovalOpnameMRPage from './pages/MR/ApprovalOpnameMRPage';
 
 import StockOpnameFGPage from './pages/GudangFG/StockOpnameFGPage';
 import BAPManagementPage from './pages/UserMenu/BAPManagementPage';
+import EstimasiKurangQtyProduksiPage from './pages/Produksi/EstimasiKurangQtyProduksiPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1721,6 +1722,15 @@ function App() {
           element={
             <P>
               <HistoryTambahBahanPage />
+            </P>
+          }
+        />
+
+        <Route
+          path="/production/approve-estimasi-kurang-qty"
+          element={
+            <P>
+              <EstimasiKurangQtyProduksiPage />
             </P>
           }
         />

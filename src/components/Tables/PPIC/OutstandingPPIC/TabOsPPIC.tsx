@@ -11,6 +11,7 @@ import TambahBahanPPIC from './TambahBahanPPIC';
 import HistoryPPICAllKendala from './HistoryPPICAllKendala';
 import TambahBahanPemakaianPPIC from './TambahBahanPemakaianPPIC';
 import BAPPPIC from '../../GudangFG/BAPPPIC';
+import EstimasiKurangQtyPPIC from './EstimasiKurangQtyPPIC';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -145,6 +146,7 @@ export default function TabOsPPIC() {
 
               <Tab label="History OS" {...a11yProps(2)} />
               <Tab label="BAP" {...a11yProps(3)} />
+              <Tab label="Kurang QTY" {...a11yProps(4)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -165,6 +167,9 @@ export default function TabOsPPIC() {
         </TabPanel>
         <TabPanel value={value} index={3} dir={theme.direction}>
           <BAPPPIC />
+        </TabPanel>
+        <TabPanel value={value} index={4} dir={theme.direction}>
+          <EstimasiKurangQtyPPIC />
         </TabPanel>
       </Box>
     </>

@@ -227,35 +227,40 @@ function countWithDetail(tahapan: any[]) {
   return tahapan.filter((t) => tahapanHasProcess(t)).length;
 }
 
-// ── baik = latest tahapan (highest index) whose produksi_lkh_proses has qty baik > 0;
-//     if that tahapan's baik is 0, walk backward to earlier tahapan until non-zero is found.
-//     rs / rt remain summed across ALL tahapan (unchanged).
-//     NOTE: qty (baik/rs/rt) always comes from produksi_lkh_proses — never from
-//     produksi_lkh_proses_last, which is only used to detect "is this tahapan
-//     touched" (see tahapanHasProcess above). ──
+// ── baik / rs / rt ALL come from the SAME tahapan: walk backward from the
+//    latest tahapan (highest index) until a tahapan whose produksi_lkh_proses
+//    has qty baik > 0 is found. Once that tahapan is picked, baik, rs, AND rt
+//    are all read from that one tahapan — rs/rt are fine being 0, we don't
+//    keep walking back for them (previously rs/rt were summed across ALL
+//    tahapan; that's no longer the case).
+//    NOTE: qty (baik/rs/rt) always comes from produksi_lkh_proses — never from
+//    produksi_lkh_proses_last, which is only used to detect "is this tahapan
+//    touched" (see tahapanHasProcess above). ──
 function sumProduksiQty(tahapan: any[]): {
   baik: number;
   rs: number;
   rt: number;
 } {
+  const sortedDesc = [...(tahapan ?? [])].sort((a, b) => b.index - a.index);
+
+  let baik = 0;
   let rs = 0;
   let rt = 0;
-  (tahapan ?? []).forEach((t: any) => {
-    (t.produksi_lkh_proses ?? []).forEach((p: any) => {
-      rs += p.rusak_sebagian ?? 0;
-      rt += p.rusak_total ?? 0;
-    });
-  });
 
-  const sortedDesc = [...(tahapan ?? [])].sort((a, b) => b.index - a.index);
-  let baik = 0;
   for (const t of sortedDesc) {
-    const tBaik = (t.produksi_lkh_proses ?? []).reduce(
-      (sum: number, p: any) => sum + (p.baik ?? 0),
-      0,
+    const sums = (t.produksi_lkh_proses ?? []).reduce(
+      (acc: any, p: any) => {
+        acc.baik += p.baik ?? 0;
+        acc.rs += p.rusak_sebagian ?? 0;
+        acc.rt += p.rusak_total ?? 0;
+        return acc;
+      },
+      { baik: 0, rs: 0, rt: 0 },
     );
-    if (tBaik > 0) {
-      baik = tBaik;
+    if (sums.baik > 0) {
+      baik = sums.baik;
+      rs = sums.rs;
+      rt = sums.rt;
       break;
     }
   }
@@ -287,6 +292,25 @@ function getProduksiQtyByTahapan(tahapan: any[]) {
     })
     .filter((t: any) => t.hasData)
     .sort((a: any, b: any) => a.index - b.index);
+}
+
+// ── job_order.estimasi_kurang_qty_qc is an array of QC "kurang qty" request
+//    records. The qty lives in each item's qty_kurang_qty field. We only
+//    count/display requests whose status is "approved" — pending/rejected
+//    requests are ignored entirely (not summed, not listed). ──
+function sumEstimasiKurangQtyQc(jo: any): {
+  total: number;
+  items: any[];
+} {
+  const all: any[] = Array.isArray(jo?.estimasi_kurang_qty_qc)
+    ? jo.estimasi_kurang_qty_qc
+    : [];
+  const items = all.filter((e: any) => e.status === 'approved');
+  const total = items.reduce(
+    (sum: number, e: any) => sum + (e.qty_kurang_qty ?? 0),
+    0,
+  );
+  return { total, items };
 }
 
 // ── sums qty tambah bahan from job_order.tambah_bahan_persiapan
@@ -322,6 +346,7 @@ function StatusBadge({ status }: { status: string }) {
     done: 'bg-green-100 text-green-700 border-green-200',
     progress: 'bg-blue-100 text-blue-700 border-blue-200',
     selesai: 'bg-green-100 text-green-700 border-green-200',
+    approved: 'bg-green-100 text-green-700 border-green-200',
     cancel: 'bg-red-100 text-red-700 border-red-200',
     'belum kirim': 'bg-yellow-100 text-yellow-800 border-yellow-200',
     'kurang qty': 'bg-orange-100 text-orange-700 border-orange-200',
@@ -710,6 +735,10 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
     ? jo.tambah_bahan_pemakaian
     : [];
 
+  // ── new: estimasi kurang qty QC — array of requests, approved only ──
+  const estimasiKurangQtyQc = sumEstimasiKurangQtyQc(jo);
+  const hasEstimasiKurangQtyQc = estimasiKurangQtyQc.items.length > 0;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
@@ -804,6 +833,31 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
                 {!dp.isOver && dp.shipped < dp.total && (
                   <div className="mt-2 text-xs text-orange-600 bg-orange-50 rounded px-2 py-1">
                     Kurang: {fmtQty(dp.total - dp.shipped)} Pcs
+                  </div>
+                )}
+                {/* ── new: Estimasi Kurang Qty QC (job_order.estimasi_kurang_qty_qc,
+                     approved requests only) ── */}
+                {hasEstimasiKurangQtyQc && (
+                  <div className="mt-2 space-y-1">
+                    <div className="text-xs text-amber-700 font-semibold bg-amber-50 rounded px-2 py-1">
+                      Total Estimasi Kurang Qty QC (Approved):{' '}
+                      {fmtQty(estimasiKurangQtyQc.total)} Pcs
+                    </div>
+                    {estimasiKurangQtyQc.items.map((e: any) => (
+                      <div
+                        key={e.id}
+                        className="flex items-center justify-between gap-2 bg-white border border-amber-200 rounded px-2 py-1 text-[10px]"
+                      >
+                        <span className="text-gray-500 truncate">
+                          {fmtDate(e.tgl_request)}
+                          {e.spesifikasi ? ` · ${e.spesifikasi}` : ''}
+                        </span>
+                        <span className="font-bold text-amber-700 whitespace-nowrap">
+                          {fmtQty(e.qty_kurang_qty)}
+                        </span>
+                        <StatusBadge status={e.status} />
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -1656,6 +1710,12 @@ function JOMonitoring() {
                     );
                     const tambahBahan = sumTambahBahan(jo);
 
+                    // ── new: estimasi kurang qty QC (approved only), merged
+                    //    into the Progress Kirim column ──
+                    const estimasiKurangQtyQc = sumEstimasiKurangQtyQc(jo);
+                    const hasEstimasiKurangQtyQc =
+                      estimasiKurangQtyQc.items.length > 0;
+
                     const rowBg = dp?.isOver
                       ? 'bg-purple-50'
                       : dp?.status === 'selesai'
@@ -1740,6 +1800,16 @@ function JOMonitoring() {
                           {row.status_work == 'done' && (
                             <span className="bg-red-100 text-red-800 text-xs px-1.5 py-0.5 rounded font-medium">
                               Status PO : CLOSED
+                            </span>
+                          )}
+                          {/* ── new: Estimasi Kurang Qty QC (approved only) ── */}
+                          {hasEstimasiKurangQtyQc && (
+                            <span
+                              className="bg-amber-100 text-amber-800 text-[10px] px-1.5 py-0.5 rounded font-medium w-fit"
+                              title={`Estimasi Kurang Qty QC — Approved (${estimasiKurangQtyQc.items.length} request)`}
+                            >
+                              Est. Kurang QC:{' '}
+                              {fmtQty(estimasiKurangQtyQc.total)}
                             </span>
                           )}
                         </td>
