@@ -335,15 +335,27 @@ const ApproveSPVLKH: React.FC = () => {
       }
 
       console.log('Approve Payload:', body);
-      await axios.put(approveUrl, body, { withCredentials: true });
 
-      // Submit estimasi kurang qty (required, defaults to 0)
-      const estimasiBody = {
-        id_produksi_lkh_tahapan: id,
-        qty_kurang_qty: qtyKurangQty,
-      };
-      console.log('Estimasi Kurang Qty Payload:', estimasiBody);
-      await axios.post(estimasiUrl, estimasiBody, { withCredentials: true });
+      // 1. Always approve LKH
+      await axios.put(approveUrl, body, {
+        withCredentials: true,
+      });
+
+      // 2. Only hit estimasi kurang qty API if qty > 0
+      if (qtyKurangQty > 0) {
+        const estimasiBody = {
+          id_produksi_lkh_tahapan: id,
+          qty_kurang_qty: qtyKurangQty,
+        };
+
+        console.log('Estimasi Kurang Qty Payload:', estimasiBody);
+
+        await axios.post(estimasiUrl, estimasiBody, {
+          withCredentials: true,
+        });
+      } else {
+        console.log('Qty Kurang Qty <= 0, skipping estimasi kurang qty API');
+      }
 
       alert('LKH approved successfully!');
       closeApprovalModal();
