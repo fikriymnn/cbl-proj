@@ -12,6 +12,7 @@ import KabagApprovalIO from './KabagApprovalIO';
 import SOApprovalKabag from './SOApprovalKabat';
 import SOPerubahanHargaApproval from './SOPerubahanHargaApproval';
 import BAPMarketing from '../../GudangFG/BAPMarketing';
+import EstimasiKurangQtyMarketing from './EstimasiKurangQtyMarketing';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -148,6 +149,7 @@ export default function TabKabagApprove() {
               <Tab label="SO" {...a11yProps(2)} />
               <Tab label="SO Perubahan Harga" {...a11yProps(3)} />
               <Tab label="BAP" {...a11yProps(4)} />
+              <Tab label="Kurang Qty" {...a11yProps(5)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -172,6 +174,9 @@ export default function TabKabagApprove() {
         </TabPanel>
         <TabPanel value={value} index={4} dir={theme.direction}>
           <BAPMarketing />
+        </TabPanel>
+        <TabPanel value={value} index={5} dir={theme.direction}>
+          <EstimasiKurangQtyMarketing />
         </TabPanel>
       </Box>
     </>

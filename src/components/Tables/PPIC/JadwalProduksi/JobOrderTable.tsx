@@ -19,6 +19,8 @@ interface ListJOData {
   total_page?: number;
 }
 
+type SortTglKirim = '' | 'oldest' | 'newest';
+
 // Add ModalXL component
 const ModalXL = ({
   isOpen,
@@ -85,6 +87,7 @@ const JobOrderTable = ({
     searchTerm: string,
     page?: number,
     limit?: number,
+    sortTglKirim?: SortTglKirim,
   ) => void;
   listJO1?: any;
   cancelJobOrder?: (jobOrder: JobOrder) => void;
@@ -101,6 +104,11 @@ const JobOrderTable = ({
   // active drives what gets sent to the API).
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
+
+  // Sort state for the "Tanggal Kirim" column. '' = unsorted (default order
+  // from API), 'newest' = most recent tgl_kirim first, 'oldest' = earliest
+  // tgl_kirim first. Forwarded to the API as sort_tgl_kirim.
+  const [sortTglKirim, setSortTglKirim] = useState<SortTglKirim>('');
 
   // Modal states
   const [isModalOpenLocal, setIsModalOpenLocal] = useState(false);
@@ -121,7 +129,15 @@ const JobOrderTable = ({
   // Handler for search button click - always resets back to page 1
   const handleSearch = () => {
     setPage(1);
-    getmasterKategori(activeStatus, startDate, endDate, searchTerm, 1, limit);
+    getmasterKategori(
+      activeStatus,
+      startDate,
+      endDate,
+      searchTerm,
+      1,
+      limit,
+      sortTglKirim,
+    );
   };
 
   // Handler for status change
@@ -132,8 +148,9 @@ const JobOrderTable = ({
     setStartDate('');
     setEndDate('');
     setSearchTerm('');
+    setSortTglKirim(''); // reset sort when switching tabs
     setPage(1);
-    getmasterKategori(status, '', '', '', 1, limit);
+    getmasterKategori(status, '', '', '', 1, limit, '');
   };
 
   // Handler for page change (MUI Pagination is 1-indexed)
@@ -146,6 +163,7 @@ const JobOrderTable = ({
       searchTerm,
       newPage,
       limit,
+      sortTglKirim,
     );
   };
 
@@ -160,6 +178,26 @@ const JobOrderTable = ({
       searchTerm,
       1,
       newLimit,
+      sortTglKirim,
+    );
+  };
+
+  // Handler for clicking the "Tanggal Kirim" header. Cycles between
+  // 'newest' and 'oldest' (starts at 'newest' on first click) and resets
+  // back to page 1 since the ordering of results changes.
+  const handleSortTglKirim = () => {
+    const newSort: SortTglKirim =
+      sortTglKirim === 'newest' ? 'oldest' : 'newest';
+    setSortTglKirim(newSort);
+    setPage(1);
+    getmasterKategori(
+      activeStatus,
+      startDate,
+      endDate,
+      searchTerm,
+      1,
+      limit,
+      newSort,
     );
   };
 
@@ -344,7 +382,24 @@ const JobOrderTable = ({
             <th className="border border-blue-600 px-4 py-2">Item</th>
             <th className="border border-blue-600 px-4 py-2">Qty Druk</th>
             <th className="border border-blue-600 px-4 py-2">Qty PCS</th>
-            <th className="border border-blue-600 px-4 py-2">Tanggal Kirim</th>
+            <th
+              onClick={handleSortTglKirim}
+              className={`border border-blue-600 px-4 py-2 cursor-pointer select-none transition-colors ${
+                sortTglKirim ? 'bg-blue-700' : 'hover:bg-blue-600'
+              }`}
+              title="Klik untuk urutkan berdasarkan tanggal kirim"
+            >
+              <div className="flex items-center justify-center gap-1">
+                <span>Tanggal Kirim</span>
+                <span className="text-xs">
+                  {sortTglKirim === 'newest'
+                    ? '▼'
+                    : sortTglKirim === 'oldest'
+                    ? '▲'
+                    : '⇅'}
+                </span>
+              </div>
+            </th>
             <th className="border border-blue-600 px-4 py-2">Action</th>
           </tr>
         </thead>

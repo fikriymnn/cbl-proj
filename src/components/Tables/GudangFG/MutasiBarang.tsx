@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import Loading from '../../Loading';
 import { Pagination, Stack } from '@mui/material';
@@ -197,15 +197,38 @@ const MutasiBarang: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(1);
+
+  // Raw text the user types — updates on every keystroke, no fetch triggered directly.
+  const [searchInput, setSearchInput] = useState<string>('');
+  // Debounced value actually used for fetching.
   const [searchTerm, setSearchTerm] = useState<string>('');
+
   const [typeMutasi, setTypeMutasi] = useState<string>('');
   const [sumberMutasi, setSumberMutasi] = useState<string>('');
+
+  // Debounce: wait 400ms after the user stops typing before committing
+  // searchInput -> searchTerm (which triggers the actual fetch below).
   useEffect(() => {
-    fetchData();
+    const t = setTimeout(() => {
+      setSearchTerm(searchInput);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  // Fetch whenever any query-affecting state changes. Uses AbortController
+  // so a slow, stale request can never overwrite a newer one's result.
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchData(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
     // eslint-disable-next-line
   }, [page, limit, searchTerm, typeMutasi, sumberMutasi]);
 
-  const fetchData = async (): Promise<void> => {
+  const fetchData = async (signal?: AbortSignal): Promise<void> => {
     try {
       setIsLoading(true);
       const res: AxiosResponse<MutasiResponse> = await axios.get(
@@ -219,12 +242,18 @@ const MutasiBarang: React.FC = () => {
             sumber_mutasi: sumberMutasi || undefined,
           },
           withCredentials: true,
+          signal,
         },
       );
       console.log('API response:', res.data);
       setData(Array.isArray(res.data?.data) ? res.data.data : []);
       setTotalPages(res.data?.total_page || 1);
     } catch (err) {
+      // Ignore aborted requests — they were cancelled intentionally because
+      // a newer request superseded them.
+      if (axios.isCancel(err) || (err as any)?.name === 'CanceledError') {
+        return;
+      }
       console.error(err);
       setData([]);
     } finally {
@@ -236,6 +265,52 @@ const MutasiBarang: React.FC = () => {
     setLimit(newLimit);
     setPage(1);
   };
+
+  // ── Client-side safety net ────────────────────────────────────────────────
+  // The backend currently filters at the GROUP level: if a JO/IO group has
+  // *any* mutation matching type_mutasi/sumber_mutasi, it returns that group's
+  // ENTIRE data_mutasi array — including rows that don't match the filter.
+  // (e.g. filtering type_mutasi=masuk still returns "keluar" rows nested
+  // inside a group that happens to also have a "masuk" row.)
+  //
+  // Until that's fixed server-side, re-filter the nested rows here so the
+  // table only ever shows rows that actually match the selected filters, and
+  // recompute each group's totals/transaction count from the filtered rows.
+  const filteredData = useMemo(() => {
+    return data
+      .map((group) => {
+        const filteredMutasi = (group.data_mutasi ?? []).filter((m) => {
+          if (
+            typeMutasi &&
+            m.type_mutasi?.toLowerCase() !== typeMutasi.toLowerCase()
+          ) {
+            return false;
+          }
+          if (
+            sumberMutasi &&
+            (m.sumber_mutasi ?? '').toLowerCase() !== sumberMutasi.toLowerCase()
+          ) {
+            return false;
+          }
+          return true;
+        });
+
+        const jumlah_qty_masuk = filteredMutasi
+          .filter((m) => m.type_mutasi?.toLowerCase() === 'masuk')
+          .reduce((s, m) => s + (m.jumlah_qty || 0), 0);
+        const jumlah_qty_keluar = filteredMutasi
+          .filter((m) => m.type_mutasi?.toLowerCase() === 'keluar')
+          .reduce((s, m) => s + (m.jumlah_qty || 0), 0);
+
+        return {
+          ...group,
+          data_mutasi: filteredMutasi,
+          jumlah_qty_masuk,
+          jumlah_qty_keluar,
+        };
+      })
+      .filter((group) => group.data_mutasi.length > 0);
+  }, [data, typeMutasi, sumberMutasi]);
 
   return (
     <>
@@ -269,10 +344,9 @@ const MutasiBarang: React.FC = () => {
               <input
                 type="text"
                 placeholder="Search No JO, SO, IO, produk, customer..."
-                value={searchTerm}
+                value={searchInput}
                 onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setPage(1);
+                  setSearchInput(e.target.value);
                 }}
                 className="pl-9 pr-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400 w-full bg-blue-50"
               />
@@ -342,7 +416,7 @@ const MutasiBarang: React.FC = () => {
               Data Mutasi Barang
             </h3>
             <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold">
-              {data.length} Record
+              {filteredData.length} Record
             </span>
           </div>
 
@@ -373,7 +447,7 @@ const MutasiBarang: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {data.length === 0 ? (
+                {filteredData.length === 0 ? (
                   <tr>
                     <td
                       colSpan={11}
@@ -383,8 +457,10 @@ const MutasiBarang: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  data.map((group, gi) => (
-                    <React.Fragment key={`${group.id_jo}-${group.id_io}`}>
+                  filteredData.map((group, gi) => (
+                    <React.Fragment
+                      key={`${group.id_jo}-${group.id_io}-${group.no_jo}-${gi}`}
+                    >
                       {/* Group header row */}
                       <tr className="bg-violet-50 border-b border-violet-100">
                         <td colSpan={11} className="p-2 px-4">
@@ -423,7 +499,7 @@ const MutasiBarang: React.FC = () => {
                       {/* Detail mutasi rows */}
                       {(group.data_mutasi ?? []).map((mutasi, mi) => {
                         const rowIdx =
-                          data
+                          filteredData
                             .slice(0, gi)
                             .reduce(
                               (s, g) => s + (g.data_mutasi?.length ?? 0),

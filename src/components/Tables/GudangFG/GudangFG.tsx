@@ -120,6 +120,11 @@ function statusBadgeClass(status: string | null | undefined): string {
   return 'bg-gray-100 text-gray-600';
 }
 
+/** Stable key identifying a GudangItem group */
+function groupKey(g: GudangItem): string {
+  return `${g.id_io}-${g.id_produk}`;
+}
+
 // ─── Async Searchable Select ──────────────────────────────────────────────────
 
 const SELECT_LIMIT = 8;
@@ -1038,6 +1043,9 @@ const GudangFG: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Which group rows (No IO + Produk) are expanded to show their data_barang
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
@@ -1075,6 +1083,15 @@ const GudangFG: React.FC = () => {
       setSearchTerm(val);
       setPage(1);
     }, 400);
+  }
+
+  function toggleGroup(key: string) {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   }
 
   const handleSendDo = async (
@@ -1279,86 +1296,124 @@ const GudangFG: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  data.map((group, gi) => (
-                    <React.Fragment key={`${group.id_io}-${group.id_produk}`}>
-                      <tr className="bg-violet-50 border-b border-violet-100">
-                        <td colSpan={10} className="p-2 px-4">
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs font-bold text-violet-700">
-                              {group.no_io}
-                            </span>
-                            <span className="text-xs text-gray-600 font-medium max-w-xs">
-                              {group.produk}
-                            </span>
-                            <span className="text-[10px] text-gray-500">
-                              {group.customer}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                      {(group.data_barang ?? []).map((barang, bi) => {
-                        const rowIdx =
-                          data
-                            .slice(0, gi)
-                            .reduce(
-                              (s, g) => s + (g.data_barang?.length ?? 0),
-                              0,
-                            ) +
-                          bi +
-                          1;
+                  data.map((group, gi) => {
+                    const key = groupKey(group);
+                    const isExpanded = expandedGroups.has(key);
+                    const itemCount = group.data_barang?.length ?? 0;
 
-                        return (
-                          <tr
-                            key={barang.id}
-                            className="border-b hover:bg-blue-50 transition-colors"
-                          >
-                            <td className="p-2 sm:p-3 text-xs text-gray-400 pl-8">
-                              {rowIdx}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs font-bold  whitespace-nowrap flex flex-col gap-1">
-                              <span className="text-violet-600">
-                                {' '}
-                                {barang.no_jo || '-'}{' '}
-                              </span>
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs text-gray-600 whitespace-nowrap">
-                              {barang.no_io || '-'}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs max-w-[180px]">
-                              <span className="block" title={barang.produk}>
-                                {barang.produk || '-'}
-                              </span>
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs text-gray-700">
-                              {barang.customer || '-'}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs text-right font-medium">
-                              {fmtQty(barang.po_qty)}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
-                              {fmtTglMasuk(barang.tgl_masuk)}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs flex flex-wrap flex-col gap-1 ">
-                              <span
-                                className={`inline-block text-center px-2 py-0.5 rounded-full font-semibold max-w-16 whitespace-nowrap ${statusBadgeClass(
-                                  barang.status,
-                                )}`}
+                    return (
+                      <React.Fragment key={key}>
+                        {/* Outer / group row — click to expand. Shows produk + total jumlah_qty only. */}
+                        <tr
+                          className="bg-violet-50 border-b border-violet-100 hover:bg-violet-100 cursor-pointer transition-colors"
+                          onClick={() => toggleGroup(key)}
+                        >
+                          <td colSpan={10} className="p-2 px-4">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <svg
+                                  className={`w-3.5 h-3.5 text-violet-500 flex-shrink-0 transition-transform ${
+                                    isExpanded ? 'rotate-90' : ''
+                                  }`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 5l7 7-7 7"
+                                  />
+                                </svg>
+                                <span className="text-xs font-bold text-violet-700 whitespace-nowrap">
+                                  {group.no_io}
+                                </span>
+                                <span className="text-xs text-gray-700 font-medium truncate">
+                                  {group.produk}
+                                </span>
+                                <span className="text-[10px] text-gray-500 whitespace-nowrap">
+                                  {group.customer}
+                                </span>
+                                <span className="text-[10px] font-semibold text-violet-600 bg-white px-1.5 py-0.5 rounded-full whitespace-nowrap">
+                                  {itemCount} item
+                                </span>
+                              </div>
+                              <div className="flex-shrink-0 text-right">
+                                <span className="text-xs font-bold text-indigo-700">
+                                  {fmtQty(group.jumlah_qty)}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Inner rows — only rendered when the group is expanded */}
+                        {isExpanded &&
+                          (group.data_barang ?? []).map((barang, bi) => {
+                            const rowIdx =
+                              data
+                                .slice(0, gi)
+                                .reduce(
+                                  (s, g) => s + (g.data_barang?.length ?? 0),
+                                  0,
+                                ) +
+                              bi +
+                              1;
+
+                            return (
+                              <tr
+                                key={barang.id}
+                                className="border-b hover:bg-blue-50 transition-colors"
                               >
-                                {barang.status || '-'}
-                              </span>
-                              {barang.jo_booking?.no_jo || '-'}{' '}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs text-gray-700 whitespace-nowrap">
-                              {lifetimeDays(barang.tgl_masuk)}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs text-right font-bold text-indigo-700">
-                              {fmtQty(barang.jumlah_qty)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </React.Fragment>
-                  ))
+                                <td className="p-2 sm:p-3 text-xs text-gray-400 pl-8">
+                                  {rowIdx}
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs font-bold  whitespace-nowrap flex flex-col gap-1">
+                                  <span className="text-violet-600">
+                                    {' '}
+                                    {barang.no_jo || '-'}{' '}
+                                  </span>
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs text-gray-600 whitespace-nowrap">
+                                  {barang.no_io || '-'}
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs max-w-[180px]">
+                                  <span className="block" title={barang.produk}>
+                                    {barang.produk || '-'}
+                                  </span>
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs text-gray-700">
+                                  {barang.customer || '-'}
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs text-right font-medium">
+                                  {fmtQty(barang.po_qty)}
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
+                                  {fmtTglMasuk(barang.tgl_masuk)}
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs flex flex-wrap flex-col gap-1 ">
+                                  <span
+                                    className={`inline-block text-center px-2 py-0.5 rounded-full font-semibold max-w-16 whitespace-nowrap ${statusBadgeClass(
+                                      barang.status,
+                                    )}`}
+                                  >
+                                    {barang.status || '-'}
+                                  </span>
+                                  {barang.jo_booking?.no_jo || '-'}{' '}
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs text-gray-700 whitespace-nowrap">
+                                  {lifetimeDays(barang.tgl_masuk)}
+                                </td>
+                                <td className="p-2 sm:p-3 text-xs text-right font-bold text-indigo-700">
+                                  {fmtQty(barang.jumlah_qty)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </React.Fragment>
+                    );
+                  })
                 )}
               </tbody>
             </table>

@@ -44,8 +44,8 @@ function JOTerjadwalTable() {
   useEffect(() => {
     const loadInitialData = async () => {
       await Promise.all([
-        getmasterKategori('history', '', '', '', 1, 10),
-        getmasterKategori('penjadwalan', '', '', '', 1, 10),
+        getmasterKategori('history', '', '', '', 1, 10, ''),
+        getmasterKategori('penjadwalan', '', '', '', 1, 10, ''),
       ]);
     };
 
@@ -105,9 +105,9 @@ function JOTerjadwalTable() {
       // Refresh all three lists back to their first page after a cancel,
       // since the underlying data (and therefore total_page) has changed.
       await Promise.all([
-        getmasterKategori('history', '', '', '', 1, 10),
-        getmasterKategori('penjadwalan', '', '', '', 1, 10),
-        getmasterKategori('canceled', '', '', '', 1, 10),
+        getmasterKategori('history', '', '', '', 1, 10, ''),
+        getmasterKategori('penjadwalan', '', '', '', 1, 10, ''),
+        getmasterKategori('canceled', '', '', '', 1, 10, ''),
       ]);
 
       setIsLoading(false);
@@ -121,9 +121,10 @@ function JOTerjadwalTable() {
   }
 
   // Fetches job order data for a given status and updates the matching state.
-  // page/limit are now real, caller-controlled pagination params (instead of
-  // being hardcoded), and the response's total_data/total_page are kept on
-  // state so the table can render an accurate pagination control.
+  // page/limit are real, caller-controlled pagination params, and the
+  // response's total_data/total_page are kept on state so the table can
+  // render an accurate pagination control. sortTglKirim ('' | 'oldest' |
+  // 'newest') is forwarded to the API as sort_tgl_kirim when set.
   async function getmasterKategori(
     statusTiket: string = 'history',
     startDate: string = '',
@@ -131,6 +132,7 @@ function JOTerjadwalTable() {
     searchTerm: string = '',
     page: number = 1,
     limit: number = 10,
+    sortTglKirim: string = '',
   ) {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi`;
     try {
@@ -143,6 +145,7 @@ function JOTerjadwalTable() {
         search?: string;
         page?: number;
         limit?: number;
+        sort_tgl_kirim?: string;
       } = {
         status_tiket: statusTiket,
         page,
@@ -152,6 +155,7 @@ function JOTerjadwalTable() {
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
       if (searchTerm) params.search = searchTerm;
+      if (sortTglKirim) params.sort_tgl_kirim = sortTglKirim;
 
       const res = await axios.get(url, {
         params,
