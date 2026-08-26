@@ -19,6 +19,25 @@ import {
 import CreatePOModal from './CreatePOModal';
 
 // ---------------------------------------------------------------------------
+// NOTE ON FIELD SOURCES
+// ---------------------------------------------------------------------------
+// The pengajuan row's real item name and category live under `detail_item`
+// (`detail_item.nama_barang` and `detail_item.sub_kategori`, e.g. "Kertas"),
+// not on the top-level `item.nama_item` / `item.tipe_barang` fields this file
+// used before. Everywhere below now reads `item.detail_item?.nama_barang` /
+// `item.detail_item?.sub_kategori` first, falling back to the old top-level
+// fields only so this still compiles if some rows genuinely lack detail_item.
+// `PengajuanItem.detail_item` in Types/Purchasing.types.ts should get
+// `nama_barang: string` and `sub_kategori: string` added to its type.
+// ---------------------------------------------------------------------------
+
+const getNamaBarang = (item: PengajuanItem): string =>
+  item.detail_item?.nama_barang || item.nama_item || '-';
+
+const getRawKategori = (item: PengajuanItem): string =>
+  item.detail_item?.sub_kategori || item.tipe_barang || '';
+
+// ---------------------------------------------------------------------------
 // Shared helpers / constants (used by both the main page and the detail modal)
 // ---------------------------------------------------------------------------
 
@@ -34,9 +53,9 @@ const KATEGORI_COLORS: Record<string, string> = {
   'Unknown Category': 'bg-slate-100 text-slate-500 ring-slate-200',
 };
 
-// Known label overrides for values coming back from the API (tipe_barang).
-// Anything not listed here is title-cased automatically, so new categories
-// added on the backend show up without a code change.
+// Known label overrides for values coming back from the API (sub_kategori /
+// tipe_barang). Anything not listed here is title-cased automatically, so
+// new categories added on the backend show up without a code change.
 const KATEGORI_LABEL_OVERRIDES: Record<string, KategoriBarang> = {
   lain_lain: 'Lain-lain',
   'lain-lain': 'Lain-lain',
@@ -50,11 +69,11 @@ const toTitleCase = (value: string): string =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 
-// tipe_barang (raw API value) -> display label. Falls back to title-casing
-// the raw value instead of "Unknown Category" so new categories from the
-// backend render sensibly without needing a code change.
-const getKategoriLabel = (tipeBarang?: string): string => {
-  const key = (tipeBarang || '').trim().toLowerCase();
+// raw category value -> display label. Falls back to title-casing the raw
+// value instead of "Unknown Category" so new categories from the backend
+// render sensibly without needing a code change.
+const getKategoriLabel = (rawKategori?: string): string => {
+  const key = (rawKategori || '').trim().toLowerCase();
   if (!key) return 'Tidak Diketahui';
   if (KATEGORI_LABEL_OVERRIDES[key]) return KATEGORI_LABEL_OVERRIDES[key];
   return toTitleCase(key);
@@ -262,7 +281,7 @@ const RekapDetailModal: React.FC<RekapDetailModalProps> = ({
                       {formatDate(item.tgl_kirim)}
                     </td>
                     <td className="px-3 py-3 text-slate-800 font-medium">
-                      {item.nama_item}
+                      {getNamaBarang(item)}
                     </td>
                     <td className="px-3 py-3">
                       <span className="inline-flex bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-md font-medium">
@@ -323,7 +342,7 @@ const PengajuanPurchase: React.FC = () => {
   const [rencanaCetakTo, setRencanaCetakTo] = useState<string>('');
   const [tanggalKirimFrom, setTanggalKirimFrom] = useState<string>('');
   const [tanggalKirimTo, setTanggalKirimTo] = useState<string>('');
-  // Raw tipe_barang values (e.g. ["coating", "corrugated"]). Sent to the API
+  // Raw category values (e.g. ["coating", "corrugated"]). Sent to the API
   // as a comma-separated string, e.g. "coating, corrugated".
   const [kategoriFilter, setKategoriFilter] = useState<string[]>([]);
   const [noJoFilter, setNoJoFilter] = useState<string>('');
@@ -496,7 +515,7 @@ const PengajuanPurchase: React.FC = () => {
     [rekapTipeBarang],
   );
 
-  // Dynamic dropdown options built straight from whatever tipe_barang values
+  // Dynamic dropdown options built straight from whatever category values
   // the rekap endpoint returns, so new categories show up automatically.
   const kategoriOptions = useMemo(
     () =>
@@ -510,7 +529,7 @@ const PengajuanPurchase: React.FC = () => {
   );
 
   // Quick lookup so the Select can render human-friendly labels for the
-  // chips/menu even though the stored values are the raw tipe_barang values.
+  // chips/menu even though the stored values are the raw category values.
   const kategoriLabelByValue = useMemo(
     () => Object.fromEntries(kategoriOptions.map((o) => [o.value, o.label])),
     [kategoriOptions],
@@ -785,7 +804,7 @@ const PengajuanPurchase: React.FC = () => {
                 </tr>
               ) : (
                 data.map((item) => {
-                  const kategori = getKategoriLabel(item.tipe_barang);
+                  const kategori = getKategoriLabel(getRawKategori(item));
                   return (
                     <tr
                       key={item.id}
@@ -814,7 +833,7 @@ const PengajuanPurchase: React.FC = () => {
                         {formatDate(item.tgl_kirim)}
                       </td>
                       <td className="px-3 py-3 text-slate-800 font-medium">
-                        {item.nama_item}
+                        {getNamaBarang(item)}
                       </td>
                       <td className="px-3 py-3">
                         <span
