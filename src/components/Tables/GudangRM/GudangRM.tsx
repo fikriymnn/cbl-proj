@@ -14,8 +14,10 @@ import Alert from '@mui/material/Alert';
  *    per selected id (no bulk endpoint exists), sequentially, and reports
  *    how many succeeded/failed.
  *
- *  - Stock: read-only current RM stock levels, with a detail modal showing
- *    each stock row's own mutation trail (gudang_raw_material_stock_mutasi).
+ *  - Stock: read-only current RM stock levels. The list only carries the
+ *    summary fields; clicking "Detail" fetches the full record from
+ *    GET /rm/gudangStock/:id (full master_barang + mutasi trail with the
+ *    user who made each mutation) and shows it in a modal.
  * ========================================================================== */
 
 type TabKey = 'booking' | 'stock';
@@ -76,8 +78,63 @@ interface GudangBookingListResponse {
   total_page?: number;
 }
 
-// --- Stock types (GET /rm/gudangStock) ---
-interface StockMutasi {
+// --- Stock list types (GET /rm/gudangStock) ---
+interface GudangStockItem {
+  id: number;
+  id_item: number;
+  kode_item: string;
+  nama_item: string;
+  qty: number;
+  tipe_barang: string | null;
+  satuan: string | null;
+  tgl_masuk: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+interface GudangStockListResponse {
+  status: number;
+  success: boolean;
+  data: GudangStockItem[];
+  total_page?: number;
+}
+
+// --- Stock detail types (GET /rm/gudangStock/:id) ---
+interface MasterBarangFull {
+  id: number;
+  id_brand: number | null;
+  id_purchase_unit: number | null;
+  id_inventory_unit: number | null;
+  kode_barang: string;
+  nama_barang: string;
+  kategori: string;
+  sub_kategori: string | null;
+  gramatur: number | null;
+  panjang: number | null;
+  lebar: number | null;
+  harga: number;
+  persentase: number;
+  batas_harga: number;
+  pajak: number;
+  harga_per_satuan: number;
+  inventory_convert: number;
+  warehouse: string;
+  keterangan: string | null;
+  is_include_tax: boolean;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+interface StockMutasiUser {
+  id: number;
+  id_role: number;
+  nama: string;
+  email: string;
+  bagian: string;
+  role: string;
+  status: string;
+}
+interface StockMutasiDetail {
   id: number;
   id_gudang_raw_material_stock: number;
   id_item: number;
@@ -94,9 +151,9 @@ interface StockMutasi {
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
-  user?: RawUserRef;
+  user?: StockMutasiUser;
 }
-interface GudangStockItem {
+interface GudangStockDetail {
   id: number;
   id_item: number;
   kode_item: string;
@@ -108,18 +165,24 @@ interface GudangStockItem {
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
-  master_barang?: RawMasterBarangRef;
-  gudang_raw_material_stock_mutasi?: StockMutasi[];
+  master_barang?: MasterBarangFull;
+  gudang_raw_material_stock_mutasi?: StockMutasiDetail[];
 }
-interface GudangStockListResponse {
+interface GudangStockDetailResponse {
   status: number;
   success: boolean;
-  data: GudangStockItem[];
-  total_page?: number;
+  data: GudangStockDetail;
 }
 
 const formatQty = (val: number | null | undefined): string =>
   (val ?? 0).toLocaleString('id-ID');
+
+const formatCurrency = (val: number | null | undefined): string =>
+  (val ?? 0).toLocaleString('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 2,
+  });
 
 const formatDate = (val?: string | null): string => {
   if (!val) return '-';
@@ -461,13 +524,39 @@ const BookingTab: React.FC<{
 };
 
 // =============================================================================
-// Stock detail modal
+// Stock detail modal — fetches the full record by id (GET /rm/gudangStock/:id)
 // =============================================================================
 const StockDetailModal: React.FC<{
-  item: GudangStockItem;
+  id: number;
   onClose: () => void;
-}> = ({ item, onClose }) => {
-  const mutasi = item.gudang_raw_material_stock_mutasi || [];
+}> = ({ id, onClose }) => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<string>('');
+  const [detail, setDetail] = useState<GudangStockDetail | null>(null);
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      const url = `${import.meta.env.VITE_API_LINK}/rm/gudangStock/${id}`;
+      try {
+        setLoading(true);
+        setLoadError('');
+        const res = await axios.get<GudangStockDetailResponse>(url, {
+          withCredentials: true,
+        });
+        setDetail(res.data.data || null);
+      } catch (err) {
+        console.error('Error fetching gudang stock detail:', err);
+        setLoadError('Gagal memuat detail stok.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [id]);
+
+  const mutasi = detail?.gudang_raw_material_stock_mutasi || [];
+  const master = detail?.master_barang;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[92vh] overflow-y-auto">
@@ -477,7 +566,7 @@ const StockDetailModal: React.FC<{
               Detail Stok RM
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              {item.kode_item} · {item.nama_item}
+              {detail ? `${detail.kode_item} · ${detail.nama_item}` : '...'}
             </p>
           </div>
           <button
@@ -489,93 +578,142 @@ const StockDetailModal: React.FC<{
           </button>
         </div>
 
-        <div className="p-6 space-y-5">
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="bg-emerald-50 border border-emerald-100 rounded-xl py-3">
-              <p className="text-[11px] text-emerald-600">Qty Saat Ini</p>
-              <p className="text-lg font-semibold text-emerald-800">
-                {formatQty(item.qty)}
-              </p>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-xl py-3">
-              <p className="text-[11px] text-slate-400">Tipe Barang</p>
-              <p className="text-sm font-medium text-slate-700 mt-1">
-                {item.tipe_barang || '-'}
-              </p>
-            </div>
-            <div className="bg-white border border-slate-200 rounded-xl py-3">
-              <p className="text-[11px] text-slate-400">Satuan</p>
-              <p className="text-sm font-medium text-slate-700 mt-1">
-                {item.satuan || '-'}
-              </p>
-            </div>
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-500 border-t-transparent" />
           </div>
+        ) : loadError ? (
+          <div className="px-6 py-14 text-center">
+            <p className="text-red-600 text-sm font-medium">{loadError}</p>
+          </div>
+        ) : !detail ? (
+          <div className="px-6 py-14 text-center">
+            <p className="text-slate-500 text-sm">Data stok tidak ditemukan.</p>
+          </div>
+        ) : (
+          <div className="p-6 space-y-5">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="bg-emerald-50 border border-emerald-100 rounded-xl py-3">
+                <p className="text-[11px] text-emerald-600">Qty Saat Ini</p>
+                <p className="text-lg font-semibold text-emerald-800">
+                  {formatQty(detail.qty)} {detail.satuan || ''}
+                </p>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-xl py-3">
+                <p className="text-[11px] text-slate-400">Tipe Barang</p>
+                <p className="text-sm font-medium text-slate-700 mt-1">
+                  {detail.tipe_barang || '-'}
+                </p>
+              </div>
+              <div className="bg-white border border-slate-200 rounded-xl py-3">
+                <p className="text-[11px] text-slate-400">Tgl Masuk Terakhir</p>
+                <p className="text-sm font-medium text-slate-700 mt-1">
+                  {formatDateTime(detail.tgl_masuk)}
+                </p>
+              </div>
+            </div>
 
-          <div className="border border-slate-200 rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 border-b border-slate-100">
-                  <tr>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                      Tanggal
-                    </th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                      Tipe
-                    </th>
-                    <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                      Qty
-                    </th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                      Sumber
-                    </th>
-                    <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                      Oleh
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {mutasi.length === 0 ? (
+            {master && (
+              <div className="border border-slate-200 rounded-xl p-4 grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+                <div>
+                  <p className="text-[11px] text-slate-400">Kategori</p>
+                  <p className="text-slate-700">
+                    {master.kategori}
+                    {master.sub_kategori ? ` · ${master.sub_kategori}` : ''}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-slate-400">Gudang</p>
+                  <p className="text-slate-700">{master.warehouse || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-slate-400">Harga</p>
+                  <p className="text-slate-700">
+                    {formatCurrency(master.harga)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] text-slate-400">Harga per Satuan</p>
+                  <p className="text-slate-700">
+                    {formatCurrency(master.harga_per_satuan)}
+                  </p>
+                </div>
+                {master.keterangan && (
+                  <div className="col-span-2">
+                    <p className="text-[11px] text-slate-400">Keterangan</p>
+                    <p className="text-slate-700">{master.keterangan}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-100">
                     <tr>
-                      <td
-                        colSpan={5}
-                        className="px-4 py-8 text-center text-slate-400 text-sm"
-                      >
-                        Belum ada mutasi.
-                      </td>
+                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        Tanggal
+                      </th>
+                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        Tipe
+                      </th>
+                      <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        Qty
+                      </th>
+                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        Sumber
+                      </th>
+                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        Oleh
+                      </th>
                     </tr>
-                  ) : (
-                    mutasi.map((m) => (
-                      <tr key={m.id}>
-                        <td className="px-3 py-2.5 whitespace-nowrap text-slate-600">
-                          {formatDateTime(m.tgl_mutasi)}
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span
-                            className={`text-[11px] px-2 py-0.5 rounded-full ring-1 font-medium ${typeBadge(
-                              m.type_mutasi,
-                            )}`}
-                          >
-                            {m.type_mutasi === 'masuk' ? 'Masuk' : 'Keluar'}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2.5 text-right tabular-nums font-medium text-slate-800">
-                          {formatQty(m.jumlah_qty)}
-                        </td>
-                        <td className="px-3 py-2.5 text-slate-500 capitalize">
-                          {m.sumber_mutasi}
-                          {m.no_jo_booking ? ` · ${m.no_jo_booking}` : ''}
-                        </td>
-                        <td className="px-3 py-2.5 text-slate-600">
-                          {m.user?.nama || '-'}
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {mutasi.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="px-4 py-8 text-center text-slate-400 text-sm"
+                        >
+                          Belum ada mutasi.
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      mutasi.map((m) => (
+                        <tr key={m.id}>
+                          <td className="px-3 py-2.5 whitespace-nowrap text-slate-600">
+                            {formatDateTime(m.tgl_mutasi)}
+                          </td>
+                          <td className="px-3 py-2.5">
+                            <span
+                              className={`text-[11px] px-2 py-0.5 rounded-full ring-1 font-medium ${typeBadge(
+                                m.type_mutasi,
+                              )}`}
+                            >
+                              {m.type_mutasi === 'masuk' ? 'Masuk' : 'Keluar'}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2.5 text-right tabular-nums font-medium text-slate-800">
+                            {formatQty(m.jumlah_qty)}
+                          </td>
+                          <td className="px-3 py-2.5 text-slate-500 capitalize">
+                            {m.sumber_mutasi}
+                            {m.no_jo_booking ? ` · ${m.no_jo_booking}` : ''}
+                            {m.note ? ` · ${m.note}` : ''}
+                          </td>
+                          <td className="px-3 py-2.5 text-slate-600">
+                            {m.user?.nama || '-'}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
@@ -594,7 +732,7 @@ const StockTab: React.FC<{
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
 
-  const [detailItem, setDetailItem] = useState<GudangStockItem | null>(null);
+  const [detailId, setDetailId] = useState<number | null>(null);
 
   const fetchData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/rm/gudangStock`;
@@ -691,7 +829,7 @@ const StockTab: React.FC<{
                     <td className="px-3 py-3">
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => setDetailItem(s)}
+                          onClick={() => setDetailId(s.id)}
                           className="text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
                         >
                           Detail
@@ -736,11 +874,8 @@ const StockTab: React.FC<{
         </Stack>
       </div>
 
-      {detailItem && (
-        <StockDetailModal
-          item={detailItem}
-          onClose={() => setDetailItem(null)}
-        />
+      {detailId !== null && (
+        <StockDetailModal id={detailId} onClose={() => setDetailId(null)} />
       )}
     </div>
   );

@@ -6,22 +6,18 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
 /* =============================================================================
- * MutasiBarangRM — flat log of raw-material stock mutations (GET
- * /rm/mutasiBarang), with a "Riwayat Item" action per row that opens the
- * per-item aggregated view (GET /rm/mutasiBarangByItem, filtered by
- * id_item) showing running totals + the full data_mutasi trail for that
- * item.
+ * MutasiBarangRM — two tabs:
+ *
+ *  - Log Mutasi: flat log of raw-material stock mutations
+ *    (GET /rm/mutasiBarang), own pagination/limit.
+ *
+ *  - Per Item: aggregated view per item (GET /rm/mutasiBarangByItem),
+ *    showing running totals + an expandable data_mutasi trail per row.
+ *    Own pagination/limit, independent from the flat tab.
  * ========================================================================== */
 
-interface RawJoBookingRef {
-  id: number;
-  no_jo: string;
-  no_io: string;
-  no_so: string;
-  customer: string;
-  produk: string;
-  status: string;
-}
+type TabKey = 'flat' | 'byItem';
+
 interface RawMasterBarangRef {
   id: number;
   kode_barang: string;
@@ -47,7 +43,6 @@ interface MutasiBarang {
   createdAt: string;
   updatedAt: string;
   master_barang?: RawMasterBarangRef;
-  jo_booking?: RawJoBookingRef | null;
 }
 interface MutasiBarangListResponse {
   status: number;
@@ -94,187 +89,45 @@ const typeBadge = (type: 'masuk' | 'keluar'): string =>
     ? 'bg-sky-50 text-sky-700 ring-sky-200'
     : 'bg-orange-50 text-orange-700 ring-orange-200';
 
-// =============================================================================
-// Per-item history modal
-// =============================================================================
-const ItemHistoryModal: React.FC<{
-  idItem: number;
-  namaBarang: string;
-  onClose: () => void;
-}> = ({ idItem, namaBarang, onClose }) => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [loadError, setLoadError] = useState<string>('');
-  const [summary, setSummary] = useState<MutasiByItem | null>(null);
-
-  useEffect(() => {
-    const fetchByItem = async () => {
-      const url = `${import.meta.env.VITE_API_LINK}/rm/mutasiBarangByItem`;
-      try {
-        setLoading(true);
-        setLoadError('');
-        const res = await axios.get<MutasiByItemListResponse>(url, {
-          params: { page: 1, limit: 100, id_item: idItem },
-          withCredentials: true,
-        });
-        const match =
-          (res.data.data || []).find((it) => it.id_item === idItem) ||
-          (res.data.data || [])[0] ||
-          null;
-        setSummary(match);
-      } catch (err) {
-        console.error('Error fetching mutasi by item:', err);
-        setLoadError('Gagal memuat riwayat mutasi item.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchByItem();
-  }, [idItem]);
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[92vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-800">
-              Riwayat Mutasi Barang
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">{namaBarang}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 h-8 w-8 flex items-center justify-center rounded-lg hover:bg-slate-100 transition-colors"
-            aria-label="Tutup"
-          >
-            ✕
-          </button>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-sky-500 border-t-transparent" />
-          </div>
-        ) : loadError ? (
-          <div className="px-6 py-14 text-center">
-            <p className="text-red-600 text-sm font-medium">{loadError}</p>
-          </div>
-        ) : !summary ? (
-          <div className="px-6 py-14 text-center">
-            <p className="text-slate-500 text-sm">
-              Tidak ada riwayat untuk item ini.
-            </p>
-          </div>
-        ) : (
-          <div className="p-6 space-y-5">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-sky-50 border border-sky-100 rounded-xl py-3 text-center">
-                <p className="text-[11px] text-sky-600">Total Masuk</p>
-                <p className="text-lg font-semibold text-sky-800">
-                  {formatQty(summary.jumlah_qty_masuk)}
-                </p>
-              </div>
-              <div className="bg-orange-50 border border-orange-100 rounded-xl py-3 text-center">
-                <p className="text-[11px] text-orange-600">Total Keluar</p>
-                <p className="text-lg font-semibold text-orange-800">
-                  {formatQty(summary.jumlah_qty_keluar)}
-                </p>
-              </div>
-            </div>
-
-            <div className="border border-slate-200 rounded-xl overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-slate-50 border-b border-slate-100">
-                    <tr>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                        Tanggal
-                      </th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                        Tipe
-                      </th>
-                      <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                        Qty
-                      </th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                        No JO
-                      </th>
-                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                        Sumber / Note
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {summary.data_mutasi.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={5}
-                          className="px-4 py-8 text-center text-slate-400 text-sm"
-                        >
-                          Belum ada mutasi.
-                        </td>
-                      </tr>
-                    ) : (
-                      summary.data_mutasi.map((m) => (
-                        <tr key={m.id}>
-                          <td className="px-3 py-2.5 whitespace-nowrap text-slate-600">
-                            {formatDateTime(m.tgl_mutasi)}
-                          </td>
-                          <td className="px-3 py-2.5">
-                            <span
-                              className={`text-[11px] px-2 py-0.5 rounded-full ring-1 font-medium ${typeBadge(
-                                m.type_mutasi,
-                              )}`}
-                            >
-                              {m.type_mutasi === 'masuk' ? 'Masuk' : 'Keluar'}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2.5 text-right tabular-nums font-medium text-slate-800">
-                            {formatQty(m.jumlah_qty)}
-                          </td>
-                          <td className="px-3 py-2.5 text-slate-600">
-                            {m.no_jo_booking || '-'}
-                          </td>
-                          <td className="px-3 py-2.5 text-slate-500">
-                            <span className="capitalize">
-                              {m.sumber_mutasi}
-                            </span>
-                            {m.note ? ` · ${m.note}` : ''}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+const LimitButtons: React.FC<{
+  limit: number;
+  onChange: (n: number) => void;
+  color?: 'sky' | 'indigo';
+}> = ({ limit, onChange, color = 'sky' }) => (
+  <div className="flex items-center gap-2">
+    <span className="text-sm text-slate-500">Baris per halaman:</span>
+    <div className="flex gap-1.5">
+      {[10, 25, 50, 100].map((pageSize) => (
+        <button
+          key={pageSize}
+          onClick={() => onChange(pageSize)}
+          className={`px-3 py-1 text-sm rounded-md transition-colors ${
+            limit === pageSize
+              ? color === 'sky'
+                ? 'bg-sky-600 text-white'
+                : 'bg-indigo-600 text-white'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          }`}
+        >
+          {pageSize}
+        </button>
+      ))}
     </div>
-  );
-};
+  </div>
+);
 
 // =============================================================================
-// Main page
+// Tab: flat mutation log (GET /rm/mutasiBarang)
 // =============================================================================
-const MutasiBarangRM: React.FC = () => {
+const FlatMutasiTab: React.FC<{
+  onToast: (message: string, severity: 'success' | 'error' | 'info') => void;
+}> = ({ onToast }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<MutasiBarang[]>([]);
 
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
-
-  const [historyItem, setHistoryItem] = useState<{
-    idItem: number;
-    namaBarang: string;
-  } | null>(null);
-
-  const [toast, setToast] = useState<{
-    open: boolean;
-    message: string;
-    severity: 'success' | 'error' | 'info';
-  }>({ open: false, message: '', severity: 'success' });
 
   const fetchData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/rm/mutasiBarang`;
@@ -289,11 +142,7 @@ const MutasiBarangRM: React.FC = () => {
     } catch (error) {
       console.error('Error fetching mutasi barang data:', error);
       setData([]);
-      setToast({
-        open: true,
-        message: 'Gagal memuat data mutasi barang.',
-        severity: 'error',
-      });
+      onToast('Gagal memuat data mutasi barang.', 'error');
     } finally {
       setLoading(false);
     }
@@ -310,8 +159,7 @@ const MutasiBarangRM: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Table */}
+    <div className="space-y-4">
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -338,15 +186,12 @@ const MutasiBarangRM: React.FC = () => {
                 <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                   Tanggal
                 </th>
-                <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                  Aksi
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-14 text-center">
+                  <td colSpan={7} className="px-4 py-14 text-center">
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-7 w-7 border-2 border-sky-500 border-t-transparent"></div>
                     </div>
@@ -354,7 +199,7 @@ const MutasiBarangRM: React.FC = () => {
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-14 text-center">
+                  <td colSpan={7} className="px-4 py-14 text-center">
                     <p className="text-slate-600 font-medium text-sm">
                       {EMPTY_TEXT}
                     </p>
@@ -389,24 +234,10 @@ const MutasiBarangRM: React.FC = () => {
                     </td>
                     <td className="px-3 py-3 text-slate-500 capitalize">
                       {m.sumber_mutasi}
+                      {m.note ? ` · ${m.note}` : ''}
                     </td>
                     <td className="px-3 py-3 text-slate-600 whitespace-nowrap">
                       {formatDateTime(m.tgl_mutasi)}
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() =>
-                            setHistoryItem({
-                              idItem: m.id_item,
-                              namaBarang: m.nama_barang,
-                            })
-                          }
-                          className="text-xs font-medium text-white bg-sky-600 hover:bg-sky-700 px-3 py-1.5 rounded-lg transition-colors"
-                        >
-                          Riwayat Item
-                        </button>
-                      </div>
                     </td>
                   </tr>
                 ))
@@ -418,24 +249,7 @@ const MutasiBarangRM: React.FC = () => {
 
       {/* Pagination */}
       <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 pb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-500">Baris per halaman:</span>
-          <div className="flex gap-1.5">
-            {[10, 25, 50, 100].map((pageSize) => (
-              <button
-                key={pageSize}
-                onClick={() => handleLimitChange(pageSize)}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  limit === pageSize
-                    ? 'bg-sky-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {pageSize}
-              </button>
-            ))}
-          </div>
-        </div>
+        <LimitButtons limit={limit} onChange={handleLimitChange} color="sky" />
         <Stack spacing={2}>
           <Pagination
             count={totalPages}
@@ -445,17 +259,283 @@ const MutasiBarangRM: React.FC = () => {
           />
         </Stack>
       </div>
+    </div>
+  );
+};
 
-      {/* Per-item history modal */}
-      {historyItem && (
-        <ItemHistoryModal
-          idItem={historyItem.idItem}
-          namaBarang={historyItem.namaBarang}
-          onClose={() => setHistoryItem(null)}
+// =============================================================================
+// Tab: per-item aggregated view (GET /rm/mutasiBarangByItem)
+// =============================================================================
+const ByItemMutasiTab: React.FC<{
+  onToast: (message: string, severity: 'success' | 'error' | 'info') => void;
+}> = ({ onToast }) => {
+  const [loading, setLoading] = useState<boolean>(true);
+  const [data, setData] = useState<MutasiByItem[]>([]);
+
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+
+  const fetchData = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/rm/mutasiBarangByItem`;
+    try {
+      setLoading(true);
+      const res = await axios.get<MutasiByItemListResponse>(url, {
+        params: { page, limit },
+        withCredentials: true,
+      });
+      setData(res.data.data || []);
+      if (res.data.total_page) setTotalPages(res.data.total_page);
+    } catch (error) {
+      console.error('Error fetching mutasi barang by item data:', error);
+      setData([]);
+      onToast('Gagal memuat riwayat mutasi per item.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, limit]);
+
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+  };
+
+  const toggleExpanded = (idItem: number) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(idItem)) next.delete(idItem);
+      else next.add(idItem);
+      return next;
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th className="px-3 py-3 w-8" />
+                <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Kode Barang
+                </th>
+                <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Nama Barang
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Total Masuk
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Total Keluar
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-14 text-center">
+                    <div className="flex justify-center">
+                      <div className="animate-spin rounded-full h-7 w-7 border-2 border-indigo-500 border-t-transparent"></div>
+                    </div>
+                  </td>
+                </tr>
+              ) : data.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-4 py-14 text-center">
+                    <p className="text-slate-600 font-medium text-sm">
+                      {EMPTY_TEXT}
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                data.map((it) => {
+                  const isOpen = expanded.has(it.id_item);
+                  return (
+                    <React.Fragment key={it.id_item}>
+                      <tr
+                        className="hover:bg-slate-50/70 transition-colors cursor-pointer"
+                        onClick={() => toggleExpanded(it.id_item)}
+                      >
+                        <td className="px-3 py-3 text-slate-400">
+                          <span
+                            className={`inline-block transition-transform ${
+                              isOpen ? 'rotate-90' : ''
+                            }`}
+                          >
+                            ›
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 font-medium text-slate-700">
+                          {it.kode_barang}
+                        </td>
+                        <td className="px-3 py-3 text-slate-700">
+                          {it.nama_barang}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums font-medium text-sky-700">
+                          {formatQty(it.jumlah_qty_masuk)}
+                        </td>
+                        <td className="px-3 py-3 text-right tabular-nums font-medium text-orange-700">
+                          {formatQty(it.jumlah_qty_keluar)}
+                        </td>
+                      </tr>
+                      {isOpen && (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="px-4 pb-4 pt-0 bg-slate-50/60"
+                          >
+                            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                              <div className="overflow-x-auto">
+                                <table className="min-w-full text-sm">
+                                  <thead className="bg-slate-50 border-b border-slate-100">
+                                    <tr>
+                                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                                        Tanggal
+                                      </th>
+                                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                                        Tipe
+                                      </th>
+                                      <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                                        Qty
+                                      </th>
+                                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                                        No JO
+                                      </th>
+                                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                                        Sumber / Note
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                    {it.data_mutasi.length === 0 ? (
+                                      <tr>
+                                        <td
+                                          colSpan={5}
+                                          className="px-4 py-6 text-center text-slate-400 text-sm"
+                                        >
+                                          Belum ada mutasi.
+                                        </td>
+                                      </tr>
+                                    ) : (
+                                      it.data_mutasi.map((m) => (
+                                        <tr key={m.id}>
+                                          <td className="px-3 py-2.5 whitespace-nowrap text-slate-600">
+                                            {formatDateTime(m.tgl_mutasi)}
+                                          </td>
+                                          <td className="px-3 py-2.5">
+                                            <span
+                                              className={`text-[11px] px-2 py-0.5 rounded-full ring-1 font-medium ${typeBadge(
+                                                m.type_mutasi,
+                                              )}`}
+                                            >
+                                              {m.type_mutasi === 'masuk'
+                                                ? 'Masuk'
+                                                : 'Keluar'}
+                                            </span>
+                                          </td>
+                                          <td className="px-3 py-2.5 text-right tabular-nums font-medium text-slate-800">
+                                            {formatQty(m.jumlah_qty)}
+                                          </td>
+                                          <td className="px-3 py-2.5 text-slate-600">
+                                            {m.no_jo_booking || '-'}
+                                          </td>
+                                          <td className="px-3 py-2.5 text-slate-500">
+                                            <span className="capitalize">
+                                              {m.sumber_mutasi}
+                                            </span>
+                                            {m.note ? ` · ${m.note}` : ''}
+                                          </td>
+                                        </tr>
+                                      ))
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 pb-4">
+        <LimitButtons
+          limit={limit}
+          onChange={handleLimitChange}
+          color="indigo"
         />
+        <Stack spacing={2}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            color="primary"
+            onChange={(_, i) => setPage(i)}
+          />
+        </Stack>
+      </div>
+    </div>
+  );
+};
+
+// =============================================================================
+// Main page
+// =============================================================================
+const MutasiBarangRM: React.FC = () => {
+  const [tab, setTab] = useState<TabKey>('flat');
+
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error' | 'info';
+  }>({ open: false, message: '', severity: 'success' });
+
+  const showToast = (message: string, severity: 'success' | 'error' | 'info') =>
+    setToast({ open: true, message, severity });
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 inline-flex gap-1">
+        {(
+          [
+            { key: 'flat', label: 'Log Mutasi' },
+            { key: 'byItem', label: 'Per Item' },
+          ] as { key: TabKey; label: string }[]
+        ).map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`px-5 py-2 text-sm font-medium rounded-xl transition-colors ${
+              tab === t.key
+                ? 'bg-sky-600 text-white'
+                : 'text-slate-500 hover:bg-slate-100'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'flat' ? (
+        <FlatMutasiTab onToast={showToast} />
+      ) : (
+        <ByItemMutasiTab onToast={showToast} />
       )}
 
-      {/* Toast */}
       <Snackbar
         open={toast.open}
         autoHideDuration={3500}
