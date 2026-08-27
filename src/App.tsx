@@ -285,6 +285,9 @@ import ApprovalOpnameMRPage from './pages/MR/ApprovalOpnameMRPage';
 import StockOpnameFGPage from './pages/GudangFG/StockOpnameFGPage';
 import BAPManagementPage from './pages/UserMenu/BAPManagementPage';
 import EstimasiKurangQtyProduksiPage from './pages/Produksi/EstimasiKurangQtyProduksiPage';
+import OutstandingRMPage from './pages/GudangRM/OutstandingRMPage';
+import MutasiRMPage from './pages/GudangRM/MutasiRMPage';
+import GudangRMPage from './pages/GudangRM/GudangRMPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2661,6 +2664,30 @@ function App() {
           element={
             <P>
               <TambahBahanRMPage />
+            </P>
+          }
+        />
+        <Route
+          path="/gudang-rm/outstanding"
+          element={
+            <P>
+              <OutstandingRMPage />
+            </P>
+          }
+        />
+        <Route
+          path="/gudang-rm/mutasi-stock"
+          element={
+            <P>
+              <MutasiRMPage />
+            </P>
+          }
+        />
+        <Route
+          path="/gudang-rm/gudang-rm"
+          element={
+            <P>
+              <GudangRMPage />
             </P>
           }
         />

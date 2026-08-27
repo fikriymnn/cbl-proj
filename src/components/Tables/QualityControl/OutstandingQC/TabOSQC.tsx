@@ -11,6 +11,7 @@ import HistoryQCAllKendala from './HistoryQCAllKendala';
 import TambahBahanQC from './TambahBahanQC';
 import TambahBahanPemakaianQC from './TambahBahanPemakaianQC';
 import EstimasiKurangQtyQC from './EstimasiKurangQtyQC';
+import IncomingRawMaterialQC from './IncomingRawMaterialQC';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -145,6 +146,7 @@ export default function TabOSQC() {
               <Tab label="Pemakaian" {...a11yProps(2)} />
               <Tab label="History OS" {...a11yProps(3)} />
               <Tab label="Kurang QTY" {...a11yProps(4)} />
+              <Tab label="Incoming RM" {...a11yProps(5)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -167,6 +169,9 @@ export default function TabOSQC() {
         </TabPanel>
         <TabPanel value={value} index={4} dir={theme.direction}>
           <EstimasiKurangQtyQC />
+        </TabPanel>
+        <TabPanel value={value} index={5} dir={theme.direction}>
+          <IncomingRawMaterialQC />
         </TabPanel>
       </Box>
     </>
