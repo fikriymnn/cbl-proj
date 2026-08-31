@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import Loading from '../../Loading';
 import { Pagination, Stack } from '@mui/material';
@@ -208,6 +208,109 @@ function isItemEditable(
     return itemStatus === 'rejected';
   }
   return !DONE_ITEM_STATUSES.includes(itemStatus);
+}
+
+// ─── Sorting & Searching (item table) ──────────────────────────────────────────
+
+type SortDirection = 'asc' | 'desc';
+
+type ItemSortKey =
+  | 'no_jo'
+  | 'no_io'
+  | 'produk'
+  | 'customer'
+  | 'tgl_masuk'
+  | 'jumlah_aktual'
+  | 'note'
+  | 'status';
+
+interface ItemSortConfig {
+  key: ItemSortKey | null;
+  direction: SortDirection;
+}
+
+// Null-safe, locale-aware comparator. Nulls/empties always sort last,
+// regardless of direction (the caller flips the result for desc).
+function compareValues(
+  a: string | number | null,
+  b: string | number | null,
+): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return 1;
+  if (b == null) return -1;
+  if (typeof a === 'number' && typeof b === 'number') return a - b;
+  return String(a).localeCompare(String(b), 'id-ID', {
+    numeric: true,
+    sensitivity: 'base',
+  });
+}
+
+function getItemSortValue(
+  it: StockOpnameItem,
+  key: ItemSortKey,
+): string | number | null {
+  switch (key) {
+    case 'no_jo':
+      return it.no_jo || null;
+    case 'no_io':
+      return it.no_io || null;
+    case 'produk':
+      return it.produk || null;
+    case 'customer':
+      return it.customer || null;
+    case 'tgl_masuk': {
+      if (!it.tgl_masuk) return null;
+      const t = new Date(it.tgl_masuk).getTime();
+      return isNaN(t) ? null : t;
+    }
+    case 'jumlah_aktual':
+      return it.jumlah_qty_real ?? null;
+    case 'note':
+      return it.note || null;
+    case 'status':
+      return it.status || null;
+    default:
+      return null;
+  }
+}
+
+// Search across the fields actually shown in the table, so the query
+// behaves the way a user expects ("typing what I can see finds it").
+function itemMatchesSearch(it: StockOpnameItem, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return [it.no_jo, it.no_io, it.produk, it.customer, it.note]
+    .filter((v): v is string => !!v)
+    .some((v) => v.toLowerCase().includes(q));
+}
+
+function SortableTh({
+  label,
+  sortKey,
+  currentSort,
+  onSort,
+  className = '',
+}: {
+  label: string;
+  sortKey: ItemSortKey;
+  currentSort: ItemSortConfig;
+  onSort: (key: ItemSortKey) => void;
+  className?: string;
+}) {
+  const active = currentSort.key === sortKey;
+  return (
+    <th
+      onClick={() => onSort(sortKey)}
+      className={`p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap cursor-pointer select-none hover:text-violet-600 transition-colors ${className}`}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        <span className="text-[9px] leading-none">
+          {active ? (currentSort.direction === 'asc' ? '▲' : '▼') : '⇅'}
+        </span>
+      </span>
+    </th>
+  );
 }
 
 // ─── Create Opname Modal ───────────────────────────────────────────────────────
@@ -624,6 +727,15 @@ function OpnameDetail({
   } | null>(null);
   const [requesting, setRequesting] = useState(false);
   const [itemStatusFilter, setItemStatusFilter] = useState<string>('all');
+  // Search box + column sort for the item table below. Both are
+  // display-only: they narrow/reorder what's rendered but never touch
+  // editableItems/allFilled/canRequest, which always reason about the
+  // full, unfiltered item list.
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortConfig, setSortConfig] = useState<ItemSortConfig>({
+    key: null,
+    direction: 'asc',
+  });
   useEffect(() => {
     fetchDetail();
     // eslint-disable-next-line
@@ -668,11 +780,37 @@ function OpnameDetail({
     ticket.status !== 'rejected' &&
     allFilled;
 
-  // Display-only filter — doesn't affect editableItems/allFilled/canRequest above.
+  // Display-only filter — doesn't affect editableItems/allFilled/canRequest
+  // above.
   const visibleItems =
     itemStatusFilter === 'all'
       ? items
       : items.filter((it) => it.status === itemStatusFilter);
+
+  // Search narrows the status-filtered set further.
+  const searchedItems = useMemo(
+    () => visibleItems.filter((it) => itemMatchesSearch(it, searchQuery)),
+    [visibleItems, searchQuery],
+  );
+
+  // Sort only reorders what search left behind.
+  const sortedItems = useMemo(() => {
+    if (!sortConfig.key) return searchedItems;
+    const key = sortConfig.key;
+    const dir = sortConfig.direction === 'asc' ? 1 : -1;
+    return [...searchedItems].sort(
+      (a, b) =>
+        dir * compareValues(getItemSortValue(a, key), getItemSortValue(b, key)),
+    );
+  }, [searchedItems, sortConfig]);
+
+  function handleSort(key: ItemSortKey) {
+    setSortConfig((prev) =>
+      prev.key === key
+        ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+        : { key, direction: 'asc' },
+    );
+  }
 
   async function saveItem(id: number) {
     const draft = drafts[id];
@@ -813,7 +951,7 @@ function OpnameDetail({
           )}
         </div>
       </div>
-      <div className="mx-4 mt-4 flex items-center gap-2">
+      <div className="mx-4 mt-4 flex items-center gap-2 flex-wrap">
         <label className="text-[10px] font-semibold text-gray-500">
           Filter Status
         </label>
@@ -828,6 +966,28 @@ function OpnameDetail({
           <option value="approved">Disetujui MR</option>
           <option value="rejected">Ditolak MR</option>
         </select>
+        <div className="relative sm:ml-auto w-full sm:w-64">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari No JO, No IO, produk, customer..."
+            className="w-full rounded-lg bg-blue-50 border border-blue-200 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-400"
+          />
+          <svg
+            className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+            />
+          </svg>
+        </div>
       </div>
       {mode === 'create' &&
         !allFilled &&
@@ -899,27 +1059,58 @@ function OpnameDetail({
           <thead className="bg-gray-100">
             <tr>
               {showCheckboxColumn && <th className="p-2 sm:p-3 w-8" />}
-              {[
-                'No JO',
-                'No IO',
-                'Produk',
-                'Customer',
-                'Tgl Masuk',
-                'Jumlah Aktual',
-                'Catatan',
-                'Status',
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap"
-                >
-                  {h}
-                </th>
-              ))}
+              <SortableTh
+                label="No JO"
+                sortKey="no_jo"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="No IO"
+                sortKey="no_io"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Produk"
+                sortKey="produk"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Customer"
+                sortKey="customer"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Tgl Masuk"
+                sortKey="tgl_masuk"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Jumlah Aktual"
+                sortKey="jumlah_aktual"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Catatan"
+                sortKey="note"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Status"
+                sortKey="status"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
             </tr>
           </thead>
           <tbody>
-            {visibleItems.length === 0 ? (
+            {sortedItems.length === 0 ? (
               <tr>
                 <td
                   colSpan={showCheckboxColumn ? 9 : 8}
@@ -927,11 +1118,13 @@ function OpnameDetail({
                 >
                   {items.length === 0
                     ? 'Tidak ada data barang pada tiket ini'
-                    : 'Tidak ada item dengan status ini'}
+                    : visibleItems.length === 0
+                    ? 'Tidak ada item dengan status ini'
+                    : 'Tidak ditemukan item yang cocok dengan pencarian'}
                 </td>
               </tr>
             ) : (
-              visibleItems.map((it) => {
+              sortedItems.map((it) => {
                 const isEditable = isItemEditable(
                   mode,
                   ticket?.status,

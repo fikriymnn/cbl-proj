@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
 import Loading from '../../Loading';
 import { Pagination, Stack } from '@mui/material';
@@ -218,6 +218,126 @@ function isTicketFinalized(ticket: StockOpname | null): boolean {
 // when the ticket is in "history", the real outcome is in status_tiket.
 function displayTicketStatus(ticket: StockOpname): string {
   return ticket.status === 'history' ? ticket.status_tiket : ticket.status;
+}
+
+// ─── Sorting & Searching (item table) ──────────────────────────────────────────
+
+type SortDirection = 'asc' | 'desc';
+
+type ItemSortKey =
+  | 'no_jo'
+  | 'no_io'
+  | 'produk'
+  | 'customer'
+  | 'tgl_masuk'
+  | 'jumlah_qty'
+  | 'jumlah_qty_real'
+  | 'selisih'
+  | 'type_opname'
+  | 'note'
+  | 'status';
+
+interface ItemSortConfig {
+  key: ItemSortKey | null;
+  direction: SortDirection;
+}
+
+// Null-safe, locale-aware comparator. Nulls/empties always sort last,
+// regardless of direction (the caller flips the result for desc).
+function compareValues(
+  a: string | number | null,
+  b: string | number | null,
+): number {
+  if (a == null && b == null) return 0;
+  if (a == null) return 1;
+  if (b == null) return -1;
+  if (typeof a === 'number' && typeof b === 'number') return a - b;
+  return String(a).localeCompare(String(b), 'id-ID', {
+    numeric: true,
+    sensitivity: 'base',
+  });
+}
+
+function getItemSortValue(
+  it: StockOpnameItem,
+  key: ItemSortKey,
+): string | number | null {
+  switch (key) {
+    case 'no_jo':
+      return it.no_jo || null;
+    case 'no_io':
+      return it.no_io || null;
+    case 'produk':
+      return it.produk || null;
+    case 'customer':
+      return it.customer || null;
+    case 'tgl_masuk': {
+      if (!it.tgl_masuk) return null;
+      const t = new Date(it.tgl_masuk).getTime();
+      return isNaN(t) ? null : t;
+    }
+    case 'jumlah_qty':
+      return it.jumlah_qty ?? null;
+    case 'jumlah_qty_real':
+      return it.jumlah_qty_real ?? null;
+    case 'selisih':
+      return diffQty(it.jumlah_qty_real, it.jumlah_qty);
+    case 'type_opname':
+      return it.type_opname || null;
+    case 'note':
+      return it.note || null;
+    case 'status':
+      return it.status || null;
+    default:
+      return null;
+  }
+}
+
+// Search across the fields actually shown in the table, so the query
+// behaves the way a user expects ("typing what I can see finds it").
+function itemMatchesSearch(it: StockOpnameItem, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return [it.no_jo, it.no_io, it.produk, it.customer, it.note]
+    .filter((v): v is string => !!v)
+    .some((v) => v.toLowerCase().includes(q));
+}
+
+function SortableTh({
+  label,
+  sortKey,
+  currentSort,
+  onSort,
+  align = 'left',
+  className = '',
+}: {
+  label: string;
+  sortKey: ItemSortKey;
+  currentSort: ItemSortConfig;
+  onSort: (key: ItemSortKey) => void;
+  align?: 'left' | 'right';
+  className?: string;
+}) {
+  const active = currentSort.key === sortKey;
+  return (
+    <th
+      onClick={() => onSort(sortKey)}
+      className={`p-2 sm:p-3 text-xs font-semibold text-gray-600 whitespace-nowrap cursor-pointer select-none hover:text-emerald-600 transition-colors ${
+        align === 'right' ? 'text-right' : 'text-left'
+      } ${className}`}
+    >
+      <span
+        className={`inline-flex items-center gap-1 ${
+          align === 'right' ? 'flex-row-reverse' : ''
+        }`}
+      >
+        {label}
+        <span className="text-[9px] leading-none">
+          {active ? (currentSort.direction === 'asc' ? '▲' : '▼') : '⇅'}
+        </span>
+      </span>
+    </th>
+  );
 }
 
 // ─── Confirm Modal ──────────────────────────────────────────────────────────────
@@ -540,6 +660,13 @@ function ApprovalDetail({
   // affect resolvableItems/allItemsResolved/approve-reject eligibility,
   // which always need to see the full, unfiltered item list.
   const [itemStatusFilter, setItemStatusFilter] = useState<string>('all');
+  // Search box + column sort for the item table below. Also display-only —
+  // same rule applies: they never affect resolvableItems/allItemsResolved.
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortConfig, setSortConfig] = useState<ItemSortConfig>({
+    key: null,
+    direction: 'asc',
+  });
 
   useEffect(() => {
     fetchDetail();
@@ -577,11 +704,37 @@ function ApprovalDetail({
   const approvedCount = items.filter((it) => it.status === 'approved').length;
   const rejectedCount = items.filter((it) => it.status === 'rejected').length;
 
-  // Rows actually rendered in the table — filtered for display only.
+  // Rows filtered by status — display only.
   const visibleItems =
     itemStatusFilter === 'all'
       ? items
       : items.filter((it) => it.status === itemStatusFilter);
+
+  // Search narrows the status-filtered set further.
+  const searchedItems = useMemo(
+    () => visibleItems.filter((it) => itemMatchesSearch(it, searchQuery)),
+    [visibleItems, searchQuery],
+  );
+
+  // Sort only reorders what search left behind — the rows actually rendered
+  // in the table.
+  const sortedItems = useMemo(() => {
+    if (!sortConfig.key) return searchedItems;
+    const key = sortConfig.key;
+    const dir = sortConfig.direction === 'asc' ? 1 : -1;
+    return [...searchedItems].sort(
+      (a, b) =>
+        dir * compareValues(getItemSortValue(a, key), getItemSortValue(b, key)),
+    );
+  }, [searchedItems, sortConfig]);
+
+  function handleSort(key: ItemSortKey) {
+    setSortConfig((prev) =>
+      prev.key === key
+        ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+        : { key, direction: 'asc' },
+    );
+  }
 
   // Once a ticket is finalized — either directly approved/rejected, or moved
   // into "history" (with the real outcome living in status_tiket) — no more
@@ -798,7 +951,7 @@ function ApprovalDetail({
         </div>
       )}
 
-      <div className="mx-4 mt-4 flex items-center gap-2">
+      <div className="mx-4 mt-4 flex items-center gap-2 flex-wrap">
         <label className="text-[10px] font-semibold text-gray-500">
           Filter Status
         </label>
@@ -813,6 +966,28 @@ function ApprovalDetail({
           <option value="approved">Disetujui</option>
           <option value="rejected">Ditolak</option>
         </select>
+        <div className="relative sm:ml-auto w-full sm:w-64">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari No JO, No IO, produk, customer..."
+            className="w-full rounded-lg bg-blue-50 border border-blue-200 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          />
+          <svg
+            className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"
+            />
+          </svg>
+        </div>
       </div>
 
       <div className="overflow-x-auto mt-4">
@@ -820,30 +995,79 @@ function ApprovalDetail({
           <thead className="bg-gray-100">
             <tr>
               <th className="p-2 sm:p-3 w-8" />
-              {[
-                'No JO',
-                'No IO',
-                'Produk',
-                'Customer',
-                'Tgl Masuk',
-                'Stok Sistem',
-                'Hasil Opname',
-                'Selisih',
-                'Tipe',
-                'Catatan Gudang',
-                'Status',
-              ].map((h) => (
-                <th
-                  key={h}
-                  className="p-2 sm:p-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap"
-                >
-                  {h}
-                </th>
-              ))}
+              <SortableTh
+                label="No JO"
+                sortKey="no_jo"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="No IO"
+                sortKey="no_io"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Produk"
+                sortKey="produk"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Customer"
+                sortKey="customer"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Tgl Masuk"
+                sortKey="tgl_masuk"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Stok Sistem"
+                sortKey="jumlah_qty"
+                currentSort={sortConfig}
+                onSort={handleSort}
+                align="right"
+              />
+              <SortableTh
+                label="Hasil Opname"
+                sortKey="jumlah_qty_real"
+                currentSort={sortConfig}
+                onSort={handleSort}
+                align="right"
+              />
+              <SortableTh
+                label="Selisih"
+                sortKey="selisih"
+                currentSort={sortConfig}
+                onSort={handleSort}
+                align="right"
+              />
+              <SortableTh
+                label="Tipe"
+                sortKey="type_opname"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Catatan Gudang"
+                sortKey="note"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
+              <SortableTh
+                label="Status"
+                sortKey="status"
+                currentSort={sortConfig}
+                onSort={handleSort}
+              />
             </tr>
           </thead>
           <tbody>
-            {visibleItems.length === 0 ? (
+            {sortedItems.length === 0 ? (
               <tr>
                 <td
                   colSpan={12}
@@ -851,11 +1075,13 @@ function ApprovalDetail({
                 >
                   {items.length === 0
                     ? 'Tidak ada data barang pada tiket ini'
-                    : 'Tidak ada item dengan status ini'}
+                    : visibleItems.length === 0
+                    ? 'Tidak ada item dengan status ini'
+                    : 'Tidak ditemukan item yang cocok dengan pencarian'}
                 </td>
               </tr>
             ) : (
-              visibleItems.map((it) => {
+              sortedItems.map((it) => {
                 const resolvable = RESOLVABLE_ITEM_STATUSES.includes(it.status);
                 return (
                   <tr

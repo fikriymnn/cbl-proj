@@ -1,3 +1,9 @@
+// NOTE: No changes needed in this file for the requested updates.
+// It has no editable number inputs (qty/harga are display-only here),
+// no PPN/grand-total math, no tgl_kirim field, and no "Catatan Internal"
+// field — those all live in EditPOModal.tsx (and CreatePOModal.tsx, not
+// provided). Reproduced as-is for completeness.
+
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import Pagination from '@mui/material/Pagination/Pagination';

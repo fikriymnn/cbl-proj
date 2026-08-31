@@ -62,6 +62,41 @@ import { formatRupiah, getStatusColor, getStatusLabel } from './Types/poStatus';
  * NOTE: `UpdatePurchaseOrderPayload` may not declare `items_jo` yet (same
  * staleness already flagged elsewhere in this codebase) — cast where
  * needed so this compiles either way.
+ *
+ * -----------------------------------------------------------------------------
+ * WHAT CHANGED (this pass) — number inputs, PPN-included-in-price, misc
+ * -----------------------------------------------------------------------------
+ * 1. NUMBER INPUTS: Discount, Qty Beli, and Harga now use the new
+ *    `NumberInput` component instead of raw `<input type="number">`. It
+ *    displays an empty field instead of a forced "0", and formats what the
+ *    user types with `id-ID` thousands separators ("1.000") while still
+ *    calling `onChange` with a plain integer — so state/payloads are
+ *    unaffected, only the on-screen text changes.
+ *
+ * 2. PPN WHEN THE MASTER PRICE ALREADY INCLUDES TAX (`is_tax_locked`):
+ *    `harga` on these items is tax-inclusive already. Per-item PPN is still
+ *    computed the same way as before (qty * harga * pajak%) so it's visible
+ *    to the user, but it must NOT be added again into the grand total,
+ *    since it's already baked into `harga` / `subTotal`. Items that are
+ *    NOT tax-locked but have the PPN checkbox ticked keep the old
+ *    behaviour: their PPN is added on top of the subtotal, same as before.
+ *    Concretely: `grandTotal = subTotal - discount + ppnAddedToTotal`,
+ *    where `ppnAddedToTotal` only sums PPN from non-tax-locked items.
+ *    `ppnIncluded` (tax-locked items' PPN) is shown separately as
+ *    informational-only and excluded from the total.
+ *
+ * 3. `tglKirim` defaults to today's date if the PO doesn't have one set.
+ *
+ * 4. `noteInternal` (Catatan Internal) is now read-only — it still loads
+ *    from the existing PO, but the user can no longer edit it here.
+ *
+ * 5. NUMBER INPUT DECIMALS: `NumberInput` now accepts a comma as the
+ *    decimal separator (e.g. "0,64") so fields like Qty Beli — which can
+ *    mirror a fractional qty_bom — are actually typeable. The UI's finest
+ *    supported precision is 0,01: a value below that but still positive
+ *    (e.g. 0.0042, coming from a computed remainder) is rounded UP to
+ *    0,01 rather than silently disappearing as 0, and the original figure
+ *    is shown next to the field so the user knows a rounding happened.
  * ========================================================================== */
 
 const DEFAULT_PPN_PERSEN = 11;
@@ -172,6 +207,7 @@ interface RowGroup {
 const uid = (): string =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const toISODate = (value?: string): string => (value ? value.slice(0, 10) : '');
+const todayISODate = (): string => new Date().toISOString().slice(0, 10);
 
 const resolveBrandName = (
   idBrand: number | null | undefined,
@@ -186,6 +222,175 @@ const recalcAllocPpn = (a: Allocation): Allocation => ({
   ...a,
   ppn: a.is_ppn ? Math.round(a.qty_po * a.harga * (a.pajak_persen / 100)) : 0,
 });
+
+// ---------------------------------------------------------------------------
+// NumberInput — text input formatted with id-ID thousands separators
+// ("1.000") that also accepts a comma as the decimal separator ("0,64"),
+// since several fields (notably Qty Beli, which can mirror a fractional
+// qty_bom) need decimals down to 0,01. Never shows a forced "0", and still
+// reports a plain number to `onChange` (state/payloads stay untouched by
+// formatting).
+//
+// If the value coming in from outside is finer than the 0,01 the UI
+// supports (e.g. a computed remainder like 0.0042), it's snapped UP to
+// 0,01 — never down to 0, since a real quantity or price shouldn't
+// silently vanish — and the original figure is shown next to the field so
+// the user knows a rounding happened.
+// ---------------------------------------------------------------------------
+
+const EPSILON = 1e-9;
+
+const formatNumberID = (value: number): string => {
+  if (!value) return '';
+  return value.toLocaleString('id-ID', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+
+// Keeps only digits and a single comma (decimal separator) while the user
+// is typing. Thousands separators ('.') get stripped since the display is
+// regrouped from scratch, and only the first comma typed counts as the
+// decimal point — extras are ignored.
+const sanitizeNumericInput = (raw: string): string => {
+  let out = '';
+  let commaUsed = false;
+  for (const ch of raw) {
+    if (ch >= '0' && ch <= '9') {
+      out += ch;
+    } else if (ch === ',' && !commaUsed) {
+      out += ',';
+      commaUsed = true;
+    }
+  }
+  return out;
+};
+
+// Formats what's currently being typed, WITHOUT rounding or collapsing
+// anything to empty — this is what makes "0", "0,", and "0,5" actually
+// typeable. Groups the integer part with id-ID thousands separators as
+// the user goes, but preserves a trailing comma and up to 2 fraction
+// digits exactly as typed (including "0,05", "0,0", etc.).
+const formatTypingDisplay = (sanitized: string): string => {
+  if (!sanitized) return '';
+  const hasComma = sanitized.includes(',');
+  const [intPartRaw, fracPartRaw] = sanitized.split(',');
+  const intDigits = (intPartRaw || '').replace(/^0+(?=\d)/, '') || '0';
+  const groupedInt = Number(intDigits).toLocaleString('id-ID');
+  const fracPart = hasComma ? (fracPartRaw || '').slice(0, 2) : '';
+  return hasComma ? `${groupedInt},${fracPart}` : groupedInt;
+};
+
+// Parses a sanitized id-ID numeric string ("1234,5" -> 1234.5). The
+// fractional part is capped at 2 digits, since 0,01 is the smallest unit
+// the UI supports. A bare "0" or a dangling "0," parses as 0, same as an
+// empty field — that's expected mid-typing, not an error.
+const parseNumberID = (raw: string): number => {
+  const sanitized = sanitizeNumericInput(raw);
+  if (!sanitized) return 0;
+  const [intPartRaw, fracPartRaw] = sanitized.split(',');
+  const intPart = intPartRaw || '0';
+  const fracPart = fracPartRaw ? fracPartRaw.slice(0, 2) : '';
+  const parsed = parseFloat(fracPart ? `${intPart}.${fracPart}` : intPart);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+// The UI's smallest supported unit is 0,01. A non-zero value smaller than
+// that gets rounded UP to 0,01 instead of down to 0 — a real quantity or
+// price should never silently vanish just because it was too fine to
+// represent. Anything else rounds to the nearest 0,01 as usual. Only used
+// for values arriving from OUTSIDE the field (initial load, a substitute
+// pre-filling qty/harga) — never while the user is actively typing, since
+// typed input is already capped at 2 decimals by formatTypingDisplay.
+const roundToSupportedPrecision = (value: number): number => {
+  if (!value) return 0;
+  const rounded = Math.round(value * 100) / 100;
+  if (rounded === 0 && value > 0) return 0.01;
+  if (rounded === 0 && value < 0) return -0.01;
+  return rounded;
+};
+
+type NumberInputProps = {
+  value: number;
+  onChange: (value: number) => void;
+  className?: string;
+  placeholder?: string;
+  min?: number;
+  disabled?: boolean;
+};
+
+const NumberInput: React.FC<NumberInputProps> = ({
+  value,
+  onChange,
+  className,
+  placeholder,
+  min = 0,
+  disabled,
+}) => {
+  const [display, setDisplay] = useState<string>(() =>
+    formatNumberID(roundToSupportedPrecision(value)),
+  );
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+
+  const rounded = roundToSupportedPrecision(value);
+  const wasRounded = !isFocused && Math.abs(rounded - value) > EPSILON;
+
+  // Stay in sync when the underlying value changes from OUTSIDE this input
+  // (e.g. a substitute is picked and pre-fills harga/qty_po, or the row
+  // loads for the first time). Skipped while focused, so it never fights
+  // the user's in-progress typing (including the transient "0" state every
+  // onChange emits while typing "0,05").
+  useEffect(() => {
+    if (isFocused) return;
+    const r = roundToSupportedPrecision(value);
+    setDisplay(formatNumberID(r));
+    if (Math.abs(r - value) > EPSILON) {
+      onChange(r);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, isFocused]);
+
+  return (
+    <div className="w-full">
+      <input
+        type="text"
+        inputMode="decimal"
+        value={display}
+        placeholder={placeholder ?? '0'}
+        disabled={disabled}
+        title={
+          wasRounded
+            ? `Nilai asli: ${value.toLocaleString('id-ID', {
+                maximumFractionDigits: 6,
+              })} — dibulatkan ke 0,01`
+            : undefined
+        }
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => {
+          setIsFocused(false);
+          const parsed = Math.max(
+            roundToSupportedPrecision(parseNumberID(display)),
+            min,
+          );
+          setDisplay(parsed === 0 ? '' : formatNumberID(parsed));
+          onChange(parsed);
+        }}
+        onChange={(e) => {
+          const sanitized = sanitizeNumericInput(e.target.value);
+          setDisplay(formatTypingDisplay(sanitized));
+          onChange(Math.max(parseNumberID(sanitized), min));
+        }}
+        className={className}
+      />
+      {wasRounded && (
+        <span className="block text-[10px] text-amber-600 mt-0.5 whitespace-nowrap">
+          *asli {value.toLocaleString('id-ID', { maximumFractionDigits: 6 })},
+          dibulatkan
+        </span>
+      )}
+    </div>
+  );
+};
 
 // Badge for a row's allocation status vs its BOM need.
 // remaining === 0  -> exact match ("Lengkap")
@@ -346,6 +551,10 @@ const normalizeKey = (a: { id_item: number; nama_item?: string }): string => {
 // aggregation, and keeps an existing item's `id` when there was exactly
 // one so the PUT updates in place. This is what keeps `items` as a pure
 // combined buy list while `items_jo` stays per-JO-need.
+//
+// Also carries `is_tax_locked` through so the caller can tell, per
+// aggregated item, whether its PPN is already baked into `harga` (and so
+// must be excluded from the grand total) or should be added on top.
 const aggregateItems = (rows: RowGroup[]) => {
   type Bucket = {
     id?: number;
@@ -360,6 +569,7 @@ const aggregateItems = (rows: RowGroup[]) => {
     value: number;
     ppn: number;
     is_ppn: boolean;
+    is_tax_locked: boolean;
   };
   const map = new Map<string, Bucket>();
 
@@ -373,6 +583,7 @@ const aggregateItems = (rows: RowGroup[]) => {
         existing.value += a.qty_po * a.harga;
         existing.ppn += a.ppn;
         existing.is_ppn = existing.is_ppn || a.is_ppn;
+        existing.is_tax_locked = existing.is_tax_locked || a.is_tax_locked;
         existing.id = existing.id ?? a.id;
       } else {
         map.set(key, {
@@ -388,6 +599,7 @@ const aggregateItems = (rows: RowGroup[]) => {
           value: a.qty_po * a.harga,
           ppn: a.ppn,
           is_ppn: a.is_ppn,
+          is_tax_locked: a.is_tax_locked,
         });
       }
     });
@@ -410,6 +622,7 @@ const aggregateItems = (rows: RowGroup[]) => {
       total: b.value,
       ppn: b.ppn,
       is_ppn: b.is_ppn,
+      is_tax_locked: b.is_tax_locked,
     };
   });
 };
@@ -474,7 +687,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
 
   const [noPurchaseOrder, setNoPurchaseOrder] = useState<string>('');
   const [tglPO, setTglPO] = useState<string>('');
-  const [tglKirim, setTglKirim] = useState<string>('');
+  const [tglKirim, setTglKirim] = useState<string>(todayISODate());
   const [noteSupplier, setNoteSupplier] = useState<string>('');
   const [noteInternal, setNoteInternal] = useState<string>('');
   const [discount, setDiscount] = useState<number>(0);
@@ -528,7 +741,8 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
         setNoPurchaseOrder(detail.no_purchase_order || '');
         setVendorId(raw.id_vendor ?? '');
         setTglPO(toISODate(detail.tgl_po));
-        setTglKirim(toISODate(detail.tgl_kirim));
+        // Default to today when the PO doesn't have a tgl_kirim set yet.
+        setTglKirim(toISODate(detail.tgl_kirim) || todayISODate());
         setNoteSupplier(detail.note_supplier || '');
         setNoteInternal(detail.note_internal || '');
         setDiscount(detail.discount || 0);
@@ -745,11 +959,29 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     () => itemsAggregate.reduce((sum, it) => sum + it.total, 0),
     [itemsAggregate],
   );
-  const totalPPN = useMemo(
-    () => itemsAggregate.reduce((sum, it) => sum + it.ppn, 0),
+  // PPN already baked into the master price (is_tax_locked items) — shown
+  // for information only, never added to the grand total, since it's
+  // already part of `harga` / `subTotal`.
+  const ppnIncluded = useMemo(
+    () =>
+      itemsAggregate
+        .filter((it) => it.is_tax_locked)
+        .reduce((sum, it) => sum + it.ppn, 0),
     [itemsAggregate],
   );
-  const grandTotal = subTotal - (discount || 0) + totalPPN;
+  // PPN from items that are NOT tax-locked but have the PPN checkbox
+  // ticked — calculated on top of harga, and does get added to the total,
+  // same as the original behaviour.
+  const ppnAddedToTotal = useMemo(
+    () =>
+      itemsAggregate
+        .filter((it) => !it.is_tax_locked)
+        .reduce((sum, it) => sum + it.ppn, 0),
+    [itemsAggregate],
+  );
+  // Combined figure kept for the payload's informational `ppn` field.
+  const totalPPN = ppnIncluded + ppnAddedToTotal;
+  const grandTotal = subTotal - (discount || 0) + ppnAddedToTotal;
 
   const isRejected =
     po?.status === 'reject kabag' || po?.status === 'reject finance';
@@ -1120,13 +1352,11 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                                 />
                               </td>
                               <td className="px-3 py-2">
-                                <input
-                                  type="number"
-                                  min={0}
+                                <NumberInput
                                   value={a.qty_po}
-                                  onChange={(e) =>
+                                  onChange={(v) =>
                                     updateAllocation(row.groupId, a.allocId, {
-                                      qty_po: parseFloat(e.target.value) || 0,
+                                      qty_po: v,
                                     })
                                   }
                                   className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -1145,13 +1375,11 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                                 />
                               </td>
                               <td className="px-3 py-2">
-                                <input
-                                  type="number"
-                                  min={0}
+                                <NumberInput
                                   value={a.harga}
-                                  onChange={(e) =>
+                                  onChange={(v) =>
                                     updateAllocation(row.groupId, a.allocId, {
-                                      harga: parseFloat(e.target.value) || 0,
+                                      harga: v,
                                     })
                                   }
                                   className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -1173,7 +1401,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                                     }
                                     title={
                                       a.is_tax_locked
-                                        ? 'Pajak wajib untuk barang ini dan tidak dapat dilepas'
+                                        ? 'Harga sudah termasuk PPN — dihitung otomatis, tidak menambah grand total'
                                         : `PPN ${a.pajak_persen}% jika dicentang`
                                     }
                                     className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-70"
@@ -1229,13 +1457,16 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1.5">
-                    Catatan Internal
+                    Catatan Internal{' '}
+                    <span className="text-slate-400 font-normal">
+                      (tidak dapat diubah)
+                    </span>
                   </label>
                   <textarea
                     value={noteInternal}
-                    onChange={(e) => setNoteInternal(e.target.value)}
+                    readOnly
                     rows={5}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none font-mono text-xs"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-500 resize-none font-mono text-xs cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -1249,20 +1480,29 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-500">Discount</span>
-                  <input
-                    type="number"
-                    min={0}
+                  <NumberInput
                     value={discount}
-                    onChange={(e) =>
-                      setDiscount(parseFloat(e.target.value) || 0)
-                    }
+                    onChange={setDiscount}
                     className="w-32 px-2 py-1 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
+                {ppnIncluded > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">
+                      PPN termasuk harga
+                      <span className="block text-[10px]">
+                        (info, tidak masuk total)
+                      </span>
+                    </span>
+                    <span className="text-slate-400 font-medium tabular-nums">
+                      Rp {formatRupiah(ppnIncluded)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">PPN</span>
                   <span className="text-slate-800 font-medium tabular-nums">
-                    Rp {formatRupiah(totalPPN)}
+                    Rp {formatRupiah(ppnAddedToTotal)}
                   </span>
                 </div>
                 <div className="border-t border-slate-200 pt-2.5 flex justify-between">
