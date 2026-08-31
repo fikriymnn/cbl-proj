@@ -288,6 +288,8 @@ import EstimasiKurangQtyProduksiPage from './pages/Produksi/EstimasiKurangQtyPro
 import OutstandingRMPage from './pages/GudangRM/OutstandingRMPage';
 import MutasiRMPage from './pages/GudangRM/MutasiRMPage';
 import GudangRMPage from './pages/GudangRM/GudangRMPage';
+import StockOpnameRMPage from './pages/GudangRM/StockOpnameRMPage';
+import ApprovalOpnameMRRMPage from './pages/MR/ApprovalOpnameMRRMPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1262,6 +1264,14 @@ function App() {
           element={
             <P>
               <ApprovalOpnameMRPage />
+            </P>
+          }
+        />
+        <Route
+          path="/mr/approval-opname-rm"
+          element={
+            <P>
+              <ApprovalOpnameMRRMPage />
             </P>
           }
         />
@@ -2691,6 +2701,15 @@ function App() {
             </P>
           }
         />
+        <Route
+          path="/gudang-rm/stock-opname"
+          element={
+            <P>
+              <StockOpnameRMPage />
+            </P>
+          }
+        />
+
         {/* ============== PRINT ROUTES ============== */}
         <Route
           path="/print/label"
