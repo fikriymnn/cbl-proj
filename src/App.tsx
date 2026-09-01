@@ -290,6 +290,7 @@ import MutasiRMPage from './pages/GudangRM/MutasiRMPage';
 import GudangRMPage from './pages/GudangRM/GudangRMPage';
 import StockOpnameRMPage from './pages/GudangRM/StockOpnameRMPage';
 import ApprovalOpnameMRRMPage from './pages/MR/ApprovalOpnameMRRMPage';
+import MonitoringPOPage from './pages/Purchasing/MonitoringPOPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2658,7 +2659,14 @@ function App() {
             </P>
           }
         />
-
+        <Route
+          path="/purchasing/monitoring-po"
+          element={
+            <P>
+              <MonitoringPOPage />
+            </P>
+          }
+        />
         {/* ============== Finance ROUTES ============== */}
         <Route
           path="/finance/po-approval"
