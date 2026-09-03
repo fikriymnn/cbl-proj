@@ -1,8 +1,12 @@
-// NOTE: No changes needed in this file for the requested updates.
-// It has no editable number inputs (qty/harga are display-only here),
-// no PPN/grand-total math, no tgl_kirim field, and no "Catatan Internal"
-// field — those all live in EditPOModal.tsx (and CreatePOModal.tsx, not
-// provided). Reproduced as-is for completeness.
+// NOTE: Item filter (id_item) added below, same pattern as ListOTSPurchase.tsx.
+//
+// ASSUMPTION (please adjust if the real API differs):
+//   - Master item list reused from MarketingBarang.tsx: GET {VITE_API_LINK}/master/barang
+//     params: { page, limit, search }
+//   - The pengajuan list endpoint accepts id_item as a comma-separated list of ids:
+//     GET {VITE_API_LINK}/purchasing/request  params: { ..., id_item: "14,220" }
+//     If your backend expects repeated query params (id_item[]=14&id_item[]=220)
+//     instead, change the single line marked `// <-- id_item param shape` below.
 
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -17,6 +21,10 @@ import ListItemText from '@mui/material/ListItemText';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import {
   KategoriBarang,
   PengajuanItem,
@@ -106,6 +114,267 @@ type ToastState = {
   open: boolean;
   message: string;
   severity: 'success' | 'error' | 'info';
+};
+
+// Minimal shape of a master item, enough to display + select it.
+// Mirrors MasterBarang in MarketingBarang.tsx — trim/extend fields as needed.
+interface MasterItemOption {
+  id: number;
+  kode_barang: string;
+  nama_barang: string;
+  kategori?: string;
+}
+
+interface MasterItemListResponse {
+  data: MasterItemOption[];
+  total_page: number;
+}
+
+// ---------------------------------------------------------------------------
+// Item picker modal: search + paginated table + checkboxes, same pattern
+// as the master barang table in MarketingBarang.tsx / ListOTSPurchase.tsx.
+// ---------------------------------------------------------------------------
+
+interface ItemPickerModalProps {
+  open: boolean;
+  initialSelected: Map<number, MasterItemOption>;
+  onClose: () => void;
+  onConfirm: (selected: Map<number, MasterItemOption>) => void;
+}
+
+const ItemPickerModal: React.FC<ItemPickerModalProps> = ({
+  open,
+  initialSelected,
+  onClose,
+  onConfirm,
+}) => {
+  const [items, setItems] = useState<MasterItemOption[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [tempSelected, setTempSelected] = useState<
+    Map<number, MasterItemOption>
+  >(new Map());
+
+  // Re-seed local state every time the modal is opened.
+  useEffect(() => {
+    if (open) {
+      setTempSelected(new Map(initialSelected));
+      setPage(1);
+      setSearchInput('');
+      setSearchTerm('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const fetchItems = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/barang`;
+    try {
+      setLoading(true);
+      const res: AxiosResponse<MasterItemListResponse> = await axios.get(url, {
+        params: {
+          page,
+          limit,
+          search: searchTerm || undefined,
+        },
+        withCredentials: true,
+      });
+      setItems(res.data.data || []);
+      if (res.data.total_page) setTotalPages(res.data.total_page);
+    } catch (error) {
+      console.error('Error fetching master item data:', error);
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open) fetchItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, page, limit, searchTerm]);
+
+  const handleSearch = () => {
+    setSearchTerm(searchInput);
+    setPage(1);
+  };
+
+  const toggleItem = (item: MasterItemOption) => {
+    setTempSelected((prev) => {
+      const next = new Map(prev);
+      if (next.has(item.id)) next.delete(item.id);
+      else next.set(item.id, item);
+      return next;
+    });
+  };
+
+  const handleConfirm = () => {
+    onConfirm(tempSelected);
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>Pilih Item</DialogTitle>
+      <DialogContent>
+        <div className="flex gap-2 mb-3 mt-1">
+          <input
+            type="text"
+            placeholder="Cari kode / nama barang..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          />
+          <button
+            onClick={handleSearch}
+            className="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            Cari
+          </button>
+        </div>
+
+        {tempSelected.size > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {Array.from(tempSelected.values()).map((it) => (
+              <span
+                key={it.id}
+                className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-md font-medium"
+              >
+                {it.kode_barang}
+                <button
+                  type="button"
+                  onClick={() => toggleItem(it)}
+                  className="text-indigo-500 hover:text-indigo-800"
+                  aria-label={`Hapus ${it.kode_barang}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="overflow-x-auto border border-slate-100 rounded-lg">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50 border-b border-slate-100">
+              <tr>
+                <th className="px-3 py-2 w-10" />
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Kode Barang
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Nama Barang
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Kategori
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-10 text-center">
+                    <div className="flex justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-2 border-indigo-500 border-t-transparent"></div>
+                    </div>
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-4 py-10 text-center text-slate-400 text-sm"
+                  >
+                    Tidak ada item ditemukan
+                  </td>
+                </tr>
+              ) : (
+                items.map((item) => (
+                  <tr
+                    key={item.id}
+                    onClick={() => toggleItem(item)}
+                    className="hover:bg-slate-50/70 transition-colors cursor-pointer"
+                  >
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={tempSelected.has(item.id)}
+                        onChange={() => toggleItem(item)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </td>
+                    <td className="px-3 py-2 text-slate-700">
+                      {item.kode_barang}
+                    </td>
+                    <td className="px-3 py-2 text-slate-700">
+                      {item.nama_barang}
+                    </td>
+                    <td className="px-3 py-2 text-slate-500">
+                      {item.kategori || '-'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="w-full flex flex-col md:flex-row items-center justify-between gap-3 mt-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-500">Baris per halaman:</span>
+            <div className="flex gap-1.5">
+              {[10, 25, 50].map((pageSize) => (
+                <button
+                  key={pageSize}
+                  onClick={() => {
+                    setLimit(pageSize);
+                    setPage(1);
+                  }}
+                  className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+                    limit === pageSize
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {pageSize}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              color="primary"
+              size="small"
+              onChange={(_, i) => setPage(i)}
+            />
+          </Stack>
+        </div>
+      </DialogContent>
+      <DialogActions>
+        <span className="text-xs text-slate-500 mr-auto pl-1">
+          {tempSelected.size} item dipilih
+        </span>
+        <button
+          onClick={onClose}
+          className="px-4 py-1.5 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+        >
+          Batal
+        </button>
+        <button
+          onClick={handleConfirm}
+          className="px-4 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+        >
+          Terapkan
+        </button>
+      </DialogActions>
+    </Dialog>
+  );
 };
 
 // ---------------------------------------------------------------------------
@@ -353,6 +622,12 @@ const PengajuanPurchase: React.FC = () => {
   const [kategoriFilter, setKategoriFilter] = useState<string[]>([]);
   const [noJoFilter, setNoJoFilter] = useState<string>('');
 
+  // Item filter (id_item): map keeps id -> display info so we can render chips
+  const [selectedItems, setSelectedItems] = useState<
+    Map<number, MasterItemOption>
+  >(new Map());
+  const [showItemModal, setShowItemModal] = useState<boolean>(false);
+
   const [showPOModal, setShowPOModal] = useState<boolean>(false);
   const [poMode, setPoMode] = useState<'from_selection' | 'manual'>(
     'from_selection',
@@ -369,6 +644,13 @@ const PengajuanPurchase: React.FC = () => {
     label: string;
   } | null>(null);
 
+  // Comma-separated id list, memoized so it's a stable primitive for the
+  // effect dependency array (Map identity changes every render).
+  const idItemParam = useMemo(
+    () => Array.from(selectedItems.keys()).join(','),
+    [selectedItems],
+  );
+
   const fetchData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/purchasing/request`;
     try {
@@ -378,6 +660,7 @@ const PengajuanPurchase: React.FC = () => {
         limit,
         search: searchTerm || undefined,
         tipe_barang: kategoriFilter.length > 0 ? kategoriFilter : undefined,
+        id_item: idItemParam || undefined,
       });
       const res: AxiosResponse<PengajuanListResponse> = await axios.get(url, {
         params: {
@@ -387,6 +670,7 @@ const PengajuanPurchase: React.FC = () => {
           search: searchTerm || undefined,
 
           tipe_barang: kategoriFilter.length > 0 ? kategoriFilter : undefined,
+          id_item: idItemParam || undefined, // <-- id_item param shape
         },
         withCredentials: true,
       });
@@ -436,6 +720,7 @@ const PengajuanPurchase: React.FC = () => {
     tanggalKirimTo,
     kategoriFilter,
     noJoFilter,
+    idItemParam,
   ]);
 
   useEffect(() => {
@@ -456,6 +741,7 @@ const PengajuanPurchase: React.FC = () => {
     setTanggalKirimTo('');
     setKategoriFilter([]);
     setNoJoFilter('');
+    setSelectedItems(new Map());
     setPage(1);
   };
 
@@ -469,6 +755,21 @@ const PengajuanPurchase: React.FC = () => {
     // On autofill we get a stringified value.
     const next = typeof value === 'string' ? value.split(',') : value;
     setKategoriFilter(next);
+    setPage(1);
+  };
+
+  const handleItemModalConfirm = (selection: Map<number, MasterItemOption>) => {
+    setSelectedItems(selection);
+    setShowItemModal(false);
+    setPage(1);
+  };
+
+  const removeSelectedItem = (id: number) => {
+    setSelectedItems((prev) => {
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
     setPage(1);
   };
 
@@ -498,7 +799,9 @@ const PengajuanPurchase: React.FC = () => {
         tanggalKirimFrom,
         tanggalKirimTo,
         noJoFilter,
-      ].filter(Boolean).length + (kategoriFilter.length > 0 ? 1 : 0),
+      ].filter(Boolean).length +
+      (kategoriFilter.length > 0 ? 1 : 0) +
+      (selectedItems.size > 0 ? 1 : 0),
     [
       searchTerm,
       rencanaCetakFrom,
@@ -507,10 +810,11 @@ const PengajuanPurchase: React.FC = () => {
       tanggalKirimTo,
       kategoriFilter,
       noJoFilter,
+      selectedItems,
     ],
   );
 
-  const selectedItems = useMemo(
+  const selectedItemsForPO = useMemo(
     () => data.filter((d) => selected.has(d.id)),
     [data, selected],
   );
@@ -711,7 +1015,45 @@ const PengajuanPurchase: React.FC = () => {
               ))}
             </Select>
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Item
+            </label>
+            <button
+              onClick={() => setShowItemModal(true)}
+              className="w-full flex items-center justify-between px-3 py-2 text-sm border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-left"
+            >
+              <span className="text-slate-600">
+                {selectedItems.size > 0
+                  ? `${selectedItems.size} item dipilih`
+                  : 'Pilih item...'}
+              </span>
+              <span className="text-indigo-600 text-xs font-medium">Pilih</span>
+            </button>
+          </div>
         </div>
+
+        {selectedItems.size > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {Array.from(selectedItems.values()).map((it) => (
+              <span
+                key={it.id}
+                className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-md font-medium"
+              >
+                {it.kode_barang}
+                <button
+                  type="button"
+                  onClick={() => removeSelectedItem(it.id)}
+                  className="text-indigo-500 hover:text-indigo-800"
+                  aria-label={`Hapus filter ${it.kode_barang}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
 
         {activeFilterCount > 0 && (
           <div className="mt-3 flex items-center gap-2">
@@ -901,11 +1243,19 @@ const PengajuanPurchase: React.FC = () => {
         </Stack>
       </div>
 
+      {/* Item picker modal */}
+      <ItemPickerModal
+        open={showItemModal}
+        initialSelected={selectedItems}
+        onClose={() => setShowItemModal(false)}
+        onConfirm={handleItemModalConfirm}
+      />
+
       {/* Create PO modal */}
       {showPOModal && (
         <CreatePOModal
           mode={poMode}
-          selectedItems={poMode === 'from_selection' ? selectedItems : []}
+          selectedItems={poMode === 'from_selection' ? selectedItemsForPO : []}
           onClose={() => setShowPOModal(false)}
           onSuccess={handlePOCreated}
         />

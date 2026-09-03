@@ -30,6 +30,11 @@ import {
  * once and sent to /qc/incomingRawMaterial in a single submission, since
  * each item in that payload already carries its own id_purchase_order.
  *
+ * no_surat_jalan for a single "incoming" submission is ALWAYS the same
+ * across every item, and it is auto-generated (read-only) by calling
+ * /qc/incomingRawMaterialNoSuratJalan when the confirmation modal opens.
+ * The person cannot type or edit it.
+ *
  * status_qc on items_jo: null | "request qc" | "approve qc" | "reject qc"
  * status_po on items_jo: "progress" | "done"
  * ========================================================================== */
@@ -83,11 +88,17 @@ interface IncomingFormRow {
   nama_item: string;
   satuan: string;
   qty_sisa: number;
-  no_surat_jalan: string;
   qty_incoming: number;
   ada_idle: boolean;
   qty_idle: number;
   qty_pallet: number;
+}
+
+interface NoSuratJalanResponse {
+  status: number;
+  success: boolean;
+  no_surat_jalan: string;
+  new_no_surat_jalan: string;
 }
 
 const formatQty = (val: number | null | undefined): string =>
@@ -115,6 +126,7 @@ const statusQcLabel = (status: string | null): string => {
 // =============================================================================
 // Incoming submission popup — the ONLY modal in this page. Rows can span
 // multiple POs; each keeps its own id_purchase_order for the payload.
+// no_surat_jalan is fetched once, shared by every row, and read-only.
 // =============================================================================
 const IncomingFormModal: React.FC<{
   rows: IncomingFormRow[];
@@ -122,9 +134,37 @@ const IncomingFormModal: React.FC<{
   onSubmitted: (submittedIds: number[]) => void;
 }> = ({ rows: initialRows, onClose, onSubmitted }) => {
   const [rows, setRows] = useState<IncomingFormRow[]>(initialRows);
-  const [bulkSuratJalan, setBulkSuratJalan] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  const [noSuratJalan, setNoSuratJalan] = useState<string>('');
+  const [loadingSuratJalan, setLoadingSuratJalan] = useState<boolean>(true);
+  const [suratJalanError, setSuratJalanError] = useState<string>('');
+
+  const fetchNoSuratJalan = async () => {
+    setLoadingSuratJalan(true);
+    setSuratJalanError('');
+    try {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/qc/incomingRawMaterialNoSuratJalan`;
+      const res = await axios.get<NoSuratJalanResponse>(url, {
+        withCredentials: true,
+      });
+      setNoSuratJalan(res.data.new_no_surat_jalan);
+    } catch (err) {
+      console.error('Error fetching no surat jalan:', err);
+      setSuratJalanError('Gagal mengambil nomor surat jalan otomatis.');
+      setNoSuratJalan('');
+    } finally {
+      setLoadingSuratJalan(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNoSuratJalan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const patchRow = (idx: number, patch: Partial<IncomingFormRow>) => {
     setRows((prev) =>
@@ -134,13 +174,6 @@ const IncomingFormModal: React.FC<{
         if (!updated.ada_idle) updated.qty_idle = 0;
         return updated;
       }),
-    );
-  };
-
-  const applyBulkSuratJalan = () => {
-    if (!bulkSuratJalan.trim()) return;
-    setRows((prev) =>
-      prev.map((r) => ({ ...r, no_surat_jalan: bulkSuratJalan })),
     );
   };
 
@@ -159,9 +192,11 @@ const IncomingFormModal: React.FC<{
   );
 
   const validate = (): string => {
+    if (loadingSuratJalan)
+      return 'Nomor surat jalan sedang dimuat, mohon tunggu.';
+    if (!noSuratJalan)
+      return 'Nomor surat jalan gagal dimuat. Coba muat ulang.';
     for (const r of rows) {
-      if (!r.no_surat_jalan.trim())
-        return `No Surat Jalan untuk "${r.nama_item}" wajib diisi.`;
       if (r.qty_incoming <= 0)
         return `Jumlah datang untuk "${r.nama_item}" harus lebih dari 0.`;
       if (r.ada_idle && r.qty_idle < 0)
@@ -188,7 +223,7 @@ const IncomingFormModal: React.FC<{
           items: rows.map((r) => ({
             id_purchase_order: r.id_purchase_order,
             id_purchase_order_item_jo: r.id_purchase_order_item_jo,
-            no_surat_jalan: r.no_surat_jalan,
+            no_surat_jalan: noSuratJalan,
             qty_incoming: r.qty_incoming,
             qty_idle: r.ada_idle ? r.qty_idle : 0,
             qty_pallet: r.qty_pallet,
@@ -205,6 +240,8 @@ const IncomingFormModal: React.FC<{
     }
   };
 
+  const canSubmit = !submitting && !loadingSuratJalan && !!noSuratJalan;
+
   return (
     <Dialog
       open
@@ -219,25 +256,36 @@ const IncomingFormModal: React.FC<{
         </span>
       </DialogTitle>
       <DialogContent>
-        <div className="flex flex-wrap items-end gap-2 mb-4 mt-1 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2.5">
+        {/* Auto-generated, read-only, shared No Surat Jalan */}
+        <div className="flex flex-wrap items-center gap-3 mb-4 mt-1 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2.5">
           <div className="flex-1 min-w-[220px]">
             <label className="block text-[11px] font-medium text-teal-700 mb-1">
-              Samakan No Surat Jalan untuk semua item
+              No Surat Jalan (otomatis, berlaku untuk semua item)
             </label>
-            <input
-              type="text"
-              value={bulkSuratJalan}
-              onChange={(e) => setBulkSuratJalan(e.target.value)}
-              placeholder="Ketik no surat jalan..."
-              className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
+            {loadingSuratJalan ? (
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-teal-500 border-t-transparent" />
+                Mengambil nomor surat jalan...
+              </div>
+            ) : suratJalanError ? (
+              <div className="flex items-center gap-2 text-sm text-red-600">
+                {suratJalanError}
+                <button
+                  onClick={fetchNoSuratJalan}
+                  className="text-xs font-medium text-teal-700 hover:text-teal-900 underline"
+                >
+                  Coba lagi
+                </button>
+              </div>
+            ) : (
+              <div
+                className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-lg bg-white text-slate-700 font-semibold tabular-nums select-all"
+                aria-readonly="true"
+              >
+                {noSuratJalan}
+              </div>
+            )}
           </div>
-          <button
-            onClick={applyBulkSuratJalan}
-            className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          >
-            Terapkan ke semua
-          </button>
         </div>
 
         <div className="overflow-x-auto border border-slate-200 rounded-xl">
@@ -283,14 +331,9 @@ const IncomingFormModal: React.FC<{
                     </div>
                   </td>
                   <td className="px-3 py-2.5 align-top">
-                    <input
-                      type="text"
-                      value={r.no_surat_jalan}
-                      onChange={(e) =>
-                        patchRow(idx, { no_surat_jalan: e.target.value })
-                      }
-                      className="w-40 px-2.5 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
+                    <span className="text-sm text-slate-500">
+                      {loadingSuratJalan ? '...' : noSuratJalan || '-'}
+                    </span>
                   </td>
                   <td className="px-3 py-2.5 align-top text-center">
                     <input
@@ -386,7 +429,7 @@ const IncomingFormModal: React.FC<{
           </button>
           <button
             onClick={handleSubmit}
-            disabled={submitting}
+            disabled={!canSubmit}
             className="px-5 py-2 text-sm bg-teal-600 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
           >
             {submitting ? 'Mengirim...' : 'Kirim Data Incoming'}
@@ -593,7 +636,6 @@ const OutstandingPO: React.FC = () => {
         nama_item: r.nama_item,
         satuan: r.satuan,
         qty_sisa: r.qty_sisa,
-        no_surat_jalan: '',
         qty_incoming: r.qty_sisa > 0 ? r.qty_sisa : r.qty_po,
         ada_idle: false,
         qty_idle: 0,
