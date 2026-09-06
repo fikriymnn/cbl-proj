@@ -63,6 +63,30 @@ interface SendDoItem {
   is_main_jo?: boolean;
 }
 
+// ─── Aging Recap Types ──────────────────────────────────────────────────────
+
+/** Aging bucket labels as returned by the API */
+type AgingCategory = '1-30' | '31-60' | '61-90' | '>90';
+
+interface RecapItem {
+  aging_category: AgingCategory | string;
+  status: string;
+  jumlah_item: number;
+  jumlah_qty: number;
+}
+
+interface RecapResponse {
+  status: number;
+  success: boolean;
+  data: RecapItem[];
+}
+
+/** The active recap filter applied on top of the main table/search */
+interface RecapFilter {
+  aging_category: string;
+  status: string;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtQty(val: number | null | undefined) {
@@ -123,6 +147,65 @@ function statusBadgeClass(status: string | null | undefined): string {
 /** Stable key identifying a GudangItem group */
 function groupKey(g: GudangItem): string {
   return `${g.id_io}-${g.id_produk}`;
+}
+
+/** Human-friendly label for a status code */
+function statusLabel(status: string): string {
+  const s = status.toLowerCase();
+  if (s === 'keep') return 'Keep';
+  if (s === 'booking') return 'Booking';
+  if (s === 'bap') return 'BAP';
+  return status;
+}
+
+/** Card color theme per status, used for the aging recap cards */
+function recapCardTheme(status: string): {
+  border: string;
+  borderActive: string;
+  bg: string;
+  text: string;
+  chip: string;
+} {
+  const s = status.toLowerCase();
+  if (s === 'keep') {
+    return {
+      border: 'border-green-200',
+      borderActive: 'border-green-500 ring-2 ring-green-200',
+      bg: 'bg-green-50',
+      text: 'text-green-700',
+      chip: 'bg-green-100 text-green-700',
+    };
+  }
+  if (s === 'booking') {
+    return {
+      border: 'border-amber-200',
+      borderActive: 'border-amber-500 ring-2 ring-amber-200',
+      bg: 'bg-amber-50',
+      text: 'text-amber-700',
+      chip: 'bg-amber-100 text-amber-700',
+    };
+  }
+  if (s === 'bap') {
+    return {
+      border: 'border-blue-200',
+      borderActive: 'border-blue-500 ring-2 ring-blue-200',
+      bg: 'bg-blue-50',
+      text: 'text-blue-700',
+      chip: 'bg-blue-100 text-blue-700',
+    };
+  }
+  return {
+    border: 'border-gray-200',
+    borderActive: 'border-gray-500 ring-2 ring-gray-200',
+    bg: 'bg-gray-50',
+    text: 'text-gray-700',
+    chip: 'bg-gray-100 text-gray-600',
+  };
+}
+
+/** Whether an aging category represents "more than 90 days" bucket */
+function isMoreThan90(agingCategory: string): boolean {
+  return agingCategory === '>90';
 }
 
 // ─── Async Searchable Select ──────────────────────────────────────────────────
@@ -1021,6 +1104,118 @@ function GroupDoModal({
   );
 }
 
+// ─── Aging Recap Cards ────────────────────────────────────────────────────────
+
+function AgingRecapCards({
+  recapData,
+  activeFilter,
+  onCardClick,
+}: {
+  recapData: RecapItem[];
+  activeFilter: RecapFilter | null;
+  onCardClick: (item: RecapItem) => void;
+}) {
+  // Hide cards where there's no data at all (nothing to show / filter for)
+  const visibleCards = recapData.filter(
+    (item) => item.jumlah_item > 0 || item.jumlah_qty > 0,
+  );
+
+  if (visibleCards.length === 0) return null;
+
+  return (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2 px-1">
+        <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+          <svg
+            className="w-4 h-4 text-violet-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
+          </svg>
+          Rekap Aging Inventory
+        </h3>
+        {activeFilter && (
+          <button
+            onClick={() =>
+              onCardClick({
+                aging_category: activeFilter.aging_category,
+                status: activeFilter.status,
+                jumlah_item: 0,
+                jumlah_qty: 0,
+              })
+            }
+            className="text-[11px] font-semibold text-violet-600 hover:text-violet-800 flex items-center gap-1"
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+            Hapus Filter
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {visibleCards.map((item) => {
+          const theme = recapCardTheme(item.status);
+          const isActive =
+            activeFilter?.aging_category === item.aging_category &&
+            activeFilter?.status === item.status;
+
+          return (
+            <button
+              key={`${item.aging_category}-${item.status}`}
+              onClick={() => onCardClick(item)}
+              className={`text-left rounded-xl border-2 p-3 transition-all ${
+                theme.bg
+              } ${
+                isActive ? theme.borderActive : theme.border
+              } hover:shadow-md`}
+            >
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${theme.chip}`}
+                >
+                  {statusLabel(item.status)}
+                </span>
+                <span className="text-[10px] font-semibold text-gray-500 whitespace-nowrap">
+                  {item.aging_category} hari
+                </span>
+              </div>
+              <p className={`text-xl font-bold ${theme.text}`}>
+                {fmtQty(item.jumlah_item)}{' '}
+                <span className="text-xs font-medium text-gray-500">item</span>
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Qty:{' '}
+                <span className="font-semibold text-gray-700">
+                  {fmtQty(item.jumlah_qty)}
+                </span>
+              </p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 type DoModalState = 'none' | 'type-select' | 'single' | 'group';
@@ -1043,13 +1238,41 @@ const GudangFG: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // ── Aging recap cards + active recap filter ──
+  const [recapData, setRecapData] = useState<RecapItem[]>([]);
+  const [recapLoading, setRecapLoading] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<RecapFilter | null>(null);
+
   // Which group rows (No IO + Produk) are expanded to show their data_barang
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
-  }, [page, limit, searchTerm]);
+  }, [page, limit, searchTerm, activeFilter]);
+
+  useEffect(() => {
+    fetchRecap();
+    // eslint-disable-next-line
+  }, []);
+
+  const fetchRecap = async (): Promise<void> => {
+    try {
+      setRecapLoading(true);
+      const res: AxiosResponse<RecapResponse> = await axios.get(
+        `${
+          import.meta.env.VITE_API_LINK
+        }/fg/gudangFinishGoodAgingInventoryRecap`,
+        { withCredentials: true },
+      );
+      setRecapData(Array.isArray(res.data?.data) ? res.data.data : []);
+    } catch (err) {
+      console.error(err);
+      setRecapData([]);
+    } finally {
+      setRecapLoading(false);
+    }
+  };
 
   const fetchData = async (): Promise<void> => {
     try {
@@ -1057,7 +1280,17 @@ const GudangFG: React.FC = () => {
       const res: AxiosResponse<GudangResponse> = await axios.get(
         `${import.meta.env.VITE_API_LINK}/fg/gudangFinishGoodByIo`,
         {
-          params: { page, limit, search: searchTerm || undefined },
+          params: {
+            page,
+            limit,
+            search: searchTerm || undefined,
+            // Recap filter, applied on top of search/pagination
+            aging_category: activeFilter?.aging_category ?? undefined,
+            status: activeFilter?.status ?? undefined,
+            is_more_than_90_days: activeFilter
+              ? isMoreThan90(activeFilter.aging_category)
+              : undefined,
+          },
           withCredentials: true,
         },
       );
@@ -1083,6 +1316,20 @@ const GudangFG: React.FC = () => {
       setSearchTerm(val);
       setPage(1);
     }, 400);
+  }
+
+  /** Clicking a recap card filters the table by its aging_category + status.
+   *  Clicking the already-active card (or the "Hapus Filter" button) clears it. */
+  function handleRecapCardClick(item: RecapItem) {
+    setActiveFilter((prev) => {
+      const isSame =
+        prev?.aging_category === item.aging_category &&
+        prev?.status === item.status;
+      return isSame
+        ? null
+        : { aging_category: item.aging_category, status: item.status };
+    });
+    setPage(1);
   }
 
   function toggleGroup(key: string) {
@@ -1111,6 +1358,7 @@ const GudangFG: React.FC = () => {
       );
       setDoModal('none');
       fetchData();
+      fetchRecap();
     } catch (err) {
       console.error(err);
     } finally {
@@ -1145,7 +1393,19 @@ const GudangFG: React.FC = () => {
         {showAdjustStock && (
           <AdjustStockModal
             onClose={() => setShowAdjustStock(false)}
-            onAdjusted={fetchData}
+            onAdjusted={() => {
+              fetchData();
+              fetchRecap();
+            }}
+          />
+        )}
+
+        {/* Aging recap cards — hidden entirely when there's no data */}
+        {!recapLoading && (
+          <AgingRecapCards
+            recapData={recapData}
+            activeFilter={activeFilter}
+            onCardClick={handleRecapCardClick}
           />
         )}
 
@@ -1234,6 +1494,40 @@ const GudangFG: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* Active recap filter chip */}
+          {activeFilter && (
+            <div className="px-3 sm:px-4 pb-3 sm:pb-4 -mt-1">
+              <div className="inline-flex items-center gap-2 text-xs bg-violet-50 border border-violet-200 text-violet-700 rounded-full px-3 py-1.5">
+                <span>
+                  Filter aktif:{' '}
+                  <strong>{activeFilter.aging_category} hari</strong> /{' '}
+                  <strong>{statusLabel(activeFilter.status)}</strong>
+                </span>
+                <button
+                  onClick={() => {
+                    setActiveFilter(null);
+                    setPage(1);
+                  }}
+                  className="text-violet-500 hover:text-violet-800"
+                >
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Table */}

@@ -19,9 +19,20 @@ import { formatDate } from '../Purchasing/Types/poStatus';
  * status. Approval is NOT bulk: each selected row is submitted one at a
  * time to POST /rm/outstandingStock/approve/:id, and the modal shows
  * per-row progress while the sequential calls go out.
+ *
+ * Sub-tabs:
+ * - "Outstanding": the actionable queue (selectable, approve button).
+ * - "Riwayat" (history): read-only list of items already approved/rejected.
+ *   No checkboxes, no approve action — just a record of what happened,
+ *   plus the approval date.
+ *
+ * NOTE: history is requested from the same endpoint with an extra
+ * `history` param. If the backend expects a different param/route for
+ * history data, adjust the `fetchData` params below accordingly.
  * ========================================================================== */
 
 const EMPTY_TEXT = 'Tidak ada stock outstanding.';
+const EMPTY_HISTORY_TEXT = 'Belum ada riwayat stock.';
 
 export interface OutstandingStockItem {
   id: number;
@@ -59,6 +70,7 @@ interface OutstandingStockListResponse {
 }
 
 type ApproveRowState = 'idle' | 'loading' | 'success' | 'error';
+type SubTab = 'outstanding' | 'history';
 
 const formatQty = (val: number | null | undefined): string =>
   (val ?? 0).toLocaleString('id-ID');
@@ -231,6 +243,8 @@ const ApproveStockModal: React.FC<{
 // Main list
 // =============================================================================
 const OutstandingStock: React.FC = () => {
+  const [subTab, setSubTab] = useState<SubTab>('outstanding');
+
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<OutstandingStockItem[]>([]);
 
@@ -251,6 +265,8 @@ const OutstandingStock: React.FC = () => {
     severity: 'success' | 'error' | 'info';
   }>({ open: false, message: '', severity: 'success' });
 
+  const isHistory = subTab === 'history';
+
   const fetchData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/rm/outstandingStock`;
     try {
@@ -260,9 +276,12 @@ const OutstandingStock: React.FC = () => {
           page,
           limit,
           search: searchTerm || undefined,
+          // Toggle between the actionable queue and the read-only history.
+          status_tiket: isHistory ? 'history' : undefined,
         },
         withCredentials: true,
       });
+      console.log('Fetched outstanding stock data:', res.data);
       setData(res.data.data || []);
       if (res.data.total_page) setTotalPages(res.data.total_page);
     } catch (error) {
@@ -281,7 +300,16 @@ const OutstandingStock: React.FC = () => {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, searchTerm]);
+  }, [page, limit, searchTerm, subTab]);
+
+  const handleSwitchTab = (tab: SubTab) => {
+    if (tab === subTab) return;
+    setSubTab(tab);
+    setSelected(new Map());
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
 
   const handleSearch = () => {
     setSearchTerm(searchInput);
@@ -352,6 +380,30 @@ const OutstandingStock: React.FC = () => {
 
   return (
     <div className="space-y-5 pb-20">
+      {/* Sub tabs: Outstanding vs Riwayat */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-1.5 inline-flex gap-1">
+        <button
+          onClick={() => handleSwitchTab('outstanding')}
+          className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+            subTab === 'outstanding'
+              ? 'bg-teal-600 text-white'
+              : 'text-slate-500 hover:bg-slate-100'
+          }`}
+        >
+          Outstanding
+        </button>
+        <button
+          onClick={() => handleSwitchTab('history')}
+          className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+            subTab === 'history'
+              ? 'bg-teal-600 text-white'
+              : 'text-slate-500 hover:bg-slate-100'
+          }`}
+        >
+          Riwayat
+        </button>
+      </div>
+
       {/* Filter card */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="max-w-md">
@@ -397,16 +449,19 @@ const OutstandingStock: React.FC = () => {
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
-                <th className="px-3 py-3 w-10">
-                  <input
-                    type="checkbox"
-                    checked={
-                      data.length > 0 && data.every((it) => selected.has(it.id))
-                    }
-                    onChange={toggleSelectAll}
-                    className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                  />
-                </th>
+                {!isHistory && (
+                  <th className="px-3 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={
+                        data.length > 0 &&
+                        data.every((it) => selected.has(it.id))
+                      }
+                      onChange={toggleSelectAll}
+                      className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                    />
+                  </th>
+                )}
                 <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                   No JO
                 </th>
@@ -425,6 +480,11 @@ const OutstandingStock: React.FC = () => {
                 <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                   Tgl Masuk
                 </th>
+                {isHistory && (
+                  <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    Tgl Approve
+                  </th>
+                )}
                 <th className="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
                   Status
                 </th>
@@ -433,7 +493,10 @@ const OutstandingStock: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-14 text-center">
+                  <td
+                    colSpan={isHistory ? 8 : 8}
+                    className="px-4 py-14 text-center"
+                  >
                     <div className="flex justify-center">
                       <div className="animate-spin rounded-full h-7 w-7 border-2 border-teal-500 border-t-transparent"></div>
                     </div>
@@ -441,9 +504,12 @@ const OutstandingStock: React.FC = () => {
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-14 text-center">
+                  <td
+                    colSpan={isHistory ? 8 : 8}
+                    className="px-4 py-14 text-center"
+                  >
                     <p className="text-slate-600 font-medium text-sm">
-                      {EMPTY_TEXT}
+                      {isHistory ? EMPTY_HISTORY_TEXT : EMPTY_TEXT}
                     </p>
                     {activeFilterCount > 0 && (
                       <p className="text-slate-400 text-xs mt-1">
@@ -455,14 +521,16 @@ const OutstandingStock: React.FC = () => {
               ) : (
                 data.map((it) => (
                   <tr key={it.id} className="hover:bg-slate-50/70">
-                    <td className="px-3 py-3">
-                      <input
-                        type="checkbox"
-                        checked={selected.has(it.id)}
-                        onChange={() => toggleItemSelected(it)}
-                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                      />
-                    </td>
+                    {!isHistory && (
+                      <td className="px-3 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(it.id)}
+                          onChange={() => toggleItemSelected(it)}
+                          className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                        />
+                      </td>
+                    )}
                     <td className="px-3 py-3 font-medium text-teal-700">
                       {it.no_jo}
                     </td>
@@ -477,6 +545,11 @@ const OutstandingStock: React.FC = () => {
                     <td className="px-3 py-3 text-slate-600 whitespace-nowrap">
                       {formatDate(it.tgl_masuk)}
                     </td>
+                    {isHistory && (
+                      <td className="px-3 py-3 text-slate-600 whitespace-nowrap">
+                        {it.tgl_approve ? formatDate(it.tgl_approve) : '-'}
+                      </td>
+                    )}
                     <td className="px-3 py-3">
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge(
@@ -524,8 +597,8 @@ const OutstandingStock: React.FC = () => {
         </Stack>
       </div>
 
-      {/* Floating selection bar */}
-      {selected.size > 0 && (
+      {/* Floating selection bar — hidden on the read-only history tab */}
+      {!isHistory && selected.size > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-30 flex justify-center px-4 pb-4">
           <div className="bg-slate-900 text-white rounded-2xl shadow-xl px-5 py-3 flex items-center gap-4">
             <p className="text-sm">
@@ -548,7 +621,7 @@ const OutstandingStock: React.FC = () => {
         </div>
       )}
 
-      {showApprove && (
+      {!isHistory && showApprove && (
         <ApproveStockModal
           rows={Array.from(selected.values())}
           onClose={() => setShowApprove(false)}

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import Snackbar from '@mui/material/Snackbar';
@@ -15,14 +15,18 @@ import { usePermissions } from '../../../constant/usePermissions';
  *    multi-selectable; "Approve Terpilih" fires the approve endpoint once
  *    per selected id (no bulk endpoint exists), sequentially, and reports
  *    how many succeeded/failed. Also carries its own "Adjust Stock" flow
- *    against /rm/adjustStockGudangBooking (search an item, then post the
- *    before/after qty + note).
+ *    against /rm/adjustStockGudangBooking (table of items, each row is
+ *    edited + saved independently, or several rows can be checked and saved
+ *    in one go — still one POST per item, sequentially, no bulk endpoint).
  *
  *  - Stock: read-only current RM stock levels. The list only carries the
  *    summary fields; clicking "Detail" fetches the full record from
- *    GET /rm/gudangStock/:id (full master_barang + mutasi trail with the
- *    user who made each mutation) and shows it in a modal. Also carries its
- *    own "Adjust Stock" flow against /rm/adjustStockGudangStock.
+ *    GET /rm/gudangStock/:id (master_barang only — mutasi is NOT included
+ *    anymore) and separately fetches the mutation trail from
+ *    GET /rm/gudangStockMutasi/:id, which is its own paginated/filterable
+ *    endpoint (page, limit, start_date, end_date, search, type_mutasi).
+ *    Also carries its own "Adjust Stock" flow against
+ *    /rm/adjustStockGudangStock.
  *
  * Both Adjust Stock actions are gated behind the same edit permission for
  * route /gudang-rm/gudang-rm.
@@ -109,6 +113,8 @@ interface GudangStockListResponse {
 }
 
 // --- Stock detail types (GET /rm/gudangStock/:id) ---
+// NOTE: this endpoint no longer returns the mutasi trail inline. Mutasi is
+// fetched separately from GET /rm/gudangStockMutasi/:id (see below).
 interface MasterBarangFull {
   id: number;
   id_brand: number | null;
@@ -121,46 +127,12 @@ interface MasterBarangFull {
   gramatur: number | null;
   panjang: number | null;
   lebar: number | null;
-  harga: number;
-  persentase: number;
-  batas_harga: number;
-  pajak: number;
-  harga_per_satuan: number;
-  inventory_convert: number;
   warehouse: string;
   keterangan: string | null;
   is_include_tax: boolean;
   is_active: boolean;
   createdAt: string;
   updatedAt: string;
-}
-interface StockMutasiUser {
-  id: number;
-  id_role: number;
-  nama: string;
-  email: string;
-  bagian: string;
-  role: string;
-  status: string;
-}
-interface StockMutasiDetail {
-  id: number;
-  id_gudang_raw_material_stock: number;
-  id_item: number;
-  id_user: number;
-  id_jo_booking: number | null;
-  kode_barang: string;
-  nama_barang: string;
-  no_jo_booking: string | null;
-  jumlah_qty: number;
-  type_mutasi: 'masuk' | 'keluar';
-  sumber_mutasi: string;
-  note: string | null;
-  tgl_mutasi: string;
-  is_active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  user?: StockMutasiUser;
 }
 interface GudangStockDetail {
   id: number;
@@ -175,12 +147,51 @@ interface GudangStockDetail {
   createdAt: string;
   updatedAt: string;
   master_barang?: MasterBarangFull;
-  gudang_raw_material_stock_mutasi?: StockMutasiDetail[];
 }
 interface GudangStockDetailResponse {
   status: number;
   success: boolean;
   data: GudangStockDetail;
+}
+
+// --- Stock mutasi types (GET /rm/gudangStockMutasi/:id) ---
+// Separate, paginated + filterable endpoint. Params: page, limit, start_date,
+// end_date (both filter on tgl_mutasi), search, type_mutasi ('masuk' | 'keluar').
+interface StockMutasiUser {
+  id: number;
+  id_role: number;
+  nama: string;
+  email: string;
+  bagian: string;
+  role: string;
+  status: string;
+}
+interface StockMutasiDetail {
+  jumlah_qty_awal: number | null | undefined;
+  id: number;
+  id_gudang_raw_material_stock: number;
+  id_item: number;
+  id_user: number;
+  id_jo_booking: number | null;
+  kode_barang: string;
+  nama_barang: string;
+  no_jo_booking: string | null;
+  no_good_receipt: string | null;
+  jumlah_qty: number;
+  type_mutasi: 'masuk' | 'keluar';
+  sumber_mutasi: string;
+  note: string | null;
+  tgl_mutasi: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user?: StockMutasiUser;
+}
+interface StockMutasiListResponse {
+  status: number;
+  success: boolean;
+  data: StockMutasiDetail[];
+  total_page?: number;
 }
 
 // --- Adjust stock types (GET/POST /rm/adjustStockGudangBooking, /rm/adjustStockGudangStock) ---
@@ -225,15 +236,14 @@ interface AdjustStockLogListResponse {
   total_page?: number;
 }
 
+// Per-row edit state for the adjust table.
+interface RowEdit {
+  qtyAdjust: string;
+  note: string;
+}
+
 const formatQty = (val: number | null | undefined): string =>
   (val ?? 0).toLocaleString('id-ID');
-
-const formatCurrency = (val: number | null | undefined): string =>
-  (val ?? 0).toLocaleString('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 2,
-  });
 
 const formatDate = (val?: string | null): string => {
   if (!val) return '-';
@@ -282,10 +292,16 @@ const typeBadge = (type: 'masuk' | 'keluar'): string =>
 // Adjust Stock modal — shared shape for both the Booking and Stock variants.
 //
 // Two modes, switchable via tabs:
-//  - "Adjust": pick an item and submit a new qty. The item list always comes
-//    from the MAIN table data source (GET /rm/gudangBooking or
-//    GET /rm/gudangStock) — the same endpoints the page tables already use —
-//    never from the adjustStockGudang* endpoints.
+//  - "Adjust": a table of items. Each row has its own editable Qty Adjust +
+//    Catatan and its own "Simpan" button, so a single item can be saved on
+//    its own. Rows can also be checked (with a "select all" in the header)
+//    and saved together via "Simpan Terpilih" — this still calls the POST
+//    endpoint once per item, sequentially, and reports how many succeeded
+//    vs failed (there is no bulk endpoint). The item list always comes from
+//    the MAIN table data source (GET /rm/gudangBooking or
+//    GET /rm/gudangStock) — never from the adjustStockGudang* endpoints.
+//    When opened from a specific row (initialItem), the table just shows
+//    that single row, with no checkbox/search/pagination.
 //  - "Riwayat" (History): a read-only log of past adjustments, fetched from
 //    GET /rm/adjustStockGudangBooking or GET /rm/adjustStockGudangStock.
 //    That endpoint is log/history data only and is never used to look up
@@ -300,11 +316,10 @@ type AdjustModalMode = 'adjust' | 'history';
 const AdjustStockRMModal: React.FC<{
   variant: AdjustStockVariant;
   /**
-   * When provided, the modal skips the search step entirely and opens
-   * straight into the adjust form for this item. Its `qty` is taken as-is
-   * from the row already loaded in the outer page table (not re-fetched),
-   * so "Jumlah Qty Awal" always matches what's currently shown outside the
-   * modal.
+   * When provided, the modal skips search/pagination/checkboxes entirely and
+   * shows a single-row table for this item. Its `qty` is taken as-is from
+   * the row already loaded in the outer page table (not re-fetched), so
+   * "Qty Awal" always matches what's currently shown outside the modal.
    */
   initialItem?: AdjustStockCandidate;
   /** Which booking status_ticket to search within (booking variant only). */
@@ -338,24 +353,35 @@ const AdjustStockRMModal: React.FC<{
   const title =
     variant === 'booking' ? 'Adjust Stock Booking RM' : 'Adjust Stock RM';
 
+  // Single-item mode (opened from a row's "Adjust" button) skips
+  // search/pagination/checkboxes and just shows that one row.
+  const isBulk = !initialItem;
+
   const [mode, setMode] = useState<AdjustModalMode>('adjust');
 
-  // ── Adjust mode: search + form ──
+  // ── Adjust mode: item table ──
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [candidates, setCandidates] = useState<AdjustStockCandidate[]>([]);
+  const [candidates, setCandidates] = useState<AdjustStockCandidate[]>(
+    initialItem ? [initialItem] : [],
+  );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [selected, setSelected] = useState<AdjustStockCandidate | null>(
-    initialItem ?? null,
+  const [rowEdits, setRowEdits] = useState<Record<number, RowEdit>>(() =>
+    initialItem
+      ? {
+          [initialItem.id]: {
+            qtyAdjust: String(initialItem.qty ?? 0),
+            note: '',
+          },
+        }
+      : {},
   );
-  const [qtyAdjust, setQtyAdjust] = useState(
-    initialItem ? String(initialItem.qty ?? 0) : '',
-  );
-  const [note, setNote] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
+  const [bulkSaving, setBulkSaving] = useState(false);
 
   const fetchCandidates = async (searchVal: string, pageVal: number) => {
     try {
@@ -400,6 +426,19 @@ const AdjustStockRMModal: React.FC<{
             }));
       setCandidates(mapped);
       setTotalPages(res.data?.total_page ?? 1);
+      // Preserve edits already made on rows the user has seen before
+      // (e.g. going back to a previous page); only seed new rows.
+      setRowEdits((prev) => {
+        const next = { ...prev };
+        mapped.forEach((c) => {
+          if (!(c.id in next)) {
+            next[c.id] = { qtyAdjust: String(c.qty ?? 0), note: '' };
+          }
+        });
+        return next;
+      });
+      // Drop selections for items no longer on this page's result set is
+      // intentionally NOT done here — selection is scoped per fetched page.
     } catch (err) {
       console.error(err);
       setCandidates([]);
@@ -410,7 +449,7 @@ const AdjustStockRMModal: React.FC<{
   };
 
   useEffect(() => {
-    if (!initialItem && mode === 'adjust') {
+    if (isBulk && mode === 'adjust') {
       fetchCandidates(search, page);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -419,59 +458,136 @@ const AdjustStockRMModal: React.FC<{
   function handleSearchInput(val: string) {
     setSearch(val);
     setPage(1);
+    setSelectedIds(new Set());
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchCandidates(val, 1), 400);
   }
 
   function handlePageChange(newPage: number) {
     setPage(newPage);
+    setSelectedIds(new Set());
     fetchCandidates(search, newPage);
   }
 
-  function handleSelect(item: AdjustStockCandidate) {
-    setSelected(item);
-    setQtyAdjust(String(item.qty ?? 0));
-    setNote('');
+  function updateRow(id: number, field: keyof RowEdit, value: string) {
+    setRowEdits((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? { qtyAdjust: '', note: '' }), [field]: value },
+    }));
   }
 
-  function handleBack() {
-    if (initialItem) {
-      onClose();
-      return;
+  function toggleSelected(id: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === candidates.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(candidates.map((c) => c.id)));
     }
-    setSelected(null);
-    setQtyAdjust('');
-    setNote('');
   }
 
-  async function handleSubmit() {
-    if (!selected) return;
-    const adjustVal = Number(qtyAdjust);
-    if (qtyAdjust === '' || Number.isNaN(adjustVal)) {
-      onToast('Jumlah adjust tidak valid.', 'error');
-      return;
+  async function saveOne(item: AdjustStockCandidate): Promise<boolean> {
+    const edit = rowEdits[item.id];
+    const adjustVal = Number(edit?.qtyAdjust);
+    if (!edit || edit.qtyAdjust === '' || Number.isNaN(adjustVal)) {
+      return false;
     }
     try {
-      setSubmitting(true);
       await axios.post(
         adjustUrl,
         {
-          [idField]: selected.id,
-          jumlah_qty_awal: selected.qty ?? 0,
+          [idField]: item.id,
+          jumlah_qty_awal: item.qty ?? 0,
           jumlah_qty_adjust: adjustVal,
-          note: note || undefined,
+          note: edit.note || undefined,
         },
         { withCredentials: true },
       );
-      onToast('Stok berhasil disesuaikan.', 'success');
-      onAdjusted();
-      onClose();
+      return true;
     } catch (err) {
       console.error(err);
-      onToast('Gagal menyesuaikan stok.', 'error');
-    } finally {
-      setSubmitting(false);
+      return false;
     }
+  }
+
+  async function handleSaveRow(item: AdjustStockCandidate) {
+    const edit = rowEdits[item.id];
+    if (
+      !edit ||
+      edit.qtyAdjust === '' ||
+      Number.isNaN(Number(edit.qtyAdjust))
+    ) {
+      onToast('Jumlah adjust tidak valid.', 'error');
+      return;
+    }
+    setSavingIds((prev) => new Set(prev).add(item.id));
+    const ok = await saveOne(item);
+    setSavingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(item.id);
+      return next;
+    });
+    if (ok) {
+      onToast(`Stok ${item.nama_item} berhasil disesuaikan.`, 'success');
+      onAdjusted();
+      if (isBulk) {
+        fetchCandidates(search, page);
+      } else {
+        onClose();
+      }
+    } else {
+      onToast(`Gagal menyesuaikan stok ${item.nama_item}.`, 'error');
+    }
+  }
+
+  async function handleBulkSave() {
+    if (selectedIds.size === 0) return;
+    setBulkSaving(true);
+    const ids = Array.from(selectedIds);
+    setSavingIds(new Set(ids));
+    let successCount = 0;
+    let failCount = 0;
+    // No bulk endpoint — save one id at a time, sequentially.
+    for (const id of ids) {
+      const item = candidates.find((c) => c.id === id);
+      if (!item) {
+        failCount += 1;
+        setSavingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        continue;
+      }
+      // eslint-disable-next-line no-await-in-loop
+      const ok = await saveOne(item);
+      if (ok) successCount += 1;
+      else failCount += 1;
+      setSavingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+    setBulkSaving(false);
+    setSelectedIds(new Set());
+    if (failCount === 0) {
+      onToast(`${successCount} item berhasil disesuaikan.`, 'success');
+    } else {
+      onToast(
+        `${successCount} berhasil, ${failCount} gagal disesuaikan.`,
+        failCount === ids.length ? 'error' : 'info',
+      );
+    }
+    onAdjusted();
+    fetchCandidates(search, page);
   }
 
   // ── History mode: read-only log ──
@@ -525,7 +641,7 @@ const AdjustStockRMModal: React.FC<{
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[92vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-4 text-white flex justify-between items-start flex-shrink-0">
           <div>
@@ -533,9 +649,9 @@ const AdjustStockRMModal: React.FC<{
             <p className="text-emerald-100 text-xs mt-0.5">
               {mode === 'history'
                 ? 'Riwayat penyesuaian stok'
-                : selected
-                ? 'Masukkan jumlah penyesuaian'
-                : 'Cari item yang akan disesuaikan'}
+                : isBulk
+                ? 'Cari item, sesuaikan qty langsung di tabel, lalu simpan satu-satu atau sekaligus'
+                : 'Sesuaikan jumlah stok untuk item ini'}
             </p>
           </div>
           <button
@@ -706,200 +822,231 @@ const AdjustStockRMModal: React.FC<{
               )}
             </div>
           </div>
-        ) : !selected ? (
-          // ── Adjust, step 1: search & pick (from the main table GET api) ──
+        ) : (
+          // ── Adjust: item table, editable per row ──
           <div className="flex flex-col p-4 gap-3 min-h-0 flex-1 overflow-hidden">
-            <div className="relative flex-shrink-0">
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => handleSearchInput(e.target.value)}
-                placeholder={
-                  variant === 'booking'
-                    ? 'Cari No JO, customer, produk, item...'
-                    : 'Cari kode item, nama item...'
-                }
-                className="w-full pl-8 pr-3 py-2 text-xs border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-emerald-50"
-              />
-              <svg
-                className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            {isBulk && (
+              <div className="relative flex-shrink-0">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => handleSearchInput(e.target.value)}
+                  placeholder={
+                    variant === 'booking'
+                      ? 'Cari No JO, customer, produk, item...'
+                      : 'Cari kode item, nama item...'
+                  }
+                  className="w-full pl-8 pr-3 py-2 text-xs border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-emerald-50"
                 />
-              </svg>
-            </div>
+                <svg
+                  className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-gray-400 pointer-events-none"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+            )}
 
             <div className="rounded-xl border border-gray-200 overflow-hidden flex flex-col flex-1 min-h-0">
-              {loading ? (
-                <div className="divide-y divide-gray-100">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="px-3 py-2.5 animate-pulse space-y-1.5"
-                    >
-                      <div className="h-3.5 w-32 bg-gray-200 rounded" />
-                      <div className="h-3 w-24 bg-gray-100 rounded" />
-                    </div>
-                  ))}
-                </div>
-              ) : candidates.length === 0 ? (
-                <div className="py-8 text-center text-xs text-gray-400 flex-1 flex items-center justify-center">
-                  {search
-                    ? 'Tidak ada hasil untuk pencarian ini'
-                    : 'Tidak ada data tersedia'}
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-100 overflow-y-auto flex-1">
-                  {candidates.map((c) => (
-                    <div
-                      key={c.id}
-                      onClick={() => handleSelect(c)}
-                      className="flex items-center justify-between gap-3 px-3 py-2.5 hover:bg-emerald-50 cursor-pointer transition-colors"
-                    >
-                      <div className="flex-1 min-w-0">
-                        {variant === 'booking' ? (
-                          <>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">
-                                {c.no_jo}
-                              </span>
-                              <span className="text-[10px] text-gray-400 truncate">
-                                {c.customer}
-                              </span>
-                            </div>
-                            <p className="text-xs font-medium text-gray-800 mt-0.5 truncate">
-                              {c.nama_item}
-                            </p>
-                            <p className="text-[10px] text-gray-400 truncate">
-                              {c.produk}
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">
-                              {c.kode_item}
-                            </span>
-                            <p className="text-xs font-medium text-gray-800 mt-0.5 truncate">
-                              {c.nama_item}
-                            </p>
-                          </>
-                        )}
-                      </div>
-                      <div className="flex-shrink-0 text-right">
-                        <p className="text-xs font-bold text-emerald-700">
-                          {formatQty(c.qty)} {c.satuan || ''}
-                        </p>
-                        <p className="text-[10px] text-gray-400">stok</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="overflow-auto flex-1">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-gray-50 border-b border-gray-100 sticky top-0 z-10">
+                    <tr>
+                      {isBulk && (
+                        <th className="px-2 py-2 w-8">
+                          <input
+                            type="checkbox"
+                            checked={
+                              candidates.length > 0 &&
+                              selectedIds.size === candidates.length
+                            }
+                            onChange={toggleSelectAll}
+                            className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                          />
+                        </th>
+                      )}
+                      {variant === 'booking' ? (
+                        <>
+                          <th className="px-2 py-2 text-left font-semibold text-gray-500">
+                            No JO
+                          </th>
+                          <th className="px-2 py-2 text-left font-semibold text-gray-500">
+                            Customer / Produk
+                          </th>
+                          <th className="px-2 py-2 text-left font-semibold text-gray-500">
+                            Nama Item
+                          </th>
+                        </>
+                      ) : (
+                        <>
+                          <th className="px-2 py-2 text-left font-semibold text-gray-500">
+                            Kode Item
+                          </th>
+                          <th className="px-2 py-2 text-left font-semibold text-gray-500">
+                            Nama Item
+                          </th>
+                        </>
+                      )}
+                      <th className="px-2 py-2 text-right font-semibold text-gray-500">
+                        Qty Awal
+                      </th>
+                      <th className="px-2 py-2 text-right font-semibold text-gray-500">
+                        Qty Adjust
+                      </th>
+                      <th className="px-2 py-2 text-left font-semibold text-gray-500">
+                        Catatan
+                      </th>
+                      <th className="px-2 py-2 text-right font-semibold text-gray-500">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {loading ? (
+                      Array.from({ length: 3 }).map((_, i) => (
+                        <tr key={i} className="animate-pulse">
+                          <td
+                            colSpan={variant === 'booking' ? 7 : 6}
+                            className="px-3 py-3"
+                          >
+                            <div className="h-3.5 w-full bg-gray-100 rounded" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : candidates.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={variant === 'booking' ? 7 : 6}
+                          className="px-4 py-10 text-center text-gray-400"
+                        >
+                          {search
+                            ? 'Tidak ada hasil untuk pencarian ini'
+                            : 'Tidak ada data tersedia'}
+                        </td>
+                      </tr>
+                    ) : (
+                      candidates.map((c) => {
+                        const edit = rowEdits[c.id] ?? {
+                          qtyAdjust: String(c.qty ?? 0),
+                          note: '',
+                        };
+                        const isSaving = savingIds.has(c.id);
+                        return (
+                          <tr key={c.id} className="hover:bg-emerald-50/50">
+                            {isBulk && (
+                              <td className="px-2 py-2 align-top">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedIds.has(c.id)}
+                                  onChange={() => toggleSelected(c.id)}
+                                  className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                                />
+                              </td>
+                            )}
+                            {variant === 'booking' ? (
+                              <>
+                                <td className="px-2 py-2 align-top">
+                                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                    {c.no_jo}
+                                  </span>
+                                </td>
+                                <td className="px-2 py-2 align-top">
+                                  <div className="text-gray-700">
+                                    {c.customer}
+                                  </div>
+                                  <div className="text-[10px] text-gray-400 max-w-[140px] truncate">
+                                    {c.produk}
+                                  </div>
+                                </td>
+                                <td className="px-2 py-2 align-top text-gray-700 max-w-[140px]">
+                                  {c.nama_item}
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td className="px-2 py-2 align-top">
+                                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded whitespace-nowrap">
+                                    {c.kode_item}
+                                  </span>
+                                </td>
+                                <td className="px-2 py-2 align-top text-gray-700 max-w-[160px]">
+                                  {c.nama_item}
+                                </td>
+                              </>
+                            )}
+                            <td className="px-2 py-2 align-top text-right tabular-nums font-medium text-gray-600 whitespace-nowrap">
+                              {formatQty(c.qty)} {c.satuan || ''}
+                            </td>
+                            <td className="px-2 py-2 align-top">
+                              <input
+                                type="number"
+                                value={edit.qtyAdjust}
+                                onChange={(e) =>
+                                  updateRow(c.id, 'qtyAdjust', e.target.value)
+                                }
+                                className="w-24 text-right rounded-lg bg-blue-50 border border-blue-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                              />
+                            </td>
+                            <td className="px-2 py-2 align-top">
+                              <input
+                                type="text"
+                                value={edit.note}
+                                onChange={(e) =>
+                                  updateRow(c.id, 'note', e.target.value)
+                                }
+                                placeholder="Alasan..."
+                                className="w-32 rounded-lg bg-blue-50 border border-blue-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                              />
+                            </td>
+                            <td className="px-2 py-2 align-top text-right">
+                              <button
+                                onClick={() => handleSaveRow(c)}
+                                disabled={isSaving || bulkSaving}
+                                className="px-2.5 py-1.5 text-[11px] font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors whitespace-nowrap"
+                              >
+                                {isSaving ? '...' : 'Simpan'}
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-              {!loading && (candidates.length > 0 || totalPages > 1) && (
-                <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-t border-gray-100 flex-shrink-0">
-                  <span className="text-[10px] text-gray-400">
-                    Hal {page}/{totalPages}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      disabled={page <= 1 || loading}
-                      onClick={() => handlePageChange(page - 1)}
-                      className="px-2 py-1 text-[10px] rounded text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Prev
-                    </button>
-                    <button
-                      disabled={page >= totalPages || loading}
-                      onClick={() => handlePageChange(page + 1)}
-                      className="px-2 py-1 text-[10px] rounded text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          // ── Adjust, step 2: form ──
-          <div className="p-5 space-y-4 overflow-y-auto flex-1">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-              {variant === 'booking' ? (
-                <>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-bold text-emerald-600 bg-white px-1.5 py-0.5 rounded">
-                      {selected.no_jo}
+              {isBulk &&
+                !loading &&
+                (candidates.length > 0 || totalPages > 1) && (
+                  <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-t border-gray-100 flex-shrink-0">
+                    <span className="text-[10px] text-gray-400">
+                      Hal {page}/{totalPages}
                     </span>
-                    <span className="text-[10px] text-gray-500">
-                      {selected.customer}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        disabled={page <= 1 || loading}
+                        onClick={() => handlePageChange(page - 1)}
+                        className="px-2 py-1 text-[10px] rounded text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Prev
+                      </button>
+                      <button
+                        disabled={page >= totalPages || loading}
+                        onClick={() => handlePageChange(page + 1)}
+                        className="px-2 py-1 text-[10px] rounded text-gray-500 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm font-semibold text-gray-800 mt-1">
-                    {selected.nama_item}
-                  </p>
-                  <p className="text-xs text-gray-500">{selected.produk}</p>
-                </>
-              ) : (
-                <>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-white px-1.5 py-0.5 rounded">
-                    {selected.kode_item}
-                  </span>
-                  <p className="text-sm font-semibold text-gray-800 mt-1">
-                    {selected.nama_item}
-                  </p>
-                </>
-              )}
-              <p className="text-xs text-gray-500 mt-1">
-                Stok saat ini:{' '}
-                <span className="font-bold text-emerald-700">
-                  {formatQty(selected.qty)} {selected.satuan || ''}
-                </span>
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">
-                Jumlah Qty Awal
-              </label>
-              <input
-                type="number"
-                value={selected.qty ?? 0}
-                disabled
-                className="w-full rounded-lg bg-gray-100 border border-gray-200 px-3 py-2 text-sm text-gray-500"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">
-                Jumlah Qty Adjust
-              </label>
-              <input
-                type="number"
-                value={qtyAdjust}
-                onChange={(e) => setQtyAdjust(e.target.value)}
-                className="w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">
-                Catatan
-              </label>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={3}
-                placeholder="Alasan penyesuaian stok..."
-                className="w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
-              />
+                )}
             </div>
           </div>
         )}
@@ -913,20 +1060,22 @@ const AdjustStockRMModal: React.FC<{
             >
               Tutup
             </button>
-          ) : selected ? (
+          ) : isBulk ? (
             <>
               <button
-                onClick={handleBack}
+                onClick={onClose}
                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg text-sm transition-colors"
               >
-                {initialItem ? 'Batal' : 'Kembali'}
+                Tutup
               </button>
               <button
-                onClick={handleSubmit}
-                disabled={submitting || qtyAdjust === ''}
+                onClick={handleBulkSave}
+                disabled={selectedIds.size === 0 || bulkSaving}
                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-colors"
               >
-                {submitting ? 'Menyimpan...' : 'Simpan Adjust'}
+                {bulkSaving
+                  ? 'Menyimpan...'
+                  : `Simpan Terpilih (${selectedIds.size})`}
               </button>
             </>
           ) : (
@@ -934,7 +1083,7 @@ const AdjustStockRMModal: React.FC<{
               onClick={onClose}
               className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg text-sm transition-colors"
             >
-              Batal
+              Tutup
             </button>
           )}
         </div>
@@ -1310,7 +1459,15 @@ const BookingTab: React.FC<{
 
 // =============================================================================
 // Stock detail modal — fetches the full record by id (GET /rm/gudangStock/:id)
+// and, separately, the mutation trail (GET /rm/gudangStockMutasi/:id), which
+// is its own paginated + filterable endpoint (page, limit, start_date,
+// end_date, search, type_mutasi). The "latest incoming" stat is fetched as
+// its own single-record query (type_mutasi=masuk, limit=1) so it always
+// reflects the true latest incoming mutation regardless of what page/filter
+// the mutation table below is currently showing.
 // =============================================================================
+const MUTASI_LIMIT = 10;
+
 const StockDetailModal: React.FC<{
   id: number;
   onClose: () => void;
@@ -1318,6 +1475,21 @@ const StockDetailModal: React.FC<{
   const [loading, setLoading] = useState<boolean>(true);
   const [loadError, setLoadError] = useState<string>('');
   const [detail, setDetail] = useState<GudangStockDetail | null>(null);
+
+  // Latest incoming ("masuk") date — fetched independently of the
+  // paginated/filterable mutasi table below.
+  const [latestMasuk, setLatestMasuk] = useState<string | null>(null);
+
+  // Mutasi table state (GET /rm/gudangStockMutasi/:id)
+  const [mutasi, setMutasi] = useState<StockMutasiDetail[]>([]);
+  const [mutasiLoading, setMutasiLoading] = useState<boolean>(true);
+  const [mutasiPage, setMutasiPage] = useState<number>(1);
+  const [mutasiTotalPages, setMutasiTotalPages] = useState<number>(1);
+  const [mutasiSearch, setMutasiSearch] = useState<string>('');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
+  const [typeMutasi, setTypeMutasi] = useState<'' | 'masuk' | 'keluar'>('');
+  const mutasiDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -1339,12 +1511,98 @@ const StockDetailModal: React.FC<{
     fetchDetail();
   }, [id]);
 
-  const mutasi = detail?.gudang_raw_material_stock_mutasi || [];
+  const fetchLatestMasuk = async () => {
+    const url = `${import.meta.env.VITE_API_LINK}/rm/gudangStockMutasi/${id}`;
+    try {
+      const res = await axios.get<StockMutasiListResponse>(url, {
+        params: { page: 1, limit: 1, type_mutasi: 'masuk' },
+        withCredentials: true,
+      });
+      setLatestMasuk(res.data?.data?.[0]?.tgl_mutasi ?? null);
+    } catch (err) {
+      console.error('Error fetching latest incoming mutasi:', err);
+      setLatestMasuk(null);
+    }
+  };
+
+  const fetchMutasi = async (
+    pageVal: number,
+    opts?: {
+      search?: string;
+      startDate?: string;
+      endDate?: string;
+      typeMutasi?: string;
+    },
+  ) => {
+    const url = `${import.meta.env.VITE_API_LINK}/rm/gudangStockMutasi/${id}`;
+    try {
+      setMutasiLoading(true);
+      const res = await axios.get<StockMutasiListResponse>(url, {
+        params: {
+          page: pageVal,
+          limit: MUTASI_LIMIT,
+          search: (opts?.search ?? mutasiSearch) || undefined,
+          start_date: (opts?.startDate ?? startDate) || undefined,
+          end_date: (opts?.endDate ?? endDate) || undefined,
+          type_mutasi: (opts?.typeMutasi ?? typeMutasi) || undefined,
+        },
+        withCredentials: true,
+      });
+      setMutasi(res.data?.data ?? []);
+      setMutasiTotalPages(res.data?.total_page ?? 1);
+    } catch (err) {
+      console.error('Error fetching gudang stock mutasi:', err);
+      setMutasi([]);
+    } finally {
+      setMutasiLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setMutasiPage(1);
+    fetchMutasi(1);
+    fetchLatestMasuk();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  function handleMutasiSearchInput(val: string) {
+    setMutasiSearch(val);
+    setMutasiPage(1);
+    if (mutasiDebounceRef.current) clearTimeout(mutasiDebounceRef.current);
+    mutasiDebounceRef.current = setTimeout(
+      () => fetchMutasi(1, { search: val }),
+      400,
+    );
+  }
+
+  function handleStartDateChange(val: string) {
+    setStartDate(val);
+    setMutasiPage(1);
+    fetchMutasi(1, { startDate: val });
+  }
+
+  function handleEndDateChange(val: string) {
+    setEndDate(val);
+    setMutasiPage(1);
+    fetchMutasi(1, { endDate: val });
+  }
+
+  function handleTypeMutasiChange(val: '' | 'masuk' | 'keluar') {
+    setTypeMutasi(val);
+    setMutasiPage(1);
+    fetchMutasi(1, { typeMutasi: val });
+  }
+
+  function handleMutasiPageChange(newPage: number) {
+    setMutasiPage(newPage);
+    fetchMutasi(newPage);
+  }
+
   const master = detail?.master_barang;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[92vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[92vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div>
             <h2 className="text-lg font-semibold text-slate-800">
@@ -1393,7 +1651,7 @@ const StockDetailModal: React.FC<{
               <div className="bg-white border border-slate-200 rounded-xl py-3">
                 <p className="text-[11px] text-slate-400">Tgl Masuk Terakhir</p>
                 <p className="text-sm font-medium text-slate-700 mt-1">
-                  {formatDateTime(detail.tgl_masuk)}
+                  {formatDateTime(latestMasuk ?? detail.tgl_masuk)}
                 </p>
               </div>
             </div>
@@ -1411,18 +1669,6 @@ const StockDetailModal: React.FC<{
                   <p className="text-[11px] text-slate-400">Gudang</p>
                   <p className="text-slate-700">{master.warehouse || '-'}</p>
                 </div>
-                <div>
-                  <p className="text-[11px] text-slate-400">Harga</p>
-                  <p className="text-slate-700">
-                    {formatCurrency(master.harga)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-slate-400">Harga per Satuan</p>
-                  <p className="text-slate-700">
-                    {formatCurrency(master.harga_per_satuan)}
-                  </p>
-                </div>
                 {master.keterangan && (
                   <div className="col-span-2">
                     <p className="text-[11px] text-slate-400">Keterangan</p>
@@ -1432,6 +1678,62 @@ const StockDetailModal: React.FC<{
               </div>
             )}
 
+            {/* Mutasi filters */}
+            <div className="flex flex-wrap items-end gap-2">
+              <div className="flex-1 min-w-[160px]">
+                <label className="text-[11px] text-slate-400 block mb-1">
+                  Cari
+                </label>
+                <input
+                  type="text"
+                  value={mutasiSearch}
+                  onChange={(e) => handleMutasiSearchInput(e.target.value)}
+                  placeholder="Cari mutasi..."
+                  className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-slate-400 block mb-1">
+                  Dari Tanggal
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
+                  className="text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-slate-400 block mb-1">
+                  Sampai Tanggal
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => handleEndDateChange(e.target.value)}
+                  className="text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-slate-400 block mb-1">
+                  Tipe
+                </label>
+                <select
+                  value={typeMutasi}
+                  onChange={(e) =>
+                    handleTypeMutasiChange(
+                      e.target.value as '' | 'masuk' | 'keluar',
+                    )
+                  }
+                  className="text-xs border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                >
+                  <option value="">Semua</option>
+                  <option value="masuk">Masuk</option>
+                  <option value="keluar">Keluar</option>
+                </select>
+              </div>
+            </div>
+
             <div className="border border-slate-200 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
@@ -1439,6 +1741,9 @@ const StockDetailModal: React.FC<{
                     <tr>
                       <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                         Tanggal
+                      </th>
+                      <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        Qty Awal
                       </th>
                       <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                         Tipe
@@ -1450,15 +1755,26 @@ const StockDetailModal: React.FC<{
                         Sumber
                       </th>
                       <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        No GR
+                      </th>
+                      <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                         Oleh
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {mutasi.length === 0 ? (
+                    {mutasiLoading ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-8 text-center">
+                          <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-emerald-500 border-t-transparent" />
+                          </div>
+                        </td>
+                      </tr>
+                    ) : mutasi.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={5}
+                          colSpan={6}
                           className="px-4 py-8 text-center text-slate-400 text-sm"
                         >
                           Belum ada mutasi.
@@ -1469,6 +1785,9 @@ const StockDetailModal: React.FC<{
                         <tr key={m.id}>
                           <td className="px-3 py-2.5 whitespace-nowrap text-slate-600">
                             {formatDateTime(m.tgl_mutasi)}
+                          </td>
+                          <td className="px-3 py-2.5 text-right tabular-nums font-medium text-slate-800">
+                            {formatQty(m.jumlah_qty_awal)}
                           </td>
                           <td className="px-3 py-2.5">
                             <span
@@ -1487,6 +1806,9 @@ const StockDetailModal: React.FC<{
                             {m.no_jo_booking ? ` · ${m.no_jo_booking}` : ''}
                             {m.note ? ` · ${m.note}` : ''}
                           </td>
+                          <td className="px-3 py-2.5 text-slate-600 whitespace-nowrap">
+                            {m.no_good_receipt || '-'}
+                          </td>
                           <td className="px-3 py-2.5 text-slate-600">
                             {m.user?.nama || '-'}
                           </td>
@@ -1496,6 +1818,23 @@ const StockDetailModal: React.FC<{
                   </tbody>
                 </table>
               </div>
+              {!mutasiLoading &&
+                (mutasi.length > 0 || mutasiTotalPages > 1) && (
+                  <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-t border-slate-100">
+                    <span className="text-[11px] text-slate-400">
+                      Hal {mutasiPage}/{mutasiTotalPages}
+                    </span>
+                    <Stack spacing={2}>
+                      <Pagination
+                        count={mutasiTotalPages}
+                        page={mutasiPage}
+                        color="primary"
+                        size="small"
+                        onChange={(_, i) => handleMutasiPageChange(i)}
+                      />
+                    </Stack>
+                  </div>
+                )}
             </div>
           </div>
         )}

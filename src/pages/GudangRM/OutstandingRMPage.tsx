@@ -22,7 +22,7 @@ const OutstandingRMPage: React.FC = () => {
     <DefaultLayout>
       <div>
         <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
-          Gudang RM &gt; Tambah Bahan
+          Gudang RM &gt; Outstanding
         </p>
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-2 mb-5">
           <Tabs

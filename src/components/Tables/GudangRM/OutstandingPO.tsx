@@ -30,16 +30,22 @@ import {
  * once and sent to /qc/incomingRawMaterial in a single submission, since
  * each item in that payload already carries its own id_purchase_order.
  *
- * no_surat_jalan for a single "incoming" submission is ALWAYS the same
+ * no_good_receipt for a single "incoming" submission is ALWAYS the same
  * across every item, and it is auto-generated (read-only) by calling
- * /qc/incomingRawMaterialNoSuratJalan when the confirmation modal opens.
+ * /qc/incomingRawMaterialNoGoodReceipt when the confirmation modal opens.
  * The person cannot type or edit it.
+ *
+ * no_surat_jalan is ALSO always the same across every item in a single
+ * submission, but unlike no_good_receipt it is free text — the person
+ * types it once in the modal and it's applied to every item sent to the
+ * backend (no per-row input/column for it).
  *
  * status_qc on items_jo: null | "request qc" | "approve qc" | "reject qc"
  * status_po on items_jo: "progress" | "done"
  * ========================================================================== */
 
 const EMPTY_TEXT = 'Tidak ada PO dengan status approve finance.';
+const EMPTY_HISTORY_TEXT = 'Belum ada riwayat PO.';
 
 interface RawMasterBarangRef {
   is_include_tax?: boolean;
@@ -94,11 +100,11 @@ interface IncomingFormRow {
   qty_pallet: number;
 }
 
-interface NoSuratJalanResponse {
+interface NoGoodReceiptResponse {
   status: number;
   success: boolean;
-  no_surat_jalan: string;
-  new_no_surat_jalan: string;
+  no_good_receipt: string;
+  new_no_good_receipt: string;
 }
 
 const formatQty = (val: number | null | undefined): string =>
@@ -126,7 +132,9 @@ const statusQcLabel = (status: string | null): string => {
 // =============================================================================
 // Incoming submission popup — the ONLY modal in this page. Rows can span
 // multiple POs; each keeps its own id_purchase_order for the payload.
-// no_surat_jalan is fetched once, shared by every row, and read-only.
+// no_good_receipt is fetched once, shared by every row, and read-only.
+// no_surat_jalan is typed once by the person and shared by every row too —
+// there's no per-row field/column for either one.
 // =============================================================================
 const IncomingFormModal: React.FC<{
   rows: IncomingFormRow[];
@@ -137,32 +145,36 @@ const IncomingFormModal: React.FC<{
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
+  // Free text, shared across every item in this submission.
   const [noSuratJalan, setNoSuratJalan] = useState<string>('');
-  const [loadingSuratJalan, setLoadingSuratJalan] = useState<boolean>(true);
-  const [suratJalanError, setSuratJalanError] = useState<string>('');
 
-  const fetchNoSuratJalan = async () => {
-    setLoadingSuratJalan(true);
-    setSuratJalanError('');
+  // Auto-generated, read-only, shared across every item in this submission.
+  const [noGoodReceipt, setNoGoodReceipt] = useState<string>('');
+  const [loadingGoodReceipt, setLoadingGoodReceipt] = useState<boolean>(true);
+  const [goodReceiptError, setGoodReceiptError] = useState<string>('');
+
+  const fetchNoGoodReceipt = async () => {
+    setLoadingGoodReceipt(true);
+    setGoodReceiptError('');
     try {
       const url = `${
         import.meta.env.VITE_API_LINK
-      }/qc/incomingRawMaterialNoSuratJalan`;
-      const res = await axios.get<NoSuratJalanResponse>(url, {
+      }/qc/incomingRawMaterialNoGoodReceipt`;
+      const res = await axios.get<NoGoodReceiptResponse>(url, {
         withCredentials: true,
       });
-      setNoSuratJalan(res.data.new_no_surat_jalan);
+      setNoGoodReceipt(res.data.new_no_good_receipt);
     } catch (err) {
-      console.error('Error fetching no surat jalan:', err);
-      setSuratJalanError('Gagal mengambil nomor surat jalan otomatis.');
-      setNoSuratJalan('');
+      console.error('Error fetching no good receipt:', err);
+      setGoodReceiptError('Gagal mengambil nomor good receipt otomatis.');
+      setNoGoodReceipt('');
     } finally {
-      setLoadingSuratJalan(false);
+      setLoadingGoodReceipt(false);
     }
   };
 
   useEffect(() => {
-    fetchNoSuratJalan();
+    fetchNoGoodReceipt();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -192,10 +204,11 @@ const IncomingFormModal: React.FC<{
   );
 
   const validate = (): string => {
-    if (loadingSuratJalan)
-      return 'Nomor surat jalan sedang dimuat, mohon tunggu.';
-    if (!noSuratJalan)
-      return 'Nomor surat jalan gagal dimuat. Coba muat ulang.';
+    if (!noSuratJalan.trim()) return 'No surat jalan wajib diisi.';
+    if (loadingGoodReceipt)
+      return 'Nomor good receipt sedang dimuat, mohon tunggu.';
+    if (!noGoodReceipt)
+      return 'Nomor good receipt gagal dimuat. Coba muat ulang.';
     for (const r of rows) {
       if (r.qty_incoming <= 0)
         return `Jumlah datang untuk "${r.nama_item}" harus lebih dari 0.`;
@@ -223,7 +236,8 @@ const IncomingFormModal: React.FC<{
           items: rows.map((r) => ({
             id_purchase_order: r.id_purchase_order,
             id_purchase_order_item_jo: r.id_purchase_order_item_jo,
-            no_surat_jalan: noSuratJalan,
+            no_surat_jalan: noSuratJalan.trim(),
+            no_good_receipt: noGoodReceipt,
             qty_incoming: r.qty_incoming,
             qty_idle: r.ada_idle ? r.qty_idle : 0,
             qty_pallet: r.qty_pallet,
@@ -240,7 +254,11 @@ const IncomingFormModal: React.FC<{
     }
   };
 
-  const canSubmit = !submitting && !loadingSuratJalan && !!noSuratJalan;
+  const canSubmit =
+    !submitting &&
+    !loadingGoodReceipt &&
+    !!noGoodReceipt &&
+    !!noSuratJalan.trim();
 
   return (
     <Dialog
@@ -256,22 +274,23 @@ const IncomingFormModal: React.FC<{
         </span>
       </DialogTitle>
       <DialogContent>
-        {/* Auto-generated, read-only, shared No Surat Jalan */}
-        <div className="flex flex-wrap items-center gap-3 mb-4 mt-1 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2.5">
+        {/* Shared fields for the whole submission: No Good Receipt
+            (auto-generated, read-only) and No Surat Jalan (free text). */}
+        <div className="flex flex-wrap items-start gap-3 mb-4 mt-1 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2.5">
           <div className="flex-1 min-w-[220px]">
             <label className="block text-[11px] font-medium text-teal-700 mb-1">
-              No Surat Jalan (otomatis, berlaku untuk semua item)
+              No Good Receipt (otomatis, berlaku untuk semua item)
             </label>
-            {loadingSuratJalan ? (
+            {loadingGoodReceipt ? (
               <div className="flex items-center gap-2 text-sm text-slate-500">
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-teal-500 border-t-transparent" />
-                Mengambil nomor surat jalan...
+                Mengambil nomor good receipt...
               </div>
-            ) : suratJalanError ? (
+            ) : goodReceiptError ? (
               <div className="flex items-center gap-2 text-sm text-red-600">
-                {suratJalanError}
+                {goodReceiptError}
                 <button
-                  onClick={fetchNoSuratJalan}
+                  onClick={fetchNoGoodReceipt}
                   className="text-xs font-medium text-teal-700 hover:text-teal-900 underline"
                 >
                   Coba lagi
@@ -282,9 +301,22 @@ const IncomingFormModal: React.FC<{
                 className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-lg bg-white text-slate-700 font-semibold tabular-nums select-all"
                 aria-readonly="true"
               >
-                {noSuratJalan}
+                {noGoodReceipt}
               </div>
             )}
+          </div>
+
+          <div className="flex-1 min-w-[220px]">
+            <label className="block text-[11px] font-medium text-teal-700 mb-1">
+              No Surat Jalan (berlaku untuk semua item)
+            </label>
+            <input
+              type="text"
+              value={noSuratJalan}
+              onChange={(e) => setNoSuratJalan(e.target.value)}
+              placeholder="Masukkan no surat jalan..."
+              className="w-full px-3 py-1.5 text-sm border border-teal-200 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
           </div>
         </div>
 
@@ -297,9 +329,6 @@ const IncomingFormModal: React.FC<{
                 </th>
                 <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                   JO / Barang
-                </th>
-                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                  No Surat Jalan
                 </th>
                 <th className="px-3 py-2.5 text-center text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                   Jumlah Datang
@@ -329,11 +358,6 @@ const IncomingFormModal: React.FC<{
                     <div className="text-[11px] text-slate-400">
                       Sisa kebutuhan: {formatQty(r.qty_sisa)} {r.satuan}
                     </div>
-                  </td>
-                  <td className="px-3 py-2.5 align-top">
-                    <span className="text-sm text-slate-500">
-                      {loadingSuratJalan ? '...' : noSuratJalan || '-'}
-                    </span>
                   </td>
                   <td className="px-3 py-2.5 align-top text-center">
                     <input
@@ -393,7 +417,7 @@ const IncomingFormModal: React.FC<{
             <tfoot className="bg-slate-50 border-t border-slate-200">
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={2}
                   className="px-3 py-2 text-xs font-semibold text-slate-500"
                 >
                   Total
@@ -443,7 +467,12 @@ const IncomingFormModal: React.FC<{
 // =============================================================================
 // Main list page
 // =============================================================================
+type SubTab = 'outstanding' | 'history';
+
 const OutstandingPO: React.FC = () => {
+  const [subTab, setSubTab] = useState<SubTab>('outstanding');
+  const isHistory = subTab === 'history';
+
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<PurchaseOrder[]>([]);
 
@@ -482,6 +511,8 @@ const OutstandingPO: React.FC = () => {
           limit,
           search: searchTerm || undefined,
           status: 'approve finance',
+          // Toggle between the actionable queue and the read-only history.
+          status_tiket: isHistory ? 'history' : undefined,
         },
         withCredentials: true,
       });
@@ -503,7 +534,18 @@ const OutstandingPO: React.FC = () => {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, searchTerm]);
+  }, [page, limit, searchTerm, subTab]);
+
+  const handleSwitchTab = (tab: SubTab) => {
+    if (tab === subTab) return;
+    setSubTab(tab);
+    setExpandedIds(new Set());
+    setDetailCache({});
+    setSelected(new Map());
+    setSearchInput('');
+    setSearchTerm('');
+    setPage(1);
+  };
 
   const handleSearch = () => {
     setSearchTerm(searchInput);
@@ -671,6 +713,30 @@ const OutstandingPO: React.FC = () => {
 
   return (
     <div className="space-y-5 pb-20">
+      {/* Sub tabs: Outstanding vs Riwayat */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-1.5 inline-flex gap-1">
+        <button
+          onClick={() => handleSwitchTab('outstanding')}
+          className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+            subTab === 'outstanding'
+              ? 'bg-teal-600 text-white'
+              : 'text-slate-500 hover:bg-slate-100'
+          }`}
+        >
+          Outstanding
+        </button>
+        <button
+          onClick={() => handleSwitchTab('history')}
+          className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${
+            subTab === 'history'
+              ? 'bg-teal-600 text-white'
+              : 'text-slate-500 hover:bg-slate-100'
+          }`}
+        >
+          Riwayat
+        </button>
+      </div>
+
       {/* Filter card */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="max-w-md">
@@ -750,7 +816,7 @@ const OutstandingPO: React.FC = () => {
                 <tr>
                   <td colSpan={7} className="px-4 py-14 text-center">
                     <p className="text-slate-600 font-medium text-sm">
-                      {EMPTY_TEXT}
+                      {isHistory ? EMPTY_HISTORY_TEXT : EMPTY_TEXT}
                     </p>
                     {activeFilterCount > 0 && (
                       <p className="text-slate-400 text-xs mt-1">
@@ -833,21 +899,23 @@ const OutstandingPO: React.FC = () => {
                                   <table className="min-w-full text-sm">
                                     <thead className="bg-slate-50 border-b border-slate-100">
                                       <tr>
-                                        <th className="px-3 py-2.5 w-10">
-                                          <input
-                                            type="checkbox"
-                                            checked={cache.items.every((it) =>
-                                              selected.has(it.id),
-                                            )}
-                                            onChange={() =>
-                                              toggleSelectAllForPo(
-                                                po,
-                                                cache.items,
-                                              )
-                                            }
-                                            className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                                          />
-                                        </th>
+                                        {!isHistory && (
+                                          <th className="px-3 py-2.5 w-10">
+                                            <input
+                                              type="checkbox"
+                                              checked={cache.items.every((it) =>
+                                                selected.has(it.id),
+                                              )}
+                                              onChange={() =>
+                                                toggleSelectAllForPo(
+                                                  po,
+                                                  cache.items,
+                                                )
+                                              }
+                                              className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                            />
+                                          </th>
+                                        )}
                                         <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
                                           No JO
                                         </th>
@@ -880,16 +948,18 @@ const OutstandingPO: React.FC = () => {
                                           key={it.id}
                                           className="hover:bg-slate-50/70"
                                         >
-                                          <td className="px-3 py-2.5">
-                                            <input
-                                              type="checkbox"
-                                              checked={selected.has(it.id)}
-                                              onChange={() =>
-                                                toggleItemSelected(po, it)
-                                              }
-                                              className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                                            />
-                                          </td>
+                                          {!isHistory && (
+                                            <td className="px-3 py-2.5">
+                                              <input
+                                                type="checkbox"
+                                                checked={selected.has(it.id)}
+                                                onChange={() =>
+                                                  toggleItemSelected(po, it)
+                                                }
+                                                className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                              />
+                                            </td>
+                                          )}
                                           <td className="px-3 py-2.5 font-medium text-teal-700">
                                             {it.no_jo}
                                           </td>
@@ -987,8 +1057,8 @@ const OutstandingPO: React.FC = () => {
         </Stack>
       </div>
 
-      {/* Floating selection bar — appears once anything is checked, across any PO */}
-      {selected.size > 0 && (
+      {/* Floating selection bar — appears once anything is checked, across any PO; hidden on the read-only history tab */}
+      {!isHistory && selected.size > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-30 flex justify-center px-4 pb-4">
           <div className="bg-slate-900 text-white rounded-2xl shadow-xl px-5 py-3 flex items-center gap-4">
             <p className="text-sm">
@@ -1012,7 +1082,7 @@ const OutstandingPO: React.FC = () => {
         </div>
       )}
 
-      {showForm && (
+      {!isHistory && showForm && (
         <IncomingFormModal
           rows={formRows}
           onClose={() => setShowForm(false)}
