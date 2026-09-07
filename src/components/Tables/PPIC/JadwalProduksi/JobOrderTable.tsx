@@ -21,6 +21,55 @@ interface ListJOData {
 
 type SortTglKirim = '' | 'oldest' | 'newest';
 
+const MONTHS_ID = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sept',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+// Formats a tgl_kirim value (or any similar date string) into "DD Mon YYYY",
+// e.g. "04 Sept 2026".
+//
+// IMPORTANT: this reads the year/month/day digits directly out of the
+// string instead of building a `Date` object and calling
+// `toLocaleDateString()`. The old approach (`new Date(value).toLocaleDateString()`)
+// parses date-only strings as UTC midnight, then converts to the browser's
+// LOCAL timezone before printing — which is exactly why the table and the
+// modal sometimes disagreed on the date (they were both doing this
+// conversion independently, and depending on the viewer's timezone it could
+// round to a different day). By parsing the raw string once, here, and
+// using that same output everywhere, the table and the modal are
+// guaranteed to always show the same date.
+const formatTglKirim = (value?: string): string => {
+  if (!value) return 'N/A';
+
+  const datePart = value.split('T')[0]; // strip any time component if present
+  const match = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (match) {
+    const [, year, month, day] = match;
+    const monthIndex = parseInt(month, 10) - 1;
+    return `${day} ${MONTHS_ID[monthIndex]} ${year}`;
+  }
+
+  // Fallback for unexpected formats — use UTC getters (never local ones)
+  // so this still can't drift by timezone.
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return 'N/A';
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  const month = MONTHS_ID[d.getUTCMonth()];
+  return `${day} ${month} ${d.getUTCFullYear()}`;
+};
+
 // Add ModalXL component
 const ModalXL = ({
   isOpen,
@@ -115,12 +164,6 @@ const JobOrderTable = ({
   const [selectedJOLocal, setSelectedJOLocal] = useState<JobOrder | null>(null);
   const [selectedIndexLocal, setSelectedIndexLocal] = useState<number>(0);
   const [showDetail, setShowDetail] = useState<boolean[]>([]);
-
-  // Helper functions
-  const convertTimeStampToDate = (timestamp: string) => {
-    if (!timestamp) return '-';
-    return new Date(timestamp).toLocaleDateString();
-  };
 
   const formatInteger = (num: number) => {
     return num ? num.toLocaleString() : '0';
@@ -446,7 +489,7 @@ const JobOrderTable = ({
                   {jo.qty_pcs || 0}
                 </td>
                 <td className="border border-blue-200 px-4 py-2 text-center">
-                  {jo.tgl_kirim || 'N/A'}
+                  {formatTglKirim(jo.tgl_kirim)}
                 </td>
                 <td className="border border-blue-200 px-4 py-2 text-center gap-2">
                   <div className="flex flex-col gap-2 justify-center items-center">
@@ -604,7 +647,9 @@ const JobOrderTable = ({
                     Tanggal Kirim
                   </label>
                   <label className="text-[#016ae6] uppercase text-xl font-normal">
-                    : {convertTimeStampToDate(selectedJOLocal?.tgl_kirim || '')}
+                    {/* Same formatter, same raw jo.tgl_kirim source as the
+                        table, so this can never disagree with it. */}
+                    : {formatTglKirim(selectedJOLocal?.tgl_kirim)}
                   </label>
                 </div>
               </div>
@@ -679,13 +724,13 @@ const JobOrderTable = ({
                         <label className="text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center">
                           {data2.tgl_from == null || data2.tgl_from == ''
                             ? '-'
-                            : data2.tgl_from}
+                            : formatTglKirim(data2.tgl_from)}
                         </label>
                       ) : (
                         <button className="text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center">
                           {data2.jadwal_per_jam?.length == 0
                             ? '-'
-                            : convertTimeStampToDate(
+                            : formatTglKirim(
                                 data2.jadwal_per_jam[0]?.tanggal,
                               )}{' '}
                           - {data2.jadwal_per_jam[0]?.jam}

@@ -806,8 +806,8 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
           params: {
             limit: 100,
             is_active: true,
-            tipe_vendor:
-              uniqueTipeBarang.length > 0 ? uniqueTipeBarang : undefined,
+            // tipe_vendor:
+            //   uniqueTipeBarang.length > 0 ? uniqueTipeBarang : undefined,
           },
           withCredentials: true,
         });
@@ -1040,12 +1040,14 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     }
     setError('');
     setSubmitting('save');
+    const payload = buildPayload();
     try {
       const url = `${
         import.meta.env.VITE_API_LINK
       }/purchasing/purchaseOrder/${idPo}`;
-      await axios.put(url, buildPayload(), { withCredentials: true });
+      await axios.put(url, payload, { withCredentials: true });
       onSaved();
+      console.log('PO updated successfully:', payload);
     } catch (err) {
       console.error('Error updating PO:', err);
       setError('Gagal menyimpan perubahan. Silakan coba lagi.');

@@ -40,6 +40,21 @@ interface RangeEntry {
   existing_2: boolean;
 }
 
+// A single source-machine day used by the "copy from machine" feature
+interface CopySourceEntry {
+  dateKey: string;
+  label: string;
+  shift_1: boolean;
+  shift_2: boolean;
+}
+
+// Per-target-machine outcome preview for the copy feature
+interface CopyTargetPreview {
+  mesin: string;
+  toApply: CopySourceEntry[];
+  skippedCount: number;
+}
+
 const DAY_LABELS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
 const MONTH_LABELS = [
@@ -137,6 +152,19 @@ const CalendarPlusIcon = () => (
   >
     <rect x="3" y="4" width="18" height="17" rx="2" />
     <path d="M3 9h18M8 2v4M16 2v4M12 12v6M9 15h6" strokeLinecap="round" />
+  </svg>
+);
+
+const CopyIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
   </svg>
 );
 
@@ -333,6 +361,21 @@ function KalenderJadwalLembur() {
   const [rangeSaving, setRangeSaving] = useState(false);
 
   // ----------------------------------------------------------------------
+  // Copy-from-machine panel state
+  // ----------------------------------------------------------------------
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
+  const [copySourceMachine, setCopySourceMachine] = useState('');
+  const [copyTargetMachines, setCopyTargetMachines] = useState<string[]>([]);
+  const [copyTargetFilter, setCopyTargetFilter] = useState('');
+  const [copySkipExisting, setCopySkipExisting] = useState(true);
+  const [copySaving, setCopySaving] = useState(false);
+  const [copyProgress, setCopyProgress] = useState<{
+    current: number;
+    total: number;
+    mesin: string;
+  } | null>(null);
+
+  // ----------------------------------------------------------------------
   // Derived data
   // ----------------------------------------------------------------------
 
@@ -443,6 +486,64 @@ function KalenderJadwalLembur() {
   const rangeAlreadySetCount = useMemo(
     () => rangeEntries.filter((e) => e.existing_1 || e.existing_2).length,
     [rangeEntries],
+  );
+
+  // ----------------------------------------------------------------------
+  // Copy-from-machine derived data
+  // ----------------------------------------------------------------------
+
+  // Every day in the currently viewed month where the reference/source
+  // machine has overtime scheduled (shift_1 and/or shift_2).
+  const copySourceEntries: CopySourceEntry[] = useMemo(() => {
+    if (!copySourceMachine) return [];
+    const entries: CopySourceEntry[] = [];
+    calendarDays.forEach((cell) => {
+      if (!cell.inMonth) return;
+      const s = groupedLembur.get(cell.dateKey)?.get(copySourceMachine);
+      if (s && (s.shift_1 || s.shift_2)) {
+        entries.push({
+          dateKey: cell.dateKey,
+          label: formatShortDate(cell.dateKey),
+          shift_1: s.shift_1,
+          shift_2: s.shift_2,
+        });
+      }
+    });
+    return entries;
+  }, [copySourceMachine, calendarDays, groupedLembur]);
+
+  // Machines the user can pick as a copy target (everything except the
+  // chosen source machine), filtered by the search box.
+  const filteredCopyTargets = useMemo(() => {
+    return machineList.filter((m) => {
+      if (m === copySourceMachine) return false;
+      if (!copyTargetFilter.trim()) return true;
+      return m.toLowerCase().includes(copyTargetFilter.toLowerCase());
+    });
+  }, [machineList, copySourceMachine, copyTargetFilter]);
+
+  // Per-target preview: which of the source machine's dates will actually
+  // be written for that target, and how many are being skipped because the
+  // target already has something scheduled there.
+  const copyPreview: CopyTargetPreview[] = useMemo(() => {
+    return copyTargetMachines.map((mesin) => {
+      const toApply = copySourceEntries.filter((e) => {
+        const existing = groupedLembur.get(e.dateKey)?.get(mesin);
+        const alreadySet = !!existing && (existing.shift_1 || existing.shift_2);
+        if (copySkipExisting && alreadySet) return false;
+        return true;
+      });
+      return {
+        mesin,
+        toApply,
+        skippedCount: copySourceEntries.length - toApply.length,
+      };
+    });
+  }, [copyTargetMachines, copySourceEntries, groupedLembur, copySkipExisting]);
+
+  const copyTotalWrites = useMemo(
+    () => copyPreview.reduce((sum, p) => sum + p.toApply.length, 0),
+    [copyPreview],
   );
 
   // ----------------------------------------------------------------------
@@ -772,6 +873,124 @@ function KalenderJadwalLembur() {
   ]);
 
   // ----------------------------------------------------------------------
+  // Copy-from-machine handlers
+  // ----------------------------------------------------------------------
+
+  const openCopyModal = useCallback(() => {
+    setCopySourceMachine('');
+    setCopyTargetMachines([]);
+    setCopyTargetFilter('');
+    setCopySkipExisting(true);
+    setCopyProgress(null);
+    setCopyModalOpen(true);
+  }, []);
+
+  const closeCopyModal = useCallback(() => {
+    if (copySaving) return; // don't allow closing mid-save
+    setCopyModalOpen(false);
+    setCopySourceMachine('');
+    setCopyTargetMachines([]);
+    setCopyTargetFilter('');
+    setCopyProgress(null);
+  }, [copySaving]);
+
+  const handleCopySourceChange = useCallback((mesin: string) => {
+    setCopySourceMachine(mesin);
+    // A machine can't be both the source and a target at the same time.
+    setCopyTargetMachines((prev) => prev.filter((m) => m !== mesin));
+  }, []);
+
+  const toggleCopyTarget = useCallback((mesin: string) => {
+    setCopyTargetMachines((prev) =>
+      prev.includes(mesin) ? prev.filter((m) => m !== mesin) : [...prev, mesin],
+    );
+  }, []);
+
+  const selectAllVisibleCopyTargets = useCallback(() => {
+    setCopyTargetMachines((prev) => {
+      const merged = new Set(prev);
+      filteredCopyTargets.forEach((m) => merged.add(m));
+      return Array.from(merged);
+    });
+  }, [filteredCopyTargets]);
+
+  const clearCopyTargets = useCallback(() => {
+    setCopyTargetMachines([]);
+  }, []);
+
+  // Saves one machine at a time, in sequence — the API only accepts a
+  // single `mesin` per request, so each target machine gets its own
+  // awaited POST rather than firing them all in parallel.
+  const handleSaveCopy = useCallback(async () => {
+    if (!copySourceMachine || copyTotalWrites === 0) {
+      closeCopyModal();
+      return;
+    }
+
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/ppic/jadwalProduksiViewLembur`;
+
+    const machinesToWrite = copyPreview.filter((p) => p.toApply.length > 0);
+
+    setCopySaving(true);
+    const failed: string[] = [];
+    try {
+      for (let i = 0; i < machinesToWrite.length; i++) {
+        const { mesin, toApply } = machinesToWrite[i];
+        setCopyProgress({
+          current: i + 1,
+          total: machinesToWrite.length,
+          mesin,
+        });
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await axios.post(
+            url,
+            {
+              data_lembur: toApply.map((e) => ({
+                tanggal_lembur: e.dateKey,
+                shift_1: e.shift_1,
+                shift_2: e.shift_2,
+              })),
+              mesin,
+            },
+            { withCredentials: true },
+          );
+        } catch (err) {
+          console.error(`Gagal menyalin jadwal ke mesin ${mesin}:`, err);
+          failed.push(mesin);
+        }
+      }
+
+      const successCount = machinesToWrite.length - failed.length;
+      if (failed.length === 0) {
+        alert(
+          `Jadwal lembur berhasil disalin ke ${successCount} mesin (${copyTotalWrites} entri tanggal).`,
+        );
+      } else {
+        alert(
+          `Selesai dengan sebagian gagal.\nBerhasil: ${successCount} mesin.\nGagal: ${failed.join(
+            ', ',
+          )}.`,
+        );
+      }
+      closeCopyModal();
+      await getJadwalLembur(monthRange.start, monthRange.end);
+    } finally {
+      setCopySaving(false);
+      setCopyProgress(null);
+    }
+  }, [
+    copySourceMachine,
+    copyTotalWrites,
+    copyPreview,
+    closeCopyModal,
+    getJadwalLembur,
+    monthRange,
+  ]);
+
+  // ----------------------------------------------------------------------
   // Render
   // ----------------------------------------------------------------------
 
@@ -812,6 +1031,14 @@ function KalenderJadwalLembur() {
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={openCopyModal}
+                disabled={machineList.length < 2}
+                className="flex items-center gap-1.5 bg-white text-[#0065de] border border-[#0065de] rounded-md py-1.5 px-3 text-sm font-medium hover:bg-[#eaf4ff] disabled:opacity-50"
+              >
+                <CopyIcon />
+                Salin dari Mesin Lain
+              </button>
               <button
                 onClick={openRangeModal}
                 disabled={machineList.length === 0}
@@ -1284,6 +1511,237 @@ function KalenderJadwalLembur() {
                   className="px-4 py-2 text-sm bg-[#0065de] text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {rangeSaving ? 'Menyimpan...' : 'Simpan Rentang'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Copy-from-machine panel */}
+      {copyModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl max-w-2xl w-full min-h-[88vh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center px-5 py-4 border-b-4 border-stroke">
+              <div>
+                <h3 className="font-bold text-sm text-gray-800">
+                  Salin Jadwal Lembur dari Mesin Lain
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Pilih mesin referensi, lalu pilih mesin tujuan untuk menyalin
+                  jadwal lembur bulan{' '}
+                  {MONTH_LABELS[Number(selectedMonth.split('-')[1]) - 1]}{' '}
+                  {selectedMonth.split('-')[0]}.
+                </p>
+              </div>
+              <button
+                onClick={closeCopyModal}
+                disabled={copySaving}
+                className="text-gray-400 hover:text-gray-700 text-2xl leading-none disabled:opacity-40"
+                title="Tutup"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Step 1: source machine */}
+            <div className="px-5 py-3 border-b border-[#D8EAFF]">
+              <label className="block text-[10px] font-semibold text-gray-500 mb-1">
+                1. MESIN REFERENSI (SUMBER)
+              </label>
+              <SearchableSelect
+                value={copySourceMachine}
+                onChange={handleCopySourceChange}
+                options={machineOptions}
+                placeholder="Pilih mesin sumber"
+                searchPlaceholder="Cari mesin..."
+                className="max-w-xs"
+              />
+              {copySourceMachine && (
+                <p className="text-[11px] text-gray-500 mt-1.5">
+                  Ditemukan{' '}
+                  <span className="font-semibold text-[#0065de]">
+                    {copySourceEntries.length}
+                  </span>{' '}
+                  tanggal lembur untuk <strong>{copySourceMachine}</strong> pada
+                  bulan ini.
+                </p>
+              )}
+            </div>
+
+            {/* Step 2: target machines */}
+            {copySourceMachine && copySourceEntries.length === 0 && (
+              <div className="mx-5 mt-3 text-[11px] bg-gray-50 border border-gray-200 text-gray-500 rounded-md px-3 py-2">
+                Mesin ini tidak memiliki jadwal lembur pada bulan yang sedang
+                dilihat. Pilih mesin lain, atau ganti bulan terlebih dahulu.
+              </div>
+            )}
+
+            {copySourceMachine && copySourceEntries.length > 0 && (
+              <>
+                <div className="px-5 py-3 border-b border-[#D8EAFF]">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-[10px] font-semibold text-gray-500">
+                      2. MESIN TUJUAN ({copyTargetMachines.length} dipilih)
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={selectAllVisibleCopyTargets}
+                        className="text-[10px] font-semibold text-[#0065de] hover:underline"
+                      >
+                        Pilih semua
+                      </button>
+                      <button
+                        onClick={clearCopyTargets}
+                        className="text-[10px] font-semibold text-gray-400 hover:underline"
+                      >
+                        Hapus pilihan
+                      </button>
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Cari mesin tujuan..."
+                    value={copyTargetFilter}
+                    onChange={(e) => setCopyTargetFilter(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0065de] mb-2"
+                  />
+                  <div className="max-h-32 overflow-y-auto border border-gray-100 rounded-md">
+                    {filteredCopyTargets.length === 0 && (
+                      <p className="text-xs text-gray-400 text-center py-3">
+                        Tidak ada mesin yang cocok
+                      </p>
+                    )}
+                    {filteredCopyTargets.map((mesin) => {
+                      const checked = copyTargetMachines.includes(mesin);
+                      return (
+                        <label
+                          key={mesin}
+                          className={`flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium cursor-pointer ${
+                            checked
+                              ? 'bg-[#eaf4ff] text-[#0065de]'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleCopyTarget(mesin)}
+                          />
+                          {mesin}
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <label className="flex items-center gap-1.5 mt-2 text-[10px] text-gray-600 font-medium">
+                    <input
+                      type="checkbox"
+                      checked={copySkipExisting}
+                      onChange={(e) => setCopySkipExisting(e.target.checked)}
+                    />
+                    Lewati tanggal yang sudah terjadwal pada mesin tujuan
+                    (jangan menimpa)
+                  </label>
+                </div>
+
+                {/* Preview */}
+                <div className="flex-1 overflow-y-auto px-5 py-3">
+                  <p className="text-[10px] font-semibold text-gray-500 mb-2">
+                    PRATINJAU
+                  </p>
+
+                  {copyTargetMachines.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-6">
+                      Pilih setidaknya satu mesin tujuan untuk melihat
+                      pratinjau.
+                    </p>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {/* Source dates being copied, shown once */}
+                      <div className="border border-gray-100 rounded-md p-2.5 bg-gray-50">
+                        <p className="text-[10px] font-semibold text-gray-500 mb-1.5">
+                          Data dari {copySourceMachine} (
+                          {copySourceEntries.length} tanggal)
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+                          {copySourceEntries.map((e) => (
+                            <span
+                              key={e.dateKey}
+                              className="flex items-center gap-1 text-[9px] bg-white border border-gray-200 rounded-full px-2 py-0.5"
+                            >
+                              {e.label.split(', ')[1]}
+                              <ShiftBadge
+                                shift1={e.shift_1}
+                                shift2={e.shift_2}
+                              />
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Per-target outcome */}
+                      <div className="flex flex-col gap-1.5">
+                        {copyPreview.map((p) => (
+                          <div
+                            key={p.mesin}
+                            className={`flex items-center justify-between px-3 py-2 rounded-md border text-xs ${
+                              p.toApply.length === 0
+                                ? 'bg-gray-50 border-gray-100 text-gray-400'
+                                : 'bg-[#eaf4ff] border-[#D8EAFF]'
+                            }`}
+                          >
+                            <span className="font-semibold text-gray-700">
+                              {p.mesin}
+                            </span>
+                            <span className="text-[11px]">
+                              {p.toApply.length === 0 ? (
+                                'Tidak ada perubahan (semua tanggal sudah terjadwal)'
+                              ) : (
+                                <>
+                                  <span className="font-semibold text-[#0065de]">
+                                    {p.toApply.length}
+                                  </span>{' '}
+                                  tanggal akan ditulis
+                                  {p.skippedCount > 0 && (
+                                    <span className="text-amber-600">
+                                      {' '}
+                                      · {p.skippedCount} dilewati
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            <div className="flex justify-between items-center gap-2 px-5 py-4 border-t-4 border-stroke">
+              <span className="text-[11px] text-gray-500">
+                {copySaving && copyProgress
+                  ? `Menyimpan ${copyProgress.current}/${copyProgress.total} — ${copyProgress.mesin}...`
+                  : `${copyTotalWrites} entri akan disimpan ke ${
+                      copyPreview.filter((p) => p.toApply.length > 0).length
+                    } mesin`}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={closeCopyModal}
+                  disabled={copySaving}
+                  className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSaveCopy}
+                  disabled={copySaving || copyTotalWrites === 0}
+                  className="px-4 py-2 text-sm bg-[#0065de] text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {copySaving ? 'Menyalin...' : 'Simpan Salinan'}
                 </button>
               </div>
             </div>

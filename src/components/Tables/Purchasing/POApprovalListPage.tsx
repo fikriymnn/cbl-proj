@@ -19,6 +19,14 @@ import POApprovalDetailModal from './POApprovalDetailModal';
 
 type ApprovalRole = 'kabag' | 'finance';
 
+// Which of this role's tickets are showing: not-yet-decided ("incoming",
+// status_tiket = the role's own "request ..." value) or already decided
+// ("history", status_tiket = "history" — confirmed present as a real
+// status_tiket value on purchase_order in the requestCancelpurchaseOrder
+// sample response). If StatusTiket's union in Purchasing.types doesn't
+// already include 'history', add it there.
+type TicketTab = 'incoming' | 'history';
+
 type ToastState = {
   open: boolean;
   message: string;
@@ -36,9 +44,20 @@ const ROLE_STATUS_TIKET: Record<ApprovalRole, StatusTiket> = {
   finance: 'request finance',
 };
 
-const ROLE_EMPTY_TEXT: Record<ApprovalRole, string> = {
-  kabag: 'Belum ada PO yang menunggu approval Kabag',
-  finance: 'Belum ada PO yang menunggu approval Finance',
+const TICKET_TAB_LABEL: Record<TicketTab, string> = {
+  incoming: 'Menunggu Approval',
+  history: 'Riwayat',
+};
+
+const ROLE_EMPTY_TEXT: Record<ApprovalRole, Record<TicketTab, string>> = {
+  kabag: {
+    incoming: 'Belum ada PO yang menunggu approval Kabag',
+    history: 'Belum ada riwayat approval Kabag',
+  },
+  finance: {
+    incoming: 'Belum ada PO yang menunggu approval Finance',
+    history: 'Belum ada riwayat approval Finance',
+  },
 };
 
 type POApprovalListPageProps = {
@@ -48,7 +67,18 @@ type POApprovalListPageProps = {
 // Shared table + approve/reject logic for the Kabag and Finance approval
 // pages. Both pages only differ in which status_tiket they query and which
 // approve/reject endpoints they call, so that's the only thing parameterized.
+//
+// Each role also gets a "Menunggu Approval" / "Riwayat" sub-tab: Incoming
+// queries the role's own pending status_tiket as before; History queries
+// status_tiket = "history" so the approver can look back at PO tickets
+// that have already been decided. Quick actions (Tolak/Setujui) are only
+// shown on the Incoming tab — History is read-only here. NOTE: this list
+// only hides the quick-action buttons; if POApprovalDetailModal lets a
+// user re-decide a ticket from its own "Detail" view, it should also be
+// checked to disable Approve/Reject when the ticket is no longer pending.
 const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
+  const [ticketTab, setTicketTab] = useState<TicketTab>('incoming');
+
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<PurchaseOrder[]>([]);
 
@@ -67,7 +97,8 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
     severity: 'success',
   });
 
-  const statusTiket = ROLE_STATUS_TIKET[role];
+  const statusTiket: StatusTiket =
+    ticketTab === 'incoming' ? ROLE_STATUS_TIKET[role] : 'history';
 
   const fetchData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/purchasing/purchaseOrder`;
@@ -105,6 +136,7 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
   useEffect(() => {
     // Role changed (shouldn't happen mid-mount, but keep filters sane).
     setPage(1);
+    setTicketTab('incoming');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
 
@@ -121,6 +153,11 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
 
   const handleLimitChange = (newLimit: number) => {
     setLimit(newLimit);
+    setPage(1);
+  };
+
+  const handleTicketTabChange = (nextTab: TicketTab) => {
+    setTicketTab(nextTab);
     setPage(1);
   };
 
@@ -179,6 +216,23 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
 
   return (
     <div className="space-y-5">
+      {/* Menunggu Approval / Riwayat sub-tabs */}
+      <div className="flex gap-2">
+        {(Object.keys(TICKET_TAB_LABEL) as TicketTab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => handleTicketTabChange(t)}
+            className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
+              ticketTab === t
+                ? 'bg-indigo-600 text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {TICKET_TAB_LABEL[t]}
+          </button>
+        ))}
+      </div>
+
       {/* Filter card */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="max-w-md">
@@ -260,7 +314,7 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
                 <tr>
                   <td colSpan={7} className="px-4 py-14 text-center">
                     <p className="text-slate-600 font-medium text-sm">
-                      {ROLE_EMPTY_TEXT[role]}
+                      {ROLE_EMPTY_TEXT[role][ticketTab]}
                     </p>
                     {activeFilterCount > 0 && (
                       <p className="text-slate-400 text-xs mt-1">
@@ -312,20 +366,24 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
                         >
                           Detail
                         </button>
-                        <button
-                          onClick={() => runQuickAction(po.id, 'reject')}
-                          disabled={decidingId === po.id}
-                          className="text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
-                        >
-                          Tolak
-                        </button>
-                        <button
-                          onClick={() => runQuickAction(po.id, 'approve')}
-                          disabled={decidingId === po.id}
-                          className="text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
-                        >
-                          {decidingId === po.id ? '...' : 'Setujui'}
-                        </button>
+                        {ticketTab === 'incoming' && (
+                          <>
+                            <button
+                              onClick={() => runQuickAction(po.id, 'reject')}
+                              disabled={decidingId === po.id}
+                              className="text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              Tolak
+                            </button>
+                            <button
+                              onClick={() => runQuickAction(po.id, 'approve')}
+                              disabled={decidingId === po.id}
+                              className="text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              {decidingId === po.id ? '...' : 'Setujui'}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

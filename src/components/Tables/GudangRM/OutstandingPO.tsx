@@ -516,6 +516,7 @@ const OutstandingPO: React.FC = () => {
         },
         withCredentials: true,
       });
+      console.log('Fetched outstanding PO data:', res.data);
       setData(res.data.data || []);
       if (res.data.total_page) setTotalPages(res.data.total_page);
     } catch (error) {
@@ -583,6 +584,7 @@ const OutstandingPO: React.FC = () => {
       const raw = res.data.data as unknown as {
         items_jo?: OutstandingItemJo[];
       };
+      console.log(`Fetched items_jo for PO ${po.no_purchase_order}:`, raw);
       setDetailCache((prev) => ({
         ...prev,
         [po.id]: { loading: false, error: '', items: raw.items_jo || [] },

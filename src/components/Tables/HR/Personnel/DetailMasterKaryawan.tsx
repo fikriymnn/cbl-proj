@@ -105,6 +105,7 @@ export default function DetailMasterKaryawanIsi() {
       setKaryawan(res.data);
 
       await getAbsen(startDate);
+      await getDetailInformasi(id);
 
       setIsLoading(false);
     } catch (error: any) {
@@ -178,6 +179,117 @@ export default function DetailMasterKaryawanIsi() {
       }
     }
   }
+
+  // ---- Penambahan (karyawanTambahan) ----
+  const [detailInformasi, setDetailInformasi] = useState<any>(null);
+  const [namaTambahan, setNamaTambahan] = useState<any>('');
+  const [jumlahTambahan, setJumlahTambahan] = useState<any>('');
+  const [showTambahan, setShowTambahan] = useState(false);
+  const [editingTambahanId, setEditingTambahanId] = useState<any>(null);
+
+  async function getDetailInformasi(idKaryawan: any) {
+    if (!idKaryawan) return;
+
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawanDetailInformasi`;
+    try {
+      const res = await axios.get(url, {
+        params: { id_karyawan: idKaryawan },
+        withCredentials: true,
+      });
+      setDetailInformasi(res.data);
+    } catch (error: any) {
+      console.error('Error fetching detail informasi data:', error);
+    }
+  }
+
+  const openModalTambahAdd = () => {
+    setEditingTambahanId(null);
+    setNamaTambahan('');
+    setJumlahTambahan('');
+    setShowTambahan(true);
+  };
+
+  const openModalTambahEdit = (item: any) => {
+    setEditingTambahanId(item.id);
+    setNamaTambahan(item.nama_tambahan);
+    setJumlahTambahan(item.jumlah_tambahan);
+    setShowTambahan(true);
+  };
+
+  const closeModalTambahan = () => {
+    setShowTambahan(false);
+    setEditingTambahanId(null);
+    setNamaTambahan('');
+    setJumlahTambahan('');
+  };
+
+  async function postTambahan() {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawanTambahan`;
+    try {
+      setIsLoading(true);
+      await axios.post(
+        url,
+        {
+          id_biodata_karyawan: karyawan?.data?.biodata_karyawan[0]?.id,
+          nama_tambahan: namaTambahan,
+          jumlah_tambahan: jumlahTambahan,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      await getKaryawan();
+      closeModalTambahan();
+      setIsLoading(false);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  async function putTambahan() {
+    if (!editingTambahanId) return;
+
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/hr/karyawanTambahan/${editingTambahanId}`;
+    try {
+      setIsLoading(true);
+      await axios.put(
+        url,
+        {
+          nama_tambahan: namaTambahan,
+          jumlah_tambahan: jumlahTambahan,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      await getKaryawan();
+      closeModalTambahan();
+      setIsLoading(false);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  const handleSaveTambahan = () => {
+    if (editingTambahanId) {
+      putTambahan();
+    } else {
+      postTambahan();
+    }
+  };
+
+  // NOTE: field path assumed as `detailInformasi.data.tambahan_karyawan`.
+  // Adjust this to match the real /hr/karyawanDetailInformasi response shape.
+  const tambahanKaryawan =
+    detailInformasi?.data?.tambahan_karyawan ||
+    karyawan?.data?.biodata_karyawan[0]?.tambahan_karyawan ||
+    [];
 
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
@@ -693,6 +805,99 @@ export default function DetailMasterKaryawanIsi() {
                   </ModalKosonganSmall>
                 )}
               </div>
+
+              {/* --- PENAMBAHAN --- */}
+              <div className="flex flex-col gap-1 px-4 py-1 w-full">
+                <div className="bg-[#eeeeee] px-6 py-2">
+                  <label className="text-blue-400 text-sm font-normal">
+                    PENAMBAHAN
+                  </label>
+                </div>
+                <div className="grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]">
+                  <label className="text-black text-sm font-semibold col-span-4">
+                    Nama Penambahan
+                  </label>
+                  <label className="text-black text-sm font-semibold col-span-3">
+                    Jumlah Penambahan
+                  </label>
+                </div>
+                {tambahanKaryawan.length > 0 ? (
+                  tambahanKaryawan.map((data: any, i: any) => (
+                    <div
+                      key={data.id ?? i}
+                      className="grid grid-cols-12 gap-1 px-6 py-2"
+                    >
+                      <label className="text-stone-500 text-sm font-semibold col-span-4">
+                        {data.nama_tambahan}
+                      </label>
+                      <label className="text-stone-500 text-sm font-semibold col-span-3">
+                        {data.jumlah_tambahan
+                          ? formatInteger(data.jumlah_tambahan)
+                          : 0}
+                      </label>
+                      <button
+                        onClick={() => openModalTambahEdit(data)}
+                        className="px-2 py-1 text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-6 py-2 text-sm text-gray-500">
+                    Belum ada penambahan
+                  </div>
+                )}
+                <button
+                  onClick={() => openModalTambahAdd()}
+                  className="bg-green-600 rounded-sm text-white text-xs font-bold px-4 py-2"
+                >
+                  TAMBAH PENAMBAHAN
+                </button>
+                {showTambahan && (
+                  <ModalKosonganSmall
+                    isOpen={showTambahan}
+                    onClose={() => closeModalTambahan()}
+                    judul={
+                      editingTambahanId
+                        ? 'Edit Penambahan'
+                        : 'Tambah Penambahan'
+                    }
+                  >
+                    <div className="flex flex-col gap-1 w-full px-[1%] py-[1%]">
+                      <div className="flex flex-col w-full">
+                        <label className="text-black text-sm font-semibold">
+                          Nama Penambahan
+                        </label>
+                        <input
+                          value={namaTambahan || ''}
+                          onChange={(e) => setNamaTambahan(e.target.value)}
+                          type="text"
+                          className="border-stroke border-2 rounded-md w-full"
+                        />
+                      </div>
+                      <div className="flex flex-col w-full">
+                        <label className="text-black text-sm font-semibold">
+                          Total Penambahan
+                        </label>
+                        <input
+                          value={jumlahTambahan || ''}
+                          onChange={(e) => setJumlahTambahan(e.target.value)}
+                          type="number"
+                          className="border-stroke border-2 rounded-md w-full"
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleSaveTambahan()}
+                        className="bg-blue-500 px-2 text-white font-semibold rounded-md text-md"
+                      >
+                        Simpan
+                      </button>
+                    </div>
+                  </ModalKosonganSmall>
+                )}
+              </div>
+
               <div>
                 <div className="bg-[#eeeeee] px-6 py-2">
                   <label className="text-blue-400 text-sm font-normal">

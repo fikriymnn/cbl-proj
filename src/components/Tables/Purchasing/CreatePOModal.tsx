@@ -759,11 +759,12 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
           params: {
             limit: 100,
             is_active: true,
-            tipe_vendor:
-              uniqueTipeBarang.length > 0 ? uniqueTipeBarang : undefined,
+            // tipe_vendor:
+            //   uniqueTipeBarang.length > 0 ? uniqueTipeBarang : undefined,
           },
           withCredentials: true,
         });
+        console.log('Fetched vendors:', res.data.data);
         setVendors(res.data.data || []);
       } catch (err) {
         console.error('Error fetching vendor list:', err);
@@ -952,7 +953,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
   // Combined figure kept for the payload's informational `ppn` field.
   const totalPPN = ppnIncluded + ppnAddedToTotal;
   const grandTotal = subTotal - (discount || 0) + ppnAddedToTotal;
-
+  const subTotalExTax = subTotal - ppnIncluded;
   const formatRupiah = (value: number): string =>
     value.toLocaleString('id-ID', { maximumFractionDigits: 0 });
 
@@ -985,7 +986,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
       nama_vendor: selectedVendor?.nama_vendor || '',
       tgl_po: tglPO,
       tgl_kirim: tglKirim,
-      sub_total: subTotal,
+      sub_total: subTotalExTax,
       ppn: totalPPN,
       discount: discount || 0,
       total: grandTotal,
@@ -1404,16 +1405,18 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Subtotal</span>
                 <span className="text-slate-800 font-medium tabular-nums">
-                  Rp {formatRupiah(subTotal)}
+                  Rp {formatRupiah(subTotalExTax)}
                 </span>
               </div>
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between text-sm">
                 <span className="text-slate-500">Discount</span>
-                <NumberInput
-                  value={discount}
-                  onChange={setDiscount}
-                  className="w-32 px-2 py-1 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <div>
+                  <NumberInput
+                    value={discount}
+                    onChange={setDiscount}
+                    className=" px-2 py-1 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
               </div>
               {ppnIncluded > 0 && (
                 <div className="flex justify-between text-sm">
