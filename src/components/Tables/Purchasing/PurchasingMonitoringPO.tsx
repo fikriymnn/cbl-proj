@@ -1,7 +1,5 @@
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
-import Pagination from '@mui/material/Pagination/Pagination';
-import Stack from '@mui/material/Stack';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
@@ -27,6 +25,15 @@ import { usePermissions } from '../../../constant/usePermissions';
  * Once a PO leaves 'progress' (status_po -> 'done', 'request cancel', or
  * 'cancel') it drops out of this list, since monitoring only cares about
  * POs still actively in progress.
+ *
+ * Date filtering: the user picks ONE date-range basis at a time — either
+ * "Tanggal PO" (start_date_po / end_date_po) or "Tanggal Kirim"
+ * (start_date_kirim / end_date_kirim) — rather than filling in both ranges
+ * at once. Defaults to "Tanggal PO", current month (1st of month -> today),
+ * on first load, mirroring SO Monitoring's default range.
+ *
+ * Pagination has been removed — the list endpoint now returns the full
+ * filtered result set in one shot (no page/limit params are sent).
  *
  * Each row expands INLINE to show its items_jo, same as OutstandingPO.
  * Unlike OutstandingPO there is no cross-PO checkbox selection here — the
@@ -62,6 +69,11 @@ import { usePermissions } from '../../../constant/usePermissions';
  * over qty, green = done, blue = mid-progress, yellow = just started), so
  * all three monitoring tables read consistently.
  *
+ * Rekap: the list endpoint also returns a `rekap` object alongside `data`
+ * ({ total_qty, ots_qty, terkirim_qty, total_rupiah, ots_rupiah,
+ * terkirim_rupiah }) — surfaced as a summary bar above the table, styled
+ * the same way SO Monitoring's rekap bar is.
+ *
  * status_qc on items_jo: null | "request qc" | "approve qc" | "reject qc"
  * status_po on items_jo: "progress" | "done"
  * status_po on the PO itself: "progress" | "done" | "request cancel" | "cancel"
@@ -80,33 +92,54 @@ const STATUS_PO_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: 'cancel', label: 'Dibatalkan' },
 ];
 
+// Which date field the active start/end range is applied to.
+type DateFilterType = 'po' | 'kirim';
+
+const DATE_FILTER_TYPE_OPTIONS: { value: DateFilterType; label: string }[] = [
+  { value: 'po', label: 'Tanggal PO' },
+  { value: 'kirim', label: 'Tanggal Kirim' },
+];
+
 interface VendorOption {
   id: number;
   nama_vendor: string;
 }
 
-// Everything GET /purchasing/purchaseOrder's list filter accepts, besides
-// pagination (page/limit) which is tracked separately. Kept as one shape
-// so "draft" (what's currently typed/selected) and "applied" (what the
-// last fetch actually used) can be plain snapshots of the same type.
+// ─── Date helpers (same pattern as SO Monitoring) ──────────────────────────
+
+function todayStr(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+    2,
+    '0',
+  )}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function firstOfMonth(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+// Everything GET /purchasing/purchaseOrder's list filter accepts.
+// dateFilterType picks which pair of query params (start/end_date_po vs
+// start/end_date_kirim) the single startDate/endDate range below is sent
+// as — only one basis is ever active at a time.
 interface MonitoringFilters {
   search: string;
   statusPo: string;
   idVendor: number | '';
-  startDatePo: string;
-  endDatePo: string;
-  startDateKirim: string;
-  endDateKirim: string;
+  dateFilterType: DateFilterType;
+  startDate: string;
+  endDate: string;
 }
 
 const DEFAULT_FILTERS: MonitoringFilters = {
   search: '',
   statusPo: 'progress',
   idVendor: '',
-  startDatePo: '',
-  endDatePo: '',
-  startDateKirim: '',
-  endDateKirim: '',
+  dateFilterType: 'po',
+  startDate: firstOfMonth(),
+  endDate: todayStr(),
 };
 
 // PurchaseOrder from shared types may not yet carry status_po, or the
@@ -141,6 +174,16 @@ interface MonitoringItemJo {
   rencana_cetak: string;
   status_qc: 'request qc' | 'approve qc' | 'reject qc' | null;
   status_po: 'progress' | 'done';
+}
+
+// Rekap summary object returned alongside `data` on the list endpoint.
+interface MonitoringRekap {
+  total_qty: number;
+  ots_qty: number;
+  terkirim_qty: number;
+  total_rupiah: number;
+  ots_rupiah: number;
+  terkirim_rupiah: number;
 }
 
 const formatQty = (val: number | null | undefined): string =>
@@ -1040,6 +1083,54 @@ const RequestCancelPoModal: React.FC<{
 };
 
 // =============================================================================
+// Rekap summary bar — shows the aggregate numbers the list endpoint returns
+// alongside `data` (see MonitoringRekap). Styled the same way SO
+// Monitoring's rekap bar is: a plain label/value grid on a white card.
+// =============================================================================
+const RekapSummaryBar: React.FC<{ rekap: MonitoringRekap }> = ({ rekap }) => (
+  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4">
+      <div>
+        <p className="text-xs text-slate-500 font-medium">Total Qty</p>
+        <p className="text-base font-bold text-slate-800 mt-0.5">
+          {formatQty(rekap.total_qty)}
+        </p>
+      </div>
+      <div>
+        <p className="text-xs text-slate-500 font-medium">OTS Qty</p>
+        <p className="text-base font-bold text-teal-700 mt-0.5">
+          {formatQty(rekap.ots_qty)}
+        </p>
+      </div>
+      <div>
+        <p className="text-xs text-slate-500 font-medium">Qty Terkirim</p>
+        <p className="text-base font-bold text-emerald-600 mt-0.5">
+          {formatQty(rekap.terkirim_qty)}
+        </p>
+      </div>
+      <div>
+        <p className="text-xs text-slate-500 font-medium">Total Rupiah</p>
+        <p className="text-base font-bold text-slate-800 mt-0.5">
+          Rp {formatRupiah(rekap.total_rupiah)}
+        </p>
+      </div>
+      <div>
+        <p className="text-xs text-slate-500 font-medium">OTS Rupiah</p>
+        <p className="text-base font-bold text-teal-700 mt-0.5">
+          Rp {formatRupiah(rekap.ots_rupiah)}
+        </p>
+      </div>
+      <div>
+        <p className="text-xs text-slate-500 font-medium">Rupiah Terkirim</p>
+        <p className="text-base font-bold text-emerald-600 mt-0.5">
+          Rp {formatRupiah(rekap.terkirim_rupiah)}
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+// =============================================================================
 // Main list page
 // =============================================================================
 const PurchasingMonitoringPO: React.FC = () => {
@@ -1051,10 +1142,7 @@ const PurchasingMonitoringPO: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<MonitoredPO[]>([]);
-
-  const [page, setPage] = useState<number>(1);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [limit, setLimit] = useState<number>(10);
+  const [rekap, setRekap] = useState<MonitoringRekap | null>(null);
 
   // "Draft" mirrors whatever is currently typed/selected in the filter
   // card; "applied" is the snapshot actually sent to fetchData. Filters
@@ -1097,28 +1185,40 @@ const PurchasingMonitoringPO: React.FC = () => {
 
   const fetchData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/purchasing/purchaseOrder`;
+    // Only one date-range basis is ever active — send it as the pair of
+    // params matching whichever type is currently selected, and leave the
+    // other pair out entirely.
+    const dateParams =
+      appliedFilters.dateFilterType === 'po'
+        ? {
+            start_date_po: appliedFilters.startDate || undefined,
+            end_date_po: appliedFilters.endDate || undefined,
+          }
+        : {
+            start_date_kirim: appliedFilters.startDate || undefined,
+            end_date_kirim: appliedFilters.endDate || undefined,
+          };
     try {
       setLoading(true);
-      const res = await axios.get<PurchaseOrderListResponse>(url, {
+      const res = await axios.get<
+        PurchaseOrderListResponse & { rekap?: MonitoringRekap }
+      >(url, {
         params: {
-          page,
-          limit,
           search: appliedFilters.search || undefined,
           status: 'approve finance',
           status_po: appliedFilters.statusPo || undefined,
-          start_date_po: appliedFilters.startDatePo || undefined,
-          end_date_po: appliedFilters.endDatePo || undefined,
-          start_date_kirim: appliedFilters.startDateKirim || undefined,
-          end_date_kirim: appliedFilters.endDateKirim || undefined,
           id_vendor: appliedFilters.idVendor || undefined,
+          ...dateParams,
         },
         withCredentials: true,
       });
+      console.log('Fetched monitoring PO data:', res.data);
       setData((res.data.data as MonitoredPO[]) || []);
-      if (res.data.total_page) setTotalPages(res.data.total_page);
+      setRekap(res.data.rekap ?? null);
     } catch (error) {
       console.error('Error fetching monitoring PO data:', error);
       setData([]);
+      setRekap(null);
       setToast({
         open: true,
         message: 'Gagal memuat data monitoring PO.',
@@ -1132,7 +1232,7 @@ const PurchasingMonitoringPO: React.FC = () => {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, appliedFilters]);
+  }, [appliedFilters]);
 
   // Vendor options for the id_vendor filter — fetched once on mount, same
   // endpoint CreatePOModal uses for its vendor picker.
@@ -1160,18 +1260,11 @@ const PurchasingMonitoringPO: React.FC = () => {
 
   const handleApplyFilters = () => {
     setAppliedFilters(filterDraft);
-    setPage(1);
   };
 
   const handleResetFilters = () => {
     setFilterDraft(DEFAULT_FILTERS);
     setAppliedFilters(DEFAULT_FILTERS);
-    setPage(1);
-  };
-
-  const handleLimitChange = (newLimit: number) => {
-    setLimit(newLimit);
-    setPage(1);
   };
 
   const activeFilterCount = useMemo(() => {
@@ -1179,10 +1272,10 @@ const PurchasingMonitoringPO: React.FC = () => {
     if (appliedFilters.search) count += 1;
     if (appliedFilters.statusPo !== DEFAULT_FILTERS.statusPo) count += 1;
     if (appliedFilters.idVendor) count += 1;
-    if (appliedFilters.startDatePo) count += 1;
-    if (appliedFilters.endDatePo) count += 1;
-    if (appliedFilters.startDateKirim) count += 1;
-    if (appliedFilters.endDateKirim) count += 1;
+    if (appliedFilters.dateFilterType !== DEFAULT_FILTERS.dateFilterType)
+      count += 1;
+    if (appliedFilters.startDate !== DEFAULT_FILTERS.startDate) count += 1;
+    if (appliedFilters.endDate !== DEFAULT_FILTERS.endDate) count += 1;
     return count;
   }, [appliedFilters]);
 
@@ -1252,7 +1345,7 @@ const PurchasingMonitoringPO: React.FC = () => {
   const handleCloseConfirmed = (poId: number) => {
     setCloseTarget(null);
     // A closed PO no longer matches status_po = 'progress', so drop it
-    // from the current list instead of refetching the whole page.
+    // from the current list instead of refetching everything.
     setData((prev) => prev.filter((p) => p.id !== poId));
     setExpandedIds((prev) => {
       const next = new Set(prev);
@@ -1370,55 +1463,49 @@ const PurchasingMonitoringPO: React.FC = () => {
           </div>
         </div>
 
-        {/* Date ranges get their own row — a native <input type="date">
-            has a fixed minimum width, so two of them plus a separator
-            never fit inside a narrow 4-column grid cell without
-            overlapping the next field. Each range gets a full half-width
-            column here instead. */}
+        {/* Date filter — the user picks ONE basis (Tanggal PO or Tanggal
+            Kirim) via a segmented toggle, and a single start/end range
+            below applies to whichever basis is selected. Only that pair
+            of date params gets sent to the API. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">
-              Tanggal PO
+              Filter Berdasarkan
             </label>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <input
-                type="date"
-                value={filterDraft.startDatePo}
-                onChange={(e) =>
-                  setFilterDraft((f) => ({
-                    ...f,
-                    startDatePo: e.target.value,
-                  }))
-                }
-                className="min-w-0 flex-1 px-2.5 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              />
-              <span className="hidden sm:inline text-slate-300 text-xs shrink-0">
-                —
-              </span>
-              <input
-                type="date"
-                value={filterDraft.endDatePo}
-                onChange={(e) =>
-                  setFilterDraft((f) => ({ ...f, endDatePo: e.target.value }))
-                }
-                className="min-w-0 flex-1 px-2.5 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              />
+            <div className="inline-flex rounded-lg border border-slate-200 overflow-hidden">
+              {DATE_FILTER_TYPE_OPTIONS.map((opt, idx) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() =>
+                    setFilterDraft((f) => ({ ...f, dateFilterType: opt.value }))
+                  }
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    idx > 0 ? 'border-l border-slate-200' : ''
+                  } ${
+                    filterDraft.dateFilterType === opt.value
+                      ? 'bg-teal-600 text-white'
+                      : 'bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">
-              Tanggal Kirim
+              {filterDraft.dateFilterType === 'po'
+                ? 'Rentang Tanggal PO'
+                : 'Rentang Tanggal Kirim'}
             </label>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <input
                 type="date"
-                value={filterDraft.startDateKirim}
+                value={filterDraft.startDate}
                 onChange={(e) =>
-                  setFilterDraft((f) => ({
-                    ...f,
-                    startDateKirim: e.target.value,
-                  }))
+                  setFilterDraft((f) => ({ ...f, startDate: e.target.value }))
                 }
                 className="min-w-0 flex-1 px-2.5 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
@@ -1427,12 +1514,9 @@ const PurchasingMonitoringPO: React.FC = () => {
               </span>
               <input
                 type="date"
-                value={filterDraft.endDateKirim}
+                value={filterDraft.endDate}
                 onChange={(e) =>
-                  setFilterDraft((f) => ({
-                    ...f,
-                    endDateKirim: e.target.value,
-                  }))
+                  setFilterDraft((f) => ({ ...f, endDate: e.target.value }))
                 }
                 className="min-w-0 flex-1 px-2.5 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               />
@@ -1469,6 +1553,10 @@ const PurchasingMonitoringPO: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Rekap summary — aggregate numbers the list endpoint returns
+          alongside `data` for the currently applied filters. */}
+      {rekap && <RekapSummaryBar rekap={rekap} />}
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -1784,36 +1872,6 @@ const PurchasingMonitoringPO: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Pagination */}
-      <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 pb-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-500">Baris per halaman:</span>
-          <div className="flex gap-1.5">
-            {[10, 25, 50, 100].map((pageSize) => (
-              <button
-                key={pageSize}
-                onClick={() => handleLimitChange(pageSize)}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  limit === pageSize
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {pageSize}
-              </button>
-            ))}
-          </div>
-        </div>
-        <Stack spacing={2}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            color="primary"
-            onChange={(_, i) => setPage(i)}
-          />
-        </Stack>
       </div>
 
       {sendBackTarget && (

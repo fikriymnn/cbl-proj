@@ -779,6 +779,7 @@ function JODetailModal({ row, onClose }: { row: any; onClose: () => void }) {
                   ['Tgl Input SO', fmtDate(row.tgl_pembuatan_so)],
                   ['Tgl Kirim', fmtDate(row.tgl_pengiriman)],
                   ['PO Qty', fmtQty(row.po_qty)],
+                  ['Qty FG', fmtQty(jo?.stok_fg)],
                   ['Qty Druk', fmtQty(jo?.qty_druk)],
                   ['Qty LP', fmtQty(jo?.qty_lp)],
 
@@ -1716,11 +1717,19 @@ function JOMonitoring() {
                     const hasEstimasiKurangQtyQc =
                       estimasiKurangQtyQc.items.length > 0;
 
-                    // ── estimasi kurang qty QC (approved) takes priority over
-                    //    the other row-background conditions below — a light
-                    //    red so the row stands out but text stays readable ──
+                    // ── row background priority ──
+                    // 1. Kurang qty QC exists, but delivery % is already
+                    //    >= 100% (dp.pct is capped at 100 for over-qty too) —
+                    //    this looks "resolved on paper" so it gets a light
+                    //    blue highlight instead of the usual red warning.
+                    // 2. Kurang qty QC exists (and delivery isn't yet 100%)
+                    //    — red, as before.
+                    // 3. Over qty / selesai / kurang qty (delivery status)
+                    //    — unchanged from before.
                     const rowBg =
-                      estimasiKurangQtyQc.total > 0
+                      estimasiKurangQtyQc.total > 0 && dp && dp.pct >= 100
+                        ? 'bg-blue-100'
+                        : estimasiKurangQtyQc.total > 0
                         ? 'bg-red-200'
                         : dp?.isOver
                         ? 'bg-purple-100'

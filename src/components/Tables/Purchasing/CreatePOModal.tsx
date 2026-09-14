@@ -181,11 +181,19 @@ const todayISO = (): string => new Date().toISOString().slice(0, 10);
 const uid = (): string =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-const recalcPpn = (a: Allocation): Allocation => ({
-  ...a,
-  ppn: a.is_ppn ? Math.round(a.qty_po * a.harga * (a.pajak_persen / 100)) : 0,
-});
-
+const recalcPpn = (a: Allocation): Allocation => {
+  const total = a.qty_po * a.harga;
+  let ppn = 0;
+  if (a.is_tax_locked) {
+    // harga already includes PPN — extract the tax portion instead of
+    // adding it on top, so it reflects what's actually embedded in the price.
+    const base = total / (1 + a.pajak_persen / 100);
+    ppn = Math.round(total - base);
+  } else if (a.is_ppn) {
+    ppn = Math.round(total * (a.pajak_persen / 100));
+  }
+  return { ...a, ppn };
+};
 // ---------------------------------------------------------------------------
 // NumberInput — text input formatted with id-ID thousands separators
 // ("1.000") that also accepts a comma as the decimal separator ("0,64"),
