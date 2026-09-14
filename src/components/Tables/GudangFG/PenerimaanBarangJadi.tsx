@@ -65,6 +65,7 @@ interface IncomingItem {
   // Coarse lifecycle bucket for this ticket — "progress" while it still needs action,
   // "history" once it has been approved/rejected and is just a record.
   status_ticket?: StatusTicket;
+  so: { no_so: string; tgl_pengiriman: string };
   toleransi_pengiriman: string;
   createdAt: string;
   updatedAt: string;
@@ -485,9 +486,8 @@ const IncomingBarangJadi: React.FC = () => {
                 <tr>
                   {[
                     'No',
-                    'No JO',
-
-                    'No IO',
+                    'Nomor',
+                    'Tgl Kirim',
                     'Produk',
                     'Customer',
                     'PO Qty',
@@ -525,12 +525,15 @@ const IncomingBarangJadi: React.FC = () => {
                       <td className="p-2 sm:p-3 text-xs text-gray-500">
                         {(page - 1) * limit + i + 1}
                       </td>
-                      <td className="p-2 sm:p-3 text-xs font-bold text-violet-600 whitespace-nowrap">
+                      <td className="p-2 sm:p-3 text-xs font-bold text-violet-600 whitespace-nowrap ">
                         {row.no_jo || '-'}
+                        <span className="block text-gray-400 text-[10px]">
+                          {row.no_io || '-'}
+                        </span>
                       </td>
 
                       <td className="p-2 sm:p-3 text-xs text-gray-600 whitespace-nowrap">
-                        {row.no_io || '-'}
+                        {fmtDate(row.so?.tgl_pengiriman)}
                       </td>
                       <td className="p-2 sm:p-3 text-xs max-w-[200px]">
                         <span className="block " title={row.produk}>

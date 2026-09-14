@@ -18,10 +18,19 @@ import {
   getStatusColor,
   getStatusLabel,
 } from '../Purchasing/Types/poStatus';
+
 /* =============================================================================
- * OutstandingPO — every PO with status 'approve finance' (that's the only
- * list-level filter; there's no separate status_tiket scoping here). Each
- * row expands INLINE to show its items_jo instead of opening a modal.
+ * OutstandingPO — every PO with status 'approve finance' (list-level base
+ * filter). On top of that, the filter card below exposes every param the
+ * GET /purchasing/purchaseOrder endpoint accepts: status_po, id_vendor,
+ * date ranges for tgl_po/tgl_kirim, and sort_by/sort_order. Each row
+ * expands INLINE to show its items_jo instead of opening a modal.
+ *
+ * Filters follow a draft/applied pattern (same as PurchasingMonitoringPO):
+ * whatever is typed/selected in the filter card is "draft" and only takes
+ * effect once "Terapkan Filter" is clicked (or Enter in the search box) —
+ * not on every keystroke/selection. "Applied" is the snapshot actually
+ * sent to fetchData.
  *
  * Checkboxes on items_jo rows have NO restriction (any row, any
  * status_qc/status_po, can be checked) — the only thing that matters is
@@ -46,6 +55,57 @@ import {
 
 const EMPTY_TEXT = 'Tidak ada PO dengan status approve finance.';
 const EMPTY_HISTORY_TEXT = 'Belum ada riwayat PO.';
+
+// status_po values accepted by GET /purchasing/purchaseOrder's status_po
+// filter param ("untuk filter monitoring po isinya").
+const STATUS_PO_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'Semua' },
+  { value: 'progress', label: 'Progress' },
+  { value: 'done', label: 'Selesai' },
+  { value: 'request cancel', label: 'Menunggu Cancel' },
+  { value: 'cancel', label: 'Dibatalkan' },
+];
+
+// sort_by accepts empty (unsorted), createdAt, tgl_po, or tgl_kirim.
+const SORT_BY_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: '- Tidak diurutkan -' },
+  { value: 'createdAt', label: 'Created At' },
+  { value: 'tgl_po', label: 'Tanggal PO' },
+  { value: 'tgl_kirim', label: 'Tanggal Kirim' },
+];
+
+interface VendorOption {
+  id: number;
+  nama_vendor: string;
+}
+
+// Everything GET /purchasing/purchaseOrder's list filter accepts, besides
+// pagination (page/limit) which is tracked separately. Kept as one shape
+// so "draft" (what's currently typed/selected) and "applied" (what the
+// last fetch actually used) can be plain snapshots of the same type.
+interface OutstandingFilters {
+  search: string;
+  statusPo: string;
+  idVendor: number | '';
+  startDatePo: string;
+  endDatePo: string;
+  startDateKirim: string;
+  endDateKirim: string;
+  sortBy: string;
+  sortOrder: string;
+}
+
+const DEFAULT_FILTERS: OutstandingFilters = {
+  search: '',
+  statusPo: '',
+  idVendor: '',
+  startDatePo: '',
+  endDatePo: '',
+  startDateKirim: '',
+  endDateKirim: '',
+  sortBy: '',
+  sortOrder: 'DESC',
+};
 
 interface RawMasterBarangRef {
   is_include_tax?: boolean;
@@ -479,8 +539,20 @@ const OutstandingPO: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
-  const [searchInput, setSearchInput] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  // "Draft" mirrors whatever is currently typed/selected in the filter
+  // card; "applied" is the snapshot actually sent to fetchData. Filters
+  // only take effect on "Terapkan Filter" (or Enter in the search box) —
+  // not on every keystroke/selection.
+  const [filterDraft, setFilterDraft] =
+    useState<OutstandingFilters>(DEFAULT_FILTERS);
+  const [appliedFilters, setAppliedFilters] =
+    useState<OutstandingFilters>(DEFAULT_FILTERS);
+
+  // Vendor dropdown options for the id_vendor filter.
+  const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
+  const [vendorOptionsLoading, setVendorOptionsLoading] =
+    useState<boolean>(true);
 
   // Inline expand state, keyed by PO id.
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
@@ -509,10 +581,22 @@ const OutstandingPO: React.FC = () => {
         params: {
           page,
           limit,
-          search: searchTerm || undefined,
+          search: appliedFilters.search || undefined,
           status: 'approve finance',
           // Toggle between the actionable queue and the read-only history.
           status_tiket: isHistory ? 'history' : undefined,
+          status_po: appliedFilters.statusPo || undefined,
+          id_vendor: appliedFilters.idVendor || undefined,
+          start_date_po: appliedFilters.startDatePo || undefined,
+          end_date_po: appliedFilters.endDatePo || undefined,
+          start_date_kirim: appliedFilters.startDateKirim || undefined,
+          end_date_kirim: appliedFilters.endDateKirim || undefined,
+          // sort_order only makes sense (and is only sent) when sort_by
+          // is set — matches the note in the params spec.
+          sort_by: appliedFilters.sortBy || undefined,
+          sort_order: appliedFilters.sortBy
+            ? appliedFilters.sortOrder || 'DESC'
+            : undefined,
         },
         withCredentials: true,
       });
@@ -535,7 +619,41 @@ const OutstandingPO: React.FC = () => {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, searchTerm, subTab]);
+  }, [page, limit, subTab, appliedFilters]);
+
+  // Vendor options for the id_vendor filter — fetched once on mount.
+  useEffect(() => {
+    const fetchVendorOptions = async () => {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/master/marketing/vendor/list`;
+      try {
+        setVendorOptionsLoading(true);
+        const res = await axios.get(url, {
+          params: { limit: 200, is_active: true },
+          withCredentials: true,
+        });
+        setVendorOptions(res.data?.data || []);
+      } catch (err) {
+        console.error('Error fetching vendor options:', err);
+        setVendorOptions([]);
+      } finally {
+        setVendorOptionsLoading(false);
+      }
+    };
+    fetchVendorOptions();
+  }, []);
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(filterDraft);
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setFilterDraft(DEFAULT_FILTERS);
+    setAppliedFilters(DEFAULT_FILTERS);
+    setPage(1);
+  };
 
   const handleSwitchTab = (tab: SubTab) => {
     if (tab === subTab) return;
@@ -543,20 +661,7 @@ const OutstandingPO: React.FC = () => {
     setExpandedIds(new Set());
     setDetailCache({});
     setSelected(new Map());
-    setSearchInput('');
-    setSearchTerm('');
-    setPage(1);
-  };
-
-  const handleSearch = () => {
-    setSearchTerm(searchInput);
-    setPage(1);
-  };
-
-  const handleResetFilters = () => {
-    setSearchInput('');
-    setSearchTerm('');
-    setPage(1);
+    handleResetFilters();
   };
 
   const handleLimitChange = (newLimit: number) => {
@@ -564,10 +669,18 @@ const OutstandingPO: React.FC = () => {
     setPage(1);
   };
 
-  const activeFilterCount = useMemo(
-    () => [searchTerm].filter(Boolean).length,
-    [searchTerm],
-  );
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (appliedFilters.search) count += 1;
+    if (appliedFilters.statusPo) count += 1;
+    if (appliedFilters.idVendor) count += 1;
+    if (appliedFilters.startDatePo) count += 1;
+    if (appliedFilters.endDatePo) count += 1;
+    if (appliedFilters.startDateKirim) count += 1;
+    if (appliedFilters.endDateKirim) count += 1;
+    if (appliedFilters.sortBy) count += 1;
+    return count;
+  }, [appliedFilters]);
 
   const fetchPoItems = async (po: PurchaseOrder) => {
     setDetailCache((prev) => ({
@@ -749,18 +862,197 @@ const OutstandingPO: React.FC = () => {
             <input
               type="text"
               placeholder="Ketik no PO atau nama vendor..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              value={filterDraft.search}
+              onChange={(e) =>
+                setFilterDraft((f) => ({ ...f, search: e.target.value }))
+              }
+              onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             />
             <button
-              onClick={handleSearch}
+              onClick={handleApplyFilters}
               className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               Cari
             </button>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Status PO
+            </label>
+            <select
+              value={filterDraft.statusPo}
+              onChange={(e) =>
+                setFilterDraft((f) => ({ ...f, statusPo: e.target.value }))
+              }
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            >
+              {STATUS_PO_FILTER_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Vendor
+            </label>
+            <select
+              value={filterDraft.idVendor}
+              disabled={vendorOptionsLoading}
+              onChange={(e) =>
+                setFilterDraft((f) => ({
+                  ...f,
+                  idVendor: e.target.value ? Number(e.target.value) : '',
+                }))
+              }
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-400"
+            >
+              <option value="">
+                {vendorOptionsLoading ? 'Memuat vendor...' : 'Semua Vendor'}
+              </option>
+              {vendorOptions.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.nama_vendor}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Date ranges get their own row — a native <input type="date">
+            has a fixed minimum width, so two of them plus a separator
+            never fit inside a narrow multi-column grid cell without
+            overlapping the next field. Each range gets a full half-width
+            column here instead. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Tanggal PO
+            </label>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <input
+                type="date"
+                value={filterDraft.startDatePo}
+                onChange={(e) =>
+                  setFilterDraft((f) => ({
+                    ...f,
+                    startDatePo: e.target.value,
+                  }))
+                }
+                className="min-w-0 flex-1 px-2.5 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              />
+              <span className="hidden sm:inline text-slate-300 text-xs shrink-0">
+                —
+              </span>
+              <input
+                type="date"
+                value={filterDraft.endDatePo}
+                onChange={(e) =>
+                  setFilterDraft((f) => ({ ...f, endDatePo: e.target.value }))
+                }
+                className="min-w-0 flex-1 px-2.5 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Tanggal Kirim
+            </label>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <input
+                type="date"
+                value={filterDraft.startDateKirim}
+                onChange={(e) =>
+                  setFilterDraft((f) => ({
+                    ...f,
+                    startDateKirim: e.target.value,
+                  }))
+                }
+                className="min-w-0 flex-1 px-2.5 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              />
+              <span className="hidden sm:inline text-slate-300 text-xs shrink-0">
+                —
+              </span>
+              <input
+                type="date"
+                value={filterDraft.endDateKirim}
+                onChange={(e) =>
+                  setFilterDraft((f) => ({
+                    ...f,
+                    endDateKirim: e.target.value,
+                  }))
+                }
+                className="min-w-0 flex-1 px-2.5 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Sort — sort_order is only meaningful once sort_by is chosen,
+            per the "jika sort_by di isi maka ini juga harus di isi" note. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Urutkan Berdasarkan
+            </label>
+            <select
+              value={filterDraft.sortBy}
+              onChange={(e) => {
+                const val = e.target.value;
+                setFilterDraft((f) => ({
+                  ...f,
+                  sortBy: val,
+                  sortOrder: val ? f.sortOrder || 'DESC' : 'DESC',
+                }));
+              }}
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            >
+              {SORT_BY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Arah Urutan
+            </label>
+            <select
+              value={filterDraft.sortOrder}
+              disabled={!filterDraft.sortBy}
+              onChange={(e) =>
+                setFilterDraft((f) => ({ ...f, sortOrder: e.target.value }))
+              }
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-400"
+            >
+              <option value="DESC">Terbaru dulu (DESC)</option>
+              <option value="ASC">Terlama dulu (ASC)</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 justify-end mt-4">
+          <button
+            onClick={handleResetFilters}
+            className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors"
+          >
+            Reset Filter
+          </button>
+          <button
+            onClick={handleApplyFilters}
+            className="px-4 py-2 text-sm bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-medium transition-colors"
+          >
+            Terapkan Filter
+          </button>
         </div>
 
         {activeFilterCount > 0 && (

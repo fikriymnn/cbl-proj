@@ -147,7 +147,14 @@ const ApproveSPVLKH: React.FC = () => {
   const [lkhData, setLkhData] = useState<LKHTahapanData[]>([]);
   const [tahapanBawahan, setTahapanBawahan] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('');
+
+  // Estimasi Kurang Qty - manual input fields
   const [qtyKurangQty, setQtyKurangQty] = useState<number>(0);
+  const [qtyBaik, setQtyBaik] = useState<number>(0);
+  const [qtyRusakSebagian, setQtyRusakSebagian] = useState<number>(0);
+  const [qtyRusakTotal, setQtyRusakTotal] = useState<number>(0);
+  const [qtyTotal, setQtyTotal] = useState<number>(0);
+
   const [actionLoading, setActionLoading] = useState<{
     [key: number]: boolean;
   }>({});
@@ -258,7 +265,14 @@ const ApproveSPVLKH: React.FC = () => {
         total_qty: waste.total_qty,
       })) || [];
     setEditableWasteData(initialEditableWasteData);
+
+    // Reset all estimasi kurang qty fields
     setQtyKurangQty(0);
+    setQtyBaik(0);
+    setQtyRusakSebagian(0);
+    setQtyRusakTotal(0);
+    setQtyTotal(0);
+
     setShowApprovalModal(true);
   };
 
@@ -267,7 +281,13 @@ const ApproveSPVLKH: React.FC = () => {
     setSelectedLKHForApproval(null);
     setEditableData([]);
     setEditableWasteData([]);
+
+    // Reset all estimasi kurang qty fields
     setQtyKurangQty(0);
+    setQtyBaik(0);
+    setQtyRusakSebagian(0);
+    setQtyRusakTotal(0);
+    setQtyTotal(0);
   };
 
   const handleEditChange = (
@@ -341,11 +361,22 @@ const ApproveSPVLKH: React.FC = () => {
         withCredentials: true,
       });
 
-      // 2. Only hit estimasi kurang qty API if qty > 0
-      if (qtyKurangQty > 0) {
+      // 2. Only hit estimasi kurang qty API if at least one field is not 0
+      const allFieldsZero =
+        qtyKurangQty === 0 &&
+        qtyBaik === 0 &&
+        qtyRusakSebagian === 0 &&
+        qtyRusakTotal === 0 &&
+        qtyTotal === 0;
+
+      if (!allFieldsZero) {
         const estimasiBody = {
           id_produksi_lkh_tahapan: id,
           qty_kurang_qty: qtyKurangQty,
+          qty_baik: qtyBaik,
+          qty_rusak_sebagian: qtyRusakSebagian,
+          qty_rusak_total: qtyRusakTotal,
+          qty_total: qtyTotal,
         };
 
         console.log('Estimasi Kurang Qty Payload:', estimasiBody);
@@ -354,7 +385,9 @@ const ApproveSPVLKH: React.FC = () => {
           withCredentials: true,
         });
       } else {
-        console.log('Qty Kurang Qty <= 0, skipping estimasi kurang qty API');
+        console.log(
+          'All estimasi kurang qty fields are 0, skipping estimasi kurang qty API',
+        );
       }
 
       alert('LKH approved successfully!');
@@ -1172,21 +1205,88 @@ const ApproveSPVLKH: React.FC = () => {
                   })()}
                 </div>
               </div>
-              {/* Qty Kurang Input */}
+
+              {/* Estimasi Kurang Qty - Manual Input Section */}
               <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Estimasi Qty Kurang <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  value={qtyKurangQty}
-                  onChange={(e) =>
-                    setQtyKurangQty(parseInt(e.target.value) || 0)
-                  }
-                  className="w-40 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                  Estimasi Kurang Qty
+                </h4>
+                <p className="text-xs text-gray-500 mb-3">
+                  Isi manual jika ada estimasi kekurangan/selisih qty. Jika
+                  semua field bernilai 0, data ini tidak akan dikirim.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Qty Kurang
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={qtyKurangQty}
+                      onChange={(e) =>
+                        setQtyKurangQty(parseInt(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Qty Baik
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={qtyBaik}
+                      onChange={(e) =>
+                        setQtyBaik(parseInt(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Qty Rusak Sebagian
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={qtyRusakSebagian}
+                      onChange={(e) =>
+                        setQtyRusakSebagian(parseInt(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Qty Rusak Total
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={qtyRusakTotal}
+                      onChange={(e) =>
+                        setQtyRusakTotal(parseInt(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Qty Total
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={qtyTotal}
+                      onChange={(e) =>
+                        setQtyTotal(parseInt(e.target.value) || 0)
+                      }
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
