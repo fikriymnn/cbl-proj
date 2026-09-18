@@ -165,6 +165,17 @@ const buildRowGroups = (
   items
     .filter((it) => !usedIdItems.has(it.id_item))
     .forEach((it) => {
+      // Display-only: recompute PPN from this item's own qty/harga/pajak
+      // instead of trusting `it.ppn`, which in some payloads reflects the
+      // order-level PPN rather than this line's share of it. Does not
+      // touch `it.total` or anything sent back on approve/reject.
+      const isTaxLocked = !!it.master_barang?.is_include_tax;
+      const isPpn = isTaxLocked || !!it.is_ppn;
+      const pajakPersen = it.master_barang?.pajak ?? 0;
+      const ppn = isPpn
+        ? Math.round(it.qty_beli * it.harga * (pajakPersen / 100))
+        : 0;
+
       groups.push({
         key: `manual-${it.id}`,
         jo: null,
@@ -177,8 +188,8 @@ const buildRowGroups = (
             satuan: it.satuan,
             qty_po: it.qty_beli,
             harga: it.harga,
-            ppn: it.ppn,
-            is_ppn: it.is_ppn,
+            ppn,
+            is_ppn: isPpn,
             total: it.total,
             is_substitute: false,
           },

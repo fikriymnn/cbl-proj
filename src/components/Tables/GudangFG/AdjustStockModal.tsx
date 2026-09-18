@@ -5,6 +5,8 @@ import Loading from '../../Loading';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type StatusBarang = 'keep' | 'booking' | 'bap' | string;
+
 interface AdjustDataBarang {
   id: number;
   id_customer: number;
@@ -17,6 +19,7 @@ interface AdjustDataBarang {
   no_jo: string;
   produk: string;
   customer: string;
+  status: StatusBarang;
 }
 
 interface AdjustGudangItem {
@@ -78,6 +81,16 @@ interface RowForm {
 
 type TabKey = 'adjust' | 'history';
 
+/** Status filter for the "data to adjust" list. 'semua' = no status filter (all). */
+type StatusFilter = 'keep' | 'booking' | 'bap' | 'semua';
+
+const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { value: 'semua', label: 'Semua' },
+  { value: 'keep', label: 'Keep' },
+  { value: 'booking', label: 'Booking' },
+  { value: 'bap', label: 'BAP' },
+];
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtQty(val: number | null | undefined) {
@@ -93,6 +106,32 @@ function fmtDateTime(val: string | null | undefined) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
     d.getHours(),
   )}:${pad(d.getMinutes())}`;
+}
+
+function statusBadgeClass(status: StatusBarang) {
+  switch (status) {
+    case 'keep':
+      return 'bg-blue-100 text-blue-700';
+    case 'booking':
+      return 'bg-amber-100 text-amber-700';
+    case 'bap':
+      return 'bg-purple-100 text-purple-700';
+    default:
+      return 'bg-gray-100 text-gray-600';
+  }
+}
+
+function statusLabel(status: StatusBarang) {
+  switch (status) {
+    case 'keep':
+      return 'Keep';
+    case 'booking':
+      return 'Booking';
+    case 'bap':
+      return 'BAP';
+    default:
+      return status || '-';
+  }
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -114,6 +153,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
   const [forms, setForms] = useState<Record<number, RowForm>>({});
   const [submitting, setSubmitting] = useState<Record<number, boolean>>({});
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('keep');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
@@ -132,6 +172,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
     pageVal: number,
     limitVal: number,
     searchVal: string,
+    statusVal: StatusFilter,
   ) => {
     try {
       setLoading(true);
@@ -142,7 +183,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
             page: pageVal,
             limit: limitVal,
             search: searchVal || undefined,
-            status: 'keep',
+            status: statusVal === 'semua' ? undefined : statusVal,
           },
           withCredentials: true,
         },
@@ -172,18 +213,23 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
 
   useEffect(() => {
     if (activeTab === 'adjust') {
-      fetchList(page, limit, search);
+      fetchList(page, limit, search, statusFilter);
     }
     // eslint-disable-next-line
-  }, [activeTab, page, limit]);
+  }, [activeTab, page, limit, statusFilter]);
 
   function handleSearchInput(val: string) {
     setSearch(val);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setPage(1);
-      fetchList(1, limit, val);
+      fetchList(1, limit, val, statusFilter);
     }, 400);
+  }
+
+  function handleStatusFilterChange(val: StatusFilter) {
+    setStatusFilter(val);
+    setPage(1);
   }
 
   function handleLimitChange(newLimit: number) {
@@ -234,7 +280,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
         { withCredentials: true },
       );
       alert('Stok berhasil di-adjust');
-      await fetchList(page, limit, search);
+      await fetchList(page, limit, search, statusFilter);
       onAdjusted?.();
     } catch (err: unknown) {
       console.error(err);
@@ -341,34 +387,57 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
         <div className="flex-1 overflow-hidden flex flex-col min-h-0 p-4 gap-3">
           {activeTab === 'adjust' ? (
             <>
-              {/* Search */}
-              <div className="relative flex-shrink-0 w-full sm:w-96">
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => handleSearchInput(e.target.value)}
-                  placeholder="Cari No JO, IO, produk, customer..."
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-blue-50"
-                />
-                <svg
-                  className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              {/* Search + Status filter */}
+              <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                <div className="relative w-full sm:w-96">
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => handleSearchInput(e.target.value)}
+                    placeholder="Cari No JO, IO, produk, customer..."
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-blue-50"
                   />
-                </svg>
+                  <svg
+                    className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600 whitespace-nowrap">
+                    Status:
+                  </span>
+                  <div className="flex gap-1.5">
+                    {STATUS_FILTER_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => handleStatusFilterChange(opt.value)}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                          statusFilter === opt.value
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Table */}
               <div className="flex-1 overflow-auto rounded-xl border border-gray-200 relative">
                 {loading && <Loading />}
-                <table className="w-full text-xs sm:text-sm min-w-[1000px]">
+                <table className="w-full text-xs sm:text-sm min-w-[1100px]">
                   <thead className="bg-white sticky top-0 z-10">
                     <tr>
                       {[
@@ -377,6 +446,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
                         'No JO',
                         'Produk',
                         'Customer',
+                        'Status',
                         'Qty Saat Ini',
                         'Qty Adjust',
                         'Note',
@@ -395,7 +465,7 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
                     {rows.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={9}
+                          colSpan={10}
                           className="p-8 text-center text-gray-500"
                         >
                           {loading ? 'Memuat data...' : 'Tidak ada data'}
@@ -431,6 +501,15 @@ const AdjustStockModal: React.FC<AdjustStockModalProps> = ({
                             </td>
                             <td className="p-2 sm:p-3 text-gray-700">
                               {b.customer || '-'}
+                            </td>
+                            <td className="p-2 sm:p-3">
+                              <span
+                                className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap ${statusBadgeClass(
+                                  b.status,
+                                )}`}
+                              >
+                                {statusLabel(b.status)}
+                              </span>
                             </td>
                             <td className="p-2 sm:p-3  font-bold text-gray-700">
                               {fmtQty(b.jumlah_qty)}
