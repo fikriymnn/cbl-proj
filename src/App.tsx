@@ -291,6 +291,7 @@ import GudangRMPage from './pages/GudangRM/GudangRMPage';
 import StockOpnameRMPage from './pages/GudangRM/StockOpnameRMPage';
 import ApprovalOpnameMRRMPage from './pages/MR/ApprovalOpnameMRRMPage';
 import MonitoringPOPage from './pages/Purchasing/MonitoringPOPage';
+import ListArPage from './pages/Accounting/ListArPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1988,7 +1989,14 @@ function App() {
             </P>
           }
         />
-
+        <Route
+          path="/accounting/list-ar"
+          element={
+            <P>
+              <ListArPage />
+            </P>
+          }
+        />
         {/* ============== MASTER DATA ROUTES ============== */}
         {/* Maintenance Master */}
         <Route
