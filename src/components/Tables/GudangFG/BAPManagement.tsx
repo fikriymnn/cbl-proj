@@ -2,12 +2,14 @@
 // Management view: no "create BAP" here — just the list, plus final
 // approve/reject per item (same endpoints as the original gudang flow),
 // with a value summary so management can see how much stock value
-// (qty x harga_jual) is sitting in rejected/"wasted" items.
+// (qty x harga_jual) is sitting in the BAP.
 //
-// Bulk actions: same UX pattern as BAPMarketing — checkbox per actionable
-// item, "select all", one shared note field, and a bulk button that still
-// calls the existing per-item approve/reject endpoints one by one (no bulk
-// endpoint on the API).
+// Bulk actions: checkbox per actionable item, "select all", one shared note
+// field, and a bulk button that still calls the existing per-item
+// approve/reject endpoints one by one (no bulk endpoint on the API).
+//
+// The detail modal has a search box + status filter (see bapItemFilter.tsx).
+// Bulk actions only ever apply to items that are currently visible.
 
 import React, { useCallback, useEffect, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
@@ -28,6 +30,7 @@ import {
   itemStatusBadgeClass,
   itemStatusLabel,
 } from './bapHelpers';
+import { BapItemFilterBar, useBapItemFilter } from './bapItemFilter';
 
 function itemValue(item: BapItem): number {
   const harga = item.so?.harga_jual ?? 0;
@@ -61,7 +64,6 @@ function ManagementBapDetailModal({
         `${import.meta.env.VITE_API_LINK}/fg/bap/${bapId}`,
         { withCredentials: true },
       );
-      console.log('Fetched BAP detail:', res.data);
       setDetail(res.data?.data ?? null);
     } catch (err) {
       console.error(err);
@@ -78,14 +80,20 @@ function ManagementBapDetailModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bapId]);
 
-  const items = detail?.bap_item ?? [];
-  const totalValue = items.reduce((sum, it) => sum + itemValue(it), 0);
-  const rejectedValue = items
-    .filter((it) => (it.status ?? '').toLowerCase() === 'reject')
-    .reduce((sum, it) => sum + itemValue(it), 0);
+  const allItems = detail?.bap_item ?? [];
+  const filter = useBapItemFilter(allItems);
+  const items = filter.filtered;
+
+  // Summary always reflects the whole BAP, not the filtered view
+  const totalValue = allItems.reduce((sum, it) => sum + itemValue(it), 0);
 
   const actionableItems = items.filter(
     (it) => (it.status ?? '').toLowerCase() === 'approve marketing',
+  );
+
+  // Only act on selected items that are still visible under the current filter
+  const selectedVisible = selected.filter((id) =>
+    actionableItems.some((it) => it.id === id),
   );
 
   function updateNote(id: number, val: string) {
@@ -99,7 +107,7 @@ function ManagementBapDetailModal({
   }
 
   function toggleSelectAll() {
-    if (selected.length === actionableItems.length) {
+    if (selectedVisible.length === actionableItems.length) {
       setSelected([]);
     } else {
       setSelected(actionableItems.map((it) => it.id));
@@ -175,14 +183,14 @@ function ManagementBapDetailModal({
       alert('Note wajib diisi untuk approve terpilih');
       return;
     }
-    if (selected.length === 0) return;
+    if (selectedVisible.length === 0) return;
     const confirmed = window.confirm(
-      `Setujui ${selected.length} item terpilih dengan note yang sama?`,
+      `Setujui ${selectedVisible.length} item terpilih dengan note yang sama?`,
     );
     if (!confirmed) return;
     try {
       setBulkSubmitting(true);
-      for (const id of selected) {
+      for (const id of selectedVisible) {
         // hit one by one — no bulk endpoint
         // eslint-disable-next-line no-await-in-loop
         await approveOne(id, bulkNote);
@@ -195,6 +203,8 @@ function ManagementBapDetailModal({
       console.error(err);
       const error = err as { response?: { data?: { msg?: string } } };
       alert(error?.response?.data?.msg ?? 'Gagal menyetujui sebagian item');
+      await fetchDetail();
+      onChanged();
     } finally {
       setBulkSubmitting(false);
     }
@@ -205,14 +215,14 @@ function ManagementBapDetailModal({
       alert('Note wajib diisi untuk tolak terpilih');
       return;
     }
-    if (selected.length === 0) return;
+    if (selectedVisible.length === 0) return;
     const confirmed = window.confirm(
-      `Tolak ${selected.length} item terpilih dengan note yang sama?`,
+      `Tolak ${selectedVisible.length} item terpilih dengan note yang sama?`,
     );
     if (!confirmed) return;
     try {
       setBulkSubmitting(true);
-      for (const id of selected) {
+      for (const id of selectedVisible) {
         // hit one by one — no bulk endpoint
         // eslint-disable-next-line no-await-in-loop
         await rejectOne(id, bulkNote);
@@ -225,6 +235,8 @@ function ManagementBapDetailModal({
       console.error(err);
       const error = err as { response?: { data?: { msg?: string } } };
       alert(error?.response?.data?.msg ?? 'Gagal menolak sebagian item');
+      await fetchDetail();
+      onChanged();
     } finally {
       setBulkSubmitting(false);
     }
@@ -254,7 +266,7 @@ function ManagementBapDetailModal({
         </div>
 
         {/* Value summary */}
-        {!loading && items.length > 0 && (
+        {!loading && allItems.length > 0 && (
           <div className="px-5 py-3 flex-shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 border-b border-gray-100">
             <div className="rounded-xl border border-gray-200 bg-white p-3">
               <p className="text-[10px] font-semibold text-gray-400 uppercase">
@@ -267,6 +279,21 @@ function ManagementBapDetailModal({
           </div>
         )}
 
+        {/* Search + status filter */}
+        {allItems.length > 0 && (
+          <BapItemFilterBar
+            search={filter.search}
+            onSearchChange={filter.setSearch}
+            status={filter.status}
+            onStatusChange={filter.setStatus}
+            statusOptions={filter.statusOptions}
+            shown={items.length}
+            total={allItems.length}
+            isFiltering={filter.isFiltering}
+            onReset={filter.reset}
+          />
+        )}
+
         {/* Bulk approve/reject bar */}
         {actionableItems.length > 0 && (
           <div className="px-5 pt-3 flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-cyan-50 border-b border-cyan-100 py-3">
@@ -274,12 +301,12 @@ function ManagementBapDetailModal({
               <input
                 type="checkbox"
                 checked={
-                  selected.length > 0 &&
-                  selected.length === actionableItems.length
+                  selectedVisible.length > 0 &&
+                  selectedVisible.length === actionableItems.length
                 }
                 onChange={toggleSelectAll}
               />
-              Pilih Semua ({selected.length}/{actionableItems.length})
+              Pilih Semua ({selectedVisible.length}/{actionableItems.length})
             </label>
             <input
               type="text"
@@ -291,21 +318,21 @@ function ManagementBapDetailModal({
             <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={handleBulkApprove}
-                disabled={selected.length === 0 || bulkSubmitting}
+                disabled={selectedVisible.length === 0 || bulkSubmitting}
                 className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
               >
                 {bulkSubmitting
                   ? 'Menyimpan...'
-                  : `Setujui Terpilih (${selected.length})`}
+                  : `Setujui Terpilih (${selectedVisible.length})`}
               </button>
               <button
                 onClick={handleBulkReject}
-                disabled={selected.length === 0 || bulkSubmitting}
+                disabled={selectedVisible.length === 0 || bulkSubmitting}
                 className="px-3 py-1.5 bg-red-500 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
               >
                 {bulkSubmitting
                   ? 'Menyimpan...'
-                  : `Tolak Terpilih (${selected.length})`}
+                  : `Tolak Terpilih (${selectedVisible.length})`}
               </button>
             </div>
           </div>
@@ -316,7 +343,9 @@ function ManagementBapDetailModal({
           {loading && <Loading />}
           {!loading && items.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">
-              Tidak ada item pada BAP ini
+              {allItems.length === 0
+                ? 'Tidak ada item pada BAP ini'
+                : 'Tidak ada item yang cocok dengan pencarian / filter'}
             </div>
           ) : (
             <div className="space-y-3">
@@ -490,7 +519,7 @@ const BAPManagement: React.FC = () => {
           </h2>
           <p className="text-cyan-100 text-xs mt-1">
             Persetujuan final per item. Buka detail untuk melihat nilai (qty ×
-            harga) dan nilai wasted dari item yang ditolak.
+            harga) dan mencari / memfilter item.
           </p>
         </div>
       </div>

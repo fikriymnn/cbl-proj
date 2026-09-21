@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
+import WasteByJoPanel from '../../Produksi/WasteByJoPanel';
 
 interface Tahapan {
   id: number;
@@ -82,15 +83,8 @@ const EstimasiKurangQtyPPIC: React.FC = () => {
     useState<EstimasiKurangQtyItem | null>(null);
   const [note, setNote] = useState<string>('');
 
-  // Waste by JO state (simplified inline panel inside the detail modal)
-  const [wasteMaster, setWasteMaster] = useState<any>(null);
-  const [wasteByJo, setWasteByJo] = useState<any>(null);
-  const [wasteLoading, setWasteLoading] = useState<boolean>(false);
-  const [showWaste, setShowWaste] = useState<boolean>(false);
-
   useEffect(() => {
     fetchListData();
-    getWasteMaster();
   }, [page, limit]);
 
   const fetchListData = async (): Promise<void> => {
@@ -126,8 +120,6 @@ const EstimasiKurangQtyPPIC: React.FC = () => {
     setDetailLoading(true);
     setSelectedDetail(null);
     setNote('');
-    setWasteByJo(null);
-    setShowWaste(false);
 
     const url = `${import.meta.env.VITE_API_LINK}/ppic/estimasiKurangQty/${id}`;
     try {
@@ -148,8 +140,6 @@ const EstimasiKurangQtyPPIC: React.FC = () => {
     setShowModal(false);
     setSelectedDetail(null);
     setNote('');
-    setWasteByJo(null);
-    setShowWaste(false);
   };
 
   const handleApprove = async (id: number): Promise<void> => {
@@ -178,54 +168,6 @@ const EstimasiKurangQtyPPIC: React.FC = () => {
       alert('Failed to approve. Please try again.');
     } finally {
       setActionLoading((prev) => ({ ...prev, [id]: false }));
-    }
-  };
-
-  // Fetches the waste master list once (used to build the waste-by-JO report)
-  const getWasteMaster = async (): Promise<void> => {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/master/produksi/wasteKendalaFormating`;
-    try {
-      const res = await axios.get(url, {});
-      setWasteMaster(res.data.waste);
-    } catch (error) {
-      console.error('Error fetching waste master:', error);
-    }
-  };
-
-  // Same as the regular waste report, but scoped to a single JO instead of a date range
-  const fetchWasteByJo = async (
-    no_jo: string,
-    id_jo: number,
-  ): Promise<void> => {
-    setWasteLoading(true);
-    setWasteByJo(null);
-    try {
-      const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/waste-lkh`;
-      const url = `${import.meta.env.VITE_API_LINK}/reportWasteByJo`;
-
-      const res2 = await axios.get(url2, {
-        params: { no_jo, id_jo },
-      });
-
-      const res = await axios.post(
-        url,
-        {
-          data_waste_master: wasteMaster,
-          data_waste_p1: res2.data,
-          no_jo,
-          id_jo,
-        },
-        { withCredentials: true },
-      );
-
-      setWasteByJo(res.data);
-    } catch (error) {
-      console.error('Error fetching waste by JO:', error);
-      setWasteByJo(null);
-    } finally {
-      setWasteLoading(false);
     }
   };
 
@@ -296,165 +238,6 @@ const EstimasiKurangQtyPPIC: React.FC = () => {
             </span>
           </div>
         </div>
-      </div>
-    );
-  };
-
-  // Renders the simplified, collapsible "waste by JO" panel shown inside the detail modal
-  const renderWastePanel = () => {
-    if (!selectedDetail) return null;
-
-    const wasteJoData = wasteByJo?.dataWasteByJo?.[0] ?? wasteByJo;
-    const defects = wasteJoData?.defects || [];
-    const hasData = defects.length > 0 || !!wasteJoData?.defectsByKategori;
-
-    return (
-      <div className="border border-gray-200 rounded-lg p-3">
-        <button
-          type="button"
-          onClick={() => {
-            if (!showWaste) {
-              fetchWasteByJo(selectedDetail.no_jo, selectedDetail.id_jo);
-            }
-            setShowWaste((prev) => !prev);
-          }}
-          className="flex items-center justify-between w-full text-sm font-medium text-blue-600 hover:text-blue-800"
-        >
-          <span>Waste JO {selectedDetail.no_jo}</span>
-          <span className="text-xs">
-            {showWaste ? 'Sembunyikan ▲' : 'Lihat ▼'}
-          </span>
-        </button>
-
-        {showWaste && (
-          <div className="mt-3">
-            {wasteLoading ? (
-              <div className="flex justify-center items-center py-6">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-              </div>
-            ) : hasData ? (
-              <>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-3">
-                  {['POTONG', 'CETAK', 'COATING', 'POND', 'LEM', 'LIPAT'].map(
-                    (kat) => (
-                      <div
-                        key={kat}
-                        className="text-center bg-gray-50 rounded p-2"
-                      >
-                        <div className="text-[10px] text-gray-500">{kat}</div>
-                        <div className="text-sm font-semibold text-blue-600">
-                          {formatNumber(
-                            wasteJoData?.defectsByKategori?.[kat]
-                              ?.total_defect ?? 0,
-                          )}
-                        </div>
-                      </div>
-                    ),
-                  )}
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs border-collapse border border-gray-200">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border border-gray-200 px-2 py-1 text-left">
-                          Kode Waste
-                        </th>
-                        <th className="border border-gray-200 px-2 py-1 text-right">
-                          Total Defect
-                        </th>
-                        <th className="border border-gray-200 px-2 py-1 text-left">
-                          Kendala
-                        </th>
-                        <th className="border border-gray-200 px-2 py-1 text-right">
-                          Defect By Kendala
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...defects]
-                        .sort(
-                          (a: any, b: any) =>
-                            (b.total_defect ?? 0) - (a.total_defect ?? 0),
-                        )
-                        .map((d: any, idx: number) => {
-                          const kendalaList = Array.isArray(d.kendala)
-                            ? d.kendala
-                            : [];
-
-                          if (kendalaList.length === 0) {
-                            return (
-                              <tr
-                                key={idx}
-                                className="border-b border-gray-200"
-                              >
-                                <td className="border border-gray-200 px-2 py-1">
-                                  {d.kode_waste} - {d.waste_desc}
-                                </td>
-                                <td className="border border-gray-200 px-2 py-1 text-right">
-                                  {formatNumber(d.total_defect)}
-                                </td>
-                                <td
-                                  className="border border-gray-200 px-2 py-1 text-center text-gray-400"
-                                  colSpan={2}
-                                >
-                                  Tidak ada data kendala
-                                </td>
-                              </tr>
-                            );
-                          }
-
-                          return (
-                            <React.Fragment key={idx}>
-                              {[...kendalaList]
-                                .sort(
-                                  (a: any, b: any) =>
-                                    (b.calculated_defect ?? 0) -
-                                    (a.calculated_defect ?? 0),
-                                )
-                                .map((k: any, ki: number) => (
-                                  <tr
-                                    key={`${idx}-${ki}`}
-                                    className="border-b border-gray-200"
-                                  >
-                                    {ki === 0 && (
-                                      <>
-                                        <td
-                                          rowSpan={kendalaList.length}
-                                          className="border border-gray-200 px-2 py-1 align-top"
-                                        >
-                                          {d.kode_waste} - {d.waste_desc}
-                                        </td>
-                                        <td
-                                          rowSpan={kendalaList.length}
-                                          className="border border-gray-200 px-2 py-1 text-right align-top"
-                                        >
-                                          {formatNumber(d.total_defect)}
-                                        </td>
-                                      </>
-                                    )}
-                                    <td className="border border-gray-200 px-2 py-1">
-                                      {k.kategori_kendala} - {k.kode_kendala} -{' '}
-                                      {k.kendala_desc}
-                                    </td>
-                                    <td className="border border-gray-200 px-2 py-1 text-right">
-                                      {formatNumber(k.calculated_defect)}
-                                    </td>
-                                  </tr>
-                                ))}
-                            </React.Fragment>
-                          );
-                        })}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            ) : (
-              <p className="text-xs text-gray-400 text-center py-4">
-                Tidak ada data waste untuk JO ini.
-              </p>
-            )}
-          </div>
-        )}
       </div>
     );
   };
@@ -808,7 +591,10 @@ const EstimasiKurangQtyPPIC: React.FC = () => {
                     </div>
                   </div>
 
-                  {renderWastePanel()}
+                  <WasteByJoPanel
+                    noJo={selectedDetail.no_jo}
+                    idJo={selectedDetail.id_jo}
+                  />
 
                   <div className="grid grid-cols-2 gap-3 p-3 bg-indigo-50 rounded-lg">
                     {renderUserBadge(

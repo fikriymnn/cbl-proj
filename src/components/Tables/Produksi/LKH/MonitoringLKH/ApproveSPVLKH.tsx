@@ -153,7 +153,7 @@ const ApproveSPVLKH: React.FC = () => {
   const [qtyBaik, setQtyBaik] = useState<number>(0);
   const [qtyRusakSebagian, setQtyRusakSebagian] = useState<number>(0);
   const [qtyRusakTotal, setQtyRusakTotal] = useState<number>(0);
-  const [qtyTotal, setQtyTotal] = useState<number>(0);
+  const qtyTotal = qtyBaik + qtyRusakSebagian + qtyRusakTotal;
 
   const [actionLoading, setActionLoading] = useState<{
     [key: number]: boolean;
@@ -271,7 +271,6 @@ const ApproveSPVLKH: React.FC = () => {
     setQtyBaik(0);
     setQtyRusakSebagian(0);
     setQtyRusakTotal(0);
-    setQtyTotal(0);
 
     setShowApprovalModal(true);
   };
@@ -287,7 +286,6 @@ const ApproveSPVLKH: React.FC = () => {
     setQtyBaik(0);
     setQtyRusakSebagian(0);
     setQtyRusakTotal(0);
-    setQtyTotal(0);
   };
 
   const handleEditChange = (
@@ -366,8 +364,7 @@ const ApproveSPVLKH: React.FC = () => {
         qtyKurangQty === 0 &&
         qtyBaik === 0 &&
         qtyRusakSebagian === 0 &&
-        qtyRusakTotal === 0 &&
-        qtyTotal === 0;
+        qtyRusakTotal === 0;
 
       if (!allFieldsZero) {
         const estimasiBody = {
@@ -1278,12 +1275,10 @@ const ApproveSPVLKH: React.FC = () => {
                     </label>
                     <input
                       type="number"
-                      min="0"
                       value={qtyTotal}
-                      onChange={(e) =>
-                        setQtyTotal(parseInt(e.target.value) || 0)
-                      }
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      readOnly
+                      tabIndex={-1}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-100 text-gray-700 cursor-not-allowed focus:outline-none"
                     />
                   </div>
                 </div>

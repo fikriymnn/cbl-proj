@@ -3,19 +3,18 @@
 // - Approve ONLY (no reject) — a bad BAP still needs a note explaining why.
 // - Per-item quick approve, or multi-select + bulk approve (still hits the API
 //   once per item — the endpoint has no bulk variant).
-// - Marketing filter: on open, ALL items in the BAP are shown unfiltered.
-//   A dropdown lets the user narrow the list down to a single marketing
-//   person. The dropdown options are built by:
-//     1. Collecting the unique bap_item.so.kalkulasi.id_marketing values
-//        actually present in this BAP.
-//     2. Resolving each id to a name via GET /hr/karyawan.
-//   So the filter only ever lists marketing people who actually have an
-//   item on this ticket — not the full company roster.
+// - Marketing filter (Marketing-only): on open, ALL items in the BAP are shown.
+//   A dropdown narrows the list to a single marketing person. Options are the
+//   unique bap_item.so.kalkulasi.id_marketing values present on this BAP.
+//   Each id is resolved to a real name by (in order):
+//     1. a name already embedded in the item (so.kalkulasi.marketing.nama, ...)
+//     2. GET /hr/karyawan, matched by MARKETING_ID_SOURCE (see below)
+//     3. fallback label "Marketing #<id>"
+// - Search + status filter (shared, see bapItemFilter.tsx) applied on top.
 //
-// NOTE: matching an id_marketing value to a karyawan record assumes the
-// karyawan record exposes a comparable id (karyawan.id, or possibly
-// karyawan.id_user / karyawan.user?.id depending on your schema). Adjust
-// `resolveKaryawanId` below if your API shapes this differently.
+// If names still show as "Marketing #<id>", open the browser console: the
+// modal logs the raw id_marketing values and the karyawan ids it fetched, so
+// you can see which id space id_marketing belongs to.
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
@@ -35,24 +34,94 @@ import {
   fmtQty,
   isMarketingApproved,
 } from './bapHelpers';
+import {
+  BapItemFilterBar,
+  StatusFilterOption,
+  useBapItemFilter,
+} from './bapItemFilter';
 import SearchableSelect from '../../../pages/MasterData/Marketing/SearchableSelect';
 
+// ─── Marketing name resolution ─────────────────────────────────────────────
+
+// Which id on the /hr/karyawan record does kalkulasi.id_marketing point to?
+//   'karyawan' -> karyawan.id (primary key of the karyawan table)
+//   'user'     -> karyawan.id_user / karyawan.user.id (the login account id)
+// Flip this if the names come out wrong / missing.
+// /hr/karyawan returns { userid, name, badgenumber, ... }, and id_marketing
+// matches `userid`, so the default is 'user'.
+const MARKETING_ID_SOURCE: 'karyawan' | 'user' = 'user';
+
 interface KaryawanRef {
+  userid?: number; // /hr/karyawan exposes the account id as `userid`
+  badgenumber?: string;
   id?: number;
+  id_karyawan?: number;
   id_user?: number;
-  user?: { id: number };
+  user?: { id?: number; nama?: string; name?: string; username?: string };
   name?: string;
   nama?: string;
+  nama_karyawan?: string;
+  nama_lengkap?: string;
+  full_name?: string;
   username?: string;
 }
 
-function resolveKaryawanId(k: KaryawanRef): number | undefined {
-  return k.id_user ?? k.user?.id ?? k.id;
+function karyawanName(k: KaryawanRef): string | undefined {
+  return (
+    k.nama ||
+    k.name ||
+    k.nama_karyawan ||
+    k.nama_lengkap ||
+    k.full_name ||
+    k.user?.nama ||
+    k.user?.name ||
+    k.username ||
+    k.user?.username ||
+    undefined
+  );
 }
 
-function karyawanName(k: KaryawanRef): string {
-  return k.name || k.nama || k.username || `#${resolveKaryawanId(k)}`;
+// Some backends already join the marketing person onto the kalkulasi.
+function embeddedMarketingName(item: BapItem): string | undefined {
+  const kalk = item.so?.kalkulasi as unknown as
+    | Record<string, unknown>
+    | undefined;
+  if (!kalk) return undefined;
+
+  const candidates = [
+    kalk.marketing,
+    kalk.user_marketing,
+    kalk.karyawan_marketing,
+    kalk.karyawan,
+  ];
+  for (const c of candidates) {
+    if (c && typeof c === 'object') {
+      const o = c as Record<string, unknown>;
+      const n = o.nama ?? o.name ?? o.nama_karyawan ?? o.username;
+      if (typeof n === 'string' && n) return n;
+    }
+  }
+  if (typeof kalk.nama_marketing === 'string' && kalk.nama_marketing) {
+    return kalk.nama_marketing;
+  }
+  return undefined;
 }
+
+const MARKETING_STATUS_OPTIONS: StatusFilterOption[] = [
+  { value: '', label: 'Semua Status', match: () => true },
+  {
+    value: 'pending',
+    label: 'Menunggu approve marketing',
+    match: (it) =>
+      !isMarketingApproved(it) &&
+      (it.status ?? '').toLowerCase() === 'incoming',
+  },
+  {
+    value: 'done',
+    label: 'Sudah disetujui marketing',
+    match: (it) => isMarketingApproved(it),
+  },
+];
 
 // ─── Detail / Approval Modal ───────────────────────────────────────────────
 
@@ -94,14 +163,28 @@ function MarketingBapDetailModal({
 
   const fetchKaryawan = useCallback(async () => {
     try {
+      // Large limit so a paginated endpoint doesn't hide the marketing person
       const res = await axios.get(
         `${import.meta.env.VITE_API_LINK}/hr/karyawan`,
-        {
-          withCredentials: true,
-        },
+        { params: { page: 1, limit: 1000 }, withCredentials: true },
       );
-      console.log('Fetched karyawan:', res.data?.data);
-      setKaryawan(Array.isArray(res.data?.data) ? res.data.data : []);
+      const raw = res.data?.data;
+      const list: KaryawanRef[] = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.data)
+        ? raw.data
+        : [];
+      console.log(
+        '[BAPMarketing] karyawan ids',
+        list.map((k) => ({
+          id: k.id,
+          userid: k.userid,
+          id_user: k.id_user,
+          user_id: k.user?.id,
+          name: karyawanName(k),
+        })),
+      );
+      setKaryawan(list);
     } catch (err) {
       console.error(err);
       setKaryawan([]);
@@ -116,39 +199,80 @@ function MarketingBapDetailModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bapId]);
 
-  const allItems = detail?.bap_item ?? [];
+  const allItems = useMemo(() => detail?.bap_item ?? [], [detail]);
+
+  // id -> name lookups, one per id space
+  const nameLookup = useMemo(() => {
+    const byKaryawanId = new Map<number, string>();
+    const byUserId = new Map<number, string>();
+    karyawan.forEach((k) => {
+      const name = karyawanName(k);
+      if (!name) return;
+      [k.id, k.id_karyawan].forEach((id) => {
+        if (id != null) byKaryawanId.set(Number(id), name);
+      });
+      [k.userid, k.id_user, k.user?.id].forEach((id) => {
+        if (id != null) byUserId.set(Number(id), name);
+      });
+    });
+    return (id: number): string | undefined => {
+      const primary =
+        MARKETING_ID_SOURCE === 'karyawan' ? byKaryawanId : byUserId;
+      const secondary =
+        MARKETING_ID_SOURCE === 'karyawan' ? byUserId : byKaryawanId;
+      return primary.get(id) ?? secondary.get(id);
+    };
+  }, [karyawan]);
 
   // Unique id_marketing values actually present on this BAP
   const marketingIdsOnBap = useMemo(() => {
     const ids = allItems
       .map((it) => it.so?.kalkulasi?.id_marketing)
       .filter((id): id is number => id != null);
-    return Array.from(new Set(ids));
+    const unique = Array.from(new Set(ids));
+    console.log('[BAPMarketing] id_marketing on this BAP', unique);
+    return unique;
   }, [allItems]);
 
   const marketingFilterOptions = useMemo(() => {
     const opts = marketingIdsOnBap.map((id) => {
-      const match = karyawan.find((k) => resolveKaryawanId(k) === id);
+      const embedded = allItems
+        .filter((it) => it.so?.kalkulasi?.id_marketing === id)
+        .map(embeddedMarketingName)
+        .find(Boolean);
       return {
         value: String(id),
-        label: match ? karyawanName(match) : `Marketing #${id}`,
+        label: embedded ?? nameLookup(id) ?? `Marketing #${id}`,
       };
     });
     return [{ value: '', label: 'Semua Marketing' }, ...opts];
-  }, [marketingIdsOnBap, karyawan]);
+  }, [marketingIdsOnBap, allItems, nameLookup]);
 
-  // Default: show everything. Only narrows down once a filter is picked.
-  const visibleItems = marketingFilter
-    ? allItems.filter(
-        (it) =>
-          String(it.so?.kalkulasi?.id_marketing ?? '') === marketingFilter,
-      )
-    : allItems;
+  // Step 1: marketing dropdown (default: everything)
+  const marketingFiltered = useMemo(
+    () =>
+      marketingFilter
+        ? allItems.filter(
+            (it) =>
+              String(it.so?.kalkulasi?.id_marketing ?? '') === marketingFilter,
+          )
+        : allItems,
+    [allItems, marketingFilter],
+  );
+
+  // Step 2: search + status filter on top of the marketing filter
+  const filter = useBapItemFilter(marketingFiltered, MARKETING_STATUS_OPTIONS);
+  const visibleItems = filter.filtered;
 
   const actionableItems = visibleItems.filter(
     (it) =>
       !isMarketingApproved(it) &&
       (it.status ?? '').toLowerCase() === 'incoming',
+  );
+
+  // Only act on selected items that are still visible under the current filters
+  const selectedVisible = selected.filter((id) =>
+    actionableItems.some((it) => it.id === id),
   );
 
   function updateNote(id: number, val: string) {
@@ -162,7 +286,7 @@ function MarketingBapDetailModal({
   }
 
   function toggleSelectAll() {
-    if (selected.length === actionableItems.length) {
+    if (selectedVisible.length === actionableItems.length) {
       setSelected([]);
     } else {
       setSelected(actionableItems.map((it) => it.id));
@@ -206,14 +330,14 @@ function MarketingBapDetailModal({
       alert('Note wajib diisi untuk approve terpilih');
       return;
     }
-    if (selected.length === 0) return;
+    if (selectedVisible.length === 0) return;
     const confirmed = window.confirm(
-      `Setujui (marketing) ${selected.length} item terpilih dengan note yang sama?`,
+      `Setujui (marketing) ${selectedVisible.length} item terpilih dengan note yang sama?`,
     );
     if (!confirmed) return;
     try {
       setBulkSubmitting(true);
-      for (const id of selected) {
+      for (const id of selectedVisible) {
         // hit one by one — no bulk endpoint
         // eslint-disable-next-line no-await-in-loop
         await approveOne(id, bulkNote);
@@ -226,6 +350,8 @@ function MarketingBapDetailModal({
       console.error(err);
       const error = err as { response?: { data?: { msg?: string } } };
       alert(error?.response?.data?.msg ?? 'Gagal menyetujui sebagian item');
+      await fetchDetail();
+      onChanged();
     } finally {
       setBulkSubmitting(false);
     }
@@ -266,17 +392,26 @@ function MarketingBapDetailModal({
               <SearchableSelect
                 placeholder="Semua Marketing"
                 value={marketingFilter}
-                onChange={(value) => {
-                  setMarketingFilter(String(value));
-                  setSelected([]);
-                }}
+                onChange={(value) => setMarketingFilter(String(value))}
                 options={marketingFilterOptions}
               />
             </div>
-            <span className="text-[10px] text-gray-400">
-              Menampilkan {visibleItems.length} dari {allItems.length} item
-            </span>
           </div>
+        )}
+
+        {/* Search + status filter */}
+        {allItems.length > 0 && (
+          <BapItemFilterBar
+            search={filter.search}
+            onSearchChange={filter.setSearch}
+            status={filter.status}
+            onStatusChange={filter.setStatus}
+            statusOptions={filter.statusOptions}
+            shown={visibleItems.length}
+            total={allItems.length}
+            isFiltering={filter.isFiltering}
+            onReset={filter.reset}
+          />
         )}
 
         {/* Bulk approve bar */}
@@ -286,12 +421,12 @@ function MarketingBapDetailModal({
               <input
                 type="checkbox"
                 checked={
-                  selected.length > 0 &&
-                  selected.length === actionableItems.length
+                  selectedVisible.length > 0 &&
+                  selectedVisible.length === actionableItems.length
                 }
                 onChange={toggleSelectAll}
               />
-              Pilih Semua ({selected.length}/{actionableItems.length})
+              Pilih Semua ({selectedVisible.length}/{actionableItems.length})
             </label>
             <input
               type="text"
@@ -302,12 +437,12 @@ function MarketingBapDetailModal({
             />
             <button
               onClick={handleBulkApprove}
-              disabled={selected.length === 0 || bulkSubmitting}
+              disabled={selectedVisible.length === 0 || bulkSubmitting}
               className="px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-lg transition-colors whitespace-nowrap"
             >
               {bulkSubmitting
                 ? 'Menyimpan...'
-                : `Setujui Terpilih (${selected.length})`}
+                : `Setujui Terpilih (${selectedVisible.length})`}
             </button>
           </div>
         )}
@@ -319,7 +454,7 @@ function MarketingBapDetailModal({
             <div className="py-12 text-center text-sm text-gray-400">
               {allItems.length === 0
                 ? 'Tidak ada item pada BAP ini'
-                : 'Tidak ada item untuk filter marketing ini'}
+                : 'Tidak ada item yang cocok dengan pencarian / filter'}
             </div>
           ) : (
             <div className="space-y-3">
@@ -472,8 +607,9 @@ const BAPMarketing: React.FC = () => {
             BAP — Approval Marketing
           </h2>
           <p className="text-cyan-100 text-xs mt-1">
-            Semua item ditampilkan secara default. Gunakan filter marketing di
-            dalam detail untuk mempersempit ke SO milik satu orang marketing.
+            Semua item ditampilkan secara default. Gunakan filter marketing,
+            pencarian, dan filter status di dalam detail untuk mempersempit
+            daftar item.
           </p>
         </div>
       </div>

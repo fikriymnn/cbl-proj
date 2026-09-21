@@ -17,6 +17,7 @@ import {
   itemStatusBadgeClass,
   itemStatusLabel,
 } from './bapHelpers';
+import { BapItemFilterBar, useBapItemFilter } from './bapItemFilter';
 
 // ─── Types reused from Gudang FG search ────────────────────────────────────────
 
@@ -69,7 +70,7 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
-  // NEW: filter toggle — only show finish goods that have been sitting >90 days
+  // filter toggle — only show finish goods that have been sitting >90 days
   const [moreThan90Days, setMoreThan90Days] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -123,7 +124,7 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
     fetchCandidates(search, newPage, moreThan90Days);
   }
 
-  // NEW: toggle handler for the >90 days filter
+  // toggle handler for the >90 days filter
   function handleMoreThan90DaysToggle() {
     const next = !moreThan90Days;
     setMoreThan90Days(next);
@@ -181,7 +182,7 @@ function AsyncFgSelect({ selectedIds, onAdd }: AsyncFgSelectProps) {
         )}
       </div>
 
-      {/* NEW: >90 days filter toggle */}
+      {/* >90 days filter toggle */}
       <label className="flex items-center gap-2 flex-shrink-0 select-none cursor-pointer">
         <input
           type="checkbox"
@@ -572,7 +573,6 @@ function BapDetailModal({
         `${import.meta.env.VITE_API_LINK}/fg/bap/${bapId}`,
         { withCredentials: true },
       );
-      console.log('Fetched BAP detail:', res.data);
       setDetail(res.data?.data ?? null);
     } catch (err) {
       console.error(err);
@@ -586,7 +586,9 @@ function BapDetailModal({
     fetchDetail();
   }, [fetchDetail]);
 
-  const items = detail?.bap_item ?? [];
+  const allItems = detail?.bap_item ?? [];
+  const filter = useBapItemFilter(allItems);
+  const items = filter.filtered;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
@@ -624,12 +626,29 @@ function BapDetailModal({
           </button>
         </div>
 
+        {/* Search + status filter */}
+        {allItems.length > 0 && (
+          <BapItemFilterBar
+            search={filter.search}
+            onSearchChange={filter.setSearch}
+            status={filter.status}
+            onStatusChange={filter.setStatus}
+            statusOptions={filter.statusOptions}
+            shown={items.length}
+            total={allItems.length}
+            isFiltering={filter.isFiltering}
+            onReset={filter.reset}
+          />
+        )}
+
         {/* Body — read only */}
         <div className="flex-1 overflow-y-auto p-4 relative min-h-[200px]">
           {loading && <Loading />}
           {!loading && items.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">
-              Tidak ada item pada BAP ini
+              {allItems.length === 0
+                ? 'Tidak ada item pada BAP ini'
+                : 'Tidak ada item yang cocok dengan pencarian / filter'}
             </div>
           ) : (
             <div className="space-y-3">

@@ -3,6 +3,9 @@
 // approve/reject actions). PPIC's only job is to close out the ticket via
 // /fg/bap/done/:id, and only once every item has been actioned
 // (i.e. nothing left with status "incoming").
+//
+// The detail modal has a search box + status filter (see bapItemFilter.tsx).
+// The "can finish" check always looks at ALL items, never the filtered view.
 
 import React, { useCallback, useEffect, useState } from 'react';
 import axios, { AxiosResponse } from 'axios';
@@ -21,6 +24,7 @@ import {
   itemStatusBadgeClass,
   itemStatusLabel,
 } from './bapHelpers';
+import { BapItemFilterBar, useBapItemFilter } from './bapItemFilter';
 
 // ─── Detail / Finish Modal ──────────────────────────────────────────────────
 
@@ -57,12 +61,16 @@ function PPICBapDetailModal({
     fetchDetail();
   }, [fetchDetail]);
 
-  const items = detail?.bap_item ?? [];
-  const hasIncoming = items.some(
+  const allItems = detail?.bap_item ?? [];
+  const filter = useBapItemFilter(allItems);
+  const items = filter.filtered;
+
+  // Finish rules are based on the full item list, not the filtered one
+  const hasIncoming = allItems.some(
     (it) => (it.status ?? '').toLowerCase() === 'incoming',
   );
   const alreadyDone = (detail?.status ?? '').toLowerCase() === 'done';
-  const canFinish = !alreadyDone && items.length > 0 && !hasIncoming;
+  const canFinish = !alreadyDone && allItems.length > 0 && !hasIncoming;
 
   async function handleFinish() {
     if (!detail) return;
@@ -118,12 +126,29 @@ function PPICBapDetailModal({
           </div>
         )}
 
+        {/* Search + status filter */}
+        {allItems.length > 0 && (
+          <BapItemFilterBar
+            search={filter.search}
+            onSearchChange={filter.setSearch}
+            status={filter.status}
+            onStatusChange={filter.setStatus}
+            statusOptions={filter.statusOptions}
+            shown={items.length}
+            total={allItems.length}
+            isFiltering={filter.isFiltering}
+            onReset={filter.reset}
+          />
+        )}
+
         {/* Body — read only */}
         <div className="flex-1 overflow-y-auto p-4 relative min-h-[200px]">
           {loading && <Loading />}
           {!loading && items.length === 0 ? (
             <div className="py-12 text-center text-sm text-gray-400">
-              Tidak ada item pada BAP ini
+              {allItems.length === 0
+                ? 'Tidak ada item pada BAP ini'
+                : 'Tidak ada item yang cocok dengan pencarian / filter'}
             </div>
           ) : (
             <div className="space-y-3">
