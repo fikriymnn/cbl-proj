@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   PurchaseOrder,
   PurchaseOrderDetailResponse,
@@ -10,23 +10,6 @@ import {
   getStatusColor,
   getStatusLabel,
 } from './Types/poStatus';
-
-/* =============================================================================
- * WHAT CHANGED — JO-grouped items with substitute ("pengganti") support
- * -----------------------------------------------------------------------------
- * Same underlying fix as EditPOModal: this was rendering the flat `items`
- * array, which loses per-JO grouping and any substitute allocations the
- * moment a JO's need was covered by more than one item. `items_jo` on the
- * detail response is what actually carries that breakdown — see the
- * sample GET /purchaseOrder/:id payload.
- *
- * `buildRowGroups` (duplicated from EditPOModal, since this component has
- * no shared read-only variant to import from) groups `items_jo` by
- * `id_jo`, pulls unit price from the matching `items` entry, and flags
- * every allocation after the first (by id, i.e. creation order) within a
- * JO group as a substitute for display. Items in `items` that never
- * appear in `items_jo` render as manual, ungrouped rows, same as before.
- * ========================================================================== */
 
 interface MasterBrandItem {
   id: number;
@@ -86,6 +69,13 @@ interface DisplayAllocation {
   harga: number;
   ppn: number;
   is_ppn: boolean;
+  // Whether this line's harga already has PPN baked in (master_barang.is_include_tax).
+  // Needed at the summary level so its PPN is shown as info-only and excluded
+  // from the grand total, same as CreatePOModal — mirrors is_tax_locked there.
+  is_tax_locked: boolean;
+  // PPN for ONE unit of harga (not qty * harga). This is what the PPN
+  // column in the item table shows — a per-item rate, not a line total.
+  ppn_per_unit: number;
   total: number;
   is_substitute: boolean;
 }
@@ -105,6 +95,31 @@ const resolveBrandName = (
 ): string => {
   if (idBrand && brandMap.has(idBrand)) return brandMap.get(idBrand) as string;
   return fallback || '';
+};
+
+/**
+ * Display-only PPN extraction.
+ *
+ * `harga` (and therefore the line total) is treated as tax-inclusive.
+ * To show how much of that total is PPN, we back out the pre-tax value
+ * using the item's own `pajak` rate from master_barang:
+ *
+ *   hargaBeforeTax = lineTotal / (1 + pajak/100)   // e.g. 1,950,000 / 1.11
+ *   displayPpn     = lineTotal - hargaBeforeTax
+ *
+ * This does NOT read or trust the stored `ppn` field on the item, and it
+ * does not mutate `total` or anything sent back to the server on
+ * approve/reject — it's purely how this column is rendered.
+ */
+const computeDisplayPpn = (
+  lineTotal: number,
+  pajakPersen: number,
+  isPpn: boolean,
+): number => {
+  if (!isPpn) return 0;
+  const rate = 1 + pajakPersen / 100;
+  const hargaBeforeTax = lineTotal / rate;
+  return Math.round(lineTotal - hargaBeforeTax);
 };
 
 const buildRowGroups = (
@@ -133,9 +148,11 @@ const buildRowGroups = (
       const isTaxLocked = !!ij.master_barang?.is_include_tax;
       const isPpn = isTaxLocked || !!matched?.is_ppn;
       const pajakPersen = ij.master_barang?.pajak ?? 0;
-      const ppn = isPpn
-        ? Math.round(ij.qty_po * harga * (pajakPersen / 100))
-        : 0;
+      const lineTotal = ij.qty_po * harga;
+      const ppn = computeDisplayPpn(lineTotal, pajakPersen, isPpn);
+      // Per-item PPN for display in the table column — computed off harga
+      // alone (one unit), NOT qty * harga.
+      const ppnPerUnit = computeDisplayPpn(harga, pajakPersen, isPpn);
       return {
         key: `jo-item-${ij.id}`,
         nama_item: ij.nama_item,
@@ -146,7 +163,9 @@ const buildRowGroups = (
         harga,
         ppn,
         is_ppn: isPpn,
-        total: ij.qty_po * harga,
+        is_tax_locked: isTaxLocked,
+        ppn_per_unit: ppnPerUnit,
+        total: lineTotal,
         is_substitute: idx > 0,
       };
     });
@@ -165,16 +184,12 @@ const buildRowGroups = (
   items
     .filter((it) => !usedIdItems.has(it.id_item))
     .forEach((it) => {
-      // Display-only: recompute PPN from this item's own qty/harga/pajak
-      // instead of trusting `it.ppn`, which in some payloads reflects the
-      // order-level PPN rather than this line's share of it. Does not
-      // touch `it.total` or anything sent back on approve/reject.
       const isTaxLocked = !!it.master_barang?.is_include_tax;
       const isPpn = isTaxLocked || !!it.is_ppn;
       const pajakPersen = it.master_barang?.pajak ?? 0;
-      const ppn = isPpn
-        ? Math.round(it.qty_beli * it.harga * (pajakPersen / 100))
-        : 0;
+      const lineTotal = it.qty_beli * it.harga;
+      const ppn = computeDisplayPpn(lineTotal, pajakPersen, isPpn);
+      const ppnPerUnit = computeDisplayPpn(it.harga, pajakPersen, isPpn);
 
       groups.push({
         key: `manual-${it.id}`,
@@ -190,6 +205,8 @@ const buildRowGroups = (
             harga: it.harga,
             ppn,
             is_ppn: isPpn,
+            is_tax_locked: isTaxLocked,
+            ppn_per_unit: ppnPerUnit,
             total: it.total,
             is_substitute: false,
           },
@@ -298,6 +315,43 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
     if (rawItems.length === 0 && rawItemsJo.length === 0) return;
     setGroups(buildRowGroups(rawItems, rawItemsJo, brandMap));
   }, [rawItems, rawItemsJo, brandMap]);
+
+  // Recomputed summary — mirrors CreatePOModal's totals instead of trusting
+  // po.sub_total / po.ppn / po.total from the API. Those stored fields have
+  // been observed coming back with PPN added on top of tax-inclusive prices
+  // (the naive qty*harga*pajak% formula) instead of extracted from them, so
+  // this recalculates from the same tax-aware per-line data used for the
+  // item table's PPN column. po.discount is still read from the server,
+  // since it's a plain stored number rather than a derived one.
+  const allAllocations = useMemo(
+    () => groups.flatMap((g) => g.allocations),
+    [groups],
+  );
+  const subTotal = useMemo(
+    () => allAllocations.reduce((sum, a) => sum + a.total, 0),
+    [allAllocations],
+  );
+  // PPN already baked into harga for is_tax_locked items — info only,
+  // excluded from the grand total since it's already part of `total`.
+  const ppnIncluded = useMemo(
+    () =>
+      allAllocations
+        .filter((a) => a.is_tax_locked)
+        .reduce((sum, a) => sum + a.ppn, 0),
+    [allAllocations],
+  );
+  // PPN from items that are ticked but NOT tax-locked — added on top of
+  // the subtotal, same as before.
+  const ppnAddedToTotal = useMemo(
+    () =>
+      allAllocations
+        .filter((a) => !a.is_tax_locked && a.is_ppn)
+        .reduce((sum, a) => sum + a.ppn, 0),
+    [allAllocations],
+  );
+  const subTotalExTax = subTotal - ppnIncluded;
+  const discount = po?.discount || 0;
+  const grandTotal = subTotal - discount + ppnAddedToTotal;
 
   const runAction = async (action: 'approve' | 'reject') => {
     const label = action === 'approve' ? 'menyetujui' : 'menolak';
@@ -491,6 +545,9 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
                                 Harga
                               </th>
                               <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                                PPN / Item
+                              </th>
+                              <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
                                 PPN
                               </th>
                               <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
@@ -525,6 +582,11 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
                                 </td>
                                 <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
                                   {formatRupiah(a.harga)}
+                                </td>
+                                <td className="px-3 py-2.5 text-right tabular-nums text-slate-500">
+                                  {a.is_ppn
+                                    ? formatRupiah(a.ppn_per_unit)
+                                    : '-'}
                                 </td>
                                 <td className="px-3 py-2.5 text-right tabular-nums text-slate-500">
                                   {a.is_ppn ? formatRupiah(a.ppn) : '-'}
@@ -568,25 +630,38 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Subtotal</span>
                   <span className="text-slate-800 font-medium tabular-nums">
-                    Rp {formatRupiah(po.sub_total)}
+                    Rp {formatRupiah(subTotalExTax)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Discount</span>
                   <span className="text-slate-800 font-medium tabular-nums">
-                    Rp {formatRupiah(po.discount)}
+                    Rp {formatRupiah(discount)}
                   </span>
                 </div>
+                {ppnIncluded > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">
+                      PPN termasuk harga
+                      <span className="block text-[10px]">
+                        (info, tidak masuk total)
+                      </span>
+                    </span>
+                    <span className="text-slate-400 font-medium tabular-nums">
+                      Rp {formatRupiah(ppnIncluded)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">PPN</span>
                   <span className="text-slate-800 font-medium tabular-nums">
-                    Rp {formatRupiah(po.ppn)}
+                    Rp {formatRupiah(ppnAddedToTotal)}
                   </span>
                 </div>
                 <div className="border-t border-slate-200 pt-2.5 flex justify-between">
                   <span className="text-slate-700 font-semibold">Total</span>
                   <span className="text-indigo-700 font-semibold tabular-nums">
-                    Rp {formatRupiah(po.total)}
+                    Rp {formatRupiah(grandTotal)}
                   </span>
                 </div>
               </div>
