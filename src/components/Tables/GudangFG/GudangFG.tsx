@@ -5,6 +5,7 @@ import { Pagination, Stack } from '@mui/material';
 
 import { usePermissions } from '../../../constant/usePermissions';
 import AdjustStockModal from './AdjustStockModal';
+import { formatDateTime } from '../Produksi/TambahBahan/Tambahbahanutils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -417,6 +418,9 @@ function AsyncSearchSelect({
                       </span>
                       <span className="text-[10px] font-semibold text-indigo-600">
                         {b.no_jo}
+                      </span>
+                      <span className="text-[10px] font-semibold text-green-600">
+                        {formatDateTime(b.tgl_masuk)}
                       </span>
                       {outOfStock && (
                         <span className="text-[10px] font-bold text-red-500 bg-red-100 px-1.5 py-0.5 rounded">
@@ -1341,6 +1345,17 @@ const GudangFG: React.FC = () => {
     });
   }
 
+  const allExpanded =
+    data.length > 0 && data.every((g) => expandedGroups.has(groupKey(g)));
+
+  function toggleAllGroups() {
+    setExpandedGroups((prev) => {
+      const isAllExpanded =
+        data.length > 0 && data.every((g) => prev.has(groupKey(g)));
+      return isAllExpanded ? new Set() : new Set(data.map((g) => groupKey(g)));
+    });
+  }
+
   const handleSendDo = async (
     type: 'single' | 'group',
     payload: SendDoItem[],
@@ -1549,9 +1564,33 @@ const GudangFG: React.FC = () => {
               </svg>
               Data Gudang FG
             </h3>
-            <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold">
-              {data.length} Record
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleAllGroups}
+                disabled={data.length === 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <svg
+                  className={`w-3.5 h-3.5 transition-transform ${
+                    allExpanded ? 'rotate-90' : ''
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+                {allExpanded ? 'Tutup Semua' : 'Buka Semua'}
+              </button>
+              <span className="text-sm text-white bg-white bg-opacity-20 px-3 py-0.5 rounded-full font-semibold">
+                {data.length} Record
+              </span>
+            </div>
           </div>
 
           <div className="overflow-x-auto">

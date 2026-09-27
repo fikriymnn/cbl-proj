@@ -11,6 +11,23 @@ import {
   getStatusLabel,
 } from './Types/poStatus';
 
+/* =============================================================================
+ * WHAT CHANGED (this pass) — combined-item summary
+ * -----------------------------------------------------------------------------
+ * JO-linked groups (`group.jo` set) are no longer rendered one-card-per-JO
+ * need. They're first combined by item (id_item, falling back to item name
+ * when id_item is falsy — same key CreatePOModal/EditPOModal use) into a
+ * single read-only summary table: one row per distinct item with its
+ * combined qty and combined total. Each summary row has an expand toggle,
+ * collapsed by default; expanding it reveals the individual JO-need
+ * breakdown rows that make up that item (same columns as before: Qty,
+ * Satuan, Harga, PPN/Item, PPN, Total), still read-only — this modal never
+ * edits values, it only approves/rejects. Manual (non-JO) groups aren't
+ * part of items_jo, so they keep rendering as their own individual cards
+ * below the summary table, same as before. The recomputed summary totals
+ * (subTotal/ppnIncluded/ppnAddedToTotal/grandTotal) are unchanged.
+ * ========================================================================== */
+
 interface MasterBrandItem {
   id: number;
   kode_brand: string;
@@ -61,6 +78,9 @@ interface RawPoItemJo {
 
 interface DisplayAllocation {
   key: string;
+  // Carried through so combined-item grouping can key off it the same way
+  // CreatePOModal/EditPOModal do (falls back to item name when falsy).
+  id_item: number;
   nama_item: string;
   nama_brand: string;
   tipe_barang: string;
@@ -84,6 +104,30 @@ interface DisplayGroup {
   key: string;
   jo: { no_jo: string; tgl_kirim: string; qty_bom: number } | null;
   allocations: DisplayAllocation[];
+}
+
+// One row per distinct item, combined across every JO-linked DisplayGroup
+// that includes it — mirrors the create/edit modals' combined-item
+// summary, but purely for read-only display. `subGroups` keeps a pointer
+// back to each contributing DisplayGroup + the subset of its allocations
+// that belong to this item, so the UI can expand a summary row into its
+// per-JO breakdown.
+interface DisplayItemAggSubGroup {
+  group: DisplayGroup;
+  allocations: DisplayAllocation[];
+}
+
+interface DisplayItemAggGroup {
+  key: string;
+  nama_item: string;
+  nama_brand: string;
+  satuan: string;
+  totalQty: number;
+  avgHarga: number;
+  total: number;
+  ppnIncluded: number; // sum of PPN from tax-locked lines — info only
+  ppnAdded: number; // sum of PPN from non-tax-locked, ticked lines
+  subGroups: DisplayItemAggSubGroup[];
 }
 
 const toISODate = (value?: string): string => (value ? value.slice(0, 10) : '');
@@ -155,6 +199,7 @@ const buildRowGroups = (
       const ppnPerUnit = computeDisplayPpn(harga, pajakPersen, isPpn);
       return {
         key: `jo-item-${ij.id}`,
+        id_item: ij.id_item,
         nama_item: ij.nama_item,
         nama_brand: resolveBrandName(ij.id_brand, brandMap, ij.nama_brand),
         tipe_barang: ij.tipe_barang,
@@ -197,6 +242,7 @@ const buildRowGroups = (
         allocations: [
           {
             key: `manual-item-${it.id}`,
+            id_item: it.id_item,
             nama_item: it.nama_item,
             nama_brand: resolveBrandName(it.id_brand, brandMap, it.nama_brand),
             tipe_barang: it.tipe_barang,
@@ -215,6 +261,77 @@ const buildRowGroups = (
     });
 
   return groups;
+};
+
+// Groups JO-linked DisplayGroups by item (id_item, falling back to item
+// name) into read-only combined summary rows, keeping a `subGroups`
+// pointer back to each contributing DisplayGroup for the expand detail.
+// Manual (non-JO) groups are intentionally excluded — they render as
+// their own cards, same as before.
+const buildDisplayItemAggGroups = (
+  groups: DisplayGroup[],
+): DisplayItemAggGroup[] => {
+  type Bucket = {
+    key: string;
+    nama_item: string;
+    nama_brand: string;
+    satuan: string;
+    qty: number;
+    value: number;
+    ppnIncluded: number;
+    ppnAdded: number;
+    subGroupsByGroup: Map<string, DisplayItemAggSubGroup>;
+  };
+  const map = new Map<string, Bucket>();
+
+  groups
+    .filter((g) => g.jo)
+    .forEach((g) => {
+      g.allocations.forEach((a) => {
+        const key = a.id_item
+          ? `id:${a.id_item}`
+          : `name:${a.nama_item.trim().toLowerCase()}`;
+        let bucket = map.get(key);
+        if (!bucket) {
+          bucket = {
+            key,
+            nama_item: a.nama_item,
+            nama_brand: a.nama_brand,
+            satuan: a.satuan,
+            qty: 0,
+            value: 0,
+            ppnIncluded: 0,
+            ppnAdded: 0,
+            subGroupsByGroup: new Map(),
+          };
+          map.set(key, bucket);
+        }
+        bucket.qty += a.qty_po;
+        bucket.value += a.total;
+        if (a.is_tax_locked) bucket.ppnIncluded += a.ppn;
+        else if (a.is_ppn) bucket.ppnAdded += a.ppn;
+
+        let sub = bucket.subGroupsByGroup.get(g.key);
+        if (!sub) {
+          sub = { group: g, allocations: [] };
+          bucket.subGroupsByGroup.set(g.key, sub);
+        }
+        sub.allocations.push(a);
+      });
+    });
+
+  return Array.from(map.values()).map((b) => ({
+    key: b.key,
+    nama_item: b.nama_item,
+    nama_brand: b.nama_brand,
+    satuan: b.satuan,
+    totalQty: b.qty,
+    avgHarga: b.qty > 0 ? Math.round(b.value / b.qty) : 0,
+    total: b.value,
+    ppnIncluded: b.ppnIncluded,
+    ppnAdded: b.ppnAdded,
+    subGroups: Array.from(b.subGroupsByGroup.values()),
+  }));
 };
 
 const formatDateShort = (dateString?: string): string => {
@@ -264,6 +381,12 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
   const [groups, setGroups] = useState<DisplayGroup[]>([]);
   const [rawItems, setRawItems] = useState<RawPoItem[]>([]);
   const [rawItemsJo, setRawItemsJo] = useState<RawPoItemJo[]>([]);
+
+  // Which combined-item summary rows are expanded to show their per-JO
+  // breakdown. Collapsed (not in this set) by default.
+  const [expandedItemKeys, setExpandedItemKeys] = useState<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -315,6 +438,25 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
     if (rawItems.length === 0 && rawItemsJo.length === 0) return;
     setGroups(buildRowGroups(rawItems, rawItemsJo, brandMap));
   }, [rawItems, rawItemsJo, brandMap]);
+
+  const toggleItemExpand = (key: string) =>
+    setExpandedItemKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  // JO-linked groups are shown through the combined-item summary; manual
+  // (non-JO) groups keep rendering individually below it, same as before.
+  const itemAggGroups = useMemo(
+    () => buildDisplayItemAggGroups(groups),
+    [groups],
+  );
+  const manualDisplayGroups = useMemo(
+    () => groups.filter((g) => !g.jo),
+    [groups],
+  );
 
   // Recomputed summary — mirrors CreatePOModal's totals instead of trusting
   // po.sub_total / po.ppn / po.total from the API. Those stored fields have
@@ -397,6 +539,86 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
       className: 'bg-blue-50 text-blue-700',
     };
   };
+
+  // Shared read-only allocation table, used both for a manual group's own
+  // table and for the subset of allocations shown under an expanded
+  // combined-item summary row.
+  const renderAllocationsTable = (allocations: DisplayAllocation[]) => (
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-sm">
+        <thead className="bg-white border-b border-slate-100">
+          <tr>
+            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Nama Barang
+            </th>
+            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Brand
+            </th>
+            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Tipe
+            </th>
+            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Qty Beli
+            </th>
+            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Satuan
+            </th>
+            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Harga
+            </th>
+            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              PPN / Item
+            </th>
+            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              PPN
+            </th>
+            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Total
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-50">
+          {allocations.map((a) => (
+            <tr key={a.key} className="hover:bg-slate-50/60">
+              <td className="px-3 py-2.5 text-slate-800 font-medium">
+                <div className="flex items-center gap-1.5">
+                  {a.nama_item}
+                  {a.is_substitute && (
+                    <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
+                      Pengganti
+                    </span>
+                  )}
+                </div>
+              </td>
+              <td className="px-3 py-2.5 text-slate-600">
+                {a.nama_brand || '-'}
+              </td>
+              <td className="px-3 py-2.5 text-slate-600">
+                {a.tipe_barang || '-'}
+              </td>
+              <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
+                {a.qty_po}
+              </td>
+              <td className="px-3 py-2.5 text-slate-500">{a.satuan || '-'}</td>
+              <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
+                {formatRupiah(a.harga)}
+              </td>
+              <td className="px-3 py-2.5 text-right tabular-nums text-slate-500">
+                {a.is_ppn ? formatRupiah(a.ppn_per_unit) : '-'}
+              </td>
+              <td className="px-3 py-2.5 text-right tabular-nums text-slate-500">
+                {a.is_ppn ? formatRupiah(a.ppn) : '-'}
+              </td>
+              <td className="px-3 py-2.5 text-right tabular-nums text-slate-800 font-medium">
+                {formatRupiah(a.total)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-full max-h-[92vh] overflow-y-auto">
@@ -469,140 +691,163 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
               </div>
             </div>
 
-            {/* Items — grouped by JO need, with substitute allocations shown together */}
+            {/* Items — combined-item summary (from items_jo) + manual items */}
             <div className="space-y-3">
-              {groups.length === 0 ? (
-                <div className="border border-slate-100 rounded-xl px-4 py-10 text-center text-slate-400 text-sm">
-                  Tidak ada item.
-                </div>
-              ) : (
-                groups.map((group) => {
-                  const qtyAllocated = group.allocations.reduce(
-                    (sum, a) => sum + a.qty_po,
-                    0,
-                  );
-                  const remaining = group.jo
-                    ? group.jo.qty_bom - qtyAllocated
-                    : 0;
-                  return (
-                    <div
-                      key={group.key}
-                      className="border border-slate-100 rounded-xl overflow-hidden"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-4 py-2.5 border-b border-slate-100">
-                        {group.jo ? (
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
-                            <span className="font-semibold text-indigo-700">
-                              {group.jo.no_jo}
-                            </span>
-                            <span>
-                              Butuh:{' '}
-                              <b className="text-slate-800">
-                                {group.jo.qty_bom}{' '}
-                                {group.allocations[0]?.satuan || ''}
-                              </b>
-                            </span>
-                            <span>
-                              Kirim: {formatDateShort(group.jo.tgl_kirim)}
-                            </span>
-                            {(() => {
-                              const badge = getAllocationBadge(remaining);
-                              return (
+              {itemAggGroups.length > 0 && (
+                <div className="border border-slate-100 rounded-xl overflow-hidden">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-slate-50 border-b border-slate-100">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide w-8"></th>
+                        <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Nama Barang
+                        </th>
+                        <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Brand
+                        </th>
+                        <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Total Qty
+                        </th>
+                        <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Unit
+                        </th>
+                        <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Harga Rata²
+                        </th>
+                        <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Total
+                        </th>
+                        <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Sumber
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {itemAggGroups.map((ig) => {
+                        const isExpanded = expandedItemKeys.has(ig.key);
+                        return (
+                          <React.Fragment key={ig.key}>
+                            <tr
+                              className="hover:bg-slate-50/60 cursor-pointer select-none"
+                              onClick={() => toggleItemExpand(ig.key)}
+                            >
+                              <td className="px-3 py-2.5 text-slate-400">
                                 <span
-                                  className={`px-2 py-0.5 rounded-full font-medium ${badge.className}`}
+                                  className={`inline-block transition-transform duration-150 ${
+                                    isExpanded ? 'rotate-90' : ''
+                                  }`}
                                 >
-                                  {badge.label}
+                                  ▶
                                 </span>
-                              );
-                            })()}
-                          </div>
-                        ) : (
-                          <span className="text-xs font-medium text-slate-500">
-                            Item manual
-                          </span>
-                        )}
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm">
-                          <thead className="bg-white border-b border-slate-100">
-                            <tr>
-                              <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                Nama Barang
-                              </th>
-                              <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                Brand
-                              </th>
-                              <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                Tipe
-                              </th>
-                              <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                Qty Beli
-                              </th>
-                              <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                Satuan
-                              </th>
-                              <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                Harga
-                              </th>
-                              <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                PPN / Item
-                              </th>
-                              <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                PPN
-                              </th>
-                              <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                                Total
-                              </th>
+                              </td>
+                              <td className="px-3 py-2.5 font-medium text-slate-800">
+                                {ig.nama_item || '-'}
+                              </td>
+                              <td className="px-3 py-2.5 text-slate-600">
+                                {ig.nama_brand || '-'}
+                              </td>
+                              <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
+                                {ig.totalQty}
+                              </td>
+                              <td className="px-3 py-2.5 text-slate-500">
+                                {ig.satuan || '-'}
+                              </td>
+                              <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
+                                {formatRupiah(ig.avgHarga)}
+                              </td>
+                              <td className="px-3 py-2.5 text-right tabular-nums text-slate-800 font-semibold">
+                                {formatRupiah(ig.total)}
+                              </td>
+                              <td className="px-3 py-2.5 text-center text-xs text-slate-400">
+                                {ig.subGroups.length} JO
+                              </td>
                             </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-50">
-                            {group.allocations.map((a) => (
-                              <tr key={a.key} className="hover:bg-slate-50/60">
-                                <td className="px-3 py-2.5 text-slate-800 font-medium">
-                                  <div className="flex items-center gap-1.5">
-                                    {a.nama_item}
-                                    {a.is_substitute && (
-                                      <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
-                                        Pengganti
-                                      </span>
-                                    )}
+                            {isExpanded && (
+                              <tr>
+                                <td colSpan={8} className="p-0 bg-slate-50/60">
+                                  <div className="divide-y divide-slate-100">
+                                    {ig.subGroups.map((sg) => {
+                                      const qtyAllocated =
+                                        sg.allocations.reduce(
+                                          (sum, a) => sum + a.qty_po,
+                                          0,
+                                        );
+                                      const remaining = sg.group.jo
+                                        ? sg.group.jo.qty_bom - qtyAllocated
+                                        : 0;
+                                      const badge =
+                                        getAllocationBadge(remaining);
+                                      return (
+                                        <div
+                                          key={sg.group.key}
+                                          className="px-3 py-3"
+                                        >
+                                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 mb-2">
+                                            <span className="font-semibold text-indigo-700">
+                                              {sg.group.jo?.no_jo}
+                                            </span>
+                                            <span>
+                                              Butuh:{' '}
+                                              <b className="text-slate-800">
+                                                {sg.group.jo?.qty_bom}{' '}
+                                                {sg.allocations[0]?.satuan ||
+                                                  ''}
+                                              </b>
+                                            </span>
+                                            <span>
+                                              Kirim:{' '}
+                                              {formatDateShort(
+                                                sg.group.jo?.tgl_kirim,
+                                              )}
+                                            </span>
+                                            <span
+                                              className={`px-2 py-0.5 rounded-full font-medium ${badge.className}`}
+                                            >
+                                              {badge.label}
+                                            </span>
+                                          </div>
+                                          <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+                                            {renderAllocationsTable(
+                                              sg.allocations,
+                                            )}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 </td>
-                                <td className="px-3 py-2.5 text-slate-600">
-                                  {a.nama_brand || '-'}
-                                </td>
-                                <td className="px-3 py-2.5 text-slate-600">
-                                  {a.tipe_barang || '-'}
-                                </td>
-                                <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
-                                  {a.qty_po}
-                                </td>
-                                <td className="px-3 py-2.5 text-slate-500">
-                                  {a.satuan || '-'}
-                                </td>
-                                <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
-                                  {formatRupiah(a.harga)}
-                                </td>
-                                <td className="px-3 py-2.5 text-right tabular-nums text-slate-500">
-                                  {a.is_ppn
-                                    ? formatRupiah(a.ppn_per_unit)
-                                    : '-'}
-                                </td>
-                                <td className="px-3 py-2.5 text-right tabular-nums text-slate-500">
-                                  {a.is_ppn ? formatRupiah(a.ppn) : '-'}
-                                </td>
-                                <td className="px-3 py-2.5 text-right tabular-nums text-slate-800 font-medium">
-                                  {formatRupiah(a.total)}
-                                </td>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  );
-                })
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               )}
+
+              {/* Manual (non-JO) groups — not part of items_jo, so they stay
+                  individually shown, same as before */}
+              {manualDisplayGroups.map((group) => (
+                <div
+                  key={group.key}
+                  className="border border-slate-100 rounded-xl overflow-hidden"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-4 py-2.5 border-b border-slate-100">
+                    <span className="text-xs font-medium text-slate-500">
+                      Item manual
+                    </span>
+                  </div>
+                  {renderAllocationsTable(group.allocations)}
+                </div>
+              ))}
+
+              {itemAggGroups.length === 0 &&
+                manualDisplayGroups.length === 0 && (
+                  <div className="border border-slate-100 rounded-xl px-4 py-10 text-center text-slate-400 text-sm">
+                    Tidak ada item.
+                  </div>
+                )}
             </div>
 
             {/* Notes + summary */}

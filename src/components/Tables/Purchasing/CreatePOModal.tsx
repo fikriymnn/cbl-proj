@@ -11,16 +11,31 @@ import {
 } from './Types/Purchasing.types';
 
 /* =============================================================================
- * WHAT CHANGED (this pass) — number inputs, PPN-included-in-price, misc
+ * WHAT CHANGED (this pass) — combined-item summary, number inputs, PPN, misc
  * -----------------------------------------------------------------------------
- * 1. NUMBER INPUTS: Discount, Qty Beli, and Harga now use the new
+ * 1. COMBINED ITEM SUMMARY (accordion over items_jo): JO-linked rows are no
+ *    longer rendered one-card-per-JO-need. Instead they're first combined by
+ *    item (same grouping key `aggregateItems` uses — id_item, or item name
+ *    when id_item is falsy) into a single summary table: one row per distinct
+ *    item with its combined qty / average harga / combined total. Each
+ *    summary row has an expand toggle; collapsed by default. Expanding it
+ *    reveals the individual JO-need rows (the old per-JO card + table) that
+ *    make up that item, exactly as editable as before (same
+ *    updateAllocation/removeAllocation/substitute-picker wiring) — you just
+ *    can't edit values directly on the collapsed summary row, only after
+ *    expanding. Manual (non-JO) rows aren't part of items_jo, so they keep
+ *    rendering as their own individual cards below the summary table, same
+ *    as before. Nothing about state shape or the submitted payload changed —
+ *    this is purely a rendering/grouping change on top of the same `rows`.
+ *
+ * 2. NUMBER INPUTS: Discount, Qty Beli, and Harga now use the new
  *    `NumberInput` component instead of raw `<input type="number">`. It
  *    shows an empty field instead of a forced "0", and formats what the
  *    user types with `id-ID` thousands separators ("1.000") while still
  *    calling `onChange` with a plain integer — state/payloads are
  *    unaffected, only the on-screen text changes.
  *
- * 2. PPN WHEN THE MASTER PRICE ALREADY INCLUDES TAX (`is_tax_locked`):
+ * 3. PPN WHEN THE MASTER PRICE ALREADY INCLUDES TAX (`is_tax_locked`):
  *    `harga` on these items is tax-inclusive already. Per-item PPN is still
  *    computed the same way as before (qty * harga * pajak%) so it stays
  *    visible, but it must NOT be added again into the grand total, since
@@ -34,11 +49,11 @@ import {
  *    top-level `ppn` field keeps reporting the combined figure
  *    (informational), while `total` uses the corrected grand total.
  *
- * 3. `noteInternal` (Catatan Internal) is now read-only — it's still
+ * 4. `noteInternal` (Catatan Internal) is now read-only — it's still
  *    auto-generated from the selected pengajuan rows, but the user can no
  *    longer edit it by hand.
  *
- * 4. NUMBER INPUT DECIMALS: `NumberInput` now accepts a comma as the
+ * 5. NUMBER INPUT DECIMALS: `NumberInput` now accepts a comma as the
  *    decimal separator (e.g. "0,64") so fields like Qty Beli — which can
  *    mirror a fractional qty_bom — are actually typeable. The UI's finest
  *    supported precision is 0,01: a value below that but still positive
@@ -116,6 +131,31 @@ interface RowGroup {
   original_nama_item: string;
   qty_bom: number; // the fixed original qty this JO needs of original item
   allocations: Allocation[];
+}
+
+// One row per distinct item, combined across every JO-need row (RowGroup)
+// that allocates it — mirrors `aggregateItems`'s grouping, but keeps a
+// pointer back to each contributing RowGroup (as `subGroups`) instead of
+// collapsing straight into a payload shape, so the UI can expand a summary
+// row back into its editable per-JO detail.
+interface ItemAggSubGroup {
+  row: RowGroup;
+  allocations: Allocation[];
+}
+
+interface ItemAggGroup {
+  key: string;
+  id_item: number;
+  nama_item: string;
+  nama_brand: string;
+  satuan: string;
+  totalQty: number;
+  avgHarga: number;
+  total: number;
+  ppn: number;
+  is_ppn: boolean;
+  is_tax_locked: boolean;
+  subGroups: ItemAggSubGroup[];
 }
 
 interface ItemPayload {
@@ -516,6 +556,86 @@ const buildInternalNote = (rows: RowGroup[]): string =>
     })
     .join('\n');
 
+// Groups JO-linked allocations by item (same key as `aggregateItems`),
+// combining qty/harga/ppn across every JO-need row (RowGroup) that
+// allocates the item, while keeping a `subGroups` pointer back to each
+// contributing RowGroup + the subset of its allocations that belong to
+// this item — so the UI can render a collapsed summary row and, on
+// expand, the original editable per-JO detail. Manual (non-JO) rows are
+// intentionally excluded here; they render as their own cards, same as
+// before, since they aren't part of items_jo.
+const buildItemAggGroups = (rows: RowGroup[]): ItemAggGroup[] => {
+  type Bucket = {
+    key: string;
+    id_item: number;
+    nama_item: string;
+    nama_brand: string;
+    satuan: string;
+    qty: number;
+    value: number;
+    ppn: number;
+    is_ppn: boolean;
+    is_tax_locked: boolean;
+    subGroupsByRow: Map<string, ItemAggSubGroup>;
+  };
+  const map = new Map<string, Bucket>();
+
+  rows
+    .filter((row) => row.jo)
+    .forEach((row) => {
+      row.allocations.forEach((a) => {
+        if (!a.id_item && !a.nama_barang.trim()) return; // skip blank rows
+        const key = a.id_item
+          ? `id:${a.id_item}`
+          : `name:${a.nama_barang.trim().toLowerCase()}`;
+        let bucket = map.get(key);
+        if (!bucket) {
+          bucket = {
+            key,
+            id_item: a.id_item,
+            nama_item: a.nama_barang,
+            nama_brand: a.nama_brand,
+            satuan: a.satuan,
+            qty: 0,
+            value: 0,
+            ppn: 0,
+            is_ppn: false,
+            is_tax_locked: false,
+            subGroupsByRow: new Map(),
+          };
+          map.set(key, bucket);
+        }
+        bucket.qty += a.qty_po;
+        bucket.value += a.qty_po * a.harga;
+        bucket.ppn += a.ppn;
+        bucket.is_ppn = bucket.is_ppn || a.is_ppn;
+        bucket.is_tax_locked = bucket.is_tax_locked || a.is_tax_locked;
+
+        let sub = bucket.subGroupsByRow.get(row.groupId);
+        if (!sub) {
+          sub = { row, allocations: [] };
+          bucket.subGroupsByRow.set(row.groupId, sub);
+        }
+        sub.allocations.push(a);
+      });
+    });
+
+  return Array.from(map.values()).map((b) => ({
+    key: b.key,
+    id_item: b.id_item,
+    nama_item: b.nama_item,
+    nama_brand: b.nama_brand,
+    satuan: b.satuan,
+    totalQty: b.qty,
+    avgHarga: b.qty > 0 ? Math.round(b.value / b.qty) : 0,
+    total: b.value,
+    ppn: b.ppn,
+    is_ppn: b.is_ppn,
+    is_tax_locked: b.is_tax_locked,
+    subGroups: Array.from(b.subGroupsByRow.values()),
+  }));
+};
+
 // One entry per distinct id_item, summed across every allocation that uses
 // it (regardless of which JO or row it came from). Unit price is a
 // qty-weighted average so the aggregate total stays correct even if the
@@ -645,6 +765,11 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
     mode === 'from_selection'
       ? buildRowsFromSelection(selectedItems, new Map())
       : [emptyManualRow()],
+  );
+  // Which combined-item summary rows are expanded to show their editable
+  // per-JO detail. Collapsed (not in this set) by default.
+  const [expandedItemKeys, setExpandedItemKeys] = useState<Set<string>>(
+    new Set(),
   );
   const [noPO, setNoPO] = useState<string>('');
   const [loadingNo, setLoadingNo] = useState<boolean>(true);
@@ -856,6 +981,19 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
   const removeManualRow = (groupId: string) =>
     setRows((prev) => prev.filter((r) => r.groupId !== groupId));
 
+  const toggleItemExpand = (key: string) =>
+    setExpandedItemKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  // JO-linked rows are shown through the combined-item summary; manual
+  // (non-JO) rows keep rendering individually below it, same as before.
+  const itemAggGroups = useMemo(() => buildItemAggGroups(rows), [rows]);
+  const manualDisplayRows = useMemo(() => rows.filter((r) => !r.jo), [rows]);
+
   const openPicker = (groupId: string) => {
     setPickerGroupId(groupId);
     setPickerSearchInput('');
@@ -1040,6 +1178,186 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
       className: 'bg-blue-50 text-blue-700',
     };
   };
+
+  // Shared allocation-editing table, used both for a manual row's own
+  // table and for the subset of allocations shown under an expanded
+  // combined-item summary row. `canRemove` decides whether the ✕ button
+  // shows — it should reflect the FULL row's allocation count (so the
+  // last remaining line on a row can't be deleted), not just the length
+  // of the subset being displayed here.
+  const renderAllocationsTable = (
+    groupId: string,
+    allocations: Allocation[],
+    canRemove: boolean,
+  ) => (
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-sm table-fixed">
+        <colgroup>
+          <col className="w-[14%]" />
+          <col className="w-[26%]" />
+          <col className="w-[14%]" />
+          <col className="w-20" />
+          <col className="w-20" />
+          <col className="w-28" />
+          <col className="w-28" />
+          <col className="w-16" />
+          <col className="w-10" />
+        </colgroup>
+        <thead className="bg-white border-b border-slate-100">
+          <tr>
+            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Kode
+            </th>
+            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Nama Barang
+            </th>
+            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Brand
+            </th>
+            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Qty Beli
+            </th>
+            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Unit
+            </th>
+            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Harga
+            </th>
+            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Total
+            </th>
+            <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+              Pajak
+            </th>
+            <th className="px-3 py-2"></th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-50">
+          {allocations.map((a) => (
+            <tr key={a.allocId} className="hover:bg-slate-50/60">
+              <td className="px-3 py-2">
+                <input
+                  type="text"
+                  value={a.kode_barang}
+                  onChange={(e) =>
+                    updateAllocation(groupId, a.allocId, {
+                      kode_barang: e.target.value,
+                    })
+                  }
+                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </td>
+              <td className="px-3 py-2">
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={a.nama_barang}
+                    onChange={(e) =>
+                      updateAllocation(groupId, a.allocId, {
+                        nama_barang: e.target.value,
+                      })
+                    }
+                    placeholder="Nama barang"
+                    className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {a.is_substitute && (
+                    <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
+                      Pengganti
+                    </span>
+                  )}
+                </div>
+              </td>
+              <td className="px-3 py-2">
+                <input
+                  type="text"
+                  value={a.nama_brand}
+                  onChange={(e) =>
+                    updateAllocation(groupId, a.allocId, {
+                      nama_brand: e.target.value,
+                    })
+                  }
+                  placeholder="Brand"
+                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </td>
+              <td className="px-3 py-2">
+                <NumberInput
+                  value={a.qty_po}
+                  onChange={(v) =>
+                    updateAllocation(groupId, a.allocId, {
+                      qty_po: v,
+                    })
+                  }
+                  className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </td>
+              <td className="px-3 py-2">
+                <input
+                  type="text"
+                  value={a.satuan}
+                  onChange={(e) =>
+                    updateAllocation(groupId, a.allocId, {
+                      satuan: e.target.value,
+                    })
+                  }
+                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </td>
+              <td className="px-3 py-2">
+                <NumberInput
+                  value={a.harga}
+                  onChange={(v) =>
+                    updateAllocation(groupId, a.allocId, {
+                      harga: v,
+                    })
+                  }
+                  className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </td>
+              <td className="px-3 py-2 text-right tabular-nums text-slate-800 font-medium">
+                {formatRupiah(a.qty_po * a.harga)}
+              </td>
+              <td className="px-3 py-2 text-center">
+                <div className="flex flex-col items-center gap-0.5">
+                  <input
+                    type="checkbox"
+                    checked={a.is_ppn}
+                    disabled={a.is_tax_locked}
+                    onChange={(e) =>
+                      updateAllocation(groupId, a.allocId, {
+                        is_ppn: e.target.checked,
+                      })
+                    }
+                    title={
+                      a.is_tax_locked
+                        ? 'Harga sudah termasuk PPN — dihitung otomatis, tidak menambah grand total'
+                        : `PPN ${a.pajak_persen}% jika dicentang`
+                    }
+                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-70"
+                  />
+                  <span className="text-[10px] text-slate-400">
+                    {a.pajak_persen}%
+                  </span>
+                </div>
+              </td>
+              <td className="px-3 py-2 text-center">
+                {canRemove && (
+                  <button
+                    onClick={() => removeAllocation(groupId, a.allocId)}
+                    className="text-red-400 hover:text-red-600 transition-colors"
+                    aria-label="Hapus alokasi"
+                  >
+                    ✕
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-full max-h-[92vh] overflow-y-auto">
@@ -1133,240 +1451,184 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
             </div>
           </div>
 
-          {/* Items — grouped by JO need, each need can hold 1+ allocations */}
+          {/* Items — combined-item summary (from items_jo) + manual rows */}
           <div className="space-y-3">
-            {rows.map((row) => {
-              const qtyAllocated = row.allocations.reduce(
-                (sum, a) => sum + a.qty_po,
-                0,
-              );
-              const remaining = row.jo ? row.qty_bom - qtyAllocated : 0;
-              return (
-                <div
-                  key={row.groupId}
-                  className="border border-slate-200 rounded-xl overflow-hidden"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-4 py-2.5 border-b border-slate-100">
-                    {row.jo ? (
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
-                        <span className="font-semibold text-indigo-700">
-                          {row.jo.no_jo}
-                        </span>
-                        <span>
-                          Butuh:{' '}
-                          <b className="text-slate-800">
-                            {row.qty_bom} {row.allocations[0]?.satuan || ''}
-                          </b>{' '}
-                          {row.original_nama_item}
-                        </span>
-                        <span>Kirim: {formatDateShort(row.jo.tgl_kirim)}</span>
-                        {(() => {
-                          const badge = getAllocationBadge(remaining);
-                          return (
-                            <span
-                              className={`px-2 py-0.5 rounded-full font-medium ${badge.className}`}
-                            >
-                              {badge.label}
-                            </span>
-                          );
-                        })()}
-                      </div>
-                    ) : (
-                      <span className="text-xs font-medium text-slate-500">
-                        Item manual
-                      </span>
-                    )}
-                    <div className="flex items-center gap-3">
-                      {row.jo && (
-                        <button
-                          onClick={() => openPicker(row.groupId)}
-                          className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
-                        >
-                          + Item pengganti
-                        </button>
-                      )}
-                      {!row.jo && (
-                        <button
-                          onClick={() => removeManualRow(row.groupId)}
-                          className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          Hapus baris
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm table-fixed">
-                      <colgroup>
-                        <col className="w-[14%]" />
-                        <col className="w-[26%]" />
-                        <col className="w-[14%]" />
-                        <col className="w-20" />
-                        <col className="w-20" />
-                        <col className="w-28" />
-                        <col className="w-28" />
-                        <col className="w-16" />
-                        <col className="w-10" />
-                      </colgroup>
-                      <thead className="bg-white border-b border-slate-100">
-                        <tr>
-                          <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                            Kode
-                          </th>
-                          <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                            Nama Barang
-                          </th>
-                          <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                            Brand
-                          </th>
-                          <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                            Qty Beli
-                          </th>
-                          <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                            Unit
-                          </th>
-                          <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                            Harga
-                          </th>
-                          <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                            Total
-                          </th>
-                          <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                            Pajak
-                          </th>
-                          <th className="px-3 py-2"></th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                        {row.allocations.map((a) => (
-                          <tr key={a.allocId} className="hover:bg-slate-50/60">
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                value={a.kode_barang}
-                                onChange={(e) =>
-                                  updateAllocation(row.groupId, a.allocId, {
-                                    kode_barang: e.target.value,
-                                  })
-                                }
-                                className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
+            {itemAggGroups.length > 0 && (
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide w-8"></th>
+                      <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                        Nama Barang
+                      </th>
+                      <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                        Brand
+                      </th>
+                      <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                        Total Qty
+                      </th>
+                      <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                        Unit
+                      </th>
+                      <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                        Harga Rata²
+                      </th>
+                      <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                        Total
+                      </th>
+                      <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                        Sumber
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {itemAggGroups.map((ig) => {
+                      const isExpanded = expandedItemKeys.has(ig.key);
+                      return (
+                        <React.Fragment key={ig.key}>
+                          <tr
+                            className="hover:bg-slate-50/60 cursor-pointer select-none"
+                            onClick={() => toggleItemExpand(ig.key)}
+                          >
+                            <td className="px-3 py-2.5 text-slate-400">
+                              <span
+                                className={`inline-block transition-transform duration-150 ${
+                                  isExpanded ? 'rotate-90' : ''
+                                }`}
+                              >
+                                ▶
+                              </span>
                             </td>
-                            <td className="px-3 py-2">
-                              <div className="flex items-center gap-1.5">
-                                <input
-                                  type="text"
-                                  value={a.nama_barang}
-                                  onChange={(e) =>
-                                    updateAllocation(row.groupId, a.allocId, {
-                                      nama_barang: e.target.value,
-                                    })
-                                  }
-                                  placeholder="Nama barang"
-                                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                />
-                                {a.is_substitute && (
-                                  <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
-                                    Pengganti
-                                  </span>
-                                )}
-                              </div>
+                            <td className="px-3 py-2.5 font-medium text-slate-800">
+                              {ig.nama_item || '-'}
                             </td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                value={a.nama_brand}
-                                onChange={(e) =>
-                                  updateAllocation(row.groupId, a.allocId, {
-                                    nama_brand: e.target.value,
-                                  })
-                                }
-                                placeholder="Brand"
-                                className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
+                            <td className="px-3 py-2.5 text-slate-600">
+                              {ig.nama_brand || '-'}
                             </td>
-                            <td className="px-3 py-2">
-                              <NumberInput
-                                value={a.qty_po}
-                                onChange={(v) =>
-                                  updateAllocation(row.groupId, a.allocId, {
-                                    qty_po: v,
-                                  })
-                                }
-                                className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
+                            <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
+                              {ig.totalQty}
                             </td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                value={a.satuan}
-                                onChange={(e) =>
-                                  updateAllocation(row.groupId, a.allocId, {
-                                    satuan: e.target.value,
-                                  })
-                                }
-                                className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
+                            <td className="px-3 py-2.5 text-slate-500">
+                              {ig.satuan || '-'}
                             </td>
-                            <td className="px-3 py-2">
-                              <NumberInput
-                                value={a.harga}
-                                onChange={(v) =>
-                                  updateAllocation(row.groupId, a.allocId, {
-                                    harga: v,
-                                  })
-                                }
-                                className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                              />
+                            <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
+                              Rp {formatRupiah(ig.avgHarga)}
                             </td>
-                            <td className="px-3 py-2 text-right tabular-nums text-slate-800 font-medium">
-                              {formatRupiah(a.qty_po * a.harga)}
+                            <td className="px-3 py-2.5 text-right tabular-nums text-slate-800 font-semibold">
+                              Rp {formatRupiah(ig.total)}
                             </td>
-                            <td className="px-3 py-2 text-center">
-                              <div className="flex flex-col items-center gap-0.5">
-                                <input
-                                  type="checkbox"
-                                  checked={a.is_ppn}
-                                  disabled={a.is_tax_locked}
-                                  onChange={(e) =>
-                                    updateAllocation(row.groupId, a.allocId, {
-                                      is_ppn: e.target.checked,
-                                    })
-                                  }
-                                  title={
-                                    a.is_tax_locked
-                                      ? 'Harga sudah termasuk PPN — dihitung otomatis, tidak menambah grand total'
-                                      : `PPN ${a.pajak_persen}% jika dicentang`
-                                  }
-                                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-70"
-                                />
-                                <span className="text-[10px] text-slate-400">
-                                  {a.pajak_persen}%
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 text-center">
-                              {row.allocations.length > 1 && (
-                                <button
-                                  onClick={() =>
-                                    removeAllocation(row.groupId, a.allocId)
-                                  }
-                                  className="text-red-400 hover:text-red-600 transition-colors"
-                                  aria-label="Hapus alokasi"
-                                >
-                                  ✕
-                                </button>
-                              )}
+                            <td className="px-3 py-2.5 text-center text-xs text-slate-400">
+                              {ig.subGroups.length} JO
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                          {isExpanded && (
+                            <tr>
+                              <td colSpan={8} className="p-0 bg-slate-50/60">
+                                <div className="divide-y divide-slate-100">
+                                  {ig.subGroups.map((sg) => {
+                                    const qtyAllocated =
+                                      sg.row.allocations.reduce(
+                                        (sum, a) => sum + a.qty_po,
+                                        0,
+                                      );
+                                    const remaining = sg.row.jo
+                                      ? sg.row.qty_bom - qtyAllocated
+                                      : 0;
+                                    const badge = getAllocationBadge(remaining);
+                                    return (
+                                      <div
+                                        key={sg.row.groupId}
+                                        className="px-3 py-3"
+                                      >
+                                        <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
+                                            <span className="font-semibold text-indigo-700">
+                                              {sg.row.jo?.no_jo}
+                                            </span>
+                                            <span>
+                                              Butuh:{' '}
+                                              <b className="text-slate-800">
+                                                {sg.row.qty_bom}{' '}
+                                                {sg.row.allocations[0]
+                                                  ?.satuan || ''}
+                                              </b>{' '}
+                                              {sg.row.original_nama_item}
+                                            </span>
+                                            <span>
+                                              Kirim:{' '}
+                                              {formatDateShort(
+                                                sg.row.jo?.tgl_kirim,
+                                              )}
+                                            </span>
+                                            <span
+                                              className={`px-2 py-0.5 rounded-full font-medium ${badge.className}`}
+                                            >
+                                              {badge.label}
+                                            </span>
+                                          </div>
+                                          <button
+                                            onClick={() =>
+                                              openPicker(sg.row.groupId)
+                                            }
+                                            className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                                          >
+                                            + Item pengganti
+                                          </button>
+                                        </div>
+                                        <div className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+                                          {renderAllocationsTable(
+                                            sg.row.groupId,
+                                            sg.allocations,
+                                            sg.row.allocations.length > 1,
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Manual (non-JO) rows — not part of items_jo, so they stay
+                individually editable, same as before */}
+            {manualDisplayRows.map((row) => (
+              <div
+                key={row.groupId}
+                className="border border-slate-200 rounded-xl overflow-hidden"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-4 py-2.5 border-b border-slate-100">
+                  <span className="text-xs font-medium text-slate-500">
+                    Item manual
+                  </span>
+                  <button
+                    onClick={() => removeManualRow(row.groupId)}
+                    className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors"
+                  >
+                    Hapus baris
+                  </button>
                 </div>
-              );
-            })}
+                {renderAllocationsTable(
+                  row.groupId,
+                  row.allocations,
+                  row.allocations.length > 1,
+                )}
+              </div>
+            ))}
+
+            {itemAggGroups.length === 0 && manualDisplayRows.length === 0 && (
+              <div className="border border-slate-100 rounded-xl px-4 py-10 text-center text-slate-400 text-sm">
+                Belum ada item.
+              </div>
+            )}
 
             {mode === 'manual' && (
               <button
