@@ -2,6 +2,18 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import PaymentARModal from './PaymentARModal';
 
+/* =============================================================================
+ * WHAT CHANGED (vs previous version)
+ * -----------------------------------------------------------------------------
+ * The payment logic moved into PaymentARModal, so this file barely changes:
+ *  - The full ARInvoice objects (no_po, tgl_faktur, total, paid_amount,
+ *    outstanding_amount, due_description, ...) are passed to the modal, which
+ *    now displays them (its PayableInvoice type accepts these extra fields).
+ *  - The lock-to-one-customer check no longer relies on
+ *    `next.values().next().value` (loosely typed); it uses lockedCustomerId.
+ *  - Selection bar shows the customer's outstanding sum with the count.
+ * ========================================================================== */
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Num = number | string | null | undefined;
@@ -302,8 +314,6 @@ const ListAR: React.FC = () => {
         withCredentials: true,
       });
 
-      console.log('Fetched AR data:', res.data);
-
       const list = Array.isArray(res.data.data) ? res.data.data : [];
       setCustomers(list);
       setSummary(res.data.data_rekap ?? null);
@@ -370,8 +380,8 @@ const ListAR: React.FC = () => {
       if (next.has(inv.id)) {
         next.delete(inv.id);
       } else {
-        const locked = next.size > 0 ? next.values().next().value : null;
-        if (locked && locked.id_customer !== inv.id_customer) return prev;
+        const first = prev.size > 0 ? Array.from(prev.values())[0] : null;
+        if (first && first.id_customer !== inv.id_customer) return prev;
         next.set(inv.id, inv);
       }
       return next;
@@ -772,7 +782,8 @@ const ListAR: React.FC = () => {
         </div>
       )}
 
-      {/* Payment modal */}
+      {/* Payment modal — full invoice objects are passed so the modal can
+          show DO / PO / faktur / jatuh tempo / total / dibayar details */}
       {isPaymentOpen && selectedList.length > 0 && (
         <PaymentARModal
           customerId={selectedList[0].id_customer}

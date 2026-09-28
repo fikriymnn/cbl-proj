@@ -63,8 +63,50 @@ interface RecapItem {
   total_harus_dibayar: string | number;
 }
 
+interface AdditionalCost {
+  id: number;
+  invoice_payment_detail_id?: number;
+  name: string;
+  amount: string | number;
+  note: string | null;
+}
+
+interface PaymentDetailItem {
+  id: number;
+  invoice_id: number;
+  invoice_payment_id: number;
+  /** Amount allocated from the payment to this invoice */
+  payment_amount: string | number;
+  additional_costs?: AdditionalCost[];
+  payment?: {
+    id: number;
+    receipt_number: string;
+    bank: string;
+    account_number: string;
+    payment_method: string;
+    payment_date: string;
+    payment_amount: string | number;
+    payment_amount_use: string | number;
+    status: string;
+    note: string | null;
+    payment_proof?: string | null;
+  };
+}
+
+/**
+ * Row returned by GET /invoice (list).
+ * If InvoiceDetail already declares these fields with a different type,
+ * remove the duplicates here.
+ */
+type InvoiceRow = InvoiceDetail & {
+  tgl_pelunasan?: string | null;
+  paid_amount?: string | number;
+  outstanding_amount?: string | number;
+  payment_details?: PaymentDetailItem[];
+};
+
 interface InvoiceResponse {
-  data: InvoiceDetail[];
+  data: InvoiceRow[];
   data_rekap_tenggat?: RecapItem[];
   status: number;
   success: boolean;
@@ -138,6 +180,26 @@ const formatCurrency = (num: number | string | null | undefined): string => {
   return `Rp ${(isNaN(n) ? 0 : n).toLocaleString('id-ID')}`;
 };
 
+const formatDateStr = (dateString?: string | null): string => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${day}/${month}/${year}`;
+};
+
+/** Day difference (to - from), ignoring time of day / timezone */
+const toDayUTC = (s: string): number => {
+  const d = new Date(s);
+  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+};
+const diffDays = (from: string, to: string): number =>
+  Math.round((toDayUTC(to) - toDayUTC(from)) / 86400000);
+
+const hasPayments = (item: InvoiceRow): boolean =>
+  Array.isArray(item.payment_details) && item.payment_details.length > 0;
+
 // ─── Recap Cards ──────────────────────────────────────────────────────────────
 
 function TenggatRecapCards({
@@ -210,12 +272,122 @@ function TenggatRecapCards({
   );
 }
 
+// ─── Payment Detail Panel ─────────────────────────────────────────────────────
+
+function PaymentDetailPanel({ item }: { item: InvoiceRow }) {
+  const details = item.payment_details ?? [];
+
+  return (
+    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-3">
+      {/* Ringkasan pembayaran invoice */}
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
+        <span className="text-gray-500">
+          Terbayar:{' '}
+          <b className="text-green-700">{formatCurrency(item.paid_amount)}</b>
+        </span>
+        <span className="text-gray-500">
+          Sisa:{' '}
+          <b className="text-red-700">
+            {formatCurrency(item.outstanding_amount ?? item.balance_due)}
+          </b>
+        </span>
+        <span className="text-gray-500">
+          Tgl Pelunasan:{' '}
+          <b className="text-gray-800">{formatDateStr(item.tgl_pelunasan)}</b>
+        </span>
+      </div>
+
+      {/* Daftar pembayaran */}
+      {details.map((pd) => (
+        <div
+          key={pd.id}
+          className="bg-white border border-gray-200 rounded-md p-3"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div className="text-xs font-semibold text-gray-800">
+              {pd.payment?.receipt_number || '-'}
+              {pd.payment?.status && (
+                <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] bg-green-100 text-green-800 uppercase">
+                  {pd.payment.status}
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-gray-500">
+              Dialokasikan ke invoice ini:{' '}
+              <b className="text-gray-900">
+                {formatCurrency(pd.payment_amount)}
+              </b>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+            <div>
+              <div className="text-gray-500">Tgl Bayar</div>
+              <div className="text-gray-900">
+                {formatDateStr(pd.payment?.payment_date)}
+              </div>
+            </div>
+            <div>
+              <div className="text-gray-500">Metode</div>
+              <div className="text-gray-900 capitalize">
+                {pd.payment?.payment_method || '-'}
+              </div>
+            </div>
+            <div>
+              <div className="text-gray-500">Bank / No. Rekening</div>
+              <div className="text-gray-900">
+                {pd.payment?.bank || '-'} · {pd.payment?.account_number || '-'}
+              </div>
+            </div>
+            <div>
+              <div className="text-gray-500">Total Bukti Bayar</div>
+              <div className="text-gray-900">
+                {formatCurrency(pd.payment?.payment_amount)}
+              </div>
+            </div>
+          </div>
+
+          {pd.payment?.note && (
+            <div className="mt-2 text-xs text-gray-600">
+              Catatan: {pd.payment.note}
+            </div>
+          )}
+
+          {pd.additional_costs && pd.additional_costs.length > 0 && (
+            <div className="mt-2 border-t border-gray-100 pt-2">
+              <div className="text-[11px] font-semibold text-gray-600 mb-1">
+                Biaya Tambahan
+              </div>
+              {pd.additional_costs.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex justify-between text-xs text-gray-700"
+                >
+                  <span>
+                    {c.name}
+                    {c.note ? (
+                      <span className="text-gray-400"> ({c.note})</span>
+                    ) : null}
+                  </span>
+                  <span className="font-medium">
+                    {formatCurrency(c.amount)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ListAllInvoice: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'invoice' | 'bukti'>('invoice');
   const [loading, setLoading] = useState<boolean>(true);
-  const [invoiceData, setInvoiceData] = useState<InvoiceDetail[]>([]);
+  const [invoiceData, setInvoiceData] = useState<InvoiceRow[]>([]);
   const [recapData, setRecapData] = useState<RecapItem[]>([]);
   const [activeWaktu, setActiveWaktu] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
@@ -225,11 +397,13 @@ const ListAllInvoice: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [isReturModalOpen, setIsReturModalOpen] = useState<boolean>(false);
   // The whole row is passed to the modal — no GET by id
-  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDetail | null>(
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRow | null>(
     null,
   );
   const [selectedInvoiceForRetur, setSelectedInvoiceForRetur] =
     useState<InvoiceItem | null>(null);
+  // Ids of rows whose payment detail is currently expanded
+  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     fetchInvoiceData();
@@ -255,6 +429,7 @@ const ListAllInvoice: React.FC = () => {
       console.log('Fetched Invoice data:', res.data);
 
       setInvoiceData(res.data.data || []);
+      setExpandedIds(new Set());
       setTotalPages(res.data.total_page || 1);
 
       // Keep the cards stable while a card filter is active
@@ -279,7 +454,7 @@ const ListAllInvoice: React.FC = () => {
     setPage(1);
   };
 
-  const handleViewDetail = (item: InvoiceDetail): void => {
+  const handleViewDetail = (item: InvoiceRow): void => {
     setSelectedInvoice(item);
     setIsDetailModalOpen(true);
   };
@@ -290,7 +465,7 @@ const ListAllInvoice: React.FC = () => {
   };
 
   // Retur still needs the full invoice incl. products, so it fetches by id
-  const handleRetur = async (invoice: InvoiceDetail): Promise<void> => {
+  const handleRetur = async (invoice: InvoiceRow): Promise<void> => {
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_LINK}/invoice/${invoice.id}`,
@@ -317,6 +492,53 @@ const ListAllInvoice: React.FC = () => {
     fetchInvoiceData();
   };
 
+  // ─── Expand / collapse ──────────────────────────────────────────────────────
+
+  const expandableIds = invoiceData.filter(hasPayments).map((i) => i.id);
+  const allExpanded =
+    expandableIds.length > 0 &&
+    expandableIds.every((id) => expandedIds.has(id));
+
+  const toggleExpand = (id: number): void => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleExpandAll = (): void => {
+    setExpandedIds(allExpanded ? new Set() : new Set(expandableIds));
+  };
+
+  const renderExpandButton = (id: number) => (
+    <button
+      onClick={() => toggleExpand(id)}
+      className="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-200 text-gray-600"
+      aria-label="Toggle detail payment"
+      aria-expanded={expandedIds.has(id)}
+    >
+      <svg
+        className={`w-4 h-4 transition-transform ${
+          expandedIds.has(id) ? 'rotate-90' : ''
+        }`}
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 5l7 7-7 7"
+        />
+      </svg>
+    </button>
+  );
+
+  // ─── Formatters / badges ────────────────────────────────────────────────────
+
   const truncateText = (text: string | null, maxLength: number) => {
     if (!text) return '-';
     return text.length > maxLength
@@ -324,14 +546,7 @@ const ListAllInvoice: React.FC = () => {
       : text;
   };
 
-  const formatDate = (dateString: string): string => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${day}/${month}/${year}`;
-  };
+  const formatDate = (dateString: string): string => formatDateStr(dateString);
 
   const getStatusBadge = (status: string) => {
     const statusColors: { [key: string]: string } = {
@@ -371,7 +586,35 @@ const ListAllInvoice: React.FC = () => {
     );
   };
 
-  const getDueBadge = (item: InvoiceDetail) => {
+  const getDueBadge = (item: InvoiceRow) => {
+    const isPaid =
+      item.status_payment?.toLowerCase() === 'lunas' && !!item.tgl_pelunasan;
+
+    // Sudah lunas: hitung dari tgl faktur ke tgl pelunasan
+    if (isPaid) {
+      const paidAfter = diffDays(item.tgl_faktur, item.tgl_pelunasan as string);
+      const lateDays = item.tgl_jatuh_tempo
+        ? diffDays(item.tgl_jatuh_tempo, item.tgl_pelunasan as string)
+        : 0;
+      const isLate = lateDays > 0;
+
+      return (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs text-gray-900">
+            Lunas {formatDate(item.tgl_pelunasan as string)} ({paidAfter} hari
+            dari faktur)
+          </span>
+          <span
+            className={`inline-block w-fit text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+              isLate ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+            }`}
+          >
+            {isLate ? `Telat bayar ${lateDays} hari` : 'Tepat waktu'}
+          </span>
+        </div>
+      );
+    }
+
     if (!item.due_description && !item.waktu) return '-';
     const theme = recapCardTheme(item.waktu ?? '');
     return (
@@ -479,6 +722,17 @@ const ListAllInvoice: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-2 py-2 text-left whitespace-nowrap">
+                      {expandableIds.length > 0 && (
+                        <button
+                          onClick={toggleExpandAll}
+                          title={allExpanded ? 'Tutup semua' : 'Buka semua'}
+                          className="text-[10px] font-semibold text-blue-600 hover:text-blue-800"
+                        >
+                          {allExpanded ? '▾ Tutup semua' : '▸ Buka semua'}
+                        </button>
+                      )}
+                    </th>
                     {[
                       'No Invoice',
                       'No DO',
@@ -505,7 +759,7 @@ const ListAllInvoice: React.FC = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan={10} className="px-3 py-4 text-center">
+                      <td colSpan={11} className="px-3 py-4 text-center">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         </div>
@@ -514,7 +768,7 @@ const ListAllInvoice: React.FC = () => {
                   ) : invoiceData.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={10}
+                        colSpan={11}
                         className="px-3 py-4 text-center text-gray-500 text-sm"
                       >
                         No data available
@@ -522,53 +776,68 @@ const ListAllInvoice: React.FC = () => {
                     </tr>
                   ) : (
                     invoiceData.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
-                          {item.no_invoice || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                          {item.no_do || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                          {item.no_po || '-'}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                          {truncateText(item.nama_customer, 20)}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                          {formatDate(item.tgl_faktur)}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                          {getDueBadge(item)}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-semibold">
-                          {formatCurrency(item.total)}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                          {getPaymentStatusBadge(item.status_payment)}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                          {getStatusBadge(item.status)}
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-xs">
-                          <div className="flex items-center justify-center gap-2">
-                            {item.status === 'approved' && (
+                      <React.Fragment key={item.id}>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-2 py-2 w-8">
+                            {hasPayments(item)
+                              ? renderExpandButton(item.id)
+                              : null}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
+                            {item.no_invoice || '-'}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {item.no_do || '-'}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {item.no_po || '-'}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {truncateText(item.nama_customer, 20)}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {formatDate(item.tgl_faktur)}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs">
+                            {getDueBadge(item)}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-semibold">
+                            {formatCurrency(item.total)}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs">
+                            {getPaymentStatusBadge(item.status_payment)}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs">
+                            {getStatusBadge(item.status)}
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-xs">
+                            <div className="flex items-center justify-center gap-2">
+                              {item.status === 'approved' && (
+                                <button
+                                  onClick={() => handleRetur(item)}
+                                  className="px-3 py-1.5 bg-orange-600 text-white text-xs font-medium rounded hover:bg-orange-700 transition-colors"
+                                >
+                                  Retur
+                                </button>
+                              )}
                               <button
-                                onClick={() => handleRetur(item)}
-                                className="px-3 py-1.5 bg-orange-600 text-white text-xs font-medium rounded hover:bg-orange-700 transition-colors"
+                                onClick={() => handleViewDetail(item)}
+                                className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
                               >
-                                Retur
+                                Detail
                               </button>
-                            )}
-                            <button
-                              onClick={() => handleViewDetail(item)}
-                              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
-                            >
-                              Detail
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {hasPayments(item) && expandedIds.has(item.id) && (
+                          <tr className="bg-gray-50/50">
+                            <td colSpan={11} className="px-4 py-3">
+                              <PaymentDetailPanel item={item} />
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))
                   )}
                 </tbody>
@@ -609,6 +878,17 @@ const ListAllInvoice: React.FC = () => {
 
           {/* Mobile Card View */}
           <div className="lg:hidden space-y-3">
+            {expandableIds.length > 0 && (
+              <button
+                onClick={toggleExpandAll}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+              >
+                {allExpanded
+                  ? '▾ Tutup semua detail payment'
+                  : '▸ Buka semua detail payment'}
+              </button>
+            )}
+
             {loading ? (
               <div className="flex justify-center items-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -706,6 +986,24 @@ const ListAllInvoice: React.FC = () => {
                         Detail
                       </button>
                     </div>
+
+                    {hasPayments(item) && (
+                      <div className="pt-1">
+                        <button
+                          onClick={() => toggleExpand(item.id)}
+                          className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800"
+                          aria-expanded={expandedIds.has(item.id)}
+                        >
+                          <span>{expandedIds.has(item.id) ? '▾' : '▸'}</span>
+                          Detail Payment ({item.payment_details?.length})
+                        </button>
+                        {expandedIds.has(item.id) && (
+                          <div className="mt-2">
+                            <PaymentDetailPanel item={item} />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
