@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 
 interface DOItem {
@@ -60,6 +60,157 @@ interface CreateInvoiceModalProps {
   onInvoiceCreated: () => void;
 }
 
+/* ---------------------------------------------------------------------------
+ * NumberInput — text input formatted with id-ID thousands separators
+ * ("1.000") that also accepts a comma as the decimal separator ("0,64").
+ * Always reports a plain number to `onChange`.
+ * `decimals` = max fraction digits (default 2, use 0 for whole numbers).
+ * ------------------------------------------------------------------------- */
+
+const EPSILON = 1e-9;
+
+const sanitizeNumericInput = (raw: string, decimals: number): string => {
+  let out = '';
+  let commaUsed = false;
+  for (const ch of raw) {
+    if (ch >= '0' && ch <= '9') {
+      out += ch;
+    } else if (ch === ',' && decimals > 0 && !commaUsed) {
+      out += ',';
+      commaUsed = true;
+    }
+  }
+  return out;
+};
+
+const parseNumberID = (raw: string, decimals: number): number => {
+  const sanitized = sanitizeNumericInput(raw, decimals);
+  if (!sanitized) return 0;
+  const [intPartRaw, fracPartRaw] = sanitized.split(',');
+  const intPart = intPartRaw || '0';
+  const fracPart = fracPartRaw ? fracPartRaw.slice(0, decimals) : '';
+  const parsed = parseFloat(fracPart ? `${intPart}.${fracPart}` : intPart);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const roundToPrecision = (value: number, decimals: number): number => {
+  if (!value) return 0;
+  const f = Math.pow(10, decimals);
+  const rounded = Math.round(value * f) / f;
+  if (rounded === 0 && value > 0) return 1 / f;
+  if (rounded === 0 && value < 0) return -1 / f;
+  return rounded;
+};
+
+const formatNumberID = (value: number, decimals: number): string => {
+  if (!value) return '';
+  return value.toLocaleString('id-ID', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  });
+};
+
+const formatTypingDisplay = (sanitized: string, decimals: number): string => {
+  if (!sanitized) return '';
+  const hasComma = sanitized.includes(',');
+  const [intPartRaw, fracPartRaw] = sanitized.split(',');
+  const intDigits = (intPartRaw || '').replace(/^0+(?=\d)/, '') || '0';
+  const groupedInt = Number(intDigits).toLocaleString('id-ID');
+  const fracPart = hasComma ? (fracPartRaw || '').slice(0, decimals) : '';
+  return hasComma ? `${groupedInt},${fracPart}` : groupedInt;
+};
+
+type NumberInputProps = {
+  value: number;
+  onChange: (value: number) => void;
+  className?: string;
+  placeholder?: string;
+  min?: number;
+  decimals?: number;
+  disabled?: boolean;
+};
+
+const NumberInput: React.FC<NumberInputProps> = ({
+  value,
+  onChange,
+  className,
+  placeholder,
+  min = 0,
+  decimals = 2,
+  disabled,
+}) => {
+  const [display, setDisplay] = useState<string>(() =>
+    formatNumberID(roundToPrecision(value, decimals), decimals),
+  );
+  const [isFocused, setIsFocused] = useState<boolean>(false);
+
+  // Sync when the value changes from OUTSIDE, never while the user is typing.
+  useEffect(() => {
+    if (isFocused) return;
+    const r = roundToPrecision(value, decimals);
+    setDisplay(formatNumberID(r, decimals));
+    if (Math.abs(r - value) > EPSILON) onChange(r);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, isFocused]);
+
+  return (
+    <input
+      type="text"
+      inputMode={decimals > 0 ? 'decimal' : 'numeric'}
+      value={display}
+      placeholder={placeholder ?? '0'}
+      disabled={disabled}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => {
+        setIsFocused(false);
+        const parsed = Math.max(
+          roundToPrecision(parseNumberID(display, decimals), decimals),
+          min,
+        );
+        setDisplay(parsed === 0 ? '' : formatNumberID(parsed, decimals));
+        onChange(parsed);
+      }}
+      onChange={(e) => {
+        const sanitized = sanitizeNumericInput(e.target.value, decimals);
+        setDisplay(formatTypingDisplay(sanitized, decimals));
+        onChange(Math.max(parseNumberID(sanitized, decimals), min));
+      }}
+      className={className}
+    />
+  );
+};
+
+/* ---------------------------------------------------------------------------
+ * Date helpers (local time, no UTC shifting)
+ * ------------------------------------------------------------------------- */
+
+const toInputDate = (d: Date): string => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const formatDateForInput = (dateString: string): string => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return toInputDate(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
+};
+
+/** "YYYY-MM-DD" + N days -> "YYYY-MM-DD" (local, safe across month ends) */
+const addDaysToInputDate = (dateStr: string, days: number): string => {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if (!y || !m || !d) return '';
+  return toInputDate(new Date(y, m - 1, d + days));
+};
+
 const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   isOpen,
   onClose,
@@ -79,24 +230,27 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   const [pelanggan, setPelanggan] = useState<string>('');
   const [alamat, setAlamat] = useState<string>('');
   const [tglFaktur, setTglFaktur] = useState<string>('');
-  const [tglJatuhTempo, setTglJatuhTempo] = useState<string>('');
-  const [waktuJatuhTempo, setWaktuJatuhTempo] = useState<string>('30 Hari');
+  // Number of days (default from detail_customer.top_faktur, editable)
+  const [topDays, setTopDays] = useState<number>(30);
   const [catatan, setCatatan] = useState<string>('');
   const [isShowDPP, setIsShowDPP] = useState<boolean>(false);
   const [dp, setDP] = useState<number>(0);
+
+  // Locked: always tglFaktur + topDays
+  const tglJatuhTempo = useMemo(
+    () => addDaysToInputDate(tglFaktur, topDays),
+    [tglFaktur, topDays],
+  );
+  // Same string format as before, sent to the API
+  const waktuJatuhTempo = `${topDays} Hari`;
 
   useEffect(() => {
     if (isOpen && selectedDOItems.length > 0) {
       fetchInvoiceNumber();
       processDataFromSelectedItems();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, selectedDOItems]);
-
-  useEffect(() => {
-    if (tglFaktur && waktuJatuhTempo) {
-      calculateJatuhTempo();
-    }
-  }, [tglFaktur, waktuJatuhTempo]);
 
   const fetchInvoiceNumber = async () => {
     try {
@@ -110,21 +264,6 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       setInvoiceNumber(res.data.new_no_invoice || '');
     } catch (error) {
       console.error('Error fetching invoice number:', error);
-    }
-  };
-
-  const formatDateForInput = (dateString: string): string => {
-    if (!dateString) return '';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return '';
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return '';
     }
   };
 
@@ -145,15 +284,15 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         .join(', ');
       setNoDO(allDONumbers || firstItem.no_do || '');
 
-      setTglKirim(formatDateForInput(firstItem.so.tgl_pengiriman || ''));
+      setTglKirim(formatDateForInput(firstItem.so?.tgl_pengiriman || ''));
       setPelanggan(firstItem.customer || '');
       setAlamat(
         firstItem.detail_customer?.alamat_penagihan || firstItem.alamat || '',
       );
-      setTglFaktur(formatDateForInput(new Date().toISOString()));
-      setWaktuJatuhTempo(
-        `${firstItem.detail_customer?.top_faktur || '30'} Hari`,
-      );
+      setTglFaktur(toInputDate(new Date()));
+
+      const top = parseInt(firstItem.detail_customer?.top_faktur, 10);
+      setTopDays(Number.isNaN(top) ? 30 : top);
 
       processProducts(selectedDOItems);
     } catch (error) {
@@ -226,14 +365,6 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
     });
 
     setInvoiceProducts(products);
-  };
-
-  const calculateJatuhTempo = () => {
-    if (!tglFaktur) return;
-    const days = parseInt(waktuJatuhTempo.replace(' Hari', '')) || 30;
-    const fakturDate = new Date(tglFaktur);
-    fakturDate.setDate(fakturDate.getDate() + days);
-    setTglJatuhTempo(formatDateForInput(fakturDate.toISOString()));
   };
 
   const handleDiskonProdukChange = (index: number, value: number) => {
@@ -494,26 +625,28 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Waktu Jatuh Tempo
+                      Waktu Jatuh Tempo (Hari)
                     </label>
-                    <input
-                      type="text"
-                      value={waktuJatuhTempo}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-gray-50"
-                      readOnly
+                    <NumberInput
+                      value={topDays}
+                      onChange={setTopDays}
+                      decimals={0}
+                      placeholder="30"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Tanggal Jatuh Tempo
+                    Tanggal Jatuh Tempo (otomatis)
                   </label>
                   <input
                     type="date"
                     value={tglJatuhTempo}
-                    onChange={(e) => setTglJatuhTempo(e.target.value)}
-                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none bg-gray-50 cursor-not-allowed"
+                    readOnly
+                    tabIndex={-1}
                   />
                 </div>
 
@@ -569,7 +702,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                         {invoiceProducts.length === 0 ? (
                           <tr>
                             <td
-                              colSpan={9}
+                              colSpan={8}
                               className="px-3 py-4 text-center text-gray-500 text-xs"
                             >
                               No products available
@@ -597,16 +730,12 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                                 {formatNumber(Math.round(product.dpp))}
                               </td>
                               <td className="px-2 py-1.5 text-xs">
-                                <input
-                                  type="number"
+                                <NumberInput
                                   value={product.diskon_produk}
-                                  onChange={(e) =>
-                                    handleDiskonProdukChange(
-                                      index,
-                                      parseFloat(e.target.value) || 0,
-                                    )
+                                  onChange={(v) =>
+                                    handleDiskonProdukChange(index, v)
                                   }
-                                  className="w-16 px-1.5 py-0.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
+                                  className="w-24 px-1.5 py-0.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs text-right"
                                 />
                               </td>
                               <td className="px-2 py-1.5 text-xs text-gray-900">
@@ -676,10 +805,9 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                     <span className="text-xs font-medium text-gray-700">
                       DP
                     </span>
-                    <input
-                      type="number"
+                    <NumberInput
                       value={dp}
-                      onChange={(e) => setDP(parseFloat(e.target.value) || 0)}
+                      onChange={setDP}
                       className="w-28 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs text-right"
                     />
                   </div>

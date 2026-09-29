@@ -292,6 +292,7 @@ import StockOpnameRMPage from './pages/GudangRM/StockOpnameRMPage';
 import ApprovalOpnameMRRMPage from './pages/MR/ApprovalOpnameMRRMPage';
 import MonitoringPOPage from './pages/Purchasing/MonitoringPOPage';
 import ListArPage from './pages/Accounting/ListArPage';
+import RekapInvoicePage from './pages/Accounting/RekapInvoicePage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1970,6 +1971,14 @@ function App() {
           element={
             <P>
               <DepositPage />
+            </P>
+          }
+        />
+        <Route
+          path="/accounting/rekap"
+          element={
+            <P>
+              <RekapInvoicePage />
             </P>
           }
         />

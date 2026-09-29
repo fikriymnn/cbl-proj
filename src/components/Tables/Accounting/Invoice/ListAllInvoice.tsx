@@ -4,6 +4,9 @@ import { Pagination, Stack } from '@mui/material';
 import DetailInvoiceModal, { InvoiceDetail } from './DetailInvoiceModal';
 import CreateReturModal from './CreateReturModal';
 import ListBuktiBayar from './ListBuktiBayar';
+import SearchableSelect from '../../../../pages/MasterData/Marketing/SearchAbleSelectFront';
+// Same searchable dropdown used in Master Data > Customer — adjust the path
+// to wherever it actually lives relative to this file.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,6 +64,12 @@ interface RecapItem {
   waktu: string;
   total_invoice: number;
   total_harus_dibayar: string | number;
+}
+
+/** Option shape SearchableSelect expects */
+interface CustomerOption {
+  value: number;
+  label: string;
 }
 
 interface AdditionalCost {
@@ -382,6 +391,25 @@ function PaymentDetailPanel({ item }: { item: InvoiceRow }) {
   );
 }
 
+// ─── Filter Chip ──────────────────────────────────────────────────────────────
+
+function FilterChip({
+  label,
+  onClear,
+}: {
+  label: string;
+  onClear: () => void;
+}) {
+  return (
+    <div className="inline-flex items-center gap-2 text-xs bg-blue-50 border border-blue-200 text-blue-700 rounded-full px-3 py-1.5 capitalize">
+      <span>{label}</span>
+      <button onClick={onClear} className="text-blue-500 hover:text-blue-800">
+        ✕
+      </button>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ListAllInvoice: React.FC = () => {
@@ -405,23 +433,109 @@ const ListAllInvoice: React.FC = () => {
   // Ids of rows whose payment detail is currently expanded
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
 
+  // ─── Extra filters (status, status_proses, status_payment, customer, date ranges) ──
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterStatusProses, setFilterStatusProses] = useState<string>('');
+  const [filterStatusPayment, setFilterStatusPayment] = useState<string>('');
+  // 0 = "Semua Customer" (same sentinel pattern used by SearchableSelect
+  // elsewhere in the app, e.g. Master Data > Customer's Marketing select)
+  const [filterIdCustomer, setFilterIdCustomer] = useState<number>(0);
+  const [customerOptions, setCustomerOptions] = useState<CustomerOption[]>([]);
+  const [filterStartDateFaktur, setFilterStartDateFaktur] =
+    useState<string>('');
+  const [filterEndDateFaktur, setFilterEndDateFaktur] = useState<string>('');
+  const [filterStartDateJatuhTempo, setFilterStartDateJatuhTempo] =
+    useState<string>('');
+  const [filterEndDateJatuhTempo, setFilterEndDateJatuhTempo] =
+    useState<string>('');
+
+  const activeFilterCount = [
+    filterStatus,
+    filterStatusProses,
+    filterStatusPayment,
+    filterIdCustomer,
+    filterStartDateFaktur,
+    filterEndDateFaktur,
+    filterStartDateJatuhTempo,
+    filterEndDateJatuhTempo,
+  ].filter(Boolean).length;
+
+  const resetFilters = (): void => {
+    setFilterStatus('');
+    setFilterStatusProses('');
+    setFilterStatusPayment('');
+    setFilterIdCustomer(0);
+    setFilterStartDateFaktur('');
+    setFilterEndDateFaktur('');
+    setFilterStartDateJatuhTempo('');
+    setFilterEndDateJatuhTempo('');
+    setPage(1);
+  };
+
+  // Customer list for the searchable dropdown — loaded once, same source as
+  // Master Data > Customer (GET /master/marketing/customer)
+  useEffect(() => {
+    fetchCustomerOptions();
+    // eslint-disable-next-line
+  }, []);
+
+  const fetchCustomerOptions = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/master/marketing/customer`;
+    try {
+      const res = await axios.get(url, {
+        params: { page: 1, limit: 1000 },
+        withCredentials: true,
+      });
+      const options: CustomerOption[] = (res.data?.data || []).map(
+        (c: { id: number; nama_customer: string }) => ({
+          value: c.id,
+          label: c.nama_customer,
+        }),
+      );
+      setCustomerOptions(options);
+    } catch (error) {
+      console.error('Error fetching customer list:', error);
+    }
+  };
+
   useEffect(() => {
     fetchInvoiceData();
     // eslint-disable-next-line
-  }, [page, searchTerm, limit, activeWaktu]);
+  }, [
+    page,
+    searchTerm,
+    limit,
+    activeWaktu,
+    filterStatus,
+    filterStatusProses,
+    filterStatusPayment,
+    filterIdCustomer,
+    filterStartDateFaktur,
+    filterEndDateFaktur,
+    filterStartDateJatuhTempo,
+    filterEndDateJatuhTempo,
+  ]);
 
   const fetchInvoiceData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/invoice`;
     try {
       setLoading(true);
 
-      // No status filter here: this list shows every invoice
       const res: AxiosResponse<InvoiceResponse> = await axios.get(url, {
         params: {
           page,
           limit,
           search: searchTerm || undefined,
           waktu: activeWaktu ?? undefined,
+          status: filterStatus || undefined,
+          status_proses: filterStatusProses || undefined,
+          status_payment: filterStatusPayment || undefined,
+          id_customer: filterIdCustomer || undefined,
+          start_date_faktur: filterStartDateFaktur || undefined,
+          end_date_faktur: filterEndDateFaktur || undefined,
+          start_date_jatuh_tempo: filterStartDateJatuhTempo || undefined,
+          end_date_jatuh_tempo: filterEndDateJatuhTempo || undefined,
         },
         withCredentials: true,
       });
@@ -696,22 +810,294 @@ const ListAllInvoice: React.FC = () => {
                   />
                 </svg>
               </div>
+
+              <button
+                onClick={() => setIsFilterOpen((prev) => !prev)}
+                className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                  isFilterOpen || activeFilterCount > 0
+                    ? 'bg-blue-50 border-blue-300 text-blue-700'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4h18M6 12h12M10 20h4"
+                  />
+                </svg>
+                Filter
+                {activeFilterCount > 0 && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 text-[11px] font-bold bg-blue-600 text-white rounded-full">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
             </div>
 
-            {activeWaktu && (
-              <div className="inline-flex items-center gap-2 text-xs bg-blue-50 border border-blue-200 text-blue-700 rounded-full px-3 py-1.5">
-                <span>
-                  Filter aktif: <strong>{activeWaktu}</strong>
-                </span>
-                <button
-                  onClick={() => {
-                    setActiveWaktu(null);
-                    setPage(1);
-                  }}
-                  className="text-blue-500 hover:text-blue-800"
-                >
-                  ✕
-                </button>
+            {/* Filter panel */}
+            {isFilterOpen && (
+              <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Status
+                    </label>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => {
+                        setFilterStatus(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Semua</option>
+                      <option value="draft">Draft</option>
+                      <option value="requested">Requested</option>
+                      <option value="approved">Approved</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Status Proses
+                    </label>
+                    <select
+                      value={filterStatusProses}
+                      onChange={(e) => {
+                        setFilterStatusProses(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Semua</option>
+                      <option value="draft">Draft</option>
+                      <option value="requested">Requested</option>
+                      <option value="done">Done</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Status Payment
+                    </label>
+                    <select
+                      value={filterStatusPayment}
+                      onChange={(e) => {
+                        setFilterStatusPayment(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Semua</option>
+                      <option value="lunas">Lunas</option>
+                      <option value="belum lunas">Belum Lunas</option>
+                      <option value="sebagian lunas">Sebagian Lunas</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Waktu Jatuh Tempo
+                    </label>
+                    <select
+                      value={activeWaktu ?? ''}
+                      onChange={(e) => {
+                        setActiveWaktu(e.target.value || null);
+                        setPage(1);
+                      }}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Semua</option>
+                      {recapData.map((r) => (
+                        <option key={r.waktu} value={r.waktu}>
+                          {r.waktu}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Customer
+                    </label>
+                    <SearchableSelect
+                      options={[
+                        { value: 0, label: 'Semua Customer' },
+                        ...customerOptions,
+                      ]}
+                      value={filterIdCustomer}
+                      onChange={(value) => {
+                        setFilterIdCustomer(Number(value));
+                        setPage(1);
+                      }}
+                      placeholder="Cari customer..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Tgl Faktur Dari
+                    </label>
+                    <input
+                      type="date"
+                      value={filterStartDateFaktur}
+                      onChange={(e) => {
+                        setFilterStartDateFaktur(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Tgl Faktur Sampai
+                    </label>
+                    <input
+                      type="date"
+                      value={filterEndDateFaktur}
+                      onChange={(e) => {
+                        setFilterEndDateFaktur(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="hidden lg:block" />
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Jatuh Tempo Dari
+                    </label>
+                    <input
+                      type="date"
+                      value={filterStartDateJatuhTempo}
+                      onChange={(e) => {
+                        setFilterStartDateJatuhTempo(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">
+                      Jatuh Tempo Sampai
+                    </label>
+                    <input
+                      type="date"
+                      value={filterEndDateJatuhTempo}
+                      onChange={(e) => {
+                        setFilterEndDateJatuhTempo(e.target.value);
+                        setPage(1);
+                      }}
+                      className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 mt-4 pt-3 border-t border-gray-100">
+                  <button
+                    onClick={resetFilters}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800"
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Active filter chips */}
+            {(activeWaktu || activeFilterCount > 0) && (
+              <div className="flex flex-wrap gap-2">
+                {activeWaktu && (
+                  <div className="inline-flex items-center gap-2 text-xs bg-blue-50 border border-blue-200 text-blue-700 rounded-full px-3 py-1.5">
+                    <span>
+                      Waktu: <strong>{activeWaktu}</strong>
+                    </span>
+                    <button
+                      onClick={() => {
+                        setActiveWaktu(null);
+                        setPage(1);
+                      }}
+                      className="text-blue-500 hover:text-blue-800"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+                {filterStatus && (
+                  <FilterChip
+                    label={`Status: ${filterStatus}`}
+                    onClear={() => {
+                      setFilterStatus('');
+                      setPage(1);
+                    }}
+                  />
+                )}
+                {filterStatusProses && (
+                  <FilterChip
+                    label={`Status Proses: ${filterStatusProses}`}
+                    onClear={() => {
+                      setFilterStatusProses('');
+                      setPage(1);
+                    }}
+                  />
+                )}
+                {filterStatusPayment && (
+                  <FilterChip
+                    label={`Payment: ${filterStatusPayment}`}
+                    onClear={() => {
+                      setFilterStatusPayment('');
+                      setPage(1);
+                    }}
+                  />
+                )}
+                {filterIdCustomer > 0 && (
+                  <FilterChip
+                    label={`Customer: ${
+                      customerOptions.find((c) => c.value === filterIdCustomer)
+                        ?.label ?? filterIdCustomer
+                    }`}
+                    onClear={() => {
+                      setFilterIdCustomer(0);
+                      setPage(1);
+                    }}
+                  />
+                )}
+                {(filterStartDateFaktur || filterEndDateFaktur) && (
+                  <FilterChip
+                    label={`Faktur: ${filterStartDateFaktur || '...'} s/d ${
+                      filterEndDateFaktur || '...'
+                    }`}
+                    onClear={() => {
+                      setFilterStartDateFaktur('');
+                      setFilterEndDateFaktur('');
+                      setPage(1);
+                    }}
+                  />
+                )}
+                {(filterStartDateJatuhTempo || filterEndDateJatuhTempo) && (
+                  <FilterChip
+                    label={`Jatuh Tempo: ${
+                      filterStartDateJatuhTempo || '...'
+                    } s/d ${filterEndDateJatuhTempo || '...'}`}
+                    onClear={() => {
+                      setFilterStartDateJatuhTempo('');
+                      setFilterEndDateJatuhTempo('');
+                      setPage(1);
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>
