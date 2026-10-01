@@ -166,10 +166,7 @@ const costsOf = (p: PaymentRow): number =>
 const depositOf = (p: PaymentRow): number => {
   const direct = (p as any).deposit_amount;
   if (direct !== undefined && direct !== null) return toNum(direct);
-  return Math.max(
-    toNum(p.payment_amount) - toNum(p.payment_amount_use) - costsOf(p),
-    0,
-  );
+  return Math.max(toNum(p.payment_amount) - toNum(p.payment_amount_use), 0);
 };
 
 // ─── Shared UI ────────────────────────────────────────────────────────────────
@@ -282,7 +279,7 @@ const LebihBayarList: React.FC<{ mode: Mode }> = ({ mode }) => {
         },
         withCredentials: true,
       });
-
+      console.log('Fetched payments:', res.data);
       const list = Array.isArray(res.data.data) ? res.data.data : [];
       setPayments(list);
       setTotalPages(res.data.total_page || 1);

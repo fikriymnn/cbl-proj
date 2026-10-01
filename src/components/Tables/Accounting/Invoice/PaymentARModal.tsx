@@ -554,8 +554,7 @@ const PaymentARModal: React.FC<PaymentARModalProps> = ({
 
       const payload = {
         customer_id: customerId,
-        // money into kas: transfer minus costs (excess over the invoices
-        // stays in here; BE turns it into deposit)
+        // uang yang benar-benar masuk kas = transfer - total biaya tambahan
         payment_amount: kasMasuk,
         payment_proof: proofName,
         payment_date: paymentDate,
@@ -567,7 +566,9 @@ const PaymentARModal: React.FC<PaymentARModalProps> = ({
           .filter((r) => r.entered > 0)
           .map((r) => ({
             invoice_id: r.inv.id,
-            payment_amount: r.cash,
+            // alokasi - biaya tambahan (BE yang menambahkan biaya kembali
+            // sehingga invoice terhitung sebesar alokasi)
+            payment_amount: r2(r.entered - r.costTotal),
             additional_costs: (costs[r.inv.id] || []).map((c) => ({
               name: c.type === 'Lainnya' ? c.customName.trim() : c.type,
               amount: c.amount,
@@ -1230,6 +1231,12 @@ const PaymentARModal: React.FC<PaymentARModalProps> = ({
               Konfirmasi pembayaran
             </div>
             <div className="p-5 space-y-3 text-sm text-gray-700">
+              <div className="rounded-lg bg-gray-50 border border-gray-200 p-3 space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Customer </span>
+                  <b>{customerName}</b>
+                </div>
+              </div>
               <div className="rounded-lg bg-gray-50 border border-gray-200 p-3 space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span>Nominal transfer</span>
