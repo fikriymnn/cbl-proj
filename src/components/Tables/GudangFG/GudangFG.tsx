@@ -383,7 +383,7 @@ function AsyncSearchSelect({
             style={{ maxHeight: '340px' }}
           >
             {candidates.map((b) => {
-              const outOfStock = (b.jumlah_qty_sisa ?? 0) <= 0;
+              const outOfStock = (b.jumlah_qty ?? 0) <= 0;
               // In showAllButLockIo mode, items with different IO are shown but disabled
               const wrongIo =
                 showAllButLockIo &&
@@ -440,7 +440,7 @@ function AsyncSearchSelect({
                   </div>
                   <div className="flex-shrink-0 text-right">
                     <p className="text-xs font-bold text-indigo-700">
-                      {fmtQty(b.jumlah_qty_sisa)}
+                      {fmtQty(b.jumlah_qty)}
                     </p>
                     <p className="text-[10px] text-gray-400">sisa</p>
                   </div>
@@ -685,7 +685,7 @@ function SelectedItemCard({
           <p className="text-[10px] text-gray-500">
             {barang.customer} — Sisa:{' '}
             <span className="font-bold text-indigo-700">
-              {fmtQty(barang.jumlah_qty_sisa)}
+              {fmtQty(barang.jumlah_qty)}
             </span>
           </p>
         </div>
@@ -725,7 +725,7 @@ function SelectedItemCard({
         <input
           type="number"
           min={1}
-          max={barang.jumlah_qty_sisa ?? undefined}
+          max={barang.jumlah_qty ?? undefined}
           value={quantity}
           onChange={(e) => onQtyChange(e.target.value)}
           className="flex-1 rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -753,7 +753,7 @@ function SingleDoModal({
     setSelected((p) => [...p, barang]);
     setQuantities((p) => ({
       ...p,
-      [barang.id]: String(barang.jumlah_qty_sisa ?? 0),
+      [barang.id]: String(barang.jumlah_qty ?? 0),
     }));
   }
 
@@ -915,7 +915,7 @@ function GroupDoModal({
     setSelected((p) => [...p, barang]);
     setQuantities((p) => ({
       ...p,
-      [barang.id]: String(barang.jumlah_qty_sisa ?? 0),
+      [barang.id]: String(barang.jumlah_qty ?? 0),
     }));
     if (selected.length === 0) {
       setMainJoId(barang.id);
