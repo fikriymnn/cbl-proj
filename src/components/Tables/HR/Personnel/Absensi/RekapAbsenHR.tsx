@@ -89,27 +89,33 @@ function RekapAbsenHR() {
 
   const calculateOvertimeHours = (absensiData: any[]) => {
     let lemburDenganSPL = 0;
-    let lemburTanpaSPL = 0;
     let lemburLiburDenganSPL = 0;
-    let lemburLiburTanpaSPL = 0;
+    let lemburTanpaSPL = 0; // jumlah hari
+    let lemburLiburTanpaSPL = 0; // jumlah hari
+
+    const normalize = (val: any) => (val ?? '').toString().trim().toLowerCase();
 
     absensiData?.forEach((record: any) => {
       const jamLembur = parseFloat(record.jam_lembur || 0);
+      const statusLembur = normalize(record.status_lembur);
+      const statusSPL = normalize(record.status_lembur_spl);
+      const jenisHari = normalize(record.jenis_hari_masuk);
 
-      if (
-        record.status_lembur === 'Lembur' ||
-        record.status_lembur === 'lembur'
-      ) {
-        if (record.status_lembur_spl === 'dengan SPL') {
-          lemburDenganSPL += jamLembur;
-        } else {
+      // ===== TANPA SPL (hitung hari berdasarkan jenis_hari_masuk + status_lembur_spl) =====
+      if (statusSPL === 'tidak dengan spl') {
+        if (jenisHari === 'biasa') {
           lemburTanpaSPL += 1;
-        }
-      } else if (record.status_lembur === 'Lembur Libur') {
-        if (record.status_lembur_spl === 'dengan SPL') {
-          lemburLiburDenganSPL += jamLembur;
-        } else {
+        } else if (jenisHari === 'libur') {
           lemburLiburTanpaSPL += 1;
+        }
+      }
+
+      // ===== DENGAN SPL (hitung jam berdasarkan status_lembur) =====
+      if (statusSPL === 'dengan spl') {
+        if (statusLembur === 'lembur') {
+          lemburDenganSPL += jamLembur;
+        } else if (statusLembur === 'lembur libur') {
+          lemburLiburDenganSPL += jamLembur;
         }
       }
     });
@@ -196,6 +202,14 @@ function RekapAbsenHR() {
       updatedShowDetail[index] = !updatedShowDetail[index];
       return updatedShowDetail;
     });
+  };
+
+  const selectArrowStyle = {
+    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+    backgroundPosition: 'right 0.5rem center',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '1.5em 1.5em',
+    paddingRight: '2.5rem',
   };
 
   return (
@@ -315,13 +329,7 @@ function RekapAbsenHR() {
                     value={idDepartment || ''}
                     onChange={(e) => setidDepartment(e.target.value)}
                     className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundSize: '1.5em 1.5em',
-                      paddingRight: '2.5rem',
-                    }}
+                    style={selectArrowStyle}
                   >
                     <option value="" className="text-gray-500">
                       Semua Department
@@ -362,13 +370,7 @@ function RekapAbsenHR() {
                     value={idDivisi || ''}
                     onChange={(e) => setIdDivisi(e.target.value)}
                     className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundSize: '1.5em 1.5em',
-                      paddingRight: '2.5rem',
-                    }}
+                    style={selectArrowStyle}
                   >
                     <option value="" className="text-gray-500">
                       Semua Divisi
@@ -409,13 +411,7 @@ function RekapAbsenHR() {
                     value={tipePenggajian || ''}
                     onChange={(e) => setTipePenggajian(e.target.value)}
                     className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                      backgroundPosition: 'right 0.5rem center',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundSize: '1.5em 1.5em',
-                      paddingRight: '2.5rem',
-                    }}
+                    style={selectArrowStyle}
                   >
                     <option value="" className="text-gray-500">
                       Semua Tipe
@@ -705,7 +701,7 @@ function RekapAbsenHR() {
 
                           {/* Lembur & Lembur Libur & Keterlambatan - Split into 3 sections */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            {/* Lembur */}
+                            {/* Lembur Dengan SPL */}
                             <div className="bg-blue-50 p-3 rounded-lg">
                               <h5 className="text-sm font-semibold text-blue-800 mb-2">
                                 LEMBUR DENGAN SPL
@@ -726,7 +722,7 @@ function RekapAbsenHR() {
                               </div>
                             </div>
 
-                            {/* Lembur Libur */}
+                            {/* Lembur Tanpa SPL */}
                             <div className="bg-purple-50 p-3 rounded-lg">
                               <h5 className="text-sm font-semibold text-purple-800 mb-2">
                                 LEMBUR TANPA SPL

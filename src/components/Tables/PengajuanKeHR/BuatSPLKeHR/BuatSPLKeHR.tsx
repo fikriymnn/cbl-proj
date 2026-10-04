@@ -28,7 +28,8 @@ function BuatSPLKeHR() {
   const [idKaryawan, setIdKaryawan] = useState<string[]>([]);
   const [me, setMe] = useState(null);
   const [idPengaju, setIdPengaju] = useState(null);
-
+  const [idDepartment, setIdDepartment] = useState<any>(null);
+  const [divisiBawahan, setDivisiBawahan] = useState<any>(null);
   // First period
   const [tglDari, setTglDari] = useState('');
   const [tglSampai, setTglSampai] = useState('');
@@ -67,10 +68,10 @@ function BuatSPLKeHR() {
   }, []);
 
   useEffect(() => {
-    if (idPengaju) {
+    if (idPengaju && idDepartment) {
       getDraftLembur();
     }
-  }, [draftPage, idPengaju, statusFilter]);
+  }, [draftPage, idPengaju, statusFilter, idDepartment, divisiBawahan]);
 
   // Function to clear all form fields
   const clearForm = () => {
@@ -94,7 +95,17 @@ function BuatSPLKeHR() {
     setIsEditMode(false);
     setEditingId(null);
   };
+  const buildDepartmentParams = (idDept: any, divBawahan: any) => {
+    const params: any = {
+      id_department: idDept,
+    };
 
+    if (divBawahan !== null && divBawahan !== undefined && divBawahan !== '') {
+      params.divisi_bawahan = divBawahan;
+    }
+
+    return params;
+  };
   async function getMe() {
     const url = `${import.meta.env.VITE_API_LINK}/me`;
     try {
@@ -103,39 +114,30 @@ function BuatSPLKeHR() {
       });
 
       setMe(res.data);
+
+      const deptId = res?.data.karyawan.biodata_karyawan[0]?.id_department;
+      const divBawahan = res.data.divisi_bawahan;
+
+      // Set these BEFORE idPengaju so the draft effect has all values ready
+      setIdDepartment(deptId);
+      setDivisiBawahan(divBawahan);
       setIdPengaju(res.data.id_karyawan);
 
-      const divisiBawahan = res.data.divisi_bawahan;
-
-      // Pass both department and divisi_bawahan to getMasterUser
-      getMasterUser(
-        res?.data.karyawan.biodata_karyawan[0]?.id_department,
-
-        divisiBawahan,
-      );
+      getMasterUser(deptId, divBawahan);
 
       console.log('getme', res.data);
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error?.data?.msg || error);
     }
   }
 
   async function getMasterUser(id: any, divisiBawahan: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
 
-    // Build params object
     const params: any = {
       is_active: true,
-      id_department: id,
+      ...buildDepartmentParams(id, divisiBawahan),
     };
-
-    if (
-      divisiBawahan !== null &&
-      divisiBawahan !== undefined &&
-      divisiBawahan !== ''
-    ) {
-      params.divisi_bawahan = divisiBawahan;
-    }
 
     try {
       const res = await axios.get(url, {
@@ -185,6 +187,7 @@ function BuatSPLKeHR() {
         status: statusFilter,
         page: draftPage,
         limit: 10,
+        ...buildDepartmentParams(idDepartment, divisiBawahan),
       };
 
       const res = await axios.get(url, {

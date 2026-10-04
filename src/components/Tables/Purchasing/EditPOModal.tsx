@@ -446,20 +446,30 @@ const NumberInput: React.FC<NumberInputProps> = ({
 // remaining > 0    -> still short  ("Sisa N")
 // remaining < 0    -> bought more than needed ("Lebih N") — previously
 //                     silently swallowed into "Lengkap" via `<= 0`.
+const formatQty = (value: number): string =>
+  value.toLocaleString('id-ID', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+
 const getAllocationBadge = (
   remaining: number,
 ): { label: string; className: string } => {
-  if (remaining === 0) {
+  // Bulatkan ke 2 desimal dulu supaya selisih floating point
+  // (mis. 0.6700000000000017) tidak membuat badge salah baca.
+  const rounded = Math.round(remaining * 100) / 100;
+
+  if (rounded === 0) {
     return { label: 'Lengkap', className: 'bg-emerald-50 text-emerald-700' };
   }
-  if (remaining > 0) {
+  if (rounded > 0) {
     return {
-      label: `Sisa ${remaining}`,
+      label: `Sisa ${formatQty(rounded)}`,
       className: 'bg-amber-50 text-amber-700',
     };
   }
   return {
-    label: `Lebih ${Math.abs(remaining)}`,
+    label: `Lebih ${formatQty(Math.abs(rounded))}`,
     className: 'bg-blue-50 text-blue-700',
   };
 };

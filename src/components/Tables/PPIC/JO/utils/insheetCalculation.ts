@@ -35,6 +35,9 @@ export interface InsheetValues {
   split?: { a: InsheetSideSplit; b: InsheetSideSplit }; // only present when formula_mode === 'dual'
 }
 
+export type DistributionKey = 'cetak' | 'pond' | 'finishing';
+export type DistributionSide = 'a' | 'b';
+
 export const emptyInsheetValues = (): InsheetValues => ({
   jumlah_druk: 0,
   jumlah_insheet_cetak: 0,
@@ -65,6 +68,10 @@ const getKetentuan = (basis: number, data: any[]) => {
  * Exported so JOPrintModal (and anything else needing per-side process
  * breakdown, e.g. image 3's Sisi A / Sisi B tables) can reuse the exact same
  * logic used when the JO was created/edited.
+ *
+ * The result is guaranteed to sum to `total`: because each process is rounded
+ * up (ceil), the sum can overshoot by a unit or two, so any difference is
+ * absorbed by the largest process.
  */
 export const splitByProcess = (total: number, prosesData: any[]) => {
   const totalPct =
@@ -79,6 +86,17 @@ export const splitByProcess = (total: number, prosesData: any[]) => {
     else if (['POND', 'PONDS', 'PONDING'].includes(name)) pond = value;
     else if (name === 'FINISHING') finishing = value;
   });
+
+  // Make sure the distribution always equals the total.
+  const diff = total - (cetak + pond + finishing);
+  if (diff !== 0) {
+    if (cetak >= pond && cetak >= finishing) cetak += diff;
+    else if (pond >= cetak && pond >= finishing) pond += diff;
+    else finishing += diff;
+    cetak = Math.max(0, cetak);
+    pond = Math.max(0, pond);
+    finishing = Math.max(0, finishing);
+  }
   return { cetak, pond, finishing };
 };
 
@@ -266,3 +284,168 @@ export const deriveQtyFromInsheet = (
   const totalIsi = isiA + isiB || 1;
   return values.jumlah_druk * totalIsi;
 };
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Editable distribution (Cetak / Pond / Finishing)
+// ═════════════════════════════════════════════════════════════════════════════
+
+const clampInt = (value: number, max: number): number => {
+  const n = Number.isFinite(value) ? Math.floor(value) : 0;
+  return Math.min(Math.max(0, n), Math.max(0, max));
+};
+
+const aggregateFromSplit = (split: {
+  a: InsheetSideSplit;
+  b: InsheetSideSplit;
+}) => ({
+  jumlah_insheet_cetak: split.a.cetak + split.b.cetak,
+  jumlah_insheet_pond: split.a.pond + split.b.pond,
+  jumlah_insheet_finishing: split.a.finishing + split.b.finishing,
+});
+
+/** Single mode: change one process value. Value is clamped to 0..total_insheet. */
+export const setSingleDistribution = (
+  values: InsheetValues,
+  key: DistributionKey,
+  value: number,
+): InsheetValues => {
+  const val = clampInt(value, values.total_insheet);
+  const next = { ...values };
+  if (key === 'cetak') next.jumlah_insheet_cetak = val;
+  else if (key === 'pond') next.jumlah_insheet_pond = val;
+  else next.jumlah_insheet_finishing = val;
+  return next;
+};
+
+/** Dual mode: change one process value on one side. Clamped to 0..side total. */
+export const setSideDistribution = (
+  values: InsheetValues,
+  side: DistributionSide,
+  key: DistributionKey,
+  value: number,
+): InsheetValues => {
+  if (!values.split) return values;
+  const sideData = values.split[side];
+  const val = clampInt(value, sideData.total_insheet);
+  const split = {
+    ...values.split,
+    [side]: { ...sideData, [key]: val },
+  } as { a: InsheetSideSplit; b: InsheetSideSplit };
+  return { ...values, split, ...aggregateFromSplit(split) };
+};
+
+/** Restore the automatic (master-data based) distribution. */
+export const resetDistribution = (
+  values: InsheetValues,
+  prosesData: any[],
+): InsheetValues => {
+  if (values.formula_mode === 'dual' && values.split) {
+    const procA = splitByProcess(values.split.a.total_insheet, prosesData);
+    const procB = splitByProcess(values.split.b.total_insheet, prosesData);
+    const split = {
+      a: { ...values.split.a, ...procA },
+      b: { ...values.split.b, ...procB },
+    };
+    return { ...values, split, ...aggregateFromSplit(split) };
+  }
+  const { cetak, pond, finishing } = splitByProcess(
+    values.total_insheet,
+    prosesData,
+  );
+  return {
+    ...values,
+    jumlah_insheet_cetak: cetak,
+    jumlah_insheet_pond: pond,
+    jumlah_insheet_finishing: finishing,
+  };
+};
+
+/**
+ * Edit mode (dual): only the aggregate distribution is stored in the DB, so
+ * rebuild the per-side distribution proportionally from the aggregate.
+ * Side A + side B always add back up to the stored aggregate.
+ */
+export const rebuildDualSplit = (
+  aggregate: { cetak: number; pond: number; finishing: number },
+  a: Omit<InsheetSideSplit, 'cetak' | 'pond' | 'finishing'>,
+  b: Omit<InsheetSideSplit, 'cetak' | 'pond' | 'finishing'>,
+): { a: InsheetSideSplit; b: InsheetSideSplit } => {
+  const total = a.total_insheet + b.total_insheet;
+  if (total <= 0) {
+    return {
+      a: { ...a, cetak: 0, pond: 0, finishing: 0 },
+      b: { ...b, cetak: 0, pond: 0, finishing: 0 },
+    };
+  }
+  const ratio = a.total_insheet / total;
+  const aCetak = Math.min(Math.round(aggregate.cetak * ratio), a.total_insheet);
+  const aPond = Math.min(
+    Math.round(aggregate.pond * ratio),
+    a.total_insheet - aCetak,
+  );
+  const aFinishing = a.total_insheet - aCetak - aPond;
+
+  return {
+    a: { ...a, cetak: aCetak, pond: aPond, finishing: aFinishing },
+    b: {
+      ...b,
+      cetak: Math.max(0, aggregate.cetak - aCetak),
+      pond: Math.max(0, aggregate.pond - aPond),
+      finishing: Math.max(0, aggregate.finishing - aFinishing),
+    },
+  };
+};
+
+export interface DistributionCheck {
+  label: string; // 'Insheet' | 'Sisi A' | 'Sisi B'
+  total: number; // what the distribution must add up to
+  sum: number; // cetak + pond + finishing as currently entered
+  diff: number; // total - sum (positive = kurang, negative = lebih)
+  valid: boolean;
+}
+
+/** Per-group check of Cetak + Pond + Finishing against the total insheet. */
+export const getDistributionChecks = (
+  values: InsheetValues,
+): DistributionCheck[] => {
+  const make = (
+    label: string,
+    total: number,
+    sum: number,
+  ): DistributionCheck => ({
+    label,
+    total,
+    sum,
+    diff: total - sum,
+    valid: total === sum,
+  });
+
+  if (values.formula_mode === 'dual' && values.split) {
+    const { a, b } = values.split;
+    return [
+      make('Sisi A', a.total_insheet, a.cetak + a.pond + a.finishing),
+      make('Sisi B', b.total_insheet, b.cetak + b.pond + b.finishing),
+    ];
+  }
+  return [
+    make(
+      'Insheet',
+      values.total_insheet,
+      values.jumlah_insheet_cetak +
+        values.jumlah_insheet_pond +
+        values.jumlah_insheet_finishing,
+    ),
+  ];
+};
+
+/** Human-readable errors; empty array = distribution is valid. */
+export const getDistributionErrors = (values: InsheetValues): string[] =>
+  getDistributionChecks(values)
+    .filter((c) => !c.valid)
+    .map((c) => {
+      const selisih = Math.abs(c.diff).toLocaleString();
+      const arah = c.diff > 0 ? `kurang ${selisih}` : `lebih ${selisih}`;
+      return `Distribusi ${
+        c.label
+      } (Cetak + Pond + Finishing) = ${c.sum.toLocaleString()}, harus sama dengan total ${c.total.toLocaleString()} (${arah})`;
+    });

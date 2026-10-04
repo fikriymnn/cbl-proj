@@ -19,6 +19,13 @@ import {
   applyManualTotalInsheet,
   deriveQtyFromInsheet,
   emptyInsheetValues,
+  getDistributionErrors,
+  rebuildDualSplit,
+  resetDistribution,
+  setSideDistribution,
+  setSingleDistribution,
+  DistributionKey,
+  DistributionSide,
   InsheetValues,
 } from './insheetCalculation';
 
@@ -622,6 +629,28 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                   selectedJoMounting.jumlah_cetak_2);
 
               if (dual) {
+                // Only the aggregate distribution is stored, so rebuild the
+                // per-side Cetak/Pond/Finishing from it (A + B == aggregate).
+                const rebuilt = rebuildDualSplit(
+                  {
+                    cetak: selectedJoMounting.jumlah_insheet_cetak || 0,
+                    pond: selectedJoMounting.jumlah_insheet_pond || 0,
+                    finishing: selectedJoMounting.jumlah_insheet_finishing || 0,
+                  },
+                  {
+                    bagian: mountingRef?.ukuran_cetak_bagian_1 || 1,
+                    isi: mountingRef?.ukuran_cetak_isi_1 || 0,
+                    jumlah_druk: selectedJoMounting.jumlah_cetak_1 || 0,
+                    total_insheet: selectedJoMounting.tambahan_insheet_1 || 0,
+                  },
+                  {
+                    bagian: mountingRef?.ukuran_cetak_bagian_2 || 0,
+                    isi: mountingRef?.ukuran_cetak_isi_2 || 0,
+                    jumlah_druk: selectedJoMounting.jumlah_cetak_2 || 0,
+                    total_insheet: selectedJoMounting.tambahan_insheet_2 || 0,
+                  },
+                );
+
                 setInsheetValues({
                   jumlah_druk:
                     (selectedJoMounting.jumlah_cetak_1 || 0) +
@@ -641,26 +670,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                       (selectedJoMounting.tambahan_insheet_1 || 0) /
                         (mountingRef?.ukuran_cetak_bagian_1 || 1),
                     ),
-                  split: {
-                    a: {
-                      bagian: mountingRef?.ukuran_cetak_bagian_1 || 1,
-                      isi: mountingRef?.ukuran_cetak_isi_1 || 0,
-                      jumlah_druk: selectedJoMounting.jumlah_cetak_1 || 0,
-                      total_insheet: selectedJoMounting.tambahan_insheet_1 || 0,
-                      cetak: 0,
-                      pond: 0,
-                      finishing: 0,
-                    },
-                    b: {
-                      bagian: mountingRef?.ukuran_cetak_bagian_2 || 0,
-                      isi: mountingRef?.ukuran_cetak_isi_2 || 0,
-                      jumlah_druk: selectedJoMounting.jumlah_cetak_2 || 0,
-                      total_insheet: selectedJoMounting.tambahan_insheet_2 || 0,
-                      cetak: 0,
-                      pond: 0,
-                      finishing: 0,
-                    },
-                  },
+                  split: rebuilt,
                 });
               } else {
                 setInsheetValues({
@@ -833,6 +843,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   };
 
   // ── handleTotalInsheetChange (delegates to shared util; single or dual) ───
+  // NOTE: changing the total re-applies the automatic distribution
+  // (Cetak/Pond/Finishing), because the old manual split no longer adds up.
   const handleTotalInsheetChange = (totalValue: number) => {
     if (!selectedMounting) return;
     setIsManualInsheetEdit(true);
@@ -859,6 +871,24 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     if (editMode) setHasQtyBeenEdited(true);
   };
 
+  // ── NEW: manual distribution (Cetak / Pond / Finishing) ───────────────────
+  const handleDistributionChange = (
+    key: DistributionKey,
+    value: number,
+    side?: DistributionSide,
+  ) => {
+    setHasUnsavedChanges(true);
+    setInsheetValues((prev) =>
+      side
+        ? setSideDistribution(prev, side, key, value)
+        : setSingleDistribution(prev, key, value),
+    );
+  };
+
+  const handleResetDistribution = () => {
+    setInsheetValues((prev) => resetDistribution(prev, prosesInsheetData));
+  };
+
   const handleQtyChange = (newQty: number) => {
     if (editMode && newQty !== originalQty) setHasQtyBeenEdited(true);
     setFormData((prev) => ({ ...prev, qty: newQty }));
@@ -869,6 +899,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       calculateInsheetFromQty(newQty, mounting);
     }
   };
+
+  // ── Distribution validation (create + edit) ───────────────────────────────
+  const distributionErrors: string[] = selectedMounting
+    ? getDistributionErrors(insheetValues)
+    : [];
 
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
@@ -897,6 +932,15 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       alert(
         'JO tidak dapat dibuat:\n' +
           createBlockReasons.map((r) => `• ${r}`).join('\n'),
+      );
+      return;
+    }
+
+    // Guard: distribution Cetak + Pond + Finishing must equal total insheet
+    if (distributionErrors.length > 0) {
+      alert(
+        'Distribusi insheet belum sesuai, perbaiki terlebih dahulu:\n' +
+          distributionErrors.map((r) => `• ${r}`).join('\n'),
       );
       return;
     }
@@ -1035,8 +1079,13 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     ? mountingData.find((m) => m.id === selectedMounting)
     : null;
 
-  // Determine if submit is blocked (only for create mode)
-  const isSubmitBlocked = !editMode && createBlockReasons.length > 0;
+  // Block reasons: tahapan/spesifikasi (create only) + distribution (create & edit)
+  const hasDistributionError = distributionErrors.length > 0;
+  const allBlockReasons: string[] = [
+    ...(!editMode ? createBlockReasons : []),
+    ...distributionErrors,
+  ];
+  const isSubmitBlocked = allBlockReasons.length > 0;
 
   return ReactDOM.createPortal(
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1138,6 +1187,38 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             </div>
           )}
 
+          {/* ── Distribution banner (create + edit) ── */}
+          {hasDistributionError && (
+            <div className="flex-shrink-0 mx-6 mt-4 flex items-start gap-3 bg-amber-50 border border-amber-400 rounded-lg px-4 py-3">
+              <svg
+                className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                />
+              </svg>
+              <div>
+                <p className="text-sm font-semibold text-amber-800">
+                  Distribusi insheet belum sesuai — data tidak bisa{' '}
+                  {editMode ? 'diupdate' : 'disimpan'} sebelum diperbaiki:
+                </p>
+                <ul className="mt-1 list-disc list-inside space-y-0.5">
+                  {distributionErrors.map((err, i) => (
+                    <li key={i} className="text-xs text-amber-700">
+                      {err}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
           {/* Body — Two Column Layout */}
           <div className="flex-1 overflow-hidden flex">
             {/* LEFT */}
@@ -1180,6 +1261,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                     qty={formData.qty || 0}
                     insheetValues={insheetValues}
                     onTotalInsheetChange={handleTotalInsheetChange}
+                    onDistributionChange={handleDistributionChange}
+                    onResetDistribution={handleResetDistribution}
+                    distributionEditable
                   />
                 )}
               </div>
@@ -1227,21 +1311,25 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
                 )}
                 {loading
                   ? 'Menyimpan...'
-                  : editMode
-                  ? 'Update JO'
+                  : hasDistributionError
+                  ? 'Distribusi Insheet Belum Sesuai'
                   : isSubmitBlocked
                   ? 'Tidak Dapat Dibuat'
+                  : editMode
+                  ? 'Update JO'
                   : 'Simpan JO'}
               </button>
 
               {/* Hover tooltip showing block reasons */}
               {isSubmitBlocked && (
-                <div className="absolute z-20 bottom-full right-0 mb-2 w-64 bg-white text-black text-xs border border-red-300 rounded-lg shadow-lg p-3 hidden group-hover:block pointer-events-none">
+                <div className="absolute z-20 bottom-full right-0 mb-2 w-72 bg-white text-black text-xs border border-red-300 rounded-lg shadow-lg p-3 hidden group-hover:block pointer-events-none">
                   <p className="font-semibold mb-1.5 text-red-600">
-                    Tidak bisa membuat JO:
+                    {editMode
+                      ? 'Tidak bisa mengupdate JO:'
+                      : 'Tidak bisa membuat JO:'}
                   </p>
                   <ul className="list-disc list-inside space-y-1">
-                    {createBlockReasons.map((reason, i) => (
+                    {allBlockReasons.map((reason, i) => (
                       <li key={i} className="text-gray-700">
                         {reason}
                       </li>

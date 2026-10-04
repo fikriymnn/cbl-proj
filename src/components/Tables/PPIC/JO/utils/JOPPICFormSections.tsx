@@ -3,7 +3,13 @@ import React, { useState } from 'react';
 import { MountingData } from '../types/jo.types';
 import SearchableSelect from '../../../../../pages/MasterData/Marketing/SearchableSelect';
 import TahapanPopup from './TahapanPopup';
-import { InsheetValues, isDualUkuran } from './insheetCalculation';
+import {
+  DistributionKey,
+  DistributionSide,
+  getDistributionChecks,
+  InsheetValues,
+  isDualUkuran,
+} from './insheetCalculation';
 
 interface BasicInfoSectionProps {
   formData: any;
@@ -697,17 +703,95 @@ export const MountingSection: React.FC<MountingSectionProps> = ({
   );
 };
 
+// ═════════════════════════════════════════════════════════════════════════════
+// Distribution helpers (editable Cetak / Pond / Finishing)
+// ═════════════════════════════════════════════════════════════════════════════
+
+/** Green "sesuai" / red "tidak sesuai" status line for one distribution group. */
+const DistributionStatus: React.FC<{
+  label: string;
+  total: number;
+  sum: number;
+  diff: number;
+  valid: boolean;
+}> = ({ label, total, sum, diff, valid }) => {
+  if (valid) {
+    return (
+      <div className="mt-2 flex items-center gap-1.5 text-xs text-green-700 bg-green-50 border border-green-200 rounded px-2 py-1.5">
+        <svg
+          className="w-4 h-4 flex-shrink-0"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+        Distribusi sesuai dengan total {label.toLowerCase()} (
+        {total.toLocaleString()}).
+      </div>
+    );
+  }
+  return (
+    <div className="mt-2 flex items-start gap-1.5 text-xs text-red-700 bg-red-50 border border-red-300 rounded px-2 py-1.5">
+      <svg
+        className="w-4 h-4 flex-shrink-0 mt-0.5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+        />
+      </svg>
+      <span>
+        Total distribusi <b>{sum.toLocaleString()}</b> tidak sama dengan total{' '}
+        {label.toLowerCase()} <b>{total.toLocaleString()}</b>.{' '}
+        {diff > 0
+          ? `Masih kurang ${diff.toLocaleString()}`
+          : `Kelebihan ${Math.abs(diff).toLocaleString()}`}
+        . Perbaiki terlebih dahulu, data tidak bisa disimpan.
+      </span>
+    </div>
+  );
+};
+
 interface InsheetCalculationSectionProps {
   mounting: MountingData;
   qty: number;
   insheetValues: InsheetValues;
   onTotalInsheetChange: (totalValue: number) => void;
+  // NEW: editable distribution
+  onDistributionChange?: (
+    key: DistributionKey,
+    value: number,
+    side?: DistributionSide,
+  ) => void;
+  onResetDistribution?: () => void;
+  // when false the distribution inputs become read-only (e.g. detail view)
+  distributionEditable?: boolean;
 }
 
 export const InsheetCalculationSection: React.FC<
   InsheetCalculationSectionProps
-> = ({ mounting, qty, insheetValues, onTotalInsheetChange }) => {
+> = ({
+  mounting,
+  qty,
+  insheetValues,
+  onTotalInsheetChange,
+  onDistributionChange,
+  onResetDistribution,
+  distributionEditable = true,
+}) => {
   const dual = insheetValues.formula_mode === 'dual';
+  const canEditDistribution = distributionEditable && !!onDistributionChange;
 
   const bagianA = mounting.ukuran_cetak_bagian_1 || 1;
   const isiA = mounting.ukuran_cetak_isi_1 || 0;
@@ -723,6 +807,26 @@ export const InsheetCalculationSection: React.FC<
   const insheetRawValue = dual
     ? Math.round(insheetValues.dual_insheet_raw ?? 0)
     : 0;
+
+  const checks = getDistributionChecks(insheetValues);
+
+  const distributionInputClass = (valid: boolean) =>
+    `w-24 px-2 py-1 text-center font-semibold border-2 rounded focus:outline-none focus:ring-2 ${
+      valid
+        ? 'border-gray-300 text-gray-700 focus:ring-blue-400'
+        : 'border-red-400 text-red-700 bg-red-50 focus:ring-red-400'
+    }`;
+
+  const ResetButton = () =>
+    canEditDistribution && onResetDistribution ? (
+      <button
+        type="button"
+        onClick={onResetDistribution}
+        className="text-xs text-blue-600 hover:text-blue-800 hover:underline font-medium"
+      >
+        Reset ke distribusi otomatis
+      </button>
+    ) : null;
 
   return (
     <div className="space-y-4">
@@ -832,15 +936,71 @@ export const InsheetCalculationSection: React.FC<
             </div>
           </div>
 
+          <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Edit Insheet{' '}
+              <span className="text-xs font-normal text-gray-600">
+                (akan mengubah Qty, Kebutuhan LP, dan Druk/Insheet sisi A &amp;
+                B)
+              </span>
+            </label>
+            <input
+              type="number"
+              value={insheetRawValue}
+              onChange={(e) => onTotalInsheetChange(Number(e.target.value))}
+              className="w-full px-4 py-3 border-2 border-yellow-400 rounded-md text-center font-bold text-2xl text-orange-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              min="0"
+            />
+            <p className="mt-2 text-xs text-gray-600">
+              Dibagi bagian terkecil ({Math.min(bagianA, bagianB) || 1}) →
+              Insheet (LP):{' '}
+              <span className="font-bold">
+                {Math.ceil(
+                  insheetRawValue / (Math.min(bagianA, bagianB) || 1),
+                ).toLocaleString()}
+              </span>
+              . Insheet total (A+B):{' '}
+              <span className="font-bold">
+                {insheetValues.total_insheet.toLocaleString()}
+              </span>
+            </p>
+          </div>
+
+          {/* Distribution header */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <p className="text-sm font-semibold text-gray-700">
+              Distribusi Insheet per Proses
+              {canEditDistribution && (
+                <span className="ml-2 text-xs font-normal text-gray-500">
+                  (bisa diedit, total tiap sisi harus sama dengan Total Insheet
+                  sisi tersebut)
+                </span>
+              )}
+            </p>
+            <ResetButton />
+          </div>
+
           {/* Side-by-side A/B breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {(['a', 'b'] as const).map((side) => {
+            {(['a', 'b'] as const).map((side, idx) => {
               const s = insheetValues.split![side];
               const label = side.toUpperCase();
+              const check = checks[idx];
+              const rows: {
+                key: DistributionKey;
+                name: string;
+                value: number;
+              }[] = [
+                { key: 'cetak', name: 'Cetak', value: s.cetak },
+                { key: 'pond', name: 'Pond', value: s.pond },
+                { key: 'finishing', name: 'Finishing', value: s.finishing },
+              ];
               return (
                 <div
                   key={side}
-                  className="border-2 border-gray-300 rounded-lg p-4 bg-white"
+                  className={`border-2 rounded-lg p-4 bg-white ${
+                    check && !check.valid ? 'border-red-300' : 'border-gray-300'
+                  }`}
                 >
                   <p className="text-sm font-bold text-gray-800 mb-3">
                     Sisi {label}{' '}
@@ -877,68 +1037,65 @@ export const InsheetCalculationSection: React.FC<
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td className="border px-2 py-1">Cetak</td>
-                        <td className="border px-2 py-1 text-center">
-                          {s.jumlah_druk.toLocaleString()}
+                      {rows.map((row) => (
+                        <tr key={row.key}>
+                          <td className="border px-2 py-1">{row.name}</td>
+                          <td className="border px-2 py-1 text-center">
+                            {s.jumlah_druk.toLocaleString()}
+                          </td>
+                          <td className="border px-2 py-1 text-center font-semibold">
+                            {canEditDistribution ? (
+                              <input
+                                type="number"
+                                min={0}
+                                max={s.total_insheet}
+                                value={row.value}
+                                onChange={(e) =>
+                                  onDistributionChange!(
+                                    row.key,
+                                    Number(e.target.value),
+                                    side,
+                                  )
+                                }
+                                className={distributionInputClass(
+                                  check ? check.valid : true,
+                                )}
+                              />
+                            ) : (
+                              row.value.toLocaleString()
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-gray-100 font-bold">
+                        <td className="border px-2 py-1" colSpan={2}>
+                          Total Distribusi
                         </td>
-                        <td className="border px-2 py-1 text-center font-semibold">
-                          {s.cetak.toLocaleString()}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border px-2 py-1">Pond</td>
-                        <td className="border px-2 py-1 text-center">
-                          {s.jumlah_druk.toLocaleString()}
-                        </td>
-                        <td className="border px-2 py-1 text-center font-semibold">
-                          {s.pond.toLocaleString()}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border px-2 py-1">Finishing</td>
-                        <td className="border px-2 py-1 text-center">
-                          {s.jumlah_druk.toLocaleString()}
-                        </td>
-                        <td className="border px-2 py-1 text-center font-semibold">
-                          {s.finishing.toLocaleString()}
+                        <td
+                          className={`border px-2 py-1 text-center ${
+                            check && !check.valid
+                              ? 'text-red-600'
+                              : 'text-orange-700'
+                          }`}
+                        >
+                          {check?.sum.toLocaleString()} /{' '}
+                          {s.total_insheet.toLocaleString()}
                         </td>
                       </tr>
                     </tbody>
                   </table>
+                  {check && (
+                    <DistributionStatus
+                      label={`Insheet Sisi ${label}`}
+                      total={check.total}
+                      sum={check.sum}
+                      diff={check.diff}
+                      valid={check.valid}
+                    />
+                  )}
                 </div>
               );
             })}
-          </div>
-
-          <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Edit Insheet{' '}
-              <span className="text-xs font-normal text-gray-600">
-                (akan mengubah Qty, Kebutuhan LP, dan Druk/Insheet sisi A &amp;
-                B)
-              </span>
-            </label>
-            <input
-              type="number"
-              value={insheetRawValue}
-              onChange={(e) => onTotalInsheetChange(Number(e.target.value))}
-              className="w-full px-4 py-3 border-2 border-yellow-400 rounded-md text-center font-bold text-2xl text-orange-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              min="0"
-            />
-            <p className="mt-2 text-xs text-gray-600">
-              Dibagi bagian terkecil ({Math.min(bagianA, bagianB) || 1}) →
-              Insheet (LP):{' '}
-              <span className="font-bold">
-                {Math.ceil(
-                  insheetRawValue / (Math.min(bagianA, bagianB) || 1),
-                ).toLocaleString()}
-              </span>
-              . Insheet total (A+B):{' '}
-              <span className="font-bold">
-                {insheetValues.total_insheet.toLocaleString()}
-              </span>
-            </p>
           </div>
 
           {/* Mounting reference */}
@@ -1110,46 +1267,99 @@ export const InsheetCalculationSection: React.FC<
             />
           </div>
 
-          {/* Process distribution table */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm border border-gray-300">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-4 py-2 border text-left font-medium text-gray-700">
-                    Proses
-                  </th>
-                  <th className="px-4 py-2 border text-center font-medium text-gray-700">
-                    Jumlah Insheet
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white">
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border font-medium">Cetak</td>
-                  <td className="px-4 py-2 border text-center font-semibold text-gray-700">
-                    {insheetValues.jumlah_insheet_cetak.toLocaleString()}
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border font-medium">Pond</td>
-                  <td className="px-4 py-2 border text-center font-semibold text-gray-700">
-                    {insheetValues.jumlah_insheet_pond.toLocaleString()}
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border font-medium">Finishing</td>
-                  <td className="px-4 py-2 border text-center font-semibold text-gray-700">
-                    {insheetValues.jumlah_insheet_finishing.toLocaleString()}
-                  </td>
-                </tr>
-                <tr className="bg-gray-100 font-bold">
-                  <td className="px-4 py-2 border">Total</td>
-                  <td className="px-4 py-2 border text-center text-orange-700">
-                    {insheetValues.total_insheet.toLocaleString()}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          {/* Process distribution table (EDITABLE) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <p className="text-sm font-semibold text-gray-700">
+                Distribusi Insheet per Proses
+                {canEditDistribution && (
+                  <span className="ml-2 text-xs font-normal text-gray-500">
+                    (bisa diedit, total harus sama dengan Total Insheet)
+                  </span>
+                )}
+              </p>
+              <ResetButton />
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm border border-gray-300">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 border text-left font-medium text-gray-700">
+                      Proses
+                    </th>
+                    <th className="px-4 py-2 border text-center font-medium text-gray-700">
+                      Jumlah Insheet
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {(
+                    [
+                      {
+                        key: 'cetak',
+                        name: 'Cetak',
+                        value: insheetValues.jumlah_insheet_cetak,
+                      },
+                      {
+                        key: 'pond',
+                        name: 'Pond',
+                        value: insheetValues.jumlah_insheet_pond,
+                      },
+                      {
+                        key: 'finishing',
+                        name: 'Finishing',
+                        value: insheetValues.jumlah_insheet_finishing,
+                      },
+                    ] as { key: DistributionKey; name: string; value: number }[]
+                  ).map((row) => (
+                    <tr key={row.key} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 border font-medium">
+                        {row.name}
+                      </td>
+                      <td className="px-4 py-2 border text-center font-semibold text-gray-700">
+                        {canEditDistribution ? (
+                          <input
+                            type="number"
+                            min={0}
+                            max={insheetValues.total_insheet}
+                            value={row.value}
+                            onChange={(e) =>
+                              onDistributionChange!(
+                                row.key,
+                                Number(e.target.value),
+                              )
+                            }
+                            className={distributionInputClass(checks[0].valid)}
+                          />
+                        ) : (
+                          row.value.toLocaleString()
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="bg-gray-100 font-bold">
+                    <td className="px-4 py-2 border">Total Distribusi</td>
+                    <td
+                      className={`px-4 py-2 border text-center ${
+                        checks[0].valid ? 'text-orange-700' : 'text-red-600'
+                      }`}
+                    >
+                      {checks[0].sum.toLocaleString()} /{' '}
+                      {insheetValues.total_insheet.toLocaleString()}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <DistributionStatus
+              label="Insheet"
+              total={checks[0].total}
+              sum={checks[0].sum}
+              diff={checks[0].diff}
+              valid={checks[0].valid}
+            />
           </div>
 
           {/* Mounting reference */}
