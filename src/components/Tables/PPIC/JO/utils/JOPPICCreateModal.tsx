@@ -28,6 +28,8 @@ import {
   DistributionSide,
   InsheetValues,
 } from './insheetCalculation';
+// NEW: modal untuk menampilkan Next JO
+import JONextModal, { NextJOItem } from './JONextModal';
 
 // Extend MountingData to include the JO mounting reference
 interface ExtendedMountingData extends MountingData {
@@ -56,6 +58,12 @@ interface TahapanItem {
   id_setting_kapasitas: number | null;
   nama_mesin: string;
   nama_proses: string;
+}
+
+// NEW: response shape of GET /ppic/joFrekuensi
+interface FrekuensiInfo {
+  jumlah_jo: number;
+  frekuensi: number;
 }
 
 interface JOPPICCreateModalProps {
@@ -89,6 +97,17 @@ const getCreateBlockReasons = (
     }
   }
   return reasons;
+};
+
+const formatTanggalID = (value?: string): string => {
+  if (!value) return '-';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '-';
+  return d.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 };
 
 const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
@@ -126,6 +145,15 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   } | null>(null);
   const [loadingGudangFG, setLoadingGudangFG] = useState(false);
 
+  // NEW: frekuensi info (GET /ppic/joFrekuensi)
+  const [frekuensiInfo, setFrekuensiInfo] = useState<FrekuensiInfo | null>(
+    null,
+  );
+  const [loadingFrekuensi, setLoadingFrekuensi] = useState(false);
+
+  // NEW: modal Next JO (GET /ppic/joNext)
+  const [showNextJOModal, setShowNextJOModal] = useState(false);
+
   // Determine if this modal is in "IO proof" mode
   const isIOProofMode =
     tipeJO === 'JO PROOF' && proofSourceType === 'IO' && !editMode;
@@ -156,6 +184,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     tgl_kirim: new Date().toISOString().split('T')[0],
     standar_warna: '',
     tipe_jo: tipeJO,
+    // NEW
+    frekuensi: 1,
+    next_jo: '',
     jo_mounting: [],
   };
 
@@ -349,6 +380,58 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
+  // ── NEW: Fetch frekuensi JO ───────────────────────────────────────────────
+  // Frekuensi dihitung dari id_io (create maupun edit).
+  const fetchFrekuensi = async (params: { id_io: number }): Promise<void> => {
+    if (!params.id_io) return;
+    const url = `${import.meta.env.VITE_API_LINK}/ppic/joFrekuensi`;
+    try {
+      setLoadingFrekuensi(true);
+      const res: AxiosResponse = await axios.get(url, {
+        params,
+        withCredentials: true,
+      });
+      if (res.data?.succes || res.data?.success) {
+        const info: FrekuensiInfo = {
+          jumlah_jo: res.data.jumlah_jo ?? 0,
+          frekuensi: res.data.frekuensi ?? 0,
+        };
+        setFrekuensiInfo(info);
+        // frekuensi ikut dikirim saat create / update
+        setFormData((prev) => ({ ...prev, frekuensi: info.frekuensi }));
+      }
+    } catch (error) {
+      console.error(
+        'Error fetching frekuensi JO:',
+        (error as any)?.response?.data || error,
+      );
+      setFrekuensiInfo(null);
+    } finally {
+      setLoadingFrekuensi(false);
+    }
+  };
+
+  // NEW: ambil semua Next JO (GET /ppic/joNext) → isi next_jo sebagai teks
+  // contoh: "JO-00002/06/2026, JO-00003/06/2026"
+  const fetchNextJO = async (idIO: number, tglKirim: string): Promise<void> => {
+    if (!idIO || !tglKirim) return;
+    const url = `${import.meta.env.VITE_API_LINK}/ppic/joNext`;
+    try {
+      const res: AxiosResponse = await axios.get(url, {
+        params: { id_io: idIO, tgl_kirim: tglKirim },
+        withCredentials: true,
+      });
+      const list: any[] = res.data?.data || [];
+      const text = list
+        .map((item) => item.no_jo)
+        .filter(Boolean)
+        .join(', ');
+      setFormData((prev) => ({ ...prev, next_jo: text }));
+    } catch (error) {
+      console.error('Error fetching next JO:', error);
+    }
+  };
+
   // ── Fetch mounting ────────────────────────────────────────────────────────
   const fetchMountingData = async (idIO: number): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/marketing/io/${idIO}`;
@@ -513,8 +596,18 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           tipe_jo: joDetail.tipe_jo,
           no_po_customer:
             joDetail.so?.no_po_customer || joDetail.no_po_customer || '',
+          // NEW: frekuensi & next_jo tersimpan (frekuensi akan di-refresh dari API)
+          frekuensi: joDetail.frekuensi ?? 1,
+          next_jo: joDetail.next_jo || '',
           jo_mounting: joDetail.jo_mounting || [],
         });
+
+        // NEW: ambil info frekuensi berdasarkan id_io
+        fetchFrekuensi({ id_io: joDetail.id_io });
+        // NEW: refresh Next JO (teks) berdasarkan IO + tgl kirim
+        if (joDetail.id_io && joDetail.tgl_kirim) {
+          fetchNextJO(joDetail.id_io, joDetail.tgl_kirim.split('T')[0]);
+        }
 
         if (joDetail.id_io) {
           // NEW: check FG warehouse stock for this IO (edit mode)
@@ -722,6 +815,9 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     setHasQtyBeenEdited(false);
     setCreateBlockReasons([]);
     setGudangFGStock(null);
+    // NEW
+    setFrekuensiInfo(null);
+    setShowNextJOModal(false);
   };
 
   useEffect(() => {
@@ -758,15 +854,26 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         tgl_kirim: selectedSO.tgl_pengiriman
           ? selectedSO.tgl_pengiriman.split('T')[0]
           : new Date().toISOString().split('T')[0],
+        next_jo: '',
       }));
 
       if (!editMode) fetchMountingData(selectedSO.id_io);
       fetchCustomerData(selectedSO.id_customer);
       // NEW: check FG warehouse stock for this IO
       fetchGudangFGByIdIO(selectedSO.id_io);
+      // NEW: info frekuensi
+      if (!editMode) fetchFrekuensi({ id_io: selectedSO.id_io });
+      // NEW: Next JO otomatis (teks)
+      fetchNextJO(
+        selectedSO.id_io,
+        selectedSO.tgl_pengiriman
+          ? selectedSO.tgl_pengiriman.split('T')[0]
+          : new Date().toISOString().split('T')[0],
+      );
     } else {
       // Deselected
       setCreateBlockReasons([]);
+      setFrekuensiInfo(null);
     }
   };
 
@@ -795,14 +902,26 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         tgl_kirim: selectedIO.tgl_pengiriman
           ? selectedIO.tgl_pengiriman.split('T')[0]
           : new Date().toISOString().split('T')[0],
+        // NEW
+        next_jo: '',
       }));
 
       fetchMountingData(selectedIO.id);
       fetchCustomerData(selectedIO.id_customer);
       // NEW: check FG warehouse stock for this IO
       fetchGudangFGByIdIO(selectedIO.id);
+      // NEW: info frekuensi
+      fetchFrekuensi({ id_io: selectedIO.id });
+      // NEW: Next JO otomatis (teks)
+      fetchNextJO(
+        selectedIO.id,
+        selectedIO.tgl_pengiriman
+          ? selectedIO.tgl_pengiriman.split('T')[0]
+          : new Date().toISOString().split('T')[0],
+      );
     } else {
       setCreateBlockReasons([]);
+      setFrekuensiInfo(null);
     }
   };
 
@@ -1023,7 +1142,13 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       },
     );
 
-    const submitData = { ...formData, jo_mounting: joMountingData };
+    // NEW: frekuensi & next_jo ikut dikirim saat create dan update
+    const submitData = {
+      ...formData,
+      frekuensi: formData.frekuensi ?? 1,
+      next_jo: formData.next_jo || '',
+      jo_mounting: joMountingData,
+    };
 
     try {
       setLoading(true);
@@ -1155,6 +1280,58 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
             </button>
           </div>
 
+          {/* ── NEW: Info Frekuensi + Next JO (di atas, setelah SO/IO dipilih) ── */}
+          {!!formData.id_io && (
+            <div className="flex-shrink-0 mx-6 mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 bg-indigo-50 border border-indigo-200 rounded-lg px-4 py-3">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-600">Jumlah JO:</span>
+                {loadingFrekuensi ? (
+                  <span className="text-xs text-gray-400">memuat...</span>
+                ) : (
+                  <span className="px-2.5 py-0.5 text-sm font-bold text-indigo-700 bg-white border border-indigo-200 rounded-full">
+                    {frekuensiInfo ? frekuensiInfo.jumlah_jo : '-'}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-600">Frekuensi:</span>
+                {loadingFrekuensi ? (
+                  <span className="text-xs text-gray-400">memuat...</span>
+                ) : (
+                  <span className="px-2.5 py-0.5 text-sm font-bold text-indigo-700 bg-white border border-indigo-200 rounded-full">
+                    {formData.frekuensi ?? '-'}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-sm flex-1 min-w-[260px]">
+                <span className="text-gray-600 whitespace-nowrap">
+                  Next JO:
+                </span>
+                <input
+                  type="text"
+                  value={formData.next_jo || ''}
+                  onChange={(e) => handleFieldChange('next_jo', e.target.value)}
+                  placeholder="-"
+                  className="flex-1 px-2 py-1 text-sm border border-indigo-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNextJOModal(true)}
+                  disabled={!formData.id_io || !formData.tgl_kirim}
+                  className="px-3 py-1 text-xs font-semibold text-white bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-full transition-colors whitespace-nowrap"
+                >
+                  Lihat Next JO
+                </button>
+              </div>
+
+              <div className="ml-auto text-xs text-gray-500">
+                Tgl Kirim: {formatTanggalID(formData.tgl_kirim)}
+              </div>
+            </div>
+          )}
+
           {/* ── Block reasons banner (create mode only, after SO/IO is selected) ── */}
           {!editMode && createBlockReasons.length > 0 && (
             <div className="flex-shrink-0 mx-6 mt-4 flex items-start gap-3 bg-red-50 border border-red-300 rounded-lg px-4 py-3">
@@ -1220,7 +1397,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           )}
 
           {/* Body — Two Column Layout */}
-          <div className="flex-1 overflow-hidden flex">
+          <div className="flex-1 overflow-hidden flex mt-4">
             {/* LEFT */}
             <div className="w-1/3 border-r overflow-y-auto p-6 bg-gray-50">
               <div className="space-y-6">
@@ -1341,6 +1518,14 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* NEW: Modal Next JO */}
+      <JONextModal
+        isOpen={showNextJOModal}
+        onClose={() => setShowNextJOModal(false)}
+        idIO={formData.id_io || 0}
+        tglKirim={formData.tgl_kirim || ''}
+      />
     </div>,
     document.body,
   );

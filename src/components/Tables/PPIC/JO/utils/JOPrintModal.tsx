@@ -47,6 +47,9 @@ interface JOPrintData {
   note_reject: string | null;
   qty_druk: number | null;
   updatedAt: string;
+  // NEW
+  frekuensi?: number | null;
+  next_jo?: string | null;
 
   // JO Mounting details - this is the array that contains mounting data
   jo_mounting?: Array<{
@@ -146,6 +149,10 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
   // NEW: proses-insheet percentages (Cetak/Pond/Finishing splits), needed to
   // rebuild the per-side (Sisi A / Sisi B) breakdown for 2-ukuran mountings.
   const [prosesInsheetData, setProsesInsheetData] = useState<any[]>([]);
+  // NEW: fallback frekuensi (GET /ppic/joFrekuensi) bila belum ada di data JO
+  const [frekuensiFetched, setFrekuensiFetched] = useState<number | null>(null);
+  // NEW: fallback next JO (GET /ppic/joNext) bila belum ada di data JO
+  const [nextJOFetched, setNextJOFetched] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen && joId) {
@@ -159,6 +166,25 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
       fetchProsesInsheet();
     }
   }, [isOpen]);
+
+  // NEW: fetch frekuensi & next JO setelah data JO tersedia
+  useEffect(() => {
+    if (!isOpen || !printData) return;
+
+    // Frekuensi — hanya fetch bila belum tersimpan di data JO
+    if (printData.frekuensi === undefined || printData.frekuensi === null) {
+      fetchFrekuensi(printData.id_io);
+    } else {
+      setFrekuensiFetched(null);
+    }
+
+    // Next JO — hanya fetch bila belum tersimpan di data JO
+    if (!printData.next_jo && printData.id_io && printData.tgl_kirim) {
+      fetchNextJO(printData.id_io, printData.tgl_kirim.split('T')[0]);
+    } else {
+      setNextJOFetched([]);
+    }
+  }, [isOpen, printData?.id]);
 
   useEffect(() => {
     // Convert logo to base64 for better print quality
@@ -219,6 +245,10 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
         setPrintData(response.data.data);
       }
       console.log('Fetched JO Data:', response.data.data);
+      console.log(
+        'frekuensi dari GET /ppic/jo/:id =',
+        response.data.data?.frekuensi,
+      );
     } catch (error) {
       console.error('Error fetching JO data:', error);
     } finally {
@@ -241,6 +271,44 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     }
   };
 
+  // NEW: GET /ppic/joFrekuensi?id_io=
+  const fetchFrekuensi = async (idIO: number) => {
+    if (!idIO) return;
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/ppic/joFrekuensi`,
+        { params: { id_io: idIO }, withCredentials: true },
+      );
+      if (res.data?.succes || res.data?.success) {
+        setFrekuensiFetched(res.data.frekuensi ?? null);
+      }
+    } catch (error) {
+      console.error(
+        'Error fetching frekuensi:',
+        (error as any)?.response?.data || error,
+      );
+      setFrekuensiFetched(null);
+    }
+  };
+
+  // NEW: GET /ppic/joNext?id_io=&tgl_kirim=
+  const fetchNextJO = async (idIO: number, tglKirim: string) => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/ppic/joNext`,
+        {
+          params: { id_io: idIO, tgl_kirim: tglKirim },
+          withCredentials: true,
+        },
+      );
+      const list: any[] = res.data?.data || [];
+      setNextJOFetched(list.map((item) => item.no_jo).filter(Boolean));
+    } catch (error) {
+      console.error('Error fetching next JO:', error);
+      setNextJOFetched([]);
+    }
+  };
+
   // Pure helper that accepts data as argument (used in useEffect above)
   const getMountingFromData = (data: JOPrintData | null) => {
     if (!data?.jo_mounting || data.jo_mounting.length === 0) return null;
@@ -259,6 +327,18 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
       return defaultValue;
     }
     return value;
+  };
+
+  // NEW: nilai frekuensi & next JO yang dipakai untuk print
+  const getFrekuensiValue = (): string => {
+    const value = printData?.frekuensi ?? frekuensiFetched;
+    return value === null || value === undefined ? '-' : String(value);
+  };
+
+  const getNextJOValue = (): string => {
+    if (printData?.next_jo) return printData.next_jo;
+    if (nextJOFetched.length > 0) return nextJOFetched.join(', ');
+    return '-';
   };
 
   const formatDate = (dateString: string): string => {
@@ -909,7 +989,9 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             <tr>
               <td class="info-label">Revisi</td>
               <td class="info-colon">:</td>
-              <td colspan="4">${getRevisiFromIO(printData?.no_io || '')}</td>
+              <td>${getRevisiFromIO(printData?.no_io || '')}</td>
+              <td class="info-label">Frekuensi</td>
+              <td colspan="2">${getFrekuensiValue()}</td>
               <td class="info-label">Tgl Pengiriman</td>
               <td class="info-colon">:</td>
               <td>${formatDate(printData?.tgl_kirim || '')}</td>
@@ -1045,12 +1127,16 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                 <!-- Process table (aggregate for 1-ukuran, Sisi A / Sisi B for 2-ukuran) -->
                 ${getProcessBreakdownHtml(selectedMounting)}
 
-                <!-- Keterangan -->
+                <!-- Keterangan + Next JO -->
                 <div style="border: 1px solid black; padding: 4px; font-size: 9px; margin-bottom: 4px;">
                   <div style="font-weight: bold; margin-bottom: 2px;">Keterangan Pengerjaan :</div>
                   <div style="min-height: 35px;">${getValue(
                     printData?.keterangan_pengerjaan,
                   )}</div>
+                  <div style="margin-top: 4px; padding-top: 3px; border-top: 1px dashed #666;">
+                    <span style="font-weight: bold;">Next JO :</span>
+                    <span>${getNextJOValue()}</span>
+                  </div>
                 </div>
               </td>
             </tr>

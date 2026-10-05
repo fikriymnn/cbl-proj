@@ -68,6 +68,10 @@ const ListOTSPurchase: React.FC = () => {
           page,
           limit,
           search: searchTerm,
+          start_tgl_rencana_cetak: tglCetakFrom || undefined,
+          end_tgl_rencana_cetak: tglCetakTo || undefined,
+          start_tgl_kirim_customer: tglKirimFrom || undefined,
+          end_tgl_kirim_customer: tglKirimTo || undefined,
         },
         withCredentials: true,
       });
@@ -104,7 +108,12 @@ const ListOTSPurchase: React.FC = () => {
     setSearchTerm(searchInput);
     setPage(1);
   };
-
+  const handleDateChange =
+    (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setter(e.target.value);
+      setPage(1);
+    };
   const handleResetFilters = () => {
     setSearchInput('');
     setSearchTerm('');
@@ -238,7 +247,55 @@ const ListOTSPurchase: React.FC = () => {
             </div>
           </div>
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          {/* Tgl Cetak */}
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Tgl Rencana Cetak
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={tglCetakFrom}
+                max={tglCetakTo || undefined}
+                onChange={handleDateChange(setTglCetakFrom)}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <span className="text-xs text-slate-400">s/d</span>
+              <input
+                type="date"
+                value={tglCetakTo}
+                min={tglCetakFrom || undefined}
+                onChange={handleDateChange(setTglCetakTo)}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+          </div>
 
+          {/* Tgl Kirim */}
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-1.5">
+              Tgl Kirim Customer
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={tglKirimFrom}
+                max={tglKirimTo || undefined}
+                onChange={handleDateChange(setTglKirimFrom)}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <span className="text-xs text-slate-400">s/d</span>
+              <input
+                type="date"
+                value={tglKirimTo}
+                min={tglKirimFrom || undefined}
+                onChange={handleDateChange(setTglKirimTo)}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
         {activeFilterCount > 0 && (
           <div className="mt-3 flex items-center gap-2">
             <span className="text-xs text-slate-500">

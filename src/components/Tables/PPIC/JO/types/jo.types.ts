@@ -208,6 +208,8 @@ export interface JOFormData {
   tgl_kirim: string;
   standar_warna: string;
   tipe_jo: 'JO PRODUKSI' | 'JO PROOF' | 'JO KANBAN';
+  frekuensi?: number;
+  next_jo?: string;
   jo_mounting: JOMounting[];
 }
 

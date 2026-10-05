@@ -668,9 +668,12 @@ const PengajuanPurchase: React.FC = () => {
           limit,
           status: 'incoming',
           search: searchTerm || undefined,
-
           tipe_barang: kategoriFilter.length > 0 ? kategoriFilter : undefined,
           id_item: idItemParam || undefined, // <-- id_item param shape
+          start_date_cetak: rencanaCetakFrom || undefined,
+          end_date_cetak: rencanaCetakTo || undefined,
+          start_date_kirim: tanggalKirimFrom || undefined,
+          end_date_kirim: tanggalKirimTo || undefined,
         },
         withCredentials: true,
       });
@@ -731,7 +734,12 @@ const PengajuanPurchase: React.FC = () => {
     setSearchTerm(searchInput);
     setPage(1);
   };
-
+  const handleDateChange =
+    (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setter(e.target.value);
+      setPage(1);
+    };
   const handleResetFilters = () => {
     setSearchInput('');
     setSearchTerm('');
@@ -1069,7 +1077,55 @@ const PengajuanPurchase: React.FC = () => {
           </div>
         )}
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        {/* Rencana Cetak */}
+        <div>
+          <label className="block text-xs font-medium text-slate-500 mb-1.5">
+            Rencana Cetak
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={rencanaCetakFrom}
+              max={rencanaCetakTo || undefined}
+              onChange={handleDateChange(setRencanaCetakFrom)}
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <span className="text-xs text-slate-400">s/d</span>
+            <input
+              type="date"
+              value={rencanaCetakTo}
+              min={rencanaCetakFrom || undefined}
+              onChange={handleDateChange(setRencanaCetakTo)}
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+        </div>
 
+        {/* Tanggal Kirim */}
+        <div>
+          <label className="block text-xs font-medium text-slate-500 mb-1.5">
+            Tanggal Kirim
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={tanggalKirimFrom}
+              max={tanggalKirimTo || undefined}
+              onChange={handleDateChange(setTanggalKirimFrom)}
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+            <span className="text-xs text-slate-400">s/d</span>
+            <input
+              type="date"
+              value={tanggalKirimTo}
+              min={tanggalKirimFrom || undefined}
+              onChange={handleDateChange(setTanggalKirimTo)}
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      </div>
       {/* Bulk selection bar */}
       {selected.size > 0 && (
         <div className="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3">
