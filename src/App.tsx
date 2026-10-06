@@ -293,6 +293,8 @@ import ApprovalOpnameMRRMPage from './pages/MR/ApprovalOpnameMRRMPage';
 import MonitoringPOPage from './pages/Purchasing/MonitoringPOPage';
 import ListArPage from './pages/Accounting/ListArPage';
 import RekapInvoicePage from './pages/Accounting/RekapInvoicePage';
+import MonitoringTambahBahanPage from './pages/Monitoring/MonitoringTambahBahanPage';
+import MonitoringKurangQtyPage from './pages/Monitoring/MonitoringKurangQtyPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2543,7 +2545,22 @@ function App() {
             </P>
           }
         />
-
+        <Route
+          path="/monitoring/monitoring-tambah-bahan"
+          element={
+            <P>
+              <MonitoringTambahBahanPage />
+            </P>
+          }
+        />
+        <Route
+          path="/monitoring/monitoring-kurang-qty"
+          element={
+            <P>
+              <MonitoringKurangQtyPage />
+            </P>
+          }
+        />
         {/* ============== PENGAJUAN ROUTES ============== */}
 
         <Route
