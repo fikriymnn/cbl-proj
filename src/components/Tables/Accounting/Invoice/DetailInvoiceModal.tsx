@@ -345,7 +345,7 @@ const DetailInvoiceModal: React.FC<DetailInvoiceModalProps> = ({
     : data.balance_due;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0  overflow-y-auto z-99999">
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
@@ -797,7 +797,7 @@ const DetailInvoiceModal: React.FC<DetailInvoiceModalProps> = ({
                 )}
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                  className="px-4 py-2 bg-gray-600 text-black text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Close
                 </button>

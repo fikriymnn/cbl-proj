@@ -3,7 +3,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import SearchableSelect from '../../../pages/MasterData/Marketing/SearchAbleSelectFront';
 // Same searchable dropdown used in Master Data > Customer — adjust the path
 // to wherever it actually lives relative to this file.
-
+import DetailInvoiceModal, {
+  InvoiceDetail,
+} from '../Accounting/Invoice/DetailInvoiceModal';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface RekapSummary {
@@ -267,9 +269,13 @@ function TopCustomersCard({ rows }: { rows: RekapCustomerRow[] }) {
 function CustomerInvoiceDetail({
   loading,
   invoices,
+  onOpenInvoice,
+  openingId,
 }: {
   loading: boolean;
   invoices: RekapInvoiceItem[] | undefined;
+  onOpenInvoice: (id: number) => void;
+  openingId: number | null;
 }) {
   if (loading) {
     return (
@@ -314,8 +320,16 @@ function CustomerInvoiceDetail({
           <tbody className="divide-y divide-gray-200 bg-white">
             {invoices.map((inv) => (
               <tr key={inv.id} className="hover:bg-gray-50">
-                <td className="px-3 py-2 whitespace-nowrap font-medium text-gray-900">
-                  {inv.no_invoice}
+                <td className="px-3 py-2 whitespace-nowrap font-medium">
+                  <button
+                    type="button"
+                    onClick={() => onOpenInvoice(inv.id)}
+                    disabled={openingId === inv.id}
+                    className="text-blue-600 hover:text-blue-800 hover:underline disabled:opacity-50 disabled:cursor-wait"
+                    title="Lihat detail invoice"
+                  >
+                    {openingId === inv.id ? 'Memuat...' : inv.no_invoice}
+                  </button>
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap text-gray-700">
                   {formatDate(inv.tgl_faktur)}
@@ -373,7 +387,12 @@ const RekapInvoice: React.FC = () => {
   const [detailLoadingIds, setDetailLoadingIds] = useState<Set<number>>(
     new Set(),
   );
-
+  // Invoice detail modal (fetched by id when a no_invoice is clicked)
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceDetail | null>(
+    null,
+  );
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+  const [openingInvoiceId, setOpeningInvoiceId] = useState<number | null>(null);
   // Customer list for the searchable dropdown — loaded once, same source as
   // Master Data > Customer (GET /master/marketing/customer)
   useEffect(() => {
@@ -419,7 +438,7 @@ const RekapInvoice: React.FC = () => {
         },
         withCredentials: true,
       });
-
+      console.log('Fetched recap:', res.data);
       if (res.data.success) {
         setSummary(res.data.data_rekap);
         setRangeTglFaktur(res.data.range_tgl_faktur);
@@ -464,6 +483,7 @@ const RekapInvoice: React.FC = () => {
         },
         withCredentials: true,
       });
+
       const invoices = res.data?.data?.[0]?.invoice || [];
       setDetailCache((prev) => ({ ...prev, [customerId]: invoices }));
     } catch (err) {
@@ -491,6 +511,31 @@ const RekapInvoice: React.FC = () => {
       }
       return next;
     });
+  };
+
+  const handleOpenInvoice = async (invoiceId: number): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/invoice/${invoiceId}`;
+    try {
+      setOpeningInvoiceId(invoiceId);
+      const res = await axios.get(url, { withCredentials: true });
+
+      if (res.data?.success && res.data?.data) {
+        setSelectedInvoice(res.data.data as InvoiceDetail);
+        setIsDetailModalOpen(true);
+      } else {
+        alert('Gagal memuat detail invoice.');
+      }
+    } catch (err) {
+      console.error('Error fetching invoice detail:', err);
+      alert('Gagal memuat detail invoice.');
+    } finally {
+      setOpeningInvoiceId(null);
+    }
+  };
+
+  const handleCloseDetailModal = (): void => {
+    setIsDetailModalOpen(false);
+    setSelectedInvoice(null);
   };
 
   const resetFilters = (): void => {
@@ -598,6 +643,19 @@ const RekapInvoice: React.FC = () => {
               className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Cari di Hasil (Nama Customer)
+            </label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="mis. Kalbe Farma"
+              className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
               Customer
@@ -610,18 +668,6 @@ const RekapInvoice: React.FC = () => {
               value={idCustomer}
               onChange={(value) => setIdCustomer(Number(value))}
               placeholder="Cari customer..."
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Cari di Hasil (Nama Customer)
-            </label>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="mis. Kalbe Farma"
-              className="w-full text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -781,6 +827,8 @@ const RekapInvoice: React.FC = () => {
                                 invoices={
                                   detailCache[row.id_customer] ?? row.invoice
                                 }
+                                onOpenInvoice={handleOpenInvoice}
+                                openingId={openingInvoiceId}
                               />
                             </td>
                           </tr>
@@ -886,6 +934,8 @@ const RekapInvoice: React.FC = () => {
                       <CustomerInvoiceDetail
                         loading={detailLoadingIds.has(row.id_customer)}
                         invoices={detailCache[row.id_customer] ?? row.invoice}
+                        onOpenInvoice={handleOpenInvoice}
+                        openingId={openingInvoiceId}
                       />
                     </div>
                   )}
@@ -895,6 +945,18 @@ const RekapInvoice: React.FC = () => {
           )}
         </div>
       </div>
+      {/* Invoice detail modal */}
+      {isDetailModalOpen && selectedInvoice && (
+        <DetailInvoiceModal
+          invoiceData={selectedInvoice}
+          isOpen={isDetailModalOpen}
+          onClose={handleCloseDetailModal}
+          onUpdated={() => {
+            setDetailCache({}); // buang cache agar detail ter-refresh
+            fetchRecap();
+          }}
+        />
+      )}
     </div>
   );
 };
