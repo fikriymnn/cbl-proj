@@ -341,6 +341,24 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
     return '-';
   };
 
+  // NEW: Qty JO = Qty Produksi - (Total Insheet × (Isi A + Isi B))
+  const getQtyJO = (): number | null => {
+    const mounting = getSelectedMounting();
+    if (!printData || !mounting) return null;
+
+    const qtyProduksi = Number(printData.qty) || 0;
+    const totalInsheet = Number(mounting.total_insheet) || 0;
+    const isiA = Number(mounting.ukuran_cetak_isi_1) || 0;
+    const isiB = Number(mounting.ukuran_cetak_isi_2) || 0;
+
+    return qtyProduksi - totalInsheet * (isiA + isiB);
+  };
+
+  const getQtyJOValue = (): string => {
+    const value = getQtyJO();
+    return value === null ? '-' : value.toLocaleString();
+  };
+
   const formatDate = (dateString: string): string => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -938,13 +956,25 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             : ''
         }
 
-        <!-- Main Info Table -->
-        <table class="info-table">
+        <!-- Main Info Table (10 kolom: 7 kiri + 3 kanan) -->
+        <table class="info-table" style="table-layout: fixed;">
+          <colgroup>
+            <col style="width: 85px;" />  <!-- 1: label kiri -->
+            <col style="width: 10px;" />  <!-- 2: colon -->
+            <col style="width: 62px;" />  <!-- 3: nilai (Qty PO / Status Produk / Revisi) -->
+            <col style="width: 78px;" />  <!-- 4: label Qty Produksi / Stok FG / Produksi Ke -->
+            <col style="width: 58px;" />  <!-- 5: nilai Qty Produksi -->
+            <col style="width: 50px;" />  <!-- 6: label Qty JO -->
+            <col style="width: 58px;" />  <!-- 7: nilai Qty JO / DUS -->
+            <col style="width: 112px;" /> <!-- 8: label kanan -->
+            <col style="width: 10px;" />  <!-- 9: colon kanan -->
+            <col />                       <!-- 10: nilai kanan (sisa space) -->
+          </colgroup>
           <tbody>
             <tr>
               <td class="info-label">Pemesan</td>
               <td class="info-colon">:</td>
-              <td colspan="3">${getValue(printData?.customer)}</td>
+              <td colspan="4">${getValue(printData?.customer)}</td>
               <td class="info-label">DUS</td>
               <td class="info-label">Marketing</td>
               <td class="info-colon">:</td>
@@ -953,7 +983,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             <tr>
               <td class="info-label">Nama Produk</td>
               <td class="info-colon">:</td>
-              <td colspan="4">${getValue(printData?.produk)}</td>
+              <td colspan="5">${getValue(printData?.produk)}</td>
               <td class="info-label">Tanggal JO</td>
               <td class="info-colon">:</td>
               <td>${formatDate(printData?.createdAt || '')}</td>
@@ -961,7 +991,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             <tr>
               <td class="info-label">Spesifikasi</td>
               <td class="info-colon">:</td>
-              <td colspan="4">${getValue(printData?.spesifikasi)}</td>
+              <td colspan="5">${getValue(printData?.spesifikasi)}</td>
               <td class="info-label">No SO</td>
               <td class="info-colon">:</td>
               <td>${getValue(printData?.no_so)}</td>
@@ -971,7 +1001,9 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               <td class="info-colon">:</td>
               <td>${printData?.po_qty?.toLocaleString()}</td>
               <td class="info-label">Qty Produksi</td>
-              <td colspan="2">${printData?.qty?.toLocaleString()}</td>
+              <td>${printData?.qty?.toLocaleString()}</td>
+              <td class="info-label">Qty JO</td>
+              <td>${getQtyJOValue()}</td>
               <td class="info-label">No PO</td>
               <td class="info-colon">:</td>
               <td>${getValue(printData?.so?.no_po_customer)}</td>
@@ -981,7 +1013,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               <td class="info-colon">:</td>
               <td>${getValue(printData?.so?.status_produk)}</td>
               <td class="info-label">Stok FG</td>
-              <td colspan="2">${printData?.stok_fg?.toLocaleString() || 0}</td>
+              <td colspan="3">${printData?.stok_fg?.toLocaleString() || 0}</td>
               <td class="info-label">Tgl PO</td>
               <td class="info-colon">:</td>
               <td>${formatDate(printData?.so?.tgl_po_customer || '')}</td>
@@ -990,8 +1022,8 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
               <td class="info-label">Revisi</td>
               <td class="info-colon">:</td>
               <td>${getRevisiFromIO(printData?.no_io || '')}</td>
-              <td class="info-label">Frekuensi</td>
-              <td colspan="2">${getFrekuensiValue()}</td>
+              <td class="info-label">Produksi Ke</td>
+              <td colspan="3">${getFrekuensiValue()}</td>
               <td class="info-label">Tgl Pengiriman</td>
               <td class="info-colon">:</td>
               <td>${formatDate(printData?.tgl_kirim || '')}</td>
@@ -999,7 +1031,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
             <tr>
               <td class="info-label">Status JO</td>
               <td class="info-colon">:</td>
-              <td colspan="4">${getValue(printData?.status_jo || '')}</td>
+              <td colspan="5">${getValue(printData?.status_jo || '')}</td>
               <td class="info-label">Toleransi Pengiriman</td>
               <td class="info-colon">:</td>
               <td>${getValue(printData?.toleransi, '3D')}</td>
