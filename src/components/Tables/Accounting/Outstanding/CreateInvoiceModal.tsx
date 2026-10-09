@@ -24,6 +24,7 @@ interface DOItem {
   isi_2: number | null;
   isi_3: number | null;
   tgl_pengiriman: string;
+  tgl_do: string;
   toleransi_pengiriman: number | null;
   note: string | null;
   status: string;
@@ -352,7 +353,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       setNoDO(allDONumbers || firstItem.no_do || '');
 
       // Tanggal kirim (mandatory) — also drives tanggal faktur & nomor invoice
-      const kirim = formatDateForInput(firstItem.so?.tgl_pengiriman || '');
+      const kirim = formatDateForInput(firstItem.tgl_do || '');
       setTglKirim(kirim);
 
       if (!kirim) {

@@ -4,6 +4,7 @@ import { Pagination, Stack } from '@mui/material';
 import CreateInvoiceModal from './CreateInvoiceModal';
 
 interface DOItem {
+  tgl_do: string;
   no_do: string;
   so: any;
   id: number;
@@ -387,6 +388,9 @@ const ListOutstanding: React.FC = () => {
                   PO Qty
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  Tgl Do
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   Tgl Pengiriman
                 </th>
               </tr>
@@ -459,6 +463,9 @@ const ListOutstanding: React.FC = () => {
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                         {formatNumber(item.so.po_qty)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                        {formatDate(item.tgl_do)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                         {formatDate(item.so.tgl_pengiriman)}
@@ -596,6 +603,14 @@ const ListOutstanding: React.FC = () => {
                       </span>
                       <div className="text-gray-900 text-xs">
                         {formatNumber(item.so.po_qty)}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 text-xs font-medium">
+                        Tgl DO:
+                      </span>
+                      <div className="text-gray-900 text-xs">
+                        {formatDate(item.tgl_do)}
                       </div>
                     </div>
                     <div>
