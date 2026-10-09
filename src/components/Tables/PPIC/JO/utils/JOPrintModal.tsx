@@ -1166,7 +1166,7 @@ const JOPrintModal: React.FC<JOPrintModalProps> = ({
                     printData?.keterangan_pengerjaan,
                   )}</div>
                   <div style="margin-top: 4px; padding-top: 3px; border-top: 1px dashed #666;">
-                    <span style="font-weight: bold;">Next JO :</span>
+                    <span style="font-weight: bold;">Jo Selanjutnya :</span>
                     <span>${getNextJOValue()}</span>
                   </div>
                 </div>
