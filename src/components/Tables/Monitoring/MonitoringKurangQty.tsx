@@ -3,7 +3,8 @@ import axios from 'axios';
 import Loading from '../../Loading';
 
 // GET /ppic/joMonitoringKurangQty
-// params: page, limit, search (contoh search: "JO-01218/09/2026")
+// params: page, limit, search (contoh search: "JO-01218/09/2026"),
+//         start_date, end_date (filter tanggal kirim, format YYYY-MM-DD)
 // response: { status_code, succes, data: [...], total_data, total_page }
 
 const LIMIT_OPTIONS = [10, 25, 50, 100];
@@ -29,9 +30,16 @@ function KurangQtyMonitoring() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
 
-  // searchInput = isi input; search = nilai yang benar-benar dikirim ke API
+  // xxxInput = isi input; yang tanpa suffix = nilai yang benar-benar dikirim ke API
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+
+  const [startDateInput, setStartDateInput] = useState('');
+  const [endDateInput, setEndDateInput] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  const [dateError, setDateError] = useState('');
 
   const fetchData = useCallback(async () => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/joMonitoringKurangQty`;
@@ -42,6 +50,8 @@ function KurangQtyMonitoring() {
           page,
           limit,
           search: search.trim() || undefined,
+          start_date: startDate || undefined,
+          end_date: endDate || undefined,
         },
         withCredentials: true,
       });
@@ -58,20 +68,32 @@ function KurangQtyMonitoring() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, limit, search]);
+  }, [page, limit, search, startDate, endDate]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const handleApply = () => {
+    if (startDateInput && endDateInput && endDateInput < startDateInput) {
+      setDateError('Tanggal akhir tidak boleh lebih awal dari tanggal mulai');
+      return;
+    }
+    setDateError('');
     setPage(1);
     setSearch(searchInput);
+    setStartDate(startDateInput);
+    setEndDate(endDateInput);
   };
 
   const handleReset = () => {
     setSearchInput('');
     setSearch('');
+    setStartDateInput('');
+    setEndDateInput('');
+    setStartDate('');
+    setEndDate('');
+    setDateError('');
     setPage(1);
   };
 
@@ -81,6 +103,8 @@ function KurangQtyMonitoring() {
   const btn =
     'px-3 py-1.5 rounded-lg text-xs font-medium border bg-white border-gray-300 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
   const th = 'p-2 sm:p-3 whitespace-nowrap';
+  const inputCls =
+    'w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 sm:py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all';
 
   return (
     <main>
@@ -94,19 +118,51 @@ function KurangQtyMonitoring() {
           </h2>
         </div>
         <div className="p-3 sm:p-4 md:p-6">
-          <div className="flex flex-col gap-2 mb-4">
-            <label className="text-xs sm:text-sm text-gray-600 font-medium">
-              Cari:
-            </label>
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleApply()}
-              placeholder="No JO..."
-              className="w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 sm:py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs sm:text-sm text-gray-600 font-medium">
+                Cari:
+              </label>
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleApply()}
+                placeholder="No JO..."
+                className={inputCls}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-xs sm:text-sm text-gray-600 font-medium">
+                Tanggal Kirim (Dari):
+              </label>
+              <input
+                type="date"
+                value={startDateInput}
+                onChange={(e) => setStartDateInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleApply()}
+                className={inputCls}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-xs sm:text-sm text-gray-600 font-medium">
+                Tanggal Kirim (Sampai):
+              </label>
+              <input
+                type="date"
+                value={endDateInput}
+                min={startDateInput || undefined}
+                onChange={(e) => setEndDateInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleApply()}
+                className={inputCls}
+              />
+            </div>
           </div>
+
+          {dateError && (
+            <p className="text-xs text-red-600 mb-3">{dateError}</p>
+          )}
+
           <div className="flex flex-wrap gap-3 justify-end">
             <button
               onClick={handleReset}
@@ -139,24 +195,50 @@ function KurangQtyMonitoring() {
           <table className="w-full text-xs sm:text-sm min-w-[1200px]">
             <thead className="bg-white sticky top-0 z-10">
               <tr className="text-left text-xs font-semibold text-gray-600">
-                <th className={th}>No</th>
-                <th className={th}>Nomor</th>
-                <th className={th}>Customer</th>
-                <th className={th}>Produk</th>
-                <th className={`${th} text-right`}>Isi</th>
-                <th className={`${th} text-right`}>Qty</th>
-                <th className={`${th} text-right`}>Qty JO</th>
-                <th className={`${th} text-right`}>Quantity Kirim FG</th>
-                <th className={`${th} text-right`}>Kurang Qty</th>
-                <th className={`${th} text-right`}>Total Insheet</th>
-                <th className={th}>Tgl Kirim</th>
+                <th className={th} rowSpan={2}>
+                  No
+                </th>
+                <th className={th} rowSpan={2}>
+                  Nomor
+                </th>
+                <th className={th} rowSpan={2}>
+                  Customer
+                </th>
+                <th className={th} rowSpan={2}>
+                  Produk
+                </th>
+                <th className={`${th} text-right`} rowSpan={2}>
+                  Qty JO
+                </th>
+                <th className={`${th} text-right`} rowSpan={2}>
+                  Total Insheet
+                </th>
+                <th
+                  className={`${th} text-center border-b border-gray-200`}
+                  colSpan={2}
+                >
+                  Total Qty Tambah Bahan
+                </th>
+                <th className={`${th} text-right`} rowSpan={2}>
+                  Quantity Kirim FG
+                </th>
+                <th className={`${th} text-right`} rowSpan={2}>
+                  Kurang Qty
+                </th>
+                <th className={th} rowSpan={2}>
+                  Tgl Kirim
+                </th>
+              </tr>
+              <tr className="text-left text-xs font-semibold text-gray-600">
+                <th className={`${th} text-right`}>Druk</th>
+                <th className={`${th} text-right`}>LP</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={10}
                     className="p-8 text-center text-gray-500 text-sm"
                   >
                     Tidak ada data
@@ -189,22 +271,22 @@ function KurangQtyMonitoring() {
                       {row.produk || '-'}
                     </td>
                     <td className="p-2 sm:p-3 text-xs text-right">
-                      {fmtQty(row.isi)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right">
-                      {fmtQty(row.qty)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right">
                       {fmtQty(row.qty_jo)}
+                    </td>
+                    <td className="p-2 sm:p-3 text-xs text-right">
+                      {fmtQty(row.total_insheet)}
+                    </td>
+                    <td className="p-2 sm:p-3 text-xs text-right text-orange-600 font-medium">
+                      {fmtQty(row.qty_tambah_bahan_druk)}
+                    </td>
+                    <td className="p-2 sm:p-3 text-xs text-right text-orange-600 font-medium">
+                      {fmtQty(row.qty_tambah_bahan_lp)}
                     </td>
                     <td className="p-2 sm:p-3 text-xs text-right font-semibold text-green-600">
                       {fmtQty(row.quantity_kirim_fg)}
                     </td>
                     <td className="p-2 sm:p-3 text-xs text-right font-bold text-red-600">
                       {fmtQty(row.kurang_qty)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right">
-                      {fmtQty(row.total_insheet)}
                     </td>
                     <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
                       {fmtDate(row.tgl_kirim)}

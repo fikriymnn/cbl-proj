@@ -542,8 +542,8 @@ function TambahBahanPanel({ type }: { type: TabType }) {
     try {
       setIsLoading(true);
       const res = await axios.get(url, { params, withCredentials: true });
+      console.log('fetchData', res.data);
       setRows(normalizeList(res.data));
-      console.log('fetchData', type, params, normalizeList(res.data));
     } catch (err) {
       console.error(err);
       setRows([]);
