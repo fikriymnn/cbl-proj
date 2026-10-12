@@ -5,7 +5,7 @@ import Select from 'react-select';
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
-type TabType = 'persiapan' | 'pemakaian';
+type TabType = 'pemakaian' | 'persiapan';
 
 // endpoint per tab
 const ENDPOINT: Record<TabType, string> = {
@@ -84,6 +84,12 @@ interface Filters {
   dates: Record<string, DateRange>;
 }
 
+type SortDir = 'asc' | 'desc';
+interface SortState {
+  key: string;
+  dir: SortDir;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function pad(n: number) {
@@ -132,6 +138,36 @@ function normalizeList(resData: any): any[] {
   return Array.isArray(resData?.data) ? resData.data : [];
 }
 
+// ambil array defect dari row sesuai tab
+function getDefects(row: any, type: TabType): any[] {
+  return Array.isArray(row?.[DEFECT_KEY[type]]) ? row[DEFECT_KEY[type]] : [];
+}
+function defectQty(d: any) {
+  return (d.qty_tambah_bahan_druk ?? 0) + (d.qty_tambah_bahan_lp ?? 0);
+}
+function toTime(iso: string | null | undefined) {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  return isNaN(t) ? null : t;
+}
+
+// nilai yang dipakai untuk sorting tiap kolom
+const SORT_VALUE: Record<
+  string,
+  (row: any, type: TabType) => string | number | null
+> = {
+  no_jo: (r) => r.no_jo ?? null,
+  nama_kertas: (r) => r.nama_kertas ?? null,
+  qty_request: (r) => r.qty_tambah_bahan_druk ?? null,
+  qty_pakai: (r) => r.qty_pakai_tambah_bahan_druk ?? null,
+  defect: (r, t) => getDefects(r, t).reduce((sum, d) => sum + defectQty(d), 0),
+  tgl_request: (r) => toTime(r.tgl_request),
+  tgl_qc: (r) => toTime(r.tgl_qc),
+  tgl_gudang: (r) => toTime(r.tgl_gudang),
+  tgl_pakai: (r) => toTime(r.tgl_pakai),
+  tgl_qc_pemakaian: (r) => toTime(r.tgl_qc_pemakaian),
+};
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
@@ -154,6 +190,31 @@ function StatusBadge({ status }: { status: string }) {
     >
       {status || '-'}
     </span>
+  );
+}
+
+function SortTh({
+  label,
+  k,
+  sort,
+  onSort,
+}: {
+  label: string;
+  k: string;
+  sort: SortState | null;
+  onSort: (k: string) => void;
+}) {
+  const active = sort?.key === k;
+  return (
+    <th
+      onClick={() => onSort(k)}
+      className="p-2 sm:p-3 whitespace-nowrap cursor-pointer select-none hover:bg-gray-50"
+    >
+      {label}
+      <span className={`ml-1 ${active ? 'text-violet-600' : 'text-gray-300'}`}>
+        {active ? (sort!.dir === 'asc' ? '▲' : '▼') : '↕'}
+      </span>
+    </th>
   );
 }
 
@@ -183,6 +244,7 @@ function DetailModal({
           `${import.meta.env.VITE_API_LINK}${ENDPOINT[type]}/${id}`,
           { withCredentials: true },
         );
+        console.log('fetchDetail', type, id, res.data);
         if (!cancelled) setRow(res.data?.data ?? null);
       } catch (err) {
         console.error(err);
@@ -217,9 +279,7 @@ function DetailModal({
   }
 
   const jo = row.job_order;
-  const defects: any[] = Array.isArray(row[DEFECT_KEY[type]])
-    ? row[DEFECT_KEY[type]]
-    : [];
+  const defects: any[] = getDefects(row, type);
 
   // Alur tiket: setiap step punya tanggal, user, dan catatan
   const steps: { title: string; tgl: any; user: any; note: any }[] = [
@@ -353,6 +413,44 @@ function DetailModal({
             </div>
           </div>
 
+          {/* Defect */}
+          {defects.length > 0 && (
+            <div className="bg-red-50 rounded-xl p-4 border border-red-200">
+              <h4 className="text-xs font-semibold text-red-700 mb-3">
+                Defect ({defects.length})
+              </h4>
+              <div className="space-y-1.5">
+                {defects.map((d: any) => (
+                  <div
+                    key={d.id}
+                    className="bg-white rounded-lg border border-red-200 grid grid-cols-2 sm:grid-cols-4 gap-2 px-3 py-2 text-xs"
+                  >
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Kode</p>
+                      <p className="font-bold text-gray-800">{d.kode}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Deskripsi</p>
+                      <p className="font-medium text-gray-700">{d.deskripsi}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Qty Druk</p>
+                      <p className="font-bold text-red-600">
+                        {fmtQty(d.qty_tambah_bahan_druk)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 mb-0.5">Qty LP</p>
+                      <p className="font-bold text-red-600">
+                        {fmtQty(d.qty_tambah_bahan_lp)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Alur tiket */}
           <div className="bg-gray-50 rounded-xl p-4">
             <h4 className="text-sm font-semibold text-gray-700 mb-3">
@@ -397,44 +495,6 @@ function DetailModal({
               })}
             </div>
           </div>
-
-          {/* Defect */}
-          {defects.length > 0 && (
-            <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-              <h4 className="text-xs font-semibold text-red-700 mb-3">
-                Defect ({defects.length})
-              </h4>
-              <div className="space-y-1.5">
-                {defects.map((d: any) => (
-                  <div
-                    key={d.id}
-                    className="bg-white rounded-lg border border-red-200 grid grid-cols-2 sm:grid-cols-4 gap-2 px-3 py-2 text-xs"
-                  >
-                    <div>
-                      <p className="text-gray-400 mb-0.5">Kode</p>
-                      <p className="font-bold text-gray-800">{d.kode}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 mb-0.5">Deskripsi</p>
-                      <p className="font-medium text-gray-700">{d.deskripsi}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 mb-0.5">Qty Druk</p>
-                      <p className="font-bold text-red-600">
-                        {fmtQty(d.qty_tambah_bahan_druk)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 mb-0.5">Qty LP</p>
-                      <p className="font-bold text-red-600">
-                        {fmtQty(d.qty_tambah_bahan_lp)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="px-6 py-4 bg-gray-50 rounded-b-2xl flex justify-end flex-shrink-0">
@@ -450,7 +510,7 @@ function DetailModal({
   );
 }
 
-// ─── Panel per tab (filter + tabel + pagination) ──────────────────────────────
+// ─── Panel per tab (filter + top defect + tabel) ──────────────────────────────
 
 function TambahBahanPanel({ type }: { type: TabType }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -465,6 +525,7 @@ function TambahBahanPanel({ type }: { type: TabType }) {
   const [applied, setApplied] = useState<Filters>(draft);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [detailId, setDetailId] = useState<number | null>(null);
+  const [sort, setSort] = useState<SortState | null>(null);
 
   const fetchData = useCallback(async () => {
     const url = `${import.meta.env.VITE_API_LINK}${ENDPOINT[type]}`;
@@ -482,6 +543,7 @@ function TambahBahanPanel({ type }: { type: TabType }) {
       setIsLoading(true);
       const res = await axios.get(url, { params, withCredentials: true });
       setRows(normalizeList(res.data));
+      console.log('fetchData', type, params, normalizeList(res.data));
     } catch (err) {
       console.error(err);
       setRows([]);
@@ -493,6 +555,59 @@ function TambahBahanPanel({ type }: { type: TabType }) {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // klik: asc → desc → kembali ke urutan asli
+  const handleSort = (key: string) => {
+    setSort((prev) => {
+      if (prev?.key !== key) return { key, dir: 'asc' };
+      if (prev.dir === 'asc') return { key, dir: 'desc' };
+      return null;
+    });
+  };
+
+  const sortedRows = useMemo(() => {
+    if (!sort) return rows;
+    const getVal = SORT_VALUE[sort.key];
+    if (!getVal) return rows;
+    const mul = sort.dir === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const va = getVal(a, type);
+      const vb = getVal(b, type);
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1; // kosong selalu di bawah
+      if (vb == null) return -1;
+      if (typeof va === 'string' && typeof vb === 'string') {
+        return va.localeCompare(vb, 'id', { numeric: true }) * mul;
+      }
+      return ((va as number) - (vb as number)) * mul;
+    });
+  }, [rows, sort, type]);
+
+  // Top 5 defect (diagregasi dari data yang sedang tampil)
+  const topDefects = useMemo(() => {
+    const map = new Map<
+      string,
+      { kode: string; deskripsi: string; druk: number; lp: number }
+    >();
+    rows.forEach((row) =>
+      getDefects(row, type).forEach((d) => {
+        const key = d.kode ?? '-';
+        const cur = map.get(key) ?? {
+          kode: d.kode ?? '-',
+          deskripsi: d.deskripsi ?? '',
+          druk: 0,
+          lp: 0,
+        };
+        cur.druk += d.qty_tambah_bahan_druk ?? 0;
+        cur.lp += d.qty_tambah_bahan_lp ?? 0;
+        map.set(key, cur);
+      }),
+    );
+    return [...map.values()]
+      .map((x) => ({ ...x, total: x.druk + x.lp }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5);
+  }, [rows, type]);
 
   const setDate = (key: string, field: 'start' | 'end', value: string) => {
     setDraft((prev) => ({
@@ -516,6 +631,7 @@ function TambahBahanPanel({ type }: { type: TabType }) {
     f.status = STATUS_OPTIONS[type][0];
     setDraft(f);
     setApplied(f);
+    setSort(null);
   };
 
   const dateFilters = DATE_FILTERS[type];
@@ -680,6 +796,67 @@ function TambahBahanPanel({ type }: { type: TabType }) {
         </div>
       </div>
 
+      {/* ── Top 5 Defect ── */}
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden mb-4">
+        <div className="bg-gradient-to-r from-red-500 to-rose-600 p-3 sm:p-4">
+          <h3 className="text-white text-base sm:text-lg font-bold">
+            Top 5 Defect
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs sm:text-sm">
+            <thead className="bg-white">
+              <tr className="text-left text-xs font-semibold text-gray-600">
+                <th className="p-2 sm:p-3">#</th>
+                <th className="p-2 sm:p-3">Kode</th>
+                <th className="p-2 sm:p-3">Deskripsi</th>
+                <th className="p-2 sm:p-3 text-right">Qty Druk</th>
+                <th className="p-2 sm:p-3 text-right">Qty LP</th>
+                <th className="p-2 sm:p-3 text-right">Total Defect</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topDefects.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="p-6 text-center text-gray-500 text-sm"
+                  >
+                    Tidak ada defect
+                  </td>
+                </tr>
+              ) : (
+                topDefects.map((d, i) => (
+                  <tr
+                    key={d.kode}
+                    className="border-b hover:bg-red-50 transition-colors"
+                  >
+                    <td className="p-2 sm:p-3 text-xs text-gray-500">
+                      {i + 1}
+                    </td>
+                    <td className="p-2 sm:p-3 text-xs font-bold text-gray-800">
+                      {d.kode}
+                    </td>
+                    <td className="p-2 sm:p-3 text-xs text-gray-700">
+                      {d.deskripsi || '-'}
+                    </td>
+                    <td className="p-2 sm:p-3 text-xs text-right">
+                      {fmtQty(d.druk)}
+                    </td>
+                    <td className="p-2 sm:p-3 text-xs text-right">
+                      {fmtQty(d.lp)}
+                    </td>
+                    <td className="p-2 sm:p-3 text-xs text-right font-bold text-red-600">
+                      {fmtQty(d.total)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* ── Table ── */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="bg-gradient-to-r from-violet-500 to-purple-600 p-3 sm:p-4 flex flex-wrap items-center justify-between gap-2">
@@ -700,29 +877,77 @@ function TambahBahanPanel({ type }: { type: TabType }) {
             <thead className="bg-white sticky top-0 z-10">
               <tr className="text-left text-xs font-semibold text-gray-600">
                 <th className="p-2 sm:p-3 whitespace-nowrap">No</th>
-                <th className="p-2 sm:p-3 whitespace-nowrap">No JO</th>
-                <th className="p-2 sm:p-3 whitespace-nowrap">Kertas</th>
-                <th className="p-2 sm:p-3 whitespace-nowrap">Qty Request</th>
+                <SortTh
+                  label="No JO"
+                  k="no_jo"
+                  sort={sort}
+                  onSort={handleSort}
+                />
+                <SortTh
+                  label="Kertas"
+                  k="nama_kertas"
+                  sort={sort}
+                  onSort={handleSort}
+                />
+                <SortTh
+                  label="Qty Request"
+                  k="qty_request"
+                  sort={sort}
+                  onSort={handleSort}
+                />
                 {type === 'persiapan' && (
-                  <th className="p-2 sm:p-3 whitespace-nowrap">Qty Pakai</th>
+                  <SortTh
+                    label="Qty Pakai"
+                    k="qty_pakai"
+                    sort={sort}
+                    onSort={handleSort}
+                  />
                 )}
-                <th className="p-2 sm:p-3 whitespace-nowrap">Status</th>
-                <th className="p-2 sm:p-3 whitespace-nowrap">Tgl Request</th>
-                <th className="p-2 sm:p-3 whitespace-nowrap">Tgl QC</th>
-                <th className="p-2 sm:p-3 whitespace-nowrap">Tgl Gudang</th>
+                <SortTh
+                  label="Defect"
+                  k="defect"
+                  sort={sort}
+                  onSort={handleSort}
+                />
+                <SortTh
+                  label="Tgl Request"
+                  k="tgl_request"
+                  sort={sort}
+                  onSort={handleSort}
+                />
+                <SortTh
+                  label="Tgl QC"
+                  k="tgl_qc"
+                  sort={sort}
+                  onSort={handleSort}
+                />
+                <SortTh
+                  label="Tgl Gudang"
+                  k="tgl_gudang"
+                  sort={sort}
+                  onSort={handleSort}
+                />
                 {type === 'persiapan' && (
                   <>
-                    <th className="p-2 sm:p-3 whitespace-nowrap">Tgl Pakai</th>
-                    <th className="p-2 sm:p-3 whitespace-nowrap">
-                      Tgl QC Pemakaian
-                    </th>
+                    <SortTh
+                      label="Tgl Pakai"
+                      k="tgl_pakai"
+                      sort={sort}
+                      onSort={handleSort}
+                    />
+                    <SortTh
+                      label="Tgl QC Pemakaian"
+                      k="tgl_qc_pemakaian"
+                      sort={sort}
+                      onSort={handleSort}
+                    />
                   </>
                 )}
                 <th className="p-2 sm:p-3 whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 ? (
+              {sortedRows.length === 0 ? (
                 <tr>
                   <td
                     colSpan={colCount + 1}
@@ -732,12 +957,13 @@ function TambahBahanPanel({ type }: { type: TabType }) {
                   </td>
                 </tr>
               ) : (
-                rows.map((row: any, i: number) => {
+                sortedRows.map((row: any, i: number) => {
                   const rowBg = row.status?.startsWith('reject')
                     ? 'bg-red-50'
                     : row.status === 'done'
                     ? 'bg-green-50'
                     : '';
+                  const defs = getDefects(row, type);
                   return (
                     <tr
                       key={row.id}
@@ -777,7 +1003,27 @@ function TambahBahanPanel({ type }: { type: TabType }) {
                         </td>
                       )}
                       <td className="p-2 sm:p-3 text-xs">
-                        <StatusBadge status={row.status} />
+                        {defs.length === 0 ? (
+                          <span className="text-gray-400">-</span>
+                        ) : (
+                          <div className="space-y-1 min-w-[160px] max-h-24 overflow-y-auto">
+                            {defs.map((d: any) => (
+                              <div
+                                key={d.id}
+                                className="flex items-center justify-between gap-2 bg-red-50 border border-red-200 rounded px-2 py-0.5"
+                                title={d.deskripsi}
+                              >
+                                <span className="font-bold text-gray-800">
+                                  {d.kode}
+                                </span>
+                                <span className="text-[10px] text-red-600 font-semibold whitespace-nowrap">
+                                  D: {fmtQty(d.qty_tambah_bahan_druk)} · LP:{' '}
+                                  {fmtQty(d.qty_tambah_bahan_lp)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </td>
                       <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
                         {fmtDateTime(row.tgl_request)}
@@ -821,11 +1067,11 @@ function TambahBahanPanel({ type }: { type: TabType }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 function TambahBahanMonitoring() {
-  const [tab, setTab] = useState<TabType>('persiapan');
+  const [tab, setTab] = useState<TabType>('pemakaian');
 
   const tabs: { key: TabType; label: string }[] = [
-    { key: 'persiapan', label: 'Persiapan' },
     { key: 'pemakaian', label: 'Pemakaian' },
+    { key: 'persiapan', label: 'Persiapan' },
   ];
 
   return (
@@ -866,7 +1112,7 @@ function TambahBahanMonitoring() {
         </div>
       </div>
 
-      {/* key={tab} → state filter/pagination dipisah dan di-reset per tab */}
+      {/* key={tab} → state filter/sort dipisah dan di-reset per tab */}
       <TambahBahanPanel key={tab} type={tab} />
     </main>
   );
