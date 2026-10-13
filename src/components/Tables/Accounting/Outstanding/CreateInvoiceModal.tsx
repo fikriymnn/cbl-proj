@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import { getDocTaxType } from './Doctax'; // sesuaikan path
 
 interface DOItem {
   id: number;
@@ -60,6 +61,14 @@ interface DepositSaldoResponse {
     nama_customer: string;
     saldo: number;
   };
+}
+
+interface InvoiceNumberResponse {
+  status: number;
+  success: boolean;
+  no_invoice_tax?: string;
+  no_invoice_tax_new?: string;
+  no_invoice_non_tax_new?: string;
 }
 
 interface CreateInvoiceModalProps {
@@ -225,9 +234,21 @@ const addDaysToInputDate = (dateStr: string, days: number): string => {
 /* ---------------------------------------------------------------------------
  * Amount helper — one single formula for DPP / PPN so the numbers stay
  * consistent both on initial load and after changing the discount.
+ *
+ * TAX     : dpp = 11/12 * total, pajak = dpp * 12%
+ * NON TAX : tanpa PPN → pajak = 0, dpp = total
+ *           (SubTotal == Total sebelum DP, Balance Due = SubTotal - DP)
  * ------------------------------------------------------------------------- */
-const computeAmounts = (qty: number, harga: number, diskon: number) => {
+const computeAmounts = (
+  qty: number,
+  harga: number,
+  diskon: number,
+  isTax: boolean,
+) => {
   const total = qty * harga - diskon;
+  if (!isTax) {
+    return { total, dpp: total, pajak: 0 };
+  }
   const dpp = (11 / 12) * total;
   const pajak = dpp * 0.12;
   return { total, dpp, pajak };
@@ -257,6 +278,10 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   const [isShowDPP, setIsShowDPP] = useState<boolean>(false);
   const [dp, setDP] = useState<number>(0);
   const [tglKirimError, setTglKirimError] = useState<string>('');
+
+  // Tax / non tax (ditentukan dari format no DO)
+  const [isTax, setIsTax] = useState<boolean>(false);
+  const [taxError, setTaxError] = useState<string>('');
 
   // Deposit modal state
   const [isDepositModalOpen, setIsDepositModalOpen] = useState<boolean>(false);
@@ -294,9 +319,12 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
     }
   }, [isOpen]);
 
-  const fetchInvoiceNumber = async (tglKirimValue: string) => {
+  const fetchInvoiceNumber = async (
+    tglKirimValue: string,
+    isTaxValue: boolean,
+  ) => {
     try {
-      const res = await axios.get(
+      const res = await axios.get<InvoiceNumberResponse>(
         `${import.meta.env.VITE_API_LINK}/invoiceNomor`,
         {
           params: { tgl_kirim: tglKirimValue },
@@ -304,7 +332,12 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         },
       );
       console.log('Invoice number response:', res.data);
-      setInvoiceNumber(res.data.new_no_invoice || '');
+
+      const newNo = isTaxValue
+        ? res.data.no_invoice_tax_new
+        : res.data.no_invoice_non_tax_new;
+
+      setInvoiceNumber(newNo || '');
     } catch (error) {
       console.error('Error fetching invoice number:', error);
       setInvoiceNumber('');
@@ -352,6 +385,26 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         .join(', ');
       setNoDO(allDONumbers || firstItem.no_do || '');
 
+      // Cek tax / non tax berdasarkan format no DO
+      const types = selectedDOItems.map((item: any) =>
+        getDocTaxType(item.no_do),
+      );
+      const hasUnknown = types.some((t) => t === null);
+      const hasMixed = new Set(types).size > 1;
+
+      let taxErr = '';
+      if (hasUnknown) {
+        taxErr =
+          'Format nomor DO tidak dikenali (harus SD00000/XXX/0000 untuk Tax atau SD00000-0000 untuk Non Tax).';
+      } else if (hasMixed) {
+        taxErr = 'DO Tax dan Non Tax tidak boleh digabung dalam satu invoice.';
+      }
+      const taxValue = types[0] === 'tax';
+      setIsTax(taxValue);
+      setTaxError(taxErr);
+      // Non tax: tidak ada DPP / PPN
+      if (!taxValue) setIsShowDPP(false);
+
       // Tanggal kirim (mandatory) — also drives tanggal faktur & nomor invoice
       const kirim = formatDateForInput(firstItem.tgl_do || '');
       setTglKirim(kirim);
@@ -366,7 +419,11 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         );
       } else {
         setTglKirimError('');
-        fetchInvoiceNumber(kirim);
+        if (taxErr) {
+          setInvoiceNumber('');
+        } else {
+          fetchInvoiceNumber(kirim, taxValue);
+        }
       }
 
       setPelanggan(firstItem.customer || '');
@@ -377,13 +434,13 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       const top = parseInt(firstItem.detail_customer?.top_faktur, 10);
       setTopDays(Number.isNaN(top) ? 30 : top);
 
-      processProducts(selectedDOItems);
+      processProducts(selectedDOItems, taxValue);
     } catch (error) {
       console.error('Error processing data from selected items:', error);
     }
   };
 
-  const processProducts = (items: DOItem[]) => {
+  const processProducts = (items: DOItem[], taxValue: boolean) => {
     const products: InvoiceProduct[] = [];
 
     items.forEach((item: any) => {
@@ -398,6 +455,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
             qty,
             harga,
             diskonProduk,
+            taxValue,
           );
 
           const product: InvoiceProduct = {
@@ -425,6 +483,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
             qty,
             harga,
             diskonProduk,
+            taxValue,
           );
 
           const product: InvoiceProduct = {
@@ -455,6 +514,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       product.qty,
       product.harga,
       value,
+      isTax,
     );
 
     updatedProducts[index] = {
@@ -485,6 +545,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       (sum, product) => sum + product.diskon_produk,
       0,
     );
+    // Non tax: totalPajak = 0 → grossTotal == subTotal
     const grossTotal = subTotal + totalPajak; // total invoice before DP
     const balanceDue = grossTotal - dp;
 
@@ -550,6 +611,10 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
   };
 
   const handleSubmit = async () => {
+    if (taxError) {
+      alert(taxError);
+      return;
+    }
     if (!tglKirim) {
       alert('Tanggal kirim wajib ada. Invoice tidak dapat dibuat.');
       return;
@@ -565,6 +630,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         nama_customer: pelanggan,
         no_po: noPO,
         no_invoice: invoiceNumber,
+        is_tax: isTax, // true = tax, false = non tax
         tgl_po: tglPO,
         no_do: noDO,
         tgl_kirim: tglKirim,
@@ -575,12 +641,12 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
         sub_total: totals.subTotal,
         dpp: totals.totalDPP,
         diskon: totals.diskon,
-        ppn: totals.totalPajak,
+        ppn: totals.totalPajak, // non tax = 0
         total: totals.balanceDue,
         balance_due: totals.balanceDue,
         dp: dp,
         note: catatan,
-        is_show_dpp: isShowDPP,
+        is_show_dpp: isTax ? isShowDPP : false,
         invoice_produk: invoiceProducts,
         delivery_order_group: buildDeliveryOrderGroup(),
       };
@@ -644,6 +710,12 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
           {tglKirimError && (
             <div className="mb-3 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-xs">
               {tglKirimError}
+            </div>
+          )}
+
+          {taxError && (
+            <div className="mb-3 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-xs">
+              {taxError}
             </div>
           )}
 
@@ -715,6 +787,15 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
                     Nomor Sales Invoice
+                    <span
+                      className={`ml-1.5 px-1.5 py-0.5 rounded text-[10px] ${
+                        isTax
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      {isTax ? 'TAX' : 'NON TAX'}
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -824,25 +905,29 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                           <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
                             Harga
                           </th>
-                          <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
-                            DPP
-                          </th>
+                          {isTax && (
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
+                              DPP
+                            </th>
+                          )}
                           <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
                             Diskon
                           </th>
                           <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
                             Total
                           </th>
-                          <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
-                            Pajak
-                          </th>
+                          {isTax && (
+                            <th className="px-2 py-1.5 text-left text-xs font-medium text-gray-500">
+                              Pajak
+                            </th>
+                          )}
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {invoiceProducts.length === 0 ? (
                           <tr>
                             <td
-                              colSpan={8}
+                              colSpan={isTax ? 8 : 6}
                               className="px-3 py-4 text-center text-gray-500 text-xs"
                             >
                               No products available
@@ -866,9 +951,11 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                               <td className="px-2 py-1.5 text-xs text-gray-900">
                                 {formatNumber(product.harga)}
                               </td>
-                              <td className="px-2 py-1.5 text-xs text-gray-900">
-                                {formatNumber(Math.round(product.dpp))}
-                              </td>
+                              {isTax && (
+                                <td className="px-2 py-1.5 text-xs text-gray-900">
+                                  {formatNumber(Math.round(product.dpp))}
+                                </td>
+                              )}
                               <td className="px-2 py-1.5 text-xs">
                                 <NumberInput
                                   value={product.diskon_produk}
@@ -881,9 +968,11 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                               <td className="px-2 py-1.5 text-xs text-gray-900">
                                 {formatNumber(Math.round(product.total))}
                               </td>
-                              <td className="px-2 py-1.5 text-xs text-gray-900">
-                                {formatNumber(Math.round(product.pajak))}
-                              </td>
+                              {isTax && (
+                                <td className="px-2 py-1.5 text-xs text-gray-900">
+                                  {formatNumber(Math.round(product.pajak))}
+                                </td>
+                              )}
                             </tr>
                           ))
                         )}
@@ -894,17 +983,19 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
 
                 {/* Summary */}
                 <div className="bg-gray-50 rounded p-3 space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={isShowDPP}
-                      onChange={(e) => setIsShowDPP(e.target.checked)}
-                      className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded"
-                    />
-                    <span className="text-xs font-medium text-gray-700">
-                      Tampilkan DPP (for display only)
-                    </span>
-                  </div>
+                  {isTax && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={isShowDPP}
+                        onChange={(e) => setIsShowDPP(e.target.checked)}
+                        className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded"
+                      />
+                      <span className="text-xs font-medium text-gray-700">
+                        Tampilkan DPP (for display only)
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-gray-700">
                       SubTotal
@@ -914,14 +1005,16 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-700">
-                      DPP (Data)
-                    </span>
-                    <span className="text-xs text-gray-900">
-                      {formatNumber(Math.round(totals.totalDPP))}
-                    </span>
-                  </div>
+                  {isTax && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700">
+                        DPP (Data)
+                      </span>
+                      <span className="text-xs text-gray-900">
+                        {formatNumber(Math.round(totals.totalDPP))}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-gray-700">
@@ -932,14 +1025,16 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-700">
-                      PPn
-                    </span>
-                    <span className="text-xs text-gray-900">
-                      {formatNumber(Math.round(totals.totalPajak))}
-                    </span>
-                  </div>
+                  {isTax && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700">
+                        PPn
+                      </span>
+                      <span className="text-xs text-gray-900">
+                        {formatNumber(Math.round(totals.totalPajak))}
+                      </span>
+                    </div>
+                  )}
 
                   {/* DP — filled via the Deposit modal */}
                   <div className="flex items-center justify-between gap-2">
@@ -1003,7 +1098,8 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               loading ||
               invoiceProducts.length === 0 ||
               !tglKirim ||
-              !invoiceNumber
+              !invoiceNumber ||
+              !!taxError
             }
             className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >

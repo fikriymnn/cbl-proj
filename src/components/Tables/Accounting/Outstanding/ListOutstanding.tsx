@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
 import CreateInvoiceModal from './CreateInvoiceModal';
+import { getDocTaxType } from './Doctax'; // sesuaikan path
 
 interface DOItem {
   tgl_do: string;
@@ -94,6 +95,10 @@ const ListOutstanding: React.FC = () => {
   const [selectedDOGroups, setSelectedDOGroups] = useState<number[]>([]);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(false);
 
+  // Tipe (tax / non tax) dari item yang sedang dipilih
+  const selectedTaxType =
+    selectedItems.length > 0 ? getDocTaxType(selectedItems[0].no_do) : null;
+
   useEffect(() => {
     fetchDOData();
   }, [page, searchTerm, limit, statusFilter]);
@@ -140,6 +145,10 @@ const ListOutstanding: React.FC = () => {
     setPage(1);
   };
 
+  const isItemDisabled = (item: DOItem): boolean =>
+    (selectedCustomerId !== null && selectedCustomerId !== item.id_customer) ||
+    (selectedTaxType !== null && getDocTaxType(item.no_do) !== selectedTaxType);
+
   const handleCheckboxChange = (item: DOItem) => {
     const isSelected = selectedItems.some(
       (selected) => selected.id === item.id,
@@ -170,6 +179,15 @@ const ListOutstanding: React.FC = () => {
           setSelectedDOGroups([item.id_do_group]);
         }
       } else if (selectedCustomerId === item.id_customer) {
+        const itemType = getDocTaxType(item.no_do);
+        if (selectedTaxType && itemType !== selectedTaxType) {
+          alert(
+            `Tidak bisa mencampur DO Tax dan Non Tax dalam satu invoice. Saat ini dipilih: ${
+              selectedTaxType === 'tax' ? 'TAX' : 'NON TAX'
+            }`,
+          );
+          return;
+        }
         const newSelected = [...selectedItems, item];
         setSelectedItems(newSelected);
         setSelectedDOItems(newSelected);
@@ -243,6 +261,22 @@ const ListOutstanding: React.FC = () => {
         }`}
       >
         {status.toUpperCase()}
+      </span>
+    );
+  };
+
+  const getTaxBadge = (noDo: string) => {
+    const type = getDocTaxType(noDo);
+    if (!type) return null;
+    return (
+      <span
+        className={`ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${
+          type === 'tax'
+            ? 'bg-blue-100 text-blue-700'
+            : 'bg-gray-200 text-gray-700'
+        }`}
+      >
+        {type === 'tax' ? 'TAX' : 'NON TAX'}
       </span>
     );
   };
@@ -336,6 +370,8 @@ const ListOutstanding: React.FC = () => {
           <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm">
             {selectedItems.length} item(s) selected from Customer ID:{' '}
             {selectedCustomerId}
+            {selectedTaxType &&
+              ` • ${selectedTaxType === 'tax' ? 'TAX' : 'NON TAX'}`}
           </div>
         )}
 
@@ -421,9 +457,7 @@ const ListOutstanding: React.FC = () => {
                   const isSelected = selectedItems.some(
                     (selected) => selected.id === item.id,
                   );
-                  const isDisabled =
-                    selectedCustomerId !== null &&
-                    selectedCustomerId !== item.id_customer;
+                  const isDisabled = isItemDisabled(item);
 
                   return (
                     <tr
@@ -445,6 +479,7 @@ const ListOutstanding: React.FC = () => {
                       )}
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                         {item.no_do || '-'}
+                        {getTaxBadge(item.no_do)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                         {item.no_io || '-'}
@@ -528,9 +563,7 @@ const ListOutstanding: React.FC = () => {
             const isSelected = selectedItems.some(
               (selected) => selected.id === item.id,
             );
-            const isDisabled =
-              selectedCustomerId !== null &&
-              selectedCustomerId !== item.id_customer;
+            const isDisabled = isItemDisabled(item);
 
             return (
               <div
@@ -563,6 +596,16 @@ const ListOutstanding: React.FC = () => {
                 </div>
 
                 <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-gray-500 text-xs font-medium">
+                      No DO:
+                    </span>
+                    <div className="text-gray-900 text-xs">
+                      {item.no_do || '-'}
+                      {getTaxBadge(item.no_do)}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <span className="text-gray-500 text-xs font-medium">

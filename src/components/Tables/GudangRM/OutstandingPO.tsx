@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 import Snackbar from '@mui/material/Snackbar';
@@ -11,6 +11,8 @@ import {
   PurchaseOrder,
   PurchaseOrderListResponse,
   PurchaseOrderDetailResponse,
+  PurchaseOrderBookingItem,
+  PurchaseOrderBookingDetailResponse,
 } from '../Purchasing/Types/Purchasing.types';
 import {
   formatDate,
@@ -18,46 +20,56 @@ import {
   getStatusColor,
   getStatusLabel,
 } from '../Purchasing/Types/poStatus';
+import {
+  POKind,
+  poBaseUrl,
+  getApiErrorMessage,
+} from '../Purchasing/Types/poApi';
+import POKindTabs from '../Purchasing/POKindTabs';
 
 /* =============================================================================
- * OutstandingPO — every PO with status 'approve finance' (list-level base
- * filter). On top of that, the filter card below exposes every param the
- * GET /purchasing/purchaseOrder endpoint accepts: status_po, id_vendor,
- * date ranges for tgl_po/tgl_kirim, and sort_by/sort_order. Each row
- * expands INLINE to show its items_jo instead of opening a modal.
+ * OutstandingPO — Gudang RM: PO yang sudah 'approve finance' dan menunggu
+ * barang datang. Dua sub tab level atas (kind):
  *
- * Filters follow a draft/applied pattern (same as PurchasingMonitoringPO):
- * whatever is typed/selected in the filter card is "draft" and only takes
- * effect once "Terapkan Filter" is clicked (or Enter in the search box) —
- * not on every keystroke/selection. "Applied" is the snapshot actually
- * sent to fetchData.
+ *   - PO Normal  -> GET /purchasing/purchaseOrder
+ *                   detail: items_jo (per JO)
+ *                   incoming payload: id_purchase_order + id_purchase_order_item_jo
+ *   - PO Booking -> GET /purchasing/purchaseOrderBooking
+ *                   detail: items (beli untuk stok, tanpa JO)
+ *                   incoming payload: id_purchase_order_booking_item
+ *                   (tanpa qty_idle — backend memaksa 0)
  *
- * Checkboxes on items_jo rows have NO restriction (any row, any
- * status_qc/status_po, can be checked) — the only thing that matters is
- * what the person decides to send to QC. Selection is tracked globally
- * (not per-PO), so items from several different POs can be checked at
- * once and sent to /qc/incomingRawMaterial in a single submission, since
- * each item in that payload already carries its own id_purchase_order.
+ * Di bawahnya tetap ada sub tab "Outstanding" / "Riwayat".
+ *   - PO Normal : Riwayat = status_tiket 'history' (perilaku lama).
+ *   - PO Booking: Outstanding = status_po 'progress', Riwayat = status_po 'done'
+ *                 (approve finance sudah otomatis status_tiket 'history', jadi
+ *                 status_po yang membedakan, sesuai dokumen flow 4.2).
  *
- * no_good_receipt for a single "incoming" submission is ALWAYS the same
- * across every item, and it is auto-generated (read-only) by calling
- * /qc/incomingRawMaterialNoGoodReceipt when the confirmation modal opens.
- * The person cannot type or edit it.
+ * Filter memakai pola draft/applied: nilai di filter card baru dipakai setelah
+ * "Terapkan Filter" (atau Enter di kolom cari).
  *
- * no_surat_jalan is ALSO always the same across every item in a single
- * submission, but unlike no_good_receipt it is free text — the person
- * types it once in the modal and it's applied to every item sent to the
- * backend (no per-row input/column for it).
+ * Checkbox item TIDAK dibatasi. Pilihan disimpan global dengan key `kind:id`
+ * sehingga item PO Normal dan PO Booking bisa dicentang bersamaan lalu dikirim
+ * dalam satu request ke /qc/incomingRawMaterial (dokumen flow 4.3 membolehkan
+ * campuran). Pilihan dibersihkan saat pindah Outstanding <-> Riwayat.
  *
- * status_qc on items_jo: null | "request qc" | "approve qc" | "reject qc"
- * status_po on items_jo: "progress" | "done"
+ * no_good_receipt satu untuk semua item (otomatis, read-only).
+ * no_surat_jalan satu untuk semua item (diketik sekali).
  * ========================================================================== */
 
-const EMPTY_TEXT = 'Tidak ada PO dengan status approve finance.';
-const EMPTY_HISTORY_TEXT = 'Belum ada riwayat PO.';
+const EMPTY_TEXT: Record<POKind, { outstanding: string; history: string }> = {
+  po: {
+    outstanding: 'Tidak ada PO dengan status approve finance.',
+    history: 'Belum ada riwayat PO.',
+  },
+  booking: {
+    outstanding: 'Tidak ada PO Booking yang menunggu barang datang.',
+    history: 'Belum ada riwayat PO Booking.',
+  },
+};
 
-// status_po values accepted by GET /purchasing/purchaseOrder's status_po
-// filter param ("untuk filter monitoring po isinya").
+// status_po yang diterima GET /purchasing/purchaseOrder (hanya PO Normal;
+// untuk PO Booking status_po ditentukan oleh sub tab Outstanding/Riwayat).
 const STATUS_PO_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: '', label: 'Semua' },
   { value: 'progress', label: 'Progress' },
@@ -66,7 +78,7 @@ const STATUS_PO_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: 'cancel', label: 'Dibatalkan' },
 ];
 
-// sort_by accepts empty (unsorted), createdAt, tgl_po, or tgl_kirim.
+// sort_by: kosong (tanpa urutan), createdAt, tgl_po, atau tgl_kirim.
 const SORT_BY_OPTIONS: { value: string; label: string }[] = [
   { value: '', label: '- Tidak diurutkan -' },
   { value: 'createdAt', label: 'Created At' },
@@ -79,10 +91,6 @@ interface VendorOption {
   nama_vendor: string;
 }
 
-// Everything GET /purchasing/purchaseOrder's list filter accepts, besides
-// pagination (page/limit) which is tracked separately. Kept as one shape
-// so "draft" (what's currently typed/selected) and "applied" (what the
-// last fetch actually used) can be plain snapshots of the same type.
 interface OutstandingFilters {
   search: string;
   statusPo: string;
@@ -112,6 +120,8 @@ interface RawMasterBarangRef {
   pajak?: number;
   kode_barang?: string;
 }
+
+// Bentuk mentah items_jo (PO Normal).
 interface OutstandingItemJo {
   id: number;
   id_jo: number;
@@ -135,9 +145,59 @@ interface OutstandingItemJo {
   master_barang?: RawMasterBarangRef;
 }
 
+// Bentuk seragam untuk tabel item, baik dari items_jo maupun item booking.
+interface OutstandingItem {
+  id: number; // id items_jo (PO Normal) / id item booking (PO Booking)
+  no_jo: string; // kosong untuk PO Booking
+  kode_barang: string;
+  nama_item: string;
+  tipe_barang: string;
+  satuan: string;
+  qty_po: number; // PO Booking: qty_beli
+  qty_terkirim: number;
+  qty_sisa: number;
+  status_qc: 'request qc' | 'approve qc' | 'reject qc' | null;
+  status_po: 'progress' | 'done';
+}
+
+const normalizeJoItem = (it: OutstandingItemJo): OutstandingItem => ({
+  id: it.id,
+  no_jo: it.no_jo,
+  kode_barang: it.master_barang?.kode_barang || '',
+  nama_item: it.nama_item,
+  tipe_barang: it.tipe_barang,
+  satuan: it.satuan,
+  qty_po: it.qty_po,
+  qty_terkirim: it.qty_terkirim,
+  qty_sisa: it.qty_sisa,
+  status_qc: it.status_qc,
+  status_po: it.status_po,
+});
+
+const normalizeBookingItem = (
+  it: PurchaseOrderBookingItem,
+): OutstandingItem => ({
+  id: it.id,
+  no_jo: '',
+  kode_barang: it.master_barang?.kode_barang || it.kode_barang || '',
+  nama_item: it.nama_item,
+  tipe_barang: it.tipe_barang,
+  satuan: it.satuan,
+  qty_po: it.qty_beli,
+  qty_terkirim: it.qty_terkirim ?? 0,
+  qty_sisa: it.qty_sisa ?? 0,
+  status_qc: it.status_qc ?? null,
+  status_po: it.status_po ?? 'progress',
+});
+
+// Key unik lintas kind — id PO / id item bisa sama antara PO Normal dan Booking.
+const rowKey = (kind: POKind, id: number): string => `${kind}:${id}`;
+
 interface SelectedRow {
-  id: number; // items_jo id
-  id_purchase_order: number;
+  key: string;
+  kind: POKind;
+  id: number; // id items_jo / id item booking
+  id_purchase_order: number; // id PO (PO Normal) / id PO Booking
   no_purchase_order: string;
   no_jo: string;
   nama_item: string;
@@ -147,9 +207,11 @@ interface SelectedRow {
 }
 
 interface IncomingFormRow {
+  key: string;
+  kind: POKind;
   id_purchase_order: number;
   no_purchase_order: string;
-  id_purchase_order_item_jo: number;
+  item_id: number; // id items_jo / id item booking
   no_jo: string;
   nama_item: string;
   satuan: string;
@@ -190,25 +252,22 @@ const statusQcLabel = (status: string | null): string => {
 };
 
 // =============================================================================
-// Incoming submission popup — the ONLY modal in this page. Rows can span
-// multiple POs; each keeps its own id_purchase_order for the payload.
-// no_good_receipt is fetched once, shared by every row, and read-only.
-// no_surat_jalan is typed once by the person and shared by every row too —
-// there's no per-row field/column for either one.
+// Popup konfirmasi incoming — satu-satunya modal di halaman ini. Baris boleh
+// berasal dari banyak PO dan campuran PO Normal + PO Booking.
 // =============================================================================
 const IncomingFormModal: React.FC<{
   rows: IncomingFormRow[];
   onClose: () => void;
-  onSubmitted: (submittedIds: number[]) => void;
+  onSubmitted: (submittedKeys: string[]) => void;
 }> = ({ rows: initialRows, onClose, onSubmitted }) => {
   const [rows, setRows] = useState<IncomingFormRow[]>(initialRows);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // Free text, shared across every item in this submission.
+  // Teks bebas, berlaku untuk semua item.
   const [noSuratJalan, setNoSuratJalan] = useState<string>('');
 
-  // Auto-generated, read-only, shared across every item in this submission.
+  // Otomatis, read-only, berlaku untuk semua item.
   const [noGoodReceipt, setNoGoodReceipt] = useState<string>('');
   const [loadingGoodReceipt, setLoadingGoodReceipt] = useState<boolean>(true);
   const [goodReceiptError, setGoodReceiptError] = useState<string>('');
@@ -243,7 +302,9 @@ const IncomingFormModal: React.FC<{
       prev.map((r, i) => {
         if (i !== idx) return r;
         const updated = { ...r, ...patch };
-        if (!updated.ada_idle) updated.qty_idle = 0;
+        // PO Booking tidak punya qty idle (backend memaksa 0).
+        if (!updated.ada_idle || updated.kind === 'booking')
+          updated.qty_idle = 0;
         return updated;
       }),
     );
@@ -259,7 +320,7 @@ const IncomingFormModal: React.FC<{
   );
 
   const poCount = useMemo(
-    () => new Set(rows.map((r) => r.id_purchase_order)).size,
+    () => new Set(rows.map((r) => rowKey(r.kind, r.id_purchase_order))).size,
     [rows],
   );
 
@@ -272,7 +333,7 @@ const IncomingFormModal: React.FC<{
     for (const r of rows) {
       if (r.qty_incoming <= 0)
         return `Jumlah datang untuk "${r.nama_item}" harus lebih dari 0.`;
-      if (r.ada_idle && r.qty_idle < 0)
+      if (r.kind === 'po' && r.ada_idle && r.qty_idle < 0)
         return `Jumlah idle untuk "${r.nama_item}" tidak boleh negatif.`;
       if (r.qty_pallet < 0)
         return `Qty pallet untuk "${r.nama_item}" tidak boleh negatif.`;
@@ -293,22 +354,39 @@ const IncomingFormModal: React.FC<{
       await axios.post(
         url,
         {
-          items: rows.map((r) => ({
-            id_purchase_order: r.id_purchase_order,
-            id_purchase_order_item_jo: r.id_purchase_order_item_jo,
-            no_surat_jalan: noSuratJalan.trim(),
-            no_good_receipt: noGoodReceipt,
-            qty_incoming: r.qty_incoming,
-            qty_idle: r.ada_idle ? r.qty_idle : 0,
-            qty_pallet: r.qty_pallet,
-          })),
+          items: rows.map((r) =>
+            r.kind === 'booking'
+              ? {
+                  // PO Booking: id_purchase_order_booking diisi backend,
+                  // qty_idle dipaksa 0 oleh backend.
+                  id_purchase_order_booking_item: r.item_id,
+                  no_surat_jalan: noSuratJalan.trim(),
+                  no_good_receipt: noGoodReceipt,
+                  qty_incoming: r.qty_incoming,
+                  qty_pallet: r.qty_pallet,
+                }
+              : {
+                  id_purchase_order: r.id_purchase_order,
+                  id_purchase_order_item_jo: r.item_id,
+                  no_surat_jalan: noSuratJalan.trim(),
+                  no_good_receipt: noGoodReceipt,
+                  qty_incoming: r.qty_incoming,
+                  qty_idle: r.ada_idle ? r.qty_idle : 0,
+                  qty_pallet: r.qty_pallet,
+                },
+          ),
         },
         { withCredentials: true },
       );
-      onSubmitted(rows.map((r) => r.id_purchase_order_item_jo));
+      onSubmitted(rows.map((r) => r.key));
     } catch (err) {
       console.error('Error submitting incoming raw material:', err);
-      setError('Gagal mengirim data incoming. Silakan coba lagi.');
+      setError(
+        getApiErrorMessage(
+          err,
+          'Gagal mengirim data incoming. Silakan coba lagi.',
+        ),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -334,8 +412,6 @@ const IncomingFormModal: React.FC<{
         </span>
       </DialogTitle>
       <DialogContent>
-        {/* Shared fields for the whole submission: No Good Receipt
-            (auto-generated, read-only) and No Surat Jalan (free text). */}
         <div className="flex flex-wrap items-start gap-3 mb-4 mt-1 bg-teal-50 border border-teal-100 rounded-lg px-3 py-2.5">
           <div className="flex-1 min-w-[220px]">
             <label className="block text-[11px] font-medium text-teal-700 mb-1">
@@ -405,74 +481,102 @@ const IncomingFormModal: React.FC<{
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {rows.map((r, idx) => (
-                <tr key={r.id_purchase_order_item_jo}>
-                  <td className="px-3 py-2.5 align-top text-xs font-semibold text-slate-500">
-                    {r.no_purchase_order}
-                  </td>
-                  <td className="px-3 py-2.5 align-top">
-                    <div className="text-xs font-semibold text-teal-700">
-                      {r.no_jo}
-                    </div>
-                    <div className="text-sm text-slate-700">{r.nama_item}</div>
-                    <div className="text-[11px] text-slate-400">
-                      Sisa kebutuhan: {formatQty(r.qty_sisa)} {r.satuan}
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5 align-top text-center">
-                    <input
-                      type="number"
-                      min={0}
-                      value={r.qty_incoming}
-                      onChange={(e) =>
-                        patchRow(idx, {
-                          qty_incoming: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      className="w-24 px-2.5 py-1.5 text-sm text-right border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </td>
-                  <td className="px-3 py-2.5 align-top">
-                    <select
-                      value={r.ada_idle ? 'ya' : 'tidak'}
-                      onChange={(e) =>
-                        patchRow(idx, { ada_idle: e.target.value === 'ya' })
-                      }
-                      className="w-24 px-2 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    >
-                      <option value="tidak">Tidak</option>
-                      <option value="ya">Ya</option>
-                    </select>
-                  </td>
-                  <td className="px-3 py-2.5 align-top text-center">
-                    <input
-                      type="number"
-                      min={0}
-                      disabled={!r.ada_idle}
-                      value={r.qty_idle}
-                      onChange={(e) =>
-                        patchRow(idx, {
-                          qty_idle: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      className="w-24 px-2.5 py-1.5 text-sm text-right border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-slate-100 disabled:text-slate-400"
-                    />
-                  </td>
-                  <td className="px-3 py-2.5 align-top text-center">
-                    <input
-                      type="number"
-                      min={0}
-                      value={r.qty_pallet}
-                      onChange={(e) =>
-                        patchRow(idx, {
-                          qty_pallet: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      className="w-20 px-2.5 py-1.5 text-sm text-right border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    />
-                  </td>
-                </tr>
-              ))}
+              {rows.map((r, idx) => {
+                const isBookingRow = r.kind === 'booking';
+                return (
+                  <tr key={r.key}>
+                    <td className="px-3 py-2.5 align-top text-xs font-semibold text-slate-500">
+                      <div>{r.no_purchase_order}</div>
+                      {isBookingRow && (
+                        <span className="inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">
+                          Booking
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 align-top">
+                      <div className="text-xs font-semibold text-teal-700">
+                        {isBookingRow ? 'Stok (tanpa JO)' : r.no_jo}
+                      </div>
+                      <div className="text-sm text-slate-700">
+                        {r.nama_item}
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {isBookingRow ? 'Sisa belum datang' : 'Sisa kebutuhan'}:{' '}
+                        {formatQty(r.qty_sisa)} {r.satuan}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 align-top text-center">
+                      <input
+                        type="number"
+                        min={0}
+                        value={r.qty_incoming}
+                        onChange={(e) =>
+                          patchRow(idx, {
+                            qty_incoming: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-24 px-2.5 py-1.5 text-sm text-right border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      />
+                      {/* Backend tidak membatasi qty_incoming terhadap
+                          qty_sisa, jadi beri peringatan (tidak memblokir). */}
+                      {isBookingRow && r.qty_incoming > r.qty_sisa && (
+                        <div className="text-[10px] text-amber-600 mt-1">
+                          Melebihi sisa ({formatQty(r.qty_sisa)})
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 align-top">
+                      {isBookingRow ? (
+                        <span className="text-slate-300">—</span>
+                      ) : (
+                        <select
+                          value={r.ada_idle ? 'ya' : 'tidak'}
+                          onChange={(e) =>
+                            patchRow(idx, {
+                              ada_idle: e.target.value === 'ya',
+                            })
+                          }
+                          className="w-24 px-2 py-1.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        >
+                          <option value="tidak">Tidak</option>
+                          <option value="ya">Ya</option>
+                        </select>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 align-top text-center">
+                      {isBookingRow ? (
+                        <span className="text-slate-300">—</span>
+                      ) : (
+                        <input
+                          type="number"
+                          min={0}
+                          disabled={!r.ada_idle}
+                          value={r.qty_idle}
+                          onChange={(e) =>
+                            patchRow(idx, {
+                              qty_idle: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          className="w-24 px-2.5 py-1.5 text-sm text-right border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:bg-slate-100 disabled:text-slate-400"
+                        />
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 align-top text-center">
+                      <input
+                        type="number"
+                        min={0}
+                        value={r.qty_pallet}
+                        onChange={(e) =>
+                          patchRow(idx, {
+                            qty_pallet: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        className="w-20 px-2.5 py-1.5 text-sm text-right border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
             <tfoot className="bg-slate-50 border-t border-slate-200">
               <tr>
@@ -525,11 +629,14 @@ const IncomingFormModal: React.FC<{
 };
 
 // =============================================================================
-// Main list page
+// Halaman utama
 // =============================================================================
 type SubTab = 'outstanding' | 'history';
 
 const OutstandingPO: React.FC = () => {
+  const [kind, setKind] = useState<POKind>('po');
+  const isBooking = kind === 'booking';
+
   const [subTab, setSubTab] = useState<SubTab>('outstanding');
   const isHistory = subTab === 'history';
 
@@ -540,31 +647,26 @@ const OutstandingPO: React.FC = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
 
-  // "Draft" mirrors whatever is currently typed/selected in the filter
-  // card; "applied" is the snapshot actually sent to fetchData. Filters
-  // only take effect on "Terapkan Filter" (or Enter in the search box) —
-  // not on every keystroke/selection.
   const [filterDraft, setFilterDraft] =
     useState<OutstandingFilters>(DEFAULT_FILTERS);
   const [appliedFilters, setAppliedFilters] =
     useState<OutstandingFilters>(DEFAULT_FILTERS);
 
-  // Vendor dropdown options for the id_vendor filter.
   const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
   const [vendorOptionsLoading, setVendorOptionsLoading] =
     useState<boolean>(true);
 
-  // Inline expand state, keyed by PO id.
-  const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
+  // Expand inline, key = rowKey(kind, po.id).
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [detailCache, setDetailCache] = useState<
     Record<
-      number,
-      { loading: boolean; error: string; items: OutstandingItemJo[] }
+      string,
+      { loading: boolean; error: string; items: OutstandingItem[] }
     >
   >({});
 
-  // Cross-PO selection, keyed by items_jo id.
-  const [selected, setSelected] = useState<Map<number, SelectedRow>>(new Map());
+  // Pilihan lintas PO dan lintas kind, key = rowKey(kind, item.id).
+  const [selected, setSelected] = useState<Map<string, SelectedRow>>(new Map());
   const [showForm, setShowForm] = useState<boolean>(false);
 
   const [toast, setToast] = useState<{
@@ -573,26 +675,33 @@ const OutstandingPO: React.FC = () => {
     severity: 'success' | 'error' | 'info';
   }>({ open: false, message: '', severity: 'success' });
 
+  // Mencegah respons lama menimpa data saat user cepat pindah tab.
+  const listReqRef = useRef(0);
+
   const fetchData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/purchasing/purchaseOrder`;
+    const reqId = ++listReqRef.current;
     try {
       setLoading(true);
-      const res = await axios.get<PurchaseOrderListResponse>(url, {
+      const res = await axios.get<PurchaseOrderListResponse>(poBaseUrl(kind), {
         params: {
           page,
           limit,
           search: appliedFilters.search || undefined,
           status: 'approve finance',
-          // Toggle between the actionable queue and the read-only history.
-          status_tiket: isHistory ? 'history' : undefined,
-          status_po: appliedFilters.statusPo || undefined,
+          // PO Normal: riwayat = status_tiket 'history'.
+          // PO Booking: approve finance sudah otomatis 'history', jadi tidak
+          // dipakai; dibedakan lewat status_po di bawah.
+          status_tiket: !isBooking && isHistory ? 'history' : undefined,
+          status_po: isBooking
+            ? isHistory
+              ? 'done'
+              : 'progress'
+            : appliedFilters.statusPo || undefined,
           id_vendor: appliedFilters.idVendor || undefined,
           start_date_po: appliedFilters.startDatePo || undefined,
           end_date_po: appliedFilters.endDatePo || undefined,
           start_date_kirim: appliedFilters.startDateKirim || undefined,
           end_date_kirim: appliedFilters.endDateKirim || undefined,
-          // sort_order only makes sense (and is only sent) when sort_by
-          // is set — matches the note in the params spec.
           sort_by: appliedFilters.sortBy || undefined,
           sort_order: appliedFilters.sortBy
             ? appliedFilters.sortOrder || 'DESC'
@@ -600,28 +709,31 @@ const OutstandingPO: React.FC = () => {
         },
         withCredentials: true,
       });
-      console.log('Fetched outstanding PO data:', res.data);
+      if (reqId !== listReqRef.current) return;
+      console.log(`Fetched outstanding ${kind} data:`, res.data);
       setData(res.data.data || []);
       if (res.data.total_page) setTotalPages(res.data.total_page);
     } catch (error) {
+      if (reqId !== listReqRef.current) return;
       console.error('Error fetching outstanding PO data:', error);
       setData([]);
       setToast({
         open: true,
-        message: 'Gagal memuat data PO outstanding.',
+        message: `Gagal memuat data ${
+          isBooking ? 'PO Booking' : 'PO'
+        } outstanding.`,
         severity: 'error',
       });
     } finally {
-      setLoading(false);
+      if (reqId === listReqRef.current) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, subTab, appliedFilters]);
+  }, [page, limit, subTab, kind, appliedFilters]);
 
-  // Vendor options for the id_vendor filter — fetched once on mount.
   useEffect(() => {
     const fetchVendorOptions = async () => {
       const url = `${
@@ -655,12 +767,23 @@ const OutstandingPO: React.FC = () => {
     setPage(1);
   };
 
+  // Outstanding <-> Riwayat: bersihkan semua, termasuk pilihan.
   const handleSwitchTab = (tab: SubTab) => {
     if (tab === subTab) return;
     setSubTab(tab);
     setExpandedIds(new Set());
     setDetailCache({});
     setSelected(new Map());
+    handleResetFilters();
+  };
+
+  // PO Normal <-> PO Booking: pilihan DIPERTAHANKAN supaya item dari kedua
+  // jenis PO bisa dikirim dalam satu surat jalan.
+  const handleKindChange = (next: POKind) => {
+    if (next === kind) return;
+    setKind(next);
+    setExpandedIds(new Set());
+    setDetailCache({});
     handleResetFilters();
   };
 
@@ -683,32 +806,43 @@ const OutstandingPO: React.FC = () => {
   }, [appliedFilters]);
 
   const fetchPoItems = async (po: PurchaseOrder) => {
+    const key = rowKey(kind, po.id);
     setDetailCache((prev) => ({
       ...prev,
-      [po.id]: { loading: true, error: '', items: prev[po.id]?.items || [] },
+      [key]: { loading: true, error: '', items: prev[key]?.items || [] },
     }));
     try {
-      const url = `${import.meta.env.VITE_API_LINK}/purchasing/purchaseOrder/${
-        po.id
-      }`;
-      const res = await axios.get<PurchaseOrderDetailResponse>(url, {
-        withCredentials: true,
-      });
-      const raw = res.data.data as unknown as {
-        items_jo?: OutstandingItemJo[];
-      };
-      console.log(`Fetched items_jo for PO ${po.no_purchase_order}:`, raw);
+      let items: OutstandingItem[] = [];
+      if (kind === 'booking') {
+        const res = await axios.get<PurchaseOrderBookingDetailResponse>(
+          `${poBaseUrl('booking')}/${po.id}`,
+          { withCredentials: true },
+        );
+        items = (res.data.data.items || []).map(normalizeBookingItem);
+      } else {
+        const res = await axios.get<PurchaseOrderDetailResponse>(
+          `${poBaseUrl('po')}/${po.id}`,
+          { withCredentials: true },
+        );
+        const raw = res.data.data as unknown as {
+          items_jo?: OutstandingItemJo[];
+        };
+        console.log(`Fetched items_jo for PO ${po.no_purchase_order}:`, raw);
+        items = (raw.items_jo || []).map(normalizeJoItem);
+      }
       setDetailCache((prev) => ({
         ...prev,
-        [po.id]: { loading: false, error: '', items: raw.items_jo || [] },
+        [key]: { loading: false, error: '', items },
       }));
     } catch (err) {
       console.error('Error fetching PO detail:', err);
       setDetailCache((prev) => ({
         ...prev,
-        [po.id]: {
+        [key]: {
           loading: false,
-          error: 'Gagal memuat item JO untuk PO ini.',
+          error: isBooking
+            ? 'Gagal memuat item untuk PO Booking ini.'
+            : 'Gagal memuat item JO untuk PO ini.',
           items: [],
         },
       }));
@@ -716,60 +850,64 @@ const OutstandingPO: React.FC = () => {
   };
 
   const toggleExpand = (po: PurchaseOrder) => {
+    const key = rowKey(kind, po.id);
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(po.id)) {
-        next.delete(po.id);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
-        next.add(po.id);
-        if (!detailCache[po.id]) fetchPoItems(po);
+        next.add(key);
+        if (!detailCache[key]) fetchPoItems(po);
       }
       return next;
     });
   };
 
-  const toggleItemSelected = (po: PurchaseOrder, it: OutstandingItemJo) => {
+  // PO Booking di tab Outstanding hanya menampilkan item yang masih progress
+  // (dokumen flow 4.2). Di Riwayat dan untuk PO Normal tampil semua.
+  const getVisibleItems = (items: OutstandingItem[]): OutstandingItem[] =>
+    isBooking && !isHistory
+      ? items.filter((it) => it.status_po === 'progress')
+      : items;
+
+  const buildSelectedRow = (
+    po: PurchaseOrder,
+    it: OutstandingItem,
+  ): SelectedRow => ({
+    key: rowKey(kind, it.id),
+    kind,
+    id: it.id,
+    id_purchase_order: po.id,
+    no_purchase_order: po.no_purchase_order,
+    no_jo: it.no_jo,
+    nama_item: it.nama_item,
+    satuan: it.satuan,
+    qty_po: it.qty_po,
+    qty_sisa: it.qty_sisa,
+  });
+
+  const toggleItemSelected = (po: PurchaseOrder, it: OutstandingItem) => {
+    const key = rowKey(kind, it.id);
     setSelected((prev) => {
       const next = new Map(prev);
-      if (next.has(it.id)) {
-        next.delete(it.id);
-      } else {
-        next.set(it.id, {
-          id: it.id,
-          id_purchase_order: po.id,
-          no_purchase_order: po.no_purchase_order,
-          no_jo: it.no_jo,
-          nama_item: it.nama_item,
-          satuan: it.satuan,
-          qty_po: it.qty_po,
-          qty_sisa: it.qty_sisa,
-        });
-      }
+      if (next.has(key)) next.delete(key);
+      else next.set(key, buildSelectedRow(po, it));
       return next;
     });
   };
 
   const toggleSelectAllForPo = (
     po: PurchaseOrder,
-    items: OutstandingItemJo[],
+    items: OutstandingItem[],
   ) => {
-    const allSelected = items.every((it) => selected.has(it.id));
+    const allSelected = items.every((it) => selected.has(rowKey(kind, it.id)));
     setSelected((prev) => {
       const next = new Map(prev);
       if (allSelected) {
-        items.forEach((it) => next.delete(it.id));
+        items.forEach((it) => next.delete(rowKey(kind, it.id)));
       } else {
         items.forEach((it) =>
-          next.set(it.id, {
-            id: it.id,
-            id_purchase_order: po.id,
-            no_purchase_order: po.no_purchase_order,
-            no_jo: it.no_jo,
-            nama_item: it.nama_item,
-            satuan: it.satuan,
-            qty_po: it.qty_po,
-            qty_sisa: it.qty_sisa,
-          }),
+          next.set(rowKey(kind, it.id), buildSelectedRow(po, it)),
         );
       }
       return next;
@@ -778,17 +916,22 @@ const OutstandingPO: React.FC = () => {
 
   const selectedPoCount = useMemo(
     () =>
-      new Set(Array.from(selected.values()).map((r) => r.id_purchase_order))
-        .size,
+      new Set(
+        Array.from(selected.values()).map((r) =>
+          rowKey(r.kind, r.id_purchase_order),
+        ),
+      ).size,
     [selected],
   );
 
   const formRows: IncomingFormRow[] = useMemo(
     () =>
       Array.from(selected.values()).map((r) => ({
+        key: r.key,
+        kind: r.kind,
         id_purchase_order: r.id_purchase_order,
         no_purchase_order: r.no_purchase_order,
-        id_purchase_order_item_jo: r.id,
+        item_id: r.id,
         no_jo: r.no_jo,
         nama_item: r.nama_item,
         satuan: r.satuan,
@@ -801,24 +944,38 @@ const OutstandingPO: React.FC = () => {
     [selected],
   );
 
-  const handleSubmitted = (submittedItemJoIds: number[]) => {
+  const handleSubmitted = (submittedKeys: string[]) => {
     setShowForm(false);
     setSelected((prev) => {
       const next = new Map(prev);
-      submittedItemJoIds.forEach((id) => next.delete(id));
+      submittedKeys.forEach((k) => next.delete(k));
       return next;
     });
-    // Invalidate caches for affected POs so re-expanding pulls fresh qty_sisa.
-    setDetailCache((prev) => {
-      const next = { ...prev };
-      Object.keys(next).forEach((key) => {
-        const poId = Number(key);
-        if (next[poId].items.some((it) => submittedItemJoIds.includes(it.id))) {
-          delete next[poId];
-        }
+
+    // Muat ulang item PO yang terdampak (status_qc berubah jadi "request qc").
+    // Yang sedang terbuka di-refetch; yang tertutup cukup cache-nya dibuang.
+    const affected = data.filter((po) => {
+      const cache = detailCache[rowKey(kind, po.id)];
+      return (
+        cache &&
+        cache.items.some((it) => submittedKeys.includes(rowKey(kind, it.id)))
+      );
+    });
+    const toRefetch = affected.filter((po) =>
+      expandedIds.has(rowKey(kind, po.id)),
+    );
+    const toDrop = affected.filter(
+      (po) => !expandedIds.has(rowKey(kind, po.id)),
+    );
+    if (toDrop.length > 0) {
+      setDetailCache((prev) => {
+        const next = { ...prev };
+        toDrop.forEach((po) => delete next[rowKey(kind, po.id)]);
+        return next;
       });
-      return next;
-    });
+    }
+    toRefetch.forEach((po) => fetchPoItems(po));
+
     setToast({
       open: true,
       message: 'Data incoming berhasil dikirim ke QC.',
@@ -826,8 +983,144 @@ const OutstandingPO: React.FC = () => {
     });
   };
 
+  const renderExpandedContent = (po: PurchaseOrder) => {
+    const cache = detailCache[rowKey(kind, po.id)];
+    if (cache?.loading) {
+      return (
+        <div className="flex justify-center py-6">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-teal-500 border-t-transparent" />
+        </div>
+      );
+    }
+    if (cache?.error) {
+      return (
+        <p className="text-sm text-red-600 text-center py-4">{cache.error}</p>
+      );
+    }
+    const items = cache ? getVisibleItems(cache.items) : [];
+    if (items.length === 0) {
+      return (
+        <p className="text-sm text-slate-400 text-center py-4">
+          {isBooking
+            ? isHistory
+              ? 'Tidak ada item pada PO Booking ini.'
+              : 'Tidak ada item yang masih menunggu kedatangan.'
+            : 'Tidak ada item JO pada PO ini.'}
+        </p>
+      );
+    }
+
+    return (
+      <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50 border-b border-slate-100">
+              <tr>
+                {!isHistory && (
+                  <th className="px-3 py-2.5 w-10">
+                    <input
+                      type="checkbox"
+                      checked={items.every((it) =>
+                        selected.has(rowKey(kind, it.id)),
+                      )}
+                      onChange={() => toggleSelectAllForPo(po, items)}
+                      className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                    />
+                  </th>
+                )}
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  {isBooking ? 'Kode' : 'No JO'}
+                </th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  Nama Barang
+                </th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  Tipe
+                </th>
+                <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  {isBooking ? 'Qty Beli' : 'Qty PO'}
+                </th>
+                <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  Qty Terkirim
+                </th>
+                <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  Sisa
+                </th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  Status PO
+                </th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                  Status QC
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {items.map((it) => (
+                <tr key={it.id} className="hover:bg-slate-50/70">
+                  {!isHistory && (
+                    <td className="px-3 py-2.5">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(rowKey(kind, it.id))}
+                        onChange={() => toggleItemSelected(po, it)}
+                        className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                      />
+                    </td>
+                  )}
+                  <td className="px-3 py-2.5 font-medium text-teal-700">
+                    {isBooking ? it.kode_barang || '-' : it.no_jo}
+                  </td>
+                  <td className="px-3 py-2.5 text-slate-700">{it.nama_item}</td>
+                  <td className="px-3 py-2.5 text-slate-500">
+                    {it.tipe_barang || '-'}
+                  </td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">
+                    {formatQty(it.qty_po)} {it.satuan}
+                  </td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">
+                    {formatQty(it.qty_terkirim)} {it.satuan}
+                  </td>
+                  <td className="px-3 py-2.5 text-right tabular-nums font-semibold">
+                    {it.qty_sisa > 0 ? (
+                      <span className="text-amber-600">
+                        {formatQty(it.qty_sisa)} {it.satuan}
+                      </span>
+                    ) : (
+                      <span className="text-emerald-600">Lengkap</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <span
+                      className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${statusPoBadge(
+                        it.status_po,
+                      )}`}
+                    >
+                      {it.status_po === 'done' ? 'Selesai' : 'Progress'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <span
+                      className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${statusQcBadge(
+                        it.status_qc,
+                      )}`}
+                    >
+                      {statusQcLabel(it.status_qc)}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-5 pb-20">
+      {/* Sub tab level atas: PO Normal / PO Booking */}
+      <POKindTabs value={kind} onChange={handleKindChange} />
+
       {/* Sub tabs: Outstanding vs Riwayat */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-1.5 inline-flex gap-1">
         <button
@@ -879,24 +1172,27 @@ const OutstandingPO: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">
-              Status PO
-            </label>
-            <select
-              value={filterDraft.statusPo}
-              onChange={(e) =>
-                setFilterDraft((f) => ({ ...f, statusPo: e.target.value }))
-              }
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-            >
-              {STATUS_PO_FILTER_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* status_po PO Booking ditentukan sub tab Outstanding/Riwayat */}
+          {!isBooking && (
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">
+                Status PO
+              </label>
+              <select
+                value={filterDraft.statusPo}
+                onChange={(e) =>
+                  setFilterDraft((f) => ({ ...f, statusPo: e.target.value }))
+                }
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              >
+                {STATUS_PO_FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">
@@ -925,11 +1221,6 @@ const OutstandingPO: React.FC = () => {
           </div>
         </div>
 
-        {/* Date ranges get their own row — a native <input type="date">
-            has a fixed minimum width, so two of them plus a separator
-            never fit inside a narrow multi-column grid cell without
-            overlapping the next field. Each range gets a full half-width
-            column here instead. */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">
@@ -995,8 +1286,6 @@ const OutstandingPO: React.FC = () => {
           </div>
         </div>
 
-        {/* Sort — sort_order is only meaningful once sort_by is chosen,
-            per the "jika sort_by di isi maka ini juga harus di isi" note. */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div>
             <label className="block text-xs font-medium text-slate-500 mb-1.5">
@@ -1110,7 +1399,7 @@ const OutstandingPO: React.FC = () => {
                 <tr>
                   <td colSpan={7} className="px-4 py-14 text-center">
                     <p className="text-slate-600 font-medium text-sm">
-                      {isHistory ? EMPTY_HISTORY_TEXT : EMPTY_TEXT}
+                      {EMPTY_TEXT[kind][isHistory ? 'history' : 'outstanding']}
                     </p>
                     {activeFilterCount > 0 && (
                       <p className="text-slate-400 text-xs mt-1">
@@ -1121,10 +1410,10 @@ const OutstandingPO: React.FC = () => {
                 </tr>
               ) : (
                 data.map((po) => {
-                  const isExpanded = expandedIds.has(po.id);
-                  const cache = detailCache[po.id];
+                  const key = rowKey(kind, po.id);
+                  const isExpanded = expandedIds.has(key);
                   return (
-                    <React.Fragment key={po.id}>
+                    <React.Fragment key={key}>
                       <tr
                         className="hover:bg-slate-50/70 transition-colors cursor-pointer"
                         onClick={() => toggleExpand(po)}
@@ -1175,140 +1464,7 @@ const OutstandingPO: React.FC = () => {
                       {isExpanded && (
                         <tr>
                           <td colSpan={7} className="bg-slate-50/60 px-4 py-4">
-                            {cache?.loading ? (
-                              <div className="flex justify-center py-6">
-                                <div className="animate-spin rounded-full h-6 w-6 border-2 border-teal-500 border-t-transparent" />
-                              </div>
-                            ) : cache?.error ? (
-                              <p className="text-sm text-red-600 text-center py-4">
-                                {cache.error}
-                              </p>
-                            ) : !cache || cache.items.length === 0 ? (
-                              <p className="text-sm text-slate-400 text-center py-4">
-                                Tidak ada item JO pada PO ini.
-                              </p>
-                            ) : (
-                              <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                                <div className="overflow-x-auto">
-                                  <table className="min-w-full text-sm">
-                                    <thead className="bg-slate-50 border-b border-slate-100">
-                                      <tr>
-                                        {!isHistory && (
-                                          <th className="px-3 py-2.5 w-10">
-                                            <input
-                                              type="checkbox"
-                                              checked={cache.items.every((it) =>
-                                                selected.has(it.id),
-                                              )}
-                                              onChange={() =>
-                                                toggleSelectAllForPo(
-                                                  po,
-                                                  cache.items,
-                                                )
-                                              }
-                                              className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                                            />
-                                          </th>
-                                        )}
-                                        <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                          No JO
-                                        </th>
-                                        <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                          Nama Barang
-                                        </th>
-                                        <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                          Tipe
-                                        </th>
-                                        <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                          Qty PO
-                                        </th>
-                                        <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                          Qty Terkirim
-                                        </th>
-                                        <th className="px-3 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                          Sisa
-                                        </th>
-                                        <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                          Status PO
-                                        </th>
-                                        <th className="px-3 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-                                          Status QC
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                      {cache.items.map((it) => (
-                                        <tr
-                                          key={it.id}
-                                          className="hover:bg-slate-50/70"
-                                        >
-                                          {!isHistory && (
-                                            <td className="px-3 py-2.5">
-                                              <input
-                                                type="checkbox"
-                                                checked={selected.has(it.id)}
-                                                onChange={() =>
-                                                  toggleItemSelected(po, it)
-                                                }
-                                                className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-                                              />
-                                            </td>
-                                          )}
-                                          <td className="px-3 py-2.5 font-medium text-teal-700">
-                                            {it.no_jo}
-                                          </td>
-                                          <td className="px-3 py-2.5 text-slate-700">
-                                            {it.nama_item}
-                                          </td>
-                                          <td className="px-3 py-2.5 text-slate-500">
-                                            {it.tipe_barang || '-'}
-                                          </td>
-                                          <td className="px-3 py-2.5 text-right tabular-nums">
-                                            {formatQty(it.qty_po)} {it.satuan}
-                                          </td>
-                                          <td className="px-3 py-2.5 text-right tabular-nums">
-                                            {formatQty(it.qty_terkirim)}{' '}
-                                            {it.satuan}
-                                          </td>
-                                          <td className="px-3 py-2.5 text-right tabular-nums font-semibold">
-                                            {it.qty_sisa > 0 ? (
-                                              <span className="text-amber-600">
-                                                {formatQty(it.qty_sisa)}{' '}
-                                                {it.satuan}
-                                              </span>
-                                            ) : (
-                                              <span className="text-emerald-600">
-                                                Lengkap
-                                              </span>
-                                            )}
-                                          </td>
-                                          <td className="px-3 py-2.5">
-                                            <span
-                                              className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${statusPoBadge(
-                                                it.status_po,
-                                              )}`}
-                                            >
-                                              {it.status_po === 'done'
-                                                ? 'Selesai'
-                                                : 'Progress'}
-                                            </span>
-                                          </td>
-                                          <td className="px-3 py-2.5">
-                                            <span
-                                              className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${statusQcBadge(
-                                                it.status_qc,
-                                              )}`}
-                                            >
-                                              {statusQcLabel(it.status_qc)}
-                                            </span>
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            )}
+                            {renderExpandedContent(po)}
                           </td>
                         </tr>
                       )}
@@ -1351,7 +1507,8 @@ const OutstandingPO: React.FC = () => {
         </Stack>
       </div>
 
-      {/* Floating selection bar — appears once anything is checked, across any PO; hidden on the read-only history tab */}
+      {/* Floating selection bar — muncul begitu ada yang dicentang, lintas PO
+          dan lintas kind; disembunyikan di tab Riwayat */}
       {!isHistory && selected.size > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-30 flex justify-center px-4 pb-4">
           <div className="bg-slate-900 text-white rounded-2xl shadow-xl px-5 py-3 flex items-center gap-4">

@@ -11,110 +11,36 @@ import {
   UpdatePurchaseOrderPayload,
 } from './Types/Purchasing.types';
 import { formatRupiah, getStatusColor, getStatusLabel } from './Types/poStatus';
+import { getApiErrorMessage } from './Types/poApi';
+import NumberInput from './NumberInput';
+import BookingPickerDialog, {
+  AvailableBookingItem,
+  BookingPick,
+} from './BookingPickerDialog';
 
 /* =============================================================================
- * WHAT CHANGED — JO-grouped items with substitute ("pengganti") support
- * -----------------------------------------------------------------------------
- * The old version rendered a flat list from `items` (the aggregated,
- * saved-for-invoicing array). That loses information the moment a JO's
- * need was covered by more than one item (a substitute added on top of, or
- * instead of, the original pick) — `items` only knows the summed qty/price
- * per id_item, not which JO(s) it came from or that it was a substitute.
+ * EditPOModal — edit PO BIASA (items + items_jo).
  *
- * `items_jo` on the detail response *is* the per-JO breakdown. Grouping is
- * done by (id_jo, qty_bom) TOGETHER — NOT by id_jo alone. The same id_jo can
- * legitimately carry multiple distinct BOM needs (e.g. two separate lines
- * both needing item #76, one at qty_bom 0.64496 and another at qty_bom
- * 0.2224 — confirmed from a real detail payload). Rows that share both
- * id_jo AND qty_bom are allocations against the SAME need (first by id =
- * original pick, any further ones = substitutes for display — this flag
- * isn't persisted by the API, so it's inferred from insertion order, same
- * limitation CreatePOModal has going the other way). Rows that only share
- * id_jo but differ in qty_bom are separate needs and must render as
- * separate rows, even if they resolve to the same id_item.
+ * Struktur: items_jo = rincian per-JO (bisa N baris untuk item yang sama),
+ * items = buy list gabungan (1 baris per id_item, qty & harga rata-rata).
+ * Baris items_jo dikelompokkan per (id_jo, qty_bom). Tampilan: tabel ringkasan
+ * per item (accordion), detail per-JO bisa diedit setelah di-expand.
  *
- * Unit price/tax-locked/pajak_persen aren't on items_jo rows, so they're
- * pulled from the matching `items` entry (by id_item) / items_jo[].master_barang.
- *
- * Items in `items` that never appear in `items_jo` are manual additions
- * (no JO) and get their own ungrouped row, same as CreatePOModal's manual
- * mode.
- *
- * The substitute picker (search master/barang, filtered by category) is
- * the same one CreatePOModal uses, so allocations can be added/replaced
- * for a JO need the same way here.
- *
- * On save:
- *   - `aggregateItems` rebuilds the flat `items` array, grouped strictly by
- *     id_item (normalized to a number; falls back to item name only when
- *     id_item is falsy) so two allocations of the same item — regardless
- *     of which JO/need row they came from — always collapse into ONE
- *     combined `items` entry (summed qty, qty-weighted avg price). This
- *     mirrors items_jo (per-JO assignment) vs items (buy list) as
- *     specified: items_jo can have N rows for the same item, items always
- *     combines them into 1.
- *   - `buildItemsJoPayload` rebuilds `items_jo`, preserving each row's `id`
- *     so the API can update in place instead of duplicating, and sets
- *     every row's `tgl_kirim` to the PO-level tglKirim (not each JO's own
- *     delivery date) — the API expects tgl_kirim to mirror the PO's own
- *     Tanggal Kirim field.
- *
- * NOTE: `UpdatePurchaseOrderPayload` may not declare `items_jo` yet (same
- * staleness already flagged elsewhere in this codebase) — cast where
- * needed so this compiles either way.
- *
- * -----------------------------------------------------------------------------
- * WHAT CHANGED (this pass) — combined-item summary, number inputs, PPN, misc
- * -----------------------------------------------------------------------------
- * 1. COMBINED ITEM SUMMARY (accordion over items_jo): JO-linked rows
- *    (`row.jo` set) are no longer rendered one-card-per-JO-need. They're
- *    first combined by item (same key `aggregateItems` uses — id_item, or
- *    item name when id_item is falsy) into a single summary table: one row
- *    per distinct item with its combined qty / average harga / combined
- *    total. Each summary row has an expand toggle, collapsed by default;
- *    expanding it reveals the individual JO-need rows that make up that
- *    item, still editable exactly as before (same updateAllocation /
- *    removeAllocation / substitute-picker wiring, and each existing row's
- *    `id` / `id_jo_item` are preserved so saving still updates in place
- *    instead of duplicating). You can't edit values directly on the
- *    collapsed summary row — only after expanding. Manual (non-JO) rows
- *    aren't part of items_jo, so they keep rendering as their own
- *    individual cards below the summary table, with "+ Tambah baris
- *    manual" unchanged. Nothing about state shape, `aggregateItems`, or
- *    `buildItemsJoPayload` changed — this is purely a rendering/grouping
- *    change on top of the same `rows`.
- *
- * 2. NUMBER INPUTS: Discount, Qty Beli, and Harga now use the new
- *    `NumberInput` component instead of raw `<input type="number">`. It
- *    displays an empty field instead of a forced "0", and formats what the
- *    user types with `id-ID` thousands separators ("1.000") while still
- *    calling `onChange` with a plain integer — so state/payloads are
- *    unaffected, only the on-screen text changes.
- *
- * 3. PPN WHEN THE MASTER PRICE ALREADY INCLUDES TAX (`is_tax_locked`):
- *    `harga` on these items is tax-inclusive already. Per-item PPN is still
- *    computed the same way as before (qty * harga * pajak%) so it's visible
- *    to the user, but it must NOT be added again into the grand total,
- *    since it's already baked into `harga` / `subTotal`. Items that are
- *    NOT tax-locked but have the PPN checkbox ticked keep the old
- *    behaviour: their PPN is added on top of the subtotal, same as before.
- *    Concretely: `grandTotal = subTotal - discount + ppnAddedToTotal`,
- *    where `ppnAddedToTotal` only sums PPN from non-tax-locked items.
- *    `ppnIncluded` (tax-locked items' PPN) is shown separately as
- *    informational-only and excluded from the total.
- *
- * 4. `tglKirim` defaults to today's date if the PO doesn't have one set.
- *
- * 5. `noteInternal` (Catatan Internal) is now read-only — it still loads
- *    from the existing PO, but the user can no longer edit it here.
- *
- * 6. NUMBER INPUT DECIMALS: `NumberInput` now accepts a comma as the
- *    decimal separator (e.g. "0,64") so fields like Qty Beli — which can
- *    mirror a fractional qty_bom — are actually typeable. The UI's finest
- *    supported precision is 0,01: a value below that but still positive
- *    (e.g. 0.0042, coming from a computed remainder) is rounded UP to
- *    0,01 rather than silently disappearing as 0, and the original figure
- *    is shown next to the field so the user knows a rounding happened.
+ * PERUBAHAN (PO Booking):
+ *   1. "Ambil dari PO Booking" di tiap baris items_jo (qty_po = dipesan ke
+ *      vendor, qty_booking = diambil dari stok booking). Payload items_jo
+ *      SELALU mengirim ulang id_purchase_order_booking_item + qty_booking
+ *      untuk baris yang memakai booking — kalau tidak dikirim, backend
+ *      menganggap booking dilepas (qty_pakai dikembalikan).
+ *   2. Batas edit: qty_booking maksimal = qty_tersedia + qty_booking lama
+ *      (item booking yang sama). Dihitung di BookingPickerDialog lewat
+ *      `previousQty`; pilihan yang sudah tersimpan tetap muncul via
+ *      `extraItems` walau qty_tersedia-nya 0.
+ *   3. Baris `is_booking_moved` (booking sudah dipindah ke gudang booking JO
+ *      saat approve finance) dikunci: tidak bisa dihapus, qty_booking tidak
+ *      bisa diubah, tidak bisa dilepas.
+ *   4. Item yang qty vendornya 0 tidak ikut `items`.
+ *   5. NumberInput diimport dari ./NumberInput. Pesan error backend ditampilkan.
  * ========================================================================== */
 
 const DEFAULT_PPN_PERSEN = 11;
@@ -147,9 +73,7 @@ interface MasterBrandListResponse {
   total_page: number;
 }
 
-// Shapes matching the real GET /purchaseOrder/:id response — read
-// defensively since the shared Purchasing.types may not declare all of
-// these fields yet.
+// Shapes matching the real GET /purchaseOrder/:id response.
 interface RawMasterBarangRef {
   is_include_tax?: boolean;
   pajak?: number;
@@ -186,6 +110,15 @@ interface RawPoItemJo {
   tgl_kirim: string;
   rencana_cetak: string;
   master_barang?: RawMasterBarangRef;
+  // --- booking ---
+  id_purchase_order_booking_item?: number | null;
+  qty_booking?: number;
+  is_booking_moved?: boolean;
+  purchase_order_booking?: {
+    id: number;
+    no_purchase_order: string;
+    nama_vendor?: string;
+  };
 }
 
 interface Allocation {
@@ -205,6 +138,12 @@ interface Allocation {
   pajak_persen: number;
   ppn: number;
   is_substitute: boolean;
+  // --- PO Booking ---
+  id_purchase_order_booking_item?: number | null;
+  qty_booking: number;
+  booking_no_po?: string;
+  booking_max?: number; // hanya terisi setelah user memilih ulang dari picker
+  is_booking_moved?: boolean;
 }
 
 interface JoContext {
@@ -222,11 +161,6 @@ interface RowGroup {
   allocations: Allocation[];
 }
 
-// One row per distinct item, combined across every JO-need row (RowGroup)
-// that allocates it — mirrors `aggregateItems`'s grouping, but keeps a
-// pointer back to each contributing RowGroup (as `subGroups`) instead of
-// collapsing straight into a payload shape, so the UI can expand a summary
-// row back into its editable per-JO detail.
 interface ItemAggSubGroup {
   row: RowGroup;
   allocations: Allocation[];
@@ -251,6 +185,7 @@ const uid = (): string =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const toISODate = (value?: string): string => (value ? value.slice(0, 10) : '');
 const todayISODate = (): string => new Date().toISOString().slice(0, 10);
+const round2 = (n: number): number => Math.round(n * 100) / 100;
 
 const resolveBrandName = (
   idBrand: number | null | undefined,
@@ -272,180 +207,7 @@ const recalcAllocPpn = (a: Allocation): Allocation => {
   }
   return { ...a, ppn };
 };
-// ---------------------------------------------------------------------------
-// NumberInput — text input formatted with id-ID thousands separators
-// ("1.000") that also accepts a comma as the decimal separator ("0,64"),
-// since several fields (notably Qty Beli, which can mirror a fractional
-// qty_bom) need decimals down to 0,01. Never shows a forced "0", and still
-// reports a plain number to `onChange` (state/payloads stay untouched by
-// formatting).
-//
-// If the value coming in from outside is finer than the 0,01 the UI
-// supports (e.g. a computed remainder like 0.0042), it's snapped UP to
-// 0,01 — never down to 0, since a real quantity or price shouldn't
-// silently vanish — and the original figure is shown next to the field so
-// the user knows a rounding happened.
-// ---------------------------------------------------------------------------
 
-const EPSILON = 1e-9;
-
-const formatNumberID = (value: number): string => {
-  if (!value) return '';
-  return value.toLocaleString('id-ID', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
-};
-
-// Keeps only digits and a single comma (decimal separator) while the user
-// is typing. Thousands separators ('.') get stripped since the display is
-// regrouped from scratch, and only the first comma typed counts as the
-// decimal point — extras are ignored.
-const sanitizeNumericInput = (raw: string): string => {
-  let out = '';
-  let commaUsed = false;
-  for (const ch of raw) {
-    if (ch >= '0' && ch <= '9') {
-      out += ch;
-    } else if (ch === ',' && !commaUsed) {
-      out += ',';
-      commaUsed = true;
-    }
-  }
-  return out;
-};
-
-// Formats what's currently being typed, WITHOUT rounding or collapsing
-// anything to empty — this is what makes "0", "0,", and "0,5" actually
-// typeable. Groups the integer part with id-ID thousands separators as
-// the user goes, but preserves a trailing comma and up to 2 fraction
-// digits exactly as typed (including "0,05", "0,0", etc.).
-const formatTypingDisplay = (sanitized: string): string => {
-  if (!sanitized) return '';
-  const hasComma = sanitized.includes(',');
-  const [intPartRaw, fracPartRaw] = sanitized.split(',');
-  const intDigits = (intPartRaw || '').replace(/^0+(?=\d)/, '') || '0';
-  const groupedInt = Number(intDigits).toLocaleString('id-ID');
-  const fracPart = hasComma ? (fracPartRaw || '').slice(0, 2) : '';
-  return hasComma ? `${groupedInt},${fracPart}` : groupedInt;
-};
-
-// Parses a sanitized id-ID numeric string ("1234,5" -> 1234.5). The
-// fractional part is capped at 2 digits, since 0,01 is the smallest unit
-// the UI supports. A bare "0" or a dangling "0," parses as 0, same as an
-// empty field — that's expected mid-typing, not an error.
-const parseNumberID = (raw: string): number => {
-  const sanitized = sanitizeNumericInput(raw);
-  if (!sanitized) return 0;
-  const [intPartRaw, fracPartRaw] = sanitized.split(',');
-  const intPart = intPartRaw || '0';
-  const fracPart = fracPartRaw ? fracPartRaw.slice(0, 2) : '';
-  const parsed = parseFloat(fracPart ? `${intPart}.${fracPart}` : intPart);
-  return Number.isNaN(parsed) ? 0 : parsed;
-};
-
-// The UI's smallest supported unit is 0,01. A non-zero value smaller than
-// that gets rounded UP to 0,01 instead of down to 0 — a real quantity or
-// price should never silently vanish just because it was too fine to
-// represent. Anything else rounds to the nearest 0,01 as usual. Only used
-// for values arriving from OUTSIDE the field (initial load, a substitute
-// pre-filling qty/harga) — never while the user is actively typing, since
-// typed input is already capped at 2 decimals by formatTypingDisplay.
-const roundToSupportedPrecision = (value: number): number => {
-  if (!value) return 0;
-  const rounded = Math.round(value * 100) / 100;
-  if (rounded === 0 && value > 0) return 0.01;
-  if (rounded === 0 && value < 0) return -0.01;
-  return rounded;
-};
-
-type NumberInputProps = {
-  value: number;
-  onChange: (value: number) => void;
-  className?: string;
-  placeholder?: string;
-  min?: number;
-  disabled?: boolean;
-};
-
-const NumberInput: React.FC<NumberInputProps> = ({
-  value,
-  onChange,
-  className,
-  placeholder,
-  min = 0,
-  disabled,
-}) => {
-  const [display, setDisplay] = useState<string>(() =>
-    formatNumberID(roundToSupportedPrecision(value)),
-  );
-  const [isFocused, setIsFocused] = useState<boolean>(false);
-
-  const rounded = roundToSupportedPrecision(value);
-  const wasRounded = !isFocused && Math.abs(rounded - value) > EPSILON;
-
-  // Stay in sync when the underlying value changes from OUTSIDE this input
-  // (e.g. a substitute is picked and pre-fills harga/qty_po, or the row
-  // loads for the first time). Skipped while focused, so it never fights
-  // the user's in-progress typing (including the transient "0" state every
-  // onChange emits while typing "0,05").
-  useEffect(() => {
-    if (isFocused) return;
-    const r = roundToSupportedPrecision(value);
-    setDisplay(formatNumberID(r));
-    if (Math.abs(r - value) > EPSILON) {
-      onChange(r);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, isFocused]);
-
-  return (
-    <div className="w-full">
-      <input
-        type="text"
-        inputMode="decimal"
-        value={display}
-        placeholder={placeholder ?? '0'}
-        disabled={disabled}
-        title={
-          wasRounded
-            ? `Nilai asli: ${value.toLocaleString('id-ID', {
-                maximumFractionDigits: 6,
-              })} — dibulatkan ke 0,01`
-            : undefined
-        }
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => {
-          setIsFocused(false);
-          const parsed = Math.max(
-            roundToSupportedPrecision(parseNumberID(display)),
-            min,
-          );
-          setDisplay(parsed === 0 ? '' : formatNumberID(parsed));
-          onChange(parsed);
-        }}
-        onChange={(e) => {
-          const sanitized = sanitizeNumericInput(e.target.value);
-          setDisplay(formatTypingDisplay(sanitized));
-          onChange(Math.max(parseNumberID(sanitized), min));
-        }}
-        className={className}
-      />
-      {wasRounded && (
-        <span className="block text-[10px] text-amber-600 mt-0.5 whitespace-nowrap">
-          *asli {value.toLocaleString('id-ID', { maximumFractionDigits: 6 })},
-          dibulatkan
-        </span>
-      )}
-    </div>
-  );
-};
-
-// Badge for a row's allocation status vs its BOM need.
-// remaining === 0  -> exact match ("Lengkap")
-// remaining > 0    -> still short  ("Sisa N")
-// remaining < 0    -> bought more than needed ("Lebih N") — previously
-//                     silently swallowed into "Lengkap" via `<= 0`.
 const formatQty = (value: number): string =>
   value.toLocaleString('id-ID', {
     minimumFractionDigits: 0,
@@ -455,8 +217,6 @@ const formatQty = (value: number): string =>
 const getAllocationBadge = (
   remaining: number,
 ): { label: string; className: string } => {
-  // Bulatkan ke 2 desimal dulu supaya selisih floating point
-  // (mis. 0.6700000000000017) tidak membuat badge salah baca.
   const rounded = Math.round(remaining * 100) / 100;
 
   if (rounded === 0) {
@@ -474,8 +234,8 @@ const getAllocationBadge = (
   };
 };
 
-// Group items_jo by (id_jo, qty_bom) — NOT id_jo alone. See file header
-// comment for why: the same id_jo can carry multiple distinct BOM needs.
+// Group items_jo by (id_jo, qty_bom) — NOT id_jo alone: the same id_jo can
+// carry multiple distinct BOM needs.
 const buildRowGroups = (
   items: RawPoItem[],
   itemsJo: RawPoItemJo[],
@@ -517,6 +277,11 @@ const buildRowGroups = (
         pajak_persen: ij.master_barang?.pajak ?? DEFAULT_PPN_PERSEN,
         ppn: 0,
         is_substitute: idx > 0,
+        id_purchase_order_booking_item:
+          ij.id_purchase_order_booking_item ?? null,
+        qty_booking: ij.qty_booking ?? 0,
+        booking_no_po: ij.purchase_order_booking?.no_purchase_order,
+        is_booking_moved: !!ij.is_booking_moved,
       });
     });
 
@@ -560,6 +325,8 @@ const buildRowGroups = (
             pajak_persen: it.master_barang?.pajak ?? DEFAULT_PPN_PERSEN,
             ppn: it.ppn,
             is_substitute: false,
+            id_purchase_order_booking_item: null,
+            qty_booking: 0,
           }),
         ],
       });
@@ -583,6 +350,8 @@ const emptyManualAllocation = (): Allocation => ({
   pajak_persen: DEFAULT_PPN_PERSEN,
   ppn: 0,
   is_substitute: false,
+  id_purchase_order_booking_item: null,
+  qty_booking: 0,
 });
 
 const emptyManualRow = (): RowGroup => ({
@@ -594,10 +363,7 @@ const emptyManualRow = (): RowGroup => ({
 });
 
 // Normalize the dedup key so two allocations of the "same" item always
-// merge — regardless of which JO/need row they came from, and regardless
-// of id_item arriving as a number vs numeric string. Falls back to the
-// item name only when id_item is genuinely falsy (0/null/undefined),
-// e.g. manually typed rows with no master-item link.
+// merge — regardless of which JO/need row they came from.
 const normalizeKey = (a: { id_item: number; nama_item?: string }): string => {
   const idItem = Number(a.id_item);
   if (idItem && !Number.isNaN(idItem)) return `id:${idItem}`;
@@ -605,15 +371,9 @@ const normalizeKey = (a: { id_item: number; nama_item?: string }): string => {
   return `name:${name}`;
 };
 
-// Groups JO-linked allocations by item (same key `normalizeKey`/
-// `aggregateItems` use), combining qty/harga/ppn across every JO-need row
-// (RowGroup) that allocates the item, while keeping a `subGroups` pointer
-// back to each contributing RowGroup + the subset of its allocations that
-// belong to this item — so the UI can render a collapsed summary row and,
-// on expand, the original editable per-JO detail (existing `id` /
-// `id_jo_item` untouched, so saving still updates in place). Manual
-// (non-JO) rows are intentionally excluded; they render as their own
-// cards, same as before, since they aren't part of items_jo.
+// Groups JO-linked allocations by item into summary rows, keeping a
+// `subGroups` pointer back to each contributing RowGroup so the UI can
+// expand a summary row into its editable per-JO detail.
 const buildItemAggGroups = (rows: RowGroup[]): ItemAggGroup[] => {
   type Bucket = {
     key: string;
@@ -684,15 +444,10 @@ const buildItemAggGroups = (rows: RowGroup[]): ItemAggGroup[] => {
   }));
 };
 
-// One entry per distinct id_item, summed across every allocation using it
-// (regardless of which JO/need row it came from) — mirrors CreatePOModal's
-// aggregation, and keeps an existing item's `id` when there was exactly
-// one so the PUT updates in place. This is what keeps `items` as a pure
-// combined buy list while `items_jo` stays per-JO-need.
-//
-// Also carries `is_tax_locked` through so the caller can tell, per
-// aggregated item, whether its PPN is already baked into `harga` (and so
-// must be excluded from the grand total) or should be added on top.
+// One entry per distinct id_item, summed across every allocation using it,
+// keeping an existing item's `id` so the PUT updates in place. `qty` = qty
+// yang dibeli ke vendor (qty_po); item dengan qty vendor 0 (semua dari
+// booking) tidak dikirim di `items`.
 const aggregateItems = (rows: RowGroup[]) => {
   type Bucket = {
     id?: number;
@@ -743,31 +498,31 @@ const aggregateItems = (rows: RowGroup[]) => {
     });
   });
 
-  return Array.from(map.values()).map((b) => {
-    const harga = b.qty > 0 ? Math.round(b.value / b.qty) : 0;
-    return {
-      id: b.id, // undefined for brand-new items — fine, API treats as insert
-      id_item: b.id_item,
-      id_brand: b.id_brand,
-      nama_item: b.nama_item,
-      nama_brand: b.nama_brand,
-      kode_barang: b.kode_barang,
-      qty: b.qty,
-      qty_beli: b.qty,
-      tipe_barang: b.tipe_barang,
-      satuan: b.satuan,
-      harga,
-      total: b.value,
-      ppn: b.ppn,
-      is_ppn: b.is_ppn,
-      is_tax_locked: b.is_tax_locked,
-    };
-  });
+  return Array.from(map.values())
+    .filter((b) => b.qty > 0)
+    .map((b) => {
+      const harga = b.qty > 0 ? Math.round(b.value / b.qty) : 0;
+      return {
+        id: b.id, // undefined for brand-new items — API treats as insert
+        id_item: b.id_item,
+        id_brand: b.id_brand,
+        nama_item: b.nama_item,
+        nama_brand: b.nama_brand,
+        kode_barang: b.kode_barang,
+        qty: b.qty,
+        qty_beli: b.qty,
+        tipe_barang: b.tipe_barang,
+        satuan: b.satuan,
+        harga,
+        total: b.value,
+        ppn: b.ppn,
+        is_ppn: b.is_ppn,
+        is_tax_locked: b.is_tax_locked,
+      };
+    });
 };
 
-// tgl_kirim on every items_jo row mirrors the PO's own Tanggal Kirim field
-// (tglKirimPO) — NOT each JO's individual delivery date. Confirmed against
-// the API contract: "tgl_kirim, SAMA SEPERTI PO".
+// tgl_kirim pada setiap baris items_jo = Tanggal Kirim PO ("SAMA SEPERTI PO").
 const buildItemsJoPayload = (
   rows: RowGroup[],
   idPo: number,
@@ -794,6 +549,15 @@ const buildItemsJoPayload = (
           satuan: a.satuan,
           tgl_kirim: tglKirimPO,
           rencana_cetak: r.jo!.rencana_cetak,
+          // SELALU kirim ulang bila baris ini memakai booking; kalau tidak
+          // dikirim backend menganggap booking dilepas.
+          ...(a.id_purchase_order_booking_item && a.qty_booking > 0
+            ? {
+                id_purchase_order_booking_item:
+                  a.id_purchase_order_booking_item,
+                qty_booking: a.qty_booking,
+              }
+            : {}),
         })),
     );
 
@@ -830,15 +594,12 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
   const [noteInternal, setNoteInternal] = useState<string>('');
   const [discount, setDiscount] = useState<number>(0);
   const [rows, setRows] = useState<RowGroup[]>([]);
-  // Which combined-item summary rows are expanded to show their editable
-  // per-JO detail. Collapsed (not in this set) by default.
   const [expandedItemKeys, setExpandedItemKeys] = useState<Set<string>>(
     new Set(),
   );
 
   // Raw detail payload kept around so rows can be rebuilt once the brand
-  // map arrives (brand names in `items`/`items_jo` are usually populated,
-  // but older POs may need the id -> name fallback).
+  // map arrives.
   const [rawItems, setRawItems] = useState<RawPoItem[]>([]);
   const [rawItemsJo, setRawItemsJo] = useState<RawPoItemJo[]>([]);
 
@@ -853,15 +614,56 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
   );
   const [error, setError] = useState<string>('');
 
-  // --- Substitute-item picker (same as CreatePOModal, scoped to one row) ---
+  // --- Substitute-item picker ---
   const [pickerGroupId, setPickerGroupId] = useState<string | null>(null);
   const [pickerSearchInput, setPickerSearchInput] = useState<string>('');
   const [pickerResults, setPickerResults] = useState<MasterBarangItem[]>([]);
   const [pickerLoading, setPickerLoading] = useState<boolean>(false);
 
+  // --- "Ambil dari PO Booking" picker ---
+  const [bookingTarget, setBookingTarget] = useState<{
+    groupId: string;
+    allocId: string;
+    idItem: number;
+    nama: string;
+  } | null>(null);
+
   const pickerRow = useMemo(
     () => rows.find((r) => r.groupId === pickerGroupId) || null,
     [rows, pickerGroupId],
+  );
+
+  // qty_booking yang SUDAH tersimpan di PO ini, per item booking. Dipakai
+  // untuk batas edit: max = qty_tersedia + qty lama.
+  const previousBookingQty = useMemo(() => {
+    const m = new Map<number, number>();
+    rawItemsJo.forEach((ij) => {
+      if (ij.id_purchase_order_booking_item && ij.qty_booking) {
+        const id = ij.id_purchase_order_booking_item;
+        m.set(id, (m.get(id) || 0) + ij.qty_booking);
+      }
+    });
+    return m;
+  }, [rawItemsJo]);
+
+  // Pilihan tersimpan yang tidak muncul di endpoint `available`
+  // (qty_tersedia = 0 karena semuanya dipakai PO ini sendiri).
+  const savedBookingExtras = useMemo<AvailableBookingItem[]>(
+    () =>
+      rawItemsJo
+        .filter((ij) => ij.id_purchase_order_booking_item)
+        .map((ij) => ({
+          id: ij.id_purchase_order_booking_item as number,
+          id_purchase_order_booking: ij.purchase_order_booking?.id ?? 0,
+          id_item: ij.id_item,
+          nama_item: ij.nama_item,
+          qty_beli: 0,
+          qty_terkirim: 0,
+          qty_pakai: 0,
+          qty_tersedia: 0,
+          purchase_order_booking: ij.purchase_order_booking,
+        })),
+    [rawItemsJo],
   );
 
   useEffect(() => {
@@ -949,8 +751,6 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
           params: {
             limit: 100,
             is_active: true,
-            // tipe_vendor:
-            //   uniqueTipeBarang.length > 0 ? uniqueTipeBarang : undefined,
           },
           withCredentials: true,
         });
@@ -1024,8 +824,6 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
       return next;
     });
 
-  // JO-linked rows are shown through the combined-item summary; manual
-  // (non-JO) rows keep rendering individually below it, same as before.
   const itemAggGroups = useMemo(() => buildItemAggGroups(rows), [rows]);
   const manualDisplayRows = useMemo(() => rows.filter((r) => !r.jo), [rows]);
 
@@ -1073,8 +871,9 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
 
   const handlePickSubstitute = (masterItem: MasterBarangItem) => {
     if (!pickerRow) return;
+    // Kebutuhan terpenuhi = qty vendor + qty booking
     const currentQty = pickerRow.allocations.reduce(
-      (sum, a) => sum + a.qty_po,
+      (sum, a) => sum + a.qty_po + a.qty_booking,
       0,
     );
     const remaining = Math.max(pickerRow.qty_bom - currentQty, 0);
@@ -1099,6 +898,8 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
       pajak_persen: masterItem.pajak ?? DEFAULT_PPN_PERSEN,
       ppn: 0,
       is_substitute: true,
+      id_purchase_order_booking_item: null,
+      qty_booking: 0,
     });
     setRows((prev) =>
       prev.map((row) =>
@@ -1110,14 +911,51 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     closePicker();
   };
 
+  // --- Ambil dari PO Booking ---
+
+  const handlePickBooking = (b: BookingPick) => {
+    if (!bookingTarget) return;
+    setRows((prev) =>
+      prev.map((row) =>
+        row.groupId !== bookingTarget.groupId
+          ? row
+          : {
+              ...row,
+              allocations: row.allocations.map((a) => {
+                if (a.allocId !== bookingTarget.allocId) return a;
+                // Default: ambil sebanyak mungkin dari booking; sisanya tetap
+                // dipesan ke vendor.
+                const take = Math.min(b.max, a.qty_po);
+                return recalcAllocPpn({
+                  ...a,
+                  id_purchase_order_booking_item: b.id,
+                  booking_no_po: b.no_po,
+                  booking_max: b.max,
+                  qty_booking: take,
+                  qty_po: round2(a.qty_po - take),
+                });
+              }),
+            },
+      ),
+    );
+    setBookingTarget(null);
+  };
+
+  const releaseBooking = (groupId: string, a: Allocation) =>
+    updateAllocation(groupId, a.allocId, {
+      qty_po: round2(a.qty_po + a.qty_booking),
+      qty_booking: 0,
+      id_purchase_order_booking_item: null,
+      booking_no_po: undefined,
+      booking_max: undefined,
+    });
+
   const itemsAggregate = useMemo(() => aggregateItems(rows), [rows]);
   const subTotal = useMemo(
     () => itemsAggregate.reduce((sum, it) => sum + it.total, 0),
     [itemsAggregate],
   );
-  // PPN already baked into the master price (is_tax_locked items) — shown
-  // for information only, never added to the grand total, since it's
-  // already part of `harga` / `subTotal`.
+  // PPN already baked into the master price (is_tax_locked items) — info only.
   const ppnIncluded = useMemo(
     () =>
       itemsAggregate
@@ -1125,9 +963,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
         .reduce((sum, it) => sum + it.ppn, 0),
     [itemsAggregate],
   );
-  // PPN from items that are NOT tax-locked but have the PPN checkbox
-  // ticked — calculated on top of harga, and does get added to the total,
-  // same as the original behaviour.
+  // PPN from non-tax-locked items with the checkbox ticked — added on top.
   const ppnAddedToTotal = useMemo(
     () =>
       itemsAggregate
@@ -1135,7 +971,6 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
         .reduce((sum, it) => sum + it.ppn, 0),
     [itemsAggregate],
   );
-  // Combined figure kept for the payload's informational `ppn` field.
   const totalPPN = ppnIncluded + ppnAddedToTotal;
   const grandTotal = subTotal - (discount || 0) + ppnAddedToTotal;
 
@@ -1176,14 +1011,41 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
   const validate = (): string => {
     if (!vendorId) return 'Vendor wajib dipilih.';
     if (rows.length === 0) return 'Minimal 1 item diperlukan.';
+    const bookingUsed = new Map<
+      number,
+      { sum: number; max?: number; no?: string }
+    >();
     for (const row of rows) {
       for (const a of row.allocations) {
         if (!a.nama_item.trim()) return 'Nama barang tidak boleh kosong.';
-        if (a.qty_po <= 0)
-          return `Qty beli untuk "${a.nama_item}" harus lebih dari 0.`;
+        if (a.qty_po + a.qty_booking <= 0)
+          return `Qty beli atau qty booking untuk "${a.nama_item}" harus lebih dari 0.`;
         if (a.harga < 0)
           return `Harga untuk "${a.nama_item}" tidak boleh negatif.`;
+        if (a.qty_booking > 0) {
+          const idB = a.id_purchase_order_booking_item;
+          if (!idB)
+            return `Pilih PO Booking untuk "${a.nama_item}" atau kosongkan qty booking.`;
+          const cur = bookingUsed.get(idB) || {
+            sum: 0,
+            max: a.booking_max,
+            no: a.booking_no_po,
+          };
+          cur.sum += a.qty_booking;
+          // Pakai batas dari baris yang sudah dipilih ulang (jika ada).
+          if (cur.max === undefined) cur.max = a.booking_max;
+          bookingUsed.set(idB, cur);
+        }
       }
+    }
+    // Baris yang dimuat dari data tersimpan belum punya batas di FE
+    // (booking_max kosong) — cek hanya jika batasnya diketahui; sisanya
+    // divalidasi backend dan pesannya ditampilkan.
+    for (const [idB, u] of Array.from(bookingUsed.entries())) {
+      if (u.max !== undefined && u.sum > u.max + 1e-9)
+        return `Total qty booking dari ${u.no || `#${idB}`} (${
+          u.sum
+        }) melebihi qty tersedia (${u.max}).`;
     }
     return '';
   };
@@ -1206,7 +1068,12 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
       console.log('PO updated successfully:', payload);
     } catch (err) {
       console.error('Error updating PO:', err);
-      setError('Gagal menyimpan perubahan. Silakan coba lagi.');
+      setError(
+        getApiErrorMessage(
+          err,
+          'Gagal menyimpan perubahan. Silakan coba lagi.',
+        ),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -1233,21 +1100,25 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
       onSaved();
     } catch (err) {
       console.error('Error submitting PO:', err);
-      setError('Gagal mengajukan PO ke Kabag. Silakan coba lagi.');
+      setError(
+        getApiErrorMessage(
+          err,
+          'Gagal mengajukan PO ke Kabag. Silakan coba lagi.',
+        ),
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Shared allocation-editing table, used both for a manual row's own
-  // table and for the subset of allocations shown under an expanded
-  // combined-item summary row. `canRemove` should reflect the FULL row's
-  // allocation count (so the last remaining line on a row can't be
-  // deleted), not just the length of the subset being displayed here.
+  // Allocation-editing table. `showBooking` = tampilkan baris "Ambil dari
+  // PO Booking" (hanya untuk baris JO, bukan item manual). `canRemove`
+  // mengikuti jumlah alokasi PENUH pada row.
   const renderAllocationsTable = (
     groupId: string,
     allocations: Allocation[],
     canRemove: boolean,
+    showBooking: boolean,
   ) => (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm table-fixed">
@@ -1293,124 +1164,195 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
         </thead>
         <tbody className="divide-y divide-slate-50">
           {allocations.map((a) => (
-            <tr key={a.allocId} className="hover:bg-slate-50/60">
-              <td className="px-3 py-2">
-                <input
-                  type="text"
-                  value={a.kode_barang}
-                  onChange={(e) =>
-                    updateAllocation(groupId, a.allocId, {
-                      kode_barang: e.target.value,
-                    })
-                  }
-                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </td>
-              <td className="px-3 py-2">
-                <div className="flex items-center gap-1.5">
+            <React.Fragment key={a.allocId}>
+              <tr className="hover:bg-slate-50/60">
+                <td className="px-3 py-2">
                   <input
                     type="text"
-                    value={a.nama_item}
+                    value={a.kode_barang}
                     onChange={(e) =>
                       updateAllocation(groupId, a.allocId, {
-                        nama_item: e.target.value,
+                        kode_barang: e.target.value,
                       })
                     }
-                    placeholder="Nama barang"
                     className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
-                  {a.is_substitute && (
-                    <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
-                      Pengganti
-                    </span>
-                  )}
-                </div>
-              </td>
-              <td className="px-3 py-2">
-                <input
-                  type="text"
-                  value={a.nama_brand}
-                  onChange={(e) =>
-                    updateAllocation(groupId, a.allocId, {
-                      nama_brand: e.target.value,
-                    })
-                  }
-                  placeholder="Brand"
-                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </td>
-              <td className="px-3 py-2">
-                <NumberInput
-                  value={a.qty_po}
-                  onChange={(v) =>
-                    updateAllocation(groupId, a.allocId, {
-                      qty_po: v,
-                    })
-                  }
-                  className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </td>
-              <td className="px-3 py-2">
-                <input
-                  type="text"
-                  value={a.satuan}
-                  onChange={(e) =>
-                    updateAllocation(groupId, a.allocId, {
-                      satuan: e.target.value,
-                    })
-                  }
-                  className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </td>
-              <td className="px-3 py-2">
-                <NumberInput
-                  value={a.harga}
-                  onChange={(v) =>
-                    updateAllocation(groupId, a.allocId, {
-                      harga: v,
-                    })
-                  }
-                  className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </td>
-              <td className="px-3 py-2 text-right tabular-nums text-slate-800 font-medium">
-                {formatRupiah(a.qty_po * a.harga)}
-              </td>
-              <td className="px-3 py-2 text-center">
-                <div className="flex flex-col items-center gap-0.5">
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={a.nama_item}
+                      onChange={(e) =>
+                        updateAllocation(groupId, a.allocId, {
+                          nama_item: e.target.value,
+                        })
+                      }
+                      placeholder="Nama barang"
+                      className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    {a.is_substitute && (
+                      <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
+                        Pengganti
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-3 py-2">
                   <input
-                    type="checkbox"
-                    checked={a.is_ppn}
-                    disabled={a.is_tax_locked}
+                    type="text"
+                    value={a.nama_brand}
                     onChange={(e) =>
                       updateAllocation(groupId, a.allocId, {
-                        is_ppn: e.target.checked,
+                        nama_brand: e.target.value,
                       })
                     }
-                    title={
-                      a.is_tax_locked
-                        ? 'Harga sudah termasuk PPN — dihitung otomatis, tidak menambah grand total'
-                        : `PPN ${a.pajak_persen}% jika dicentang`
-                    }
-                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-70"
+                    placeholder="Brand"
+                    className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
-                  <span className="text-[10px] text-slate-400">
-                    {a.pajak_persen}%
-                  </span>
-                </div>
-              </td>
-              <td className="px-3 py-2 text-center">
-                {canRemove && (
-                  <button
-                    onClick={() => removeAllocation(groupId, a.allocId)}
-                    className="text-red-400 hover:text-red-600 transition-colors"
-                    aria-label="Hapus alokasi"
-                  >
-                    ✕
-                  </button>
-                )}
-              </td>
-            </tr>
+                </td>
+                <td className="px-3 py-2">
+                  <NumberInput
+                    value={a.qty_po}
+                    onChange={(v) =>
+                      updateAllocation(groupId, a.allocId, {
+                        qty_po: v,
+                      })
+                    }
+                    className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <input
+                    type="text"
+                    value={a.satuan}
+                    onChange={(e) =>
+                      updateAllocation(groupId, a.allocId, {
+                        satuan: e.target.value,
+                      })
+                    }
+                    className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </td>
+                <td className="px-3 py-2">
+                  <NumberInput
+                    value={a.harga}
+                    onChange={(v) =>
+                      updateAllocation(groupId, a.allocId, {
+                        harga: v,
+                      })
+                    }
+                    className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </td>
+                <td className="px-3 py-2 text-right tabular-nums text-slate-800 font-medium">
+                  {formatRupiah(a.qty_po * a.harga)}
+                </td>
+                <td className="px-3 py-2 text-center">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <input
+                      type="checkbox"
+                      checked={a.is_ppn}
+                      disabled={a.is_tax_locked}
+                      onChange={(e) =>
+                        updateAllocation(groupId, a.allocId, {
+                          is_ppn: e.target.checked,
+                        })
+                      }
+                      title={
+                        a.is_tax_locked
+                          ? 'Harga sudah termasuk PPN — dihitung otomatis, tidak menambah grand total'
+                          : `PPN ${a.pajak_persen}% jika dicentang`
+                      }
+                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-70"
+                    />
+                    <span className="text-[10px] text-slate-400">
+                      {a.pajak_persen}%
+                    </span>
+                  </div>
+                </td>
+                <td className="px-3 py-2 text-center">
+                  {canRemove && !a.is_booking_moved && (
+                    <button
+                      onClick={() => removeAllocation(groupId, a.allocId)}
+                      className="text-red-400 hover:text-red-600 transition-colors"
+                      aria-label="Hapus alokasi"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </td>
+              </tr>
+
+              {/* Baris "Ambil dari PO Booking" (hanya baris JO) */}
+              {showBooking && (
+                <tr className="bg-slate-50/40">
+                  <td colSpan={9} className="px-3 py-1.5">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                      {a.id_purchase_order_booking_item ? (
+                        <>
+                          <span>
+                            Ambil dari PO Booking:{' '}
+                            <b className="text-slate-700">
+                              {a.booking_no_po ||
+                                `#${a.id_purchase_order_booking_item}`}
+                            </b>
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            Qty booking
+                            <span className="w-24">
+                              <NumberInput
+                                value={a.qty_booking}
+                                disabled={a.is_booking_moved}
+                                onChange={(v) =>
+                                  updateAllocation(groupId, a.allocId, {
+                                    qty_booking: v,
+                                  })
+                                }
+                                className="w-full px-2 py-1 text-xs text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50"
+                              />
+                            </span>
+                            {a.booking_max !== undefined && (
+                              <span className="text-slate-400">
+                                / maks {formatQty(a.booking_max)}
+                              </span>
+                            )}
+                          </span>
+                          {a.is_booking_moved ? (
+                            <span className="text-emerald-600">
+                              Sudah dipindah ke gudang booking JO (terkunci)
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => releaseBooking(groupId, a)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              Lepas
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        a.id_item > 0 && (
+                          <button
+                            onClick={() =>
+                              setBookingTarget({
+                                groupId,
+                                allocId: a.allocId,
+                                idItem: a.id_item,
+                                nama: a.nama_item,
+                              })
+                            }
+                            className="font-medium text-indigo-600 hover:text-indigo-800"
+                          >
+                            + Ambil dari PO Booking
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </React.Fragment>
           ))}
         </tbody>
       </table>
@@ -1609,9 +1551,11 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                                 <td colSpan={8} className="p-0 bg-slate-50/60">
                                   <div className="divide-y divide-slate-100">
                                     {ig.subGroups.map((sg) => {
+                                      // Kebutuhan terpenuhi = qty vendor + qty booking
                                       const qtyAllocated =
                                         sg.row.allocations.reduce(
-                                          (sum, a) => sum + a.qty_po,
+                                          (sum, a) =>
+                                            sum + a.qty_po + a.qty_booking,
                                           0,
                                         );
                                       const remaining = sg.row.jo
@@ -1663,6 +1607,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                                               sg.row.groupId,
                                               sg.allocations,
                                               sg.row.allocations.length > 1,
+                                              true,
                                             )}
                                           </div>
                                         </div>
@@ -1680,8 +1625,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                 </div>
               )}
 
-              {/* Manual (non-JO) rows — not part of items_jo, so they stay
-                  individually editable, same as before */}
+              {/* Manual (non-JO) rows — tidak ada booking di sini */}
               {manualDisplayRows.map((row) => (
                 <div
                   key={row.groupId}
@@ -1696,6 +1640,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                     row.groupId,
                     row.allocations,
                     row.allocations.length > 1,
+                    false,
                   )}
                 </div>
               ))}
@@ -1895,6 +1840,17 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* PO Booking picker */}
+      <BookingPickerDialog
+        open={!!bookingTarget}
+        idItem={bookingTarget?.idItem ?? 0}
+        namaItem={bookingTarget?.nama ?? ''}
+        previousQty={previousBookingQty}
+        extraItems={savedBookingExtras}
+        onClose={() => setBookingTarget(null)}
+        onPick={handlePickBooking}
+      />
     </div>
   );
 };

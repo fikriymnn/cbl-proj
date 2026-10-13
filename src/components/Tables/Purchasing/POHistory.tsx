@@ -7,7 +7,6 @@ import Alert from '@mui/material/Alert';
 import {
   PurchaseOrder,
   PurchaseOrderListResponse,
-  StatusTiket,
 } from './Types/Purchasing.types';
 import {
   formatDate,
@@ -15,21 +14,22 @@ import {
   getStatusColor,
   getStatusLabel,
 } from './Types/poStatus';
+import { POKind, poBaseUrl, getApiErrorMessage } from './Types/poApi';
 import POApprovalDetailModal from './POApprovalDetailModal';
-
-// NOTE: adjust this to whatever the real status_tiket value for a
-// "finished" PO is in your StatusTiket union (e.g. 'history', 'selesai').
-// If "history" actually means several final statuses (approved + rejected,
-// for example), swap this single value out for an array and send it as
-// status_tiket[] or similar, matching your API's contract.
-const HISTORY_STATUS_TIKET: StatusTiket = 'approve finance';
-
-const EMPTY_TEXT = 'Belum ada riwayat PO.';
+import POBookingDetailModal from './POBookingDetailModal';
+import POKindTabs from './POKindTabs';
 
 // Read-only history list: same table/pagination/search shell as
-// POApprovalListPage, but fixed to the "history" status_tiket and with no
-// approve/reject actions since these POs are already decided.
-const POHistory: React.FC = () => {
+// POApprovalListPage, but fixed to POs that already reached
+// "approve finance". Untuk kind="booking" ada tombol Close PO selama
+// status_po masih 'progress'.
+const POHistory: React.FC<{ kind?: POKind }> = ({ kind: kindProp }) => {
+  const [kindState, setKindState] = useState<POKind>('po');
+  const showKindTabs = kindProp === undefined;
+  const kind: POKind = kindProp ?? kindState;
+  const isBooking = kind === 'booking';
+  const label = isBooking ? 'PO Booking' : 'PO';
+
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<PurchaseOrder[]>([]);
 
@@ -40,6 +40,7 @@ const POHistory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   const [detailId, setDetailId] = useState<number | null>(null);
+  const [closingId, setClosingId] = useState<number | null>(null);
 
   const [toast, setToast] = useState<{
     open: boolean;
@@ -52,7 +53,7 @@ const POHistory: React.FC = () => {
   });
 
   const fetchData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/purchasing/purchaseOrder`;
+    const url = poBaseUrl(kind);
     try {
       setLoading(true);
       const res = await axios.get<PurchaseOrderListResponse>(url, {
@@ -64,7 +65,7 @@ const POHistory: React.FC = () => {
         },
         withCredentials: true,
       });
-      console.log('PO history data:', res.data);
+      console.log(`${label} history data:`, res.data);
       setData(res.data.data || []);
       if (res.data.total_page) setTotalPages(res.data.total_page);
     } catch (error) {
@@ -72,7 +73,7 @@ const POHistory: React.FC = () => {
       setData([]);
       setToast({
         open: true,
-        message: 'Gagal memuat data riwayat PO.',
+        message: `Gagal memuat data riwayat ${label}.`,
         severity: 'error',
       });
     } finally {
@@ -83,7 +84,7 @@ const POHistory: React.FC = () => {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, searchTerm]);
+  }, [page, limit, searchTerm, kind]);
 
   const handleSearch = () => {
     setSearchTerm(searchInput);
@@ -105,9 +106,49 @@ const POHistory: React.FC = () => {
     () => [searchTerm].filter(Boolean).length,
     [searchTerm],
   );
+  const handleKindChange = (next: POKind) => {
+    if (next === kind) return;
+    setKindState(next);
+    setPage(1);
+    setSearchInput('');
+    setSearchTerm('');
+    setDetailId(null);
+  };
+  // PUT /purchasing/purchaseOrderBooking/close/:id — status_po header & semua
+  // item jadi 'done'. Tanpa body.
+  const handleClosePO = async (idPo: number) => {
+    if (
+      !window.confirm(
+        'Tutup PO Booking ini? Status PO dan semua itemnya menjadi selesai, sisa qty tidak ditunggu lagi.',
+      )
+    )
+      return;
+    setClosingId(idPo);
+    try {
+      await axios.put(`${poBaseUrl('booking')}/close/${idPo}`, undefined, {
+        withCredentials: true,
+      });
+      setToast({
+        open: true,
+        message: 'PO Booking ditutup.',
+        severity: 'success',
+      });
+      fetchData();
+    } catch (error) {
+      console.error('Error closing PO booking:', error);
+      setToast({
+        open: true,
+        message: getApiErrorMessage(error, 'Gagal menutup PO Booking.'),
+        severity: 'error',
+      });
+    } finally {
+      setClosingId(null);
+    }
+  };
 
   return (
     <div className="space-y-5">
+      {showKindTabs && <POKindTabs value={kind} onChange={handleKindChange} />}
       {/* Filter card */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="max-w-md">
@@ -189,7 +230,7 @@ const POHistory: React.FC = () => {
                 <tr>
                   <td colSpan={7} className="px-4 py-14 text-center">
                     <p className="text-slate-600 font-medium text-sm">
-                      {EMPTY_TEXT}
+                      Belum ada riwayat {label}.
                     </p>
                     {activeFilterCount > 0 && (
                       <p className="text-slate-400 text-xs mt-1">
@@ -241,6 +282,15 @@ const POHistory: React.FC = () => {
                         >
                           Detail
                         </button>
+                        {isBooking && po.status_po === 'progress' && (
+                          <button
+                            onClick={() => handleClosePO(po.id)}
+                            disabled={closingId === po.id}
+                            className="text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-lg transition-colors"
+                          >
+                            {closingId === po.id ? 'Menutup...' : 'Close PO'}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -281,15 +331,22 @@ const POHistory: React.FC = () => {
         </Stack>
       </div>
 
-      {/* Detail modal (read-only view; history POs are already decided) */}
-      {detailId !== null && (
-        <POApprovalDetailModal
-          idPo={detailId}
-          role="kabag"
-          onClose={() => setDetailId(null)}
-          onDecided={() => setDetailId(null)}
-        />
-      )}
+      {/* Detail modal */}
+      {detailId !== null &&
+        (isBooking ? (
+          // Tanpa `role` -> murni read-only, tidak ada Tolak/Setujui
+          <POBookingDetailModal
+            idPo={detailId}
+            onClose={() => setDetailId(null)}
+          />
+        ) : (
+          <POApprovalDetailModal
+            idPo={detailId}
+            role="kabag"
+            onClose={() => setDetailId(null)}
+            onDecided={() => setDetailId(null)}
+          />
+        ))}
 
       {/* Toast */}
       <Snackbar

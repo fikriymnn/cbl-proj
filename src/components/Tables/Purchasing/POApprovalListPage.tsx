@@ -15,16 +15,16 @@ import {
   getStatusColor,
   getStatusLabel,
 } from './Types/poStatus';
+import { POKind, poBaseUrl, getApiErrorMessage } from './Types/poApi';
 import POApprovalDetailModal from './POApprovalDetailModal';
+import POBookingDetailModal from './POBookingDetailModal';
+import POKindTabs from './POKindTabs';
 
 type ApprovalRole = 'kabag' | 'finance';
 
 // Which of this role's tickets are showing: not-yet-decided ("incoming",
 // status_tiket = the role's own "request ..." value) or already decided
-// ("history", status_tiket = "history" — confirmed present as a real
-// status_tiket value on purchase_order in the requestCancelpurchaseOrder
-// sample response). If StatusTiket's union in Purchasing.types doesn't
-// already include 'history', add it there.
+// ("history", status_tiket = "history").
 type TicketTab = 'incoming' | 'history';
 
 type ToastState = {
@@ -62,21 +62,20 @@ const ROLE_EMPTY_TEXT: Record<ApprovalRole, Record<TicketTab, string>> = {
 
 type POApprovalListPageProps = {
   role: ApprovalRole;
+  // Kalau diisi, tab disembunyikan dan kind dikunci.
+  kind?: POKind;
 };
 
-// Shared table + approve/reject logic for the Kabag and Finance approval
-// pages. Both pages only differ in which status_tiket they query and which
-// approve/reject endpoints they call, so that's the only thing parameterized.
-//
-// Each role also gets a "Menunggu Approval" / "Riwayat" sub-tab: Incoming
-// queries the role's own pending status_tiket as before; History queries
-// status_tiket = "history" so the approver can look back at PO tickets
-// that have already been decided. Quick actions (Tolak/Setujui) are only
-// shown on the Incoming tab — History is read-only here. NOTE: this list
-// only hides the quick-action buttons; if POApprovalDetailModal lets a
-// user re-decide a ticket from its own "Detail" view, it should also be
-// checked to disable Approve/Reject when the ticket is no longer pending.
-const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
+const POApprovalListPage: React.FC<POApprovalListPageProps> = ({
+  role,
+  kind: kindProp,
+}) => {
+  const [kindState, setKindState] = useState<POKind>('po');
+  const showKindTabs = kindProp === undefined;
+  const kind: POKind = kindProp ?? kindState;
+  const isBooking = kind === 'booking';
+  const label = isBooking ? 'PO Booking' : 'PO';
+
   const [ticketTab, setTicketTab] = useState<TicketTab>('incoming');
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -101,7 +100,7 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
     ticketTab === 'incoming' ? ROLE_STATUS_TIKET[role] : 'history';
 
   const fetchData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/purchasing/purchaseOrder`;
+    const url = poBaseUrl(kind);
     try {
       setLoading(true);
       const res = await axios.get<PurchaseOrderListResponse>(url, {
@@ -120,25 +119,33 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
       setData([]);
       setToast({
         open: true,
-        message: 'Gagal memuat data PO.',
+        message: `Gagal memuat data ${label}.`,
         severity: 'error',
       });
     } finally {
       setLoading(false);
     }
   };
-
+  const handleKindChange = (next: POKind) => {
+    if (next === kind) return;
+    setKindState(next);
+    setTicketTab('incoming');
+    setPage(1);
+    setSearchInput('');
+    setSearchTerm('');
+    setDetailId(null);
+  };
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, searchTerm, statusTiket]);
+  }, [page, limit, searchTerm, statusTiket, kind]);
 
   useEffect(() => {
     // Role changed (shouldn't happen mid-mount, but keep filters sane).
     setPage(1);
     setTicketTab('incoming');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [role]);
+  }, [role, kind]);
 
   const handleSearch = () => {
     setSearchTerm(searchInput);
@@ -167,8 +174,8 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
   );
 
   const runQuickAction = async (idPo: number, action: 'approve' | 'reject') => {
-    const label = action === 'approve' ? 'menyetujui' : 'menolak';
-    if (!window.confirm(`Yakin ingin ${label} PO ini?`)) return;
+    const verb = action === 'approve' ? 'menyetujui' : 'menolak';
+    if (!window.confirm(`Yakin ingin ${verb} ${label} ini?`)) return;
 
     setDecidingId(idPo);
     try {
@@ -176,16 +183,14 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
         action === 'approve'
           ? ROLE_ENDPOINT[role].approve
           : ROLE_ENDPOINT[role].reject;
-      const url = `${
-        import.meta.env.VITE_API_LINK
-      }/purchasing/purchaseOrder/${endpoint}/${idPo}`;
+      const url = `${poBaseUrl(kind)}/${endpoint}/${idPo}`;
       await axios.put(url, undefined, { withCredentials: true });
       setToast({
         open: true,
         message:
           action === 'approve'
-            ? 'PO berhasil disetujui.'
-            : 'PO berhasil ditolak.',
+            ? `${label} berhasil disetujui.`
+            : `${label} berhasil ditolak.`,
         severity: 'success',
       });
       fetchData();
@@ -193,10 +198,12 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
       console.error(`Error on ${action} PO:`, error);
       setToast({
         open: true,
-        message:
+        message: getApiErrorMessage(
+          error,
           action === 'approve'
-            ? 'Gagal menyetujui PO. Silakan coba lagi.'
-            : 'Gagal menolak PO. Silakan coba lagi.',
+            ? `Gagal menyetujui ${label}. Silakan coba lagi.`
+            : `Gagal menolak ${label}. Silakan coba lagi.`,
+        ),
         severity: 'error',
       });
     } finally {
@@ -216,6 +223,7 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
 
   return (
     <div className="space-y-5">
+      {showKindTabs && <POKindTabs value={kind} onChange={handleKindChange} />}
       {/* Menunggu Approval / Riwayat sub-tabs */}
       <div className="flex gap-2">
         {(Object.keys(TICKET_TAB_LABEL) as TicketTab[]).map((t) => (
@@ -314,7 +322,12 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
                 <tr>
                   <td colSpan={7} className="px-4 py-14 text-center">
                     <p className="text-slate-600 font-medium text-sm">
-                      {ROLE_EMPTY_TEXT[role][ticketTab]}
+                      {isBooking
+                        ? ROLE_EMPTY_TEXT[role][ticketTab].replace(
+                            'PO',
+                            'PO Booking',
+                          )
+                        : ROLE_EMPTY_TEXT[role][ticketTab]}
                     </p>
                     {activeFilterCount > 0 && (
                       <p className="text-slate-400 text-xs mt-1">
@@ -425,14 +438,23 @@ const POApprovalListPage: React.FC<POApprovalListPageProps> = ({ role }) => {
       </div>
 
       {/* Detail / decision modal */}
-      {detailId !== null && (
-        <POApprovalDetailModal
-          idPo={detailId}
-          role={role}
-          onClose={() => setDetailId(null)}
-          onDecided={handleDecided}
-        />
-      )}
+      {detailId !== null &&
+        (isBooking ? (
+          <POBookingDetailModal
+            idPo={detailId}
+            // hanya tab "Menunggu Approval" yang boleh memutuskan
+            role={ticketTab === 'incoming' ? role : undefined}
+            onClose={() => setDetailId(null)}
+            onDecided={handleDecided}
+          />
+        ) : (
+          <POApprovalDetailModal
+            idPo={detailId}
+            role={role}
+            onClose={() => setDetailId(null)}
+            onDecided={handleDecided}
+          />
+        ))}
 
       {/* Toast */}
       <Snackbar

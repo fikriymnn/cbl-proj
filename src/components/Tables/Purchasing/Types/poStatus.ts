@@ -11,6 +11,7 @@ export const STATUS_LABELS: Record<StatusPO, string> = {
   'request finance': 'Menunggu Approval Finance',
   'reject kabag': 'Ditolak Kabag',
   'reject finance': 'Ditolak Finance',
+  'approve finance': 'Disetujui Finance',
   proses: 'Proses',
 };
 
@@ -20,6 +21,7 @@ export const STATUS_COLORS: Record<StatusPO, string> = {
   'request finance': 'bg-blue-50 text-blue-700 ring-blue-100',
   'reject kabag': 'bg-red-50 text-red-700 ring-red-100',
   'reject finance': 'bg-red-50 text-red-700 ring-red-100',
+  'approve finance': 'bg-emerald-50 text-emerald-700 ring-emerald-100',
   proses: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
 };
 

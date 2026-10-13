@@ -1,12 +1,15 @@
-// NOTE: Item filter (id_item) added below, same pattern as ListOTSPurchase.tsx.
+// PengajuanPurchase.tsx
 //
-// ASSUMPTION (please adjust if the real API differs):
-//   - Master item list reused from MarketingBarang.tsx: GET {VITE_API_LINK}/master/barang
-//     params: { page, limit, search }
-//   - The pengajuan list endpoint accepts id_item as a comma-separated list of ids:
+// PERUBAHAN (PO Booking):
+//   - Tombol "+ PO Manual" sekarang membuka POBookingFormModal (PO Booking,
+//     beli untuk stok, tanpa JO). Sebelumnya membuka CreatePOModal mode manual.
+//   - "Buat PO (n)" tetap membuat PO biasa dari baris terpilih. CreatePOModal
+//     sekarang hanya melayani mode ini, jadi prop `mode` dihapus.
+//
+// ASSUMPTION (id_item filter), tidak berubah:
+//   - Master item list: GET {VITE_API_LINK}/master/barang  params: { page, limit, search }
+//   - Pengajuan list menerima id_item sebagai comma-separated:
 //     GET {VITE_API_LINK}/purchasing/request  params: { ..., id_item: "14,220" }
-//     If your backend expects repeated query params (id_item[]=14&id_item[]=220)
-//     instead, change the single line marked `// <-- id_item param shape` below.
 
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -31,18 +34,14 @@ import {
   PengajuanListResponse,
 } from './Types/Purchasing.types';
 import CreatePOModal from './CreatePOModal';
+import POBookingFormModal from './POBookingFormModal';
 
 // ---------------------------------------------------------------------------
 // NOTE ON FIELD SOURCES
 // ---------------------------------------------------------------------------
 // The pengajuan row's real item name and category live under `detail_item`
 // (`detail_item.nama_barang` and `detail_item.sub_kategori`, e.g. "Kertas"),
-// not on the top-level `item.nama_item` / `item.tipe_barang` fields this file
-// used before. Everywhere below now reads `item.detail_item?.nama_barang` /
-// `item.detail_item?.sub_kategori` first, falling back to the old top-level
-// fields only so this still compiles if some rows genuinely lack detail_item.
-// `PengajuanItem.detail_item` in Types/Purchasing.types.ts should get
-// `nama_barang: string` and `sub_kategori: string` added to its type.
+// not on the top-level `item.nama_item` / `item.tipe_barang` fields.
 // ---------------------------------------------------------------------------
 
 const getNamaBarang = (item: PengajuanItem): string =>
@@ -68,8 +67,7 @@ const KATEGORI_COLORS: Record<string, string> = {
 };
 
 // Known label overrides for values coming back from the API (sub_kategori /
-// tipe_barang). Anything not listed here is title-cased automatically, so
-// new categories added on the backend show up without a code change.
+// tipe_barang). Anything not listed here is title-cased automatically.
 const KATEGORI_LABEL_OVERRIDES: Record<string, KategoriBarang> = {
   lain_lain: 'Lain-lain',
   'lain-lain': 'Lain-lain',
@@ -83,9 +81,6 @@ const toTitleCase = (value: string): string =>
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 
-// raw category value -> display label. Falls back to title-casing the raw
-// value instead of "Unknown Category" so new categories from the backend
-// render sensibly without needing a code change.
 const getKategoriLabel = (rawKategori?: string): string => {
   const key = (rawKategori || '').trim().toLowerCase();
   if (!key) return 'Tidak Diketahui';
@@ -117,7 +112,6 @@ type ToastState = {
 };
 
 // Minimal shape of a master item, enough to display + select it.
-// Mirrors MasterBarang in MarketingBarang.tsx — trim/extend fields as needed.
 interface MasterItemOption {
   id: number;
   kode_barang: string;
@@ -131,8 +125,7 @@ interface MasterItemListResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Item picker modal: search + paginated table + checkboxes, same pattern
-// as the master barang table in MarketingBarang.tsx / ListOTSPurchase.tsx.
+// Item picker modal: search + paginated table + checkboxes
 // ---------------------------------------------------------------------------
 
 interface ItemPickerModalProps {
@@ -617,8 +610,6 @@ const PengajuanPurchase: React.FC = () => {
   const [rencanaCetakTo, setRencanaCetakTo] = useState<string>('');
   const [tanggalKirimFrom, setTanggalKirimFrom] = useState<string>('');
   const [tanggalKirimTo, setTanggalKirimTo] = useState<string>('');
-  // Raw category values (e.g. ["coating", "corrugated"]). Sent to the API
-  // as a comma-separated string, e.g. "coating, corrugated".
   const [kategoriFilter, setKategoriFilter] = useState<string[]>([]);
   const [noJoFilter, setNoJoFilter] = useState<string>('');
 
@@ -628,10 +619,11 @@ const PengajuanPurchase: React.FC = () => {
   >(new Map());
   const [showItemModal, setShowItemModal] = useState<boolean>(false);
 
+  // PO biasa (dari baris pengajuan terpilih)
   const [showPOModal, setShowPOModal] = useState<boolean>(false);
-  const [poMode, setPoMode] = useState<'from_selection' | 'manual'>(
-    'from_selection',
-  );
+  // PO Booking (dari tombol "+ PO Booking", entri manual untuk stok)
+  const [showBookingModal, setShowBookingModal] = useState<boolean>(false);
+
   const [toast, setToast] = useState<ToastState>({
     open: false,
     message: '',
@@ -644,8 +636,6 @@ const PengajuanPurchase: React.FC = () => {
     label: string;
   } | null>(null);
 
-  // Comma-separated id list, memoized so it's a stable primitive for the
-  // effect dependency array (Map identity changes every render).
   const idItemParam = useMemo(
     () => Array.from(selectedItems.keys()).join(','),
     [selectedItems],
@@ -655,13 +645,6 @@ const PengajuanPurchase: React.FC = () => {
     const url = `${import.meta.env.VITE_API_LINK}/purchasing/request`;
     try {
       setLoading(true);
-      console.log('Fetching pengajuan data with params:', {
-        page,
-        limit,
-        search: searchTerm || undefined,
-        tipe_barang: kategoriFilter.length > 0 ? kategoriFilter : undefined,
-        id_item: idItemParam || undefined,
-      });
       const res: AxiosResponse<PengajuanListResponse> = await axios.get(url, {
         params: {
           page,
@@ -760,7 +743,6 @@ const PengajuanPurchase: React.FC = () => {
 
   const handleKategoriChange = (event: SelectChangeEvent<string[]>) => {
     const { value } = event.target;
-    // On autofill we get a stringified value.
     const next = typeof value === 'string' ? value.split(',') : value;
     setKategoriFilter(next);
     setPage(1);
@@ -833,8 +815,6 @@ const PengajuanPurchase: React.FC = () => {
     [rekapTipeBarang],
   );
 
-  // Dynamic dropdown options built straight from whatever category values
-  // the rekap endpoint returns, so new categories show up automatically.
   const kategoriOptions = useMemo(
     () =>
       rekapTipeBarang
@@ -846,8 +826,6 @@ const PengajuanPurchase: React.FC = () => {
     [rekapTipeBarang],
   );
 
-  // Quick lookup so the Select can render human-friendly labels for the
-  // chips/menu even though the stored values are the raw category values.
   const kategoriLabelByValue = useMemo(
     () => Object.fromEntries(kategoriOptions.map((o) => [o.value, o.label])),
     [kategoriOptions],
@@ -865,33 +843,31 @@ const PengajuanPurchase: React.FC = () => {
     fetchRekapTipeBarang();
   };
 
+  // PO Booking tidak mengonsumsi baris pengajuan, jadi tabel & rekap tidak
+  // perlu di-refresh.
+  const handleBookingCreated = () => {
+    setShowBookingModal(false);
+    setToast({
+      open: true,
+      message: 'PO Booking berhasil dibuat sebagai draft.',
+      severity: 'success',
+    });
+  };
+
   return (
     <div className="space-y-5">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
-        <div>
-          {/* <h1 className="text-xl font-semibold text-slate-800">
-            Pengajuan Pembelian
-          </h1>
-          <p className="text-sm text-slate-500">
-            Kelola dan kelompokkan kebutuhan material menjadi Purchase Order.
-          </p> */}
-        </div>
+        <div></div>
         <div className="flex gap-2">
           <button
-            onClick={() => {
-              setPoMode('manual');
-              setShowPOModal(true);
-            }}
+            onClick={() => setShowBookingModal(true)}
             className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
-            + PO Manual
+            + PO Booking
           </button>
           <button
-            onClick={() => {
-              setPoMode('from_selection');
-              setShowPOModal(true);
-            }}
+            onClick={() => setShowPOModal(true)}
             disabled={selected.size === 0}
             className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
@@ -1307,13 +1283,20 @@ const PengajuanPurchase: React.FC = () => {
         onConfirm={handleItemModalConfirm}
       />
 
-      {/* Create PO modal */}
+      {/* Create PO modal (PO biasa dari baris terpilih) */}
       {showPOModal && (
         <CreatePOModal
-          mode={poMode}
-          selectedItems={poMode === 'from_selection' ? selectedItemsForPO : []}
+          selectedItems={selectedItemsForPO}
           onClose={() => setShowPOModal(false)}
           onSuccess={handlePOCreated}
+        />
+      )}
+
+      {/* Create PO Booking modal (entri manual, untuk stok) */}
+      {showBookingModal && (
+        <POBookingFormModal
+          onClose={() => setShowBookingModal(false)}
+          onSaved={handleBookingCreated}
         />
       )}
 

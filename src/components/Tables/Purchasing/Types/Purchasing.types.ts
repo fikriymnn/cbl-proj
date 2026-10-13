@@ -125,6 +125,7 @@ export type StatusPO =
   | 'request finance'
   | 'reject kabag'
   | 'reject finance'
+  | 'approve finance' // <-- baru: PO Booking yang sudah final
   | 'proses';
 
 export type StatusTiket =
@@ -221,12 +222,12 @@ export interface MasterVendorListResponse {
 
 // ============================================================================
 // Purchase Order — list / detail / update, used by DraftPO, POApprovalPurchase
-// (kabag) and POApprovalFinance.
+// (kabag) and POApprovalFinance. PO Booking memakai header yang sama
+// (lihat PurchaseOrderBooking di bawah).
 //
 // Source: GET    {VITE_API_LINK}/purchasing/purchaseOrder
 //                params: { page, limit, search, status, status_tiket }
 // Detail: GET    {VITE_API_LINK}/purchasing/purchaseOrder/:idPo
-//                (assumed — same resource as the PUT below; returns `items`)
 // Update: PUT    {VITE_API_LINK}/purchasing/purchaseOrder/:idPo
 // Request:PUT    {VITE_API_LINK}/purchasing/purchaseOrder/request/:idPo
 // Approve:PUT    {VITE_API_LINK}/purchasing/purchaseOrder/approveKabag/:idPo
@@ -264,6 +265,8 @@ export interface PurchaseOrder {
   id_approve_finance?: number | null;
   id_reject_kabag?: number | null;
   id_reject_finance?: number | null;
+  id_vendor?: number | null; // <-- baru
+  purchase_name?: string; // <-- baru
   sub_total: number;
   discount: number;
   ppn: number;
@@ -276,6 +279,7 @@ export interface PurchaseOrder {
   note_supplier: string;
   status: StatusPO;
   status_tiket: StatusTiket;
+  status_po?: 'progress' | 'done' | 'request cancel' | 'cancel'; // <-- baru
   is_active?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -330,4 +334,46 @@ export interface PurchaseOrderActionResponse {
   status: number;
   success: boolean;
   message?: string;
+}
+
+// ============================================================================
+// PO Booking — beli untuk stok, tanpa items_jo.
+// Base: {VITE_API_LINK}/purchasing/purchaseOrderBooking
+// ============================================================================
+export interface PurchaseOrderBookingItem {
+  id: number;
+  id_purchase_order_booking?: number;
+  id_item: number;
+  id_brand?: number | null;
+  nama_item: string;
+  nama_brand?: string;
+  kode_barang?: string;
+  qty: number;
+  qty_beli: number;
+  qty_terkirim: number;
+  qty_sisa: number;
+  qty_pakai: number;
+  tipe_barang: string;
+  satuan: string;
+  harga: number;
+  total: number;
+  ppn: number;
+  is_ppn: boolean;
+  status_qc?: 'request qc' | 'approve qc' | 'reject qc' | null;
+  status_po?: 'progress' | 'done';
+  master_barang?: {
+    is_include_tax?: boolean;
+    pajak?: number;
+    kode_barang?: string;
+  };
+}
+
+export interface PurchaseOrderBooking extends Omit<PurchaseOrder, 'items'> {
+  items?: PurchaseOrderBookingItem[];
+}
+
+export interface PurchaseOrderBookingDetailResponse {
+  status: number;
+  success: boolean;
+  data: PurchaseOrderBooking;
 }

@@ -10,22 +10,16 @@ import {
   getStatusColor,
   getStatusLabel,
 } from './Types/poStatus';
+import { getApiErrorMessage } from './Types/poApi';
 
 /* =============================================================================
- * WHAT CHANGED (this pass) — combined-item summary
- * -----------------------------------------------------------------------------
- * JO-linked groups (`group.jo` set) are no longer rendered one-card-per-JO
- * need. They're first combined by item (id_item, falling back to item name
- * when id_item is falsy — same key CreatePOModal/EditPOModal use) into a
- * single read-only summary table: one row per distinct item with its
- * combined qty and combined total. Each summary row has an expand toggle,
- * collapsed by default; expanding it reveals the individual JO-need
- * breakdown rows that make up that item (same columns as before: Qty,
- * Satuan, Harga, PPN/Item, PPN, Total), still read-only — this modal never
- * edits values, it only approves/rejects. Manual (non-JO) groups aren't
- * part of items_jo, so they keep rendering as their own individual cards
- * below the summary table, same as before. The recomputed summary totals
- * (subTotal/ppnIncluded/ppnAddedToTotal/grandTotal) are unchanged.
+ * Detail PO biasa untuk approval Kabag/Finance (read-only + Tolak/Setujui).
+ *
+ * Perubahan pass ini: baris items_jo yang mengambil stok PO Booking
+ * (`qty_booking > 0`) menampilkan tag "Booking <no PO> · <qty>", dan badge
+ * "Lengkap/Sisa/Lebih" menghitung qty_po + qty_booking.
+ *
+ * Catatan: modal ini TIDAK dipakai untuk PO Booking — itu POBookingDetailModal.
  * ========================================================================== */
 
 interface MasterBrandItem {
@@ -74,27 +68,26 @@ interface RawPoItemJo {
   tgl_kirim: string;
   rencana_cetak: string;
   master_barang?: RawMasterBarangRef;
+  // --- booking ---
+  qty_booking?: number;
+  id_purchase_order_booking_item?: number | null;
+  purchase_order_booking?: { id: number; no_purchase_order: string };
 }
 
 interface DisplayAllocation {
   key: string;
-  // Carried through so combined-item grouping can key off it the same way
-  // CreatePOModal/EditPOModal do (falls back to item name when falsy).
   id_item: number;
   nama_item: string;
   nama_brand: string;
   tipe_barang: string;
   satuan: string;
   qty_po: number;
+  qty_booking: number; // qty yang diambil dari PO Booking (0 jika tidak ada)
+  booking_no_po?: string;
   harga: number;
   ppn: number;
   is_ppn: boolean;
-  // Whether this line's harga already has PPN baked in (master_barang.is_include_tax).
-  // Needed at the summary level so its PPN is shown as info-only and excluded
-  // from the grand total, same as CreatePOModal — mirrors is_tax_locked there.
   is_tax_locked: boolean;
-  // PPN for ONE unit of harga (not qty * harga). This is what the PPN
-  // column in the item table shows — a per-item rate, not a line total.
   ppn_per_unit: number;
   total: number;
   is_substitute: boolean;
@@ -106,12 +99,6 @@ interface DisplayGroup {
   allocations: DisplayAllocation[];
 }
 
-// One row per distinct item, combined across every JO-linked DisplayGroup
-// that includes it — mirrors the create/edit modals' combined-item
-// summary, but purely for read-only display. `subGroups` keeps a pointer
-// back to each contributing DisplayGroup + the subset of its allocations
-// that belong to this item, so the UI can expand a summary row into its
-// per-JO breakdown.
 interface DisplayItemAggSubGroup {
   group: DisplayGroup;
   allocations: DisplayAllocation[];
@@ -125,8 +112,8 @@ interface DisplayItemAggGroup {
   totalQty: number;
   avgHarga: number;
   total: number;
-  ppnIncluded: number; // sum of PPN from tax-locked lines — info only
-  ppnAdded: number; // sum of PPN from non-tax-locked, ticked lines
+  ppnIncluded: number;
+  ppnAdded: number;
   subGroups: DisplayItemAggSubGroup[];
 }
 
@@ -142,18 +129,9 @@ const resolveBrandName = (
 };
 
 /**
- * Display-only PPN extraction.
- *
- * `harga` (and therefore the line total) is treated as tax-inclusive.
- * To show how much of that total is PPN, we back out the pre-tax value
- * using the item's own `pajak` rate from master_barang:
- *
- *   hargaBeforeTax = lineTotal / (1 + pajak/100)   // e.g. 1,950,000 / 1.11
- *   displayPpn     = lineTotal - hargaBeforeTax
- *
- * This does NOT read or trust the stored `ppn` field on the item, and it
- * does not mutate `total` or anything sent back to the server on
- * approve/reject — it's purely how this column is rendered.
+ * Display-only PPN extraction. `harga` diperlakukan tax-inclusive; PPN yang
+ * ditampilkan = lineTotal - lineTotal / (1 + pajak/100). Tidak membaca field
+ * `ppn` tersimpan dan tidak mengubah apa pun yang dikirim saat approve/reject.
  */
 const computeDisplayPpn = (
   lineTotal: number,
@@ -194,8 +172,6 @@ const buildRowGroups = (
       const pajakPersen = ij.master_barang?.pajak ?? 0;
       const lineTotal = ij.qty_po * harga;
       const ppn = computeDisplayPpn(lineTotal, pajakPersen, isPpn);
-      // Per-item PPN for display in the table column — computed off harga
-      // alone (one unit), NOT qty * harga.
       const ppnPerUnit = computeDisplayPpn(harga, pajakPersen, isPpn);
       return {
         key: `jo-item-${ij.id}`,
@@ -205,6 +181,8 @@ const buildRowGroups = (
         tipe_barang: ij.tipe_barang,
         satuan: ij.satuan,
         qty_po: ij.qty_po,
+        qty_booking: ij.qty_booking ?? 0,
+        booking_no_po: ij.purchase_order_booking?.no_purchase_order,
         harga,
         ppn,
         is_ppn: isPpn,
@@ -248,6 +226,7 @@ const buildRowGroups = (
             tipe_barang: it.tipe_barang,
             satuan: it.satuan,
             qty_po: it.qty_beli,
+            qty_booking: 0,
             harga: it.harga,
             ppn,
             is_ppn: isPpn,
@@ -263,11 +242,6 @@ const buildRowGroups = (
   return groups;
 };
 
-// Groups JO-linked DisplayGroups by item (id_item, falling back to item
-// name) into read-only combined summary rows, keeping a `subGroups`
-// pointer back to each contributing DisplayGroup for the expand detail.
-// Manual (non-JO) groups are intentionally excluded — they render as
-// their own cards, same as before.
 const buildDisplayItemAggGroups = (
   groups: DisplayGroup[],
 ): DisplayItemAggGroup[] => {
@@ -349,7 +323,7 @@ type ApprovalRole = 'kabag' | 'finance';
 
 type POApprovalDetailModalProps = {
   idPo: number;
-  role: ApprovalRole;
+  role?: ApprovalRole;
   onClose: () => void;
   onDecided: () => void;
 };
@@ -382,8 +356,6 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
   const [rawItems, setRawItems] = useState<RawPoItem[]>([]);
   const [rawItemsJo, setRawItemsJo] = useState<RawPoItemJo[]>([]);
 
-  // Which combined-item summary rows are expanded to show their per-JO
-  // breakdown. Collapsed (not in this set) by default.
   const [expandedItemKeys, setExpandedItemKeys] = useState<Set<string>>(
     new Set(),
   );
@@ -447,8 +419,6 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
       return next;
     });
 
-  // JO-linked groups are shown through the combined-item summary; manual
-  // (non-JO) groups keep rendering individually below it, same as before.
   const itemAggGroups = useMemo(
     () => buildDisplayItemAggGroups(groups),
     [groups],
@@ -459,12 +429,7 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
   );
 
   // Recomputed summary — mirrors CreatePOModal's totals instead of trusting
-  // po.sub_total / po.ppn / po.total from the API. Those stored fields have
-  // been observed coming back with PPN added on top of tax-inclusive prices
-  // (the naive qty*harga*pajak% formula) instead of extracted from them, so
-  // this recalculates from the same tax-aware per-line data used for the
-  // item table's PPN column. po.discount is still read from the server,
-  // since it's a plain stored number rather than a derived one.
+  // po.sub_total / po.ppn / po.total from the API.
   const allAllocations = useMemo(
     () => groups.flatMap((g) => g.allocations),
     [groups],
@@ -473,8 +438,6 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
     () => allAllocations.reduce((sum, a) => sum + a.total, 0),
     [allAllocations],
   );
-  // PPN already baked into harga for is_tax_locked items — info only,
-  // excluded from the grand total since it's already part of `total`.
   const ppnIncluded = useMemo(
     () =>
       allAllocations
@@ -482,8 +445,6 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
         .reduce((sum, a) => sum + a.ppn, 0),
     [allAllocations],
   );
-  // PPN from items that are ticked but NOT tax-locked — added on top of
-  // the subtotal, same as before.
   const ppnAddedToTotal = useMemo(
     () =>
       allAllocations
@@ -496,6 +457,7 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
   const grandTotal = subTotal - discount + ppnAddedToTotal;
 
   const runAction = async (action: 'approve' | 'reject') => {
+    if (!role) return;
     const label = action === 'approve' ? 'menyetujui' : 'menolak';
     if (!window.confirm(`Yakin ingin ${label} PO ini?`)) return;
 
@@ -513,15 +475,21 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
       onDecided();
     } catch (err) {
       console.error(`Error on ${action} PO:`, err);
+      // Approve finance bisa gagal karena stok gudang (booking) — tampilkan
+      // pesan dari backend apa adanya.
       setError(
-        action === 'approve'
-          ? 'Gagal menyetujui PO. Silakan coba lagi.'
-          : 'Gagal menolak PO. Silakan coba lagi.',
+        getApiErrorMessage(
+          err,
+          action === 'approve'
+            ? 'Gagal menyetujui PO. Silakan coba lagi.'
+            : 'Gagal menolak PO. Silakan coba lagi.',
+        ),
       );
     } finally {
       setDeciding(false);
     }
   };
+
   const formatQty = (value: number): string =>
     value.toLocaleString('id-ID', {
       minimumFractionDigits: 0,
@@ -531,8 +499,6 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
   const getAllocationBadge = (
     remaining: number,
   ): { label: string; className: string } => {
-    // Bulatkan ke 2 desimal dulu supaya selisih floating point
-    // (mis. 0.6700000000000017) tidak membuat badge salah baca.
     const rounded = Math.round(remaining * 100) / 100;
 
     if (rounded === 0) {
@@ -550,9 +516,6 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
     };
   };
 
-  // Shared read-only allocation table, used both for a manual group's own
-  // table and for the subset of allocations shown under an expanded
-  // combined-item summary row.
   const renderAllocationsTable = (allocations: DisplayAllocation[]) => (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
@@ -591,11 +554,17 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
           {allocations.map((a) => (
             <tr key={a.key} className="hover:bg-slate-50/60">
               <td className="px-3 py-2.5 text-slate-800 font-medium">
-                <div className="flex items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {a.nama_item}
                   {a.is_substitute && (
                     <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
                       Pengganti
+                    </span>
+                  )}
+                  {a.qty_booking > 0 && (
+                    <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">
+                      Booking {a.booking_no_po || ''} ·{' '}
+                      {formatQty(a.qty_booking)}
                     </span>
                   )}
                 </div>
@@ -648,8 +617,8 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
               )}
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              {po ? po.no_purchase_order : 'Memuat...'} · Approval{' '}
-              {ROLE_LABEL[role]}
+              {po ? po.no_purchase_order : 'Memuat...'}
+              {role ? ` · Approval ${ROLE_LABEL[role]}` : ''}
             </p>
           </div>
           <button
@@ -777,9 +746,12 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
                                 <td colSpan={8} className="p-0 bg-slate-50/60">
                                   <div className="divide-y divide-slate-100">
                                     {ig.subGroups.map((sg) => {
+                                      // qty_po + qty_booking = total yang
+                                      // memenuhi kebutuhan JO
                                       const qtyAllocated =
                                         sg.allocations.reduce(
-                                          (sum, a) => sum + a.qty_po,
+                                          (sum, a) =>
+                                            sum + a.qty_po + a.qty_booking,
                                           0,
                                         );
                                       const remaining = sg.group.jo
@@ -836,8 +808,6 @@ const POApprovalDetailModal: React.FC<POApprovalDetailModalProps> = ({
                 </div>
               )}
 
-              {/* Manual (non-JO) groups — not part of items_jo, so they stay
-                  individually shown, same as before */}
               {manualDisplayGroups.map((group) => (
                 <div
                   key={group.key}

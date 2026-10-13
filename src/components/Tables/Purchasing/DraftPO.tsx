@@ -1,8 +1,3 @@
-// NOTE: No changes needed in this file for the requested updates.
-// It has no editable number inputs, no PPN/grand-total math, no tgl_kirim
-// field, and no "Catatan Internal" field — those all live in
-// EditPOModal.tsx. Reproduced as-is for completeness.
-
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import Pagination from '@mui/material/Pagination/Pagination';
@@ -19,7 +14,10 @@ import {
   getStatusColor,
   getStatusLabel,
 } from './Types/poStatus';
+import { POKind, poBaseUrl, getApiErrorMessage } from './Types/poApi';
 import EditPOModal from './EditPOModal';
+import POBookingFormModal from './POBookingFormModal';
+import POKindTabs from './POKindTabs';
 
 type ToastState = {
   open: boolean;
@@ -39,7 +37,18 @@ const STATUS_FILTER_OPTIONS: { value: string; label: string }[] = [
   { value: 'reject finance', label: 'Ditolak Finance' },
 ];
 
-const DraftPO: React.FC = () => {
+type DraftPOProps = {
+  // 'po' (default) = PO biasa, 'booking' = PO Booking
+  kind?: POKind;
+};
+
+const DraftPO: React.FC<DraftPOProps> = ({ kind: kindProp }) => {
+  const [kindState, setKindState] = useState<POKind>('po');
+  const showKindTabs = kindProp === undefined;
+  const kind: POKind = kindProp ?? kindState;
+  const isBooking = kind === 'booking';
+  const label = isBooking ? 'PO Booking' : 'PO';
+
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<PurchaseOrder[]>([]);
 
@@ -60,7 +69,7 @@ const DraftPO: React.FC = () => {
   });
 
   const fetchData = async (): Promise<void> => {
-    const url = `${import.meta.env.VITE_API_LINK}/purchasing/purchaseOrder`;
+    const url = poBaseUrl(kind);
     try {
       setLoading(true);
       const res = await axios.get<PurchaseOrderListResponse>(url, {
@@ -73,26 +82,34 @@ const DraftPO: React.FC = () => {
         },
         withCredentials: true,
       });
-      console.log('Fetched draft PO data:', res.data);
+      console.log(`Fetched draft ${label} data:`, res.data);
       setData(res.data.data || []);
       if (res.data.total_page) setTotalPages(res.data.total_page);
     } catch (error) {
-      console.error('Error fetching draft PO data:', error);
+      console.error(`Error fetching draft ${label} data:`, error);
       setData([]);
       setToast({
         open: true,
-        message: 'Gagal memuat data draft PO.',
+        message: `Gagal memuat data draft ${label}.`,
         severity: 'error',
       });
     } finally {
       setLoading(false);
     }
   };
-
+  const handleKindChange = (next: POKind) => {
+    if (next === kind) return;
+    setKindState(next);
+    setPage(1);
+    setSearchInput('');
+    setSearchTerm('');
+    setStatusFilter('');
+    setEditingId(null);
+  };
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, searchTerm, statusFilter]);
+  }, [page, limit, searchTerm, statusFilter, kind]);
 
   const handleSearch = () => {
     setSearchTerm(searchInput);
@@ -117,16 +134,14 @@ const DraftPO: React.FC = () => {
   );
 
   const handleQuickSubmit = async (idPo: number) => {
-    if (!window.confirm('Ajukan PO ini ke Kabag untuk approval?')) return;
+    if (!window.confirm(`Ajukan ${label} ini ke Kabag untuk approval?`)) return;
     setSubmittingId(idPo);
     try {
-      const url = `${
-        import.meta.env.VITE_API_LINK
-      }/purchasing/purchaseOrder/request/${idPo}`;
+      const url = `${poBaseUrl(kind)}/request/${idPo}`;
       await axios.put(url, undefined, { withCredentials: true });
       setToast({
         open: true,
-        message: 'PO berhasil diajukan ke Kabag.',
+        message: `${label} berhasil diajukan ke Kabag.`,
         severity: 'success',
       });
       fetchData();
@@ -134,7 +149,10 @@ const DraftPO: React.FC = () => {
       console.error('Error requesting PO:', error);
       setToast({
         open: true,
-        message: 'Gagal mengajukan PO. Silakan coba lagi.',
+        message: getApiErrorMessage(
+          error,
+          `Gagal mengajukan ${label}. Silakan coba lagi.`,
+        ),
         severity: 'error',
       });
     } finally {
@@ -146,7 +164,7 @@ const DraftPO: React.FC = () => {
     setEditingId(null);
     setToast({
       open: true,
-      message: 'Perubahan PO berhasil disimpan.',
+      message: `Perubahan ${label} berhasil disimpan.`,
       severity: 'success',
     });
     fetchData();
@@ -154,6 +172,8 @@ const DraftPO: React.FC = () => {
 
   return (
     <div className="space-y-5">
+      {showKindTabs && <POKindTabs value={kind} onChange={handleKindChange} />}
+
       {/* Filter card */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -257,11 +277,13 @@ const DraftPO: React.FC = () => {
                 <tr>
                   <td colSpan={7} className="px-4 py-14 text-center">
                     <p className="text-slate-600 font-medium text-sm">
-                      Belum ada draft PO
+                      Belum ada draft {label}
                     </p>
                     <p className="text-slate-400 text-xs mt-1">
                       {activeFilterCount > 0
                         ? 'Coba ubah atau reset filter pencarian.'
+                        : isBooking
+                        ? 'Buat PO Booking lewat tombol + PO Booking di halaman Pengajuan Pembelian.'
                         : 'Buat PO dari halaman Pengajuan Pembelian terlebih dahulu.'}
                     </p>
                   </td>
@@ -354,13 +376,20 @@ const DraftPO: React.FC = () => {
       </div>
 
       {/* Edit modal */}
-      {editingId !== null && (
-        <EditPOModal
-          idPo={editingId}
-          onClose={() => setEditingId(null)}
-          onSaved={handleEditSaved}
-        />
-      )}
+      {editingId !== null &&
+        (isBooking ? (
+          <POBookingFormModal
+            idPo={editingId}
+            onClose={() => setEditingId(null)}
+            onSaved={handleEditSaved}
+          />
+        ) : (
+          <EditPOModal
+            idPo={editingId}
+            onClose={() => setEditingId(null)}
+            onSaved={handleEditSaved}
+          />
+        ))}
 
       {/* Toast */}
       <Snackbar
