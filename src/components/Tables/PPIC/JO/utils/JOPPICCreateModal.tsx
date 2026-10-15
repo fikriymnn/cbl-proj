@@ -110,6 +110,44 @@ const formatTanggalID = (value?: string): string => {
   });
 };
 
+// ── NEW: Helper Next JO ──────────────────────────────────────────────────────
+const normalizeNoJO = (v?: string): string =>
+  (v || '').replace(/\s+/g, '').toUpperCase();
+
+// Cek apakah dua nomor JO dianggap sama.
+// - Format lengkap sama persis → sama
+// - Kalau salah satu tidak punya "/", bandingkan bagian dasarnya saja
+//   (mis. "JO-00001" vs "JO-00001/06/2026")
+const isSameNoJO = (a?: string, b?: string): boolean => {
+  const x = normalizeNoJO(a);
+  const y = normalizeNoJO(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+  if (!x.includes('/') || !y.includes('/')) {
+    return x.split('/')[0] === y.split('/')[0];
+  }
+  return false;
+};
+
+// Bersihkan daftar Next JO: buang kosong, no_jo sendiri, dan duplikat.
+const sanitizeNextJO = (value?: string, currentNoJO?: string): string => {
+  if (!value) return '';
+  const seen = new Set<string>();
+
+  return value
+    .split(',')
+    .map((s) => s.trim())
+    .filter((no) => {
+      if (!no || no === '-') return false; // ← tambah pengecekan '-'
+      if (currentNoJO && isSameNoJO(no, currentNoJO)) return false;
+      const key = normalizeNoJO(no);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .join(', ');
+};
+
 const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
   isOpen,
   onClose,
@@ -239,6 +277,18 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       setHasUnsavedChanges(true);
     }
   }, [formData.id_so, formData.id_io, selectedMounting]);
+
+  // NEW: no_jo bisa berubah setelah next_jo terisi (mis. nomor JO baru selesai
+  // di-generate). Saat no_jo berubah, bersihkan lagi next_jo agar tidak
+  // memuat no_jo sendiri.
+  useEffect(() => {
+    if (!formData.no_jo) return;
+    setFormData((prev) => {
+      if (!prev.next_jo) return prev;
+      const cleaned = sanitizeNextJO(prev.next_jo, prev.no_jo);
+      return cleaned === prev.next_jo ? prev : { ...prev, next_jo: cleaned };
+    });
+  }, [formData.no_jo]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -411,10 +461,16 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     }
   };
 
-  // NEW: ambil semua Next JO (GET /ppic/joNext) → isi next_jo sebagai teks
-  // contoh: "JO-00002/06/2026, JO-00003/06/2026"
-  const fetchNextJO = async (idIO: number, tglKirim: string): Promise<void> => {
-    if (!idIO || !tglKirim) return;
+  // ── Fetch Next JO → return teks yang SUDAH difilter ───────────────────────
+  // Setiap item dari API dicek berdasarkan nomor JO-nya:
+  // kalau no_jo-nya sama dengan no_jo JO yang sedang dibuat/diedit, dibuang.
+  // Return null kalau request gagal (supaya caller bisa fallback).
+  const fetchNextJOText = async (
+    idIO: number,
+    tglKirim: string,
+    excludeNoJO?: string,
+  ): Promise<string | null> => {
+    if (!idIO || !tglKirim) return null;
     const url = `${import.meta.env.VITE_API_LINK}/ppic/joNext`;
     try {
       const res: AxiosResponse = await axios.get(url, {
@@ -422,14 +478,35 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         withCredentials: true,
       });
       const list: any[] = res.data?.data || [];
-      const text = list
+      const raw = list
+        .filter((item) => {
+          if (!item?.no_jo) return false;
+          // buang kalau nomornya sama dengan no_jo JO ini
+          if (excludeNoJO && isSameNoJO(item.no_jo, excludeNoJO)) return false;
+          return true;
+        })
         .map((item) => item.no_jo)
-        .filter(Boolean)
         .join(', ');
-      setFormData((prev) => ({ ...prev, next_jo: text }));
+      return sanitizeNextJO(raw, excludeNoJO);
     } catch (error) {
       console.error('Error fetching next JO:', error);
+      return null;
     }
+  };
+
+  // Ambil Next JO lalu isi ke form.
+  const fetchNextJO = async (
+    idIO: number,
+    tglKirim: string,
+    noJO?: string,
+  ): Promise<void> => {
+    if (!idIO || !tglKirim) return;
+    const text = await fetchNextJOText(idIO, tglKirim, noJO);
+    if (text === null) return;
+    setFormData((prev) => ({
+      ...prev,
+      next_jo: sanitizeNextJO(text, noJO || prev.no_jo),
+    }));
   };
 
   // ── Fetch mounting ────────────────────────────────────────────────────────
@@ -597,16 +674,22 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
           no_po_customer:
             joDetail.so?.no_po_customer || joDetail.no_po_customer || '',
           // NEW: frekuensi & next_jo tersimpan (frekuensi akan di-refresh dari API)
+          // next_jo yang tersimpan juga dibersihkan dari no_jo sendiri
           frekuensi: joDetail.frekuensi ?? 1,
-          next_jo: joDetail.next_jo || '',
+          next_jo: sanitizeNextJO(joDetail.next_jo || '', joDetail.no_jo),
           jo_mounting: joDetail.jo_mounting || [],
         });
 
         // NEW: ambil info frekuensi berdasarkan id_io
         fetchFrekuensi({ id_io: joDetail.id_io });
-        // NEW: refresh Next JO (teks) berdasarkan IO + tgl kirim
+        // NEW: refresh Next JO (teks) berdasarkan IO + tgl kirim,
+        // dengan membuang no_jo JO ini sendiri
         if (joDetail.id_io && joDetail.tgl_kirim) {
-          fetchNextJO(joDetail.id_io, joDetail.tgl_kirim.split('T')[0]);
+          fetchNextJO(
+            joDetail.id_io,
+            joDetail.tgl_kirim.split('T')[0],
+            joDetail.no_jo,
+          );
         }
 
         if (joDetail.id_io) {
@@ -835,6 +918,10 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       // Compute block reasons from SO → io.io_mounting[].tahapan[]
       setCreateBlockReasons([]);
 
+      const tglKirim = selectedSO.tgl_pengiriman
+        ? selectedSO.tgl_pengiriman.split('T')[0]
+        : new Date().toISOString().split('T')[0];
+
       setFormData((prev) => ({
         ...prev,
         id_so: selectedSO.id,
@@ -851,9 +938,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         standar_warna: selectedSO.ada_standar_warna || '',
         status_produk: selectedSO.status_produk || '',
         status_jo: selectedSO.status_jo || '-',
-        tgl_kirim: selectedSO.tgl_pengiriman
-          ? selectedSO.tgl_pengiriman.split('T')[0]
-          : new Date().toISOString().split('T')[0],
+        tgl_kirim: tglKirim,
         next_jo: '',
       }));
 
@@ -863,13 +948,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       fetchGudangFGByIdIO(selectedSO.id_io);
       // NEW: info frekuensi
       if (!editMode) fetchFrekuensi({ id_io: selectedSO.id_io });
-      // NEW: Next JO otomatis (teks)
-      fetchNextJO(
-        selectedSO.id_io,
-        selectedSO.tgl_pengiriman
-          ? selectedSO.tgl_pengiriman.split('T')[0]
-          : new Date().toISOString().split('T')[0],
-      );
+      // NEW: Next JO otomatis (teks) — no_jo sendiri dibuang dari daftar
+      fetchNextJO(selectedSO.id_io, tglKirim, formData.no_jo);
     } else {
       // Deselected
       setCreateBlockReasons([]);
@@ -883,6 +963,11 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
     if (selectedIO) {
       // Compute block reasons from IO → io_mounting[].tahapan[]
       setCreateBlockReasons([]);
+
+      const tglKirim = selectedIO.tgl_pengiriman
+        ? selectedIO.tgl_pengiriman.split('T')[0]
+        : new Date().toISOString().split('T')[0];
+
       setFormData((prev) => ({
         ...prev,
         id_so: 0,
@@ -899,9 +984,7 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
         standar_warna: selectedIO.ada_standar_warna || '',
         status_produk: selectedIO.status_produk || '',
         status_jo: '-',
-        tgl_kirim: selectedIO.tgl_pengiriman
-          ? selectedIO.tgl_pengiriman.split('T')[0]
-          : new Date().toISOString().split('T')[0],
+        tgl_kirim: tglKirim,
         // NEW
         next_jo: '',
       }));
@@ -912,13 +995,8 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       fetchGudangFGByIdIO(selectedIO.id);
       // NEW: info frekuensi
       fetchFrekuensi({ id_io: selectedIO.id });
-      // NEW: Next JO otomatis (teks)
-      fetchNextJO(
-        selectedIO.id,
-        selectedIO.tgl_pengiriman
-          ? selectedIO.tgl_pengiriman.split('T')[0]
-          : new Date().toISOString().split('T')[0],
-      );
+      // NEW: Next JO otomatis (teks) — no_jo sendiri dibuang dari daftar
+      fetchNextJO(selectedIO.id, tglKirim, formData.no_jo);
     } else {
       setCreateBlockReasons([]);
       setFrekuensiInfo(null);
@@ -1142,22 +1220,34 @@ const JOPPICCreateModal: React.FC<JOPPICCreateModalProps> = ({
       },
     );
 
-    // NEW: frekuensi & next_jo ikut dikirim saat create dan update
-    const submitData = {
-      ...formData,
-      frekuensi: formData.frekuensi ?? 1,
-      next_jo: formData.next_jo || '',
-      jo_mounting: joMountingData,
-    };
-
     try {
       setLoading(true);
+      // disimpan/diupdate, dibuang dari daftar.
+      let nextJOText = formData.next_jo || '';
+      if (formData.id_io && formData.tgl_kirim) {
+        const fetched = await fetchNextJOText(
+          formData.id_io,
+          formData.tgl_kirim,
+          formData.no_jo,
+        );
+        if (fetched !== null) nextJOText = fetched;
+      }
+      nextJOText = sanitizeNextJO(nextJOText, formData.no_jo);
+
+      const submitData = {
+        ...formData,
+        frekuensi: formData.frekuensi ?? 1,
+        next_jo: nextJOText || '-', // ← kosong dikirim sebagai '-'
+        jo_mounting: joMountingData,
+      };
+
       if (editMode && editJOId) {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jo/${editJOId}`;
         const res: AxiosResponse = await axios.put(url, submitData, {
           withCredentials: true,
         });
         if (res.data.success || res.data.succes) {
+          console.log('JO updated successfully:', submitData);
           alert('JO berhasil diupdate');
           setHasUnsavedChanges(false);
           onSuccess();
