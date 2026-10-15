@@ -1013,9 +1013,16 @@ function TambahBahanPanel({ type }: { type: TabType }) {
                                 className="flex items-center justify-between gap-2 bg-red-50 border border-red-200 rounded px-2 py-0.5"
                                 title={d.deskripsi}
                               >
-                                <span className="font-bold text-gray-800">
-                                  {d.kode}
-                                </span>
+                                <div>
+                                  {' '}
+                                  <span className="font-bold text-gray-800">
+                                    {d.kode}{' '}
+                                  </span>
+                                  <span className="font-bold text-left text-gray-800">
+                                    - {d.deskripsi}
+                                  </span>
+                                </div>
+
                                 <span className="text-[10px] text-red-600 font-semibold whitespace-nowrap">
                                   D: {fmtQty(d.qty_tambah_bahan_druk)} · LP:{' '}
                                   {fmtQty(d.qty_tambah_bahan_lp)}
@@ -1071,7 +1078,7 @@ function TambahBahanMonitoring() {
 
   const tabs: { key: TabType; label: string }[] = [
     { key: 'pemakaian', label: 'Pemakaian' },
-    { key: 'persiapan', label: 'Persiapan' },
+    // { key: 'persiapan', label: 'Persiapan' },
   ];
 
   return (
