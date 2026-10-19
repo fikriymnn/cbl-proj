@@ -1,172 +1,294 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
 import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
-function ProsesPotongHistory() {
-  const [isMobile, setIsMobile] = useState(false);
-  const navigate = useNavigate();
-  const [page, setPage] = useState(1);
+interface PotongJob {
+  id: number;
+  mesin: string;
+  no_jo: string;
+  shift: string | number;
+  bagian?: string | null;
+  customer: string;
+  createdAt: string;
+  item: string;
+  jenis_potong: string;
+}
 
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768);
+interface HistoryResponse {
+  data?: PotongJob[];
+  total_page?: number;
+}
+
+const API_URL = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong`;
+const PAGE_LIMIT = 15;
+
+const TABLE_HEADERS = [
+  'Mesin',
+  'No. JO',
+  'Shift',
+  'Bagian',
+  'Customer',
+  'Tanggal',
+  'Item',
+  'Jenis potong',
+];
+
+const getDetailPath = (job: PotongJob) => {
+  if (job.jenis_potong === 'potong bahan')
+    return `/qc/inspection/potong/bahan/${job.id}`;
+  if (job.jenis_potong === 'potong jadi')
+    return `/qc/inspection/potong/jadi/${job.id}`;
+  return null;
+};
+
+const barColor = (jenis: string) =>
+  jenis === 'potong bahan' ? 'border-green-500' : 'border-blue-500';
+
+function JenisBadge({ jenis }: { jenis: string }) {
+  const isBahan = jenis === 'potong bahan';
+  return (
+    <span
+      className={`inline-block whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${
+        isBahan ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+      }`}
+    >
+      {jenis}
+    </span>
+  );
+}
+
+function ActionLink({
+  path,
+  className = '',
+}: {
+  path: string | null;
+  className?: string;
+}) {
+  if (!path) return null;
+  return (
+    <Link
+      to={path}
+      className={`inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 ${className}`}
+    >
+      Lihat checksheet
+    </Link>
+  );
+}
+
+function JobList({ jobs }: { jobs: PotongJob[] }) {
+  return (
+    <>
+      {/* Tabel (layar lebar) */}
+      <div className="hidden overflow-hidden rounded-xl bg-white shadow-sm lg:block">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-50 text-neutral-500">
+            <tr>
+              {TABLE_HEADERS.map((h) => (
+                <th key={h} scope="col" className="px-3 py-3 font-semibold">
+                  {h}
+                </th>
+              ))}
+              <th scope="col" className="px-3 py-3">
+                <span className="sr-only">Aksi</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-neutral-100 text-neutral-700">
+            {jobs.map((job) => (
+              <tr key={job.id} className="hover:bg-blue-50">
+                <td
+                  className={`border-l-4 px-3 py-3 ${barColor(
+                    job.jenis_potong,
+                  )}`}
+                >
+                  {job.mesin}
+                </td>
+                <td className="px-3 py-3 font-medium">{job.no_jo}</td>
+                <td className="px-3 py-3">{job.shift}</td>
+                <td className="px-3 py-3">{job.bagian ?? '-'}</td>
+                <td className="px-3 py-3">{job.customer}</td>
+                <td className="px-3 py-3 text-xs">
+                  {convertTimeStampToDate(job.createdAt)}
+                </td>
+                <td className="max-w-[220px] px-3 py-3 text-xs">
+                  <span className="line-clamp-2">{job.item}</span>
+                </td>
+                <td className="px-3 py-3">
+                  <JenisBadge jenis={job.jenis_potong} />
+                </td>
+                <td className="px-3 py-3 text-right">
+                  <ActionLink path={getDetailPath(job)} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Kartu (mobile & tablet) */}
+      <ul className="space-y-3 lg:hidden">
+        {jobs.map((job) => (
+          <li
+            key={job.id}
+            className={`rounded-xl border-l-4 bg-white p-4 shadow-sm ${barColor(
+              job.jenis_potong,
+            )}`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <p className="font-semibold text-neutral-800">{job.no_jo}</p>
+              <JenisBadge jenis={job.jenis_potong} />
+            </div>
+            <p className="mt-1 line-clamp-2 text-sm text-neutral-600">
+              {job.item}
+            </p>
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              {[
+                ['Mesin', job.mesin],
+                ['Shift', job.shift],
+                ['Bagian', job.bagian ?? '-'],
+                ['Customer', job.customer],
+                ['Tanggal', convertTimeStampToDate(job.createdAt)],
+              ].map(([label, value]) => (
+                <div key={label as string}>
+                  <dt className="text-xs text-neutral-500">{label}</dt>
+                  <dd className="font-medium text-neutral-700">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <ActionLink path={getDetailPath(job)} className="mt-4 w-full" />
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+function ProsesPotongHistory() {
+  const [data, setData] = useState<HistoryResponse>();
+  const [page, setPage] = useState(1);
+  const [noJo, setNoJo] = useState('');
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function load() {
+      setLoading(true);
+      setError(false);
+      try {
+        const res = await axios.get(API_URL, {
+          params: { search: query, status: 'history', page, limit: PAGE_LIMIT },
+          withCredentials: true,
+        });
+        if (!ignore) setData(res.data);
+      } catch {
+        if (!ignore) setError(true);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [page, query, refresh]);
+
+  const jobs = data?.data ?? [];
+  const totalPage = data?.total_page ?? 1;
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    setQuery(noJo.trim());
+    setRefresh((n) => n + 1);
   };
 
-  useEffect(() => {
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const handleReset = () => {
+    setNoJo('');
+    setQuery('');
+    setPage(1);
+  };
 
-  const [pondMesin, setPondMesin] = useState<any>();
-  const [noJo, setNoJo] = useState<string>('');
-
-  useEffect(() => {
-    getPondMesin();
-  }, [page]);
-
-  async function getPondMesin() {
-    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong`;
-    try {
-      const res = await axios.get(url, {
-        params: { search: noJo, status: 'history', page, limit: 15 },
-        withCredentials: true,
-      });
-      setPondMesin(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-
-  const colStyle = 'text-neutral-500 text-sm font-semibold px-3 py-4';
-  const cellStyle = 'text-neutral-700 text-sm px-3 py-4';
+  const messageCls =
+    'rounded-xl bg-white px-4 py-10 text-center text-sm shadow-sm';
 
   return (
-    <main className="overflow-x-auto">
-      <div className="min-w-[900px] bg-white rounded-xl shadow-sm ">
-        {/* Search bar */}
-        <div className="flex items-end justify-end gap-3 px-4 py-3 border-b-8 border-[#D8EAFF] bg-gray-50 rounded-t-xl">
-          <div className="flex flex-col gap-1">
-            <p className="text-xs text-blue-600 font-semibold">Cari</p>
-            <input
-              className="rounded-md h-8 bg-[#D8EAFF] px-3 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              placeholder="Nomor JO"
-              type="text"
-              value={noJo}
-              onChange={(e) => setNoJo(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && getPondMesin()}
-            />
-          </div>
+    <main className="space-y-4">
+      <form
+        onSubmit={handleSearch}
+        className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-end"
+      >
+        <label className="block flex-1 sm:max-w-xs">
+          <span className="mb-1 block text-xs font-semibold text-blue-600">
+            Nomor JO
+          </span>
+          <input
+            type="search"
+            value={noJo}
+            onChange={(e) => setNoJo(e.target.value)}
+            placeholder="Contoh: JO-00806/06/2026"
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 sm:text-sm"
+          />
+        </label>
+        <div className="flex gap-2">
           <button
-            onClick={getPondMesin}
-            className="bg-blue-600 hover:bg-blue-500 transition-colors text-white rounded-md px-4 py-1.5 text-sm font-medium h-8"
+            type="submit"
+            className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500 sm:flex-none"
           >
             Cari
           </button>
-        </div>
-
-        {/* Header */}
-        <div
-          className="grid border-b-8 border-[#D8EAFF] bg-gray-50"
-          style={{
-            gridTemplateColumns:
-              '80px 110px 60px 80px 160px 170px 200px 130px 90px',
-          }}
-        >
-          <div className={colStyle}>Mesin</div>
-          <div className={colStyle}>No. JO</div>
-          <div className={colStyle}>Shift</div>
-          <div className={colStyle}>Bagian</div>
-          <div className={colStyle}>Customer</div>
-          <div className={colStyle}>Tanggal</div>
-          <div className={colStyle}>Item</div>
-          <div className={colStyle + ' uppercase'}>Jenis Potong</div>
-          <div className={colStyle}></div>
-        </div>
-
-        {/* Rows */}
-        {pondMesin?.data?.map((data: any, i: number) => {
-          const tglTicket = convertTimeStampToDate(data.createdAt);
-          const isPotongBahan = data.jenis_potong === 'potong bahan';
-
-          return (
-            <div
-              key={i}
-              className="grid border-b-8 border-[#D8EAFF] items-center hover:bg-blue-50 transition-colors"
-              style={{
-                gridTemplateColumns:
-                  '80px 110px 60px 80px 160px 170px 200px 130px 90px',
-              }}
+          {query && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 sm:flex-none"
             >
-              {/* Mesin with left color bar */}
-              <div className="flex items-center h-full">
-                <div
-                  className={`w-1.5 self-stretch flex-shrink-0 ${
-                    isPotongBahan ? 'bg-green-500' : 'bg-blue-500'
-                  }`}
-                />
-                <span className={cellStyle + ' flex-1'}>{data.mesin}</span>
-              </div>
+              Reset
+            </button>
+          )}
+        </div>
+      </form>
 
-              <div className={cellStyle + ' font-medium'}>{data.no_jo}</div>
-              <div className={cellStyle}>{data.shift}</div>
-              <div className={cellStyle}>{data.bagian ?? '-'}</div>
-              <div className={cellStyle}>{data.customer}</div>
-              <div className={cellStyle + ' text-xs'}>{tglTicket}</div>
-              <div className={cellStyle + ' text-xs line-clamp-2'}>
-                {data.item}
-              </div>
+      {error ? (
+        <div className={`${messageCls} text-red-600`}>
+          <p>Data gagal dimuat. Periksa koneksi, lalu coba lagi.</p>
+          <button
+            type="button"
+            onClick={() => setRefresh((n) => n + 1)}
+            className="mt-3 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-500"
+          >
+            Muat ulang
+          </button>
+        </div>
+      ) : loading ? (
+        <div className={`${messageCls} text-neutral-400`}>Memuat data…</div>
+      ) : jobs.length === 0 ? (
+        <div className={`${messageCls} text-neutral-400`}>
+          {query
+            ? `Tidak ada riwayat untuk "${query}".`
+            : 'Belum ada riwayat inspeksi.'}
+        </div>
+      ) : (
+        <JobList jobs={jobs} />
+      )}
 
-              {/* Jenis Potong badge */}
-              <div className="px-3 py-4">
-                <span
-                  className={`inline-block text-xs font-semibold uppercase px-2 py-1 rounded-full ${
-                    isPotongBahan
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}
-                >
-                  {data.jenis_potong}
-                </span>
-              </div>
-
-              {/* Action button */}
-              <div className="px-3 py-4 flex justify-end">
-                {(isPotongBahan || data.jenis_potong === 'potong jadi') && (
-                  <Link
-                    to={`/qc/inspection/potong/${
-                      isPotongBahan ? 'bahan' : 'jadi'
-                    }/${data.id}`}
-                  >
-                    <button className="uppercase px-4 py-1.5 rounded text-white text-xs font-bold bg-blue-600 hover:bg-blue-500 transition-colors">
-                      PILIH
-                    </button>
-                  </Link>
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {(!pondMesin?.data || pondMesin.data.length === 0) && (
-          <div className="text-center text-gray-400 py-10 text-sm">
-            Tidak ada data
-          </div>
-        )}
-      </div>
-
-      {/* Pagination */}
-      <div className="w-full flex justify-center mt-5">
-        <Stack spacing={2}>
+      {totalPage > 1 && (
+        <div className="flex justify-center pt-2">
           <Pagination
-            count={pondMesin?.total_page}
+            count={totalPage}
+            page={page}
             color="primary"
-            onChange={(_, i) => setPage(i)}
+            siblingCount={0}
+            onChange={(_, p) => setPage(p)}
           />
-        </Stack>
-      </div>
+        </div>
+      )}
     </main>
   );
 }

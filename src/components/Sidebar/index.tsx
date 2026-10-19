@@ -63,7 +63,50 @@ const Sidebar = ({
 
     return false;
   };
+  const [searchQuery, setSearchQuery] = useState('');
 
+  const isDeveloper = String(role ?? '').toLowerCase() === 'developer';
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const isSearching = isDeveloper && normalizedQuery !== '';
+
+  // Filter menu item secara rekursif berdasarkan nama
+  const filterItemsByName = (items: MenuItem[], query: string): MenuItem[] =>
+    items.reduce<MenuItem[]>((acc, item) => {
+      const selfMatch = item.name.toLowerCase().includes(query);
+
+      if (item.children && item.children.length > 0) {
+        // Jika nama parent cocok, tampilkan semua child-nya
+        if (selfMatch) {
+          acc.push(item);
+          return acc;
+        }
+        const matchedChildren = filterItemsByName(item.children, query);
+        if (matchedChildren.length > 0) {
+          acc.push({ ...item, children: matchedChildren });
+        }
+      } else if (selfMatch) {
+        acc.push(item);
+      }
+      return acc;
+    }, []);
+
+  // Filter kategori berdasarkan nama kategori atau nama menu di dalamnya
+  const filterCategoriesByName = (
+    categories: MenuCategory[],
+    query: string,
+  ): MenuCategory[] =>
+    categories.reduce<MenuCategory[]>((acc, category) => {
+      // Jika nama kategori cocok, tampilkan semua isinya
+      if (category.name.toLowerCase().includes(query)) {
+        acc.push(category);
+        return acc;
+      }
+      const matchedItems = filterItemsByName(category.items, query);
+      if (matchedItems.length > 0) {
+        acc.push({ ...category, items: matchedItems });
+      }
+      return acc;
+    }, []);
   // Render menu items recursively
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
     const hasChildren = item.children && item.children.length > 0;
@@ -74,6 +117,7 @@ const Sidebar = ({
         <SidebarLinkGroup
           key={item.path + item.name}
           activeCondition={isActive}
+          forceOpen={isSearching}
         >
           {(handleClick, open) => (
             <React.Fragment>
@@ -162,7 +206,11 @@ const Sidebar = ({
     const categoryActive = isCategoryActive(category);
 
     return (
-      <SidebarLinkGroup key={category.name} activeCondition={categoryActive}>
+      <SidebarLinkGroup
+        key={category.name}
+        activeCondition={categoryActive}
+        forceOpen={isSearching}
+      >
         {(handleClick, open) => (
           <React.Fragment>
             <NavLink
@@ -213,28 +261,33 @@ const Sidebar = ({
 
   // Get filtered menu categories based on permissions or API menu data
   const getFilteredMenus = (): MenuCategory[] => {
-    // Check if we should use custom menu from API
     const useCustomMenu = localStorage.getItem('useCustomMenu') === 'true';
     const userMenuData = localStorage.getItem('userMenu');
+
+    let menus: MenuCategory[] | null = null;
 
     if (useCustomMenu && userMenuData) {
       try {
         const parsedMenu = JSON.parse(userMenuData);
-
-        // Check if the parsed menu has custom menu data
         if (hasCustomMenu(parsedMenu)) {
-          // Transform API menu to MenuCategory format
-          return transformAPIMenuToCategories(parsedMenu);
+          menus = transformAPIMenuToCategories(parsedMenu);
         }
       } catch (error) {
         console.error('Error parsing user menu from localStorage:', error);
       }
     }
 
-    // Fallback to rbacConfig-based filtering
-    return filterCategoriesByPermissions(menuCategories, role, bagian);
-  };
+    if (!menus) {
+      menus = filterCategoriesByPermissions(menuCategories, role, bagian);
+    }
 
+    // Search khusus developer
+    if (isSearching) {
+      return filterCategoriesByName(menus, normalizedQuery);
+    }
+
+    return menus;
+  };
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!sidebar.current || !trigger.current) return;
@@ -306,9 +359,36 @@ const Sidebar = ({
 
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
         <nav className="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
+          {isDeveloper && (
+            <div className="relative mb-5">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari menu..."
+                className="w-full rounded-md border border-white/20 bg-white/10 py-2 pl-3 pr-9 text-sm text-white placeholder-white/60 outline-none focus:border-white/50"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Hapus pencarian"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          )}
+
           <div>
             <ul className="mb-6 flex flex-col gap-1.5">
               {getFilteredMenus().map((category) => renderCategory(category))}
+              {isSearching && getFilteredMenus().length === 0 && (
+                <li className="px-4 py-2 text-sm text-white/70">
+                  Menu tidak ditemukan
+                </li>
+              )}
             </ul>
           </div>
         </nav>

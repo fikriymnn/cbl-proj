@@ -121,6 +121,19 @@ function fmtQty(val: number | null | undefined) {
   if (val == null) return '-';
   return val.toLocaleString('id-ID');
 }
+// total_waktu dari API dalam detik (bisa berupa string)
+function fmtDuration(sec: number | string | null | undefined) {
+  const s = Number(sec);
+  if (sec == null || sec === '' || isNaN(s) || s <= 0) return '-';
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const d = Math.floor(s % 60);
+  const parts: string[] = [];
+  if (h) parts.push(`${h}j`);
+  if (m) parts.push(`${m}m`);
+  if (d || parts.length === 0) parts.push(`${d}d`);
+  return parts.join(' ');
+}
 
 function buildDefaultFilters(): Filters {
   return {
@@ -233,6 +246,11 @@ function DetailModal({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // histori kendala per JO
+  const [kendala, setKendala] = useState<any[]>([]);
+  const [kendalaLoading, setKendalaLoading] = useState(false);
+  const [kendalaError, setKendalaError] = useState(false);
+
   // GET /gudangRM/tambahBahan{Persiapan|Pemakaian}/:id
   useEffect(() => {
     let cancelled = false;
@@ -257,6 +275,45 @@ function DetailModal({
       cancelled = true;
     };
   }, [id, type]);
+
+  // id_jo diambil dari detail (fallback ke job_order.id)
+  const idJo: number | null = row?.id_jo ?? row?.job_order?.id ?? null;
+
+  // GET /produksi/historyKendalaByJo/:id_jo
+  useEffect(() => {
+    if (idJo == null) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setKendalaLoading(true);
+        setKendalaError(false);
+        const res = await axios.get(
+          `${
+            import.meta.env.VITE_API_LINK
+          }/produksi/historyKendalaByJo/${idJo}`,
+          { withCredentials: true },
+        );
+        console.log('fetchKendala', idJo, res.data);
+        if (!cancelled) setKendala(normalizeList(res.data));
+      } catch (err) {
+        console.error(err);
+        if (!cancelled) {
+          setKendala([]);
+          setKendalaError(true);
+        }
+      } finally {
+        if (!cancelled) setKendalaLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [idJo]);
+
+  const totalKendalaSec = useMemo(
+    () => kendala.reduce((sum, k) => sum + (Number(k.total_waktu) || 0), 0),
+    [kendala],
+  );
 
   if (isLoading) return <Loading />;
 
@@ -334,7 +391,7 @@ function DetailModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col">
         <div className="bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 text-white rounded-t-2xl flex justify-between items-start flex-shrink-0">
           <div>
             <h3 className="text-lg font-bold">
@@ -366,7 +423,7 @@ function DetailModal({
             <h4 className="text-sm font-semibold text-gray-700 mb-3">
               Informasi JO
             </h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
               {info.map(([label, val]) => (
                 <div key={label}>
                   <p className="text-gray-400 font-medium mb-0.5">{label}:</p>
@@ -413,43 +470,150 @@ function DetailModal({
             </div>
           </div>
 
-          {/* Defect */}
-          {defects.length > 0 && (
-            <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-              <h4 className="text-xs font-semibold text-red-700 mb-3">
-                Defect ({defects.length})
-              </h4>
-              <div className="space-y-1.5">
-                {defects.map((d: any) => (
-                  <div
-                    key={d.id}
-                    className="bg-white rounded-lg border border-red-200 grid grid-cols-2 sm:grid-cols-4 gap-2 px-3 py-2 text-xs"
-                  >
-                    <div>
-                      <p className="text-gray-400 mb-0.5">Kode</p>
-                      <p className="font-bold text-gray-800">{d.kode}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 mb-0.5">Deskripsi</p>
-                      <p className="font-medium text-gray-700">{d.deskripsi}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 mb-0.5">Qty Druk</p>
-                      <p className="font-bold text-red-600">
-                        {fmtQty(d.qty_tambah_bahan_druk)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 mb-0.5">Qty LP</p>
-                      <p className="font-bold text-red-600">
-                        {fmtQty(d.qty_tambah_bahan_lp)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+          {/* Histori Kendala (kiri) + Defect (kanan) */}
+          <div
+            className={`grid grid-cols-1 gap-4 ${
+              defects.length > 0 ? 'lg:grid-cols-2' : ''
+            }`}
+          >
+            {/* Histori Kendala */}
+            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+              <div className="flex items-center justify-between mb-3 gap-2">
+                <h4 className="text-xs font-semibold text-amber-700">
+                  Histori Kendala JO ({kendala.length})
+                </h4>
+                {kendala.length > 0 && (
+                  <span className="text-[10px] font-semibold text-amber-800 bg-amber-100 border border-amber-200 rounded-full px-2 py-0.5 whitespace-nowrap">
+                    Total: {fmtDuration(totalKendalaSec)}
+                  </span>
+                )}
               </div>
+
+              {kendalaLoading ? (
+                <p className="text-xs text-gray-500 text-center py-6">
+                  Memuat histori kendala...
+                </p>
+              ) : kendalaError ? (
+                <p className="text-xs text-red-600 text-center py-6">
+                  Gagal memuat histori kendala.
+                </p>
+              ) : kendala.length === 0 ? (
+                <p className="text-xs text-gray-500 text-center py-6">
+                  Tidak ada histori kendala
+                </p>
+              ) : (
+                <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
+                  {kendala.map((k: any) => (
+                    <div
+                      key={k.id}
+                      className="bg-white rounded-lg border border-amber-200 px-3 py-2 text-xs"
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="min-w-0">
+                          <span className="font-bold text-gray-800">
+                            {k.kode}
+                          </span>
+                          <span className="font-medium text-gray-700">
+                            {' '}
+                            - {k.deskripsi}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-1.5 py-0.5 whitespace-nowrap">
+                          {fmtDuration(k.total_waktu)}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                        <div>
+                          <span className="text-gray-400">Tahapan: </span>
+                          <span className="font-medium text-gray-700">
+                            {k.tahapan?.nama_tahapan ?? '-'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Mesin: </span>
+                          <span className="font-medium text-gray-700">
+                            {k.mesin?.nama_mesin ?? '-'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Operator: </span>
+                          <span className="font-medium text-gray-700">
+                            {k.operator?.nama ?? '-'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Status: </span>
+                          <span className="font-medium text-gray-700 capitalize">
+                            {k.status ?? '-'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Mulai: </span>
+                          <span className="font-medium text-gray-700">
+                            {fmtDateTime(k.waktu_mulai)}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Selesai: </span>
+                          <span className="font-medium text-gray-700">
+                            {fmtDateTime(k.waktu_selesai)}
+                          </span>
+                        </div>
+                        {k.note ? (
+                          <div className="col-span-2">
+                            <span className="text-gray-400">Catatan: </span>
+                            <span className="font-medium text-gray-700">
+                              {k.note}
+                            </span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Defect */}
+            {defects.length > 0 && (
+              <div className="bg-red-50 rounded-xl p-4 border border-red-200">
+                <h4 className="text-xs font-semibold text-red-700 mb-3">
+                  Defect ({defects.length})
+                </h4>
+                <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
+                  {defects.map((d: any) => (
+                    <div
+                      key={d.id}
+                      className="bg-white rounded-lg border border-red-200 grid grid-cols-2 gap-2 px-3 py-2 text-xs"
+                    >
+                      <div>
+                        <p className="text-gray-400 mb-0.5">Kode</p>
+                        <p className="font-bold text-gray-800">{d.kode}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-0.5">Deskripsi</p>
+                        <p className="font-medium text-gray-700">
+                          {d.deskripsi}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-0.5">Qty Druk</p>
+                        <p className="font-bold text-red-600">
+                          {fmtQty(d.qty_tambah_bahan_druk)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 mb-0.5">Qty LP</p>
+                        <p className="font-bold text-red-600">
+                          {fmtQty(d.qty_tambah_bahan_lp)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Alur tiket */}
           <div className="bg-gray-50 rounded-xl p-4">

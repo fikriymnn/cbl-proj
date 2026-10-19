@@ -295,6 +295,11 @@ import ListArPage from './pages/Accounting/ListArPage';
 import RekapInvoicePage from './pages/Accounting/RekapInvoicePage';
 import MonitoringTambahBahanPage from './pages/Monitoring/MonitoringTambahBahanPage';
 import MonitoringKurangQtyPage from './pages/Monitoring/MonitoringKurangQtyPage';
+import ListOutstandingGRPage from './pages/Accounting/Pembelian/ListOutstandingGRPage';
+import ListInvoiceRequestAPPage from './pages/Accounting/Pembelian/ListInvoiceAPPage';
+import ListInvoiceApproveAPPage from './pages/Accounting/Pembelian/ListInvoiceApproveAPPage';
+import ListGRPage from './pages/Accounting/Pembelian/ListGRPage';
+import ListAllInvoiceAPPage from './pages/Accounting/Pembelian/ListAllInvoiceAPPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2008,6 +2013,47 @@ function App() {
             </P>
           }
         />
+        <Route
+          path="/accounting/list-outstanding-pembelian"
+          element={
+            <P>
+              <ListOutstandingGRPage />
+            </P>
+          }
+        />
+        <Route
+          path="/accounting/list-request-invoice-pembelian"
+          element={
+            <P>
+              <ListInvoiceRequestAPPage />
+            </P>
+          }
+        />
+        <Route
+          path="/accounting/list-approve-invoice-pembelian"
+          element={
+            <P>
+              <ListInvoiceApproveAPPage />
+            </P>
+          }
+        />
+        <Route
+          path="/accounting/list-gr"
+          element={
+            <P>
+              <ListGRPage />
+            </P>
+          }
+        />
+        <Route
+          path="/accounting/list-all-invoice-ap"
+          element={
+            <P>
+              <ListAllInvoiceAPPage />
+            </P>
+          }
+        />
+
         {/* ============== MASTER DATA ROUTES ============== */}
         {/* Maintenance Master */}
         <Route
