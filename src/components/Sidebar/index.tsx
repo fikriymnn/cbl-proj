@@ -65,7 +65,9 @@ const Sidebar = ({
   };
   const [searchQuery, setSearchQuery] = useState('');
 
-  const isDeveloper = String(role ?? '').toLowerCase() === 'developer';
+  const isDeveloper =
+    String(role ?? '').toLowerCase() === 'developer' ||
+    String(role ?? '').toLowerCase() === 'super admin';
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const isSearching = isDeveloper && normalizedQuery !== '';
 
