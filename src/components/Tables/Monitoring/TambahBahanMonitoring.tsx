@@ -7,6 +7,9 @@ import Select from 'react-select';
 
 type TabType = 'pemakaian' | 'persiapan';
 
+const API = import.meta.env.VITE_API_LINK;
+const API_P1 = import.meta.env.VITE_API_LINK_P1;
+
 // endpoint per tab
 const ENDPOINT: Record<TabType, string> = {
   persiapan: '/gudangRM/tambahBahanPersiapan',
@@ -121,19 +124,17 @@ function fmtQty(val: number | null | undefined) {
   if (val == null) return '-';
   return val.toLocaleString('id-ID');
 }
-// total_waktu dari API dalam detik (bisa berupa string)
-function fmtDuration(sec: number | string | null | undefined) {
-  const s = Number(sec);
-  if (sec == null || sec === '' || isNaN(s) || s <= 0) return '-';
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const d = Math.floor(s % 60);
-  const parts: string[] = [];
-  if (h) parts.push(`${h}j`);
-  if (m) parts.push(`${m}m`);
-  if (d || parts.length === 0) parts.push(`${d}d`);
-  return parts.join(' ');
-}
+
+const norm = (v: any) =>
+  String(v ?? '')
+    .trim()
+    .toLowerCase();
+
+const fmtTemuan = (v: any) => {
+  if (v == null || v === '') return '-';
+  if (Array.isArray(v)) return v.length ? v.join(', ') : '-';
+  return String(v);
+};
 
 function buildDefaultFilters(): Filters {
   return {
@@ -162,6 +163,38 @@ function toTime(iso: string | null | undefined) {
   if (!iso) return null;
   const t = new Date(iso).getTime();
   return isNaN(t) ? null : t;
+}
+
+// Cache di level modul: master + P1 + reportWaste cukup diambil sekali
+let wasteReportCache: Promise<any> | null = null;
+
+function fetchWasteReport(): Promise<any> {
+  if (!wasteReportCache) {
+    wasteReportCache = (async () => {
+      const master = await axios.get(
+        `${API}/master/produksi/wasteKendalaFormating`,
+        {},
+      );
+      const p1 = await axios.get(`${API_P1}/api/waste-lkh`, {
+        params: { first_date: null, last_date: null },
+      });
+      const res = await axios.post(
+        `${API}/reportWaste`,
+        {
+          data_waste_master: master.data.waste,
+          data_waste_p1: p1.data,
+          start_date: null,
+          end_date: null,
+        },
+        { withCredentials: true },
+      );
+      return res.data;
+    })().catch((err) => {
+      wasteReportCache = null; // gagal → boleh dicoba lagi
+      throw err;
+    });
+  }
+  return wasteReportCache;
 }
 
 // nilai yang dipakai untuk sorting tiap kolom
@@ -246,10 +279,10 @@ function DetailModal({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // histori kendala per JO
-  const [kendala, setKendala] = useState<any[]>([]);
-  const [kendalaLoading, setKendalaLoading] = useState(false);
-  const [kendalaError, setKendalaError] = useState(false);
+  // histori waste per JO
+  const [wasteJo, setWasteJo] = useState<any | null>(null);
+  const [wasteLoading, setWasteLoading] = useState(false);
+  const [wasteError, setWasteError] = useState(false);
 
   // GET /gudangRM/tambahBahan{Persiapan|Pemakaian}/:id
   useEffect(() => {
@@ -276,43 +309,64 @@ function DetailModal({
     };
   }, [id, type]);
 
-  // id_jo diambil dari detail (fallback ke job_order.id)
-  const idJo: number | null = row?.id_jo ?? row?.job_order?.id ?? null;
+  // no_jo diambil dari detail (fallback ke job_order.no_jo)
+  const noJo: string | null = row?.no_jo ?? row?.job_order?.no_jo ?? null;
 
-  // GET /produksi/historyKendalaByJo/:id_jo
+  // GET master + P1, lalu POST /reportWaste → ambil JO yang sama
   useEffect(() => {
-    if (idJo == null) return;
+    if (!noJo) return;
     let cancelled = false;
     (async () => {
       try {
-        setKendalaLoading(true);
-        setKendalaError(false);
-        const res = await axios.get(
-          `${
-            import.meta.env.VITE_API_LINK
-          }/produksi/historyKendalaByJo/${idJo}`,
-          { withCredentials: true },
-        );
-        console.log('fetchKendala', idJo, res.data);
-        if (!cancelled) setKendala(normalizeList(res.data));
+        setWasteLoading(true);
+        setWasteError(false);
+        const data = await fetchWasteReport();
+        console.log('fetchWaste', noJo, data);
+        const list: any[] = Array.isArray(data?.dataWasteByJo)
+          ? data.dataWasteByJo
+          : [];
+        const found = list.find((j) => norm(j.no_jo) === norm(noJo));
+        if (!cancelled) setWasteJo(found ?? null);
       } catch (err) {
         console.error(err);
         if (!cancelled) {
-          setKendala([]);
-          setKendalaError(true);
+          setWasteJo(null);
+          setWasteError(true);
         }
       } finally {
-        if (!cancelled) setKendalaLoading(false);
+        if (!cancelled) setWasteLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [idJo]);
+  }, [noJo]);
 
-  const totalKendalaSec = useMemo(
-    () => kendala.reduce((sum, k) => sum + (Number(k.total_waktu) || 0), 0),
-    [kendala],
+  const wastes: any[] = useMemo(
+    () =>
+      [...(wasteJo?.defects ?? [])].sort(
+        (a: any, b: any) => (b.total_defect ?? 0) - (a.total_defect ?? 0),
+      ),
+    [wasteJo],
+  );
+
+  const defects: any[] = useMemo(() => getDefects(row, type), [row, type]);
+
+  // kode yang ada di masing-masing sisi → dasar indikator sama/beda
+  const defectCodes = useMemo(
+    () => new Set(defects.map((d) => norm(d.kode))),
+    [defects],
+  );
+  const wasteCodes = useMemo(
+    () => new Set(wastes.map((w) => norm(w.kode_waste))),
+    [wastes],
+  );
+  const matchCount = wastes.filter((w) =>
+    defectCodes.has(norm(w.kode_waste)),
+  ).length;
+  const totalWasteDefect = wastes.reduce(
+    (s, w) => s + (w.total_defect ?? 0),
+    0,
   );
 
   if (isLoading) return <Loading />;
@@ -336,7 +390,6 @@ function DetailModal({
   }
 
   const jo = row.job_order;
-  const defects: any[] = getDefects(row, type);
 
   // Alur tiket: setiap step punya tanggal, user, dan catatan
   const steps: { title: string; tgl: any; user: any; note: any }[] = [
@@ -470,149 +523,239 @@ function DetailModal({
             </div>
           </div>
 
-          {/* Histori Kendala (kiri) + Defect (kanan) */}
-          <div
-            className={`grid grid-cols-1 gap-4 ${
-              defects.length > 0 ? 'lg:grid-cols-2' : ''
-            }`}
-          >
-            {/* Histori Kendala */}
-            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+          {/* Legend */}
+          <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600">
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-green-100 border border-green-400" />
+              Kode sama (ada di waste &amp; defect tambah bahan)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded bg-red-100 border border-red-400" />
+              Kode berbeda (hanya ada di salah satu sisi)
+            </span>
+          </div>
+
+          {/* Histori Waste (kiri) + Defect (kanan) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Histori Waste */}
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
               <div className="flex items-center justify-between mb-3 gap-2">
-                <h4 className="text-xs font-semibold text-amber-700">
-                  Histori Kendala JO ({kendala.length})
+                <h4 className="text-xs font-semibold text-gray-700">
+                  Histori Waste JO ({wastes.length})
                 </h4>
-                {kendala.length > 0 && (
-                  <span className="text-[10px] font-semibold text-amber-800 bg-amber-100 border border-amber-200 rounded-full px-2 py-0.5 whitespace-nowrap">
-                    Total: {fmtDuration(totalKendalaSec)}
+                {wastes.length > 0 && (
+                  <span className="text-[10px] font-semibold text-gray-700 bg-white border border-gray-200 rounded-full px-2 py-0.5 whitespace-nowrap">
+                    {matchCount} sama · {wastes.length - matchCount} beda ·
+                    Total: {fmtQty(totalWasteDefect)}
                   </span>
                 )}
               </div>
 
-              {kendalaLoading ? (
+              {wasteLoading ? (
                 <p className="text-xs text-gray-500 text-center py-6">
-                  Memuat histori kendala...
+                  Memuat histori waste...
                 </p>
-              ) : kendalaError ? (
+              ) : wasteError ? (
                 <p className="text-xs text-red-600 text-center py-6">
-                  Gagal memuat histori kendala.
+                  Gagal memuat histori waste.
                 </p>
-              ) : kendala.length === 0 ? (
+              ) : wastes.length === 0 ? (
                 <p className="text-xs text-gray-500 text-center py-6">
-                  Tidak ada histori kendala
+                  Tidak ada histori waste
                 </p>
               ) : (
                 <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
-                  {kendala.map((k: any) => (
-                    <div
-                      key={k.id}
-                      className="bg-white rounded-lg border border-amber-200 px-3 py-2 text-xs"
-                    >
-                      <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <div className="min-w-0">
-                          <span className="font-bold text-gray-800">
-                            {k.kode}
-                          </span>
-                          <span className="font-medium text-gray-700">
-                            {' '}
-                            - {k.deskripsi}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-1.5 py-0.5 whitespace-nowrap">
-                          {fmtDuration(k.total_waktu)}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
-                        <div>
-                          <span className="text-gray-400">Tahapan: </span>
-                          <span className="font-medium text-gray-700">
-                            {k.tahapan?.nama_tahapan ?? '-'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Mesin: </span>
-                          <span className="font-medium text-gray-700">
-                            {k.mesin?.nama_mesin ?? '-'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Operator: </span>
-                          <span className="font-medium text-gray-700">
-                            {k.operator?.nama ?? '-'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Status: </span>
-                          <span className="font-medium text-gray-700 capitalize">
-                            {k.status ?? '-'}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Mulai: </span>
-                          <span className="font-medium text-gray-700">
-                            {fmtDateTime(k.waktu_mulai)}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Selesai: </span>
-                          <span className="font-medium text-gray-700">
-                            {fmtDateTime(k.waktu_selesai)}
-                          </span>
-                        </div>
-                        {k.note ? (
-                          <div className="col-span-2">
-                            <span className="text-gray-400">Catatan: </span>
+                  {wastes.map((w: any, wi: number) => {
+                    const matched = defectCodes.has(norm(w.kode_waste));
+                    const kendalaList: any[] = Array.isArray(w.kendala)
+                      ? w.kendala
+                      : [];
+                    const ops: any[] = Array.isArray(w.operator_inspektor)
+                      ? w.operator_inspektor.filter(Boolean)
+                      : [];
+                    return (
+                      <div
+                        key={w.kode_waste ?? wi}
+                        className={`rounded-lg border px-3 py-2 text-xs ${
+                          matched
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-red-50 border-red-300'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <div className="min-w-0">
+                            <span className="font-bold text-gray-800">
+                              {w.kode_waste}
+                            </span>
                             <span className="font-medium text-gray-700">
-                              {k.note}
+                              {' '}
+                              - {w.waste_desc}
                             </span>
                           </div>
-                        ) : null}
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span
+                              className={`text-[10px] font-semibold rounded px-1.5 py-0.5 whitespace-nowrap ${
+                                matched
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-red-100 text-red-700'
+                              }`}
+                            >
+                              {matched ? 'Sama' : 'Beda'}
+                            </span>
+                            <span className="text-[10px] font-semibold text-gray-700 bg-white border border-gray-200 rounded px-1.5 py-0.5 whitespace-nowrap">
+                              {fmtQty(w.total_defect)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Kendala terkait */}
+                        {kendalaList.length > 0 && (
+                          <div className="space-y-0.5 mb-1.5 text-[11px]">
+                            {kendalaList.map((k: any, ki: number) => (
+                              <div
+                                key={ki}
+                                className="flex justify-between gap-2"
+                              >
+                                <span className="text-gray-600">
+                                  ✤ {k.kategori_kendala} - {k.kode_kendala} -{' '}
+                                  {k.kendala_desc}
+                                </span>
+                                <span className="font-semibold text-gray-700 whitespace-nowrap">
+                                  {fmtQty(k.calculated_defect)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Inspektor / operator / mesin */}
+                        {ops.length > 0 && (
+                          <div className="space-y-1 border-t border-gray-200 pt-1.5">
+                            {ops.map((op: any, oi: number) => (
+                              <div
+                                key={oi}
+                                className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]"
+                              >
+                                <div>
+                                  <span className="text-gray-400">
+                                    Inspektor:{' '}
+                                  </span>
+                                  <span className="font-medium text-gray-700">
+                                    {op.inspektor || '-'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-400">
+                                    Operator:{' '}
+                                  </span>
+                                  <span className="font-medium text-gray-700">
+                                    {op.operator || '-'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-400">Mesin: </span>
+                                  <span className="font-medium text-gray-700">
+                                    {op.mesin || '-'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-400">
+                                    Defect:{' '}
+                                  </span>
+                                  <span className="font-medium text-gray-700">
+                                    {fmtQty(op.calculated_defect)}
+                                  </span>
+                                </div>
+                                <div className="col-span-2">
+                                  <span className="text-gray-400">
+                                    Kendala LKH:{' '}
+                                  </span>
+                                  <span className="font-medium text-gray-700">
+                                    {[op.kode_lkh, op.masalah_lkh]
+                                      .filter(Boolean)
+                                      .join(' - ') || '-'}
+                                  </span>
+                                </div>
+                                <div className="col-span-2">
+                                  <span className="text-gray-400">
+                                    Temuan:{' '}
+                                  </span>
+                                  <span className="font-medium text-gray-700">
+                                    {fmtTemuan(op.temuan)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
 
             {/* Defect */}
-            {defects.length > 0 && (
-              <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-                <h4 className="text-xs font-semibold text-red-700 mb-3">
-                  Defect ({defects.length})
-                </h4>
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <h4 className="text-xs font-semibold text-gray-700 mb-3">
+                Defect Tambah Bahan ({defects.length})
+              </h4>
+              {defects.length === 0 ? (
+                <p className="text-xs text-gray-500 text-center py-6">
+                  Tidak ada defect
+                </p>
+              ) : (
                 <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
-                  {defects.map((d: any) => (
-                    <div
-                      key={d.id}
-                      className="bg-white rounded-lg border border-red-200 grid grid-cols-2 gap-2 px-3 py-2 text-xs"
-                    >
-                      <div>
-                        <p className="text-gray-400 mb-0.5">Kode</p>
-                        <p className="font-bold text-gray-800">{d.kode}</p>
+                  {defects.map((d: any, di: number) => {
+                    const matched = wasteCodes.has(norm(d.kode));
+                    return (
+                      <div
+                        key={d.id ?? di}
+                        className={`rounded-lg border grid grid-cols-2 gap-2 px-3 py-2 text-xs ${
+                          matched
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-red-50 border-red-300'
+                        }`}
+                      >
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Kode</p>
+                          <p className="font-bold text-gray-800">{d.kode}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Deskripsi</p>
+                          <p className="font-medium text-gray-700">
+                            {d.deskripsi}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-400 mb-0.5">Qty Druk</p>
+                          <p className="font-bold text-red-600">
+                            {fmtQty(d.qty_tambah_bahan_druk)}
+                          </p>
+                        </div>
+                        <div className="flex items-end justify-between gap-2">
+                          <div>
+                            <p className="text-gray-400 mb-0.5">Qty LP</p>
+                            <p className="font-bold text-red-600">
+                              {fmtQty(d.qty_tambah_bahan_lp)}
+                            </p>
+                          </div>
+                          <span
+                            className={`text-[10px] font-semibold rounded px-1.5 py-0.5 whitespace-nowrap ${
+                              matched
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-red-100 text-red-700'
+                            }`}
+                          >
+                            {matched ? 'Sama' : 'Beda'}
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-gray-400 mb-0.5">Deskripsi</p>
-                        <p className="font-medium text-gray-700">
-                          {d.deskripsi}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 mb-0.5">Qty Druk</p>
-                        <p className="font-bold text-red-600">
-                          {fmtQty(d.qty_tambah_bahan_druk)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-400 mb-0.5">Qty LP</p>
-                        <p className="font-bold text-red-600">
-                          {fmtQty(d.qty_tambah_bahan_lp)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Alur tiket */}

@@ -1045,8 +1045,8 @@ const InputLKH: React.FC = () => {
               activeProcesses={activeProcesses}
               processDataList={processDataList}
               wasteProcessData={wasteProcessData}
-              selectedJO={selectedJO} // ← NEW
-              userId={userId} // ← NEW
+              selectedJO={selectedJO}
+              userId={userId}
               onStartProcess={handleStartProcess}
               onStopProcess={handleStopProcess}
               onProcessDataChange={handleProcessDataChange}

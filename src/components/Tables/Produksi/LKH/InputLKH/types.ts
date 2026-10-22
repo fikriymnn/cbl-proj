@@ -192,3 +192,59 @@ export interface WasteProcessData {
   id_kendala: string;
   total_qty: number;
 }
+// Tambahkan ke file types.ts
+
+// Item dari GET /produksi/historyKendalaByJo/:id
+export interface KendalaHistory {
+  id: number;
+  id_jo: number;
+  id_produksi_lkh: number;
+  id_produksi_lkh_tahapan: number;
+  id_tahapan: number;
+  id_mesin: number;
+  id_operator: number;
+  id_kode_produksi: number;
+  kode: string;
+  deskripsi: string;
+  proses: string;
+  baik: number;
+  rusak_sebagian: number;
+  rusak_total: number;
+  pallet: number;
+  waktu_mulai: string;
+  waktu_selesai: string | null;
+  total_waktu: string | null;
+  note: string | null;
+  status: string;
+  is_final_result: boolean;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  tahapan: {
+    id: number;
+    nama_tahapan: string;
+  };
+  mesin: {
+    id: number;
+    nama_mesin: string;
+  };
+  operator: {
+    id: number;
+    nama: string;
+  };
+  jo: {
+    id: number;
+    no_jo: string;
+  };
+}
+
+// Option untuk dropdown "Rincian Kendala" (extends Option: value + label)
+export interface KendalaHistoryOption extends Option {
+  id_kode_produksi: number;
+  kode: string;
+  deskripsi: string;
+  id_tahapan: number;
+  nama_tahapan: string;
+  id_mesin: number;
+  nama_mesin: string;
+}

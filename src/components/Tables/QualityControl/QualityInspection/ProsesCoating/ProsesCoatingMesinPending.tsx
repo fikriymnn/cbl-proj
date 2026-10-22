@@ -104,6 +104,9 @@ function ProsesCoatingMesinPending() {
                 Nama JO
               </label>
               <label className="text-neutral-500 text-sm font-semibold ">
+                Qty Druk
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold ">
                 Operator
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-3">
@@ -136,9 +139,12 @@ function ProsesCoatingMesinPending() {
                         {data.nama_produk}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold  pl-3">
+                        {data.jumlah_druk}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold  pl-3">
                         {data.operator}
                       </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                      <label className="text-neutral-500 text-sm font-semibold col-span-2">
                         {data.alasan_pending}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2">

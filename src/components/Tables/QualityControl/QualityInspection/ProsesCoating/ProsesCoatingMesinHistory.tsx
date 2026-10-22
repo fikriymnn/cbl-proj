@@ -95,7 +95,10 @@ function ProsesCoatingMesinHistory() {
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama Produk
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold ">
+                Qty Druk
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold ">
                 Operator
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -137,7 +140,10 @@ function ProsesCoatingMesinHistory() {
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                         {data.nama_produk}
                       </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
+                      <label className="text-neutral-500 text-sm font-semibold  pl-3">
+                        {data.jumlah_druk}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold pl-3">
                         {data.operator}
                       </label>
                       <div className="text-neutral-500 text-sm font-semibold flex flex-col col-span-2">

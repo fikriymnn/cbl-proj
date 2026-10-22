@@ -93,7 +93,7 @@ function ProsesCetakMesinPending() {
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
             <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-              <label className="text-neutral-500 text-sm font-semibold ">
+              <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 MESIN
               </label>
 
@@ -104,10 +104,10 @@ function ProsesCetakMesinPending() {
                 Nama JO
               </label>
               <label className="text-neutral-500 text-sm font-semibold ">
-                Operator
+                Qty Druk
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-3">
-                Alasan Pending
+              <label className="text-neutral-500 text-sm font-semibold ">
+                Operator
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Tanggal
@@ -120,7 +120,7 @@ function ProsesCetakMesinPending() {
                 <>
                   <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
-                      className={`w-full h-full sticky left-0 z-20  gap-8  flex items-center`}
+                      className={`w-full h-full sticky left-0 z-20  gap-8 col-span-2 flex items-center`}
                     >
                       <div
                         className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}
@@ -137,10 +137,10 @@ function ProsesCetakMesinPending() {
                       {data.nama_produk}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold ">
-                      {data.operator}
+                      {data.jumlah_druk}
                     </label>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-3">
-                      {data.alasan_pending}
+                    <label className="text-neutral-500 text-sm font-semibold ">
+                      {data.operator}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {tglTicket}

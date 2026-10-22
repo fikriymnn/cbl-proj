@@ -104,9 +104,12 @@ function ProsesPondMesinPending() {
                 Nama JO
               </label>
               <label className="text-neutral-500 text-sm font-semibold ">
+                Qty Druk
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold ">
                 Operator
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-3">
+              <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Alasan Pending
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -134,9 +137,12 @@ function ProsesPondMesinPending() {
                       {data.nama_produk}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold ">
+                      {data.jumlah_druk}
+                    </label>
+                    <label className="text-neutral-500 text-sm font-semibold ">
                       {data.operator}
                     </label>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {data.alasan_pending}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">

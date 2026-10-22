@@ -96,6 +96,9 @@ function ProsesCetakMesinHistory() {
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama JO
               </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-1">
+                Qty Druk
+              </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Operator
               </label>
@@ -105,7 +108,7 @@ function ProsesCetakMesinHistory() {
               <label className="text-neutral-500 text-sm font-semibold col-span-1">
                 Periode
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold ">
                 Tanggal
               </label>
             </div>
@@ -140,6 +143,9 @@ function ProsesCetakMesinHistory() {
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                       {data.nama_produk}
                     </label>
+                    <label className="text-neutral-500 text-sm font-semibold pl-3">
+                      {data.jumlah_druk}
+                    </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {data.operator}
                     </label>
@@ -164,7 +170,7 @@ function ProsesCetakMesinHistory() {
                         {periodeCount}
                       </span>
                     </div>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                    <label className="text-neutral-500 text-sm font-semibold ">
                       {tglTicket}
                     </label>
                     <div className="justify-end flex pr-2 ">

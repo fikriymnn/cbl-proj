@@ -80,7 +80,10 @@ function ProsesPondMesin() {
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama Produk
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold">
+                Qty Druk
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold ">
                 Operator
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -102,14 +105,16 @@ function ProsesPondMesin() {
                           {data.mesin}
                         </label>
                       </div>
-
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
                         {data.no_jo} / {data.no_io}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3 line-clamp-3">
                         {data.nama_produk}
+                      </label>{' '}
+                      <label className="text-neutral-500 text-sm font-semibold ">
+                        {data.jumlah_druk}
                       </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                      <label className="text-neutral-500 text-sm font-semibold ">
                         {data.operator}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2">

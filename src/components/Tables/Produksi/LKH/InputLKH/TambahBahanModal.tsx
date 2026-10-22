@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import {
-  KendalaHistoryItem,
   TambahBahanPersiapanRecord,
   TambahBahanPemakaianSubmitPayload,
   TambahBahanPemakaianCreatePayload,
@@ -18,8 +17,9 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_LINK;
 
+// Option rincian kendala — hanya berasal dari GET /produksi/historyKendalaByJo/:id
 interface KendalaOption {
-  id: number;
+  id: number; // id_kode_produksi
   kode: string;
   deskripsi: string;
 }
@@ -40,61 +40,57 @@ interface TambahBahanModalProps {
   onClose: () => void;
   idJo: number | null;
   noJo?: string;
-  kendalaKodeOptions: KendalaOption[];
   onSuccess?: () => void;
 }
 
 const USABLE_STATUSES = ['approve gudang'];
+
+const EMPTY_KENDALA_HINT =
+  'Belum ada kendala untuk JO ini. Mulai proses Kendala terlebih dahulu dan pilih kendalanya, lalu stop prosesnya. Setelah itu buka kembali modal ini agar pilihan kendala muncul.';
 
 const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
   show,
   onClose,
   idJo,
   noJo,
-  kendalaKodeOptions,
   onSuccess,
 }) => {
   const [activeTab, setActiveTab] = useState<ModalTab>('pemakaian');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // ---- shared kendala history (both tabs) ----
-  const [kendalaHistory, setKendalaHistory] = useState<KendalaHistoryItem[]>(
-    [],
-  );
+  // ---- shared kendala options (both tabs) ----
+  // Sumber tunggal: GET /produksi/historyKendalaByJo/:id (sudah terfilter)
+  const [kendalaOptions, setKendalaOptions] = useState<KendalaOption[]>([]);
+  const [loadingKendala, setLoadingKendala] = useState(false);
 
-  const fetchKendalaHistory = useCallback(async () => {
+  const fetchKendalaOptions = useCallback(async () => {
     if (!idJo) return;
+    setLoadingKendala(true);
     try {
-      const res = await axios.get(`${API_BASE}/produksi/listAllData`, {
-        params: { id_jo: idJo, limit: 100 },
-        withCredentials: true,
-      });
-      const rows = res.data.data || [];
-      const freq = new Map<number, KendalaHistoryItem>();
-      rows.forEach((row: any) => {
-        (row.produksi_lkh_proses || []).forEach((p: any) => {
-          if (p.proses?.toLowerCase() === 'kendala' && p.id_kode_produksi) {
-            const existing = freq.get(p.id_kode_produksi);
-            if (existing) {
-              existing.frequency += 1;
-            } else {
-              freq.set(p.id_kode_produksi, {
-                id_kode_produksi: p.id_kode_produksi,
-                kode: p.kode,
-                deskripsi: p.deskripsi,
-                frequency: 1,
-              });
-            }
-          }
+      const res = await axios.get(
+        `${API_BASE}/produksi/historyKendalaByJo/${idJo}`,
+        { withCredentials: true },
+      );
+      const rows: any[] = res.data.data || [];
+
+      // Dedupe per id_kode_produksi
+      const map = new Map<number, KendalaOption>();
+      rows.forEach((row) => {
+        if (!row.id_kode_produksi || map.has(row.id_kode_produksi)) return;
+        map.set(row.id_kode_produksi, {
+          id: row.id_kode_produksi,
+          kode: row.kode,
+          deskripsi: row.deskripsi,
         });
       });
-      setKendalaHistory(
-        Array.from(freq.values()).sort((a, b) => b.frequency - a.frequency),
-      );
+      setKendalaOptions(Array.from(map.values()));
     } catch (error) {
-      console.error('Error fetching kendala history:', error);
-      setKendalaHistory([]);
+      console.error('Error fetching history kendala:', error);
+      toast.error('Gagal mengambil history kendala');
+      setKendalaOptions([]);
+    } finally {
+      setLoadingKendala(false);
     }
   }, [idJo]);
 
@@ -187,7 +183,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     }
   };
 
-  const addLine = (itemId: number, prefill?: KendalaHistoryItem) => {
+  const addLine = (itemId: number) => {
     setSelections((prev) => {
       const current = prev[itemId]?.lines || [];
       return {
@@ -197,9 +193,9 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
             ...current,
             {
               uid: `${Date.now()}-${Math.random()}`,
-              id_kode_produksi: prefill?.id_kode_produksi || 0,
-              kode: prefill?.kode || '',
-              deskripsi: prefill?.deskripsi || '',
+              id_kode_produksi: 0,
+              kode: '',
+              deskripsi: '',
               qty_tambah_bahan_lp: '',
               qty_tambah_bahan_druk: '',
             },
@@ -292,14 +288,14 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     }
   }, [idJo]);
 
-  const addPemakaianLine = (prefill?: KendalaHistoryItem) => {
+  const addPemakaianLine = () => {
     setPemakaianLines((prev) => [
       ...prev,
       {
         uid: `${Date.now()}-${Math.random()}`,
-        id_kode_produksi: prefill?.id_kode_produksi || 0,
-        kode: prefill?.kode || '',
-        deskripsi: prefill?.deskripsi || '',
+        id_kode_produksi: 0,
+        kode: '',
+        deskripsi: '',
         qty_tambah_bahan_lp: '',
         qty_tambah_bahan_druk: '',
       },
@@ -324,6 +320,8 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
   };
 
   // ---- lifecycle ----
+  // Data kendala di-fetch ulang setiap modal dibuka, sehingga kendala yang
+  // baru saja di-stop langsung muncul sebagai option.
   useEffect(() => {
     if (show && idJo) {
       setActiveTab('pemakaian');
@@ -332,7 +330,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
       setBagianValue('');
       resetPemakaianForm();
       fetchPersiapanList();
-      fetchKendalaHistory();
+      fetchKendalaOptions();
       fetchJoDetail();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -503,6 +501,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
     Number(pemakaianQtyLp) > 0 &&
     Number(pemakaianQtyDruk) > 0 &&
     pemakaianNote.trim() !== '';
+  const hasKendalaOptions = kendalaOptions.length > 0;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -664,25 +663,6 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                 />
               </div>
 
-              {kendalaHistory.length > 0 && (
-                <div>
-                  <div className="text-[11px] font-bold text-gray-500 mb-1.5">
-                    Kendala Sering Dipakai
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {kendalaHistory.slice(0, 6).map((k) => (
-                      <button
-                        key={k.id_kode_produksi}
-                        onClick={() => addPemakaianLine(k)}
-                        className="text-[11px] px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                      >
-                        {k.kode} — {k.deskripsi}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <label className="text-black text-xs font-bold">
@@ -690,16 +670,27 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                   </label>
                   <button
                     onClick={() => addPemakaianLine()}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-800"
+                    disabled={!hasKendalaOptions}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-800 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     + Tambah Kendala
                   </button>
                 </div>
 
-                {pemakaianLines.length === 0 && (
+                {loadingKendala ? (
                   <p className="text-xs text-gray-400">
-                    Belum ada kendala ditambahkan.
+                    Memuat data kendala...
                   </p>
+                ) : !hasKendalaOptions ? (
+                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2.5">
+                    {EMPTY_KENDALA_HINT}
+                  </p>
+                ) : (
+                  pemakaianLines.length === 0 && (
+                    <p className="text-xs text-gray-400">
+                      Belum ada kendala ditambahkan.
+                    </p>
+                  )
                 )}
 
                 {pemakaianLines.map((line) => (
@@ -710,7 +701,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                     <select
                       value={line.id_kode_produksi || ''}
                       onChange={(e) => {
-                        const opt = kendalaKodeOptions.find(
+                        const opt = kendalaOptions.find(
                           (k) => k.id === Number(e.target.value),
                         );
                         updatePemakaianLine(line.uid, {
@@ -722,7 +713,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                       className="flex-1 h-9 px-2 border border-gray-300 rounded-md text-xs bg-white"
                     >
                       <option value="">Pilih kendala...</option>
-                      {kendalaKodeOptions.map((k) => (
+                      {kendalaOptions.map((k) => (
                         <option key={k.id} value={k.id}>
                           {k.kode} — {k.deskripsi}
                         </option>
@@ -881,31 +872,21 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
 
                         {isExpanded && (
                           <div className="border-t border-gray-100 bg-gray-50 p-4 flex flex-col gap-3">
-                            {kendalaHistory.length > 0 && (
-                              <div>
-                                <div className="text-[11px] font-bold text-gray-500 mb-1.5">
-                                  Kendala Sering Dipakai
-                                </div>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {kendalaHistory.slice(0, 6).map((k) => (
-                                    <button
-                                      key={k.id_kode_produksi}
-                                      onClick={() => addLine(item.id, k)}
-                                      disabled={remainingFor(item) <= 0}
-                                      className="text-[11px] px-2.5 py-1 rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                                    >
-                                      {k.kode} — {k.deskripsi}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {lines.length === 0 && (
+                            {loadingKendala ? (
                               <p className="text-xs text-gray-400">
-                                Belum ada kendala dipilih. Klik chip di atas
-                                atau tambah manual di bawah.
+                                Memuat data kendala...
                               </p>
+                            ) : !hasKendalaOptions ? (
+                              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2.5">
+                                {EMPTY_KENDALA_HINT}
+                              </p>
+                            ) : (
+                              lines.length === 0 && (
+                                <p className="text-xs text-gray-400">
+                                  Belum ada kendala dipilih. Klik "+ Tambah
+                                  Kendala" di bawah.
+                                </p>
+                              )
                             )}
 
                             {lines.map((line) => {
@@ -918,7 +899,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                                   <select
                                     value={line.id_kode_produksi || ''}
                                     onChange={(e) => {
-                                      const opt = kendalaKodeOptions.find(
+                                      const opt = kendalaOptions.find(
                                         (k) => k.id === Number(e.target.value),
                                       );
                                       updateLine(item, line.uid, {
@@ -930,7 +911,7 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                                     className="flex-1 h-9 px-2 border border-gray-300 rounded-md text-xs"
                                   >
                                     <option value="">Pilih kendala...</option>
-                                    {kendalaKodeOptions.map((k) => (
+                                    {kendalaOptions.map((k) => (
                                       <option key={k.id} value={k.id}>
                                         {k.kode} — {k.deskripsi}
                                       </option>
@@ -977,7 +958,9 @@ const TambahBahanModal: React.FC<TambahBahanModalProps> = ({
                             <div className="flex items-center justify-between">
                               <button
                                 onClick={() => addLine(item.id)}
-                                disabled={remainingFor(item) <= 0}
+                                disabled={
+                                  !hasKendalaOptions || remainingFor(item) <= 0
+                                }
                                 className="text-xs font-bold text-blue-600 hover:text-blue-800 disabled:opacity-40 disabled:cursor-not-allowed"
                               >
                                 + Tambah Kendala

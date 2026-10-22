@@ -410,13 +410,6 @@ const ProcessControl: React.FC<ProcessControlProps> = ({
         show={showTambahBahanModal}
         idJo={selectedJO?.id ?? null}
         noJo={selectedJO?.no_jo}
-        kendalaKodeOptions={(kodeProduksiByProcess['Kendala'] || []).map(
-          (k) => ({
-            id: k.id,
-            kode: k.kode,
-            deskripsi: k.deskripsi,
-          }),
-        )}
         onClose={() => setShowTambahBahanModal(false)}
       />
     </>
