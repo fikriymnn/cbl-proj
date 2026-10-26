@@ -2,6 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import Loading from '../../Loading';
 
+import {
+  InformasiKurangQtyList,
+  Pagination,
+  fmtDate,
+  fmtMesin,
+  fmtQty,
+} from '../Produksi/InformasiKurangQtyShared';
+
 // GET /ppic/joMonitoringKurangQty
 // params: page, limit, search (contoh search: "JO-01218/09/2026"),
 //         start_date, end_date (filter tanggal kirim, format YYYY-MM-DD)
@@ -9,25 +17,17 @@ import Loading from '../../Loading';
 //
 // Detail modal:
 //  - info + defect diambil dari row (row.tambah_bahan_pemakaian[])
+//  - informasi kurang qty diambil dari row.informasi_kurang_qty[]
 //  - histori waste: GET master + P1, lalu POST /reportWaste (sama seperti RekapWasteQC),
 //    diambil dari dataWasteByJo yang no_jo-nya sama dengan row.no_jo
 //  - indikator: hijau = kode sama di waste & defect tambah bahan, merah = beda
-
-const LIMIT_OPTIONS = [10, 25, 50, 100];
+//
+// Pembuatan / ubah / hapus informasi kurang qty ada di halaman InformasiKurangQty.tsx
 
 const API = import.meta.env.VITE_API_LINK;
 const API_P1 = import.meta.env.VITE_API_LINK_P1;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function fmtDate(iso: string | null | undefined) {
-  if (!iso) return '-';
-  return iso.split('T')[0];
-}
-function fmtQty(val: number | null | undefined) {
-  if (val == null) return '-';
-  return val.toLocaleString('id-ID');
-}
 
 const norm = (v: any) =>
   String(v ?? '')
@@ -103,7 +103,6 @@ function DetailModal({ row, onClose }: { row: any; onClose: () => void }) {
         setWasteLoading(true);
         setWasteError(false);
         const data = await fetchWasteReport();
-        console.log('fetchWaste', row.no_jo, data);
         const list: any[] = Array.isArray(data?.dataWasteByJo)
           ? data.dataWasteByJo
           : [];
@@ -248,6 +247,9 @@ function DetailModal({ row, onClose }: { row: any; onClose: () => void }) {
               </div>
             </div>
           </div>
+
+          {/* Informasi Kurang Qty (dibuat dari halaman Informasi Kurang Qty) */}
+          <InformasiKurangQtyList items={row.informasi_kurang_qty} />
 
           {/* Legend */}
           <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600">
@@ -552,7 +554,6 @@ function KurangQtyMonitoring() {
         },
         withCredentials: true,
       });
-      console.log('Fetched Kurang Qty data:', res.data);
       const list: any[] = Array.isArray(res.data?.data) ? res.data.data : [];
       setRows(list);
       setTotalData(res.data?.total_data ?? list.length);
@@ -594,11 +595,6 @@ function KurangQtyMonitoring() {
     setPage(1);
   };
 
-  const from = totalData === 0 ? 0 : (page - 1) * limit + 1;
-  const to = Math.min(page * limit, totalData);
-
-  const btn =
-    'px-3 py-1.5 rounded-lg text-xs font-medium border bg-white border-gray-300 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
   const th = 'p-2 sm:p-3 whitespace-nowrap';
   const inputCls =
     'w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 sm:py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 transition-all';
@@ -692,7 +688,7 @@ function KurangQtyMonitoring() {
         </div>
 
         <div className="overflow-x-auto max-h-[650px] overflow-y-auto">
-          <table className="w-full text-xs sm:text-sm min-w-[1300px]">
+          <table className="w-full text-xs sm:text-sm min-w-[1500px]">
             <thead className="bg-white sticky top-0 z-10">
               <tr className="text-left text-xs font-semibold text-gray-600">
                 <th className={th} rowSpan={2}>
@@ -726,6 +722,12 @@ function KurangQtyMonitoring() {
                   Kurang Qty
                 </th>
                 <th className={th} rowSpan={2}>
+                  Mesin Cetak
+                </th>
+                <th className={`${th} text-center`} rowSpan={2}>
+                  Informasi
+                </th>
+                <th className={th} rowSpan={2}>
                   Tgl Kirim
                 </th>
                 <th className={th} rowSpan={2}>
@@ -741,133 +743,108 @@ function KurangQtyMonitoring() {
               {rows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={11}
+                    colSpan={14}
                     className="p-8 text-center text-gray-500 text-sm"
                   >
                     Tidak ada data
                   </td>
                 </tr>
               ) : (
-                rows.map((row: any, i: number) => (
-                  <tr
-                    key={row.id ?? i}
-                    className="border-b hover:bg-blue-50 transition-colors"
-                  >
-                    <td className="p-2 sm:p-3 text-xs text-gray-500">
-                      {(page - 1) * limit + i + 1}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs">
-                      <span
-                        onClick={() => setDetailRow(row)}
-                        className="block font-bold text-violet-600 hover:text-violet-800 hover:underline whitespace-nowrap cursor-pointer"
-                      >
-                        {row.no_jo || '-'}
-                      </span>
-                      <span className="block text-blue-600 font-medium whitespace-nowrap">
-                        {row.no_so || '-'}
-                      </span>
-                      <span className="block text-gray-500 whitespace-nowrap">
-                        {row.no_io || '-'}
-                      </span>
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs max-w-[160px] font-medium">
-                      {row.customer || '-'}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs max-w-[220px]">
-                      {row.produk || '-'}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right">
-                      {fmtQty(row.qty_jo)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right">
-                      {fmtQty(row.total_insheet)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right text-orange-600 font-medium">
-                      {fmtQty(row.qty_tambah_bahan_druk)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right text-orange-600 font-medium">
-                      {fmtQty(row.qty_tambah_bahan_lp)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right font-semibold text-green-600">
-                      {fmtQty(row.quantity_kirim_fg)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs text-right font-bold text-red-600">
-                      {fmtQty(row.kurang_qty)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
-                      {fmtDate(row.tgl_kirim)}
-                    </td>
-                    <td className="p-2 sm:p-3 text-xs">
-                      <button
-                        onClick={() => setDetailRow(row)}
-                        className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-violet-600 hover:text-violet-800 hover:bg-violet-50 border border-violet-200 transition-colors"
-                      >
-                        Detail
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                rows.map((row: any, i: number) => {
+                  const totalInfo = row.total_informasi_kurang_qty ?? 0;
+                  return (
+                    <tr
+                      key={row.id ?? i}
+                      className="border-b hover:bg-blue-50 transition-colors"
+                    >
+                      <td className="p-2 sm:p-3 text-xs text-gray-500">
+                        {(page - 1) * limit + i + 1}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs">
+                        <span
+                          onClick={() => setDetailRow(row)}
+                          className="block font-bold text-violet-600 hover:text-violet-800 hover:underline whitespace-nowrap cursor-pointer"
+                        >
+                          {row.no_jo || '-'}
+                        </span>
+                        <span className="block text-blue-600 font-medium whitespace-nowrap">
+                          {row.no_so || '-'}
+                        </span>
+                        <span className="block text-gray-500 whitespace-nowrap">
+                          {row.no_io || '-'}
+                        </span>
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs max-w-[160px] font-medium">
+                        {row.customer || '-'}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs max-w-[220px]">
+                        {row.produk || '-'}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs text-right">
+                        {fmtQty(row.qty_jo)}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs text-right">
+                        {fmtQty(row.total_insheet)}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs text-right text-orange-600 font-medium">
+                        {fmtQty(row.qty_tambah_bahan_druk)}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs text-right text-orange-600 font-medium">
+                        {fmtQty(row.qty_tambah_bahan_lp)}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs text-right font-semibold text-green-600">
+                        {fmtQty(row.quantity_kirim_fg)}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs text-right font-bold text-red-600">
+                        {fmtQty(row.kurang_qty)}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
+                        {fmtMesin(row.data_cetak)}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs text-center">
+                        <span
+                          className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${
+                            totalInfo > 0
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          {totalInfo > 0
+                            ? `${totalInfo} informasi`
+                            : 'Belum ada'}
+                        </span>
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs whitespace-nowrap">
+                        {fmtDate(row.tgl_kirim)}
+                      </td>
+                      <td className="p-2 sm:p-3 text-xs">
+                        <button
+                          onClick={() => setDetailRow(row)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-violet-600 hover:text-violet-800 hover:bg-violet-50 border border-violet-200 transition-colors"
+                        >
+                          Detail
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
 
         {/* ── Pagination (total_data / total_page dari API) ── */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 border-t bg-gray-50">
-          <div className="flex items-center gap-2 text-xs text-gray-600">
-            <span>Tampilkan</span>
-            <select
-              value={limit}
-              onChange={(e) => {
-                setLimit(Number(e.target.value));
-                setPage(1);
-              }}
-              className="rounded-lg bg-white border border-gray-300 px-2 py-1 text-xs"
-            >
-              {LIMIT_OPTIONS.map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
-              ))}
-            </select>
-            <span>
-              {from}–{to} dari {totalData}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <button
-              className={btn}
-              disabled={page <= 1}
-              onClick={() => setPage(1)}
-            >
-              «
-            </button>
-            <button
-              className={btn}
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              Sebelumnya
-            </button>
-            <span className="text-xs text-gray-600 px-2">
-              {page} / {totalPage}
-            </span>
-            <button
-              className={btn}
-              disabled={page >= totalPage}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Berikutnya
-            </button>
-            <button
-              className={btn}
-              disabled={page >= totalPage}
-              onClick={() => setPage(totalPage)}
-            >
-              »
-            </button>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          limit={limit}
+          totalData={totalData}
+          totalPage={totalPage}
+          onPage={setPage}
+          onLimit={(l) => {
+            setLimit(l);
+            setPage(1);
+          }}
+        />
       </div>
     </main>
   );

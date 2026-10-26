@@ -71,7 +71,7 @@ const EstimasiKurangQtyQC: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
   const [totalPages, setTotalPages] = useState<number>(0);
-
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [actionLoading, setActionLoading] = useState<{
     [key: number]: boolean;
   }>({});
@@ -84,7 +84,7 @@ const EstimasiKurangQtyQC: React.FC = () => {
 
   useEffect(() => {
     fetchListData();
-  }, [page, limit]);
+  }, [page, limit, searchTerm]);
 
   const fetchListData = async (): Promise<void> => {
     const url = `${import.meta.env.VITE_API_LINK}/qc/estimasiKurangQty`;
@@ -93,7 +93,7 @@ const EstimasiKurangQtyQC: React.FC = () => {
       const res: AxiosResponse<EstimasiKurangQtyResponse> = await axios.get(
         url,
         {
-          params: { page, limit },
+          params: { page, limit, search: searchTerm || undefined },
           withCredentials: true,
         },
       );
@@ -235,6 +235,34 @@ const EstimasiKurangQtyQC: React.FC = () => {
 
   return (
     <div className="">
+      {/* Search */}
+      <div className="mb-4 sm:mb-6">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search by No JO, Customer, Produk..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
+            className="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+          />
+          <svg
+            className="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+      </div>
       {/* Desktop Table */}
       <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">

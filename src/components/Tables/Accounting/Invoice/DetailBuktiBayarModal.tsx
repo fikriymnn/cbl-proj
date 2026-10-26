@@ -12,6 +12,12 @@ export interface PaymentDetailInvoice {
   paid_amount: Num;
   status_payment: string;
 }
+interface APPaymentCost {
+  id: number;
+  name: string;
+  amount: Num;
+  note: string | null;
+}
 
 export interface PaymentDetail {
   id: number;
@@ -19,6 +25,7 @@ export interface PaymentDetail {
   invoice_id: number;
   payment_amount: Num;
   invoice?: PaymentDetailInvoice;
+  additional_costs?: APPaymentCost[];
 }
 
 export interface PaymentLog {
@@ -98,7 +105,11 @@ const DetailBuktiBayarModal: React.FC<DetailBuktiBayarModalProps> = ({
     : '';
   const unallocated =
     toNum(payment.payment_amount) - toNum(payment.payment_amount_use);
-
+  const totalCosts = details.reduce(
+    (sum, d) =>
+      sum + (d.additional_costs ?? []).reduce((a, c) => a + toNum(c.amount), 0),
+    0,
+  );
   const InfoItem = ({
     label,
     value,
@@ -196,6 +207,10 @@ const DetailBuktiBayarModal: React.FC<DetailBuktiBayarModalProps> = ({
                   value={formatDate(payment.createdAt)}
                 />
                 <InfoItem label="Catatan:" value={payment.note} />
+                <InfoItem
+                  label="Biaya Tambahan:"
+                  value={formatCurrency(totalCosts)}
+                />
               </div>
             </div>
 
@@ -274,25 +289,66 @@ const DetailBuktiBayarModal: React.FC<DetailBuktiBayarModalProps> = ({
                           </td>
                         </tr>
                       ) : (
-                        details.map((d) => (
-                          <tr key={d.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-xs font-medium text-gray-900 whitespace-nowrap">
-                              {d.invoice?.no_invoice || `#${d.invoice_id}`}
-                            </td>
-                            <td className="px-4 py-3 text-xs text-right text-gray-700 whitespace-nowrap">
-                              {formatCurrency(d.invoice?.total)}
-                            </td>
-                            <td className="px-4 py-3 text-xs text-right font-semibold text-green-700 whitespace-nowrap">
-                              {formatCurrency(d.payment_amount)}
-                            </td>
-                            <td className="px-4 py-3 text-xs text-right text-gray-700 whitespace-nowrap">
-                              {formatCurrency(d.invoice?.paid_amount)}
-                            </td>
-                            <td className="px-4 py-3">
-                              {paymentBadge(d.invoice?.status_payment ?? '')}
-                            </td>
-                          </tr>
-                        ))
+                        details.map((d) => {
+                          const costs = d.additional_costs ?? [];
+                          return (
+                            <React.Fragment key={d.id}>
+                              <tr className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-xs font-medium text-gray-900 whitespace-nowrap">
+                                  {d.invoice?.no_invoice || `#${d.invoice_id}`}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-right text-gray-700 whitespace-nowrap">
+                                  {formatCurrency(d.invoice?.total)}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-right font-semibold text-green-700 whitespace-nowrap">
+                                  {formatCurrency(d.payment_amount)}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-right text-gray-700 whitespace-nowrap">
+                                  {formatCurrency(d.invoice?.paid_amount)}
+                                </td>
+                                <td className="px-4 py-3">
+                                  {paymentBadge(
+                                    d.invoice?.status_payment ?? '',
+                                  )}
+                                </td>
+                              </tr>
+
+                              {costs.length > 0 && (
+                                <tr>
+                                  <td
+                                    colSpan={5}
+                                    className="px-4 pb-3 pt-0 bg-gray-50"
+                                  >
+                                    <div className="pt-2">
+                                      <div className="text-[11px] font-semibold text-gray-600 mb-1">
+                                        Biaya Tambahan
+                                      </div>
+                                      {costs.map((c) => (
+                                        <div
+                                          key={c.id}
+                                          className="flex justify-between text-xs text-gray-700"
+                                        >
+                                          <span>
+                                            {c.name}
+                                            {c.note ? (
+                                              <span className="text-gray-400">
+                                                {' '}
+                                                ({c.note})
+                                              </span>
+                                            ) : null}
+                                          </span>
+                                          <span className="font-medium">
+                                            {formatCurrency(c.amount)}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>

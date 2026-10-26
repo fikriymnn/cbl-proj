@@ -20,6 +20,13 @@ interface InvoiceResponse {
   total_data?: number;
 }
 
+/** Item shown inside the bulk confirmation modal */
+interface BulkItem {
+  id: number;
+  label: string;
+  sub?: string;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function recapCardTheme(waktu: string) {
@@ -165,7 +172,7 @@ function TenggatRecapCards({
 // ─── Spinner ──────────────────────────────────────────────────────────────────
 
 const ButtonSpinner = () => (
-  <span className="flex items-center gap-1">
+  <span className="flex items-center justify-center gap-1">
     <svg
       className="animate-spin h-3 w-3"
       xmlns="http://www.w3.org/2000/svg"
@@ -190,6 +197,110 @@ const ButtonSpinner = () => (
   </span>
 );
 
+// ─── Bulk Confirm Modal ───────────────────────────────────────────────────────
+
+function BulkConfirmModal({
+  open,
+  title,
+  description,
+  confirmLabel,
+  confirmClass,
+  items,
+  processing,
+  onRemove,
+  onConfirm,
+  onClose,
+}: {
+  open: boolean;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  confirmClass: string;
+  items: BulkItem[];
+  processing: boolean;
+  onRemove: (id: number) => void;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={() => !processing && onClose()}
+    >
+      <div
+        className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[85vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-5 pt-5 pb-3 border-b border-gray-200">
+          <h3 className="text-base font-bold text-gray-900">{title}</h3>
+          <p className="text-xs text-gray-500 mt-1">{description}</p>
+          <p className="text-xs font-semibold text-gray-700 mt-2">
+            Total: {items.length} invoice
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-3">
+          {items.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-6">
+              Tidak ada invoice yang dipilih.
+            </p>
+          ) : (
+            <ol className="divide-y divide-gray-100">
+              {items.map((it, idx) => (
+                <li
+                  key={it.id}
+                  className="flex items-center gap-3 py-2 text-sm"
+                >
+                  <span className="w-6 text-xs text-gray-400 text-right">
+                    {idx + 1}.
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-900 break-words">
+                      {it.label}
+                    </div>
+                    {it.sub && (
+                      <div className="text-xs text-gray-500 break-words">
+                        {it.sub}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => onRemove(it.id)}
+                    disabled={processing}
+                    title="Keluarkan dari daftar"
+                    className="text-gray-400 hover:text-red-600 disabled:opacity-40"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+
+        <div className="px-5 py-4 border-t border-gray-200 flex justify-end gap-2">
+          <button
+            onClick={onClose}
+            disabled={processing}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={processing || items.length === 0}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed ${confirmClass}`}
+          >
+            {processing ? 'Processing...' : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ListApprovingInvoice: React.FC = () => {
@@ -210,6 +321,11 @@ const ListApprovingInvoice: React.FC = () => {
   const [processingAction, setProcessingAction] = useState<
     'approve' | 'reject' | null
   >(null);
+
+  // Bulk selection (kept across pages so the user can pick from several pages)
+  const [selected, setSelected] = useState<Map<number, BulkItem>>(new Map());
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState<boolean>(false);
+  const [bulkProcessing, setBulkProcessing] = useState<boolean>(false);
 
   useEffect(() => {
     fetchInvoiceData();
@@ -311,6 +427,82 @@ const ListApprovingInvoice: React.FC = () => {
     }
   };
 
+  // ── Bulk selection ──
+
+  const isSelectable = (item: InvoiceDetail): boolean =>
+    item.status === 'requested';
+
+  const toBulkItem = (item: InvoiceDetail): BulkItem => ({
+    id: item.id,
+    label: item.no_invoice || `#${item.id}`,
+    sub: item.nama_customer || undefined,
+  });
+
+  const selectableRows = invoiceData.filter(isSelectable);
+  const allPageSelected =
+    selectableRows.length > 0 &&
+    selectableRows.every((i) => selected.has(i.id));
+  const somePageSelected = selectableRows.some((i) => selected.has(i.id));
+
+  const toggleOne = (item: InvoiceDetail): void => {
+    setSelected((prev) => {
+      const next = new Map(prev);
+      if (next.has(item.id)) next.delete(item.id);
+      else next.set(item.id, toBulkItem(item));
+      return next;
+    });
+  };
+
+  const toggleAllPage = (): void => {
+    setSelected((prev) => {
+      const next = new Map(prev);
+      if (allPageSelected) {
+        selectableRows.forEach((i) => next.delete(i.id));
+      } else {
+        selectableRows.forEach((i) => next.set(i.id, toBulkItem(i)));
+      }
+      return next;
+    });
+  };
+
+  const removeFromSelection = (id: number): void => {
+    setSelected((prev) => {
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  const handleBulkApprove = async (): Promise<void> => {
+    const ids = Array.from(selected.keys());
+    if (ids.length === 0) return;
+
+    const url = `${import.meta.env.VITE_API_LINK}/invoice/bulk/approve`;
+    try {
+      setBulkProcessing(true);
+      const res = await axios.put(url, { ids }, { withCredentials: true });
+
+      console.log('Bulk approve response:', res.data);
+
+      if (res.data?.success) {
+        alert(`${ids.length} invoice berhasil di-approve!`);
+        setSelected(new Map());
+        setIsBulkModalOpen(false);
+        fetchInvoiceData();
+      } else {
+        alert(res.data?.message || 'Failed to bulk approve invoice.');
+      }
+    } catch (error: any) {
+      console.error('Error bulk approving invoice:', error);
+      alert(
+        error?.response?.data?.message ||
+          'Error bulk approving invoice. Please try again.',
+      );
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
   const handleViewDetail = (item: InvoiceDetail): void => {
     setSelectedInvoice(item);
     setIsDetailModalOpen(true);
@@ -319,13 +511,6 @@ const ListApprovingInvoice: React.FC = () => {
   const handleCloseDetailModal = (): void => {
     setIsDetailModalOpen(false);
     setSelectedInvoice(null);
-  };
-
-  const truncateText = (text: string | null, maxLength: number) => {
-    if (!text) return '-';
-    return text.length > maxLength
-      ? `${text.substring(0, maxLength)}...`
-      : text;
   };
 
   const formatDate = (dateString: string): string => {
@@ -366,7 +551,7 @@ const ListApprovingInvoice: React.FC = () => {
 
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-medium ${
+        className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
           statusColors[status.toLowerCase()] || 'bg-gray-100 text-gray-800'
         }`}
       >
@@ -380,12 +565,12 @@ const ListApprovingInvoice: React.FC = () => {
     const theme = recapCardTheme(item.waktu ?? '');
     return (
       <div className="flex flex-col gap-0.5">
-        <span className="text-xs text-gray-900">
+        <span className="text-xs text-gray-900 whitespace-nowrap">
           {item.due_description || '-'}
         </span>
         {item.waktu && (
           <span
-            className={`inline-block w-fit text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${theme.chip}`}
+            className={`inline-block w-fit text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${theme.chip}`}
           >
             {item.waktu}
           </span>
@@ -457,10 +642,22 @@ const ListApprovingInvoice: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
+                <th className="pl-3 pr-1 py-2 w-8">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+                    checked={allPageSelected}
+                    ref={(el) => {
+                      if (el)
+                        el.indeterminate = somePageSelected && !allPageSelected;
+                    }}
+                    onChange={toggleAllPage}
+                    disabled={loading || selectableRows.length === 0}
+                    title="Pilih semua di halaman ini"
+                  />
+                </th>
                 {[
-                  'No Invoice',
-                  'No DO',
-                  'No PO',
+                  'Invoice / DO / PO',
                   'Customer',
                   'Tgl Faktur',
                   'Jatuh Tempo',
@@ -470,12 +667,12 @@ const ListApprovingInvoice: React.FC = () => {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap"
+                    className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase"
                   >
                     {h}
                   </th>
                 ))}
-                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                <th className="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                   Actions
                 </th>
               </tr>
@@ -483,7 +680,7 @@ const ListApprovingInvoice: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-3 py-4 text-center">
+                  <td colSpan={9} className="px-3 py-4 text-center">
                     <div className="flex justify-center items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
@@ -492,7 +689,7 @@ const ListApprovingInvoice: React.FC = () => {
               ) : invoiceData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={9}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -500,42 +697,64 @@ const ListApprovingInvoice: React.FC = () => {
                 </tr>
               ) : (
                 invoiceData.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">
-                      {item.no_invoice || '-'}
+                  <tr
+                    key={item.id}
+                    className={`hover:bg-gray-50 ${
+                      selected.has(item.id) ? 'bg-blue-50/60' : ''
+                    }`}
+                  >
+                    <td className="pl-3 pr-1 py-2">
+                      {isSelectable(item) && (
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 cursor-pointer"
+                          checked={selected.has(item.id)}
+                          onChange={() => toggleOne(item)}
+                        />
+                      )}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {item.no_do || '-'}
+                    <td className="px-2 py-2 text-xs max-w-[240px]">
+                      <div className="font-semibold text-gray-900 whitespace-nowrap">
+                        {item.no_invoice || '-'}
+                      </div>
+                      <div className="mt-0.5 space-y-0.5 text-[11px] text-gray-600">
+                        <div className="break-all">
+                          <span className="text-gray-400">DO: </span>
+                          {item.no_do || '-'}
+                        </div>
+                        <div className="break-all">
+                          <span className="text-gray-400">PO: </span>
+                          {item.no_po || '-'}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {item.no_po || '-'}
+                    <td
+                      className="px-2 py-2 text-xs text-gray-900 max-w-[180px] break-words"
+                      title={item.nama_customer}
+                    >
+                      {item.nama_customer || '-'}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                      {truncateText(item.nama_customer, 20)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
                       {formatDate(item.tgl_faktur)}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs">
-                      {getDueBadge(item)}
-                    </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-semibold">
+                    <td className="px-2 py-2 text-xs">{getDueBadge(item)}</td>
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900 font-semibold">
                       {formatCurrency(item.total)}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                    <td className="px-2 py-2 text-xs">
                       {getPaymentStatusBadge(item.status_payment)}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs">
+                    <td className="px-2 py-2 text-xs">
                       {getStatusBadge(item.status)}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs">
-                      <div className="flex items-center justify-center gap-2">
+                    <td className="px-2 py-2 text-xs">
+                      <div className="flex flex-col items-stretch gap-1.5 w-24 mx-auto">
                         {item.status === 'requested' && (
                           <>
                             <button
                               onClick={() => handleApproveInvoice(item.id)}
                               disabled={processingId === item.id}
-                              className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {processingId === item.id &&
                               processingAction === 'approve' ? (
@@ -547,7 +766,7 @@ const ListApprovingInvoice: React.FC = () => {
                             <button
                               onClick={() => handleRejectInvoice(item.id)}
                               disabled={processingId === item.id}
-                              className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {processingId === item.id &&
                               processingAction === 'reject' ? (
@@ -560,7 +779,7 @@ const ListApprovingInvoice: React.FC = () => {
                         )}
                         <button
                           onClick={() => handleViewDetail(item)}
-                          className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
+                          className="w-full px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
                         >
                           Detail
                         </button>
@@ -607,6 +826,18 @@ const ListApprovingInvoice: React.FC = () => {
 
       {/* Mobile Card View */}
       <div className="lg:hidden space-y-3">
+        {!loading && selectableRows.length > 0 && (
+          <label className="flex items-center gap-2 px-1 text-xs text-gray-600">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-gray-300"
+              checked={allPageSelected}
+              onChange={toggleAllPage}
+            />
+            Pilih semua di halaman ini
+          </label>
+        )}
+
         {loading ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -617,8 +848,21 @@ const ListApprovingInvoice: React.FC = () => {
           </div>
         ) : (
           invoiceData.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow p-4">
+            <div
+              key={item.id}
+              className={`bg-white rounded-lg shadow p-4 ${
+                selected.has(item.id) ? 'ring-2 ring-blue-300' : ''
+              }`}
+            >
               <div className="flex justify-between items-start mb-3">
+                {isSelectable(item) && (
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 mt-0.5 mr-3 rounded border-gray-300"
+                    checked={selected.has(item.id)}
+                    onChange={() => toggleOne(item)}
+                  />
+                )}
                 <div className="flex-1">
                   <div className="font-semibold text-sm text-gray-900">
                     {item.no_invoice || '-'}
@@ -642,7 +886,9 @@ const ListApprovingInvoice: React.FC = () => {
                     <span className="text-gray-500 text-xs font-medium">
                       No PO:
                     </span>
-                    <div className="text-gray-900 text-xs">{item.no_po}</div>
+                    <div className="text-gray-900 text-xs break-all">
+                      {item.no_po}
+                    </div>
                   </div>
                 </div>
 
@@ -755,6 +1001,43 @@ const ListApprovingInvoice: React.FC = () => {
           </Stack>
         </div>
       </div>
+
+      {/* Floating bulk action bar */}
+      {selected.size > 0 && !isBulkModalOpen && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-lg bg-white text-black border-2 border-black rounded-xl shadow-2xl px-4 py-3 flex items-center justify-between gap-3">
+          <span className="text-sm">
+            <strong>{selected.size}</strong> invoice dipilih
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSelected(new Map())}
+              className="text-xs text-gray-300 hover:text-white underline"
+            >
+              Batal pilih
+            </button>
+            <button
+              onClick={() => setIsBulkModalOpen(true)}
+              className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-xs font-semibold rounded-lg"
+            >
+              Approve ({selected.size})
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk confirm modal */}
+      <BulkConfirmModal
+        open={isBulkModalOpen}
+        title="Konfirmasi Bulk Approve"
+        description="Pastikan daftar invoice berikut sudah benar sebelum di-approve."
+        confirmLabel={`Approve ${selected.size} Invoice`}
+        confirmClass="bg-green-600 hover:bg-green-700"
+        items={Array.from(selected.values())}
+        processing={bulkProcessing}
+        onRemove={removeFromSelection}
+        onConfirm={handleBulkApprove}
+        onClose={() => setIsBulkModalOpen(false)}
+      />
 
       {/* Detail Modal — receives the row directly (read-only: not a draft) */}
       {isDetailModalOpen && selectedInvoice && (

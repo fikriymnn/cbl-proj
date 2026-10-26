@@ -300,6 +300,7 @@ import ListInvoiceRequestAPPage from './pages/Accounting/Pembelian/ListInvoiceAP
 import ListInvoiceApproveAPPage from './pages/Accounting/Pembelian/ListInvoiceApproveAPPage';
 import ListGRPage from './pages/Accounting/Pembelian/ListGRPage';
 import ListAllInvoiceAPPage from './pages/Accounting/Pembelian/ListAllInvoiceAPPage';
+import InformasiKurangQtyPage from './pages/Produksi/InformasiKurangQtyPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -1754,6 +1755,14 @@ function App() {
           element={
             <P>
               <EstimasiKurangQtyProduksiPage />
+            </P>
+          }
+        />
+        <Route
+          path="/production/informasi-kurang-qty"
+          element={
+            <P>
+              <InformasiKurangQtyPage />
             </P>
           }
         />
