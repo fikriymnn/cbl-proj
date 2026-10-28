@@ -301,6 +301,7 @@ import ListInvoiceApproveAPPage from './pages/Accounting/Pembelian/ListInvoiceAp
 import ListGRPage from './pages/Accounting/Pembelian/ListGRPage';
 import ListAllInvoiceAPPage from './pages/Accounting/Pembelian/ListAllInvoiceAPPage';
 import InformasiKurangQtyPage from './pages/Produksi/InformasiKurangQtyPage';
+import ListCOAPage from './pages/Accounting/ListCOAPage';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2063,6 +2064,14 @@ function App() {
           }
         />
 
+        <Route
+          path="/accounting/chart-of-accounts"
+          element={
+            <P>
+              <ListCOAPage />
+            </P>
+          }
+        />
         {/* ============== MASTER DATA ROUTES ============== */}
         {/* Maintenance Master */}
         <Route
