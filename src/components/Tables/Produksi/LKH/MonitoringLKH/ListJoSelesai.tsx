@@ -392,7 +392,7 @@ const ListJoSelesai: React.FC = () => {
         params: { page, limit, search: searchTerm },
         withCredentials: true,
       });
-
+      console.log('Fetched JO Done data:', res.data);
       setJoDoneData(res.data.data || []);
       setTotalPages(res.data.total_page || 1);
     } catch (error) {
@@ -475,7 +475,7 @@ const ListJoSelesai: React.FC = () => {
     setExpandedJoId(item.id);
     setExpandedData(null);
 
-    const url = `${import.meta.env.VITE_API_LINK}/produksi/joDone/${item.id}`;
+    const url = `${import.meta.env.VITE_API_LINK} `;
 
     try {
       setExpandingJoId(item.id);

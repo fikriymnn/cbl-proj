@@ -129,11 +129,22 @@ const norm = (v: any) =>
   String(v ?? '')
     .trim()
     .toLowerCase();
+// poin di dalam waste (3.2.3 - debu kertas, dst.)
+const getKendala = (w: any): any[] =>
+  Array.isArray(w?.kendala) ? w.kendala : [];
+// id JO untuk /reportWasteByJo. Sesuaikan jika field di API berbeda.
+const getIdJo = (row: any) =>
+  row?.id_jo ?? row?.job_order?.id_jo ?? row?.job_order?.id;
 
-const fmtTemuan = (v: any) => {
-  if (v == null || v === '') return '-';
-  if (Array.isArray(v)) return v.length ? v.join(', ') : '-';
-  return String(v);
+// Semua mesin unik untuk satu kode waste (dari operator_inspektor[].mesin)
+const getUniqueMesin = (w: any): string[] => {
+  const list = Array.isArray(w?.operator_inspektor) ? w.operator_inspektor : [];
+  const set = new Set<string>();
+  list.forEach((item: any) => {
+    const mesin = item?.mesin ? String(item.mesin).trim() : '';
+    if (mesin) set.add(mesin);
+  });
+  return Array.from(set);
 };
 
 function buildDefaultFilters(): Filters {
@@ -165,36 +176,41 @@ function toTime(iso: string | null | undefined) {
   return isNaN(t) ? null : t;
 }
 
-// Cache di level modul: master + P1 + reportWaste cukup diambil sekali
-let wasteReportCache: Promise<any> | null = null;
+// Cache di level modul: waste master cukup diambil sekali
+let wasteMasterCache: Promise<any> | null = null;
 
-function fetchWasteReport(): Promise<any> {
-  if (!wasteReportCache) {
-    wasteReportCache = (async () => {
-      const master = await axios.get(
-        `${API}/master/produksi/wasteKendalaFormating`,
-        {},
-      );
-      const p1 = await axios.get(`${API_P1}/api/waste-lkh`, {
-        params: { first_date: null, last_date: null },
+function fetchWasteMaster(): Promise<any> {
+  if (!wasteMasterCache) {
+    wasteMasterCache = axios
+      .get(`${API}/master/produksi/wasteKendalaFormating`, {})
+      .then((res) => res.data.waste)
+      .catch((err) => {
+        wasteMasterCache = null; // gagal → boleh dicoba lagi
+        throw err;
       });
-      const res = await axios.post(
-        `${API}/reportWaste`,
-        {
-          data_waste_master: master.data.waste,
-          data_waste_p1: p1.data,
-          start_date: null,
-          end_date: null,
-        },
-        { withCredentials: true },
-      );
-      return res.data;
-    })().catch((err) => {
-      wasteReportCache = null; // gagal → boleh dicoba lagi
-      throw err;
-    });
   }
-  return wasteReportCache;
+  return wasteMasterCache;
+}
+
+// GET master (cache) + GET P1 (per JO) → POST /reportWasteByJo
+async function fetchWasteByJo(noJo: string, idJo: any): Promise<any> {
+  const master = await fetchWasteMaster();
+
+  const p1 = await axios.get(`${API_P1}/api/waste-lkh`, {
+    params: { no_jo: noJo, id_jo: idJo },
+  });
+
+  const res = await axios.post(
+    `${API}/reportWasteByJo`,
+    {
+      data_waste_master: master,
+      data_waste_p1: p1.data,
+      no_jo: noJo,
+      id_jo: idJo,
+    },
+    { withCredentials: true },
+  );
+  return res.data;
 }
 
 // nilai yang dipakai untuk sorting tiap kolom
@@ -309,10 +325,11 @@ function DetailModal({
     };
   }, [id, type]);
 
-  // no_jo diambil dari detail (fallback ke job_order.no_jo)
+  // no_jo & id_jo diambil dari detail (fallback ke job_order)
   const noJo: string | null = row?.no_jo ?? row?.job_order?.no_jo ?? null;
+  const idJo = getIdJo(row);
 
-  // GET master + P1, lalu POST /reportWaste → ambil JO yang sama
+  // GET master (cache) + P1 (per JO), lalu POST /reportWasteByJo
   useEffect(() => {
     if (!noJo) return;
     let cancelled = false;
@@ -320,13 +337,11 @@ function DetailModal({
       try {
         setWasteLoading(true);
         setWasteError(false);
-        const data = await fetchWasteReport();
-        console.log('fetchWaste', noJo, data);
-        const list: any[] = Array.isArray(data?.dataWasteByJo)
-          ? data.dataWasteByJo
-          : [];
-        const found = list.find((j) => norm(j.no_jo) === norm(noJo));
-        if (!cancelled) setWasteJo(found ?? null);
+        setWasteJo(null);
+        const data = await fetchWasteByJo(noJo, idJo);
+        console.log('fetchWasteByJo', noJo, data);
+        const joData = data?.dataWasteByJo?.[0] ?? data;
+        if (!cancelled) setWasteJo(joData ?? null);
       } catch (err) {
         console.error(err);
         if (!cancelled) {
@@ -340,35 +355,47 @@ function DetailModal({
     return () => {
       cancelled = true;
     };
-  }, [noJo]);
+  }, [noJo, idJo]);
 
   const wastes: any[] = useMemo(
     () =>
-      [...(wasteJo?.defects ?? [])].sort(
+      [...(Array.isArray(wasteJo?.defects) ? wasteJo.defects : [])].sort(
         (a: any, b: any) => (b.total_defect ?? 0) - (a.total_defect ?? 0),
       ),
     [wasteJo],
   );
 
   const defects: any[] = useMemo(() => getDefects(row, type), [row, type]);
-
-  // kode yang ada di masing-masing sisi → dasar indikator sama/beda
+  // kode defect tambah bahan (mis. C-11, 3.2.3)
   const defectCodes = useMemo(
     () => new Set(defects.map((d) => norm(d.kode))),
     [defects],
   );
+
+  // semua kode di sisi waste: kode waste (C-11) + kode poin (3.2.3)
   const wasteCodes = useMemo(
-    () => new Set(wastes.map((w) => norm(w.kode_waste))),
+    () =>
+      new Set([
+        ...wastes.map((w) => norm(w.kode_waste)),
+        ...wastes.flatMap((w) =>
+          getKendala(w).map((k: any) => norm(k.kode_kendala)),
+        ),
+      ]),
     [wastes],
   );
-  const matchCount = wastes.filter((w) =>
-    defectCodes.has(norm(w.kode_waste)),
-  ).length;
-  const totalWasteDefect = wastes.reduce(
-    (s, w) => s + (w.total_defect ?? 0),
-    0,
-  );
 
+  const isPointMatch = (k: any) => defectCodes.has(norm(k.kode_kendala));
+
+  // kartu waste "Sama" jika kode waste ATAU salah satu poinnya cocok
+  const isWasteMatch = (w: any) =>
+    defectCodes.has(norm(w.kode_waste)) || getKendala(w).some(isPointMatch);
+
+  // hitung per kartu waste
+  const matchCount = wastes.filter(isWasteMatch).length;
+  // hitung per kartu defect (kanan)
+  const defectMatchCount = defects.filter((d) =>
+    wasteCodes.has(norm(d.kode)),
+  ).length;
   if (isLoading) return <Loading />;
 
   if (error || !row) {
@@ -545,8 +572,7 @@ function DetailModal({
                 </h4>
                 {wastes.length > 0 && (
                   <span className="text-[10px] font-semibold text-gray-700 bg-white border border-gray-200 rounded-full px-2 py-0.5 whitespace-nowrap">
-                    {matchCount} sama · {wastes.length - matchCount} beda ·
-                    Total: {fmtQty(totalWasteDefect)}
+                    {matchCount} sama · {wastes.length - matchCount} beda
                   </span>
                 )}
               </div>
@@ -566,13 +592,9 @@ function DetailModal({
               ) : (
                 <div className="space-y-1.5 max-h-80 overflow-y-auto pr-1">
                   {wastes.map((w: any, wi: number) => {
-                    const matched = defectCodes.has(norm(w.kode_waste));
-                    const kendalaList: any[] = Array.isArray(w.kendala)
-                      ? w.kendala
-                      : [];
-                    const ops: any[] = Array.isArray(w.operator_inspektor)
-                      ? w.operator_inspektor.filter(Boolean)
-                      : [];
+                    const points = getKendala(w);
+                    // kartu dianggap "Sama" jika ada minimal satu poin yang kodenya sama
+                    const matched = isWasteMatch(w);
                     return (
                       <div
                         key={w.kode_waste ?? wi}
@@ -608,85 +630,38 @@ function DetailModal({
                           </div>
                         </div>
 
-                        {/* Kendala terkait */}
-                        {kendalaList.length > 0 && (
-                          <div className="space-y-0.5 mb-1.5 text-[11px]">
-                            {kendalaList.map((k: any, ki: number) => (
-                              <div
-                                key={ki}
-                                className="flex justify-between gap-2"
-                              >
-                                <span className="text-gray-600">
-                                  ✤ {k.kategori_kendala} - {k.kode_kendala} -{' '}
-                                  {k.kendala_desc}
-                                </span>
-                                <span className="font-semibold text-gray-700 whitespace-nowrap">
-                                  {fmtQty(k.calculated_defect)}
-                                </span>
-                              </div>
-                            ))}
+                        {points.length > 0 ? (
+                          <div className="space-y-0.5 text-[11px]">
+                            {points.map((k: any, ki: number) => {
+                              const pm = isPointMatch(k);
+                              return (
+                                <div
+                                  key={ki}
+                                  className={`flex justify-between gap-2 rounded px-1.5 py-0.5 ${
+                                    pm ? 'bg-green-100' : ''
+                                  }`}
+                                >
+                                  <span
+                                    className={
+                                      pm
+                                        ? 'text-green-800 font-semibold'
+                                        : 'text-gray-600'
+                                    }
+                                  >
+                                    ✤ {k.kategori_kendala} - {k.kode_kendala} -{' '}
+                                    {k.kendala_desc}
+                                  </span>
+                                  <span className="font-semibold text-gray-700 whitespace-nowrap">
+                                    {fmtQty(k.calculated_defect)}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
-                        )}
-
-                        {/* Inspektor / operator / mesin */}
-                        {ops.length > 0 && (
-                          <div className="space-y-1 border-t border-gray-200 pt-1.5">
-                            {ops.map((op: any, oi: number) => (
-                              <div
-                                key={oi}
-                                className="grid grid-cols-2 gap-x-3 gap-y-0.5 text-[11px]"
-                              >
-                                <div>
-                                  <span className="text-gray-400">
-                                    Inspektor:{' '}
-                                  </span>
-                                  <span className="font-medium text-gray-700">
-                                    {op.inspektor || '-'}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-400">
-                                    Operator:{' '}
-                                  </span>
-                                  <span className="font-medium text-gray-700">
-                                    {op.operator || '-'}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-400">Mesin: </span>
-                                  <span className="font-medium text-gray-700">
-                                    {op.mesin || '-'}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-gray-400">
-                                    Defect:{' '}
-                                  </span>
-                                  <span className="font-medium text-gray-700">
-                                    {fmtQty(op.calculated_defect)}
-                                  </span>
-                                </div>
-                                <div className="col-span-2">
-                                  <span className="text-gray-400">
-                                    Kendala LKH:{' '}
-                                  </span>
-                                  <span className="font-medium text-gray-700">
-                                    {[op.kode_lkh, op.masalah_lkh]
-                                      .filter(Boolean)
-                                      .join(' - ') || '-'}
-                                  </span>
-                                </div>
-                                <div className="col-span-2">
-                                  <span className="text-gray-400">
-                                    Temuan:{' '}
-                                  </span>
-                                  <span className="font-medium text-gray-700">
-                                    {fmtTemuan(op.temuan)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                        ) : (
+                          <p className="text-[11px] text-gray-400">
+                            Tidak ada poin kendala
+                          </p>
                         )}
                       </div>
                     );
@@ -697,9 +672,17 @@ function DetailModal({
 
             {/* Defect */}
             <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <h4 className="text-xs font-semibold text-gray-700 mb-3">
-                Defect Tambah Bahan ({defects.length})
-              </h4>
+              <div className="flex items-center justify-between mb-3 gap-2">
+                <h4 className="text-xs font-semibold text-gray-700">
+                  Defect Tambah Bahan ({defects.length})
+                </h4>
+                {defects.length > 0 && (
+                  <span className="text-[10px] font-semibold text-gray-700 bg-white border border-gray-200 rounded-full px-2 py-0.5 whitespace-nowrap">
+                    {defectMatchCount} sama ·{' '}
+                    {defects.length - defectMatchCount} beda
+                  </span>
+                )}
+              </div>
               {defects.length === 0 ? (
                 <p className="text-xs text-gray-500 text-center py-6">
                   Tidak ada defect
