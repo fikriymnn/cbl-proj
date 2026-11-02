@@ -17,7 +17,8 @@ interface JoDoneItem {
   no_so: string;
   customer: string | null;
   produk: string;
-  qty_kirim: number | null;
+  qty_kirim: number | null; // Qty Kirim FI
+  qty_hasil_fi?: number | null; // Qty Hasil FI
   status: string;
   status_proses: string;
   is_active: boolean;
@@ -265,7 +266,9 @@ const EditQtyKirimModal: React.FC<EditQtyKirimModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         <div className="bg-amber-500 px-6 py-4 rounded-t-lg flex justify-between items-center">
-          <h3 className="text-lg font-semibold text-white">Ubah Qty Kirim</h3>
+          <h3 className="text-lg font-semibold text-white">
+            Ubah Qty Kirim FI
+          </h3>
           <button
             onClick={onClose}
             className="text-white hover:text-amber-100 text-2xl font-bold leading-none"
@@ -290,7 +293,7 @@ const EditQtyKirimModal: React.FC<EditQtyKirimModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Qty Kirim Saat Ini
+                Qty Kirim FI Saat Ini
               </label>
               <input
                 type="text"
@@ -302,7 +305,7 @@ const EditQtyKirimModal: React.FC<EditQtyKirimModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Qty Kirim Baru <span className="text-red-500">*</span>
+                Qty Kirim FI Baru <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -312,7 +315,7 @@ const EditQtyKirimModal: React.FC<EditQtyKirimModalProps> = ({
                   setError('');
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                placeholder="Masukkan qty kirim"
+                placeholder="Masukkan qty kirim FI"
                 min="0"
                 required
               />
@@ -359,7 +362,7 @@ const ListJoSelesai: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [limit, setLimit] = useState<number>(10);
 
-  // ── NEW: expand state ───────────────────────────────────────────────────
+  // ── Expand state ───────────────────────────────────────────────────────
   const [expandedJoId, setExpandedJoId] = useState<number | null>(null);
   const [expandingJoId, setExpandingJoId] = useState<number | null>(null);
   const [expandedData, setExpandedData] = useState<any>(null);
@@ -435,7 +438,7 @@ const ListJoSelesai: React.FC = () => {
   };
   // ─────────────────────────────────────────────────────────────────────────
 
-  // ── NEW: Open JO Done ────────────────────────────────────────────────────────
+  // ── Open JO Done ────────────────────────────────────────────────────────
   const handleOpenJoDone = async (item: JoDoneItem) => {
     const confirmed = window.confirm(
       `Apakah Anda yakin ingin membuka kembali JO "${item.no_jo}"?`,
@@ -460,7 +463,7 @@ const ListJoSelesai: React.FC = () => {
   };
   // ─────────────────────────────────────────────────────────────────────────────
 
-  // ── NEW: Expand row — fetch by id for final inspection detail ───────────────
+  // ── Expand row — fetch by id for final inspection detail ───────────────
   const handleExpandClick = async (item: JoDoneItem) => {
     // collapse if clicking the same row again
     if (expandedJoId === item.id) {
@@ -511,6 +514,24 @@ const ListJoSelesai: React.FC = () => {
   const formatNumber = (num: number | null | undefined): string => {
     if (num === null || num === undefined) return '-';
     return num.toLocaleString('id-ID');
+  };
+
+  /** Selisih = Qty Kirim FI - Qty Hasil FI (null jika Qty Hasil FI belum ada) */
+  const getSelisih = (item: JoDoneItem): number | null => {
+    if (item.qty_hasil_fi === null || item.qty_hasil_fi === undefined) {
+      return null;
+    }
+    return (item.qty_kirim ?? 0) - item.qty_hasil_fi;
+  };
+
+  const renderSelisih = (item: JoDoneItem) => {
+    const selisih = getSelisih(item);
+    if (selisih === null) return <span className="text-gray-400">-</span>;
+
+    const color =
+      selisih === 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium';
+
+    return <span className={color}>{formatNumber(selisih)}</span>;
   };
 
   const getStatusBadge = (status: string) => {
@@ -573,7 +594,7 @@ const ListJoSelesai: React.FC = () => {
           key="edit-qty"
           onClick={() => handleEditQtyClick(item)}
           className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1 rounded text-xs"
-          title="Ubah Qty Kirim"
+          title="Ubah Qty Kirim FI"
         >
           Edit Qty
         </button>,
@@ -626,7 +647,7 @@ const ListJoSelesai: React.FC = () => {
                 Jam
               </th>
               <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
-                Quantity
+                Qty Kirim FI
               </th>
               <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
                 No Packing
@@ -650,7 +671,7 @@ const ListJoSelesai: React.FC = () => {
                 Status FG
               </th>
               <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
-                Qty Kirim FG
+                Qty Hasil FI
               </th>
               <th className="px-2 py-1 text-left font-medium text-gray-600 whitespace-nowrap">
                 Lama Pengerjaan
@@ -778,7 +799,13 @@ const ListJoSelesai: React.FC = () => {
                   QTY PO
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
-                  QTY Kirim
+                  QTY Kirim FI
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  QTY Hasil FI
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  Selisih
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   Status
@@ -786,7 +813,6 @@ const ListJoSelesai: React.FC = () => {
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   JO Done
                 </th>
-                {/* NEW: Expand column on the right */}
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   Detail
                 </th>
@@ -795,7 +821,7 @@ const ListJoSelesai: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-3 py-4 text-center">
+                  <td colSpan={12} className="px-3 py-4 text-center">
                     <div className="flex justify-center items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
@@ -804,7 +830,7 @@ const ListJoSelesai: React.FC = () => {
               ) : joDoneData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={12}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -835,6 +861,12 @@ const ListJoSelesai: React.FC = () => {
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
                         {formatNumber(item.qty_kirim)}
                       </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                        {formatNumber(item.qty_hasil_fi)}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-xs">
+                        {renderSelisih(item)}
+                      </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs">
                         {getStatusBadge(item.status_proses)}
                       </td>
@@ -847,7 +879,7 @@ const ListJoSelesai: React.FC = () => {
                           <span className="text-gray-400">✗ No</span>
                         )}
                       </td>
-                      {/* NEW: Expand button cell */}
+                      {/* Expand button cell */}
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-center">
                         <button
                           onClick={() => handleExpandClick(item)}
@@ -874,10 +906,10 @@ const ListJoSelesai: React.FC = () => {
                       </td>
                     </tr>
 
-                    {/* NEW: Expanded detail row */}
+                    {/* Expanded detail row */}
                     {expandedJoId === item.id && (
                       <tr>
-                        <td colSpan={10} className="px-6 py-2 bg-gray-50">
+                        <td colSpan={12} className="px-6 py-2 bg-gray-50">
                           {renderExpandedRow(item)}
                         </td>
                       </tr>
@@ -948,7 +980,7 @@ const ListJoSelesai: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   {renderActionCell(item)}
-                  {/* NEW: Expand button on the right, mobile */}
+                  {/* Expand button on the right, mobile */}
                   <button
                     onClick={() => handleExpandClick(item)}
                     disabled={expandingJoId === item.id}
@@ -1008,11 +1040,28 @@ const ListJoSelesai: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-gray-500 text-xs font-medium">
-                      QTY Kirim:
+                      QTY Kirim FI:
                     </span>
                     <div className="text-gray-900 text-xs">
                       {formatNumber(item.qty_kirim)}
                     </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <span className="text-gray-500 text-xs font-medium">
+                      QTY Hasil FI:
+                    </span>
+                    <div className="text-gray-900 text-xs">
+                      {formatNumber(item.qty_hasil_fi)}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 text-xs font-medium">
+                      Selisih:
+                    </span>
+                    <div className="text-xs">{renderSelisih(item)}</div>
                   </div>
                 </div>
 
@@ -1039,7 +1088,7 @@ const ListJoSelesai: React.FC = () => {
                   </div>
                 </div>
 
-                {/* NEW: Expanded detail block, mobile */}
+                {/* Expanded detail block, mobile */}
                 {expandedJoId === item.id && (
                   <div className="mt-2 border-t border-gray-200 pt-2">
                     {renderExpandedRow(item)}

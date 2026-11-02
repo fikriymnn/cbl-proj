@@ -4,18 +4,20 @@ import { Pagination, Stack } from '@mui/material';
 import DetailBuktiBayarModal, {
   PaymentLog,
 } from './Invoice/DetailBuktiBayarModal';
+import type { DepositVendorItem } from './DepositVendorForm';
 
 /* =============================================================================
  * Halaman Deposit Approval (1 file)
  *  Tab 1 (default) : Deposit dari Bukti Lebih Bayar  → GET /invoice/payment
  *  Tab 2           : Deposit Manual                  → GET /deposit
+ *  Tab 3           : Deposit Vendor                  → GET /depositVendor
  *  Tiap tab punya sub tab: Outstanding (requested) & History (approved)
  * ========================================================================== */
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Mode = 'outstanding' | 'history';
-type MainTab = 'lebih-bayar' | 'manual';
+type MainTab = 'lebih-bayar' | 'manual' | 'vendor';
 
 interface User {
   id: number;
@@ -80,6 +82,20 @@ interface DepositDetailResponse {
   data: DepositItem;
   status: number;
   success: boolean;
+}
+
+interface DepositVendorResponse {
+  data: DepositVendorItem[];
+  status: number;
+  success: boolean;
+  total_data?: number;
+  total_page?: number;
+}
+
+interface VendorSaldoResponse {
+  status: number;
+  success: boolean;
+  data: { id: number; nama_vendor: string; saldo: number }[];
 }
 
 // Field tambahan dari response GET /invoice/payment
@@ -1135,11 +1151,616 @@ const ManualDepositList: React.FC<{ mode: Mode }> = ({ mode }) => {
   );
 };
 
+// ─── TAB 3: Deposit Vendor ────────────────────────────────────────────────────
+
+const VendorDepositList: React.FC<{ mode: Mode }> = ({ mode }) => {
+  const isHistory = mode === 'history';
+
+  const [loading, setLoading] = useState<boolean>(true);
+  const [depositData, setDepositData] = useState<DepositVendorItem[]>([]);
+  const [selectedDeposit, setSelectedDeposit] =
+    useState<DepositVendorItem | null>(null);
+  const [vendorSaldo, setVendorSaldo] = useState<number | null>(null);
+  const [saldoLoading, setSaldoLoading] = useState<boolean>(false);
+  const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [limit, setLimit] = useState<number>(10);
+  const [rejectReason, setRejectReason] = useState<string>('');
+  const [showRejectModal, setShowRejectModal] = useState<boolean>(false);
+  const [depositToReject, setDepositToReject] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetchDepositData();
+    // eslint-disable-next-line
+  }, [page, searchTerm, limit, mode]);
+
+  const fetchDepositData = async (): Promise<void> => {
+    const url = `${import.meta.env.VITE_API_LINK}/depositVendor`;
+    try {
+      setLoading(true);
+      const res: AxiosResponse<DepositVendorResponse> = await axios.get(url, {
+        params: {
+          page,
+          limit,
+          search: searchTerm || undefined,
+          status: isHistory ? 'approved' : 'requested',
+        },
+        withCredentials: true,
+      });
+      setDepositData(Array.isArray(res.data.data) ? res.data.data : []);
+      setTotalPages(res.data.total_page || 1);
+    } catch (error) {
+      console.error('Error fetching Deposit Vendor data:', error);
+      setDepositData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Detail diambil dari row list + saldo vendor dari /depositVendorSaldo
+  const openDetail = async (item: DepositVendorItem): Promise<void> => {
+    setSelectedDeposit(item);
+    setVendorSaldo(null);
+    setShowDetailModal(true);
+
+    const url = `${import.meta.env.VITE_API_LINK}/depositVendorSaldo`;
+    try {
+      setSaldoLoading(true);
+      const res: AxiosResponse<VendorSaldoResponse> = await axios.get(url, {
+        withCredentials: true,
+      });
+      const list = Array.isArray(res.data.data) ? res.data.data : [];
+      const found = list.find((v) => v.id === item.id_vendor);
+      setVendorSaldo(found ? toNum(found.saldo) : 0);
+    } catch (error) {
+      console.error('Error fetching vendor saldo:', error);
+      setVendorSaldo(null);
+    } finally {
+      setSaldoLoading(false);
+    }
+  };
+
+  const handleApprove = async (depositId: number) => {
+    if (!depositId) return;
+
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/depositVendor/approve/${depositId}`;
+    if (window.confirm('Apakah Anda yakin ingin Approve Deposit Vendor Ini?')) {
+      try {
+        const res = await axios.put(url, {}, { withCredentials: true });
+        if (res.data.success) {
+          alert('Deposit Vendor berhasil di-approve');
+          fetchDepositData();
+          setShowDetailModal(false);
+        }
+      } catch (error: any) {
+        console.error('Error approving deposit vendor:', error);
+        alert(
+          error.response?.data?.message || 'Failed to approve deposit vendor',
+        );
+      }
+    }
+  };
+
+  const handleRejectClick = (depositId: number) => {
+    setDepositToReject(depositId);
+    setRejectReason('');
+    setShowRejectModal(true);
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!depositToReject) return;
+    if (!rejectReason.trim()) {
+      alert('Silakan masukkan alasan reject');
+      return;
+    }
+
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/depositVendor/reject/${depositToReject}`;
+    try {
+      const res = await axios.put(
+        url,
+        { note_reject: rejectReason },
+        { withCredentials: true },
+      );
+      if (res.data.success) {
+        alert('Deposit Vendor berhasil di-reject');
+        fetchDepositData();
+        setShowRejectModal(false);
+        setShowDetailModal(false);
+        setRejectReason('');
+        setDepositToReject(null);
+      }
+    } catch (error: any) {
+      console.error('Error rejecting deposit vendor:', error);
+      alert(error.response?.data?.message || 'Failed to reject deposit vendor');
+    }
+  };
+
+  const handleLimitChange = (n: number): void => {
+    setLimit(n);
+    setPage(1);
+  };
+
+  const emptyText = isHistory
+    ? 'Belum ada history deposit vendor'
+    : 'No pending deposit vendor for approval';
+
+  const EmptyIcon = (
+    <svg
+      className="w-12 h-12 text-gray-300"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    </svg>
+  );
+
+  return (
+    <div>
+      {/* Search */}
+      <div className="mb-4 sm:mb-6">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search by No Deposit, Vendor, Cara Bayar..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1);
+            }}
+            className="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+          />
+          <SearchIcon />
+        </div>
+      </div>
+
+      {/* Desktop Table */}
+      <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                {[
+                  'No Deposit',
+                  'Tgl Faktur',
+                  'Vendor',
+                  'Cara Bayar',
+                  'Nominal',
+                  'Dibuat Oleh',
+                  ...(isHistory ? ['Disetujui Oleh'] : []),
+                  'Status',
+                  'Action',
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="px-3 py-4 text-center">
+                    <Spinner />
+                  </td>
+                </tr>
+              ) : depositData.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={9}
+                    className="px-3 py-8 text-center text-gray-500 text-sm"
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      {EmptyIcon}
+                      <p>{emptyText}</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                depositData.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900 font-medium">
+                      {item.no_deposit || '-'}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                      {formatDate(item.tgl_faktur)}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                      {item.vendor?.nama_vendor || '-'}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                      <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                        {item.cara_bayar || '-'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900 font-semibold">
+                      {formatCurrency(item.nominal)}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                      {item.user_create?.nama || '-'}
+                    </td>
+                    {isHistory && (
+                      <td className="px-3 py-3 whitespace-nowrap text-xs text-gray-900">
+                        {item.user_approve?.nama || '-'}
+                      </td>
+                    )}
+                    <td className="px-3 py-3 whitespace-nowrap text-xs">
+                      {getStatusBadge(item.status)}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap text-xs">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => openDetail(item)}
+                          className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs font-medium"
+                          title="Detail"
+                        >
+                          Detail
+                        </button>
+                        {!isHistory && (
+                          <>
+                            <button
+                              onClick={() => handleApprove(item.id)}
+                              className="px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-xs font-medium"
+                              title="Approve"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleRejectClick(item.id)}
+                              className="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-xs font-medium"
+                              title="Reject"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <PaginationBar
+          limit={limit}
+          page={page}
+          totalPages={totalPages}
+          onLimitChange={handleLimitChange}
+          onPageChange={setPage}
+        />
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-3">
+        {loading ? (
+          <div className="py-8">
+            <Spinner />
+          </div>
+        ) : depositData.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500 flex flex-col items-center gap-2">
+            {EmptyIcon}
+            <p>{emptyText}</p>
+          </div>
+        ) : (
+          depositData.map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <div className="font-semibold text-sm text-gray-900 mb-1">
+                    {item.no_deposit || '-'}
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    {item.vendor?.nama_vendor || '-'}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-green-600 mb-1">
+                    {formatCurrency(item.nominal)}
+                  </div>
+                  {getStatusBadge(item.status)}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-sm border-t pt-3 mt-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <span className="text-gray-500 text-xs font-medium">
+                      Tgl Faktur:
+                    </span>
+                    <div className="text-gray-900 text-xs">
+                      {formatDate(item.tgl_faktur)}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 text-xs font-medium">
+                      Cara Bayar:
+                    </span>
+                    <div className="text-gray-900 text-xs">
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                        {item.cara_bayar || '-'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex gap-2">
+                  <button
+                    onClick={() => openDetail(item)}
+                    className="flex-1 px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+                  >
+                    Detail
+                  </button>
+                  {!isHistory && (
+                    <>
+                      <button
+                        onClick={() => handleApprove(item.id)}
+                        className="flex-1 px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm font-medium"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleRejectClick(item.id)}
+                        className="flex-1 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+
+        {!loading && depositData.length > 0 && (
+          <PaginationBar
+            className="w-full flex flex-col items-center gap-4 py-4"
+            limit={limit}
+            page={page}
+            totalPages={totalPages}
+            onLimitChange={handleLimitChange}
+            onPageChange={setPage}
+          />
+        )}
+      </div>
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedDeposit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900">
+                Detail Deposit Vendor
+              </h2>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    No Deposit
+                  </label>
+                  <p className="text-base text-gray-900 font-semibold">
+                    {selectedDeposit.no_deposit}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Status
+                  </label>
+                  <div className="mt-1">
+                    {getStatusBadge(selectedDeposit.status)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Vendor
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.vendor?.nama_vendor || '-'}
+                  </p>
+                </div>
+                <div className="bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                  <label className="text-sm font-medium text-blue-700">
+                    Saldo Vendor
+                  </label>
+                  <p className="text-base text-blue-900 font-bold">
+                    {saldoLoading
+                      ? 'Memuat...'
+                      : vendorSaldo === null
+                      ? '-'
+                      : formatCurrency(vendorSaldo)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Tanggal Faktur
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {formatDate(selectedDeposit.tgl_faktur)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Cara Bayar
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.cara_bayar}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Nominal
+                </label>
+                <p className="text-xl text-gray-900 font-bold">
+                  {formatCurrency(selectedDeposit.nominal)}
+                </p>
+              </div>
+
+              {selectedDeposit.billing_address && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Billing Address
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.billing_address}
+                  </p>
+                </div>
+              )}
+
+              {selectedDeposit.note && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Note
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.note}
+                  </p>
+                </div>
+              )}
+
+              {selectedDeposit.user_create && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Dibuat Oleh
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.user_create.nama}
+                  </p>
+                </div>
+              )}
+
+              {isHistory && selectedDeposit.user_approve && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Disetujui Oleh
+                  </label>
+                  <p className="text-base text-gray-900">
+                    {selectedDeposit.user_approve.nama}
+                  </p>
+                </div>
+              )}
+
+              {!isHistory && (
+                <div className="border-t pt-4 flex gap-3">
+                  <button
+                    onClick={() => handleApprove(selectedDeposit.id)}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowDetailModal(false);
+                      handleRejectClick(selectedDeposit.id);
+                    }}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="px-6 py-4 border-b">
+              <h2 className="text-xl font-bold text-gray-900">
+                Reject Deposit Vendor
+              </h2>
+            </div>
+
+            <div className="p-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Alasan Reject <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Masukkan alasan reject..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                rows={4}
+              />
+            </div>
+
+            <div className="px-6 py-4 border-t flex gap-3">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectReason('');
+                  setDepositToReject(null);
+                }}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectSubmit}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Main: tabs + sub tabs ────────────────────────────────────────────────────
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'lebih-bayar', label: 'Deposit dari Bukti Lebih Bayar' },
   { key: 'manual', label: 'Deposit Manual' },
+  { key: 'vendor', label: 'Deposit Vendor' },
 ];
 
 const SUB_TABS: { key: Mode; label: string }[] = [
@@ -1198,8 +1819,10 @@ const DepositApproval: React.FC = () => {
       {/* key → remount saat tab berganti (reset page, search, dll) */}
       {mainTab === 'lebih-bayar' ? (
         <LebihBayarList key={`lb-${subTab}`} mode={subTab} />
-      ) : (
+      ) : mainTab === 'manual' ? (
         <ManualDepositList key={`manual-${subTab}`} mode={subTab} />
+      ) : (
+        <VendorDepositList key={`vendor-${subTab}`} mode={subTab} />
       )}
     </div>
   );
