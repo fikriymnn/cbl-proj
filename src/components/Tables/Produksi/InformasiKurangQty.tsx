@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import Loading from '../../Loading';
 import {
@@ -11,6 +11,14 @@ import {
   fmtQty,
   toDateInput,
 } from './InformasiKurangQtyShared';
+import JenisKerusakanPicker, {
+  DefectItem,
+  mergeDefects,
+  parseDefects,
+  serializeDefects,
+  sortDefects,
+} from './JenisKerusakanPicker';
+import InformasiKurangQtyPrint from './InformasiKurangQtyPrint';
 
 // Tab 1 "Buat Informasi"
 //   GET  /ppic/joMonitoringKurangQty  → daftar JO (sama seperti KurangQtyMonitoring)
@@ -19,6 +27,7 @@ import {
 //   GET    /informasiKurangQty        → params: limit, page, search, id_produk, start_date, end_date
 //   PUT    /informasiKurangQty/:id    → ubah
 //   DELETE /informasiKurangQty/:id    → hapus (dengan modal konfirmasi)
+//   Cetak  → komponen InformasiKurangQtyPrint (A4, tanpa API)
 //
 // Asumsi response GET /informasiKurangQty: { data: [...], total_data, total_page }
 // dan tiap item punya field yang sama dengan informasi_kurang_qty[] (id, no_jo, nama_produk, dst).
@@ -40,103 +49,115 @@ type FormState = {
   nama_mesin_cetak: string;
   tgl_cetak: string;
   qty_kurang: string;
-  jenis_kerusakan: string;
+  jenis_kerusakan: string; // string "nama qty, nama qty" → sama seperti payload BE
   note: string;
 };
 
 function validate(f: FormState): string {
-  if (!f.id_mesin_cetak) return 'Mesin cetak wajib dipilih';
-  if (!f.tgl_cetak) return 'Tanggal cetak wajib diisi';
+  if (!f.id_mesin_cetak) return 'Mesin cetak tidak ditemukan pada JO ini';
+  if (!f.tgl_cetak) return 'Tanggal cetak tidak ditemukan';
   const q = Number(f.qty_kurang);
   if (!f.qty_kurang || Number.isNaN(q) || q <= 0)
     return 'Qty kurang harus lebih dari 0';
-  if (!f.jenis_kerusakan.trim()) return 'Jenis kerusakan wajib diisi';
+  if (!f.jenis_kerusakan.trim()) return 'Pilih minimal satu jenis kerusakan';
   return '';
+}
+
+function ReadonlyField({ label, value }: { label: string; value: any }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs text-gray-600 font-medium">{label}</label>
+      <div className={readonlyCls}>{value || '-'}</div>
+    </div>
+  );
 }
 
 function FormFields({
   form,
   setForm,
-  machines,
+  defectOptions,
 }: {
   form: FormState;
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
-  machines: any[];
+  defectOptions: DefectItem[];
 }) {
-  const set = (k: keyof FormState, v: string) =>
-    setForm((p) => ({ ...p, [k]: v }));
+  const [pickerOpen, setPickerOpen] = useState(false);
 
-  const onMesin = (idStr: string) => {
-    const m = machines.find((x) => String(x.id_mesin_cetak) === idStr);
-    setForm((p) => ({
-      ...p,
-      id_mesin_cetak: idStr,
-      nama_mesin_cetak: m?.nama_mesin_cetak ?? '',
-      // tanggal cetak ikut mesin yang dipilih, tetap bisa diubah manual
-      tgl_cetak: m?.tgl_cetak ? toDateInput(m.tgl_cetak) : p.tgl_cetak,
-    }));
-  };
+  const selected = useMemo(
+    () => sortDefects(parseDefects(form.jenis_kerusakan)),
+    [form.jenis_kerusakan],
+  );
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-gray-600 font-medium">Mesin Cetak</label>
-        <select
-          value={form.id_mesin_cetak}
-          onChange={(e) => onMesin(e.target.value)}
-          className={inputCls}
-        >
-          <option value="">Pilih mesin...</option>
-          {machines.map((m) => (
-            <option key={m.id_mesin_cetak} value={m.id_mesin_cetak}>
-              {m.nama_mesin_cetak}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-gray-600 font-medium">
-          Tanggal Cetak
-        </label>
-        <input
-          type="date"
-          value={form.tgl_cetak}
-          onChange={(e) => set('tgl_cetak', e.target.value)}
-          className={inputCls}
-        />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-gray-600 font-medium">Qty Kurang</label>
-        <input
-          type="number"
-          min={1}
-          value={form.qty_kurang}
-          onChange={(e) => set('qty_kurang', e.target.value)}
-          className={inputCls}
-        />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-gray-600 font-medium">
-          Jenis Kerusakan
-        </label>
-        <input
-          type="text"
+    <>
+      {pickerOpen && (
+        <JenisKerusakanPicker
+          options={defectOptions}
           value={form.jenis_kerusakan}
-          onChange={(e) => set('jenis_kerusakan', e.target.value)}
-          placeholder="Contoh: Pisau tidak turun"
-          className={inputCls}
+          onClose={() => setPickerOpen(false)}
+          onConfirm={(v) => setForm((p) => ({ ...p, jenis_kerusakan: v }))}
+        />
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* tidak bisa diedit */}
+        <ReadonlyField label="Mesin Cetak" value={form.nama_mesin_cetak} />
+        <ReadonlyField label="Tanggal Cetak" value={fmtDate(form.tgl_cetak)} />
+        <ReadonlyField
+          label="Qty Kurang"
+          value={fmtQty(Number(form.qty_kurang))}
         />
       </div>
-      <div className="flex flex-col gap-1.5 sm:col-span-2">
+
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <label className="text-xs text-gray-600 font-medium">
+            Jenis Kerusakan
+          </label>
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            disabled={defectOptions.length === 0}
+            className="px-3 py-1 rounded-lg text-xs font-semibold text-violet-600 hover:bg-violet-50 border border-violet-200 transition-colors disabled:opacity-40"
+          >
+            Pilih ({selected.length}/{defectOptions.length})
+          </button>
+        </div>
+        <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 min-h-[44px]">
+          {selected.length === 0 ? (
+            <span className="text-xs text-gray-400">
+              Belum ada jenis kerusakan dipilih
+            </span>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {selected.map((d, i) => (
+                <span
+                  key={`${d.name}-${i}`}
+                  className="inline-flex items-center gap-1 rounded-full bg-white border border-violet-200 px-2 py-0.5 text-[11px] text-gray-700"
+                >
+                  {d.name}
+                  {d.qty != null && (
+                    <b className="text-red-600">
+                      {d.qty.toLocaleString('id-ID')}
+                    </b>
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
         <label className="text-xs text-gray-600 font-medium">Catatan</label>
         <textarea
           rows={3}
           value={form.note}
-          onChange={(e) => set('note', e.target.value)}
+          onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
           className={inputCls}
         />
       </div>
-    </div>
+    </>
   );
 }
 
@@ -181,15 +202,6 @@ function ModalShell({
   );
 }
 
-function ReadonlyField({ label, value }: { label: string; value: any }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs text-gray-600 font-medium">{label}</label>
-      <div className={readonlyCls}>{value || '-'}</div>
-    </div>
-  );
-}
-
 // ─── Modal Buat ───────────────────────────────────────────────────────────────
 
 function CreateModal({
@@ -206,10 +218,19 @@ function CreateModal({
   const machines: any[] = Array.isArray(row.data_cetak) ? row.data_cetak : [];
   const src = row.form_informasi_kurang_qty ?? {};
 
-  // default: mesin dari form_informasi_kurang_qty, kalau tidak ada pakai mesin pertama
+  // mesin dari form_informasi_kurang_qty, kalau tidak ada pakai mesin pertama
   const initMesin =
     machines.find((m) => m.id_mesin_cetak === src.id_mesin_cetak) ??
     machines[0];
+
+  // semua jenis kerusakan dari JO (urut terbesar → terkecil)
+  const defectOptions = useMemo(
+    () =>
+      sortDefects(
+        parseDefects(src.jenis_kerusakan ?? row.jenis_kerusakan ?? ''),
+      ),
+    [src.jenis_kerusakan, row.jenis_kerusakan],
+  );
 
   const [form, setForm] = useState<FormState>({
     id_mesin_cetak: String(
@@ -218,7 +239,8 @@ function CreateModal({
     nama_mesin_cetak: initMesin?.nama_mesin_cetak ?? src.nama_mesin_cetak ?? '',
     tgl_cetak: toDateInput(src.tgl_cetak ?? initMesin?.tgl_cetak),
     qty_kurang: String(src.qty_kurang ?? row.kurang_qty ?? ''),
-    jenis_kerusakan: src.jenis_kerusakan ?? row.jenis_kerusakan ?? '',
+    // default: semua tercentang
+    jenis_kerusakan: serializeDefects(defectOptions),
     note: '',
   });
   const [error, setError] = useState('');
@@ -293,14 +315,13 @@ function CreateModal({
         <ReadonlyField label="Qty PO" value={fmtQty(qtyPo)} />
       </div>
 
-      {machines.length === 0 && (
+      {machines.length === 0 && !src.id_mesin_cetak && (
         <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          JO ini belum punya data cetak, sehingga mesin cetak belum bisa
-          dipilih.
+          JO ini belum punya data cetak, sehingga informasi belum bisa disimpan.
         </p>
       )}
 
-      <FormFields form={form} setForm={setForm} machines={machines} />
+      <FormFields form={form} setForm={setForm} defectOptions={defectOptions} />
 
       {error && <p className="text-xs text-red-600">{error}</p>}
 
@@ -322,8 +343,13 @@ function EditModal({
   onSaved: () => void;
   notify: Notify;
 }) {
-  const [machines, setMachines] = useState<any[]>(
-    Array.isArray(item.data_cetak) ? item.data_cetak : [],
+  const current = useMemo(
+    () => parseDefects(item.jenis_kerusakan),
+    [item.jenis_kerusakan],
+  );
+  // pilihan awal = yang tersimpan; setelah fetch JO, ditambah semua jenis kerusakan asli
+  const [defectOptions, setDefectOptions] = useState<DefectItem[]>(
+    sortDefects(current),
   );
   const [form, setForm] = useState<FormState>({
     id_mesin_cetak: String(item.id_mesin_cetak ?? ''),
@@ -336,7 +362,7 @@ function EditModal({
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Ambil daftar mesin cetak JO ini dari endpoint monitoring
+  // Ambil daftar jenis kerusakan asli JO ini dari endpoint monitoring
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -347,7 +373,13 @@ function EditModal({
         });
         const list: any[] = Array.isArray(res.data?.data) ? res.data.data : [];
         const jo = list.find((j) => j.no_jo === item.no_jo);
-        if (!cancelled && jo?.data_cetak?.length) setMachines(jo.data_cetak);
+        const original = parseDefects(
+          jo?.form_informasi_kurang_qty?.jenis_kerusakan ??
+            jo?.jenis_kerusakan ??
+            '',
+        );
+        if (!cancelled && original.length)
+          setDefectOptions(mergeDefects(original, current));
       } catch (err) {
         console.error(err);
       }
@@ -355,23 +387,7 @@ function EditModal({
     return () => {
       cancelled = true;
     };
-  }, [item.no_jo]);
-
-  // pastikan mesin yang tersimpan tetap muncul di dropdown
-  const options =
-    form.id_mesin_cetak &&
-    !machines.some(
-      (m) => String(m.id_mesin_cetak) === String(item.id_mesin_cetak),
-    )
-      ? [
-          {
-            id_mesin_cetak: item.id_mesin_cetak,
-            nama_mesin_cetak: item.nama_mesin_cetak,
-            tgl_cetak: item.tgl_cetak,
-          },
-          ...machines,
-        ]
-      : machines;
+  }, [item.no_jo, current]);
 
   const handleSave = async () => {
     const msg = validate(form);
@@ -434,7 +450,7 @@ function EditModal({
         <ReadonlyField label="Produk" value={item.nama_produk} />
         <ReadonlyField label="Qty PO" value={fmtQty(item.qty_po)} />
       </div>
-      <FormFields form={form} setForm={setForm} machines={options} />
+      <FormFields form={form} setForm={setForm} defectOptions={defectOptions} />
       {error && <p className="text-xs text-red-600">{error}</p>}
     </ModalShell>
   );
@@ -775,6 +791,7 @@ function TabDaftar({ notify }: { notify: Notify }) {
 
   const [editItem, setEditItem] = useState<any | null>(null);
   const [deleteItem, setDeleteItem] = useState<any | null>(null);
+  const [printItem, setPrintItem] = useState<any | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -839,6 +856,12 @@ function TabDaftar({ notify }: { notify: Notify }) {
           onClose={() => setEditItem(null)}
           onSaved={fetchData}
           notify={notify}
+        />
+      )}
+      {printItem && (
+        <InformasiKurangQtyPrint
+          item={printItem}
+          onClose={() => setPrintItem(null)}
         />
       )}
       {deleteItem && (
@@ -932,6 +955,12 @@ function TabDaftar({ notify }: { notify: Notify }) {
                     <td className="p-2 sm:p-3 text-xs">
                       <div className="flex gap-1.5">
                         <button
+                          onClick={() => setPrintItem(r)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-300 transition-colors"
+                        >
+                          Cetak
+                        </button>
+                        <button
                           onClick={() => setEditItem(r)}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-semibold text-violet-600 hover:text-violet-800 hover:bg-violet-50 border border-violet-200 transition-colors"
                         >
@@ -999,7 +1028,7 @@ function InformasiKurangQty() {
       {toast && (
         <div
           role="status"
-          className={`fixed top-4 right-4 z-[70] max-w-sm rounded-lg px-4 py-3 text-sm font-medium shadow-lg text-white ${
+          className={`fixed top-4 right-4 z-[90] max-w-sm rounded-lg px-4 py-3 text-sm font-medium shadow-lg text-white ${
             toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
           }`}
         >

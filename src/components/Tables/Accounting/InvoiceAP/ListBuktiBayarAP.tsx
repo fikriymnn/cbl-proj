@@ -13,6 +13,12 @@ import { formatCurrency, formatDate } from './utils';
  * mode="view"    : list + Detail            (tab "Bukti Bayar" di ListAP)
  * mode="approve" : list + Detail + Approve  (tab "Pembelian" di halaman approving)
  *                  PUT /invoiceAp/payment/approve/:id
+ *
+ * WHAT CHANGED
+ *  - Field baru: no_document, giro_number, due_date, recipient_bank,
+ *    recipient_account_number
+ *  - No Dokumen tampil di tabel, card mobile, dan detail
+ *  - Detail Giro tampil (di detail) bila metode pembayaran = giro
  * ========================================================================== */
 
 const API = import.meta.env.VITE_API_LINK as string;
@@ -55,6 +61,7 @@ interface APPayment {
   id: number;
   vendor_id: number;
   receipt_number: string;
+  no_document?: string | null;
   payment_amount: Num;
   payment_amount_use: Num;
   payment_proof?: string | null;
@@ -62,6 +69,11 @@ interface APPayment {
   payment_method: string;
   bank: string;
   account_number: string;
+  // Khusus giro
+  giro_number?: string | null;
+  due_date?: string | null;
+  recipient_bank?: string | null;
+  recipient_account_number?: string | null;
   note: string | null;
   status: string;
   createdAt: string;
@@ -85,6 +97,9 @@ const toNum = (v: Num): number => {
   const n = Number(v ?? 0);
   return isNaN(n) ? 0 : n;
 };
+
+const isGiroPayment = (p: APPayment): boolean =>
+  (p.payment_method || '').toLowerCase() === 'giro';
 
 // Approve hanya untuk pembayaran yang belum approved / rejected.
 const isApprovable = (status: string): boolean =>
@@ -147,6 +162,7 @@ const DetailModal: React.FC<{
     0,
   );
   const sisa = toNum(p.payment_amount) - toNum(p.payment_amount_use);
+  const giro = isGiroPayment(p);
 
   const Info = ({
     label,
@@ -195,6 +211,7 @@ const DetailModal: React.FC<{
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
+            <Info label="No. Dokumen">{p.no_document || '-'}</Info>
             <Info label="Tgl Bayar">{formatDate(p.payment_date)}</Info>
             <Info label="Metode">
               <span className="capitalize">{p.payment_method || '-'}</span>
@@ -212,6 +229,23 @@ const DetailModal: React.FC<{
             <Info label="Tgl Input">{formatDate(p.createdAt)}</Info>
             <Info label="Catatan">{p.note || '-'}</Info>
           </div>
+
+          {/* Detail giro */}
+          {giro && (
+            <div className="border border-indigo-200 bg-indigo-50 rounded-lg p-3">
+              <p className="text-xs font-semibold text-indigo-800 mb-2">
+                Detail Giro
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-3">
+                <Info label="No. Giro">{p.giro_number || '-'}</Info>
+                <Info label="Tgl Jatuh Tempo">{formatDate(p.due_date)}</Info>
+                <Info label="Bank Penerima">{p.recipient_bank || '-'}</Info>
+                <Info label="No. Rekening Penerima">
+                  {p.recipient_account_number || '-'}
+                </Info>
+              </div>
+            </div>
+          )}
 
           {/* Bukti */}
           <div>
@@ -537,7 +571,7 @@ const ListBuktiBayarAP: React.FC<{ mode?: 'view' | 'approve' }> = ({
           <div className="relative lg:col-span-2">
             <input
               type="text"
-              placeholder="Search by No Kwitansi, Vendor, Bank..."
+              placeholder="Search by No Kwitansi, No Dokumen, Vendor, Bank..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
@@ -614,6 +648,7 @@ const ListBuktiBayarAP: React.FC<{ mode?: 'view' | 'approve' }> = ({
               <tr>
                 {[
                   ['No Kwitansi', 'left'],
+                  ['No Dokumen', 'left'],
                   ['Vendor', 'left'],
                   ['Invoice', 'left'],
                   ['Tgl Bayar', 'left'],
@@ -636,7 +671,7 @@ const ListBuktiBayarAP: React.FC<{ mode?: 'view' | 'approve' }> = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="px-3 py-6 text-center">
+                  <td colSpan={11} className="px-3 py-6 text-center">
                     <div className="flex justify-center">
                       <Spinner />
                     </div>
@@ -645,7 +680,7 @@ const ListBuktiBayarAP: React.FC<{ mode?: 'view' | 'approve' }> = ({
               ) : data.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={10}
+                    colSpan={11}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -656,6 +691,9 @@ const ListBuktiBayarAP: React.FC<{ mode?: 'view' | 'approve' }> = ({
                   <tr key={p.id} className="hover:bg-gray-50">
                     <td className="px-3 py-2 text-xs font-semibold text-gray-900 whitespace-nowrap">
                       {p.receipt_number || '-'}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-gray-900 whitespace-nowrap">
+                      {p.no_document || '-'}
                     </td>
                     <td
                       className="px-3 py-2 text-xs text-gray-900 max-w-[180px] break-words"
@@ -676,6 +714,11 @@ const ListBuktiBayarAP: React.FC<{ mode?: 'view' | 'approve' }> = ({
                       <div className="text-[11px] text-gray-500">
                         {p.bank || '-'}
                       </div>
+                      {isGiroPayment(p) && p.giro_number && (
+                        <div className="text-[10px] text-indigo-600">
+                          Giro: {p.giro_number}
+                        </div>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-xs text-right font-semibold text-gray-900 whitespace-nowrap">
                       {formatCurrency(p.payment_amount)}
@@ -717,6 +760,11 @@ const ListBuktiBayarAP: React.FC<{ mode?: 'view' | 'approve' }> = ({
                   <div className="font-semibold text-sm text-gray-900 break-words">
                     {p.receipt_number || '-'}
                   </div>
+                  {p.no_document && (
+                    <div className="text-[11px] text-gray-500 break-words">
+                      Dok: {p.no_document}
+                    </div>
+                  )}
                   <div className="text-xs text-gray-600 mt-0.5">
                     {p.vendor?.nama_vendor || '-'}
                   </div>
@@ -739,6 +787,26 @@ const ListBuktiBayarAP: React.FC<{ mode?: 'view' | 'approve' }> = ({
                     {p.payment_method || '-'} · {p.bank || '-'}
                   </div>
                 </div>
+                {isGiroPayment(p) && (
+                  <>
+                    <div>
+                      <span className="text-gray-500 font-medium">
+                        No. Giro
+                      </span>
+                      <div className="text-gray-900 break-words">
+                        {p.giro_number || '-'}
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 font-medium">
+                        Jatuh Tempo Giro
+                      </span>
+                      <div className="text-gray-900">
+                        {formatDate(p.due_date)}
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div>
                   <span className="text-gray-500 font-medium">Nominal</span>
                   <div className="text-gray-900 font-semibold">

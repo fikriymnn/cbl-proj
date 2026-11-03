@@ -196,15 +196,10 @@ function fetchWasteMaster(): Promise<any> {
 async function fetchWasteByJo(noJo: string, idJo: any): Promise<any> {
   const master = await fetchWasteMaster();
 
-  const p1 = await axios.get(`${API_P1}/api/waste-lkh`, {
-    params: { no_jo: noJo, id_jo: idJo },
-  });
-
   const res = await axios.post(
     `${API}/reportWasteByJo`,
     {
       data_waste_master: master,
-      data_waste_p1: p1.data,
       no_jo: noJo,
       id_jo: idJo,
     },

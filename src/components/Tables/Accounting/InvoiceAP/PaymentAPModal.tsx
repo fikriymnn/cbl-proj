@@ -18,11 +18,19 @@ import { API, formatCurrency, formatDate } from './utils';
  * 4. Nomor kwitansi diambil dari GET /invoiceAp/payment/number.
  *    Jenis pajak (isTax) datang dari invoice yang dipilih di list:
  *    tax -> receipt_number_tax_new, non tax -> receipt_number_non_tax_new
+ * 5. (BARU) Nomor dokumen mengikuti METODE PEMBAYARAN (bukan pajak):
+ *      transfer -> no_document_transfer_new (GT)
+ *      cash     -> no_document_cash_new     (KB)
+ *      giro     -> no_document_giro_new     (GK)
+ * 6. (BARU) Bila metode = giro, wajib isi: no giro, tgl jatuh tempo,
+ *    bank penerima, no rekening penerima.
  *
  * PAYLOAD
  *   payment_amount (top)      = transfer - total biaya
  *   invoices[].payment_amount = alokasi - biaya
  *   invoices[].additional_costs
+ *   no_document
+ *   giro_number, due_date, recipient_bank, recipient_account_number (giro)
  * ========================================================================== */
 
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
@@ -55,6 +63,7 @@ interface PaymentAPModalProps {
 }
 
 type CostType = 'Pajak' | 'Biaya administrasi' | 'Lainnya';
+type PaymentMethod = 'transfer' | 'cash' | 'giro';
 
 interface CostItem {
   id: string;
@@ -64,9 +73,16 @@ interface CostItem {
   note: string;
 }
 
+interface DocumentNumbers {
+  transfer: string;
+  cash: string;
+  giro: string;
+}
+
 interface ReceiptNumbers {
   tax: string;
   nonTax: string;
+  docs: DocumentNumbers;
 }
 
 const COST_TYPES: CostType[] = ['Pajak', 'Biaya administrasi', 'Lainnya'];
@@ -238,16 +254,24 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
   const [costs, setCosts] = useState<Record<number, CostItem[]>>({});
 
   const [paymentDate, setPaymentDate] = useState<string>(todayLocal());
-  const [paymentMethod, setPaymentMethod] = useState<string>('transfer');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('transfer');
   const [bank, setBank] = useState<string>('');
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [note, setNote] = useState<string>('');
 
-  // Nomor kwitansi
+  // Giro (hanya dipakai bila paymentMethod === 'giro')
+  const [giroNumber, setGiroNumber] = useState<string>('');
+  const [dueDate, setDueDate] = useState<string>('');
+  const [recipientBank, setRecipientBank] = useState<string>('');
+  const [recipientAccountNumber, setRecipientAccountNumber] =
+    useState<string>('');
+
+  // Nomor kwitansi & nomor dokumen
   const [receiptNumbers, setReceiptNumbers] = useState<ReceiptNumbers | null>(
     null,
   );
   const [receiptNumber, setReceiptNumber] = useState<string>('');
+  const [noDocument, setNoDocument] = useState<string>('');
   const [receiptLoading, setReceiptLoading] = useState<boolean>(true);
   const [receiptError, setReceiptError] = useState<string>('');
 
@@ -265,7 +289,9 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // ── Ambil nomor kwitansi ──
+  const isGiro = paymentMethod === 'giro';
+
+  // ── Ambil nomor kwitansi + nomor dokumen ──
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -278,6 +304,11 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
         setReceiptNumbers({
           tax: res.data?.receipt_number_tax_new ?? '',
           nonTax: res.data?.receipt_number_non_tax_new ?? '',
+          docs: {
+            transfer: res.data?.no_document_transfer_new ?? '',
+            cash: res.data?.no_document_cash_new ?? '',
+            giro: res.data?.no_document_giro_new ?? '',
+          },
         });
         setReceiptError('');
       } catch (err) {
@@ -298,6 +329,12 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
     if (!receiptNumbers) return;
     setReceiptNumber(isTax ? receiptNumbers.tax : receiptNumbers.nonTax);
   }, [receiptNumbers, isTax]);
+
+  // Isi otomatis nomor dokumen saat data / metode pembayaran berubah
+  useEffect(() => {
+    if (!receiptNumbers) return;
+    setNoDocument(receiptNumbers.docs[paymentMethod] ?? '');
+  }, [receiptNumbers, paymentMethod]);
 
   // ── Kalkulasi ──
   const rows = useMemo(
@@ -487,10 +524,18 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
   const validate = (): string => {
     if (!paymentDate) return 'Tanggal pembayaran wajib diisi';
     if (!receiptNumber.trim()) return 'Nomor kwitansi belum tersedia';
+    if (!noDocument.trim()) return 'Nomor dokumen belum tersedia';
     if (paymentMethod === 'transfer' && !bank.trim())
       return 'Bank wajib diisi untuk transfer';
     if (paymentMethod === 'transfer' && !selectedFile)
       return 'Bukti pembayaran wajib diunggah untuk transfer';
+    if (isGiro) {
+      if (!giroNumber.trim()) return 'No. giro wajib diisi';
+      if (!dueDate) return 'Tanggal jatuh tempo giro wajib diisi';
+      if (!recipientBank.trim()) return 'Bank penerima wajib diisi';
+      if (!recipientAccountNumber.trim())
+        return 'No. rekening penerima wajib diisi';
+    }
     if (transfer <= 0) return 'Nominal transfer harus lebih dari 0';
     if (sumEntered <= 0) return 'Distribusikan nominal ke minimal 1 invoice';
     if (sumEntered - transfer > EPSILON)
@@ -550,6 +595,16 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
         account_number: accountNumber.trim(),
         note: note.trim(),
         receipt_number: receiptNumber.trim(),
+        no_document: noDocument.trim(),
+        // Field khusus giro: hanya dikirim bila metode = giro
+        ...(isGiro
+          ? {
+              giro_number: giroNumber.trim(),
+              due_date: dueDate,
+              recipient_bank: recipientBank.trim(),
+              recipient_account_number: recipientAccountNumber.trim(),
+            }
+          : {}),
         is_tax: isTax,
         invoices: rows
           .filter((r) => r.entered > 0)
@@ -1041,6 +1096,38 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Metode Pembayaran
+                  </label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) =>
+                      setPaymentMethod(e.target.value as PaymentMethod)
+                    }
+                    className={`${inputCls} bg-white`}
+                  >
+                    <option value="transfer">Transfer</option>
+                    <option value="cash">Cash</option>
+                    <option value="giro">Giro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    No. Dokumen
+                  </label>
+                  <input
+                    type="text"
+                    value={receiptLoading ? 'Memuat...' : noDocument}
+                    onChange={(e) => setNoDocument(e.target.value)}
+                    disabled={receiptLoading}
+                    className={inputCls}
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    Mengikuti metode pembayaran (Transfer: GT · Cash: KB · Giro:
+                    GK)
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
                     Tanggal Pembayaran
                   </label>
                   <input
@@ -1049,20 +1136,6 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
                     onChange={(e) => setPaymentDate(e.target.value)}
                     className={inputCls}
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Metode Pembayaran
-                  </label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className={`${inputCls} bg-white`}
-                  >
-                    <option value="transfer">Transfer</option>
-                    <option value="cash">Cash</option>
-                    <option value="giro">Giro</option>
-                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -1076,7 +1149,7 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
                     className={inputCls}
                   />
                 </div>
-                <div>
+                <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-700 mb-1">
                     No. Rekening
                   </label>
@@ -1087,6 +1160,66 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
                     className={inputCls}
                   />
                 </div>
+
+                {/* Khusus giro */}
+                {isGiro && (
+                  <div className="sm:col-span-2 border border-indigo-200 bg-indigo-50 rounded-xl p-3">
+                    <p className="text-xs font-semibold text-indigo-800 mb-3">
+                      Detail Giro
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          No. Giro
+                        </label>
+                        <input
+                          type="text"
+                          value={giroNumber}
+                          onChange={(e) => setGiroNumber(e.target.value)}
+                          className={`${inputCls} bg-white`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Tgl Jatuh Tempo
+                        </label>
+                        <input
+                          type="date"
+                          value={dueDate}
+                          min={paymentDate || undefined}
+                          onChange={(e) => setDueDate(e.target.value)}
+                          className={`${inputCls} bg-white`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Bank Penerima
+                        </label>
+                        <input
+                          type="text"
+                          value={recipientBank}
+                          onChange={(e) => setRecipientBank(e.target.value)}
+                          placeholder="BCA"
+                          className={`${inputCls} bg-white`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          No. Rekening Penerima
+                        </label>
+                        <input
+                          type="text"
+                          value={recipientAccountNumber}
+                          onChange={(e) =>
+                            setRecipientAccountNumber(e.target.value)
+                          }
+                          className={`${inputCls} bg-white`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-700 mb-1">
                     Catatan
@@ -1251,6 +1384,14 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
                 <div className="flex justify-between">
                   <span>No. Kwitansi</span>
                   <b>{receiptNumber}</b>
+                </div>
+                <div className="flex justify-between">
+                  <span>No. Dokumen</span>
+                  <b>{noDocument}</b>
+                </div>
+                <div className="flex justify-between">
+                  <span>Metode</span>
+                  <b className="capitalize">{paymentMethod}</b>
                 </div>
               </div>
               <div className="rounded-lg bg-gray-50 border border-gray-200 p-3 space-y-1 text-xs">
