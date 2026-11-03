@@ -3,6 +3,25 @@ import React, { useEffect, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
 import { usePermissions } from '../../../../../constant/usePermissions';
 
+interface FinalInspeksiItem {
+  id: number;
+  id_jo?: number;
+  tanggal?: string | null;
+  jam?: string | null;
+  quantity: number | null; // Qty Kirim FI (per baris)
+  quantity_kirim_fg: number | null; // Qty Hasil FI (per baris)
+  status: string | null;
+  status_fg?: string | null;
+  status_jo?: string | null;
+  no_packing?: string | null;
+  qty_packing?: number | null;
+  jumlah_packing?: number | null;
+  no_barcode?: string | null;
+  lama_pengerjaan?: number | null;
+  catatan?: string | null;
+  [key: string]: any;
+}
+
 interface JoDoneItem {
   so: any;
   id: number;
@@ -17,8 +36,9 @@ interface JoDoneItem {
   no_so: string;
   customer: string | null;
   produk: string;
-  qty_kirim: number | null; // Qty Kirim FI
-  qty_hasil_fi?: number | null; // Qty Hasil FI
+  qty_kirim: number | null; // Qty Kirim FI (nilai DB)
+  qty_hasil_fi?: number | null; // Qty Hasil FI (nilai DB)
+  data_final_inspeksi?: FinalInspeksiItem[];
   status: string;
   status_proses: string;
   is_active: boolean;
@@ -392,7 +412,7 @@ const ListJoSelesai: React.FC = () => {
         params: { page, limit, search: searchTerm },
         withCredentials: true,
       });
-      console.log('Fetched JO Done data:', res.data);
+
       setJoDoneData(res.data.data || []);
       setTotalPages(res.data.total_page || 1);
     } catch (error) {
@@ -475,7 +495,7 @@ const ListJoSelesai: React.FC = () => {
     setExpandedJoId(item.id);
     setExpandedData(null);
 
-    const url = `${import.meta.env.VITE_API_LINK} `;
+    const url = `${import.meta.env.VITE_API_LINK}/produksi/joDone/${item.id}`;
 
     try {
       setExpandingJoId(item.id);
@@ -516,12 +536,48 @@ const ListJoSelesai: React.FC = () => {
     return num.toLocaleString('id-ID');
   };
 
-  /** Selisih = Qty Kirim FI - Qty Hasil FI (null jika Qty Hasil FI belum ada) */
+  // ── Akumulasi dari data_final_inspeksi (status "bisa kirim") ────────────
+  const isBisaKirim = (fi: FinalInspeksiItem): boolean =>
+    (fi.status || '').toString().trim().toLowerCase() === 'bisa kirim';
+
+  /** Ambil list FI dengan status "bisa kirim"; null jika data_final_inspeksi tidak tersedia */
+  const getBisaKirimList = (item: JoDoneItem): FinalInspeksiItem[] | null => {
+    if (!Array.isArray(item.data_final_inspeksi)) return null;
+    return item.data_final_inspeksi.filter(isBisaKirim);
+  };
+
+  /** Qty Kirim FI = total `quantity` dari FI berstatus "bisa kirim" */
+  const getQtyKirimFI = (item: JoDoneItem): number | null => {
+    const list = getBisaKirimList(item);
+    // fallback ke nilai lama jika response tidak membawa data_final_inspeksi
+    if (list === null) return item.qty_kirim ?? null;
+    return list.reduce((sum, fi) => sum + (Number(fi.quantity) || 0), 0);
+  };
+
+  /** Qty Hasil FI = total `quantity_kirim_fg` dari FI berstatus "bisa kirim"
+   *  (null jika belum ada satu pun yang terisi) */
+  const getQtyHasilFI = (item: JoDoneItem): number | null => {
+    const list = getBisaKirimList(item);
+    if (list === null) return item.qty_hasil_fi ?? null;
+
+    const filled = list.filter(
+      (fi) =>
+        fi.quantity_kirim_fg !== null && fi.quantity_kirim_fg !== undefined,
+    );
+    if (filled.length === 0) return null;
+
+    return filled.reduce(
+      (sum, fi) => sum + (Number(fi.quantity_kirim_fg) || 0),
+      0,
+    );
+  };
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /** Selisih = Qty Kirim FI (akumulasi) - Qty Hasil FI (akumulasi); null jika Qty Hasil FI belum ada */
   const getSelisih = (item: JoDoneItem): number | null => {
-    if (item.qty_hasil_fi === null || item.qty_hasil_fi === undefined) {
-      return null;
-    }
-    return (item.qty_kirim ?? 0) - item.qty_hasil_fi;
+    const hasil = getQtyHasilFI(item);
+    if (hasil === null) return null;
+    return (getQtyKirimFI(item) ?? 0) - hasil;
   };
 
   const renderSelisih = (item: JoDoneItem) => {
@@ -859,10 +915,10 @@ const ListJoSelesai: React.FC = () => {
                         {formatNumber(item.so?.po_qty)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {formatNumber(item.qty_kirim)}
+                        {formatNumber(getQtyKirimFI(item))}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {formatNumber(item.qty_hasil_fi)}
+                        {formatNumber(getQtyHasilFI(item))}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs">
                         {renderSelisih(item)}
@@ -1043,7 +1099,7 @@ const ListJoSelesai: React.FC = () => {
                       QTY Kirim FI:
                     </span>
                     <div className="text-gray-900 text-xs">
-                      {formatNumber(item.qty_kirim)}
+                      {formatNumber(getQtyKirimFI(item))}
                     </div>
                   </div>
                 </div>
@@ -1054,7 +1110,7 @@ const ListJoSelesai: React.FC = () => {
                       QTY Hasil FI:
                     </span>
                     <div className="text-gray-900 text-xs">
-                      {formatNumber(item.qty_hasil_fi)}
+                      {formatNumber(getQtyHasilFI(item))}
                     </div>
                   </div>
                   <div>
