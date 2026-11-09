@@ -12,11 +12,11 @@ import { API, formatCurrency } from './InvoiceAP/utils';
 /* =============================================================================
  * Chart of Accounts (COA) - 3 tingkatan: header > detail > sub
  *  - GET  /masterCoaTree        -> tree (params: branch, show_inactive, search,
- *                                  tipe, page, limit)
+ *                                  page, limit)
  *  - GET  /masterCoa?tipe=...   -> daftar akun induk + dasar kode otomatis
  *  - POST /masterCoa            -> buat akun
  *  - PUT  /masterCoa/:id        -> ubah akun
- *  - PUT  /masterCoa/active/:id -> aktif / nonaktif
+ *  - PUT  /masterCoa/active/:id -> aktif / nonaktif (saldo harus 0)
  * ========================================================================== */
 
 type TipeNode = 'header' | 'detail' | 'sub';
@@ -24,7 +24,6 @@ type TipeNode = 'header' | 'detail' | 'sub';
 interface COANode {
   id: number;
   id_parent: number | null;
-  tipe_akun: string;
   kode_akun: string;
   nama_akun: string;
   tipe: TipeNode;
@@ -46,14 +45,12 @@ interface COAParent {
   id: number;
   id_parent: number | null;
   tipe: TipeNode;
-  tipe_akun: string;
   kode_akun: string;
   nama_akun: string;
   is_active?: boolean;
 }
 
 interface COAForm {
-  tipe_akun: string;
   kode_akun: string;
   nama_akun: string;
   tipe: TipeNode;
@@ -102,51 +99,11 @@ const PARENT_TIPE: Record<TipeNode, TipeNode | null> = {
 const labelOf = (opts: Option[], v?: string | null): string =>
   opts.find((o) => o.value === v)?.label ?? '-';
 
-// Hanya untuk dropdown "Tipe akun" di form (nilai tipe_akun yang dikenali
-// backend). Bukan lagi dipakai sebagai sidebar.
-const TYPE_GROUPS: { group: string; types: string[] }[] = [
-  {
-    group: 'Asset',
-    types: [
-      'Cash/Bank',
-      'Account Receivable',
-      'Inventory',
-      'Other Current Asset',
-      'Fixed Asset',
-      'Accumulated Depreciation',
-      'Other Asset',
-    ],
-  },
-  {
-    group: 'Liability',
-    types: [
-      'Credit Card',
-      'Account Payables',
-      'Other Current Liability',
-      'Long Term Liability',
-      'Other Liability',
-    ],
-  },
-  { group: 'Equity', types: ['Equity'] },
-  { group: 'Income', types: ['Income'] },
-  { group: 'Cost of Goods Sold', types: ['Cost of Goods Sold'] },
-  { group: 'Expense', types: ['Expense'] },
-  { group: 'Other Income', types: ['Other Income'] },
-  { group: 'Other Expense', types: ['Other Expense'] },
-  { group: 'Income Tax', types: ['Income Tax'] },
-  {
-    group: 'Other Income (Comprehensive)',
-    types: ['Other Income (Comprehensive)'],
-  },
-];
-
-const ALL_TYPES = TYPE_GROUPS.flatMap((g) => g.types);
 const PAGE_SIZES = [10, 25, 50, 100];
 
 const todayISO = (): string => new Date().toISOString().slice(0, 10);
 
 const emptyForm = (tipe: TipeNode = 'detail'): COAForm => ({
-  tipe_akun: ALL_TYPES[0],
   kode_akun: '',
   nama_akun: '',
   tipe,
@@ -166,6 +123,12 @@ const errMsg = (e: unknown, fallback: string): string => {
   const err = e as { response?: { data?: { message?: string } } };
   return err?.response?.data?.message || fallback;
 };
+
+// Saldo dianggap 0 bila selisihnya di bawah setengah sen (hindari masalah float).
+const isZeroBalance = (v: number | string | null | undefined): boolean =>
+  Math.abs(Number(v ?? 0)) < 0.005;
+
+const NONZERO_MSG = 'Akun tidak bisa dinonaktifkan karena saldonya belum 0.';
 
 /* ---------------------------- Kode otomatis ------------------------------ */
 // Pola kode: "101-1000" (header), "101-1001" (detail/sub di bawahnya),
@@ -189,27 +152,12 @@ const parsedKodes = (
 
 const suggestKode = (
   tipe: TipeNode,
-  tipeAkun: string,
   parentId: string,
   accounts: COAParent[],
 ): string => {
-  if (tipe === 'header') {
-    // Prefix diambil dari akun lain dengan tipe akun yang sama (mis. 101 untuk
-    // Cash/Bank). Bila belum ada akun sama sekali, kode diisi manual.
-    const same = parsedKodes(accounts.filter((a) => a.tipe_akun === tipeAkun));
-    if (same.length === 0) return '';
-    const count: Record<string, number> = {};
-    same.forEach((p) => {
-      count[p.prefix] = (count[p.prefix] || 0) + 1;
-    });
-    const prefix = Object.keys(count).sort((a, b) => count[b] - count[a])[0];
-    const maxNum = Math.max(
-      ...parsedKodes(accounts)
-        .filter((p) => p.prefix === prefix)
-        .map((p) => p.num),
-    );
-    return fmtKode(prefix, (Math.floor(maxNum / 1000) + 1) * 1000);
-  }
+  // Header: prefix tidak bisa diturunkan lagi (tipe akun sudah dihapus),
+  // jadi kode header diisi manual.
+  if (tipe === 'header') return '';
 
   // detail / sub: lanjutkan nomor terakhir di blok header yang sama.
   const parent = accounts.find((a) => String(a.id) === parentId);
@@ -304,7 +252,6 @@ const COAModal: React.FC<COAModalProps> = ({
   const [form, setForm] = useState<COAForm>(() =>
     editing
       ? {
-          tipe_akun: editing.tipe_akun,
           kode_akun: editing.kode_akun,
           nama_akun: editing.nama_akun,
           tipe: editing.tipe,
@@ -323,12 +270,7 @@ const COAModal: React.FC<COAModalProps> = ({
       : {
           ...emptyForm('detail'),
           // Header terpilih di sidebar: akun baru langsung jadi anaknya.
-          ...(defaultHeader
-            ? {
-                tipe_akun: defaultHeader.tipe_akun,
-                id_parent: String(defaultHeader.id),
-              }
-            : {}),
+          ...(defaultHeader ? { id_parent: String(defaultHeader.id) } : {}),
           branch: defaultBranch || 'Main',
         },
   );
@@ -367,23 +309,20 @@ const COAModal: React.FC<COAModalProps> = ({
 
   const requiredParentTipe = PARENT_TIPE[form.tipe];
 
-  // Tipe akun sama, level induk benar, dan bukan dirinya sendiri.
+  // Level induk benar dan bukan dirinya sendiri.
   const parentOptions = useMemo(
     () =>
       requiredParentTipe
         ? accounts.filter(
-            (p) =>
-              p.tipe === requiredParentTipe &&
-              p.tipe_akun === form.tipe_akun &&
-              p.id !== editing?.id,
+            (p) => p.tipe === requiredParentTipe && p.id !== editing?.id,
           )
         : [],
-    [accounts, requiredParentTipe, form.tipe_akun, editing],
+    [accounts, requiredParentTipe, editing],
   );
 
   const suggestedKode = useMemo(
-    () => suggestKode(form.tipe, form.tipe_akun, form.id_parent, accounts),
-    [form.tipe, form.tipe_akun, form.id_parent, accounts],
+    () => suggestKode(form.tipe, form.id_parent, accounts),
+    [form.tipe, form.id_parent, accounts],
   );
 
   // Akun baru: isi kode otomatis sampai pengguna mengetik sendiri.
@@ -395,7 +334,10 @@ const COAModal: React.FC<COAModalProps> = ({
   }, [editing, kodeTouched, suggestedKode]);
 
   const isHeader = form.tipe === 'header';
-  const isBank = form.tipe_akun === 'Cash/Bank';
+
+  // Penonaktifan diblokir selama saldo akun belum 0.
+  const deactivateBlocked =
+    !!editing && editing.is_active && !isZeroBalance(editing.balance);
 
   const handleSave = async (): Promise<void> => {
     if (!form.kode_akun.trim()) return setError('Kode akun wajib diisi.');
@@ -412,9 +354,9 @@ const COAModal: React.FC<COAModalProps> = ({
       return setError('Tipe saldo wajib dipilih.');
     if (!editing && !form.tipe_report)
       return setError('Tipe report wajib dipilih.');
+    if (deactivateBlocked && !form.is_active) return setError(NONZERO_MSG);
 
     const payload: Record<string, unknown> = {
-      tipe_akun: form.tipe_akun,
       kode_akun: form.kode_akun.trim(),
       nama_akun: form.nama_akun.trim(),
       tipe: form.tipe,
@@ -437,13 +379,23 @@ const COAModal: React.FC<COAModalProps> = ({
       setSaving(true);
       setError('');
       if (editing) {
+        const statusChanged = editing.is_active !== form.is_active;
+        // Menonaktifkan: jalankan lebih dulu. Bila backend menolak (saldo
+        // belum 0), perubahan lain tidak ikut tersimpan setengah jalan.
+        if (statusChanged && !form.is_active) {
+          await axios.put(
+            `${API}/masterCoa/active/${editing.id}`,
+            { is_active: false },
+            { withCredentials: true },
+          );
+        }
         await axios.put(`${API}/masterCoa/${editing.id}`, payload, {
           withCredentials: true,
         });
-        if (editing.is_active !== form.is_active) {
+        if (statusChanged && form.is_active) {
           await axios.put(
             `${API}/masterCoa/active/${editing.id}`,
-            { is_active: form.is_active },
+            { is_active: true },
             { withCredentials: true },
           );
         }
@@ -484,26 +436,6 @@ const COAModal: React.FC<COAModalProps> = ({
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Tipe akun" required>
-              <select
-                value={form.tipe_akun}
-                onChange={(e) => {
-                  set('tipe_akun', e.target.value);
-                  set('id_parent', '');
-                }}
-                className={inputCls}
-              >
-                {TYPE_GROUPS.map((g) => (
-                  <optgroup key={g.group} label={g.group}>
-                    {g.types.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-            </Field>
             <Field label="Jenis">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border border-gray-300 rounded-lg px-3 py-2 text-sm">
                 {TIPE_OPTIONS.map((t) => (
@@ -526,43 +458,6 @@ const COAModal: React.FC<COAModalProps> = ({
                 ))}
               </div>
             </Field>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Kode" required>
-              <input
-                value={form.kode_akun}
-                onChange={(e) => {
-                  setKodeTouched(true);
-                  set('kode_akun', e.target.value);
-                }}
-                placeholder="101-1001"
-                className={inputCls}
-              />
-              {!editing && (
-                <p className="mt-1 text-[11px] text-gray-500">
-                  {suggestedKode
-                    ? 'Terisi otomatis, bisa diubah.'
-                    : form.tipe === 'header'
-                    ? 'Belum ada akun dengan tipe ini, isi kode manual.'
-                    : 'Pilih induk untuk mengisi kode otomatis.'}
-                  {kodeTouched &&
-                    suggestedKode &&
-                    form.kode_akun !== suggestedKode && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setKodeTouched(false);
-                          set('kode_akun', suggestedKode);
-                        }}
-                        className="ml-1 font-semibold text-violet-600 hover:text-violet-800 underline"
-                      >
-                        Pakai {suggestedKode}
-                      </button>
-                    )}
-                </p>
-              )}
-            </Field>
             <Field label="Sub account of" required={!!requiredParentTipe}>
               <select
                 value={form.id_parent}
@@ -584,14 +479,50 @@ const COAModal: React.FC<COAModalProps> = ({
             </Field>
           </div>
 
-          <Field label="Deskripsi" required>
-            <input
-              value={form.nama_akun}
-              onChange={(e) => set('nama_akun', e.target.value)}
-              placeholder="Nama akun"
-              className={inputCls}
-            />
-          </Field>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Kode" required>
+              <input
+                value={form.kode_akun}
+                onChange={(e) => {
+                  setKodeTouched(true);
+                  set('kode_akun', e.target.value);
+                }}
+                placeholder="101-1001"
+                className={inputCls}
+              />
+              {!editing && (
+                <p className="mt-1 text-[11px] text-gray-500">
+                  {suggestedKode
+                    ? 'Terisi otomatis, bisa diubah.'
+                    : form.tipe === 'header'
+                    ? 'Isi kode header secara manual.'
+                    : 'Pilih induk untuk mengisi kode otomatis.'}
+                  {kodeTouched &&
+                    suggestedKode &&
+                    form.kode_akun !== suggestedKode && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setKodeTouched(false);
+                          set('kode_akun', suggestedKode);
+                        }}
+                        className="ml-1 font-semibold text-violet-600 hover:text-violet-800 underline"
+                      >
+                        Pakai {suggestedKode}
+                      </button>
+                    )}
+                </p>
+              )}
+            </Field>
+            <Field label="Deskripsi" required>
+              <input
+                value={form.nama_akun}
+                onChange={(e) => set('nama_akun', e.target.value)}
+                placeholder="Nama akun"
+                className={inputCls}
+              />
+            </Field>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Tipe saldo" required={!editing}>
@@ -643,7 +574,7 @@ const COAModal: React.FC<COAModalProps> = ({
               <input
                 value={form.no_rekening}
                 onChange={(e) => set('no_rekening', e.target.value)}
-                placeholder={isBank ? '1234567890' : '-'}
+                placeholder="1234567890"
                 className={inputCls}
               />
             </Field>
@@ -691,15 +622,28 @@ const COAModal: React.FC<COAModalProps> = ({
           )}
 
           {editing && (
-            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={!form.is_active}
-                onChange={(e) => set('is_active', !e.target.checked)}
-                className="w-4 h-4 accent-violet-600"
-              />
-              Nonaktifkan akun ini
-            </label>
+            <div>
+              <label
+                className={`inline-flex items-center gap-2 text-sm ${
+                  deactivateBlocked ? 'text-gray-400' : 'text-gray-700'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={!form.is_active}
+                  disabled={deactivateBlocked}
+                  onChange={(e) => set('is_active', !e.target.checked)}
+                  className="w-4 h-4 accent-violet-600"
+                />
+                Nonaktifkan akun ini
+              </label>
+              {deactivateBlocked && (
+                <p className="mt-1 text-[11px] text-amber-600">
+                  Saldo akun harus 0 sebelum bisa dinonaktifkan (saat ini{' '}
+                  {formatCurrency(Number(editing.balance ?? 0))}).
+                </p>
+              )}
+            </div>
           )}
         </div>
 
@@ -776,7 +720,6 @@ const ListCOA: React.FC = () => {
       });
       if (id !== reqId.current) return;
       setTree(Array.isArray(res.data?.data) ? res.data.data : []);
-      console.log('Fetched COA tree:', res.data?.data);
     } catch (e) {
       if (id !== reqId.current) return;
       console.error('Error fetching COA tree:', e);
@@ -857,6 +800,15 @@ const ListCOA: React.FC = () => {
   };
 
   const handleToggleActive = async (n: COANode): Promise<void> => {
+    // Menonaktifkan hanya boleh bila saldo sudah 0.
+    if (n.is_active && !isZeroBalance(n.balance)) {
+      window.alert(
+        `${NONZERO_MSG}\nSaldo ${n.kode_akun} · ${
+          n.nama_akun
+        }: ${formatCurrency(Number(n.balance ?? 0))}`,
+      );
+      return;
+    }
     const verb = n.is_active ? 'menonaktifkan' : 'mengaktifkan';
     if (
       !window.confirm(
@@ -924,7 +876,7 @@ const ListCOA: React.FC = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4">
-        {/* Sidebar: Account type = tingkatan akun */}
+        {/* Sidebar: daftar header */}
         <aside className="hidden lg:block w-60 flex-shrink-0">
           <div className="bg-white rounded-lg shadow p-3">
             <p className="text-xs font-semibold text-gray-700 mb-2">
@@ -1068,7 +1020,7 @@ const ListCOA: React.FC = () => {
                         Akun
                       </th>
                       <th className="hidden sm:table-cell px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase whitespace-nowrap">
-                        Tipe
+                        Jenis
                       </th>
                       <th className="hidden md:table-cell px-3 py-2 text-left text-[10px] font-medium text-gray-500 uppercase whitespace-nowrap">
                         Saldo
@@ -1091,6 +1043,8 @@ const ListCOA: React.FC = () => {
                         : isSub
                         ? 'text-gray-500'
                         : 'text-gray-900';
+                      const blocked =
+                        node.is_active && !isZeroBalance(node.balance);
                       return (
                         <tr
                           key={node.id}
@@ -1151,7 +1105,7 @@ const ListCOA: React.FC = () => {
                             )}
                           </td>
                           <td className="hidden sm:table-cell px-3 py-2 text-xs text-gray-600 whitespace-nowrap">
-                            {node.tipe_akun}
+                            {labelOf(TIPE_OPTIONS, node.tipe)}
                           </td>
                           <td className="hidden md:table-cell px-3 py-2 text-xs text-gray-600 whitespace-nowrap">
                             {labelOf(SALDO_OPTIONS, node.tipe_saldo)}
@@ -1177,7 +1131,13 @@ const ListCOA: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleToggleActive(node)}
-                              className={`text-xs font-semibold ${
+                              disabled={blocked}
+                              title={
+                                blocked
+                                  ? 'Saldo harus 0 untuk menonaktifkan'
+                                  : undefined
+                              }
+                              className={`text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed ${
                                 node.is_active
                                   ? 'text-red-600 hover:text-red-800'
                                   : 'text-green-600 hover:text-green-800'
