@@ -302,6 +302,7 @@ import ListGRPage from './pages/Accounting/Pembelian/ListGRPage';
 import ListAllInvoiceAPPage from './pages/Accounting/Pembelian/ListAllInvoiceAPPage';
 import InformasiKurangQtyPage from './pages/Produksi/InformasiKurangQtyPage';
 import ListCOAPage from './pages/Accounting/ListCOAPage';
+import QMSWorkspace from './pages/AllDept/QMS/QMSWorkspace';
 
 // Helper: wraps a page element in ProtectedRoute + PageTitle
 const P = ({
@@ -2841,6 +2842,31 @@ function App() {
             </P>
           }
         />
+        <Route
+          path="/quality-management-system/qms-qc"
+          element={
+            <P title="QMS QC">
+              <QMSWorkspace role="qc" />
+            </P>
+          }
+        />
+        <Route
+          path="/quality-management-system/qms-mr"
+          element={
+            <P title="QMS MR">
+              <QMSWorkspace role="mr" />
+            </P>
+          }
+        />
+        <Route
+          path="/quality-management-system/qms-user"
+          element={
+            <P title="QMS">
+              <QMSWorkspace role="user" />
+            </P>
+          }
+        />
+
         {/* ============== HISTORY ROUTES ============== */}
         <Route
           path="/history"
