@@ -498,8 +498,6 @@ const PaymentARModal: React.FC<PaymentARModalProps> = ({
     if (!paymentDate) return 'Tanggal pembayaran wajib diisi';
     if (paymentMethod === 'transfer' && !bank.trim())
       return 'Bank wajib diisi untuk transfer';
-    if (paymentMethod === 'transfer' && !selectedFile)
-      return 'Bukti pembayaran wajib diunggah untuk transfer';
     if (transfer <= 0) return 'Nominal transfer harus lebih dari 0';
     if (sumEntered <= 0) return 'Distribusikan nominal ke minimal 1 invoice';
     if (sumEntered - transfer > EPSILON)

@@ -527,8 +527,6 @@ const PaymentAPModal: React.FC<PaymentAPModalProps> = ({
     if (!noDocument.trim()) return 'Nomor dokumen belum tersedia';
     if (paymentMethod === 'transfer' && !bank.trim())
       return 'Bank wajib diisi untuk transfer';
-    if (paymentMethod === 'transfer' && !selectedFile)
-      return 'Bukti pembayaran wajib diunggah untuk transfer';
     if (isGiro) {
       if (!giroNumber.trim()) return 'No. giro wajib diisi';
       if (!dueDate) return 'Tanggal jatuh tempo giro wajib diisi';

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
@@ -787,6 +787,26 @@ function EmployeeDetailModal({
 }
 
 // ─── Period Detail Modal ──────────────────────────────────────────────────────
+const LABEL_MAP: Record<string, string> = {
+  tunjanganKopi: 'Tunjangan Kopi',
+  uangHadir: 'Uang Hadir',
+  uangLembur: 'Uang Lembur',
+  uangMakanLembur: 'Uang Makan Lembur',
+  upahHarian: 'Upah Harian',
+  tunjanganKerjaMalam: 'Tunjangan Kerja Malam',
+  upahHarianSakit: 'Upah Harian Sakit',
+  // tambah mapping lain di sini sesuai kebutuhan
+};
+
+const fmtLabel = (raw: string): string => {
+  if (LABEL_MAP[raw]) return LABEL_MAP[raw];
+  return raw
+    .replace(/([A-Z])/g, ' $1')
+    .replace(/^./, (c) => c.toUpperCase())
+    .trim();
+};
+
+// ─── Period Detail Modal ──────────────────────────────────────────────────────
 function PeriodDetailModal({
   periode,
   onClose,
@@ -818,7 +838,6 @@ function PeriodDetailModal({
         `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarBulananPeriode`,
         { params: { page: 1, limit: 100 }, withCredentials: true },
       );
-      console.log('refreshLocalPeriode', res.data?.data);
       const fresh = (res.data?.data ?? []).find(
         (p: any) => p.id === localPeriode.id,
       );
@@ -857,13 +876,6 @@ function PeriodDetailModal({
         .filter(Boolean),
     ),
   ] as string[];
-  const tipePenggajianOptions: string[] = [
-    ...new Set(
-      (localPeriode.payroll_detail_bulanan ?? [])
-        .map((d: any) => d.tipe_penggajian)
-        .filter(Boolean),
-    ),
-  ] as string[];
   const tipeKaryawanOptions: string[] = [
     ...new Set(
       (localPeriode.payroll_detail_bulanan ?? [])
@@ -877,39 +889,115 @@ function PeriodDetailModal({
     filterTipePenggajian ||
     filterTipeKaryawan;
 
-  const filtered = (localPeriode.payroll_detail_bulanan ?? []).filter(
-    (d: any) => {
-      const name = d.karyawan?.name?.toLowerCase() ?? '';
-      const nik = d.karyawan?.biodata_karyawan?.[0]?.nik ?? '';
-      const department =
-        d.karyawan?.biodata_karyawan?.[0]?.department?.nama_department ??
-        d.department ??
-        '';
-      const divisi = d.nama_divisi ?? d.divisi ?? '';
-      const q = search.toLowerCase();
+  const filtered: any[] = useMemo(
+    () =>
+      (localPeriode.payroll_detail_bulanan ?? []).filter((d: any) => {
+        const name = d.karyawan?.name?.toLowerCase() ?? '';
+        const nik = d.karyawan?.biodata_karyawan?.[0]?.nik ?? '';
+        const department =
+          d.karyawan?.biodata_karyawan?.[0]?.department?.nama_department ??
+          d.department ??
+          '';
+        const divisi = d.nama_divisi ?? d.divisi ?? '';
+        const q = search.toLowerCase();
 
-      const matchSearch = name.includes(q) || nik.includes(q);
-      const matchDepartment =
-        !filterDepartment || department === filterDepartment;
-      const matchDivisi = !filterDivisi || divisi === filterDivisi;
-      const matchPenggajian =
-        !filterTipePenggajian || d.tipe_penggajian === filterTipePenggajian;
-      const matchKaryawan =
-        !filterTipeKaryawan || d.tipe_karyawan === filterTipeKaryawan;
-
-      return (
-        matchSearch &&
-        matchDepartment &&
-        matchDivisi &&
-        matchPenggajian &&
-        matchKaryawan
-      );
-    },
+        return (
+          (name.includes(q) || String(nik).includes(q)) &&
+          (!filterDepartment || department === filterDepartment) &&
+          (!filterDivisi || divisi === filterDivisi) &&
+          (!filterTipePenggajian ||
+            d.tipe_penggajian === filterTipePenggajian) &&
+          (!filterTipeKaryawan || d.tipe_karyawan === filterTipeKaryawan)
+        );
+      }),
+    [
+      localPeriode,
+      search,
+      filterDepartment,
+      filterDivisi,
+      filterTipePenggajian,
+      filterTipeKaryawan,
+    ],
   );
 
   const totalKaryawan = localPeriode.payroll_detail_bulanan?.length ?? 0;
   const isDraft = localPeriode.status?.toLowerCase() === 'draft';
   const isIncomingPay = localPeriode.status?.toLowerCase() === 'incoming pay';
+
+  // ── Kolom dinamis: label unik dari detail_payroll (item manual) ─────────────
+  const allBayaranLabels: string[] = useMemo(() => {
+    const set = new Set<string>();
+    filtered.forEach((emp: any) =>
+      (emp.detail_payroll ?? [])
+        .filter((d: any) => d.tipe === 'bayaran')
+        .forEach((d: any) => set.add(d.label)),
+    );
+    return Array.from(set);
+  }, [filtered]);
+
+  const allPotonganLabels: string[] = useMemo(() => {
+    const set = new Set<string>();
+    filtered.forEach((emp: any) =>
+      (emp.detail_payroll ?? [])
+        .filter((d: any) => d.tipe === 'potongan')
+        .forEach((d: any) => set.add(d.label)),
+    );
+    return Array.from(set);
+  }, [filtered]);
+
+  // ── Kolom dinamis: kategori potongan otomatis (absensi) yang benar-benar ada ─
+  const autoPotonganCols = useMemo(() => {
+    const present = new Set<string>();
+    filtered.forEach((emp: any) =>
+      getPotonganBreakdown(emp).forEach((cat) => present.add(cat.key)),
+    );
+    return POTONGAN_CATEGORIES.filter((c) => present.has(c.key));
+  }, [filtered]);
+
+  // ── Total per kolom untuk baris ringkasan ───────────────────────────────────
+  const columnTotals = useMemo(() => {
+    const bayaranTotals: Record<string, number> = {};
+    const potonganTotals: Record<string, number> = {};
+    const autoTotals: Record<string, number> = {};
+    let totalUpahSum = 0;
+    let tmkSum = 0;
+    let totalPotonganSum = 0;
+    let subTotalSum = 0;
+
+    filtered.forEach((emp: any) => {
+      (emp.detail_payroll ?? []).forEach((d: any) => {
+        if (d.tipe === 'bayaran') {
+          bayaranTotals[d.label] =
+            (bayaranTotals[d.label] ?? 0) + Number(d.total || 0);
+        } else if (d.tipe === 'potongan') {
+          potonganTotals[d.label] =
+            (potonganTotals[d.label] ?? 0) + Number(d.total || 0);
+        }
+      });
+      getPotonganBreakdown(emp).forEach((cat) => {
+        autoTotals[cat.key] = (autoTotals[cat.key] ?? 0) + cat.total;
+      });
+      totalUpahSum += Number(emp.total_upah ?? emp.sub_total_upah ?? 0);
+      tmkSum += Number(emp.tmk || 0);
+      totalPotonganSum += Number(emp.total_potongan || 0);
+      subTotalSum += Number(emp.sub_total_upah || 0);
+    });
+
+    return {
+      bayaranTotals,
+      potonganTotals,
+      autoTotals,
+      totalUpahSum,
+      tmkSum,
+      totalPotonganSum,
+      subTotalSum,
+    };
+  }, [filtered]);
+
+  const dynamicColCount =
+    allBayaranLabels.length +
+    allPotonganLabels.length +
+    autoPotonganCols.length;
 
   return (
     <>
@@ -918,7 +1006,7 @@ function PeriodDetailModal({
           className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           onClick={onClose}
         />
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-7xl mx-4 max-h-[90vh] flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -971,7 +1059,7 @@ function PeriodDetailModal({
             </div>
           </div>
 
-          {/* Search + Filter bar */}
+          {/* Search + Filter bar (tidak berubah, hanya ikon filter diperbaiki) */}
           <div className="px-6 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50 space-y-2">
             <div className="relative max-w-sm">
               <svg
@@ -998,7 +1086,7 @@ function PeriodDetailModal({
               {departmentOptions.length > 0 && (
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                    <IconArrowLeft />
+                    <IconFilter />
                   </span>
                   <select
                     value={filterDepartment}
@@ -1016,46 +1104,42 @@ function PeriodDetailModal({
                 </div>
               )}
               {divisiOptions.length > 0 && (
-                <select
-                  value={filterDivisi}
-                  onChange={(e) => setFilterDivisi(e.target.value)}
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Semua Divisi</option>
-                  {divisiOptions.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterDivisi}
+                    onChange={(e) => setFilterDivisi(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Divisi</option>
+                    {divisiOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
-              {/* {tipePenggajianOptions.length > 0 && (
-                <select
-                  value={filterTipePenggajian}
-                  onChange={(e) => setFilterTipePenggajian(e.target.value)}
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Semua Tipe Penggajian</option>
-                  {tipePenggajianOptions.map((t) => (
-                    <option key={t} value={t} className="capitalize">
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              )} */}
               {tipeKaryawanOptions.length > 0 && (
-                <select
-                  value={filterTipeKaryawan}
-                  onChange={(e) => setFilterTipeKaryawan(e.target.value)}
-                  className="px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Semua Tipe Karyawan</option>
-                  {tipeKaryawanOptions.map((t) => (
-                    <option key={t} value={t} className="capitalize">
-                      {t}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <IconFilter />
+                  </span>
+                  <select
+                    value={filterTipeKaryawan}
+                    onChange={(e) => setFilterTipeKaryawan(e.target.value)}
+                    className="pl-9 pr-8 py-2 text-sm border border-slate-200 rounded-xl bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Semua Tipe Karyawan</option>
+                    {tipeKaryawanOptions.map((t) => (
+                      <option key={t} value={t} className="capitalize">
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
               {filterDepartment && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
@@ -1074,17 +1158,6 @@ function PeriodDetailModal({
                   <button
                     onClick={() => setFilterDivisi('')}
                     className="hover:text-amber-900 transition"
-                  >
-                    <IconX />
-                  </button>
-                </span>
-              )}
-              {filterTipePenggajian && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200">
-                  <span className="capitalize">{filterTipePenggajian}</span>
-                  <button
-                    onClick={() => setFilterTipePenggajian('')}
-                    className="hover:text-violet-900 transition"
                   >
                     <IconX />
                   </button>
@@ -1117,105 +1190,194 @@ function PeriodDetailModal({
             </div>
           </div>
 
-          {/* Table */}
-          <div className="overflow-y-auto flex-1">
+          {/* ── Tabel karyawan (kolom dinamis) ── */}
+          <div className="overflow-y-auto overflow-x-auto flex-1">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200 sticky top-0">
+              <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-20">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500 w-8">
+                  {/* Sticky: # | NIK | Nama */}
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap sticky left-0 z-20 bg-slate-50">
                     #
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap sticky left-[52px] z-20 bg-slate-50 border-r border-slate-200">
                     NIK
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap sticky left-[115px] z-20 bg-slate-50 border-r border-slate-200">
                     Nama
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
-                    Department
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
+                  {['Department', 'Divisi', 'Tipe Karyawan'].map((h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-xs font-bold text-slate-500 text-left whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  ))}
+
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-right whitespace-nowrap">
                     Total Upah
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
-                    Potongan
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
+                  <th className="px-4 py-3 text-xs font-bold text-blue-700 text-right whitespace-nowrap">
                     TMK
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">
-                    Rincian Potongan
+
+                  {/* Pendapatan tambahan (manual) */}
+                  {allBayaranLabels.map((label) => (
+                    <th
+                      key={`b-${label}`}
+                      className="px-4 py-3 text-xs font-bold text-emerald-600 text-right whitespace-nowrap"
+                    >
+                      {fmtLabel(label)}
+                    </th>
+                  ))}
+
+                  {/* Potongan otomatis dari absensi */}
+                  {autoPotonganCols.map((c) => (
+                    <th
+                      key={`a-${c.key}`}
+                      className="px-4 py-3 text-xs font-bold text-red-600 text-right whitespace-nowrap"
+                    >
+                      Pot. {c.label}
+                    </th>
+                  ))}
+
+                  {/* Potongan manual */}
+                  {allPotonganLabels.map((label) => (
+                    <th
+                      key={`p-${label}`}
+                      className="px-4 py-3 text-xs font-bold text-red-600 text-right whitespace-nowrap"
+                    >
+                      {fmtLabel(label)}
+                    </th>
+                  ))}
+
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-right whitespace-nowrap">
+                    Total Potongan
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-slate-500">
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-right whitespace-nowrap">
                     Sub Total
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-bold text-slate-500">
+                  <th className="px-4 py-3 text-xs font-bold text-slate-500 text-center whitespace-nowrap">
                     Aksi
                   </th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((emp: any, i: number) => {
                   const bio = emp.karyawan?.biodata_karyawan?.[0];
-                  const potonganBreakdown = getPotonganBreakdown(emp);
+
+                  // map label -> total untuk baris ini
+                  const bayaranMap: Record<string, number> = {};
+                  const potonganMap: Record<string, number> = {};
+                  (emp.detail_payroll ?? []).forEach((d: any) => {
+                    if (d.tipe === 'bayaran') {
+                      bayaranMap[d.label] =
+                        (bayaranMap[d.label] ?? 0) + Number(d.total || 0);
+                    } else if (d.tipe === 'potongan') {
+                      potonganMap[d.label] =
+                        (potonganMap[d.label] ?? 0) + Number(d.total || 0);
+                    }
+                  });
+                  const autoMap: Record<
+                    string,
+                    { total: number; count: number }
+                  > = {};
+                  getPotonganBreakdown(emp).forEach((cat) => {
+                    autoMap[cat.key] = { total: cat.total, count: cat.count };
+                  });
+
                   return (
                     <tr
                       key={emp.id ?? i}
-                      className="hover:bg-slate-50 transition-colors"
+                      className="hover:bg-slate-50 transition-colors group"
                     >
-                      <td className="px-4 py-3 text-slate-400 text-xs">
+                      <td className="px-4 py-3 text-slate-400 text-xs sticky left-0 z-10 bg-white group-hover:bg-slate-50">
                         {i + 1}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 sticky left-[52px] z-10 bg-white group-hover:bg-slate-50 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         <span className="font-mono text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                           {bio?.nik ?? emp.nik ?? '—'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-medium text-slate-800 text-xs">
+                      <td className="px-4 py-3 font-medium text-slate-800 text-xs whitespace-nowrap sticky left-[115px] z-10 bg-white group-hover:bg-slate-50 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         {emp.karyawan?.name ?? emp.nama_karyawan ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-slate-500 text-xs">
+                      <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
                         {bio?.department?.nama_department ??
                           emp.department ??
                           '—'}
                       </td>
-                      <td className="px-4 py-3 text-right text-xs text-emerald-700 font-semibold">
+                      <td className="px-4 py-3 text-slate-400 text-xs whitespace-nowrap">
+                        {emp.nama_divisi ?? emp.divisi ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-slate-400 text-xs whitespace-nowrap capitalize">
+                        {emp.tipe_karyawan ?? '—'}
+                      </td>
+
+                      <td className="px-4 py-3 text-right text-xs text-emerald-700 font-semibold whitespace-nowrap">
                         Rp {formatInteger(emp.total_upah ?? emp.sub_total_upah)}
                       </td>
-                      <td className="px-4 py-3 text-right text-xs text-red-600 font-semibold">
-                        {(emp.total_potongan ?? 0) > 0 ? (
-                          `Rp ${formatInteger(emp.total_potongan)}`
-                        ) : (
-                          <span className="text-slate-300">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right text-xs text-blue-700 font-semibold">
+                      <td className="px-4 py-3 text-right text-xs text-blue-700 font-semibold whitespace-nowrap">
                         {(emp.tmk ?? 0) > 0 ? (
                           `Rp ${formatInteger(emp.tmk)}`
                         ) : (
                           <span className="text-slate-300">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        {potonganBreakdown.length > 0 ? (
-                          <div className="flex flex-wrap gap-1 max-w-[180px]">
-                            {potonganBreakdown.map((cat) => (
-                              <span
-                                key={cat.key}
-                                title={`${cat.label}: Rp ${formatInteger(
-                                  cat.total,
-                                )}`}
-                                className="inline-flex items-center text-[10px] font-semibold bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded-full whitespace-nowrap"
-                              >
-                                {cat.label} {cat.count}x
+
+                      {allBayaranLabels.map((label) => (
+                        <td
+                          key={`b-${label}`}
+                          className="px-4 py-3 text-right text-xs text-emerald-700 font-semibold whitespace-nowrap"
+                        >
+                          {bayaranMap[label] != null ? (
+                            `Rp ${formatInteger(bayaranMap[label])}`
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                      ))}
+
+                      {autoPotonganCols.map((c) => (
+                        <td
+                          key={`a-${c.key}`}
+                          className="px-4 py-3 text-right text-xs text-red-600 font-semibold whitespace-nowrap"
+                        >
+                          {autoMap[c.key] ? (
+                            <span title={`${autoMap[c.key].count}x`}>
+                              Rp {formatInteger(autoMap[c.key].total)}{' '}
+                              <span className="text-[10px] text-red-400 font-medium">
+                                ({autoMap[c.key].count}x)
                               </span>
-                            ))}
-                          </div>
+                            </span>
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                      ))}
+
+                      {allPotonganLabels.map((label) => (
+                        <td
+                          key={`p-${label}`}
+                          className="px-4 py-3 text-right text-xs text-red-600 font-semibold whitespace-nowrap"
+                        >
+                          {potonganMap[label] != null ? (
+                            `Rp ${formatInteger(potonganMap[label])}`
+                          ) : (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </td>
+                      ))}
+
+                      <td className="px-4 py-3 text-right text-xs text-red-600 font-semibold whitespace-nowrap">
+                        {(emp.total_potongan ?? 0) > 0 ? (
+                          `Rp ${formatInteger(emp.total_potongan)}`
                         ) : (
-                          <span className="text-slate-300 text-xs">—</span>
+                          <span className="text-slate-300">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right text-xs font-bold text-slate-800">
+                      <td className="px-4 py-3 text-right text-xs font-bold text-slate-800 whitespace-nowrap">
                         Rp {formatInteger(emp.sub_total_upah)}
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -1229,10 +1391,11 @@ function PeriodDetailModal({
                     </tr>
                   );
                 })}
+
                 {filtered.length === 0 && (
                   <tr>
                     <td
-                      colSpan={10}
+                      colSpan={11 + dynamicColCount}
                       className="text-center py-12 text-slate-400 text-sm"
                     >
                       Tidak ada data
@@ -1240,6 +1403,59 @@ function PeriodDetailModal({
                   </tr>
                 )}
               </tbody>
+
+              {/* ── Baris ringkasan ── */}
+              {filtered.length > 0 && (
+                <tfoot className="sticky bottom-0 z-20 bg-slate-100 border-t-2 border-slate-300">
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-4 py-3 text-xs font-bold text-slate-700 sticky left-0 bg-slate-100"
+                    >
+                      RINGKASAN ({filtered.length} karyawan)
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs font-bold text-emerald-700 whitespace-nowrap">
+                      Rp {formatInteger(columnTotals.totalUpahSum)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs font-bold text-blue-700 whitespace-nowrap">
+                      Rp {formatInteger(columnTotals.tmkSum)}
+                    </td>
+                    {allBayaranLabels.map((label) => (
+                      <td
+                        key={`b-${label}`}
+                        className="px-4 py-3 text-right text-xs font-bold text-emerald-700 whitespace-nowrap"
+                      >
+                        Rp{' '}
+                        {formatInteger(columnTotals.bayaranTotals[label] ?? 0)}
+                      </td>
+                    ))}
+                    {autoPotonganCols.map((c) => (
+                      <td
+                        key={`a-${c.key}`}
+                        className="px-4 py-3 text-right text-xs font-bold text-red-700 whitespace-nowrap"
+                      >
+                        Rp {formatInteger(columnTotals.autoTotals[c.key] ?? 0)}
+                      </td>
+                    ))}
+                    {allPotonganLabels.map((label) => (
+                      <td
+                        key={`p-${label}`}
+                        className="px-4 py-3 text-right text-xs font-bold text-red-700 whitespace-nowrap"
+                      >
+                        Rp{' '}
+                        {formatInteger(columnTotals.potonganTotals[label] ?? 0)}
+                      </td>
+                    ))}
+                    <td className="px-4 py-3 text-right text-xs font-bold text-red-700 whitespace-nowrap">
+                      Rp {formatInteger(columnTotals.totalPotonganSum)}
+                    </td>
+                    <td className="px-4 py-3 text-right text-xs font-bold text-slate-900 whitespace-nowrap">
+                      Rp {formatInteger(columnTotals.subTotalSum)}
+                    </td>
+                    <td />
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
 
