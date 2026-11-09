@@ -12,6 +12,7 @@ import {
 } from './Types/Purchasing.types';
 import { formatRupiah, getStatusColor, getStatusLabel } from './Types/poStatus';
 import { getApiErrorMessage } from './Types/poApi';
+import { fetchSubstituteCandidates } from './Types/fetchSubstituteCandidates';
 import NumberInput from './NumberInput';
 import BookingPickerDialog, {
   AvailableBookingItem,
@@ -41,6 +42,11 @@ import BookingPickerDialog, {
  *      bisa diubah, tidak bisa dilepas.
  *   4. Item yang qty vendornya 0 tidak ikut `items`.
  *   5. NumberInput diimport dari ./NumberInput. Pesan error backend ditampilkan.
+ *
+ * PERUBAHAN (Item Pengganti):
+ *   6. Picker item pengganti memfilter berdasarkan kategori DAN sub kategori
+ *      (gabungan, dedupe). Kalau tidak ada yang cocok, tampilkan semua item
+ *      + notice ke user. Lihat ./Types/fetchSubstituteCandidates.
  * ========================================================================== */
 
 const DEFAULT_PPN_PERSEN = 11;
@@ -59,10 +65,6 @@ interface MasterBarangItem {
   is_include_tax: boolean;
   pajak: number;
 }
-interface MasterBarangListResponse {
-  data: MasterBarangItem[];
-  total_page: number;
-}
 interface MasterBrandItem {
   id: number;
   kode_brand: string;
@@ -78,6 +80,8 @@ interface RawMasterBarangRef {
   is_include_tax?: boolean;
   pajak?: number;
   kode_barang?: string;
+  kategori?: string | null; // BARU — dipakai untuk filter item pengganti
+  sub_kategori?: string | null; // BARU
 }
 interface RawPoItem {
   id: number;
@@ -156,7 +160,8 @@ interface JoContext {
 interface RowGroup {
   groupId: string;
   jo: JoContext | null;
-  tipe_barang: string;
+  tipe_barang: string; // sub kategori
+  kategori: string; // kategori (dipakai untuk filter item pengganti)
   qty_bom: number;
   allocations: Allocation[];
 }
@@ -285,6 +290,11 @@ const buildRowGroups = (
       });
     });
 
+    // Kategori: ambil dari baris pertama yang punya master_barang.kategori.
+    const kategori =
+      sorted.find((ij) => ij.master_barang?.kategori)?.master_barang
+        ?.kategori || '';
+
     groups.push({
       groupId: `jo-${sorted[0].id_jo}-${sorted[0].qty_bom}`,
       jo: {
@@ -294,6 +304,7 @@ const buildRowGroups = (
         rencana_cetak: toISODate(sorted[0].rencana_cetak),
       },
       tipe_barang: sorted[0].tipe_barang,
+      kategori,
       qty_bom: sorted[0].qty_bom,
       allocations,
     });
@@ -307,6 +318,7 @@ const buildRowGroups = (
         groupId: `manual-${it.id}`,
         jo: null,
         tipe_barang: it.tipe_barang,
+        kategori: it.master_barang?.kategori || '',
         qty_bom: 0,
         allocations: [
           recalcAllocPpn({
@@ -358,6 +370,7 @@ const emptyManualRow = (): RowGroup => ({
   groupId: uid(),
   jo: null,
   tipe_barang: '',
+  kategori: '',
   qty_bom: 0,
   allocations: [emptyManualAllocation()],
 });
@@ -619,6 +632,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
   const [pickerSearchInput, setPickerSearchInput] = useState<string>('');
   const [pickerResults, setPickerResults] = useState<MasterBarangItem[]>([]);
   const [pickerLoading, setPickerLoading] = useState<boolean>(false);
+  const [pickerNotice, setPickerNotice] = useState<string>('');
 
   // --- "Ambil dari PO Booking" picker ---
   const [bookingTarget, setBookingTarget] = useState<{
@@ -831,34 +845,32 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     setPickerGroupId(groupId);
     setPickerSearchInput('');
     setPickerResults([]);
+    setPickerNotice('');
   };
   const closePicker = () => {
     setPickerGroupId(null);
     setPickerSearchInput('');
     setPickerResults([]);
+    setPickerNotice('');
   };
 
   const fetchPickerResults = async () => {
     if (!pickerRow) return;
-    const url = `${import.meta.env.VITE_API_LINK}/master/barang`;
     try {
       setPickerLoading(true);
-      const res = await axios.get<MasterBarangListResponse>(url, {
-        params: {
-          page: 1,
-          limit: 20,
-          search: pickerSearchInput || undefined,
-          sub_kategori: pickerRow.tipe_barang || undefined,
-        },
-        withCredentials: true,
-      });
+      const { items, notice } =
+        await fetchSubstituteCandidates<MasterBarangItem>({
+          search: pickerSearchInput,
+          kategori: pickerRow.kategori,
+          subKategori: pickerRow.tipe_barang,
+        });
       const alreadyUsed = new Set(pickerRow.allocations.map((a) => a.id_item));
-      setPickerResults(
-        (res.data.data || []).filter((mi) => !alreadyUsed.has(mi.id)),
-      );
+      setPickerResults(items.filter((mi) => !alreadyUsed.has(mi.id)));
+      setPickerNotice(notice);
     } catch (err) {
       console.error('Error fetching master barang list:', err);
       setPickerResults([]);
+      setPickerNotice('');
     } finally {
       setPickerLoading(false);
     }
@@ -1780,8 +1792,8 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
           Pilih Item Pengganti
           {pickerRow && (
             <span className="block text-xs font-normal text-slate-400 mt-0.5">
-              Kategori: {pickerRow.tipe_barang || '-'} · untuk{' '}
-              {pickerRow.jo?.no_jo}
+              Kategori: {pickerRow.kategori || '-'} /{' '}
+              {pickerRow.tipe_barang || '-'} · untuk {pickerRow.jo?.no_jo}
             </span>
           )}
         </DialogTitle>
@@ -1803,13 +1815,19 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
             </button>
           </div>
 
+          {pickerNotice && !pickerLoading && (
+            <div className="mb-3 bg-amber-50 border border-amber-100 text-amber-700 text-xs rounded-lg px-3 py-2">
+              {pickerNotice}
+            </div>
+          )}
+
           {pickerLoading ? (
             <div className="flex justify-center py-10">
               <div className="animate-spin rounded-full h-7 w-7 border-2 border-indigo-500 border-t-transparent" />
             </div>
           ) : pickerResults.length === 0 ? (
             <p className="text-center text-sm text-slate-400 py-10">
-              Tidak ada item ditemukan untuk kategori ini.
+              Tidak ada item ditemukan.
             </p>
           ) : (
             <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto -mx-1">

@@ -10,6 +10,7 @@ import {
   PurchaseOrderNoResponse,
 } from './Types/Purchasing.types';
 import { getApiErrorMessage } from './Types/poApi';
+import { fetchSubstituteCandidates } from './Types/fetchSubstituteCandidates';
 import NumberInput from './NumberInput';
 import BookingPickerDialog, { BookingPick } from './BookingPickerDialog';
 
@@ -29,6 +30,11 @@ import BookingPickerDialog, { BookingPick } from './BookingPickerDialog';
  *   3. Item yang qty vendornya 0 (semua dari booking) tidak ikut `items`.
  *   4. NumberInput diimport dari ./NumberInput (kode sama dengan versi inline).
  *   5. Pesan error backend ditampilkan apa adanya saat simpan.
+ *
+ * PERUBAHAN (Item Pengganti):
+ *   6. Picker item pengganti memfilter berdasarkan kategori DAN sub kategori
+ *      (gabungan, dedupe). Kalau tidak ada yang cocok, tampilkan semua item
+ *      + notice ke user. Lihat ./Types/fetchSubstituteCandidates.
  * ========================================================================== */
 
 const DEFAULT_PPN_PERSEN = 11;
@@ -48,10 +54,6 @@ interface MasterBarangItem {
   pajak: number;
 }
 
-interface MasterBarangListResponse {
-  data: MasterBarangItem[];
-  total_page: number;
-}
 interface MasterBrandItem {
   id: number;
   kode_brand: string;
@@ -97,7 +99,8 @@ interface JoContext {
 interface RowGroup {
   groupId: string;
   jo: JoContext;
-  tipe_barang: string;
+  tipe_barang: string; // sub kategori
+  kategori: string; // kategori (dipakai untuk filter item pengganti)
   original_id_item: number;
   original_nama_item: string;
   qty_bom: number; // the fixed original qty this JO needs of original item
@@ -287,6 +290,11 @@ const buildRowsFromSelection = (
       rencana_cetak: item.rencana_cetak || '',
     },
     tipe_barang: item.detail_item?.sub_kategori || item.tipe_barang || '',
+    // Cast: pastikan tipe detail_item di Purchasing.types punya `kategori`
+    // supaya cast ini bisa dihapus.
+    kategori:
+      (item.detail_item as { kategori?: string | null } | undefined)
+        ?.kategori || '',
     original_id_item: item.id_item ?? 0,
     original_nama_item: item.detail_item?.nama_barang || item.nama_item,
     qty_bom: item.qty,
@@ -536,6 +544,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
   const [pickerSearchInput, setPickerSearchInput] = useState<string>('');
   const [pickerResults, setPickerResults] = useState<MasterBarangItem[]>([]);
   const [pickerLoading, setPickerLoading] = useState<boolean>(false);
+  const [pickerNotice, setPickerNotice] = useState<string>('');
 
   // --- "Ambil dari PO Booking" picker (scoped ke satu baris alokasi) ---
   const [bookingTarget, setBookingTarget] = useState<{
@@ -722,35 +731,33 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
     setPickerGroupId(groupId);
     setPickerSearchInput('');
     setPickerResults([]);
+    setPickerNotice('');
   };
 
   const closePicker = () => {
     setPickerGroupId(null);
     setPickerSearchInput('');
     setPickerResults([]);
+    setPickerNotice('');
   };
 
   const fetchPickerResults = async () => {
     if (!pickerRow) return;
-    const url = `${import.meta.env.VITE_API_LINK}/master/barang`;
     try {
       setPickerLoading(true);
-      const res = await axios.get<MasterBarangListResponse>(url, {
-        params: {
-          page: 1,
-          limit: 20,
-          search: pickerSearchInput || undefined,
-          sub_kategori: pickerRow.tipe_barang || undefined,
-        },
-        withCredentials: true,
-      });
+      const { items, notice } =
+        await fetchSubstituteCandidates<MasterBarangItem>({
+          search: pickerSearchInput,
+          kategori: pickerRow.kategori,
+          subKategori: pickerRow.tipe_barang,
+        });
       const alreadyUsed = new Set(pickerRow.allocations.map((a) => a.id_item));
-      setPickerResults(
-        (res.data.data || []).filter((mi) => !alreadyUsed.has(mi.id)),
-      );
+      setPickerResults(items.filter((mi) => !alreadyUsed.has(mi.id)));
+      setPickerNotice(notice);
     } catch (err) {
       console.error('Error fetching master barang list:', err);
       setPickerResults([]);
+      setPickerNotice('');
     } finally {
       setPickerLoading(false);
     }
@@ -1566,8 +1573,8 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
           Pilih Item Pengganti
           {pickerRow && (
             <span className="block text-xs font-normal text-slate-400 mt-0.5">
-              Kategori: {pickerRow.tipe_barang || '-'} · untuk{' '}
-              {pickerRow.jo.no_jo}
+              Kategori: {pickerRow.kategori || '-'} /{' '}
+              {pickerRow.tipe_barang || '-'} · untuk {pickerRow.jo.no_jo}
             </span>
           )}
         </DialogTitle>
@@ -1589,13 +1596,19 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({
             </button>
           </div>
 
+          {pickerNotice && !pickerLoading && (
+            <div className="mb-3 bg-amber-50 border border-amber-100 text-amber-700 text-xs rounded-lg px-3 py-2">
+              {pickerNotice}
+            </div>
+          )}
+
           {pickerLoading ? (
             <div className="flex justify-center py-10">
               <div className="animate-spin rounded-full h-7 w-7 border-2 border-indigo-500 border-t-transparent" />
             </div>
           ) : pickerResults.length === 0 ? (
             <p className="text-center text-sm text-slate-400 py-10">
-              Tidak ada item ditemukan untuk kategori ini.
+              Tidak ada item ditemukan.
             </p>
           ) : (
             <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto -mx-1">
