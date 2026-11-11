@@ -11,6 +11,9 @@ export interface PaymentDetailInvoice {
   balance_due: Num;
   paid_amount: Num;
   status_payment: string;
+  tgl_pelunasan?: string | null;
+  // Tambahkan di backend (include attribute) agar tercetak di kolom "Invoice Date"
+  tgl_invoice?: string | null;
 }
 interface APPaymentCost {
   id: number;
@@ -32,6 +35,7 @@ export interface PaymentLog {
   id: number;
   customer_id: number;
   created_by: number;
+  id_approve?: number | null;
   receipt_number: string;
   payment_amount: Num;
   payment_amount_use: Num;
@@ -42,9 +46,12 @@ export interface PaymentLog {
   account_number: string | null;
   note: string | null;
   is_active: boolean;
+  is_tax?: boolean;
+  status?: string;
   createdAt: string;
   updatedAt: string;
   created_user?: { id: number; nama: string } | null;
+  approved_user?: { id: number; nama: string } | null;
   payment_details?: PaymentDetail[];
 }
 
@@ -52,6 +59,7 @@ interface DetailBuktiBayarModalProps {
   payment: PaymentLog;
   isOpen: boolean;
   onClose: () => void;
+  onPrint?: (payment: PaymentLog) => void;
 }
 
 const toNum = (v: Num): number => {
@@ -88,10 +96,24 @@ const paymentBadge = (status: string) => {
   );
 };
 
+const InfoItem = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) => (
+  <div>
+    <span className="text-xs text-gray-600 font-medium">{label}</span>
+    <div className="text-sm text-gray-900">{value || '-'}</div>
+  </div>
+);
+
 const DetailBuktiBayarModal: React.FC<DetailBuktiBayarModalProps> = ({
   payment,
   isOpen,
   onClose,
+  onPrint,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [imageError, setImageError] = useState<boolean>(false);
@@ -109,18 +131,6 @@ const DetailBuktiBayarModal: React.FC<DetailBuktiBayarModalProps> = ({
     (sum, d) =>
       sum + (d.additional_costs ?? []).reduce((a, c) => a + toNum(c.amount), 0),
     0,
-  );
-  const InfoItem = ({
-    label,
-    value,
-  }: {
-    label: string;
-    value: React.ReactNode;
-  }) => (
-    <div>
-      <span className="text-xs text-gray-600 font-medium">{label}</span>
-      <div className="text-sm text-gray-900">{value || '-'}</div>
-    </div>
   );
 
   return (
@@ -201,6 +211,10 @@ const DetailBuktiBayarModal: React.FC<DetailBuktiBayarModalProps> = ({
                 <InfoItem
                   label="Dibuat Oleh:"
                   value={payment.created_user?.nama}
+                />
+                <InfoItem
+                  label="Disetujui Oleh:"
+                  value={payment.approved_user?.nama}
                 />
                 <InfoItem
                   label="Dibuat Pada:"
@@ -393,7 +407,15 @@ const DetailBuktiBayarModal: React.FC<DetailBuktiBayarModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-2">
+            {onPrint && (
+              <button
+                onClick={() => onPrint(payment)}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Print
+              </button>
+            )}
             <button
               onClick={onClose}
               className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors"

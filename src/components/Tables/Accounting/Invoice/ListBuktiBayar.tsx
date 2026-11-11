@@ -3,6 +3,7 @@ import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { Pagination, Stack } from '@mui/material';
 import DetailBuktiBayarModal, { PaymentLog } from './DetailBuktiBayarModal';
+import PrintBuktiBayarModal from './PrintBuktiBayarModal';
 
 interface PaymentResponse {
   status: number;
@@ -56,6 +57,7 @@ const ListBuktiBayar: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<PaymentLog | null>(
     null,
   );
+  const [printPayment, setPrintPayment] = useState<PaymentLog | null>(null);
 
   useEffect(() => {
     fetchPayments();
@@ -78,8 +80,6 @@ const ListBuktiBayar: React.FC = () => {
         },
         withCredentials: true,
       });
-
-      console.log('Fetched payment logs:', res.data);
 
       const list = Array.isArray(res.data.data) ? res.data.data : [];
       setPayments(list);
@@ -315,12 +315,18 @@ const ListBuktiBayar: React.FC = () => {
                         )}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap text-xs">
-                        <div className="flex items-center justify-center">
+                        <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => setSelectedPayment(p)}
                             className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
                           >
                             Detail
+                          </button>
+                          <button
+                            onClick={() => setPrintPayment(p)}
+                            className="px-3 py-1.5 bg-gray-700 text-white text-xs font-medium rounded hover:bg-gray-800 transition-colors"
+                          >
+                            Print
                           </button>
                         </div>
                       </td>
@@ -371,8 +377,16 @@ const ListBuktiBayar: React.FC = () => {
           payment={selectedPayment}
           isOpen={!!selectedPayment}
           onClose={() => setSelectedPayment(null)}
+          onPrint={(p) => setPrintPayment(p)}
         />
       )}
+
+      {/* Print preview modal */}
+      <PrintBuktiBayarModal
+        isOpen={!!printPayment}
+        payment={printPayment}
+        onClose={() => setPrintPayment(null)}
+      />
     </div>
   );
 };
