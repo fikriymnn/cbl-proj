@@ -1,13 +1,21 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import ModalXL from './ModalXL';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 import PopUpTable from './DragAndDropPopUp';
-import ModalFull from './ModalFull';
+import Modal from './AppModal';
 
-// Define proper TypeScript interfaces
+/* ------------------------------------------------------------------ */
+/* Types                                                               */
+/* ------------------------------------------------------------------ */
+
 interface JOData {
   id: string;
   no_jo: string;
@@ -80,7 +88,64 @@ interface SortConfig {
   direction: SortDirection;
 }
 
-// Sort indicator icon component
+const NUMERIC_KEYS: SortKey[] = ['qty_pcs', 'qty_druk', 'qty_lp', 'qty_po'];
+
+/* ------------------------------------------------------------------ */
+/* Small UI primitives                                                 */
+/* ------------------------------------------------------------------ */
+
+function Icon({ d, className = 'w-4 h-4' }: { d: string; className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d={d} />
+    </svg>
+  );
+}
+
+const ICON = {
+  search: 'M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z',
+  x: 'M6 6l12 12M18 6L6 18',
+  chevron: 'M9 6l6 6-6 6',
+  calendar:
+    'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z',
+  check: 'M5 13l4 4L19 7',
+  calc: 'M4 4h16v16H4zM8 8h8M8 12h2M14 12h2M8 16h2M14 16h2',
+  move: 'M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20',
+  eye: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12zM12 15a3 3 0 100-6 3 3 0 000 6z',
+  ban: 'M12 21a9 9 0 100-18 9 9 0 000 18zM5.6 5.6l12.8 12.8',
+  refresh:
+    'M3 12a9 9 0 0115.5-6.3L21 8M21 3v5h-5M21 12a9 9 0 01-15.5 6.3L3 16M3 21v-5h5',
+};
+
+function StatusBadge({ status }: { status: string }) {
+  const calculated = status === 'calculated';
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+        calculated
+          ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+          : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
+      }`}
+    >
+      <i
+        className={`h-1.5 w-1.5 rounded-full ${
+          calculated ? 'bg-emerald-500' : 'bg-amber-500'
+        }`}
+      />
+      {calculated ? 'Sudah dikalkulasi' : 'Belum dikalkulasi'}
+    </span>
+  );
+}
+
 function SortIcon({
   column,
   sortConfig,
@@ -91,64 +156,89 @@ function SortIcon({
   const isActive = sortConfig.key === column;
   const isAsc = isActive && sortConfig.direction === 'asc';
   const isDesc = isActive && sortConfig.direction === 'desc';
-
   return (
-    <span className="inline-flex flex-col ml-1.5 gap-[1px] align-middle">
+    <span className="ml-1 inline-flex flex-col gap-[1px] align-middle">
       <svg
         width="8"
         height="5"
         viewBox="0 0 8 5"
-        fill="none"
-        className={`transition-opacity duration-150 ${
-          isAsc ? 'opacity-100' : 'opacity-35'
-        }`}
+        className={`transition-opacity ${isAsc ? 'opacity-100' : 'opacity-30'}`}
       >
-        <path d="M4 0L7.46 4.5H0.54L4 0Z" fill="white" />
+        <path d="M4 0L7.46 4.5H0.54L4 0Z" fill="currentColor" />
       </svg>
       <svg
         width="8"
         height="5"
         viewBox="0 0 8 5"
-        fill="none"
-        className={`transition-opacity duration-150 ${
-          isDesc ? 'opacity-100' : 'opacity-35'
+        className={`transition-opacity ${
+          isDesc ? 'opacity-100' : 'opacity-30'
         }`}
       >
-        <path d="M4 5L0.54 0.5H7.46L4 5Z" fill="white" />
+        <path d="M4 5L0.54 0.5H7.46L4 5Z" fill="currentColor" />
       </svg>
     </span>
   );
 }
 
+function InfoItem({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+        {label}
+      </p>
+      <p className="break-words text-sm font-semibold text-[#0065de]">
+        {value === null || value === undefined || value === '' ? '-' : value}
+      </p>
+    </div>
+  );
+}
+
+const MONTHS = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
+];
+
+/* ------------------------------------------------------------------ */
+/* Main component                                                      */
+/* ------------------------------------------------------------------ */
+
 function ListJOProduksi() {
-  // Consolidated state management with proper typing
   const [isLoading, setIsLoading] = useState(false);
   const [listJO, setListJO] = useState<{ data: JOData[] }>({ data: [] });
   const [selectedJO, setSelectedJO] = useState<DetailJOData | null>(null);
   const [mapData, setMapData] = useState<any[]>([]);
-  const [dateRange, setDateRange] = useState({
-    startDate: '',
-    endDate: '',
-  });
+  const [dateRange, setDateRange] = useState({ startDate: '', endDate: '' });
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [mesinList, setmesinList] = useState<any>([]);
 
-  // Sort state
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: null,
     direction: null,
   });
 
-  // UI state
-  const [showCalculateIndex, setShowCalculateIndex] = useState<number | null>(
-    null,
-  );
-  const [showDetails, setShowDetails] = useState<Record<string, boolean>>({});
-  const [showModalFull, setShowModalFull] = useState<Record<string, boolean>>(
-    {},
-  );
-  const [selectedTahapan, setSelectedTahapan] = useState<string | null>(null);
-  const [selectedData, setSelectedData] = useState<JadwalPerJam | null>(null);
+  // Calculation modal
+  const [calcJO, setCalcJO] = useState<JOData | null>(null);
+  const [expandedTahap, setExpandedTahap] = useState<Set<number>>(new Set());
+  // UI-only selection of jam rows ("tahapIndex:rowKey"); API will be wired later
+  const [checkedRows, setCheckedRows] = useState<Set<string>>(new Set());
+
+  // Drag & drop modal (existing PopUpTable + API untouched)
+  const [dragTarget, setDragTarget] = useState<{
+    tahapan: string;
+    data: JadwalPerJam;
+  } | null>(null);
+
+  // Cancel modal
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelNote, setCancelNote] = useState('');
   const [pendingCancelId, setPendingCancelId] = useState<string | null>(null);
@@ -156,7 +246,7 @@ function ListJOProduksi() {
     no_jo: string;
     item: string;
   } | null>(null);
-  // Handle column sort toggle
+
   const handleSort = useCallback((key: SortKey) => {
     setSortConfig((prev) => {
       if (prev.key === key) {
@@ -167,34 +257,17 @@ function ListJOProduksi() {
     });
   }, []);
 
-  // Format date for display
   const formatCustomDate = useCallback((dateString: string) => {
     if (!dateString) return '';
-
-    const months = [
-      'Januari',
-      'Februari',
-      'Maret',
-      'April',
-      'Mei',
-      'Juni',
-      'Juli',
-      'Agustus',
-      'September',
-      'Oktober',
-      'November',
-      'Desember',
-    ];
-
     const [datePart, timePart] = dateString.split(' ');
     const [year, month, day] = datePart.split('-');
-
-    return `${parseInt(day)} / ${months[parseInt(month) - 1]} / ${year} ${
+    return `${parseInt(day)} / ${months(month)} / ${year} ${
       timePart ? '- ' + timePart.replace(/\./g, ':') : ''
     }`;
   }, []);
 
-  // API calls with error handling
+  /* ------------------------------ API ------------------------------ */
+
   const fetchAPI = useCallback(
     async (url: string, params = {}, method = 'get', data = {}) => {
       setIsLoading(true);
@@ -204,14 +277,12 @@ function ListJOProduksi() {
           withCredentials: true,
           ...(method !== 'get' && { data }),
         };
-
         const response =
           method === 'get'
             ? await axios.get(url, config)
             : method === 'put'
             ? await axios.put(url, config.data, config)
             : await axios.post(url, config.data, config);
-        console.log('response', response);
         return response.data;
       } catch (error) {
         console.error(`Error in API call to ${url}:`, error);
@@ -223,7 +294,6 @@ function ListJOProduksi() {
     [],
   );
 
-  // Memoized API base URL
   const API_BASE = useMemo(() => import.meta.env.VITE_API_LINK, []);
 
   const getInitialJadwalView = useCallback(async () => {
@@ -241,7 +311,7 @@ function ListJOProduksi() {
       setmesinList(res.data.data);
     } catch (error: any) {
       setIsLoading(false);
-      console.log(error.data.msg);
+      console.log(error.data?.msg);
     }
   }
 
@@ -320,7 +390,6 @@ function ListJOProduksi() {
     [API_BASE, fetchAPI, getJOList],
   );
 
-  // Step 1: open modal instead of window.confirm
   const handleCancelClick = useCallback((jo: JOData) => {
     setPendingCancelId(jo.id);
     setPendingCancelJOInfo({ no_jo: jo.no_jo, item: jo.item });
@@ -328,7 +397,13 @@ function ListJOProduksi() {
     setCancelModalOpen(true);
   }, []);
 
-  // Step 2: actual API call with body
+  const closeCancelModal = useCallback(() => {
+    setCancelModalOpen(false);
+    setPendingCancelId(null);
+    setPendingCancelJOInfo(null);
+    setCancelNote('');
+  }, []);
+
   const cancelJobOrder = useCallback(async () => {
     if (!pendingCancelId) return;
     if (!cancelNote.trim()) {
@@ -342,61 +417,93 @@ function ListJOProduksi() {
       const tglCancel = new Date().toISOString().split('T')[0];
 
       await axios.delete(url, {
-        data: {
-          note_cancel: cancelNote,
-          tgl_cancel: tglCancel,
-        },
+        data: { note_cancel: cancelNote, tgl_cancel: tglCancel },
         withCredentials: true,
       });
 
       await Promise.all([getInitialJadwalView(), getJOList()]);
       setIsLoading(false);
-
-      setCancelModalOpen(false);
-      setPendingCancelId(null);
-      setPendingCancelJOInfo(null);
-      setCancelNote('');
+      closeCancelModal();
       alert('Job Order cancelled successfully!');
     } catch (error: any) {
       setIsLoading(false);
       console.error('Error cancelling job order:', error);
       alert('Failed to cancel job order. Please try again.');
     }
-  }, [API_BASE, pendingCancelId, cancelNote, getInitialJadwalView, getJOList]);
+  }, [
+    API_BASE,
+    pendingCancelId,
+    cancelNote,
+    getInitialJadwalView,
+    getJOList,
+    closeCancelModal,
+  ]);
+
+  /* ------------------------------ handlers ------------------------------ */
+
+  const resetCalcUI = useCallback(() => {
+    setExpandedTahap(new Set());
+    setCheckedRows(new Set());
+  }, []);
 
   const handleViewCalculation = useCallback(
-    async (id: string, index: number) => {
-      const data = await getSingleJO(id);
-      if (data) setShowCalculateIndex(index);
+    async (jo: JOData) => {
+      const data = await getSingleJO(jo.id);
+      if (data) {
+        resetCalcUI();
+        setCalcJO(jo);
+      }
     },
-    [getSingleJO],
+    [getSingleJO, resetCalcUI],
   );
 
   const handleCalculateJO = useCallback(
-    async (id: string, index: number, isLembur: boolean) => {
-      const success = await calculateJO(id, isLembur);
-      if (success) handleViewCalculation(id, index);
+    async (jo: JOData, isLembur: boolean) => {
+      const success = await calculateJO(jo.id, isLembur);
+      if (success) handleViewCalculation(jo);
     },
     [calculateJO, handleViewCalculation],
   );
 
-  const toggleDetailsView = useCallback((id: string) => {
-    setShowDetails((prev) => ({ ...prev, [id]: !prev[id] }));
-  }, []);
+  const closeCalcModal = useCallback(() => {
+    setCalcJO(null);
+    setDragTarget(null);
+    resetCalcUI();
+  }, [resetCalcUI]);
 
-  const handleOpenModalFull = useCallback(
-    (index: string, tahapan: string, data: JadwalPerJam | null = null) => {
-      setShowModalFull((prev) => ({ ...prev, [index]: true }));
-      setSelectedTahapan(tahapan);
-      setSelectedData(data);
-    },
-    [],
-  );
+  const toggleTahap = (i: number) =>
+    setExpandedTahap((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
 
-  const handleCloseModalFull = useCallback((index: string) => {
-    setShowModalFull((prev) => ({ ...prev, [index]: false }));
-    setSelectedData(null);
-  }, []);
+  const rowKey = (tahapIndex: number, row: JadwalPerJam, i: number) =>
+    `${tahapIndex}:${row.id ?? i}`;
+
+  const toggleRow = (key: string) =>
+    setCheckedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  const toggleAllRowsInTahap = (
+    tahapIndex: number,
+    rows: JadwalPerJam[],
+    checked: boolean,
+  ) =>
+    setCheckedRows((prev) => {
+      const next = new Set(prev);
+      rows.forEach((r, i) => {
+        const k = rowKey(tahapIndex, r, i);
+        if (checked) next.add(k);
+        else next.delete(k);
+      });
+      return next;
+    });
 
   useEffect(() => {
     getMasterMesin();
@@ -411,30 +518,29 @@ function ListJOProduksi() {
     [],
   );
 
-  const handleSearchChange = useCallback((e: any) => {
-    setSearchTerm(e.target.value);
-  }, []);
-
   const handleApplyFilters = useCallback(() => {
     getJadwalView();
     getJOList();
   }, [getJadwalView, getJOList]);
 
-  // Filter then sort
+  const handleResetFilters = useCallback(() => {
+    setDateRange({ startDate: '', endDate: '' });
+    setSearchTerm('');
+  }, []);
+
+  /* ------------------------------ derived ------------------------------ */
+
   const filteredJOData = useMemo(() => {
     if (!listJO?.data) return [];
-
     let filtered = listJO.data;
 
     if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter((jo) => {
-        const searchableFields = [jo.no_jo, jo.item, jo.nama_bahan, jo.no_io];
-        return searchableFields.some(
-          (field) =>
-            field && field.toString().toLowerCase().includes(searchLower),
-        );
-      });
+      const q = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter((jo) =>
+        [jo.no_jo, jo.item, jo.nama_bahan, jo.no_io].some(
+          (f) => f && f.toString().toLowerCase().includes(q),
+        ),
+      );
     }
 
     if (sortConfig.key && sortConfig.direction) {
@@ -442,20 +548,11 @@ function ListJOProduksi() {
       filtered = [...filtered].sort((a, b) => {
         const aVal = a[key];
         const bVal = b[key];
-
-        // Numeric columns
-        if (
-          key === 'qty_pcs' ||
-          key === 'qty_druk' ||
-          key === 'qty_lp' ||
-          key === 'qty_po'
-        ) {
+        if (NUMERIC_KEYS.includes(key)) {
           return direction === 'asc'
             ? (aVal as number) - (bVal as number)
             : (bVal as number) - (aVal as number);
         }
-
-        // String / date columns
         const aStr = (aVal ?? '').toString().toLowerCase();
         const bStr = (bVal ?? '').toString().toLowerCase();
         if (aStr < bStr) return direction === 'asc' ? -1 : 1;
@@ -463,670 +560,686 @@ function ListJOProduksi() {
         return 0;
       });
     }
-
     return filtered;
   }, [listJO?.data, searchTerm, sortConfig]);
 
-  // Sortable th helper
+  const totalAll = listJO?.data?.length ?? 0;
+  const calculatedCount = useMemo(
+    () => filteredJOData.filter((j) => j.status === 'calculated').length,
+    [filteredJOData],
+  );
+  const hasFilter =
+    !!dateRange.startDate || !!dateRange.endDate || !!searchTerm.trim();
+
+  const tahapList = selectedJO?.data?.tahap ?? [];
+  const canSubmit = (selectedJO?.data?.jadwal_per_jam?.length ?? 0) > 0;
+
+  /* ------------------------------ render ------------------------------ */
+
   const SortableTh = ({
     label,
     column,
-    className = '',
+    align = 'left',
   }: {
     label: string;
     column: SortKey;
-    className?: string;
+    align?: 'left' | 'right';
   }) => (
     <th
       onClick={() => handleSort(column)}
-      className={`px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500 cursor-pointer select-none hover:bg-blue-800 active:bg-blue-900 transition-colors duration-150 ${className}`}
+      aria-sort={
+        sortConfig.key === column
+          ? sortConfig.direction === 'asc'
+            ? 'ascending'
+            : 'descending'
+          : 'none'
+      }
+      className={`cursor-pointer select-none whitespace-nowrap border-r border-[#D8EAFF] px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#0065de] transition-colors hover:bg-[#DEF0FF] ${
+        align === 'right' ? 'text-right' : 'text-left'
+      }`}
     >
-      <span className="inline-flex items-center gap-1">
-        {label}
-        <SortIcon column={column} sortConfig={sortConfig} />
-      </span>
+      {label}
+      <SortIcon column={column} sortConfig={sortConfig} />
     </th>
   );
 
   return (
-    <main className="overflow-x-scroll">
+    <main className="min-w-0">
       {isLoading && <Loading />}
-      <div className="min-w-[700px] bg-white rounded-xl flex gap-1">
-        <div className="flex w-full flex-col bg-gradient-to-br from-[#D8EAFF] to-[#E8F4FF]">
-          {/* Filter Section */}
-          <div className="col-span-10 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"
-                  />
-                </svg>
-                Filter & Pencarian Data
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Gunakan filter di bawah untuk menyaring data sesuai kebutuhan
-              </p>
-            </div>
 
-            {/* Filter Content */}
-            <div className="p-6">
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {/* Date Range Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <svg
-                      className="w-4 h-4 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <label className="text-sm font-semibold text-gray-700">
-                      Rentang Tanggal
-                    </label>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
-                        Tanggal Mulai
-                      </label>
-                      <input
-                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        type="date"
-                        onChange={(e) =>
-                          handleDateChange('startDate', e.target.value)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
-                        Tanggal Akhir
-                      </label>
-                      <input
-                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        type="date"
-                        onChange={(e) =>
-                          handleDateChange('endDate', e.target.value)
-                        }
-                        disabled={isLoading}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Search Section */}
-                <div className="flex justify-end flex-col">
-                  <div className="flex items-center gap-2">
-                    <svg
-                      className="w-4 h-4 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    <label className="text-sm font-semibold text-gray-700">
-                      Pencarian
-                    </label>
-                  </div>
-                  <input
-                    className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    type="text"
-                    placeholder="Cari berdasarkan No Booking, item, atau data lainnya..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    disabled={isLoading}
-                  />
-                </div>
-              </div>
-
-              {/* Action Button + Total Data */}
-              <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-200">
-                {/* Total data badge */}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">Total data:</span>
-                  <span className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold px-3 py-1 rounded-full">
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                      />
-                    </svg>
-                    {filteredJOData.length}
-                    {filteredJOData.length !== (listJO?.data?.length ?? 0) && (
-                      <span className="text-blue-400 font-normal">
-                        / {listJO?.data?.length ?? 0}
-                      </span>
-                    )}
-                    &nbsp;record
-                  </span>
-                </div>
-
-                <button
-                  onClick={handleApplyFilters}
-                  disabled={isLoading}
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                >
-                  {isLoading ? (
-                    <>
-                      <svg
-                        className="animate-spin w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Memproses...
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      Terapkan Filter
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+      <div className="rounded-xl bg-white px-4 py-4">
+        {/* Row 1: title + date range + actions */}
+        <div className="flex flex-wrap items-end gap-3 border-b border-[#D8EAFF] pb-3">
+          <div className="mr-2">
+            <h2 className="text-lg font-semibold text-blue-500">
+              Job Order Masuk
+            </h2>
+            <p className="text-xs text-slate-500">
+              Kalkulasi dan jadwalkan JO yang belum masuk jadwal produksi
+            </p>
           </div>
 
-          {/* Table Container */}
-          <div className="bg-white shadow-xl rounded-b-xl">
-            <div className="h-full overflow-y-auto rounded-b-xl">
-              <table className="w-full border-collapse">
-                <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10">
-                  <tr>
-                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
-                      No
-                    </th>
-                    <SortableTh label="Waktu Masuk Tiket" column="createdAt" />
-                    <SortableTh label="Job Order" column="no_jo" />
-                    <SortableTh label="Nama Item" column="item" />
-                    <SortableTh label="Nama Bahan" column="nama_bahan" />
-                    <SortableTh label="Qty Pcs" column="qty_pcs" />
-                    <SortableTh label="Qty Druk" column="qty_druk" />
-                    <SortableTh label="Qty LP" column="qty_lp" />
-                    <SortableTh label="Qty PO" column="qty_po" />
-                    <SortableTh label="Tanggal Kirim" column="tgl_kirim_date" />
+          <div className="ml-auto flex flex-wrap items-end gap-2">
+            <label className="block text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Tanggal mulai
+              <input
+                type="date"
+                value={dateRange.startDate}
+                max={dateRange.endDate || undefined}
+                onChange={(e) => handleDateChange('startDate', e.target.value)}
+                disabled={isLoading}
+                className="mt-1 block h-9 rounded-lg bg-[#D8EAFF] px-3 text-sm font-medium normal-case tracking-normal text-slate-800 disabled:opacity-60"
+              />
+            </label>
+            <label className="block text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Tanggal akhir
+              <input
+                type="date"
+                value={dateRange.endDate}
+                min={dateRange.startDate || undefined}
+                onChange={(e) => handleDateChange('endDate', e.target.value)}
+                disabled={isLoading}
+                className="mt-1 block h-9 rounded-lg bg-[#D8EAFF] px-3 text-sm font-medium normal-case tracking-normal text-slate-800 disabled:opacity-60"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={handleApplyFilters}
+              disabled={isLoading}
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+            >
+              <Icon d={ICON.refresh} className="h-4 w-4" />
+              {isLoading ? 'Memproses…' : 'Terapkan'}
+            </button>
+          </div>
+        </div>
 
-                    <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredJOData?.length > 0 ? (
-                    filteredJOData.map((jo: any, index) => (
-                      <tr
-                        key={jo.id}
-                        className={`hover:bg-blue-50 transition-colors duration-150 ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                        }`}
-                      >
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
-                          {index + 1}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
-                          {jo.createdAt ? formatCustomDate(jo.createdAt) : '-'}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
-                          {jo.no_jo}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-700 border-r border-gray-200">
-                          {jo.item}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-700 border-r border-gray-200">
-                          {jo.nama_bahan}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 border-r border-gray-200">
-                          {formatInteger(jo.qty_pcs)}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 border-r border-gray-200">
-                          {formatInteger(jo.qty_druk)}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 border-r border-gray-200">
-                          {formatInteger(jo.qty_lp)}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 border-r border-gray-200">
-                          {formatInteger(jo.qty_po)}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
-                          {formatCustomDate(jo.tgl_kirim_date)}
-                        </td>
+        {/* Row 2: search + stats */}
+        <div className="flex flex-wrap items-center gap-2 pt-3">
+          <div className="flex h-9 items-center gap-1 rounded-lg border border-slate-300 bg-white pl-2 pr-1 focus-within:border-[#0065de] focus-within:ring-2 focus-within:ring-[#0065de]/30">
+            <Icon d={ICON.search} className="h-4 w-4 text-slate-400" />
+            <input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
+              disabled={isLoading}
+              placeholder="Cari JO, IO, item, atau bahan…"
+              className="w-72 bg-transparent text-sm outline-none"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                aria-label="Hapus pencarian"
+                onClick={() => setSearchTerm('')}
+                className="rounded p-1 text-slate-600 hover:bg-slate-100"
+              >
+                <Icon d={ICON.x} className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
 
-                        <td className="px-4 py-4 whitespace-nowrap text-center">
-                          {jo.status === 'calculated' ? (
-                            <div className="flex flex-col gap-2">
-                              <button
-                                onClick={() =>
-                                  handleViewCalculation(jo.id, index)
-                                }
-                                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                              >
-                                VIEW
-                              </button>
-                              <button
-                                onClick={() => handleCancelClick(jo)}
-                                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                              >
-                                CANCEL
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex flex-col gap-2">
-                              <button
-                                onClick={() =>
-                                  handleCalculateJO(jo.id, index, false)
-                                }
-                                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                              >
-                                CALCULATE
-                              </button>
-                              <button
-                                onClick={() => handleCancelClick(jo)}
-                                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                              >
-                                CANCEL
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                        {/* Calculation Modal */}
-                        {showCalculateIndex === index && selectedJO && (
-                          <ModalXL
-                            isOpen={showCalculateIndex === index}
-                            onClose={() => setShowCalculateIndex(null)}
-                            judul="Rumus Kalkulasi"
-                          >
-                            <>
-                              {/* JO Details */}
-                              <div className="grid grid-cols-2 gap-2 px-4 py-4 border-b-8 border-[#D8EAFF] bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
-                                <div className="flex flex-col">
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <label className="text-black text-sm font-bold">
-                                      Nomor JO
-                                    </label>
-                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
-                                      : {jo.no_jo}
-                                    </label>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <label className="text-black text-sm font-bold">
-                                      Nomor IO
-                                    </label>
-                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
-                                      : {jo.no_io}
-                                    </label>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <label className="text-black text-sm font-bold">
-                                      Item
-                                    </label>
-                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
-                                      : {jo.item}
-                                    </label>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <label className="text-black text-sm font-bold">
-                                      Tanggal Kirim
-                                    </label>
-                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
-                                      : {convertTimeStampToDate(jo.tgl_kirim)}
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="flex flex-col">
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <label className="text-black text-sm font-bold">
-                                      Qty Druk
-                                    </label>
-                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
-                                      : {formatInteger(jo.qty_druk)}
-                                    </label>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <label className="text-black text-sm font-bold">
-                                      Qty Pcs
-                                    </label>
-                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
-                                      : {formatInteger(jo.qty_pcs)}
-                                    </label>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <label className="text-black text-sm font-bold">
-                                      Qty LP
-                                    </label>
-                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
-                                      : {formatInteger(jo.qty_lp)}
-                                    </label>
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <label className="text-black text-sm font-bold">
-                                      Qty PO
-                                    </label>
-                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
-                                      : {formatInteger(jo.qty_po)}
-                                    </label>
-                                  </div>
-                                </div>
-                              </div>
+          {hasFilter && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="h-9 rounded-lg border border-slate-300 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Reset filter
+            </button>
+          )}
 
-                              {/* Tahapan Data */}
-                              <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-2 px-4 py-4 bg-gray-50">
-                                <div className="w-[150px] flex flex-col">
-                                  <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                    TAHAPAN
-                                  </label>
-                                  <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                    TANGGAL
-                                  </label>
-                                  {showDetails[jo.id] && (
-                                    <>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        KATEGORI
-                                      </label>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        DRYING TIME
-                                      </label>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        MESIN
-                                      </label>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        KAPASITAS/JAM
-                                      </label>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        DRYING TIME (JAM)
-                                      </label>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        SETTING (JAM)
-                                      </label>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        KAPASITAS (JAM)
-                                      </label>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        TOLERANSI
-                                      </label>
-                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
-                                        TOTAL WAKTU
-                                      </label>
-                                    </>
-                                  )}
-                                </div>
+          <p className="ml-auto text-sm tabular-nums text-slate-600">
+            <span className="font-semibold text-slate-800">
+              {filteredJOData.length}
+            </span>
+            {filteredJOData.length !== totalAll && <> dari {totalAll}</>} JO,{' '}
+            <span className="font-semibold text-emerald-600">
+              {calculatedCount}
+            </span>{' '}
+            sudah dikalkulasi,{' '}
+            <span className="font-semibold text-amber-600">
+              {filteredJOData.length - calculatedCount}
+            </span>{' '}
+            belum
+          </p>
+        </div>
 
-                                <div className="flex overflow-x-scroll max-w-screen">
-                                  {selectedJO.data?.tahap?.map(
-                                    (tahap, tahapIndex) => (
-                                      <div
-                                        key={tahapIndex}
-                                        className="min-w-[150px] flex flex-col justify-center"
-                                      >
-                                        <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                          {tahap.tahapan}
-                                        </label>
-                                        <div className="justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                          {tahap?.jadwal_per_jam?.length ===
-                                          0 ? (
-                                            <label className="text-red-500 text-xs border-2 px-3 py-2 rounded-lg border-blue-400 text-center cursor-pointer transition">
-                                              {formatCustomDate(tahap.tgl_from)}
-                                            </label>
-                                          ) : (
-                                            <button
-                                              onClick={() =>
-                                                handleOpenModalFull(
-                                                  `${index}-${tahapIndex}`,
-                                                  tahap.tahapan,
-                                                  tahap.jadwal_per_jam[0],
-                                                )
-                                              }
-                                              className="text-blue-500 text-xs border-2 px-3 py-2 rounded-lg border-blue-400 text-center hover:bg-blue-50 transition"
-                                            >
-                                              {convertTimeStampToDate(
-                                                tahap.jadwal_per_jam[0]
-                                                  ?.tanggal,
-                                              )}{' '}
-                                              - {tahap.jadwal_per_jam[0]?.jam}
-                                            </button>
-                                          )}
-                                          {showModalFull[
-                                            `${index}-${tahapIndex}`
-                                          ] && (
-                                            <ModalFull
-                                              isOpen={
-                                                showModalFull[
-                                                  `${index}-${tahapIndex}`
-                                                ]
-                                              }
-                                              onClose={() =>
-                                                handleCloseModalFull(
-                                                  `${index}-${tahapIndex}`,
-                                                )
-                                              }
-                                              judul={`Jadwal ${tahap.tahapan} - ${jo.no_jo}`}
-                                            >
-                                              <div className="col-span-5 flex flex-col gap-1">
-                                                <PopUpTable
-                                                  dataMap={selectedData}
-                                                  onClose={() => {
-                                                    setSelectedData(null);
-                                                    handleCloseModalFull(
-                                                      `${index}-${tahapIndex}`,
-                                                    );
-                                                  }}
-                                                  onFinish={() => {
-                                                    handleCloseModalFull(
-                                                      `${index}-${tahapIndex}`,
-                                                    );
-                                                    getSingleJO(jo.id);
-                                                  }}
-                                                />
-                                              </div>
-                                            </ModalFull>
-                                          )}
-                                        </div>
+        {/* Loading bar */}
+        <div
+          className={`mt-3 h-0.5 rounded bg-[#0065de] transition-opacity ${
+            isLoading ? 'animate-pulse opacity-100' : 'opacity-0'
+          }`}
+        />
 
-                                        {showDetails[jo.id] && (
-                                          <>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.kategori} -{' '}
-                                              {tahap.nama_kategori}
-                                            </label>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.kategori_drying_time}
-                                            </label>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.mesin}
-                                            </label>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.kapasitas_per_jam}
-                                            </label>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.drying_time}
-                                            </label>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.setting}
-                                            </label>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.kapasitas}
-                                            </label>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.toleransi}
-                                            </label>
-                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.total_waktu}
-                                            </label>
-                                          </>
-                                        )}
-                                      </div>
-                                    ),
-                                  )}
-                                </div>
+        {/* Table */}
+        <div
+          className={`relative mt-2 overflow-auto rounded-xl border border-[#D8EAFF] bg-white transition-opacity ${
+            isLoading ? 'opacity-60' : ''
+          }`}
+          style={{ maxHeight: 'calc(100vh - 260px)', minHeight: 320 }}
+        >
+          <table className="w-full min-w-[1000px] border-collapse">
+            <thead className="sticky top-0 z-10 bg-[#eaf4ff]">
+              <tr className="border-b border-[#D8EAFF]">
+                <th className="w-12 border-r border-[#D8EAFF] px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0065de]">
+                  No
+                </th>
 
-                                <div>
-                                  <button
-                                    onClick={() => toggleDetailsView(jo.id)}
-                                    className="text-xs w-full flex font-bold text-white px-3 bg-gradient-to-r from-blue-600 to-blue-700 py-2 border-blue-700 border rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md"
-                                  >
-                                    DETAIL
-                                  </button>
-                                </div>
-                              </div>
+                <SortableTh label="Job Order" column="no_jo" />
+                <SortableTh label="Item" column="item" />
+                <SortableTh label="Bahan" column="nama_bahan" />
+                <SortableTh label="Pcs" column="qty_pcs" align="right" />
+                <SortableTh label="Druk" column="qty_druk" align="right" />
+                <SortableTh label="LP" column="qty_lp" align="right" />
+                <SortableTh label="PO" column="qty_po" align="right" />
+                <SortableTh label="Tgl Kirim" column="tgl_kirim_date" />
 
-                              {selectedJO.data?.jadwal_per_jam?.length > 0 && (
-                                <div className="flex justify-center items-center pt-4">
-                                  <button
-                                    onClick={() => {
-                                      submitToSchedule(jo.id).then(
-                                        (success) => {
-                                          if (success)
-                                            setShowCalculateIndex(null);
-                                        },
-                                      );
-                                    }}
-                                    className="text-lg w-full flex justify-center font-bold text-white px-6 bg-gradient-to-r from-green-600 to-green-700 py-4 border-green-700 border rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg"
-                                  >
-                                    MASUK JADWAL
-                                  </button>
-                                </div>
-                              )}
-                            </>
-                          </ModalXL>
+                <th className="sticky right-0 bg-[#eaf4ff] px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wide text-[#0065de]">
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredJOData.length > 0 ? (
+                filteredJOData.map((jo, index) => {
+                  const zebra = index % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white';
+                  const calculated = jo.status === 'calculated';
+                  return (
+                    <tr
+                      key={jo.id}
+                      className={`border-b border-[#E3EEFB] transition-colors hover:bg-[#E3F0FF] ${zebra}`}
+                    >
+                      <td className="border-r border-[#E3EEFB] px-3 py-3 text-xs tabular-nums text-slate-500">
+                        {index + 1}
+                      </td>
+
+                      <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-sm font-semibold text-slate-900">
+                        {jo.no_jo}
+                        {jo.no_io && (
+                          <span className="block text-[11px] font-normal text-slate-500">
+                            IO: {jo.no_io}
+                          </span>
                         )}
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={10} className="px-4 py-12 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <div className="text-gray-400 text-6xl mb-4">📋</div>
-                          <p className="text-gray-500 text-lg">
-                            Tidak ada data yang ditemukan
-                          </p>
+                      </td>
+                      <td className="max-w-[240px] border-r border-[#E3EEFB] px-3 py-3 text-sm text-slate-700">
+                        {jo.item}
+                      </td>
+                      <td className="max-w-[200px] border-r border-[#E3EEFB] px-3 py-3 text-sm text-slate-700">
+                        {jo.nama_bahan}
+                      </td>
+                      <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-right text-sm tabular-nums text-slate-700">
+                        {formatInteger(jo.qty_pcs)}
+                      </td>
+                      <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-right text-sm tabular-nums text-slate-700">
+                        {formatInteger(jo.qty_druk)}
+                      </td>
+                      <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-right text-sm tabular-nums text-slate-700">
+                        {formatInteger(jo.qty_lp)}
+                      </td>
+                      <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-right text-sm tabular-nums text-slate-700">
+                        {formatInteger(jo.qty_po)}
+                      </td>
+                      <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-xs text-slate-600">
+                        {formatCustomDate(jo.tgl_kirim_date)}
+                      </td>
+
+                      <td className={`sticky right-0 px-3 py-2 ${zebra}`}>
+                        <div className="flex  items-center justify-center gap-1.5">
+                          {calculated ? (
+                            <button
+                              type="button"
+                              onClick={() => handleViewCalculation(jo)}
+                              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white hover:bg-emerald-700"
+                            >
+                              <Icon d={ICON.eye} className="h-3.5 w-3.5" />
+                              Lihat
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleCalculateJO(jo, false)}
+                              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#0065de] px-3 text-xs font-semibold text-white hover:opacity-90"
+                            >
+                              <Icon d={ICON.calc} className="h-3.5 w-3.5" />
+                              Kalkulasi
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleCancelClick(jo)}
+                            title="Cancel Job Order"
+                            aria-label={`Cancel ${jo.no_jo}`}
+                            className="grid h-8 w-8 place-items-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50"
+                          >
+                            <Icon d={ICON.ban} className="h-4 w-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={12} className="px-4 py-20 text-center">
+                    <p className="text-sm font-semibold text-slate-700">
+                      Tidak ada data yang ditemukan
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Ubah rentang tanggal atau kata kunci pencarian.
+                    </p>
+                    {hasFilter && (
+                      <button
+                        type="button"
+                        onClick={handleResetFilters}
+                        className="mt-3 h-9 rounded-lg bg-[#0065de] px-4 text-sm font-medium text-white hover:opacity-90"
+                      >
+                        Reset filter
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-      {/* Cancel confirmation modal */}
-      {cancelModalOpen && pendingCancelJOInfo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md mx-4">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-base font-semibold">Cancel Job Order</h2>
+
+      {/* ---------------------- Calculation modal ---------------------- */}
+      <Modal
+        open={!!calcJO && !!selectedJO}
+        onClose={closeCalcModal}
+        size="xl"
+        title="Rumus Kalkulasi"
+        subtitle={
+          calcJO && (
+            <>
+              <span className="font-semibold text-[#0065de]">
+                {calcJO.no_jo}
+              </span>
+              {' · '}
+              {calcJO.item}
+            </>
+          )
+        }
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={closeCalcModal}
+              className="h-9 rounded-lg bg-slate-100 px-4 text-sm font-medium text-slate-700 hover:bg-slate-200"
+            >
+              Tutup
+            </button>
+            {canSubmit && calcJO && (
               <button
-                onClick={() => setCancelModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl font-bold leading-none"
+                type="button"
+                onClick={() =>
+                  submitToSchedule(calcJO.id).then((ok) => {
+                    if (ok) closeCalcModal();
+                  })
+                }
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white hover:bg-emerald-700"
               >
-                ×
+                <Icon d={ICON.check} />
+                Masuk Jadwal
               </button>
+            )}
+          </>
+        }
+      >
+        {calcJO && (
+          <div className="space-y-4">
+            {/* JO summary */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl bg-[#F0F7FF] p-4 sm:grid-cols-4">
+              <InfoItem label="Nomor JO" value={calcJO.no_jo} />
+              <InfoItem label="Nomor IO" value={calcJO.no_io} />
+              <InfoItem label="Item" value={calcJO.item} />
+              <InfoItem
+                label="Tanggal Kirim"
+                value={convertTimeStampToDate(calcJO.tgl_kirim)}
+              />
+              <InfoItem
+                label="Qty Druk"
+                value={formatInteger(calcJO.qty_druk)}
+              />
+              <InfoItem label="Qty Pcs" value={formatInteger(calcJO.qty_pcs)} />
+              <InfoItem label="Qty LP" value={formatInteger(calcJO.qty_lp)} />
+              <InfoItem label="Qty PO" value={formatInteger(calcJO.qty_po)} />
             </div>
 
-            <div className="p-4">
-              {/* Summary */}
-              <div className="bg-gray-50 rounded-md p-3 mb-4 text-sm">
-                <div className="grid grid-cols-2 gap-1">
-                  <span className="text-gray-500">No JO</span>
-                  <span className="font-medium">
-                    {pendingCancelJOInfo.no_jo}
-                  </span>
-                  <span className="text-gray-500">Item</span>
-                  <span>{pendingCancelJOInfo.item}</span>
-                  <span className="text-gray-500">Tgl cancel</span>
-                  <span>{new Date().toLocaleDateString('id-ID')}</span>
-                </div>
-              </div>
-
-              {/* Note textarea */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1 text-gray-700">
-                  Note cancel <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={cancelNote}
-                  onChange={(e) => setCancelNote(e.target.value)}
-                  placeholder="Masukkan alasan pembatalan..."
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-red-400 focus:border-red-400 resize-vertical"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
+            {/* Tahapan toolbar */}
+            <div className="flex flex-wrap items-center gap-2">
+              <h4 className="text-sm font-semibold text-slate-800">
+                Tahapan produksi
+                <span className="ml-2 rounded-full bg-[#D8EAFF] px-2 py-0.5 text-xs font-medium text-[#0065de]">
+                  {tahapList.length}
+                </span>
+              </h4>
+              <div className="ml-auto flex gap-1.5">
                 <button
-                  onClick={() => setCancelModalOpen(false)}
-                  className="px-4 py-2 text-sm rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
+                  type="button"
+                  onClick={() =>
+                    setExpandedTahap(new Set(tahapList.map((_, i) => i)))
+                  }
+                  className="h-8 rounded-lg border border-slate-300 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
                 >
-                  Batal
+                  Buka semua
                 </button>
                 <button
-                  onClick={cancelJobOrder}
-                  disabled={isLoading}
-                  className="px-4 py-2 text-sm rounded-md bg-red-600 text-white font-medium hover:bg-red-700 disabled:opacity-50"
+                  type="button"
+                  onClick={() => setExpandedTahap(new Set())}
+                  className="h-8 rounded-lg border border-slate-300 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
                 >
-                  {isLoading ? 'Loading...' : 'Konfirmasi cancel'}
+                  Ciutkan semua
                 </button>
               </div>
+            </div>
+
+            {/* Tahapan list */}
+            <div className="overflow-hidden rounded-xl border border-[#D8EAFF]">
+              {tahapList.length === 0 && (
+                <p className="py-10 text-center text-sm text-slate-500">
+                  Belum ada data tahapan.
+                </p>
+              )}
+              {tahapList.map((tahap, ti) => {
+                const open = expandedTahap.has(ti);
+                const rows = tahap.jadwal_per_jam ?? [];
+                const first = rows[0];
+                const scheduled = rows.length > 0;
+                const checkedInTahap = rows.filter((r, i) =>
+                  checkedRows.has(rowKey(ti, r, i)),
+                ).length;
+                const allChecked =
+                  rows.length > 0 && checkedInTahap === rows.length;
+                const zebra = ti % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white';
+
+                return (
+                  <div
+                    key={ti}
+                    className="border-b border-[#E3EEFB] last:border-0"
+                  >
+                    {/* Summary row */}
+                    <button
+                      type="button"
+                      onClick={() => toggleTahap(ti)}
+                      aria-expanded={open}
+                      className={`flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left transition hover:bg-[#E3F0FF] ${zebra}`}
+                    >
+                      <Icon
+                        d={ICON.chevron}
+                        className={`h-4 w-4 shrink-0 text-[#0065de] transition-transform ${
+                          open ? 'rotate-90' : ''
+                        }`}
+                      />
+                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#D8EAFF] text-[11px] font-bold text-[#0065de]">
+                        {ti + 1}
+                      </span>
+                      <span className="min-w-[140px] flex-1 text-sm font-semibold text-slate-800">
+                        {tahap.tahapan}
+                      </span>
+                      <span className="hidden text-xs text-slate-500 sm:inline">
+                        {tahap.mesin || '-'}
+                      </span>
+                      <span className="text-xs tabular-nums text-slate-500">
+                        {tahap.total_waktu ?? 0} jam
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                          scheduled
+                            ? 'bg-blue-50 text-[#0065de] ring-1 ring-blue-200'
+                            : 'bg-rose-50 text-rose-600 ring-1 ring-rose-200'
+                        }`}
+                      >
+                        <Icon d={ICON.calendar} className="h-3 w-3" />
+                        {scheduled
+                          ? `${convertTimeStampToDate(
+                              first?.tanggal,
+                            )} - ${first?.jam}`
+                          : formatCustomDate(tahap.tgl_from) || 'Belum ada'}
+                      </span>
+                    </button>
+
+                    {/* Expanded detail */}
+                    {open && (
+                      <div className="space-y-4 border-t border-[#E3EEFB] bg-white px-4 py-4">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
+                          <InfoItem
+                            label="Kategori"
+                            value={[tahap.kategori, tahap.nama_kategori]
+                              .filter(Boolean)
+                              .join(' - ')}
+                          />
+                          <InfoItem
+                            label="Drying time"
+                            value={tahap.kategori_drying_time}
+                          />
+                          <InfoItem label="Mesin" value={tahap.mesin} />
+                          <InfoItem
+                            label="Kapasitas / jam"
+                            value={tahap.kapasitas_per_jam}
+                          />
+                          <InfoItem
+                            label="Drying time (jam)"
+                            value={tahap.drying_time}
+                          />
+                          <InfoItem
+                            label="Setting (jam)"
+                            value={tahap.setting}
+                          />
+                          <InfoItem
+                            label="Kapasitas (jam)"
+                            value={tahap.kapasitas}
+                          />
+                          <InfoItem label="Toleransi" value={tahap.toleransi} />
+                          <InfoItem
+                            label="Total waktu"
+                            value={tahap.total_waktu}
+                          />
+                        </div>
+
+                        {/* Jam schedule (checklist, UI only for now) */}
+                        <div className="rounded-xl border border-[#D8EAFF]">
+                          <div className="flex flex-wrap items-center gap-2 border-b border-[#D8EAFF] bg-[#eaf4ff] px-3 py-2">
+                            <h5 className="text-xs font-semibold uppercase tracking-wide text-[#0065de]">
+                              Rincian jadwal per jam
+                            </h5>
+                            <span className="text-xs text-slate-500">
+                              {checkedInTahap > 0
+                                ? `${checkedInTahap} dari ${rows.length} jam dipilih`
+                                : `${rows.length} jam`}
+                            </span>
+                            <div className="ml-auto flex gap-1.5">
+                              <button
+                                type="button"
+                                disabled={checkedInTahap === 0}
+                                title="Akan aktif setelah API pemindahan jam siap"
+                                // TODO: hubungkan ke API ubah jam per baris
+                                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#0065de] px-3 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-40"
+                              >
+                                <Icon d={ICON.move} className="h-3.5 w-3.5" />
+                                Ubah jam terpilih
+                              </button>
+                              <button
+                                type="button"
+                                disabled={!first}
+                                onClick={() =>
+                                  first &&
+                                  setDragTarget({
+                                    tahapan: tahap.tahapan,
+                                    data: first,
+                                  })
+                                }
+                                className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40"
+                              >
+                                Atur drag &amp; drop
+                              </button>
+                            </div>
+                          </div>
+
+                          {rows.length === 0 ? (
+                            <p className="px-3 py-6 text-center text-sm text-slate-500">
+                              Tahapan ini belum memiliki jadwal per jam.
+                            </p>
+                          ) : (
+                            <div className="max-h-64 overflow-auto">
+                              <table className="w-full border-collapse text-sm">
+                                <thead className="sticky top-0 bg-white">
+                                  <tr className="border-b border-[#E3EEFB] text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                    <th className="w-10 px-3 py-2">
+                                      <input
+                                        type="checkbox"
+                                        aria-label="Pilih semua jam"
+                                        checked={allChecked}
+                                        onChange={(e) =>
+                                          toggleAllRowsInTahap(
+                                            ti,
+                                            rows,
+                                            e.target.checked,
+                                          )
+                                        }
+                                        className="accent-[#0065de]"
+                                      />
+                                    </th>
+                                    <th className="w-12 px-3 py-2">#</th>
+                                    <th className="px-3 py-2">Tanggal</th>
+                                    <th className="px-3 py-2">Jam</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {rows.map((row, ri) => {
+                                    const k = rowKey(ti, row, ri);
+                                    const checked = checkedRows.has(k);
+                                    return (
+                                      <tr
+                                        key={k}
+                                        onClick={() => toggleRow(k)}
+                                        className={`cursor-pointer border-b border-[#E3EEFB] last:border-0 hover:bg-[#F0F7FF] ${
+                                          checked ? 'bg-[#E3F0FF]' : ''
+                                        }`}
+                                      >
+                                        <td className="px-3 py-2">
+                                          <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onClick={(e) => e.stopPropagation()}
+                                            onChange={() => toggleRow(k)}
+                                            aria-label={`Pilih baris ${ri + 1}`}
+                                            className="accent-[#0065de]"
+                                          />
+                                        </td>
+                                        <td className="px-3 py-2 text-xs tabular-nums text-slate-500">
+                                          {ri + 1}
+                                        </td>
+                                        <td className="px-3 py-2 text-slate-700">
+                                          {convertTimeStampToDate(row.tanggal)}
+                                        </td>
+                                        <td className="px-3 py-2 font-medium tabular-nums text-slate-800">
+                                          {row.jam}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
+
+      {/* ---------------------- Drag & drop modal ---------------------- */}
+      <Modal
+        open={!!dragTarget && !!calcJO}
+        onClose={() => setDragTarget(null)}
+        size="screen"
+        flush
+        stacked
+        title="Drag And Drop Edit"
+        subtitle={
+          dragTarget && calcJO ? (
+            <>
+              Jadwal {dragTarget.tahapan} · {calcJO.no_jo}
+            </>
+          ) : undefined
+        }
+      >
+        {dragTarget && calcJO && (
+          <PopUpTable
+            dataMap={dragTarget.data}
+            onClose={() => setDragTarget(null)}
+            onFinish={() => {
+              setDragTarget(null);
+              getSingleJO(calcJO.id);
+            }}
+          />
+        )}
+      </Modal>
+
+      {/* ---------------------- Cancel modal ---------------------- */}
+      <Modal
+        open={cancelModalOpen && !!pendingCancelJOInfo}
+        onClose={() => !isLoading && closeCancelModal()}
+        title="Cancel Job Order"
+        subtitle="Tindakan ini akan membatalkan JO dari antrian penjadwalan."
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={closeCancelModal}
+              disabled={isLoading}
+              className="h-9 rounded-lg bg-slate-100 px-4 text-sm font-medium text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={cancelJobOrder}
+              disabled={isLoading || !cancelNote.trim()}
+              className="h-9 rounded-lg bg-rose-600 px-4 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-50"
+            >
+              {isLoading ? 'Memproses…' : 'Konfirmasi cancel'}
+            </button>
+          </>
+        }
+      >
+        {pendingCancelJOInfo && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-3 rounded-xl bg-[#F0F7FF] p-3">
+              <InfoItem label="No JO" value={pendingCancelJOInfo.no_jo} />
+              <InfoItem label="Item" value={pendingCancelJOInfo.item} />
+              <InfoItem
+                label="Tgl cancel"
+                value={new Date().toLocaleDateString('id-ID')}
+              />
+            </div>
+            <label className="block text-sm font-medium text-slate-700">
+              Note cancel <span className="text-rose-500">*</span>
+              <textarea
+                value={cancelNote}
+                onChange={(e) => setCancelNote(e.target.value)}
+                placeholder="Masukkan alasan pembatalan…"
+                rows={4}
+                autoFocus
+                className="mt-1 w-full resize-y rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-400/30"
+              />
+            </label>
+          </div>
+        )}
+      </Modal>
     </main>
   );
+
+  function months(m: string) {
+    return MONTHS[parseInt(m) - 1];
+  }
 }
 
 export default ListJOProduksi;

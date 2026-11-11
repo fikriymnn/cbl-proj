@@ -34,7 +34,7 @@ import {
   useJobTicket,
   useMachineList,
   useMasterKategori,
-} from './Jadwalshared';
+} from './jadwalshared';
 
 const DAY_MIN_W = 150;
 const HEADER_H = 52;

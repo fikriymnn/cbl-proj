@@ -33,7 +33,7 @@ import {
   shiftMonth,
   toYMD,
   useClickOutside,
-} from './Jadwalshared';
+} from './jadwalshared';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */

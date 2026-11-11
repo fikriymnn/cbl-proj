@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import axios from 'axios';
 import ModalXL from './ModalXL';
-import ModalFull from './ModalFull';
+import AppModal from './AppModal';
 import PopUpTable2 from './PopUpTable2';
 import JobOrderTable from './JobOrderTable';
 import Loading from '../../../Loading';
@@ -31,7 +31,7 @@ import {
   useJobTicket,
   useMachineList,
   useMasterKategori,
-} from './Jadwalshared';
+} from './jadwalshared';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => `${pad(i)}:00:00`);
 const TIME_W = 84;
@@ -408,21 +408,33 @@ function TampilanDailyJO() {
 
         {hoveredJobOrder && <JobDetailCard data={hoveredJobOrder} />}
 
-        {/* Drag and drop edit popup */}
-        {jobToOpen && (
-          <ModalFull
-            isOpen
-            onClose={() => setOpenJobId(null)}
-            judul={'Drag And Drop Edit'}
-          >
+        {/* Drag and drop edit popup (full-screen workspace) */}
+        <AppModal
+          open={!!jobToOpen}
+          onClose={() => setOpenJobId(null)}
+          size="screen"
+          flush
+          title="Drag And Drop Edit"
+          subtitle={
+            jobToOpen ? (
+              <>
+                <span className="font-semibold text-[#0065de]">
+                  {jobToOpen.no_jo}
+                </span>
+                {jobToOpen.mesin ? ` · ${jobToOpen.mesin}` : ''}
+              </>
+            ) : undefined
+          }
+        >
+          {jobToOpen && (
             <PopUpTable2
               dataMap={jobToOpen}
               onClose={() => setOpenJobId(null)}
               onFinish={() => getJadwalView(startDate, startDate)}
               tgl={startDate}
             />
-          </ModalFull>
-        )}
+          )}
+        </AppModal>
 
         {isDetailVisible && (
           <JobOrderTable
