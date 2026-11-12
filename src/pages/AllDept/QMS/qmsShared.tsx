@@ -316,13 +316,16 @@ export function useMe() {
   return me;
 }
 
-export function useDepartments() {
+export function useDepartments(activeOnly = false) {
   const [options, setOptions] = useState<{ value: number; label: string }[]>(
     [],
   );
   useEffect(() => {
     axios
-      .get(`${API}/master/hr/department`, { withCredentials: true })
+      .get(`${API}/master/hr/department`, {
+        params: activeOnly ? { is_active: true } : undefined,
+        withCredentials: true,
+      })
       .then((res) =>
         setOptions(
           (res.data?.data ?? []).map((d: any) => ({
@@ -332,7 +335,7 @@ export function useDepartments() {
         ),
       )
       .catch(console.error);
-  }, []);
+  }, [activeOnly]);
   return options;
 }
 

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import Select from 'react-select';
+import AsyncSelect from 'react-select/async';
 import { FaPlus, FaTrash } from 'react-icons/fa';
 import {
   API,
@@ -39,7 +40,21 @@ const emptyDept = (): DeptRow => ({
   department: '',
   items: [emptyItem()],
 });
-const KATEGORI_HINT = ['Man', 'Machine', 'Material', 'Method', 'Environment'];
+
+// Kategori laporan = master kategori kendala untuk tipe dengan kode 2
+const KATEGORI_KENDALA_KODE = 2;
+// Filter status pada GET /ppic/jo (dari halaman JO History). Hapus / ganti
+// bila JO yang boleh dilaporkan NCR tidak hanya berstatus history.
+const JO_STATUS: string | undefined = 'history';
+
+const toJoOption = (j: any) => ({
+  value: j.no_jo,
+  label: j.no_jo,
+  produk: j.produk ?? '',
+  no_io: j.no_io ?? '',
+  customer: j.customer ?? '',
+  qty: j.qty,
+});
 
 interface Props {
   mode: 'create' | 'edit';
@@ -58,9 +73,19 @@ export default function NCRFormModal({
 }: Props) {
   const isEdit = mode === 'edit';
   const me = useMe();
-  const deptOptions = useDepartments();
-
-  const [joOptions, setJoOptions] = useState<any[]>([]);
+  const deptOptions = useDepartments(true); // hanya department aktif
+  const [kategoriOptions, setKategoriOptions] = useState<any[]>([]);
+  const [joOpt, setJoOpt] = useState<any>(
+    initial?.no_jo
+      ? {
+          value: initial.no_jo,
+          label: initial.no_jo,
+          produk: initial.nama_produk,
+        }
+      : null,
+  );
+  const [joAuto, setJoAuto] = useState(false); // IO & produk terisi dari JO
+  const joTimer = useRef<any>();
   const [kategori, setKategori] = useState(initial?.kategori_laporan ?? '');
   const [noJo, setNoJo] = useState<string>(initial?.no_jo ?? '');
   const [noIo, setNoIo] = useState(initial?.no_io ?? '');
@@ -87,20 +112,62 @@ export default function NCRFormModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // daftar JO realtime (sama seperti modul SPL)
+  // kategori laporan dari master kategori kendala (kode 2)
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_API_LINK_P1}/api/list-jo-realtime`)
+      .get(`${API}/master/produksi/kategoriKendala`, {
+        params: { kode: KATEGORI_KENDALA_KODE },
+        withCredentials: true,
+      })
       .then((res) =>
-        setJoOptions(
-          (res.data?.data ?? []).map((j: any) => ({
-            value: j.e_no_jo,
-            label: j.e_no_jo,
-          })),
+        setKategoriOptions(
+          (res.data?.data ?? [])
+            // jika data membawa field kode, pastikan hanya kode 2
+            .filter(
+              (k: any) =>
+                k.kode === undefined ||
+                Number(k.kode) === KATEGORI_KENDALA_KODE,
+            )
+            .map((k: any) => ({ value: k.kategori, label: k.kategori })),
         ),
       )
       .catch(console.error);
   }, []);
+
+  // pencarian JO ke GET /ppic/jo (debounce)
+  const loadJo = (input: string) =>
+    new Promise<any[]>((resolve) => {
+      clearTimeout(joTimer.current);
+      joTimer.current = setTimeout(async () => {
+        try {
+          const res = await axios.get(`${API}/ppic/jo`, {
+            params: {
+              page: 1,
+              limit: 20,
+              search: input || undefined,
+              status: JO_STATUS,
+            },
+            withCredentials: true,
+          });
+          resolve((res.data?.data ?? []).map(toJoOption));
+        } catch {
+          resolve([]);
+        }
+      }, 350);
+    });
+
+  const pickJo = (o: any) => {
+    setJoOpt(o);
+    setNoJo(o?.value ?? '');
+    setJoAuto(!!o);
+    if (o) {
+      setNoIo(o.no_io ?? '');
+      setProduk(o.produk ?? '');
+    } else if (joAuto) {
+      setNoIo('');
+      setProduk('');
+    }
+  };
 
   // prefill pelapor dari /me (hanya create)
   useEffect(() => {
@@ -240,42 +307,73 @@ export default function NCRFormModal({
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Kategori Laporan" required>
-            <input
-              list="ncr-kategori"
-              value={kategori}
-              onChange={(e) => setKategori(e.target.value)}
-              placeholder="Mis. Material"
-              className={INPUT}
-            />
-            <datalist id="ncr-kategori">
-              {KATEGORI_HINT.map((k) => (
-                <option key={k} value={k} />
-              ))}
-            </datalist>
-          </Field>
-          <Field label="Nama Produk">
-            <input
-              value={produk}
-              onChange={(e) => setProduk(e.target.value)}
-              className={INPUT}
-            />
-          </Field>
-          <Field label="No JO">
             <Select
-              isClearable
-              options={joOptions}
-              value={noJo ? { value: noJo, label: noJo } : null}
-              onChange={(s: any) => setNoJo(s?.value ?? '')}
-              placeholder="Pilih JO"
+              options={kategoriOptions}
+              value={kategori ? { value: kategori, label: kategori } : null}
+              onChange={(o: any) => setKategori(o?.value ?? '')}
+              placeholder="Pilih kategori"
+              noOptionsMessage={() => 'Tidak ada kategori'}
               styles={selectStyles}
               className="text-xs sm:text-sm"
               menuPortalTarget={document.body}
               menuPosition="fixed"
             />
           </Field>
+          <Field label="No JO">
+            <AsyncSelect
+              isClearable
+              cacheOptions
+              defaultOptions
+              loadOptions={loadJo}
+              value={joOpt}
+              onChange={pickJo}
+              filterOption={null} // pencarian dilakukan server
+              placeholder="Cari No JO / produk / customer"
+              noOptionsMessage={() => 'JO tidak ditemukan'}
+              loadingMessage={() => 'Mencari JO...'}
+              formatOptionLabel={(o: any, meta: any) =>
+                meta.context === 'menu' ? (
+                  <div className="leading-tight">
+                    <div className="font-semibold text-gray-800">{o.label}</div>
+                    <div className="text-[11px] text-gray-500 truncate">
+                      {o.produk || '-'}
+                    </div>
+                    {o.customer && (
+                      <div className="text-[10px] text-gray-400 truncate">
+                        {o.customer}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <span className="font-medium">
+                    {o.label}
+                    {o.produk ? (
+                      <span className="text-gray-400 font-normal">
+                        {' '}
+                        · {o.produk}
+                      </span>
+                    ) : null}
+                  </span>
+                )
+              }
+              styles={selectStyles}
+              className="text-xs sm:text-sm"
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+            />
+          </Field>
+          <Field label="Nama Produk">
+            <input
+              value={produk}
+              disabled={joAuto}
+              onChange={(e) => setProduk(e.target.value)}
+              className={INPUT}
+            />
+          </Field>
           <Field label="No IO">
             <input
               value={noIo}
+              disabled={joAuto}
               onChange={(e) => setNoIo(e.target.value)}
               className={INPUT}
             />
@@ -300,8 +398,8 @@ export default function NCRFormModal({
           )}
         </div>
         <p className="mt-2 text-[10px] text-gray-400">
-          Nomor NCR, tanggal, dan status diisi otomatis. Jika JO / IO tidak
-          ditemukan, tersimpan kosong.
+          Nomor NCR, tanggal, dan status diisi otomatis. No IO dan produk terisi
+          otomatis dari JO yang dipilih; kosongkan JO untuk mengisi manual.
         </p>
       </section>
 
