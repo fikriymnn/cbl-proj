@@ -92,7 +92,9 @@ function CheckSheetHasilRabut() {
 
     try {
       setIsLoading(true);
-      const res = await axios.get(url);
+      const res = await axios.get(url, {
+        params: { is_active: true },
+      });
       setIsLoading(false);
       setDefectMaster(res.data);
       setOptions(
@@ -115,7 +117,9 @@ function CheckSheetHasilRabut() {
 
     try {
       setIsLoading(true);
-      const res = await axios.get(url2);
+      const res = await axios.get(url2, {
+        params: { is_active: true },
+      });
       setMasterWaste(res.data.waste);
       setIsLoading(false);
     } catch (error: any) {

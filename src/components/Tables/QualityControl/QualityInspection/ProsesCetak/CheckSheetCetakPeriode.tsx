@@ -1530,7 +1530,7 @@ function CheckSheetCetakPeriode() {
                                   {/* Code Label */}
                                   <div className="text-center p-3 border-b border-gray-200 flex-shrink-0">
                                     <label className="text-gray-700 text-sm font-semibold bg-white px-2 py-1 rounded">
-                                      {data2.kode}
+                                      {data2.kode} - {data2.masalah}
                                     </label>
                                   </div>
 
