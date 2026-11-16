@@ -21,6 +21,7 @@ interface StandarWarnaData {
   customer: string;
   produk: string;
   status: string;
+  no_standar_warna: string;
   status_proses: string;
   is_active: boolean;
   note: string | null;
@@ -99,6 +100,7 @@ const ApprovalStandarWarna: React.FC = () => {
           setTotalPages(res.data.total_page);
         }
       }
+      console.log('Fetched standar warna data:', res.data);
     } catch (error) {
       console.error('Error fetching standar warna data:', error);
       setData([]);
@@ -242,16 +244,13 @@ const ApprovalStandarWarna: React.FC = () => {
                   ACTION
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  NO JO
+                  NO STANDAR WARNA
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  NOMOR
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   STATUS
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  NO SO
-                </th>
-                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  NO IO
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   CUSTOMER
@@ -324,20 +323,47 @@ const ApprovalStandarWarna: React.FC = () => {
                         )}
                       </div>
                     </td>
-
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                      <span title={item.no_standar_warna}>
+                        {item.no_standar_warna
+                          ? item.no_standar_warna.substring(0, 30) +
+                            (item.no_standar_warna.length > 30 ? '...' : '')
+                          : '-'}
+                      </span>
+                    </td>
                     {/* NO JO */}
                     <td className="px-2 py-2 whitespace-nowrap">
-                      {item.no_jo ? (
+                      <div className="flex flex-col gap-1">
+                        {item.no_jo ? (
+                          <span
+                            className="bg-indigo-100 text-indigo-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                            title={item.no_jo}
+                          >
+                            {item.no_jo.substring(0, 25) +
+                              (item.no_jo.length > 25 ? '...' : '')}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
                         <span
-                          className="bg-indigo-100 text-indigo-800 text-xs px-1.5 py-0.5 rounded font-medium"
-                          title={item.no_jo}
+                          className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                          title={item.no_so}
                         >
-                          {item.no_jo.substring(0, 25) +
-                            (item.no_jo.length > 25 ? '...' : '')}
+                          {item.no_so
+                            ? item.no_so.substring(0, 20) +
+                              (item.no_so.length > 20 ? '...' : '')
+                            : '-'}
                         </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
+                        <span
+                          className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium"
+                          title={item.no_io}
+                        >
+                          {item.no_io
+                            ? item.no_io.substring(0, 20) +
+                              (item.no_io.length > 20 ? '...' : '')
+                            : '-'}
+                        </span>
+                      </div>
                     </td>
 
                     {/* STATUS */}
@@ -353,32 +379,6 @@ const ApprovalStandarWarna: React.FC = () => {
                       ) : (
                         <span className="text-xs text-gray-400">-</span>
                       )}
-                    </td>
-
-                    {/* NO SO */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className="bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded font-medium"
-                        title={item.no_so}
-                      >
-                        {item.no_so
-                          ? item.no_so.substring(0, 20) +
-                            (item.no_so.length > 20 ? '...' : '')
-                          : '-'}
-                      </span>
-                    </td>
-
-                    {/* NO IO */}
-                    <td className="px-2 py-2 whitespace-nowrap">
-                      <span
-                        className="bg-purple-100 text-purple-800 text-xs px-1.5 py-0.5 rounded font-medium"
-                        title={item.no_io}
-                      >
-                        {item.no_io
-                          ? item.no_io.substring(0, 20) +
-                            (item.no_io.length > 20 ? '...' : '')
-                          : '-'}
-                      </span>
                     </td>
 
                     {/* CUSTOMER */}

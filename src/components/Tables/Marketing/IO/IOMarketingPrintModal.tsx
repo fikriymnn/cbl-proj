@@ -87,7 +87,20 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
       return '-';
     }
   };
+  // Ambil no_standar_warna dari pembuatan_standar_warna (data aktif terbaru)
+  const getNoStandarWarna = (): string => {
+    const list = (printData as any)?.pembuatan_standar_warna;
+    if (!Array.isArray(list) || list.length === 0) return '-';
 
+    // Prioritaskan yang is_active, lalu ambil revisi tertinggi
+    const active = list.filter((item: any) => item?.is_active !== false);
+    const source = active.length > 0 ? active : list;
+    const latest = [...source].sort(
+      (a: any, b: any) => (b?.revisi || 0) - (a?.revisi || 0),
+    )[0];
+
+    return getValue(latest?.no_standar_warna);
+  };
   /**
    * Generates the full HTML document for the IO print/preview.
    *
@@ -105,7 +118,7 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
       printData.revisi_ke,
     );
     const marketingName = getMarketingName();
-
+    const noStandarWarna = getNoStandarWarna();
     // Get ALL tahapan data (no limit) and sort by index field
     const tahapan = mounting?.tahapan
       ? [...mounting.tahapan].sort((a, b) => (a.index || 0) - (b.index || 0))
@@ -397,10 +410,16 @@ const IOMarketingPrintModal: React.FC<IOMarketingPrintModalProps> = ({
                   <div style="font-size: 10px; margin-bottom: 2px;">No. IO</div>
                   <div class="text-2xl">${getValue(printData.no_io)}</div>
                 </td>
-                <td rowspan="2" class="text-center font-bold" style="width: 15%">
+               <td rowspan="2" class="text-center font-bold" style="width: 15%; padding: 0;">
+                <div style="padding: 3px 5px; border-bottom: 1px solid black;">
                   <div style="font-size: 10px; margin-bottom: 2px;">No. Revisi</div>
                   <div class="text-2xl">${revisionNumber}</div>
-                </td>
+                </div>
+                <div style="padding: 3px 5px;">
+                  <div style="font-size: 10px; margin-bottom: 2px;">No. Standar Warna</div>
+                  <div style="font-size: 11px; word-break: break-all;">${noStandarWarna}</div>
+                </div>
+              </td>
               </tr>
               <tr>
                 <td>Nama Produk (Kode)</td>
