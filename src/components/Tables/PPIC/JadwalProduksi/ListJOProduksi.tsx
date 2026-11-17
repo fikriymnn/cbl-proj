@@ -9,8 +9,20 @@ import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
-import PopUpTable from './DragAndDropPopUp';
 import Modal from './AppModal';
+import EditJadwalPanel from './EditJadwalPanel';
+import TimelineTiket from './TimelineTiket';
+import RiwayatJadwal from './RiwayatJadwal';
+import ResolveConflictsModal from './ResolveConflictsModal';
+import {
+  ConflictsData,
+  TahapRef,
+  errMsg,
+  fmtRange,
+  getConflicts,
+  httpStatus,
+  isoToApi,
+} from './JadwalApi';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -39,6 +51,13 @@ interface JadwalPerJam {
 }
 
 interface TahapData {
+  id: number;
+  from?: string;
+  produksi_mulai?: string | null;
+  produksi_selesai?: string | null;
+  drying_mulai?: string | null;
+  drying_selesai?: string | null;
+  is_diubah_manual?: boolean;
   tahapan: string;
   kategori: string;
   nama_kategori: string;
@@ -63,6 +82,7 @@ interface DetailJOData {
     qty_druk: number;
     tgl_kirim: string;
     tgl_kirim_date: string;
+    tgl_target_fg?: string;
     status: string;
     tahap: TahapData[];
     jadwal_per_jam: JadwalPerJam[];
@@ -229,13 +249,18 @@ function ListJOProduksi() {
   // Calculation modal
   const [calcJO, setCalcJO] = useState<JOData | null>(null);
   const [expandedTahap, setExpandedTahap] = useState<Set<number>>(new Set());
-  // UI-only selection of jam rows ("tahapIndex:rowKey"); API will be wired later
-  const [checkedRows, setCheckedRows] = useState<Set<string>>(new Set());
+  const [calcTab, setCalcTab] = useState<'timeline' | 'tahapan' | 'riwayat'>(
+    'timeline',
+  );
+  const [conflicts, setConflicts] = useState<ConflictsData | null>(null);
+  const [historyKey, setHistoryKey] = useState(0);
+  const [calcError, setCalcError] = useState<string | null>(null);
+  const [resolveOpen, setResolveOpen] = useState(false);
 
-  // Drag & drop modal (existing PopUpTable + API untouched)
-  const [dragTarget, setDragTarget] = useState<{
-    tahapan: string;
-    data: JadwalPerJam;
+  // Edit jadwal (geser / kapasitas & drying / cari jam kosong)
+  const [editTarget, setEditTarget] = useState<{
+    tahap: TahapRef;
+    initial: 'geser' | 'parameter' | 'cari';
   } | null>(null);
 
   // Cancel modal
@@ -361,33 +386,77 @@ function ListJOProduksi() {
     [API_BASE, fetchAPI],
   );
 
+  const loadConflicts = useCallback(async (id: string) => {
+    try {
+      setConflicts(await getConflicts(id));
+    } catch {
+      setConflicts(null);
+    }
+  }, []);
+
+  /** Muat ulang detail tiket + bentrok + riwayat (setelah simpan / calculate). */
+  const refreshCalc = useCallback(
+    async (id: string) => {
+      await getSingleJO(id);
+      await loadConflicts(id);
+      setHistoryKey((k) => k + 1);
+      getJOList();
+    },
+    [getSingleJO, loadConflicts, getJOList],
+  );
+
   const calculateJO = useCallback(
-    async (id: string, isLembur: boolean) => {
-      if (!window.confirm(`Lakukan Kalkulasi pada JO ini?`)) return false;
-      const url = `${API_BASE}/ppic/calculateJadwalProduksi/${id}`;
-      const data = await fetchAPI(url, { is_lembur: isLembur });
-      if (data) {
+    async (id: string, isLembur: boolean, adaPerubahanManual = false) => {
+      const msg = adaPerubahanManual
+        ? 'Calculate ulang akan menyusun ulang semua jadwal dari awal. Semua perubahan manual akan hilang. Lanjutkan?'
+        : 'Lakukan Kalkulasi pada JO ini?';
+      if (!window.confirm(msg)) return false;
+      setIsLoading(true);
+      try {
+        await axios.get(`${API_BASE}/ppic/calculateJadwalProduksi/${id}`, {
+          params: { is_lembur: isLembur },
+          withCredentials: true,
+        });
         await getJOList();
         return true;
+      } catch (e) {
+        alert(errMsg(e, 'Gagal melakukan kalkulasi'));
+        return false;
+      } finally {
+        setIsLoading(false);
       }
-      return false;
     },
-    [API_BASE, fetchAPI, getJOList],
+    [API_BASE, getJOList],
   );
 
   const submitToSchedule = useCallback(
     async (id: string) => {
       if (!window.confirm(`Masukkan JO ini ke jadwal?`)) return false;
-      const url = `${API_BASE}/ppic/jadwalProduksi/submit/${id}`;
-      const data = await fetchAPI(url, {}, 'put');
-      if (data) {
+      setIsLoading(true);
+      try {
+        await axios.put(
+          `${API_BASE}/ppic/jadwalProduksi/submit/${id}`,
+          {},
+          { withCredentials: true },
+        );
         await getJOList();
         alert('Berhasil masuk jadwal');
         return true;
+      } catch (e) {
+        if (httpStatus(e) === 409) {
+          setCalcError(
+            errMsg(e, 'Masih ada jadwal yang bentrok, selesaikan dahulu.'),
+          );
+          await loadConflicts(id);
+        } else {
+          alert(errMsg(e, 'Gagal memasukkan JO ke jadwal'));
+        }
+        return false;
+      } finally {
+        setIsLoading(false);
       }
-      return false;
     },
-    [API_BASE, fetchAPI, getJOList],
+    [API_BASE, getJOList, loadConflicts],
   );
 
   const handleCancelClick = useCallback((jo: JOData) => {
@@ -443,7 +512,9 @@ function ListJOProduksi() {
 
   const resetCalcUI = useCallback(() => {
     setExpandedTahap(new Set());
-    setCheckedRows(new Set());
+    setCalcTab('timeline');
+    setCalcError(null);
+    setConflicts(null);
   }, []);
 
   const handleViewCalculation = useCallback(
@@ -452,14 +523,16 @@ function ListJOProduksi() {
       if (data) {
         resetCalcUI();
         setCalcJO(jo);
+        setHistoryKey((k) => k + 1);
+        loadConflicts(jo.id);
       }
     },
-    [getSingleJO, resetCalcUI],
+    [getSingleJO, resetCalcUI, loadConflicts],
   );
 
   const handleCalculateJO = useCallback(
-    async (jo: JOData, isLembur: boolean) => {
-      const success = await calculateJO(jo.id, isLembur);
+    async (jo: JOData, isLembur: boolean, adaPerubahanManual = false) => {
+      const success = await calculateJO(jo.id, isLembur, adaPerubahanManual);
       if (success) handleViewCalculation(jo);
     },
     [calculateJO, handleViewCalculation],
@@ -467,7 +540,8 @@ function ListJOProduksi() {
 
   const closeCalcModal = useCallback(() => {
     setCalcJO(null);
-    setDragTarget(null);
+    setEditTarget(null);
+    setResolveOpen(false);
     resetCalcUI();
   }, [resetCalcUI]);
 
@@ -476,32 +550,6 @@ function ListJOProduksi() {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
       else next.add(i);
-      return next;
-    });
-
-  const rowKey = (tahapIndex: number, row: JadwalPerJam, i: number) =>
-    `${tahapIndex}:${row.id ?? i}`;
-
-  const toggleRow = (key: string) =>
-    setCheckedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-
-  const toggleAllRowsInTahap = (
-    tahapIndex: number,
-    rows: JadwalPerJam[],
-    checked: boolean,
-  ) =>
-    setCheckedRows((prev) => {
-      const next = new Set(prev);
-      rows.forEach((r, i) => {
-        const k = rowKey(tahapIndex, r, i);
-        if (checked) next.add(k);
-        else next.delete(k);
-      });
       return next;
     });
 
@@ -572,7 +620,23 @@ function ListJOProduksi() {
     !!dateRange.startDate || !!dateRange.endDate || !!searchTerm.trim();
 
   const tahapList = selectedJO?.data?.tahap ?? [];
-  const canSubmit = (selectedJO?.data?.jadwal_per_jam?.length ?? 0) > 0;
+  const isFG = (t: { tahapan: string }) => t.tahapan.toUpperCase() === 'FG';
+  const hasManual = tahapList.some((t) => t.is_diubah_manual);
+  // Tiket dari versi lama: tahapan non-FG belum punya produksi_mulai
+  const isStale =
+    tahapList.length > 0 &&
+    tahapList.some((t) => !isFG(t) && !t.produksi_mulai);
+  const canEdit = selectedJO?.data?.status === 'calculated' && !isStale;
+  const adaBentrok = !!conflicts?.ada_bentrok;
+  const canSubmit =
+    (selectedJO?.data?.jadwal_per_jam?.length ?? 0) > 0 && !isStale;
+  const tahapNames = useMemo(() => {
+    const m: Record<number, string> = {};
+    tahapList.forEach((t) => {
+      if (t.id != null) m[t.id] = t.tahapan;
+    });
+    return m;
+  }, [tahapList]);
 
   /* ------------------------------ render ------------------------------ */
 
@@ -594,7 +658,7 @@ function ListJOProduksi() {
             : 'descending'
           : 'none'
       }
-      className={`cursor-pointer select-none whitespace-nowrap border-r border-[#D8EAFF] px-2 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#0065de] transition-colors hover:bg-[#DEF0FF] ${
+      className={`cursor-pointer select-none whitespace-nowrap border-r border-[#D8EAFF] px-3 py-3 text-[11px] font-semibold uppercase tracking-wide text-[#0065de] transition-colors hover:bg-[#DEF0FF] ${
         align === 'right' ? 'text-right' : 'text-left'
       }`}
     >
@@ -724,7 +788,7 @@ function ListJOProduksi() {
                 <th className="w-12 border-r border-[#D8EAFF] px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0065de]">
                   No
                 </th>
-
+                <SortableTh label="Masuk" column="createdAt" />
                 <SortableTh label="Job Order" column="no_jo" />
                 <SortableTh label="Item" column="item" />
                 <SortableTh label="Bahan" column="nama_bahan" />
@@ -733,7 +797,9 @@ function ListJOProduksi() {
                 <SortableTh label="LP" column="qty_lp" align="right" />
                 <SortableTh label="PO" column="qty_po" align="right" />
                 <SortableTh label="Tgl Kirim" column="tgl_kirim_date" />
-
+                <th className="whitespace-nowrap border-r border-[#D8EAFF] px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-[#0065de]">
+                  Status
+                </th>
                 <th className="sticky right-0 bg-[#eaf4ff] px-3 py-3 text-center text-[11px] font-semibold uppercase tracking-wide text-[#0065de]">
                   Aksi
                 </th>
@@ -752,7 +818,9 @@ function ListJOProduksi() {
                       <td className="border-r border-[#E3EEFB] px-3 py-3 text-xs tabular-nums text-slate-500">
                         {index + 1}
                       </td>
-
+                      <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-xs text-slate-600">
+                        {jo.createdAt ? formatCustomDate(jo.createdAt) : '-'}
+                      </td>
                       <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-sm font-semibold text-slate-900">
                         {jo.no_jo}
                         {jo.no_io && (
@@ -782,9 +850,11 @@ function ListJOProduksi() {
                       <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-xs text-slate-600">
                         {formatCustomDate(jo.tgl_kirim_date)}
                       </td>
-
+                      <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3">
+                        <StatusBadge status={jo.status} />
+                      </td>
                       <td className={`sticky right-0 px-3 py-2 ${zebra}`}>
-                        <div className="flex  items-center justify-center gap-1.5">
+                        <div className="flex items-center justify-center gap-1.5">
                           {calculated ? (
                             <button
                               type="button"
@@ -870,15 +940,31 @@ function ListJOProduksi() {
             >
               Tutup
             </button>
+            {calcJO && (
+              <button
+                type="button"
+                onClick={() => handleCalculateJO(calcJO, false, hasManual)}
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#0065de] px-4 text-sm font-semibold text-[#0065de] hover:bg-[#F0F7FF]"
+              >
+                <Icon d={ICON.calc} />
+                Calculate ulang
+              </button>
+            )}
             {canSubmit && calcJO && (
               <button
                 type="button"
+                disabled={adaBentrok}
+                title={
+                  adaBentrok
+                    ? 'Masih ada jadwal bentrok, selesaikan terlebih dahulu'
+                    : undefined
+                }
                 onClick={() =>
                   submitToSchedule(calcJO.id).then((ok) => {
                     if (ok) closeCalcModal();
                   })
                 }
-                className="inline-flex h-9 items-center gap-2 rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white hover:bg-emerald-700"
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
               >
                 <Icon d={ICON.check} />
                 Masuk Jadwal
@@ -907,281 +993,421 @@ function ListJOProduksi() {
               <InfoItem label="Qty PO" value={formatInteger(calcJO.qty_po)} />
             </div>
 
-            {/* Tahapan toolbar */}
-            <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-sm font-semibold text-slate-800">
-                Tahapan produksi
-                <span className="ml-2 rounded-full bg-[#D8EAFF] px-2 py-0.5 text-xs font-medium text-[#0065de]">
-                  {tahapList.length}
+            {/* Tiket versi lama */}
+            {isStale && (
+              <div className="flex flex-wrap items-center gap-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800 ring-1 ring-amber-200">
+                <span className="min-w-0 flex-1">
+                  <b>Tiket ini dibuat dengan versi lama.</b> Jadwal tidak bisa
+                  diubah sebelum dikalkulasi ulang.
                 </span>
-              </h4>
-              <div className="ml-auto flex gap-1.5">
                 <button
                   type="button"
-                  onClick={() =>
-                    setExpandedTahap(new Set(tahapList.map((_, i) => i)))
-                  }
-                  className="h-8 rounded-lg border border-slate-300 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  onClick={() => handleCalculateJO(calcJO, false, hasManual)}
+                  className="h-8 rounded-lg bg-amber-600 px-3 text-xs font-semibold text-white hover:bg-amber-700"
                 >
-                  Buka semua
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setExpandedTahap(new Set())}
-                  className="h-8 rounded-lg border border-slate-300 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  Ciutkan semua
+                  Calculate ulang
                 </button>
               </div>
-            </div>
+            )}
 
-            {/* Tahapan list */}
-            <div className="overflow-hidden rounded-xl border border-[#D8EAFF]">
-              {tahapList.length === 0 && (
-                <p className="py-10 text-center text-sm text-slate-500">
-                  Belum ada data tahapan.
-                </p>
-              )}
-              {tahapList.map((tahap, ti) => {
-                const open = expandedTahap.has(ti);
-                const rows = tahap.jadwal_per_jam ?? [];
-                const first = rows[0];
-                const scheduled = rows.length > 0;
-                const checkedInTahap = rows.filter((r, i) =>
-                  checkedRows.has(rowKey(ti, r, i)),
-                ).length;
-                const allChecked =
-                  rows.length > 0 && checkedInTahap === rows.length;
-                const zebra = ti % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white';
+            {calcError && (
+              <p
+                role="alert"
+                className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-200"
+              >
+                {calcError}
+              </p>
+            )}
 
-                return (
-                  <div
-                    key={ti}
-                    className="border-b border-[#E3EEFB] last:border-0"
-                  >
-                    {/* Summary row */}
+            {/* Banner bentrok */}
+            {adaBentrok && conflicts && (
+              <div className="space-y-2 rounded-xl bg-rose-50 p-4 ring-1 ring-rose-200">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="min-w-0 flex-1 text-sm font-semibold text-rose-800">
+                    {conflicts.per_tahapan.length} tahapan bentrok dengan jadwal
+                    lain. JO belum bisa masuk jadwal.
+                  </p>
+                  {canEdit && (
                     <button
                       type="button"
-                      onClick={() => toggleTahap(ti)}
-                      aria-expanded={open}
-                      className={`flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left transition hover:bg-[#E3F0FF] ${zebra}`}
+                      onClick={() => setResolveOpen(true)}
+                      className="h-8 rounded-lg bg-rose-600 px-3 text-xs font-semibold text-white hover:bg-rose-700"
                     >
-                      <Icon
-                        d={ICON.chevron}
-                        className={`h-4 w-4 shrink-0 text-[#0065de] transition-transform ${
-                          open ? 'rotate-90' : ''
-                        }`}
-                      />
-                      <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#D8EAFF] text-[11px] font-bold text-[#0065de]">
-                        {ti + 1}
-                      </span>
-                      <span className="min-w-[140px] flex-1 text-sm font-semibold text-slate-800">
-                        {tahap.tahapan}
-                      </span>
-                      <span className="hidden text-xs text-slate-500 sm:inline">
-                        {tahap.mesin || '-'}
-                      </span>
-                      <span className="text-xs tabular-nums text-slate-500">
-                        {tahap.total_waktu ?? 0} jam
-                      </span>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
-                          scheduled
-                            ? 'bg-blue-50 text-[#0065de] ring-1 ring-blue-200'
-                            : 'bg-rose-50 text-rose-600 ring-1 ring-rose-200'
-                        }`}
-                      >
-                        <Icon d={ICON.calendar} className="h-3 w-3" />
-                        {scheduled
-                          ? `${convertTimeStampToDate(
-                              first?.tanggal,
-                            )} - ${first?.jam}`
-                          : formatCustomDate(tahap.tgl_from) || 'Belum ada'}
-                      </span>
+                      Selesaikan semua otomatis
                     </button>
+                  )}
+                </div>
+                <ul className="space-y-1">
+                  {conflicts.per_tahapan.map((c) => {
+                    const t = tahapList.find((x) => x.id === c.id_tahapan);
+                    return (
+                      <li
+                        key={c.id_tahapan}
+                        className="flex flex-wrap items-center gap-2 text-xs text-rose-800"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <b>{c.tahapan}</b> ({c.mesin}): {c.jumlah_jam} jam
+                          bentrok dengan {c.no_jo.join(', ') || 'jadwal lain'}
+                        </span>
+                        {canEdit && t && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setEditTarget({ tahap: t, initial: 'cari' })
+                            }
+                            className="h-7 rounded-md border border-rose-300 bg-white px-2 text-[11px] font-semibold text-rose-700 hover:bg-rose-100"
+                          >
+                            Cari jam kosong terdekat
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
 
-                    {/* Expanded detail */}
-                    {open && (
-                      <div className="space-y-4 border-t border-[#E3EEFB] bg-white px-4 py-4">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
-                          <InfoItem
-                            label="Kategori"
-                            value={[tahap.kategori, tahap.nama_kategori]
-                              .filter(Boolean)
-                              .join(' - ')}
-                          />
-                          <InfoItem
-                            label="Drying time"
-                            value={tahap.kategori_drying_time}
-                          />
-                          <InfoItem label="Mesin" value={tahap.mesin} />
-                          <InfoItem
-                            label="Kapasitas / jam"
-                            value={tahap.kapasitas_per_jam}
-                          />
-                          <InfoItem
-                            label="Drying time (jam)"
-                            value={tahap.drying_time}
-                          />
-                          <InfoItem
-                            label="Setting (jam)"
-                            value={tahap.setting}
-                          />
-                          <InfoItem
-                            label="Kapasitas (jam)"
-                            value={tahap.kapasitas}
-                          />
-                          <InfoItem label="Toleransi" value={tahap.toleransi} />
-                          <InfoItem
-                            label="Total waktu"
-                            value={tahap.total_waktu}
-                          />
-                        </div>
+            {/* Tabs */}
+            <div className="flex gap-1 border-b border-[#D8EAFF]">
+              {(
+                [
+                  ['timeline', 'Timeline'],
+                  ['tahapan', `Tahapan (${tahapList.length})`],
+                  ['riwayat', 'Riwayat'],
+                ] as const
+              ).map(([k, label]) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setCalcTab(k)}
+                  className={`-mb-px h-9 rounded-t-lg px-4 text-sm font-semibold ${
+                    calcTab === k
+                      ? 'border-b-2 border-[#0065de] text-[#0065de]'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
-                        {/* Jam schedule (checklist, UI only for now) */}
-                        <div className="rounded-xl border border-[#D8EAFF]">
-                          <div className="flex flex-wrap items-center gap-2 border-b border-[#D8EAFF] bg-[#eaf4ff] px-3 py-2">
-                            <h5 className="text-xs font-semibold uppercase tracking-wide text-[#0065de]">
-                              Rincian jadwal per jam
-                            </h5>
-                            <span className="text-xs text-slate-500">
-                              {checkedInTahap > 0
-                                ? `${checkedInTahap} dari ${rows.length} jam dipilih`
-                                : `${rows.length} jam`}
-                            </span>
-                            <div className="ml-auto flex gap-1.5">
-                              <button
-                                type="button"
-                                disabled={checkedInTahap === 0}
-                                title="Akan aktif setelah API pemindahan jam siap"
-                                // TODO: hubungkan ke API ubah jam per baris
-                                className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#0065de] px-3 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-40"
-                              >
-                                <Icon d={ICON.move} className="h-3.5 w-3.5" />
-                                Ubah jam terpilih
-                              </button>
-                              <button
-                                type="button"
-                                disabled={!first}
-                                onClick={() =>
-                                  first &&
-                                  setDragTarget({
-                                    tahapan: tahap.tahapan,
-                                    data: first,
-                                  })
-                                }
-                                className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40"
-                              >
-                                Atur drag &amp; drop
-                              </button>
+            {calcTab === 'timeline' && (
+              <TimelineTiket
+                tahap={tahapList}
+                tglKirim={(selectedJO?.data.tgl_kirim_date ?? '').slice(0, 10)}
+                tglTargetFg={(selectedJO?.data.tgl_target_fg ?? '').slice(
+                  0,
+                  10,
+                )}
+                conflicts={conflicts?.conflicts ?? []}
+                canEdit={canEdit}
+                onSelect={(t) => setEditTarget({ tahap: t, initial: 'geser' })}
+              />
+            )}
+
+            {calcTab === 'riwayat' && (
+              <RiwayatJadwal
+                idTiket={calcJO.id}
+                reloadKey={historyKey}
+                tahapNames={tahapNames}
+              />
+            )}
+
+            {calcTab === 'tahapan' && (
+              <>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-sm font-semibold text-slate-800">
+                    Tahapan produksi
+                    <span className="ml-2 rounded-full bg-[#D8EAFF] px-2 py-0.5 text-xs font-medium text-[#0065de]">
+                      {tahapList.length}
+                    </span>
+                  </h4>
+                  <div className="ml-auto flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedTahap(new Set(tahapList.map((_, i) => i)))
+                      }
+                      className="h-8 rounded-lg border border-slate-300 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Buka semua
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExpandedTahap(new Set())}
+                      className="h-8 rounded-lg border border-slate-300 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      Ciutkan semua
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-xl border border-[#D8EAFF]">
+                  {tahapList.length === 0 && (
+                    <p className="py-10 text-center text-sm text-slate-500">
+                      Belum ada data tahapan.
+                    </p>
+                  )}
+                  {tahapList.map((tahap, ti) => {
+                    const open = expandedTahap.has(ti);
+                    const rows = tahap.jadwal_per_jam ?? [];
+                    const first = rows[0];
+                    const scheduled = rows.length > 0;
+                    const zebra = ti % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white';
+                    const editable = canEdit && !isFG(tahap);
+
+                    return (
+                      <div
+                        key={tahap.id ?? ti}
+                        className="border-b border-[#E3EEFB] last:border-0"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleTahap(ti)}
+                          aria-expanded={open}
+                          className={`flex w-full flex-wrap items-center gap-3 px-4 py-3 text-left transition hover:bg-[#E3F0FF] ${zebra}`}
+                        >
+                          <Icon
+                            d={ICON.chevron}
+                            className={`h-4 w-4 shrink-0 text-[#0065de] transition-transform ${
+                              open ? 'rotate-90' : ''
+                            }`}
+                          />
+                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#D8EAFF] text-[11px] font-bold text-[#0065de]">
+                            {ti + 1}
+                          </span>
+                          <span className="min-w-[140px] flex-1 text-sm font-semibold text-slate-800">
+                            {tahap.tahapan}
+                            {tahap.is_diubah_manual && (
+                              <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
+                                Diubah manual
+                              </span>
+                            )}
+                          </span>
+                          <span className="hidden text-xs text-slate-500 sm:inline">
+                            {tahap.mesin || '-'}
+                          </span>
+                          <span className="text-xs tabular-nums text-slate-500">
+                            {tahap.total_waktu ?? 0} jam
+                          </span>
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                              scheduled
+                                ? 'bg-blue-50 text-[#0065de] ring-1 ring-blue-200'
+                                : 'bg-rose-50 text-rose-600 ring-1 ring-rose-200'
+                            }`}
+                          >
+                            <Icon d={ICON.calendar} className="h-3 w-3" />
+                            {scheduled
+                              ? `${convertTimeStampToDate(
+                                  first?.tanggal,
+                                )} - ${first?.jam}`
+                              : formatCustomDate(tahap.tgl_from) || 'Belum ada'}
+                          </span>
+                        </button>
+
+                        {open && (
+                          <div className="space-y-4 border-t border-[#E3EEFB] bg-white px-4 py-4">
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
+                              <InfoItem
+                                label="Kategori"
+                                value={[tahap.kategori, tahap.nama_kategori]
+                                  .filter(Boolean)
+                                  .join(' - ')}
+                              />
+                              <InfoItem
+                                label="Drying time"
+                                value={tahap.kategori_drying_time}
+                              />
+                              <InfoItem label="Mesin" value={tahap.mesin} />
+                              <InfoItem
+                                label="Kapasitas / jam"
+                                value={tahap.kapasitas_per_jam}
+                              />
+                              <InfoItem
+                                label="Drying time (jam)"
+                                value={tahap.drying_time}
+                              />
+                              <InfoItem
+                                label="Setting (jam)"
+                                value={tahap.setting}
+                              />
+                              <InfoItem
+                                label="Kapasitas (jam)"
+                                value={tahap.kapasitas}
+                              />
+                              <InfoItem
+                                label="Toleransi"
+                                value={tahap.toleransi}
+                              />
+                              <InfoItem
+                                label="Total waktu"
+                                value={tahap.total_waktu}
+                              />
+                              <InfoItem
+                                label="Produksi"
+                                value={fmtRange(
+                                  isoToApi(tahap.produksi_mulai),
+                                  isoToApi(tahap.produksi_selesai),
+                                )}
+                              />
+                              <InfoItem
+                                label="Drying"
+                                value={fmtRange(
+                                  isoToApi(tahap.drying_mulai),
+                                  isoToApi(tahap.drying_selesai),
+                                )}
+                              />
+                            </div>
+
+                            <div className="rounded-xl border border-[#D8EAFF]">
+                              <div className="flex flex-wrap items-center gap-2 border-b border-[#D8EAFF] bg-[#eaf4ff] px-3 py-2">
+                                <h5 className="text-xs font-semibold uppercase tracking-wide text-[#0065de]">
+                                  Rincian jadwal per jam
+                                </h5>
+                                <span className="text-xs text-slate-500">
+                                  {rows.length} jam
+                                </span>
+                                {editable && (
+                                  <div className="ml-auto flex flex-wrap gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setEditTarget({
+                                          tahap,
+                                          initial: 'geser',
+                                        })
+                                      }
+                                      className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#0065de] px-3 text-xs font-semibold text-white hover:opacity-90"
+                                    >
+                                      <Icon
+                                        d={ICON.move}
+                                        className="h-3.5 w-3.5"
+                                      />
+                                      Atur jadwal
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setEditTarget({
+                                          tahap,
+                                          initial: 'parameter',
+                                        })
+                                      }
+                                      className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                                    >
+                                      Kapasitas / drying
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setEditTarget({
+                                          tahap,
+                                          initial: 'cari',
+                                        })
+                                      }
+                                      className="h-8 rounded-lg border border-slate-300 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                                    >
+                                      Cari jam kosong terdekat
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
+                              {rows.length === 0 ? (
+                                <p className="px-3 py-6 text-center text-sm text-slate-500">
+                                  Tahapan ini belum memiliki jadwal per jam.
+                                </p>
+                              ) : (
+                                <div className="max-h-64 overflow-auto">
+                                  <table className="w-full border-collapse text-sm">
+                                    <thead className="sticky top-0 bg-white">
+                                      <tr className="border-b border-[#E3EEFB] text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                        <th className="w-12 px-3 py-2">#</th>
+                                        <th className="px-3 py-2">Tanggal</th>
+                                        <th className="px-3 py-2">Jam</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {rows.map((row, ri) => (
+                                        <tr
+                                          key={row.id ?? ri}
+                                          className={`border-b border-[#E3EEFB] last:border-0 ${
+                                            ri % 2 === 0
+                                              ? 'bg-[#F0F7FF]'
+                                              : 'bg-white'
+                                          }`}
+                                        >
+                                          <td className="px-3 py-2 text-xs tabular-nums text-slate-500">
+                                            {ri + 1}
+                                          </td>
+                                          <td className="px-3 py-2 text-slate-700">
+                                            {convertTimeStampToDate(
+                                              row.tanggal,
+                                            )}
+                                          </td>
+                                          <td className="px-3 py-2 font-medium tabular-nums text-slate-800">
+                                            {row.jam}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
                             </div>
                           </div>
-
-                          {rows.length === 0 ? (
-                            <p className="px-3 py-6 text-center text-sm text-slate-500">
-                              Tahapan ini belum memiliki jadwal per jam.
-                            </p>
-                          ) : (
-                            <div className="max-h-64 overflow-auto">
-                              <table className="w-full border-collapse text-sm">
-                                <thead className="sticky top-0 bg-white">
-                                  <tr className="border-b border-[#E3EEFB] text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                                    <th className="w-10 px-3 py-2">
-                                      <input
-                                        type="checkbox"
-                                        aria-label="Pilih semua jam"
-                                        checked={allChecked}
-                                        onChange={(e) =>
-                                          toggleAllRowsInTahap(
-                                            ti,
-                                            rows,
-                                            e.target.checked,
-                                          )
-                                        }
-                                        className="accent-[#0065de]"
-                                      />
-                                    </th>
-                                    <th className="w-12 px-3 py-2">#</th>
-                                    <th className="px-3 py-2">Tanggal</th>
-                                    <th className="px-3 py-2">Jam</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {rows.map((row, ri) => {
-                                    const k = rowKey(ti, row, ri);
-                                    const checked = checkedRows.has(k);
-                                    return (
-                                      <tr
-                                        key={k}
-                                        onClick={() => toggleRow(k)}
-                                        className={`cursor-pointer border-b border-[#E3EEFB] last:border-0 hover:bg-[#F0F7FF] ${
-                                          checked ? 'bg-[#E3F0FF]' : ''
-                                        }`}
-                                      >
-                                        <td className="px-3 py-2">
-                                          <input
-                                            type="checkbox"
-                                            checked={checked}
-                                            onClick={(e) => e.stopPropagation()}
-                                            onChange={() => toggleRow(k)}
-                                            aria-label={`Pilih baris ${ri + 1}`}
-                                            className="accent-[#0065de]"
-                                          />
-                                        </td>
-                                        <td className="px-3 py-2 text-xs tabular-nums text-slate-500">
-                                          {ri + 1}
-                                        </td>
-                                        <td className="px-3 py-2 text-slate-700">
-                                          {convertTimeStampToDate(row.tanggal)}
-                                        </td>
-                                        <td className="px-3 py-2 font-medium tabular-nums text-slate-800">
-                                          {row.jam}
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-                          )}
-                        </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         )}
       </Modal>
 
-      {/* ---------------------- Drag & drop modal ---------------------- */}
+      {/* ---------------------- Edit jadwal (full screen) ---------------------- */}
       <Modal
-        open={!!dragTarget && !!calcJO}
-        onClose={() => setDragTarget(null)}
+        open={!!editTarget && !!calcJO}
+        onClose={() => setEditTarget(null)}
         size="screen"
         flush
         stacked
-        title="Drag And Drop Edit"
+        title="Ubah jadwal tahapan"
         subtitle={
-          dragTarget && calcJO ? (
+          editTarget && calcJO ? (
             <>
-              Jadwal {dragTarget.tahapan} · {calcJO.no_jo}
+              {editTarget.tahap.tahapan} · {calcJO.no_jo}
             </>
           ) : undefined
         }
       >
-        {dragTarget && calcJO && (
-          <PopUpTable
-            dataMap={dragTarget.data}
-            onClose={() => setDragTarget(null)}
-            onFinish={() => {
-              setDragTarget(null);
-              getSingleJO(calcJO.id);
+        {editTarget && calcJO && (
+          <EditJadwalPanel
+            key={`${editTarget.tahap.id}-${editTarget.initial}`}
+            tahap={editTarget.tahap}
+            initial={editTarget.initial}
+            onClose={() => setEditTarget(null)}
+            onSaved={() => {
+              setEditTarget(null);
+              refreshCalc(calcJO.id);
             }}
           />
         )}
       </Modal>
+
+      <ResolveConflictsModal
+        open={resolveOpen && !!calcJO}
+        idTiket={calcJO?.id ?? ''}
+        subtitle={calcJO?.no_jo}
+        onClose={() => setResolveOpen(false)}
+        onSaved={() => {
+          setResolveOpen(false);
+          if (calcJO) refreshCalc(calcJO.id);
+        }}
+      />
 
       {/* ---------------------- Cancel modal ---------------------- */}
       <Modal

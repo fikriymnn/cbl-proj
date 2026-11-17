@@ -41,6 +41,8 @@ function CloseIcon() {
   );
 }
 
+const modalStack: symbol[] = [];
+
 const AppModal = ({
   open,
   onClose,
@@ -54,14 +56,21 @@ const AppModal = ({
 }: AppModalProps) => {
   useEffect(() => {
     if (!open) return;
+    const token = Symbol('modal');
+    modalStack.push(token);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      // hanya modal paling atas yang menutup saat Esc
+      if (e.key === 'Escape' && modalStack[modalStack.length - 1] === token) {
         e.stopPropagation();
         onClose();
       }
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      const i = modalStack.indexOf(token);
+      if (i >= 0) modalStack.splice(i, 1);
+    };
   }, [open, onClose]);
 
   // Lock page scroll while open
