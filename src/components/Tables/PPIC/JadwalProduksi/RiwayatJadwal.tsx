@@ -120,7 +120,7 @@ export default function RiwayatJadwal({
               )}
               <span className="ml-auto text-[11px] tabular-nums text-slate-500">
                 {fmtWaktu(isoToApi(it.createdAt))}
-                {it.id_user != null && ` · User #${it.id_user}`}
+                {/* {it.id_user != null && ` · User #${it.id_user}`} */}
               </span>
             </div>
 
