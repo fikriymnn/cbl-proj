@@ -18,6 +18,8 @@ interface UserInfo {
 }
 
 interface EstimasiKurangQtyItem {
+  tgl_kirim: string;
+  qty_po: number | null | undefined;
   id: number;
   id_produksi_lkh_tahapan: number;
   id_jo: number;
@@ -606,6 +608,22 @@ const EstimasiKurangQtyQC: React.FC = () => {
                       </span>
                       <p className="text-gray-900 font-semibold">
                         {formatNumber(selectedDetail.qty_total)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-gray-500">
+                        Qty PO
+                      </span>
+                      <p className="text-gray-900 font-semibold">
+                        {formatNumber(selectedDetail.qty_po)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-gray-500">
+                        Tgl Kirim
+                      </span>
+                      <p className="text-gray-900 font-semibold">
+                        {selectedDetail.tgl_kirim || '-'}
                       </p>
                     </div>
                   </div>

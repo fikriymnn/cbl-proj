@@ -34,6 +34,7 @@ interface EstimasiKurangQtyItem {
   customer: string;
   produk: string;
   qty_jo: number;
+  qty_po: number;
   qty_kurang_qty: number;
   qty_baik?: number;
   qty_rusak_sebagian?: number;
@@ -41,6 +42,7 @@ interface EstimasiKurangQtyItem {
   qty_total?: number;
   spesifikasi: string;
   tgl_approve: string | null;
+  tgl_kirim: string | null;
   tgl_request: string;
   note?: string | null;
   status: string;
@@ -143,7 +145,7 @@ const EstimasiKurangQtyProduksi: React.FC = () => {
           withCredentials: true,
         },
       );
-
+      console.log('Fetched estimasi kurang qty (Produksi):', res.data);
       const responseData = Array.isArray(res.data.data) ? res.data.data : [];
       setListData(responseData);
       setTotalPages(res.data.total_page || 0);
@@ -665,6 +667,22 @@ const EstimasiKurangQtyProduksi: React.FC = () => {
                       </span>
                       <p className="text-gray-900 font-semibold">
                         {formatNumber(selectedDetail.qty_total)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-gray-500">
+                        Qty PO
+                      </span>
+                      <p className="text-gray-900 font-semibold">
+                        {formatNumber(selectedDetail.qty_po)}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-xs font-medium text-gray-500">
+                        Tgl Kirim
+                      </span>
+                      <p className="text-gray-900 font-semibold">
+                        {selectedDetail.tgl_kirim || '-'}
                       </p>
                     </div>
                   </div>
