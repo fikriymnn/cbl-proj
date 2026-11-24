@@ -29,6 +29,8 @@ import {
 /* ------------------------------------------------------------------ */
 
 interface JOData {
+  tgl_kirim_update: ReactNode;
+  tgl_kirim_update_date: ReactNode;
   id: string;
   no_jo: string;
   item: string;
@@ -849,7 +851,7 @@ function ListJOProduksi() {
                         {formatInteger(jo.qty_po)}
                       </td>
                       <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-xs text-slate-600">
-                        {jo.tgl_kirim}
+                        {jo.tgl_kirim_update}
                       </td>
                       <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3">
                         <StatusBadge status={jo.status} />
