@@ -1,4 +1,4 @@
-import  {
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -344,6 +344,7 @@ function ListJOProduksi() {
     const url = `${API_BASE}/ppic/jadwalProduksi`;
     const params = { status_tiket: 'incoming', type: 'jadwal' };
     const data = await fetchAPI(url, params);
+    console.log('Initial JO List:', data);
     if (data) setListJO(data);
   }, [API_BASE, fetchAPI]);
 
@@ -848,7 +849,7 @@ function ListJOProduksi() {
                         {formatInteger(jo.qty_po)}
                       </td>
                       <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3 text-xs text-slate-600">
-                        {formatCustomDate(jo.tgl_kirim_date)}
+                        {jo.tgl_kirim}
                       </td>
                       <td className="whitespace-nowrap border-r border-[#E3EEFB] px-3 py-3">
                         <StatusBadge status={jo.status} />
