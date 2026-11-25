@@ -97,6 +97,15 @@ const DraftPO: React.FC<DraftPOProps> = ({ kind: kindProp }) => {
       setLoading(false);
     }
   };
+  const handleItemDeleted = () => {
+    fetchData(); // total PO berubah setelah item dihapus
+    setToast({
+      open: true,
+      message: 'Item dihapus dan dikembalikan ke Request Purchase.',
+      severity: 'success',
+    });
+  };
+
   const handleKindChange = (next: POKind) => {
     if (next === kind) return;
     setKindState(next);
@@ -388,6 +397,7 @@ const DraftPO: React.FC<DraftPOProps> = ({ kind: kindProp }) => {
             idPo={editingId}
             onClose={() => setEditingId(null)}
             onSaved={handleEditSaved}
+            onItemDeleted={handleItemDeleted}
           />
         ))}
 

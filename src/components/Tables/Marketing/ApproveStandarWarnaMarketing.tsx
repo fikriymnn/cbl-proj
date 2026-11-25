@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Pagination from '@mui/material/Pagination/Pagination';
 import Stack from '@mui/material/Stack';
 
-type StatusFilter = 'request marketing' | 'approved' | 'rejected';
+type StatusFilter = 'request marketing' | 'history';
 
 interface StandarWarnaData {
   no_standar_warna: string | undefined;
@@ -138,14 +138,22 @@ const ApproveStandarWarnaMarketing: React.FC = () => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/pembuatanStandarWarna`;
     try {
       setLoading(true);
+
+      // History (approved + rejected) uses status_proses: 'done'
+      const params: Record<string, string | number> = {
+        page,
+        limit,
+        search: searchTerm,
+      };
+      if (statusFilter === 'history') {
+        params.status_proses = 'done';
+      } else {
+        params.status = statusFilter;
+      }
+
       const res: AxiosResponse<APIResponse<StandarWarnaData[]>> =
         await axios.get(url, {
-          params: {
-            page,
-            limit,
-            search: searchTerm,
-            status: statusFilter,
-          },
+          params,
           withCredentials: true,
         });
       if (res.data.success) {
@@ -252,16 +260,10 @@ const ApproveStandarWarnaMarketing: React.FC = () => {
       activeColor: 'bg-orange-500 text-white',
     },
     {
-      label: 'Approved',
-      value: 'approved',
-      color: 'bg-gray-100 text-gray-700 hover:bg-green-50 hover:text-green-700',
-      activeColor: 'bg-green-500 text-white',
-    },
-    {
-      label: 'Rejected',
-      value: 'rejected',
-      color: 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-700',
-      activeColor: 'bg-red-500 text-white',
+      label: 'History',
+      value: 'history',
+      color: 'bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-700',
+      activeColor: 'bg-blue-500 text-white',
     },
   ];
 

@@ -31,25 +31,36 @@ import BookingPickerDialog, {
  *   1. "Ambil dari PO Booking" di tiap baris items_jo (qty_po = dipesan ke
  *      vendor, qty_booking = diambil dari stok booking). Payload items_jo
  *      SELALU mengirim ulang id_purchase_order_booking_item + qty_booking
- *      untuk baris yang memakai booking — kalau tidak dikirim, backend
- *      menganggap booking dilepas (qty_pakai dikembalikan).
- *   2. Batas edit: qty_booking maksimal = qty_tersedia + qty_booking lama
- *      (item booking yang sama). Dihitung di BookingPickerDialog lewat
- *      `previousQty`; pilihan yang sudah tersimpan tetap muncul via
- *      `extraItems` walau qty_tersedia-nya 0.
- *   3. Baris `is_booking_moved` (booking sudah dipindah ke gudang booking JO
- *      saat approve finance) dikunci: tidak bisa dihapus, qty_booking tidak
- *      bisa diubah, tidak bisa dilepas.
+ *      untuk baris yang memakai booking.
+ *   2. Batas edit: qty_booking maksimal = qty_tersedia + qty_booking lama.
+ *   3. Baris `is_booking_moved` dikunci: tidak bisa dihapus / diubah / dilepas.
  *   4. Item yang qty vendornya 0 tidak ikut `items`.
- *   5. NumberInput diimport dari ./NumberInput. Pesan error backend ditampilkan.
  *
  * PERUBAHAN (Item Pengganti):
- *   6. Picker item pengganti memfilter berdasarkan kategori DAN sub kategori
- *      (gabungan, dedupe). Kalau tidak ada yang cocok, tampilkan semua item
- *      + notice ke user. Lihat ./Types/fetchSubstituteCandidates.
+ *   5. Picker item pengganti memfilter kategori DAN sub kategori.
+ *
+ * PERUBAHAN (kali ini):
+ *   6. HAPUS ITEM (flow-delete-item-purchase-order.md): item yang sudah
+ *      tersimpan di PO dihapus lewat endpoint khusus, BUKAN lewat PUT, supaya
+ *      kebutuhannya kembali ke Request Purchase (status `incoming`):
+ *        - per item JO : DELETE /purchasing/purchaseOrder/itemJo/:idItemJo
+ *        - per item PO : DELETE /purchasing/purchaseOrder/item/:idItem
+ *          (semua item JO dengan item yang sama ikut terhapus)
+ *      Hanya aktif saat status draft / reject kabag / reject finance. Tombol
+ *      disembunyikan jika tinggal 1 item / 1 item JO (PO tidak boleh kosong)
+ *      dan di-disable untuk baris `is_booking_moved`. Setelah sukses, detail
+ *      PO dimuat ulang (perubahan form item yang belum disimpan ikut
+ *      di-reset; field header tidak). Alokasi baru yang belum tersimpan
+ *      cukup dihapus lokal.
+ *   7. HARGA & PAJAK diinput 1x PER ITEM di baris ringkasan (induk), berlaku
+ *      untuk semua JO pada item tsb. Payload ke backend tetap per baris.
+ *      Item manual (tanpa JO) tetap punya harga/pajak di barisnya sendiri.
  * ========================================================================== */
 
 const DEFAULT_PPN_PERSEN = 11;
+
+// Status PO yang boleh menghapus item (sesuai backend).
+const DELETABLE_STATUSES = ['draft', 'reject kabag', 'reject finance'];
 
 interface MasterBarangItem {
   purchase_unit_name: string;
@@ -75,13 +86,21 @@ interface MasterBrandListResponse {
   total_page: number;
 }
 
+interface DeleteItemResponse {
+  data?: {
+    deleted_item_jo?: number;
+    restored_request?: number;
+    created_request?: number;
+  };
+}
+
 // Shapes matching the real GET /purchaseOrder/:id response.
 interface RawMasterBarangRef {
   is_include_tax?: boolean;
   pajak?: number;
   kode_barang?: string;
-  kategori?: string | null; // BARU — dipakai untuk filter item pengganti
-  sub_kategori?: string | null; // BARU
+  kategori?: string | null; // dipakai untuk filter item pengganti
+  sub_kategori?: string | null;
 }
 interface RawPoItem {
   id: number;
@@ -178,13 +197,19 @@ interface ItemAggGroup {
   nama_brand: string;
   satuan: string;
   totalQty: number;
-  avgHarga: number;
+  harga: number; // harga seragam per item (input di baris ringkasan)
+  hargaMixed: boolean; // true jika alokasi punya harga berbeda-beda
+  pajak_persen: number;
   total: number;
   ppn: number;
   is_ppn: boolean;
   is_tax_locked: boolean;
+  itemPoId?: number; // id `items` yang sudah tersimpan (untuk hapus per item)
+  hasBookingMoved: boolean;
   subGroups: ItemAggSubGroup[];
 }
+
+type AllocMode = 'jo' | 'manual';
 
 const uid = (): string =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -399,6 +424,10 @@ const buildItemAggGroups = (rows: RowGroup[]): ItemAggGroup[] => {
     ppn: number;
     is_ppn: boolean;
     is_tax_locked: boolean;
+    pajak_persen: number;
+    hargas: number[];
+    itemPoId?: number;
+    hasBookingMoved: boolean;
     subGroupsByRow: Map<string, ItemAggSubGroup>;
   };
   const map = new Map<string, Bucket>();
@@ -422,6 +451,10 @@ const buildItemAggGroups = (rows: RowGroup[]): ItemAggGroup[] => {
             ppn: 0,
             is_ppn: false,
             is_tax_locked: false,
+            pajak_persen: a.pajak_persen,
+            hargas: [],
+            itemPoId: undefined,
+            hasBookingMoved: false,
             subGroupsByRow: new Map(),
           };
           map.set(key, bucket);
@@ -431,6 +464,9 @@ const buildItemAggGroups = (rows: RowGroup[]): ItemAggGroup[] => {
         bucket.ppn += a.ppn;
         bucket.is_ppn = bucket.is_ppn || a.is_ppn;
         bucket.is_tax_locked = bucket.is_tax_locked || a.is_tax_locked;
+        bucket.hargas.push(a.harga);
+        bucket.itemPoId = bucket.itemPoId ?? a.id;
+        bucket.hasBookingMoved = bucket.hasBookingMoved || !!a.is_booking_moved;
 
         let sub = bucket.subGroupsByRow.get(row.groupId);
         if (!sub) {
@@ -441,20 +477,33 @@ const buildItemAggGroups = (rows: RowGroup[]): ItemAggGroup[] => {
       });
     });
 
-  return Array.from(map.values()).map((b) => ({
-    key: b.key,
-    id_item: b.id_item,
-    nama_item: b.nama_item,
-    nama_brand: b.nama_brand,
-    satuan: b.satuan,
-    totalQty: b.qty,
-    avgHarga: b.qty > 0 ? Math.round(b.value / b.qty) : 0,
-    total: b.value,
-    ppn: b.ppn,
-    is_ppn: b.is_ppn,
-    is_tax_locked: b.is_tax_locked,
-    subGroups: Array.from(b.subGroupsByRow.values()),
-  }));
+  return Array.from(map.values()).map((b) => {
+    const first = b.hargas[0] ?? 0;
+    const allSame = b.hargas.every((h) => Math.abs(h - first) < 1e-9);
+    const harga = allSame
+      ? first
+      : b.qty > 0
+      ? Math.round(b.value / b.qty)
+      : first;
+    return {
+      key: b.key,
+      id_item: b.id_item,
+      nama_item: b.nama_item,
+      nama_brand: b.nama_brand,
+      satuan: b.satuan,
+      totalQty: b.qty,
+      harga,
+      hargaMixed: !allSame,
+      pajak_persen: b.pajak_persen,
+      total: b.value,
+      ppn: b.ppn,
+      is_ppn: b.is_ppn,
+      is_tax_locked: b.is_tax_locked,
+      itemPoId: b.itemPoId,
+      hasBookingMoved: b.hasBookingMoved,
+      subGroups: Array.from(b.subGroupsByRow.values()),
+    };
+  });
 };
 
 // One entry per distinct id_item, summed across every allocation using it,
@@ -589,13 +638,19 @@ type EditPOModalProps = {
   idPo: number;
   onClose: () => void;
   onSaved: () => void;
+  // Dipanggil setelah item berhasil dihapus (kebutuhan kembali ke Request
+  // Purchase) — parent bisa refresh list PO / Request Purchase.
+  onItemDeleted?: () => void;
 };
 
 const EditPOModal: React.FC<EditPOModalProps> = ({
   idPo,
   onClose,
   onSaved,
+  onItemDeleted,
 }) => {
+  const poApiBase = `${import.meta.env.VITE_API_LINK}/purchasing/purchaseOrder`;
+
   const [loading, setLoading] = useState<boolean>(true);
   const [po, setPo] = useState<PurchaseOrder | null>(null);
   const [loadError, setLoadError] = useState<string>('');
@@ -625,7 +680,9 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
   const [submitting, setSubmitting] = useState<false | 'save' | 'submit'>(
     false,
   );
+  const [deleting, setDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [notice, setNotice] = useState<string>('');
 
   // --- Substitute-item picker ---
   const [pickerGroupId, setPickerGroupId] = useState<string | null>(null);
@@ -641,6 +698,8 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     idItem: number;
     nama: string;
   } | null>(null);
+
+  const busy = !!submitting || deleting;
 
   const pickerRow = useMemo(
     () => rows.find((r) => r.groupId === pickerGroupId) || null,
@@ -680,23 +739,24 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     [rawItemsJo],
   );
 
-  useEffect(() => {
-    const fetchDetail = async () => {
-      const url = `${
-        import.meta.env.VITE_API_LINK
-      }/purchasing/purchaseOrder/${idPo}`;
-      try {
-        setLoading(true);
-        const res = await axios.get<PurchaseOrderDetailResponse>(url, {
-          withCredentials: true,
-        });
-        const detail = res.data.data;
-        const raw = detail as unknown as {
-          id_vendor?: number | null;
-          items?: RawPoItem[];
-          items_jo?: RawPoItemJo[];
-        };
-        setPo(detail);
+  // `initial` = load pertama (isi semua field form). Reload setelah hapus
+  // item (initial = false) hanya menyegarkan status + daftar item, supaya
+  // field header yang sedang diedit tidak ikut ter-reset.
+  const fetchDetail = async (initial = true) => {
+    try {
+      if (initial) setLoading(true);
+      const res = await axios.get<PurchaseOrderDetailResponse>(
+        `${poApiBase}/${idPo}`,
+        { withCredentials: true },
+      );
+      const detail = res.data.data;
+      const raw = detail as unknown as {
+        id_vendor?: number | null;
+        items?: RawPoItem[];
+        items_jo?: RawPoItemJo[];
+      };
+      setPo(detail);
+      if (initial) {
         setNoPurchaseOrder(detail.no_purchase_order || '');
         setVendorId(raw.id_vendor ?? '');
         setTglPO(toISODate(detail.tgl_po));
@@ -705,20 +765,25 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
         setNoteSupplier(detail.note_supplier || '');
         setNoteInternal(detail.note_internal || '');
         setDiscount(detail.discount || 0);
-
-        const items = raw.items || [];
-        const itemsJo = raw.items_jo || [];
-        setRawItems(items);
-        setRawItemsJo(itemsJo);
-        setRows(buildRowGroups(items, itemsJo, new Map()));
-      } catch (err) {
-        console.error('Error fetching PO detail:', err);
-        setLoadError('Gagal memuat detail PO. Silakan coba lagi.');
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchDetail();
+
+      const items = raw.items || [];
+      const itemsJo = raw.items_jo || [];
+      setRawItems(items);
+      setRawItemsJo(itemsJo);
+      setRows(buildRowGroups(items, itemsJo, brandMap));
+    } catch (err) {
+      console.error('Error fetching PO detail:', err);
+      if (initial) setLoadError('Gagal memuat detail PO. Silakan coba lagi.');
+      else
+        setError('Gagal memuat ulang detail PO. Silakan tutup dan buka lagi.');
+    } finally {
+      if (initial) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDetail(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idPo]);
 
@@ -792,6 +857,84 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     [vendors, vendorId],
   );
 
+  // --- Aturan hapus item (flow-delete-item-purchase-order.md) ---
+  const canDeleteStatus = !!po && DELETABLE_STATUSES.includes(po.status);
+  // PO tidak boleh kosong: sembunyikan hapus jika tinggal 1 item / 1 item JO.
+  const savedItemJoCount = rawItemsJo.length;
+  const savedItemCount = rawItems.length;
+
+  const canRemoveAlloc = (
+    a: Allocation,
+    rowAllocCount: number,
+    mode: AllocMode,
+  ): boolean => {
+    if (a.is_booking_moved) return false;
+    if (a.id_jo_item) return canDeleteStatus && savedItemJoCount > 1;
+    if (mode === 'manual' && a.id) return canDeleteStatus && savedItemCount > 1;
+    return rowAllocCount > 1; // alokasi baru (belum tersimpan) → hapus lokal
+  };
+
+  const runDelete = async (url: string, fallbackMsg: string) => {
+    setDeleting(true);
+    setError('');
+    setNotice('');
+    try {
+      const res = await axios.delete<DeleteItemResponse>(url, {
+        withCredentials: true,
+      });
+      const d = res.data?.data;
+      const returned = (d?.restored_request ?? 0) + (d?.created_request ?? 0);
+      await fetchDetail(false);
+      setNotice(
+        `Item berhasil dihapus. ${returned} kebutuhan dikembalikan ke Request Purchase.`,
+      );
+      onItemDeleted?.();
+    } catch (err) {
+      console.error('Error deleting PO item:', err);
+      setError(getApiErrorMessage(err, fallbackMsg));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const UNSAVED_WARNING =
+    'Perubahan lain pada daftar item yang belum disimpan akan di-reset.';
+
+  const deleteSavedItemJo = (groupId: string, a: Allocation) => {
+    if (!a.id_jo_item || busy) return;
+    const noJo = rows.find((r) => r.groupId === groupId)?.jo?.no_jo || '';
+    if (
+      !window.confirm(
+        `Hapus "${a.nama_item}"${
+          noJo ? ` dari ${noJo}` : ''
+        }? Kebutuhannya akan dikembalikan ke Request Purchase.\n\n${UNSAVED_WARNING}`,
+      )
+    )
+      return;
+    runDelete(
+      `${poApiBase}/itemJo/${a.id_jo_item}`,
+      'Gagal menghapus item JO. Silakan coba lagi.',
+    );
+  };
+
+  const deleteSavedItemPo = (idItem: number, nama: string, joCount: number) => {
+    if (busy) return;
+    const extra =
+      joCount > 0
+        ? ` Semua item JO dengan item yang sama (${joCount} JO) ikut terhapus.`
+        : '';
+    if (
+      !window.confirm(
+        `Hapus item "${nama}" dari PO?${extra} Kebutuhannya akan dikembalikan ke Request Purchase.\n\n${UNSAVED_WARNING}`,
+      )
+    )
+      return;
+    runDelete(
+      `${poApiBase}/item/${idItem}`,
+      'Gagal menghapus item. Silakan coba lagi.',
+    );
+  };
+
   const updateAllocation = (
     groupId: string,
     allocId: string,
@@ -813,6 +956,26 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     );
   };
 
+  // Harga & pajak diinput 1x per item → diterapkan ke SEMUA alokasi (semua
+  // JO) yang memakai item tsb. Payload ke backend tetap per baris items_jo.
+  const updateItemPricing = (
+    key: string,
+    patch: { harga?: number; is_ppn?: boolean },
+  ) => {
+    setRows((prev) =>
+      prev.map((row) => ({
+        ...row,
+        allocations: row.allocations.map((a) => {
+          if (normalizeKey(a) !== key) return a;
+          const updated = { ...a, ...patch };
+          if (updated.is_tax_locked) updated.is_ppn = true;
+          return recalcAllocPpn(updated);
+        }),
+      })),
+    );
+  };
+
+  // Hapus lokal (hanya untuk alokasi yang belum tersimpan di backend).
   const removeAllocation = (groupId: string, allocId: string) => {
     setRows((prev) =>
       prev.map((row) => {
@@ -826,9 +989,51 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     );
   };
 
+  const handleRemoveAllocation = (
+    groupId: string,
+    a: Allocation,
+    mode: AllocMode,
+  ) => {
+    if (a.id_jo_item) {
+      deleteSavedItemJo(groupId, a);
+      return;
+    }
+    if (mode === 'manual' && a.id) {
+      deleteSavedItemPo(a.id, a.nama_item, 0);
+      return;
+    }
+    removeAllocation(groupId, a.allocId);
+  };
+
   const addManualRow = () => setRows((prev) => [...prev, emptyManualRow()]);
   const removeManualRow = (groupId: string) =>
     setRows((prev) => prev.filter((r) => r.groupId !== groupId));
+
+  const handleRemoveManualRow = (row: RowGroup) => {
+    const saved = row.allocations.find((a) => a.id);
+    if (saved?.id) {
+      deleteSavedItemPo(saved.id, saved.nama_item, 0);
+      return;
+    }
+    removeManualRow(row.groupId);
+  };
+
+  // Hapus per item (baris ringkasan): item tersimpan → endpoint hapus item
+  // PO (semua JO ikut); item yang hanya berisi alokasi baru → hapus lokal.
+  const handleDeleteItemGroup = (ig: ItemAggGroup) => {
+    if (ig.itemPoId) {
+      deleteSavedItemPo(ig.itemPoId, ig.nama_item, ig.subGroups.length);
+      return;
+    }
+    setRows((prev) =>
+      prev.map((row) => {
+        const kept = row.allocations.filter(
+          (a) => !(normalizeKey(a) === ig.key && !a.id_jo_item && !a.id),
+        );
+        return kept.length === 0 ? row : { ...row, allocations: kept };
+      }),
+    );
+  };
 
   const toggleItemExpand = (key: string) =>
     setExpandedItemKeys((prev) => {
@@ -858,7 +1063,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     if (!pickerRow) return;
     try {
       setPickerLoading(true);
-      const { items, notice } =
+      const { items, notice: n } =
         await fetchSubstituteCandidates<MasterBarangItem>({
           search: pickerSearchInput,
           kategori: pickerRow.kategori,
@@ -866,7 +1071,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
         });
       const alreadyUsed = new Set(pickerRow.allocations.map((a) => a.id_item));
       setPickerResults(items.filter((mi) => !alreadyUsed.has(mi.id)));
-      setPickerNotice(notice);
+      setPickerNotice(n);
     } catch (err) {
       console.error('Error fetching master barang list:', err);
       setPickerResults([]);
@@ -890,7 +1095,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     );
     const remaining = Math.max(pickerRow.qty_bom - currentQty, 0);
     const isTaxLocked = !!masterItem.is_include_tax;
-    const newAlloc: Allocation = recalcAllocPpn({
+    let newAlloc: Allocation = recalcAllocPpn({
       allocId: uid(),
       id_item: masterItem.id,
       id_brand: masterItem.id_brand ?? null,
@@ -913,6 +1118,18 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
       id_purchase_order_booking_item: null,
       qty_booking: 0,
     });
+    // Item yang sama sudah dipakai di JO lain → samakan harga & pajaknya
+    // supaya tetap 1 harga per item.
+    const existing = rows
+      .flatMap((r) => r.allocations)
+      .find((x) => x.id_item === masterItem.id);
+    if (existing) {
+      newAlloc = recalcAllocPpn({
+        ...newAlloc,
+        harga: existing.harga,
+        is_ppn: existing.is_ppn || newAlloc.is_tax_locked,
+      });
+    }
     setRows((prev) =>
       prev.map((row) =>
         row.groupId === pickerRow.groupId
@@ -1069,13 +1286,13 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
       return;
     }
     setError('');
+    setNotice('');
     setSubmitting('save');
     const payload = buildPayload();
     try {
-      const url = `${
-        import.meta.env.VITE_API_LINK
-      }/purchasing/purchaseOrder/${idPo}`;
-      await axios.put(url, payload, { withCredentials: true });
+      await axios.put(`${poApiBase}/${idPo}`, payload, {
+        withCredentials: true,
+      });
       onSaved();
       console.log('PO updated successfully:', payload);
     } catch (err) {
@@ -1098,15 +1315,13 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
       return;
     }
     setError('');
+    setNotice('');
     setSubmitting('submit');
     try {
-      const baseUrl = `${
-        import.meta.env.VITE_API_LINK
-      }/purchasing/purchaseOrder`;
-      await axios.put(`${baseUrl}/${idPo}`, buildPayload(), {
+      await axios.put(`${poApiBase}/${idPo}`, buildPayload(), {
         withCredentials: true,
       });
-      await axios.put(`${baseUrl}/request/${idPo}`, undefined, {
+      await axios.put(`${poApiBase}/request/${idPo}`, undefined, {
         withCredentials: true,
       });
       onSaved();
@@ -1123,253 +1338,272 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
     }
   };
 
-  // Allocation-editing table. `showBooking` = tampilkan baris "Ambil dari
-  // PO Booking" (hanya untuk baris JO, bukan item manual). `canRemove`
-  // mengikuti jumlah alokasi PENUH pada row.
+  // Tabel alokasi. mode 'jo' = detail per JO: harga & pajak TIDAK diinput di
+  // sini (ada di baris ringkasan item), tapi ada baris "Ambil dari PO
+  // Booking". mode 'manual' = item tanpa JO: harga & pajak tetap di baris,
+  // tanpa booking.
   const renderAllocationsTable = (
     groupId: string,
     allocations: Allocation[],
-    canRemove: boolean,
-    showBooking: boolean,
-  ) => (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-sm table-fixed">
-        <colgroup>
-          <col className="w-[14%]" />
-          <col className="w-[26%]" />
-          <col className="w-[14%]" />
-          <col className="w-20" />
-          <col className="w-20" />
-          <col className="w-28" />
-          <col className="w-28" />
-          <col className="w-16" />
-          <col className="w-10" />
-        </colgroup>
-        <thead className="bg-white border-b border-slate-100">
-          <tr>
-            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-              Kode
-            </th>
-            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-              Nama Barang
-            </th>
-            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-              Brand
-            </th>
-            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-              Qty Beli
-            </th>
-            <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-              Unit
-            </th>
-            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-              Harga
-            </th>
-            <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-              Total
-            </th>
-            <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-              Pajak
-            </th>
-            <th className="px-3 py-2"></th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-50">
-          {allocations.map((a) => (
-            <React.Fragment key={a.allocId}>
-              <tr className="hover:bg-slate-50/60">
-                <td className="px-3 py-2">
-                  <input
-                    type="text"
-                    value={a.kode_barang}
-                    onChange={(e) =>
-                      updateAllocation(groupId, a.allocId, {
-                        kode_barang: e.target.value,
-                      })
-                    }
-                    className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <div className="flex items-center gap-1.5">
+    rowAllocCount: number,
+    mode: AllocMode,
+  ) => {
+    const showPrice = mode === 'manual';
+    const colSpan = showPrice ? 9 : 7;
+    return (
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm table-fixed">
+          <colgroup>
+            <col className="w-[14%]" />
+            <col className="w-[26%]" />
+            <col className="w-[14%]" />
+            <col className="w-24" />
+            <col className="w-24" />
+            {showPrice && <col className="w-28" />}
+            <col className="w-32" />
+            {showPrice && <col className="w-16" />}
+            <col className="w-10" />
+          </colgroup>
+          <thead className="bg-white border-b border-slate-100">
+            <tr>
+              <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                Kode
+              </th>
+              <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                Nama Barang
+              </th>
+              <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                Brand
+              </th>
+              <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                Qty Beli
+              </th>
+              <th className="px-3 py-2 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                Unit
+              </th>
+              {showPrice && (
+                <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                  Harga
+                </th>
+              )}
+              <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                Total
+              </th>
+              {showPrice && (
+                <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                  Pajak
+                </th>
+              )}
+              <th className="px-3 py-2"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-50">
+            {allocations.map((a) => (
+              <React.Fragment key={a.allocId}>
+                <tr className="hover:bg-slate-50/60">
+                  <td className="px-3 py-2">
                     <input
                       type="text"
-                      value={a.nama_item}
+                      value={a.kode_barang}
                       onChange={(e) =>
                         updateAllocation(groupId, a.allocId, {
-                          nama_item: e.target.value,
+                          kode_barang: e.target.value,
                         })
                       }
-                      placeholder="Nama barang"
                       className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
-                    {a.is_substitute && (
-                      <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
-                        Pengganti
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    type="text"
-                    value={a.nama_brand}
-                    onChange={(e) =>
-                      updateAllocation(groupId, a.allocId, {
-                        nama_brand: e.target.value,
-                      })
-                    }
-                    placeholder="Brand"
-                    className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <NumberInput
-                    value={a.qty_po}
-                    onChange={(v) =>
-                      updateAllocation(groupId, a.allocId, {
-                        qty_po: v,
-                      })
-                    }
-                    className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <input
-                    type="text"
-                    value={a.satuan}
-                    onChange={(e) =>
-                      updateAllocation(groupId, a.allocId, {
-                        satuan: e.target.value,
-                      })
-                    }
-                    className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </td>
-                <td className="px-3 py-2">
-                  <NumberInput
-                    value={a.harga}
-                    onChange={(v) =>
-                      updateAllocation(groupId, a.allocId, {
-                        harga: v,
-                      })
-                    }
-                    className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </td>
-                <td className="px-3 py-2 text-right tabular-nums text-slate-800 font-medium">
-                  {formatRupiah(a.qty_po * a.harga)}
-                </td>
-                <td className="px-3 py-2 text-center">
-                  <div className="flex flex-col items-center gap-0.5">
-                    <input
-                      type="checkbox"
-                      checked={a.is_ppn}
-                      disabled={a.is_tax_locked}
-                      onChange={(e) =>
-                        updateAllocation(groupId, a.allocId, {
-                          is_ppn: e.target.checked,
-                        })
-                      }
-                      title={
-                        a.is_tax_locked
-                          ? 'Harga sudah termasuk PPN — dihitung otomatis, tidak menambah grand total'
-                          : `PPN ${a.pajak_persen}% jika dicentang`
-                      }
-                      className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-70"
-                    />
-                    <span className="text-[10px] text-slate-400">
-                      {a.pajak_persen}%
-                    </span>
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-center">
-                  {canRemove && !a.is_booking_moved && (
-                    <button
-                      onClick={() => removeAllocation(groupId, a.allocId)}
-                      className="text-red-400 hover:text-red-600 transition-colors"
-                      aria-label="Hapus alokasi"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </td>
-              </tr>
-
-              {/* Baris "Ambil dari PO Booking" (hanya baris JO) */}
-              {showBooking && (
-                <tr className="bg-slate-50/40">
-                  <td colSpan={9} className="px-3 py-1.5">
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                      {a.id_purchase_order_booking_item ? (
-                        <>
-                          <span>
-                            Ambil dari PO Booking:{' '}
-                            <b className="text-slate-700">
-                              {a.booking_no_po ||
-                                `#${a.id_purchase_order_booking_item}`}
-                            </b>
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            Qty booking
-                            <span className="w-24">
-                              <NumberInput
-                                value={a.qty_booking}
-                                disabled={a.is_booking_moved}
-                                onChange={(v) =>
-                                  updateAllocation(groupId, a.allocId, {
-                                    qty_booking: v,
-                                  })
-                                }
-                                className="w-full px-2 py-1 text-xs text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50"
-                              />
-                            </span>
-                            {a.booking_max !== undefined && (
-                              <span className="text-slate-400">
-                                / maks {formatQty(a.booking_max)}
-                              </span>
-                            )}
-                          </span>
-                          {a.is_booking_moved ? (
-                            <span className="text-emerald-600">
-                              Sudah dipindah ke gudang booking JO (terkunci)
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => releaseBooking(groupId, a)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              Lepas
-                            </button>
-                          )}
-                        </>
-                      ) : (
-                        a.id_item > 0 && (
-                          <button
-                            onClick={() =>
-                              setBookingTarget({
-                                groupId,
-                                allocId: a.allocId,
-                                idItem: a.id_item,
-                                nama: a.nama_item,
-                              })
-                            }
-                            className="font-medium text-indigo-600 hover:text-indigo-800"
-                          >
-                            + Ambil dari PO Booking
-                          </button>
-                        )
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={a.nama_item}
+                        onChange={(e) =>
+                          updateAllocation(groupId, a.allocId, {
+                            nama_item: e.target.value,
+                          })
+                        }
+                        placeholder="Nama barang"
+                        className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      {a.is_substitute && (
+                        <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600 font-medium">
+                          Pengganti
+                        </span>
                       )}
                     </div>
                   </td>
+                  <td className="px-3 py-2">
+                    <input
+                      type="text"
+                      value={a.nama_brand}
+                      onChange={(e) =>
+                        updateAllocation(groupId, a.allocId, {
+                          nama_brand: e.target.value,
+                        })
+                      }
+                      placeholder="Brand"
+                      className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <NumberInput
+                      value={a.qty_po}
+                      onChange={(v) =>
+                        updateAllocation(groupId, a.allocId, {
+                          qty_po: v,
+                        })
+                      }
+                      className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <input
+                      type="text"
+                      value={a.satuan}
+                      onChange={(e) =>
+                        updateAllocation(groupId, a.allocId, {
+                          satuan: e.target.value,
+                        })
+                      }
+                      className="w-full px-2 py-1.5 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </td>
+                  {showPrice && (
+                    <td className="px-3 py-2">
+                      <NumberInput
+                        value={a.harga}
+                        onChange={(v) =>
+                          updateAllocation(groupId, a.allocId, {
+                            harga: v,
+                          })
+                        }
+                        className="w-full px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </td>
+                  )}
+                  <td className="px-3 py-2 text-right tabular-nums text-slate-800 font-medium">
+                    {formatRupiah(a.qty_po * a.harga)}
+                  </td>
+                  {showPrice && (
+                    <td className="px-3 py-2 text-center">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <input
+                          type="checkbox"
+                          checked={a.is_ppn}
+                          disabled={a.is_tax_locked}
+                          onChange={(e) =>
+                            updateAllocation(groupId, a.allocId, {
+                              is_ppn: e.target.checked,
+                            })
+                          }
+                          title={
+                            a.is_tax_locked
+                              ? 'Harga sudah termasuk PPN — dihitung otomatis, tidak menambah grand total'
+                              : `PPN ${a.pajak_persen}% jika dicentang`
+                          }
+                          className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-70"
+                        />
+                        <span className="text-[10px] text-slate-400">
+                          {a.pajak_persen}%
+                        </span>
+                      </div>
+                    </td>
+                  )}
+                  <td className="px-3 py-2 text-center">
+                    {canRemoveAlloc(a, rowAllocCount, mode) && (
+                      <button
+                        onClick={() => handleRemoveAllocation(groupId, a, mode)}
+                        disabled={busy}
+                        className="text-red-400 hover:text-red-600 disabled:opacity-40 transition-colors"
+                        aria-label="Hapus alokasi"
+                        title={
+                          a.id_jo_item || a.id
+                            ? 'Hapus & kembalikan ke Request Purchase'
+                            : 'Hapus baris'
+                        }
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </td>
                 </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+
+                {/* Baris "Ambil dari PO Booking" (hanya baris JO) */}
+                {mode === 'jo' && (
+                  <tr className="bg-slate-50/40">
+                    <td colSpan={colSpan} className="px-3 py-1.5">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                        {a.id_purchase_order_booking_item ? (
+                          <>
+                            <span>
+                              Ambil dari PO Booking:{' '}
+                              <b className="text-slate-700">
+                                {a.booking_no_po ||
+                                  `#${a.id_purchase_order_booking_item}`}
+                              </b>
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                              Qty booking
+                              <span className="w-24">
+                                <NumberInput
+                                  value={a.qty_booking}
+                                  disabled={a.is_booking_moved}
+                                  onChange={(v) =>
+                                    updateAllocation(groupId, a.allocId, {
+                                      qty_booking: v,
+                                    })
+                                  }
+                                  className="w-full px-2 py-1 text-xs text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-slate-50"
+                                />
+                              </span>
+                              {a.booking_max !== undefined && (
+                                <span className="text-slate-400">
+                                  / maks {formatQty(a.booking_max)}
+                                </span>
+                              )}
+                            </span>
+                            {a.is_booking_moved ? (
+                              <span className="text-emerald-600">
+                                Sudah dipindah ke gudang booking JO (terkunci)
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => releaseBooking(groupId, a)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                Lepas
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          a.id_item > 0 && (
+                            <button
+                              onClick={() =>
+                                setBookingTarget({
+                                  groupId,
+                                  allocId: a.allocId,
+                                  idItem: a.id_item,
+                                  nama: a.nama_item,
+                                })
+                              }
+                              className="font-medium text-indigo-600 hover:text-indigo-800"
+                            >
+                              + Ambil dari PO Booking
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1416,6 +1650,12 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
               <div className="bg-red-50 border border-red-100 text-red-700 text-sm rounded-lg px-4 py-2.5">
                 PO ini ditolak ({getStatusLabel(po?.status)}). Perbaiki data di
                 bawah lalu ajukan kembali ke Kabag.
+              </div>
+            )}
+
+            {notice && (
+              <div className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm rounded-lg px-4 py-2.5">
+                {notice}
               </div>
             )}
 
@@ -1487,7 +1727,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
               </div>
             </div>
 
-            {/* Items — combined-item summary (from items_jo) + manual rows */}
+            {/* Items — ringkasan per item (harga & pajak 1x input) + manual rows */}
             <div className="space-y-3">
               {itemAggGroups.length > 0 && (
                 <div className="border border-slate-200 rounded-xl overflow-hidden">
@@ -1508,7 +1748,10 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                           Unit
                         </th>
                         <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
-                          Harga Rata²
+                          Harga / Unit
+                        </th>
+                        <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Pajak
                         </th>
                         <th className="px-3 py-2 text-right text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
                           Total
@@ -1516,11 +1759,17 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                         <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
                           Sumber
                         </th>
+                        <th className="px-3 py-2 text-center text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                          Aksi
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {itemAggGroups.map((ig) => {
                         const isExpanded = expandedItemKeys.has(ig.key);
+                        const groupDeletable =
+                          !ig.itemPoId ||
+                          (canDeleteStatus && savedItemCount > 1);
                         return (
                           <React.Fragment key={ig.key}>
                             <tr
@@ -1543,13 +1792,56 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                                 {ig.nama_brand || '-'}
                               </td>
                               <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
-                                {ig.totalQty}
+                                {formatQty(ig.totalQty)}
                               </td>
                               <td className="px-3 py-2.5 text-slate-500">
                                 {ig.satuan || '-'}
                               </td>
-                              <td className="px-3 py-2.5 text-right tabular-nums text-slate-700">
-                                Rp {formatRupiah(ig.avgHarga)}
+                              <td
+                                className="px-3 py-2.5"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="flex flex-col items-end gap-0.5">
+                                  <NumberInput
+                                    value={ig.harga}
+                                    onChange={(v) =>
+                                      updateItemPricing(ig.key, { harga: v })
+                                    }
+                                    className="w-28 px-2 py-1.5 text-sm text-right border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                  />
+                                  {ig.hargaMixed && (
+                                    <span className="text-[10px] text-amber-600">
+                                      Harga beragam (rata²) — isi untuk
+                                      menyeragamkan
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td
+                                className="px-3 py-2.5 text-center"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <input
+                                    type="checkbox"
+                                    checked={ig.is_ppn}
+                                    disabled={ig.is_tax_locked}
+                                    onChange={(e) =>
+                                      updateItemPricing(ig.key, {
+                                        is_ppn: e.target.checked,
+                                      })
+                                    }
+                                    title={
+                                      ig.is_tax_locked
+                                        ? 'Harga sudah termasuk PPN — dihitung otomatis, tidak menambah grand total'
+                                        : `PPN ${ig.pajak_persen}% jika dicentang`
+                                    }
+                                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-70"
+                                  />
+                                  <span className="text-[10px] text-slate-400">
+                                    {ig.pajak_persen}%
+                                  </span>
+                                </div>
                               </td>
                               <td className="px-3 py-2.5 text-right tabular-nums text-slate-800 font-semibold">
                                 Rp {formatRupiah(ig.total)}
@@ -1557,10 +1849,31 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                               <td className="px-3 py-2.5 text-center text-xs text-slate-400">
                                 {ig.subGroups.length} JO
                               </td>
+                              <td
+                                className="px-3 py-2.5 text-center"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {groupDeletable && (
+                                  <button
+                                    onClick={() => handleDeleteItemGroup(ig)}
+                                    disabled={busy || ig.hasBookingMoved}
+                                    title={
+                                      ig.hasBookingMoved
+                                        ? 'Ada JO yang qty booking-nya sudah masuk gudang — tidak bisa dihapus'
+                                        : ig.itemPoId
+                                        ? 'Hapus item (semua JO ikut) & kembalikan ke Request Purchase'
+                                        : 'Hapus item'
+                                    }
+                                    className="text-xs font-medium text-red-500 hover:text-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                  >
+                                    Hapus
+                                  </button>
+                                )}
+                              </td>
                             </tr>
                             {isExpanded && (
                               <tr>
-                                <td colSpan={8} className="p-0 bg-slate-50/60">
+                                <td colSpan={10} className="p-0 bg-slate-50/60">
                                   <div className="divide-y divide-slate-100">
                                     {ig.subGroups.map((sg) => {
                                       // Kebutuhan terpenuhi = qty vendor + qty booking
@@ -1588,7 +1901,7 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                                               <span>
                                                 Butuh:{' '}
                                                 <b className="text-slate-800">
-                                                  {sg.row.qty_bom}{' '}
+                                                  {formatQty(sg.row.qty_bom)}{' '}
                                                   {sg.row.allocations[0]
                                                     ?.satuan || ''}
                                                 </b>
@@ -1618,8 +1931,8 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                                             {renderAllocationsTable(
                                               sg.row.groupId,
                                               sg.allocations,
-                                              sg.row.allocations.length > 1,
-                                              true,
+                                              sg.row.allocations.length,
+                                              'jo',
                                             )}
                                           </div>
                                         </div>
@@ -1637,25 +1950,40 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
                 </div>
               )}
 
-              {/* Manual (non-JO) rows — tidak ada booking di sini */}
-              {manualDisplayRows.map((row) => (
-                <div
-                  key={row.groupId}
-                  className="border border-slate-200 rounded-xl overflow-hidden"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-4 py-2.5 border-b border-slate-100">
-                    <span className="text-xs font-medium text-slate-500">
-                      Item manual
-                    </span>
+              {/* Manual (non-JO) rows — harga & pajak tetap di baris, tanpa booking */}
+              {manualDisplayRows.map((row) => {
+                const savedAlloc = row.allocations.find((a) => a.id);
+                const manualDeletable = savedAlloc
+                  ? canDeleteStatus && savedItemCount > 1
+                  : true;
+                return (
+                  <div
+                    key={row.groupId}
+                    className="border border-slate-200 rounded-xl overflow-hidden"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 px-4 py-2.5 border-b border-slate-100">
+                      <span className="text-xs font-medium text-slate-500">
+                        Item manual
+                      </span>
+                      {manualDeletable && (
+                        <button
+                          onClick={() => handleRemoveManualRow(row)}
+                          disabled={busy}
+                          className="text-xs font-medium text-red-500 hover:text-red-700 disabled:opacity-40 transition-colors"
+                        >
+                          Hapus item
+                        </button>
+                      )}
+                    </div>
+                    {renderAllocationsTable(
+                      row.groupId,
+                      row.allocations,
+                      row.allocations.length,
+                      'manual',
+                    )}
                   </div>
-                  {renderAllocationsTable(
-                    row.groupId,
-                    row.allocations,
-                    row.allocations.length > 1,
-                    false,
-                  )}
-                </div>
-              ))}
+                );
+              })}
 
               {itemAggGroups.length === 0 && manualDisplayRows.length === 0 && (
                 <div className="border border-slate-100 rounded-xl px-4 py-10 text-center text-slate-400 text-sm">
@@ -1757,20 +2085,21 @@ const EditPOModal: React.FC<EditPOModalProps> = ({
           <div className="sticky bottom-0 bg-white border-t border-slate-100 px-6 py-4 flex items-center justify-end gap-2 rounded-b-2xl">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              disabled={busy}
+              className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50 rounded-lg transition-colors"
             >
               Kembali
             </button>
             <button
               onClick={handleSaveDraft}
-              disabled={!!submitting}
+              disabled={busy}
               className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 rounded-lg font-medium transition-colors"
             >
               {submitting === 'save' ? 'Menyimpan...' : 'Simpan Draft'}
             </button>
             <button
               onClick={handleSaveAndSubmit}
-              disabled={!!submitting}
+              disabled={busy}
               className="px-5 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
             >
               {submitting === 'submit'
