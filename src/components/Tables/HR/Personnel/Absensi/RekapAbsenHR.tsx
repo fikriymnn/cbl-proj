@@ -4,6 +4,18 @@ import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDate from '../../../../../utils/convertDate';
 import ExcelExportRekapAbsen from './ExcelExportRekapAbsen';
+import Select from 'react-select';
+
+// ===== Helper di luar komponen =====
+const normalize = (val: any) => (val ?? '').toString().trim().toLowerCase();
+
+// "17:00" / "17:00:00" -> menit
+const timeToMinutes = (t: any): number | null => {
+  if (!t || t === '0' || t === '-') return null;
+  const m = t.toString().match(/(\d{1,2}):(\d{2})/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+};
 
 function RekapAbsenHR() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +28,8 @@ function RekapAbsenHR() {
   const [tipePenggajian, setTipePenggajian] = useState<any>('');
   const [idDivisi, setIdDivisi] = useState<any>('');
   const [divisi, setDivisi] = useState<any>();
+  const [tipeKaryawan, setTipeKaryawan] = useState<any>('');
+  const [masterShift, setMasterShift] = useState<any[]>([]);
 
   const filteredAbsen = absen?.filter((data: any) =>
     data.nama_karyawan.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -24,6 +38,7 @@ function RekapAbsenHR() {
   useEffect(() => {
     getDepartment();
     getDivisi();
+    getMasterShift();
   }, []);
 
   async function getDepartment() {
@@ -61,6 +76,16 @@ function RekapAbsenHR() {
     }
   }
 
+  async function getMasterShift() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/shift`;
+    try {
+      const res = await axios.get(url, { withCredentials: true });
+      setMasterShift(res.data?.data || []);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
   async function getabsen(dateFrom1: any, dateTo1: any) {
     const url = `${import.meta.env.VITE_API_LINK}/hr/absensiRekap`;
     try {
@@ -72,6 +97,7 @@ function RekapAbsenHR() {
           idDepartment: idDepartment || undefined,
           tipe_penggajian: tipePenggajian || undefined,
           id_divisi: idDivisi || undefined,
+          tipe_karyawan: tipeKaryawan || undefined,
           is_active: true,
           page: 1,
           limit: 10,
@@ -87,13 +113,54 @@ function RekapAbsenHR() {
     }
   }
 
+  // Jam lembur tanpa SPL = jam_keluar pegawai - shift keluar terdekat (master shift)
+  const hitungJamLemburTanpaSPL = (record: any): number => {
+    const keluar = timeToMinutes(record.jam_keluar);
+    if (keluar === null) return 0;
+
+    const hari = normalize(record.hari);
+    const jenisHari = normalize(record.jenis_hari_masuk);
+    const findRow = (nama: string) =>
+      masterShift.find((s: any) => normalize(s.hari) === nama);
+
+    // Libur (termasuk Minggu & tanggal merah) -> baris "Libur"
+    // Hari biasa -> baris sesuai hari, fallback ke "Libur" kalau tidak ketemu (mis. Minggu)
+    const row =
+      jenisHari === 'libur'
+        ? findRow('libur') || findRow(hari)
+        : findRow(hari) || findRow('libur');
+    if (!row) return 0;
+
+    const shiftKeluar = [row.shift_1_keluar, row.shift_2_keluar]
+      .map(timeToMinutes)
+      .filter((v): v is number => v !== null);
+    if (shiftKeluar.length === 0) return 0;
+
+    // shift keluar terdekat dari jam keluar pegawai (aman untuk lewat tengah malam)
+    let bestDiff: number | null = null;
+    shiftKeluar.forEach((sk) => {
+      let diff = keluar - sk;
+      if (diff < -720) diff += 1440;
+      if (diff > 720) diff -= 1440;
+      if (bestDiff === null || Math.abs(diff) < Math.abs(bestDiff)) {
+        bestDiff = diff;
+      }
+    });
+
+    if (bestDiff === null || bestDiff <= 0) return 0;
+
+    // Bulatkan per record ke kelipatan 30 menit (0.5 jam), dibulatkan ke atas
+    // contoh: 1 mnt -> 0.5, 30 mnt -> 0.5, 31 mnt -> 1.0, 61 mnt -> 1.5
+    return Math.ceil(bestDiff / 30) * 0.5;
+  };
+
   const calculateOvertimeHours = (absensiData: any[]) => {
     let lemburDenganSPL = 0;
     let lemburLiburDenganSPL = 0;
     let lemburTanpaSPL = 0; // jumlah hari
     let lemburLiburTanpaSPL = 0; // jumlah hari
-
-    const normalize = (val: any) => (val ?? '').toString().trim().toLowerCase();
+    let lemburTanpaSPLJam = 0; // jumlah jam
+    let lemburLiburTanpaSPLJam = 0; // jumlah jam
 
     absensiData?.forEach((record: any) => {
       const jamLembur = parseFloat(record.jam_lembur || 0);
@@ -101,12 +168,15 @@ function RekapAbsenHR() {
       const statusSPL = normalize(record.status_lembur_spl);
       const jenisHari = normalize(record.jenis_hari_masuk);
 
-      // ===== TANPA SPL (hitung hari berdasarkan jenis_hari_masuk + status_lembur_spl) =====
+      // ===== TANPA SPL (hari + jam dari master shift) =====
       if (statusSPL === 'tidak dengan spl') {
+        const jam = hitungJamLemburTanpaSPL(record);
         if (jenisHari === 'biasa') {
           lemburTanpaSPL += 1;
+          lemburTanpaSPLJam += jam;
         } else if (jenisHari === 'libur') {
           lemburLiburTanpaSPL += 1;
+          lemburLiburTanpaSPLJam += jam;
         }
       }
 
@@ -125,6 +195,8 @@ function RekapAbsenHR() {
       lemburTanpaSPL: lemburTanpaSPL.toFixed(0),
       lemburLiburDenganSPL: lemburLiburDenganSPL.toFixed(1),
       lemburLiburTanpaSPL: lemburLiburTanpaSPL.toFixed(0),
+      lemburTanpaSPLJam: lemburTanpaSPLJam.toFixed(1),
+      lemburLiburTanpaSPLJam: lemburLiburTanpaSPLJam.toFixed(1),
     };
   };
 
@@ -204,12 +276,64 @@ function RekapAbsenHR() {
     });
   };
 
-  const selectArrowStyle = {
-    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-    backgroundPosition: 'right 0.5rem center',
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: '1.5em 1.5em',
-    paddingRight: '2.5rem',
+  // ===== Opsi & style untuk react-select =====
+  const departmentOptions =
+    department?.data?.map((d: any) => ({
+      value: d.id,
+      label: d.nama_department,
+    })) || [];
+
+  const divisiOptions =
+    divisi?.data?.map((d: any) => ({
+      value: d.id,
+      label: d.nama_divisi,
+    })) || [];
+
+  const tipeKaryawanOptions = [
+    { value: 'staff', label: 'Staff' },
+    { value: 'produksi', label: 'Produksi' },
+  ];
+
+  const tipePenggajianOptions = [
+    { value: 'mingguan', label: 'Mingguan' },
+    { value: 'bulanan', label: 'Bulanan' },
+  ];
+
+  const findOption = (options: any[], value: any) =>
+    options.find((opt: any) => String(opt.value) === String(value)) || null;
+
+  const customSelectStyles = {
+    control: (base: any) => ({
+      ...base,
+      minHeight: '38px',
+      backgroundColor: '#eff6ff',
+      borderColor: '#bfdbfe',
+      fontSize: '0.875rem',
+      '&:hover': {
+        borderColor: '#60a5fa',
+      },
+    }),
+    menu: (base: any) => ({
+      ...base,
+      zIndex: 9999,
+      fontSize: '0.875rem',
+    }),
+    menuPortal: (base: any) => ({
+      ...base,
+      zIndex: 9999,
+    }),
+  };
+
+  const inputClass =
+    'w-full rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all';
+  const labelClass = 'block text-xs sm:text-sm text-gray-600 font-medium mb-2';
+
+  const resetFilter = () => {
+    setSearchQuery('');
+    setidDepartment('');
+    setIdDivisi('');
+    setTipeKaryawan('');
+    setTipePenggajian('');
   };
 
   return (
@@ -218,328 +342,161 @@ function RekapAbsenHR() {
         {isLoading && <Loading />}
 
         {/* Filter Section */}
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg mb-6 border border-gray-200">
-          <div className="p-8">
-            {/* Header with Icon */}
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-              <div className="bg-primary/10 p-3 rounded-lg">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-primary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 mb-6">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-3 sm:p-4 rounded-t-lg">
+            <h2 className="text-white text-base sm:text-lg md:text-xl font-bold">
+              Filter Rekap Absensi
+            </h2>
+            <p className="text-blue-100 text-xs sm:text-sm mt-0.5">
+              Pilih kriteria filter untuk menampilkan data absensi karyawan
+            </p>
+          </div>
+
+          <div className="p-4 sm:p-6 space-y-6">
+            {/* Periode & Organisasi */}
+            <div>
+              <h3 className="text-sm sm:text-base font-semibold text-blue-600 mb-3">
+                Periode & Organisasi
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className={labelClass}>Tanggal Mulai</label>
+                  <input
+                    className={inputClass}
+                    type="date"
+                    value={dateFrom || ''}
+                    onChange={(e) => setDateFrom(e.target.value)}
                   />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">
-                  Filter Rekap Absensi
-                </h3>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  Pilih kriteria filter untuk menampilkan data absensi karyawan
-                </p>
+                </div>
+                <div>
+                  <label className={labelClass}>Tanggal Selesai</label>
+                  <input
+                    className={inputClass}
+                    type="date"
+                    value={dateTo || ''}
+                    onChange={(e) => setDateTo(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Department</label>
+                  <Select
+                    options={departmentOptions}
+                    value={findOption(departmentOptions, idDepartment)}
+                    onChange={(selected: any) =>
+                      setidDepartment(selected?.value || '')
+                    }
+                    isClearable
+                    placeholder="Semua Department"
+                    styles={customSelectStyles}
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Divisi</label>
+                  <Select
+                    options={divisiOptions}
+                    value={findOption(divisiOptions, idDivisi)}
+                    onChange={(selected: any) =>
+                      setIdDivisi(selected?.value || '')
+                    }
+                    isClearable
+                    placeholder="Semua Divisi"
+                    styles={customSelectStyles}
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Filter Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-              {/* Date Range Section - Takes 3 columns */}
-              <div className="lg:col-span-3">
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-blue-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    <h4 className="text-sm font-semibold text-gray-700">
-                      Periode Tanggal
-                    </h4>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-2">
-                        Tanggal Mulai
-                      </label>
-                      <input
-                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all"
-                        type="date"
-                        value={dateFrom || ''}
-                        onChange={(e) => {
-                          setDateFrom(e.target.value);
-                          console.log(e.target.value);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-2">
-                        Tanggal Selesai
-                      </label>
-                      <input
-                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all"
-                        type="date"
-                        value={dateTo || ''}
-                        onChange={(e) => setDateTo(e.target.value)}
-                      />
-                    </div>
-                  </div>
+            {/* Filter Tambahan */}
+            <div>
+              <h3 className="text-sm sm:text-base font-semibold text-blue-600 mb-3">
+                Filter Tambahan
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelClass}>Nama Karyawan</label>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Cari nama karyawan..."
+                    className={inputClass}
+                  />
+                </div>
+                {/* <div>
+                  <label className={labelClass}>Tipe Karyawan</label>
+                  <Select
+                    options={tipeKaryawanOptions}
+                    value={findOption(tipeKaryawanOptions, tipeKaryawan)}
+                    onChange={(selected: any) =>
+                      setTipeKaryawan(selected?.value || '')
+                    }
+                    isClearable
+                    placeholder="Semua Tipe"
+                    styles={customSelectStyles}
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                  />
+                </div> */}
+                <div>
+                  <label className={labelClass}>Tipe Penggajian</label>
+                  <Select
+                    options={tipePenggajianOptions}
+                    value={findOption(tipePenggajianOptions, tipePenggajian)}
+                    onChange={(selected: any) =>
+                      setTipePenggajian(selected?.value || '')
+                    }
+                    isClearable
+                    placeholder="Semua Tipe"
+                    styles={customSelectStyles}
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Department Section - Takes 2 columns */}
-              <div className="lg:col-span-2">
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-purple-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                      />
-                    </svg>
-                    <h4 className="text-sm font-semibold text-gray-700">
-                      Department
-                    </h4>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-200">
+              <button
+                onClick={resetFilter}
+                className="bg-red-500 hover:bg-red-600 active:bg-red-700 transition-all rounded-lg px-4 py-2.5 text-sm font-medium text-white"
+              >
+                Reset Filter
+              </button>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {filteredAbsen && filteredAbsen.length > 0 && (
+                  <div className="min-w-[160px]">
+                    <ExcelExportRekapAbsen
+                      filteredAbsen={filteredAbsen}
+                      dateFrom={dateFrom}
+                      dateTo={dateTo}
+                      idDepartment={idDepartment}
+                      tipePenggajian={tipePenggajian}
+                      idDivisi={idDivisi}
+                      calculateOvertimeHours={calculateOvertimeHours}
+                      calculateTimeMetrics={calculateTimeMetrics}
+                      convertTimeStampToDate={convertTimeStampToDate}
+                    />
                   </div>
-                  <select
-                    name="nama_department"
-                    value={idDepartment || ''}
-                    onChange={(e) => setidDepartment(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
-                    style={selectArrowStyle}
-                  >
-                    <option value="" className="text-gray-500">
-                      Semua Department
-                    </option>
-                    {department?.data?.map((data: any, i: number) => (
-                      <option key={i} value={data.id} className="text-gray-800">
-                        {data.nama_department}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Divisi Section - Takes 2 columns */}
-              <div className="lg:col-span-2">
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-indigo-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    <h4 className="text-sm font-semibold text-gray-700">
-                      Divisi
-                    </h4>
-                  </div>
-                  <select
-                    name="id_divisi"
-                    value={idDivisi || ''}
-                    onChange={(e) => setIdDivisi(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
-                    style={selectArrowStyle}
-                  >
-                    <option value="" className="text-gray-500">
-                      Semua Divisi
-                    </option>
-                    {divisi?.data?.map((data: any, i: number) => (
-                      <option key={i} value={data.id} className="text-gray-800">
-                        {data.nama_divisi}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Tipe Penggajian Section - Takes 2 columns */}
-              <div className="lg:col-span-2">
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-green-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <h4 className="text-sm font-semibold text-gray-700">
-                      Tipe Penggajian
-                    </h4>
-                  </div>
-                  <select
-                    name="tipe_penggajian"
-                    value={tipePenggajian || ''}
-                    onChange={(e) => setTipePenggajian(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all appearance-none cursor-pointer"
-                    style={selectArrowStyle}
-                  >
-                    <option value="" className="text-gray-500">
-                      Semua Tipe
-                    </option>
-                    <option value="mingguan" className="text-gray-800">
-                      Mingguan
-                    </option>
-                    <option value="bulanan" className="text-gray-800">
-                      Bulanan
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Search and Action Section - Takes 3 columns */}
-              <div className="lg:col-span-3">
-                <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow h-full">
-                  <div className="flex items-center gap-2 mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 text-orange-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                    <h4 className="text-sm font-semibold text-gray-700">
-                      Pencarian
-                    </h4>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 text-gray-400"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                          />
-                        </svg>
-                      </div>
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Cari nama karyawan..."
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all"
-                      />
-                    </div>
-
-                    {dateFrom == null || dateTo == null ? (
-                      <button
-                        disabled
-                        className="w-full bg-gray-300 text-gray-500 px-4 py-2.5 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                        Pilih Tanggal Terlebih Dahulu
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => getabsen(dateFrom, dateTo)}
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                        Tampilkan Data
-                      </button>
-                    )}
-
-                    {filteredAbsen && filteredAbsen.length > 0 && (
-                      <ExcelExportRekapAbsen
-                        filteredAbsen={filteredAbsen}
-                        dateFrom={dateFrom}
-                        dateTo={dateTo}
-                        idDepartment={idDepartment}
-                        tipePenggajian={tipePenggajian}
-                        idDivisi={idDivisi}
-                        calculateOvertimeHours={calculateOvertimeHours}
-                        calculateTimeMetrics={calculateTimeMetrics}
-                        convertTimeStampToDate={convertTimeStampToDate}
-                      />
-                    )}
-                  </div>
-                </div>
+                )}
+                <button
+                  onClick={() => getabsen(dateFrom, dateTo)}
+                  disabled={!dateFrom || !dateTo}
+                  className={`rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-all ${
+                    !dateFrom || !dateTo
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700 hover:shadow-md active:bg-blue-800'
+                  }`}
+                >
+                  {!dateFrom || !dateTo
+                    ? 'Pilih Tanggal Terlebih Dahulu'
+                    : 'Tampilkan Data'}
+                </button>
               </div>
             </div>
           </div>
@@ -567,7 +524,10 @@ function RekapAbsenHR() {
               <label className="text-gray-700 text-sm font-semibold col-span-2">
                 Divisi
               </label>
-              <label className="text-gray-700 text-sm font-semibold col-span-3 flex justify-end">
+              <label className="text-gray-700 text-sm font-semibold col-span-1 flex justify-center">
+                Status
+              </label>
+              <label className="text-gray-700 text-sm font-semibold col-span-2 flex justify-end">
                 Aksi
               </label>
             </div>
@@ -576,6 +536,18 @@ function RekapAbsenHR() {
             {filteredAbsen?.map((data: any, i: any) => {
               const overtimeCalc = calculateOvertimeHours(data.absensi);
               const timeMetrics = calculateTimeMetrics(data.absensi);
+
+              // Indikator: merah jika ada sakit/izin/mangkir, hijau jika tidak ada
+              const jmlSakit = Number(data.jumlah_hari_sakit || 0);
+              const jmlIzin = Number(data.jumlah_hari_izin || 0);
+              const jmlMangkir = Number(data.jumlah_hari_mangkir || 0);
+              const adaSakitIzinMangkir =
+                jmlSakit > 0 ||
+                jmlIzin > 0 ||
+                jmlMangkir > 0 ||
+                data.sakit?.length > 0 ||
+                data.izin?.length > 0 ||
+                data.mangkir?.length > 0;
 
               return (
                 <div
@@ -595,7 +567,19 @@ function RekapAbsenHR() {
                   <label className="text-gray-600 text-sm col-span-2">
                     {data.divisi}
                   </label>
-                  <div className="col-span-3 flex justify-end">
+                  <div className="col-span-1 flex items-center justify-center">
+                    <span
+                      title={
+                        adaSakitIzinMangkir
+                          ? `Sakit: ${jmlSakit} hari, Izin: ${jmlIzin} hari, Mangkir: ${jmlMangkir} hari`
+                          : 'Tidak ada sakit/izin/mangkir'
+                      }
+                      className={`inline-block h-3.5 w-3.5 rounded-full ${
+                        adaSakitIzinMangkir ? 'bg-red-500' : 'bg-green-500'
+                      }`}
+                    />
+                  </div>
+                  <div className="col-span-2 flex justify-end">
                     <button
                       onClick={() => openModalModal(i)}
                       className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors"
@@ -732,13 +716,15 @@ function RekapAbsenHR() {
                                   <div className="flex justify-between">
                                     <span>Lembur:</span>
                                     <span className="font-medium">
-                                      {overtimeCalc.lemburTanpaSPL} Hari
+                                      {overtimeCalc.lemburTanpaSPLJam} Jam,{' '}
+                                      {overtimeCalc.lemburTanpaSPL} Kali
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Lembur Libur:</span>
                                     <span className="font-medium">
-                                      {overtimeCalc.lemburLiburTanpaSPL} Hari
+                                      {overtimeCalc.lemburLiburTanpaSPLJam} Jam,{' '}
+                                      {overtimeCalc.lemburLiburTanpaSPL} Kali
                                     </span>
                                   </div>
                                 </div>
@@ -1160,6 +1146,17 @@ function RekapAbsenHR() {
                                                 SPL: {record.status_lembur_spl}
                                               </div>
                                             )}
+                                          {normalize(
+                                            record.status_lembur_spl,
+                                          ) === 'tidak dengan spl' && (
+                                            <div className="text-purple-600">
+                                              Lembur tanpa SPL:{' '}
+                                              {hitungJamLemburTanpaSPL(
+                                                record,
+                                              ).toFixed(1)}{' '}
+                                              jam
+                                            </div>
+                                          )}
                                           {record.keterangan &&
                                             record.keterangan !== '-' && (
                                               <div className="text-gray-500">

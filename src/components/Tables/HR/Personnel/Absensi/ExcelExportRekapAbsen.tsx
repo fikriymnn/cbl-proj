@@ -282,11 +282,11 @@ const ExcelExportRekapAbsen = ({
       ]);
       sheetData.push([
         'Lembur tanpa SPL',
-        `${overtimeCalc.lemburTanpaSPL} Hari`,
+        `${overtimeCalc.lemburTanpaSPLJam} Jam, ${overtimeCalc.lemburTanpaSPL} Kali`,
       ]);
       sheetData.push([
         'Lembur Libur tanpa SPL',
-        `${overtimeCalc.lemburLiburTanpaSPL} Hari`,
+        `${overtimeCalc.lemburLiburTanpaSPLJam} Jam, ${overtimeCalc.lemburLiburTanpaSPL} Kali`,
       ]);
       sheetData.push([]);
 
