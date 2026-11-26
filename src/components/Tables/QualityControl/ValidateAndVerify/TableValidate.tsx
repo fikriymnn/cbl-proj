@@ -1,434 +1,178 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/converDateTime';
+import { getErrorMessage } from '../../../../utils/qcHelpers';
+import ModalVerifikasi from '../../../Modals/Qc/ModalVerifikasi';
+import QcActionForm from '../../../Qc/QcActionForm';
+import type { QcAction } from '../../../Qc/QcActionForm';
+import QcTicketList from '../../../Qc/QcTicketList';
+import type { TicketColumn } from '../../../Qc/QcTicketList';
+import type { InfoItem } from '../../../Qc/TicketInfo';
+
+const API = import.meta.env.VITE_API_LINK;
+
+const isMesin = (t: any) =>
+  String(t?.jenis_kendala ?? '').toLowerCase() === 'mesin';
+
+const getKendalaLabel = (t: any) =>
+  [isMesin(t) ? t.kode_lkh : t.kode_kendala, t.nama_kendala, t.jenis_kendala]
+    .filter(Boolean)
+    .join(' - ');
+
+const getEndpoint = (t: any, action: QcAction) => {
+  const mesin = isMesin(t);
+  const path =
+    action === 'approve'
+      ? mesin
+        ? 'ticket/validate'
+        : 'kendalaLkh/validate'
+      : mesin
+      ? 'ticket/tolak'
+      : 'kendalaLkh/reject';
+  return `${API}/${path}/${t.id}`;
+};
+
+const buildInfoItems = (t: any): InfoItem[] => [
+  { label: 'Kode Tiket', value: t.kode_ticket },
+  { label: 'Waktu Masuk', value: convertTimeStampToDate(t.createdAt) },
+  { label: 'Nama Mesin', value: t.mesin },
+  { label: 'No JO', value: t.no_jo },
+  { label: 'Nama Item', value: t.nama_produk },
+  { label: 'Customer', value: t.nama_customer },
+  { label: 'Operator', value: t.operator },
+  { label: 'Jenis Kendala', value: t.jenis_kendala },
+  { label: 'Unit', value: t.unit },
+  { label: 'Bagian', value: t.bagian },
+  { label: 'Kendala', value: getKendalaLabel(t), fullWidth: true },
+  { label: 'Masalah', value: t.nama_analisis_mtc, fullWidth: true },
+];
+
+const columns: TicketColumn<any>[] = [
+  { header: 'Kode Tiket', render: (t) => t.kode_ticket },
+  { header: 'Waktu Masuk', render: (t) => convertTimeStampToDate(t.createdAt) },
+  { header: 'Nama Mesin', render: (t) => t.mesin },
+  { header: 'No JO', render: (t) => t.no_jo },
+  { header: 'Nama Item', render: (t) => t.nama_produk },
+  { header: 'Kendala', render: getKendalaLabel },
+];
 
 const TableValidasi = () => {
-  const [ticketValidasi, setTicketValidasi] = useState<any>(null);
-  const [note, setNote] = useState<any>('');
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  const [showDetail, setShowDetail] = useState<boolean[]>(
-    new Array(ticketValidasi != null && ticketValidasi.length).fill(false),
-  );
+  const [selected, setSelected] = useState<any | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleClickDetail = (index: number) => {
-    setShowDetail((prevState) => {
-      const updatedShowDetail = [...prevState];
-      updatedShowDetail[index] = !updatedShowDetail[index];
-      return updatedShowDetail;
-    });
-  };
-
-  useEffect(() => {
-    getMTC();
-  }, []);
-
-  async function getMTC() {
-    const url = `${import.meta.env.VITE_API_LINK}/validasiQc`;
+  const fetchTickets = useCallback(async () => {
+    setIsLoading(true);
     try {
-      const res = await axios.get(url, {
+      const res = await axios.get(`${API}/validasiQc`, {
         withCredentials: true,
       });
-
-      setTicketValidasi(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.response);
+      setTickets(res.data?.data ?? []);
+      setLoadError('');
+    } catch (error) {
+      setLoadError(getErrorMessage(error, 'Gagal memuat data tiket.'));
+    } finally {
+      setIsLoading(false);
     }
-  }
+  }, []);
 
-  async function validasiTicket(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket/validate/${id}`;
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
+
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => setSuccessMessage(''), 3000);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
+  const openModal = (ticket: any) => {
+    setSubmitError('');
+    setSelected(ticket);
+  };
+
+  const closeModal = () => {
+    if (!isSubmitting) setSelected(null);
+  };
+
+  const handleSubmit = async (action: QcAction, note: string) => {
+    if (!selected || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitError('');
     try {
-      const res = await axios.put(
-        url,
-        {
-          note_qc: note,
-        },
-        {
-          withCredentials: true,
-        },
+      await axios.put(
+        getEndpoint(selected, action),
+        { note_qc: note },
+        { withCredentials: true },
       );
-
-      alert('success');
-      setShowDetail((prevDetail) =>
-        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen)),
+      setSelected(null);
+      setSuccessMessage(
+        action === 'approve'
+          ? 'Tiket berhasil divalidasi.'
+          : 'Tiket berhasil ditolak.',
       );
-      setNote('');
-      getMTC();
-    } catch (error: any) {
-      console.log(error.response);
+      await fetchTickets();
+    } catch (error) {
+      // Error dari backend (mis. pengecekan validasi) ditampilkan di dalam form
+      setSubmitError(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
     }
-  }
-
-  async function tolakTicket(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket/tolak/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {
-          note_qc: note,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
-      alert('success');
-      setShowDetail((prevDetail) =>
-        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen)),
-      );
-      setNote('');
-      getMTC();
-    } catch (error: any) {
-      console.log(error.response);
-    }
-  }
-
-  async function validasiTicketAll(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/kendalaLkh/validate/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {
-          note_qc: note,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
-      alert('success');
-      setShowDetail((prevDetail) =>
-        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen)),
-      );
-      setNote('');
-      getMTC();
-    } catch (error: any) {
-      console.log(error.response);
-    }
-  }
-
-  async function tolakTicketAll(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/kendalaLkh/reject/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {
-          note_qc: note,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
-      alert('success');
-      setShowDetail((prevDetail) =>
-        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen)),
-      );
-      setNote('');
-      getMTC();
-    } catch (error: any) {
-      console.log(error.response);
-    }
-  }
+  };
 
   return (
-    <>
-      <div className="flex flex-col gap-2">
-        {/* Desktop Table */}
-        <div className="hidden md:block">
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white dark:bg-boxdark shadow-default">
-              <thead className="border border-stroke dark:border-strokedark">
-                <tr>
-                  <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left w-10">
-                    No
-                  </th>
-                  <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                    Kode Tiket
-                  </th>
-                  <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                    Waktu Masuk
-                  </th>
-                  <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                    Nama Mesin
-                  </th>
-                  <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                    No JO
-                  </th>
-                  <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                    Nama Item
-                  </th>
-                  <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                    Kendala
-                  </th>
-                  <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {ticketValidasi?.data.map((data: any, index: number) => {
-                  const tglTicket = convertTimeStampToDate(data.createdAt);
-                  return (
-                    <tr
-                      key={index}
-                      className="border border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-gray-800"
-                    >
-                      <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white">
-                        {index + 1}
-                      </td>
-                      <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis max-w-xs">
-                        {data.kode_ticket}
-                      </td>
-                      <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
-                        {tglTicket}
-                      </td>
-                      <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
-                        {data.mesin}
-                      </td>
-                      <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
-                        {data.no_jo}
-                      </td>
-                      <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
-                        {data.nama_produk}
-                      </td>
-                      <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
-                        {data.jenis_kendala == 'Mesin' ||
-                        data.jenis_kendala == 'mesin' ? (
-                          <>
-                            {data.kode_lkh +
-                              ' - ' +
-                              data.nama_kendala +
-                              ' - ' +
-                              data.jenis_kendala}
-                          </>
-                        ) : (
-                          <>
-                            {data.kode_kendala +
-                              ' - ' +
-                              data.nama_kendala +
-                              ' - ' +
-                              data.jenis_kendala}
-                          </>
-                        )}
-                      </td>
-                      <td className="py-3 px-2">
-                        <button
-                          onClick={() => handleClickDetail(index)}
-                          className="bg-blue-600 text-white text-xs py-1 px-3 rounded"
-                        >
-                          Aksi
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+    <div className="flex flex-col gap-2">
+      {successMessage && (
+        <div
+          role="status"
+          className="rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-700"
+        >
+          {successMessage}
         </div>
-
-        {/* Mobile Card Layout */}
-        <div className="block md:hidden space-y-3">
-          {ticketValidasi?.data.map((data: any, index: number) => {
-            const tglTicket = convertTimeStampToDate(data.createdAt);
-            return (
-              <div
-                key={index}
-                className="bg-white dark:bg-boxdark border border-stroke dark:border-strokedark rounded-lg p-4 shadow-sm"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <div className="text-xs font-semibold text-slate-600 dark:text-white mb-1">
-                      #{index + 1} - {data.kode_ticket}
-                    </div>
-                    <div className="text-xs text-neutral-500 dark:text-white">
-                      {tglTicket}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleClickDetail(index)}
-                    className="bg-blue-600 text-white text-xs py-2 px-4 rounded ml-2 flex-shrink-0"
-                  >
-                    Aksi
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 gap-2 text-xs">
-                  <div className="flex">
-                    <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                      Mesin:
-                    </span>
-                    <span className="text-neutral-500 dark:text-white">
-                      {data.mesin}
-                    </span>
-                  </div>
-
-                  <div className="flex">
-                    <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                      No JO:
-                    </span>
-                    <span className="text-neutral-500 dark:text-white">
-                      {data.no_jo}
-                    </span>
-                  </div>
-
-                  <div className="flex">
-                    <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                      Item:
-                    </span>
-                    <span className="text-neutral-500 dark:text-white break-words">
-                      {data.nama_produk}
-                    </span>
-                  </div>
-
-                  <div className="flex">
-                    <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                      Kendala:
-                    </span>
-                    <span className="text-neutral-500 dark:text-white break-words">
-                      {data.jenis_kendala == 'Mesin' ||
-                      data.jenis_kendala == 'mesin' ? (
-                        <>
-                          {data.kode_lkh +
-                            ' - ' +
-                            data.nama_kendala +
-                            ' - ' +
-                            data.jenis_kendala}
-                        </>
-                      ) : (
-                        <>
-                          {data.kode_kendala +
-                            ' - ' +
-                            data.nama_kendala +
-                            ' - ' +
-                            data.jenis_kendala}
-                        </>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+      )}
+      {loadError && (
+        <div
+          role="alert"
+          className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          {loadError}
         </div>
+      )}
 
-        {/* Modal for both desktop and mobile */}
-        {showDetail.some(Boolean) && (
-          <div className="fixed z-50 inset-0 overflow-y-auto w-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
-            <div className="flex flex-col gap-1 justify-center w-full max-w-md md:w-4/12 bg-white p-3 rounded-xl max-h-[90vh] overflow-y-auto">
-              {showDetail.map((isOpen, modalIndex) => {
-                if (!isOpen) return null;
-                const data = ticketValidasi?.data[modalIndex];
+      <QcTicketList
+        rows={tickets}
+        columns={columns}
+        getKey={(t) => `${t.jenis_kendala}-${t.id}`}
+        onAction={openModal}
+        actionLabel="Aksi"
+        isLoading={isLoading}
+        emptyText="Tidak ada tiket yang menunggu validasi."
+      />
 
-                return (
-                  <div key={modalIndex}>
-                    <label
-                      htmlFor="namaPemeriksa"
-                      className="form-label block text-black text-xs font-bold my-2 uppercase"
-                    >
-                      KENDALA {data.jenis_kendala}
-                    </label>
-                    <div className="w-full flex justify-between">
-                      <label
-                        htmlFor="namaPemeriksa"
-                        className="form-label block text-black text-xs font-bold my-2"
-                      >
-                        CATATAN
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleClickDetail(modalIndex);
-                        }}
-                        className="text-gray-400 focus:outline-none"
-                      >
-                        <svg
-                          width="22"
-                          height="22"
-                          viewBox="0 0 22 22"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx="11" cy="11" r="11" fill="#0065DE" />
-                          <rect
-                            x="6.03955"
-                            y="4.23242"
-                            width="17"
-                            height="3"
-                            rx="1.5"
-                            transform="rotate(42.8321 6.03955 4.23242)"
-                            fill="white"
-                          />
-                          <rect
-                            x="4.18213"
-                            y="16.0609"
-                            width="17"
-                            height="3"
-                            rx="1.5"
-                            transform="rotate(-45 4.18213 16.0609)"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                    {data.jenis_kendala == 'Mesin' ||
-                    data.jenis_kendala == 'mesin' ? (
-                      <>
-                        <textarea
-                          onChange={(e) => setNote(e.target.value)}
-                          className="w-full border border-neutral-600 h-32 md:h-56 p-2 rounded-sm mb-2"
-                          name=""
-                          id=""
-                          value={note}
-                        ></textarea>
-
-                        <button
-                          onClick={() => validasiTicket(data.id)}
-                          className="text-xs font-bold bg-blue-600 py-2 px-5 text-white w-full rounded-md mb-2"
-                        >
-                          Validasi
-                        </button>
-                        <button
-                          onClick={() => tolakTicket(data.id)}
-                          className="text-xs font-bold bg-red-600 py-2 px-5 text-white w-full rounded-md"
-                        >
-                          Tolak
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <textarea
-                          onChange={(e) => setNote(e.target.value)}
-                          className="w-full border border-neutral-600 h-32 md:h-56 p-2 rounded-sm mb-2"
-                          name=""
-                          id=""
-                          value={note}
-                        ></textarea>
-
-                        <button
-                          onClick={() => validasiTicketAll(data.id)}
-                          className="text-xs font-bold bg-blue-600 py-2 px-5 text-white w-full rounded-md mb-2"
-                        >
-                          Validasi
-                        </button>
-                        <button
-                          onClick={() => tolakTicketAll(data.id)}
-                          className="text-xs font-bold bg-red-600 py-2 px-5 text-white w-full rounded-md"
-                        >
-                          Tolak
-                        </button>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    </>
+      {selected && (
+        <ModalVerifikasi
+          key={`${selected.jenis_kendala}-${selected.id}`}
+          isOpen
+          onClose={closeModal}
+          title={`Validasi Kendala ${selected.jenis_kendala ?? ''}`}
+          items={buildInfoItems(selected)}
+        >
+          <QcActionForm
+            approveLabel="Validasi"
+            rejectLabel="Tolak"
+            isSubmitting={isSubmitting}
+            errorMessage={submitError}
+            onSubmit={handleSubmit}
+          />
+        </ModalVerifikasi>
+      )}
+    </div>
   );
 };
 

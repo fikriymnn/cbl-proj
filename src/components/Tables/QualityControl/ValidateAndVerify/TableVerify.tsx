@@ -1,474 +1,262 @@
-import { BRAND } from '../../../../types/brand';
-import { useEffect, useState } from 'react';
-import Modal from '../../../Modals/ModalDetailPopup';
-import Logo from '../../images/logo/logo-cbl 1.svg';
+import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
 import convertTimeStampToDate from '../../../../utils/converDateTime';
-import ModalVerifikasi from '../../../Modals/Qc/ModalVerifikasi';
 import calculateTime from '../../../../utils/calculateTime';
+import { getErrorMessage } from '../../../../utils/qcHelpers';
+import ModalVerifikasi from '../../../Modals/Qc/ModalVerifikasi';
+import QcActionForm from '../../../Qc/QcActionForm';
+import type { QcAction } from '../../../Qc/QcActionForm';
+import QcTicketList from '../../../Qc/QcTicketList';
+import type { TicketColumn } from '../../../Qc/QcTicketList';
+import type { InfoItem } from '../../../Qc/TicketInfo';
+
+const API = import.meta.env.VITE_API_LINK;
+const PAGE_SIZE = 10;
+
+const getProcessInfo = (ticket: any) => {
+  const processes: any[] = ticket?.proses_mtcs ?? [];
+  const last = processes[processes.length - 1] ?? null;
+  const previous =
+    processes.length > 1 ? processes[processes.length - 2] : null;
+  return {
+    last,
+    scoreBefore: previous?.skor_mtc ?? 0,
+    scoreAfter: last?.skor_mtc ?? 0,
+  };
+};
+
+const getKendala = (t: any) => `${t.kode_lkh} - ${t.nama_kendala}`;
+
+const ScoreFlow = ({ ticket }: { ticket: any }) => {
+  const { scoreBefore, scoreAfter } = getProcessInfo(ticket);
+  return (
+    <div className="flex items-center gap-1">
+      <span className="rounded-full bg-orange-200 px-2 text-[11px] font-medium text-orange-600">
+        {scoreBefore}%
+      </span>
+      <svg width="14" height="8" viewBox="0 0 23 8" fill="none">
+        <path
+          d="M0 3.82353H22M22 3.82353L19.25 1M22 3.82353L19.25 7"
+          stroke="#0065DE"
+        />
+      </svg>
+      <span className="rounded-full bg-[#FFF2B1] px-2 text-[11px] font-medium text-[#FCBF11]">
+        {scoreAfter}%
+      </span>
+    </div>
+  );
+};
+
+const columns: TicketColumn<any>[] = [
+  { header: 'Kode Tiket', render: (t) => t.kode_ticket },
+  {
+    header: 'Selesai MTC',
+    render: (t) => convertTimeStampToDate(t.waktu_selesai_mtc),
+  },
+  { header: 'Mesin', render: (t) => t.mesin },
+  { header: 'No JO', render: (t) => t.no_jo },
+  { header: 'Nama Item', render: (t) => t.nama_produk },
+  { header: 'Kendala', render: getKendala },
+  { header: 'Persentase', render: (t) => <ScoreFlow ticket={t} /> },
+  {
+    header: 'Eksekutor',
+    render: (t) => getProcessInfo(t).last?.user_eksekutor?.nama,
+  },
+];
+
+const buildInfoItems = (t: any): InfoItem[] => {
+  const { last, scoreBefore, scoreAfter } = getProcessInfo(t);
+  return [
+    { label: 'Kode Tiket', value: t.kode_ticket },
+    { label: 'Waktu Masuk', value: convertTimeStampToDate(t.createdAt) },
+    { label: 'Nama Mesin', value: t.mesin },
+    { label: 'No JO', value: t.no_jo },
+    { label: 'Nama Item', value: t.nama_produk },
+    { label: 'Customer', value: t.nama_customer },
+    { label: 'Persentase Awal', value: `${scoreBefore}%` },
+    {
+      label: 'Persentase Belum Terverifikasi',
+      value: `${scoreAfter}%`,
+      tone: 'warning',
+    },
+    { label: 'Operator', value: t.operator },
+    { label: 'Eksekutor', value: last?.user_eksekutor?.nama },
+    { label: 'Unit', value: last?.unit },
+    { label: 'Bagian', value: last?.bagian_mesin },
+    {
+      label: 'Durasi Perbaikan',
+      value: last
+        ? calculateTime(last.waktu_mulai_mtc, last.waktu_selesai_mtc)
+        : '-',
+    },
+    { label: 'Cara Perbaikan', value: last?.cara_perbaikan },
+    {
+      label: 'Kode Analisis',
+      value: last
+        ? [last.kode_analisis_mtc, last.nama_analisis_mtc]
+            .filter(Boolean)
+            .join(' - ')
+        : '-',
+      fullWidth: true,
+    },
+    { label: 'Kendala', value: getKendala(t), fullWidth: true },
+    { label: 'Catatan MTC', value: last?.note_mtc, fullWidth: true },
+  ];
+};
 
 const TableVerifikasi = () => {
   const [page, setPage] = useState(1);
-  const [user, setUser] = useState<any>();
-  const [aksiOn, setAksiOn] = useState(null);
-  const [showModal1, setShowModal1] = useState<any>([]);
-  const [ticketVerifikasi, setTicketVerifikasi] = useState<any>(null);
-  const [note, setNote] = useState<any>();
+  const [totalPage, setTotalPage] = useState(1);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
-  const handleClick = (index: any) => {
-    setAksiOn((prevState: any) => {
-      return prevState === index ? null : index;
-    });
-  };
+  const [selected, setSelected] = useState<any | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const openModal1 = (i: any) => {
-    const onchangeVal: any = [...showModal1];
-    onchangeVal[i] = true;
-    setShowModal1(onchangeVal);
-  };
+  const fetchTickets = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await axios.get(`${API}/ticket`, {
+        params: { status_tiket: 'request to qc', page, limit: PAGE_SIZE },
+        withCredentials: true,
+      });
+      const list = res.data?.data ?? [];
+      setTotalPage(res.data?.total_page ?? 1);
 
-  const closeModal1 = (i: any) => {
-    const onchangeVal: any = [...showModal1];
-    onchangeVal[i] = false;
-    setShowModal1(onchangeVal);
-  };
-
-  useEffect(() => {
-    getMTC();
-    getUser();
+      // Halaman terakhir kosong setelah aksi → mundur satu halaman
+      if (!list.length && page > 1) {
+        setPage((p) => p - 1);
+        return;
+      }
+      setTickets(list);
+      setLoadError('');
+    } catch (error) {
+      setLoadError(getErrorMessage(error, 'Gagal memuat data tiket.'));
+    } finally {
+      setIsLoading(false);
+    }
   }, [page]);
 
-  async function getUser() {
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
-        withCredentials: true,
-      });
-      setUser(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.response);
-    }
-  }
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
 
-  async function getMTC() {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket?status_tiket=request to qc`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          page: page,
-          limit: 10,
-        },
-        withCredentials: true,
-      });
-      setTicketVerifikasi(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.response);
-    }
-  }
+  useEffect(() => {
+    axios
+      .get(`${API}/me`, { withCredentials: true })
+      .then((res) => setUser(res.data))
+      .catch((error) => console.log(getErrorMessage(error)));
+  }, []);
 
-  async function verifikasiTicket(id: number, id_proses: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket/verifikasiQc/${id}`;
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => setSuccessMessage(''), 3000);
+    return () => clearTimeout(timer);
+  }, [successMessage]);
+
+  const openModal = (ticket: any) => {
+    setSubmitError('');
+    setSelected(ticket);
+  };
+
+  const closeModal = () => {
+    if (!isSubmitting) setSelected(null);
+  };
+
+  const handleSubmit = async (action: QcAction, note: string) => {
+    if (!selected || isSubmitting) return;
+
+    const { last } = getProcessInfo(selected);
+    if (!last || !user?.id) {
+      setSubmitError('Data proses atau user belum siap. Muat ulang halaman.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError('');
     try {
-      const res = await axios.put(
-        url,
-        {
-          id_proses: id_proses,
-          id_qc: user.id,
-          note_qc: note,
-        },
-        {
-          withCredentials: true,
-        },
+      await axios.put(
+        `${API}/ticket/${action === 'approve' ? 'verifikasiQc' : 'rejectQc'}/${
+          selected.id
+        }`,
+        { id_proses: last.id, id_qc: user.id, note_qc: note },
+        { withCredentials: true },
       );
-      alert('success');
-      getMTC();
-    } catch (error: any) {
-      console.log(error.response);
-    }
-  }
-
-  async function tolakTicket(id: number, id_proses: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket/rejectQc/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {
-          id_proses: id_proses,
-          id_qc: user.id,
-          note_qc: note,
-        },
-        {
-          withCredentials: true,
-        },
+      setSelected(null);
+      setSuccessMessage(
+        action === 'approve'
+          ? 'Tiket berhasil diverifikasi.'
+          : 'Tiket berhasil ditolak.',
       );
-      alert('success');
-      getMTC();
-    } catch (error: any) {
-      console.log(error.response);
+      await fetchTickets();
+    } catch (error) {
+      setSubmitError(getErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Desktop Table */}
-      <div className="hidden lg:block">
-        <div className="overflow-x-auto">
-          <table className="w-full bg-white dark:bg-boxdark shadow-default text-xs">
-            <thead className="border border-stroke dark:border-strokedark">
-              <tr>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left w-8">
-                  No
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                  Kode Tiket
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                  Waktu Masuk
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                  Mesin
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                  No JO
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                  Nama Item
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                  Kendala
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                  Persentase
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
-                  Eksekutor
-                </th>
-                <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-center w-16">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {ticketVerifikasi?.data.map((data: any, index: number) => {
-                const lengthProses = data.proses_mtcs.length - 1;
-                const lengthProsesSebelum = lengthProses - 1;
-                const skorAwal =
-                  lengthProses == 0
-                    ? 0
-                    : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
-                const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
-                const tglTicket = convertTimeStampToDate(
-                  data.waktu_selesai_mtc,
-                );
-                const waktuPengerjaan = calculateTime(
-                  data.proses_mtcs[lengthProses].waktu_mulai_mtc,
-                  data.proses_mtcs[lengthProses].waktu_selesai_mtc,
-                );
-
-                return (
-                  <tr
-                    key={index}
-                    className="border border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-gray-800"
-                  >
-                    <td className="py-2 px-1 text-xs font-light text-slate-600 dark:text-white">
-                      {index + 1}
-                    </td>
-                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                      <div className="truncate max-w-[90px]">
-                        {data.kode_ticket}
-                      </div>
-                    </td>
-                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                      <div className=" max-w-[90px]">{tglTicket}</div>
-                    </td>
-                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                      <div className=" max-w-[60px]">{data.mesin}</div>
-                    </td>
-                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                      <div className=" max-w-[90px]">{data.no_jo}</div>
-                    </td>
-                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                      <div className=" max-w-[100px]">{data.nama_produk}</div>
-                    </td>
-                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                      <div className=" max-w-[100px]">
-                        {data.kode_lkh + ' - ' + data.nama_kendala}
-                      </div>
-                    </td>
-                    <td className="py-2 px-1">
-                      <div className="flex items-center gap-1">
-                        <p className="px-1 rounded-full text-[10px] font-light text-orange-600 bg-orange-200">
-                          {skorAwal}
-                        </p>
-                        <svg
-                          width="12"
-                          height="6"
-                          viewBox="0 0 23 8"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M0 3.82353H22M22 3.82353L19.25 1M22 3.82353L19.25 7"
-                            stroke="#0065DE"
-                          />
-                        </svg>
-                        <p className="px-1 rounded-full text-[10px] font-light text-[#FCBF11] bg-[#FFF2B1]">
-                          {skorBaru}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
-                      <div className="truncate max-w-[80px]">
-                        {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
-                      </div>
-                    </td>
-                    <td className="py-2 px-1 text-center">
-                      <button
-                        onClick={() => openModal1(index)}
-                        className="text-[10px] font-bold bg-blue-700 py-1 px-1 w-14 text-white rounded-sm"
-                      >
-                        Aksi
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {successMessage && (
+        <div
+          role="status"
+          className="rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-700"
+        >
+          {successMessage}
         </div>
-      </div>
-
-      {/* Mobile Card Layout */}
-      <div className="block lg:hidden space-y-3">
-        {ticketVerifikasi?.data.map((data: any, index: number) => {
-          const lengthProses = data.proses_mtcs.length - 1;
-          const lengthProsesSebelum = lengthProses - 1;
-          const skorAwal =
-            lengthProses == 0
-              ? 0
-              : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
-          const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
-          const tglTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
-          const waktuPengerjaan = calculateTime(
-            data.proses_mtcs[lengthProses].waktu_mulai_mtc,
-            data.proses_mtcs[lengthProses].waktu_selesai_mtc,
-          );
-
-          return (
-            <div
-              key={index}
-              className="bg-white dark:bg-boxdark border border-stroke dark:border-strokedark rounded-lg p-4 shadow-sm"
-            >
-              {/* Header with ticket info and action button */}
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <div className="text-sm font-semibold text-slate-600 dark:text-white mb-1">
-                    #{index + 1} - {data.kode_ticket}
-                  </div>
-                  <div className="text-xs text-neutral-500 dark:text-white">
-                    {tglTicket}
-                  </div>
-                </div>
-                <button
-                  onClick={() => openModal1(index)}
-                  className="text-xs font-bold bg-blue-700 py-2 px-4 text-white rounded ml-2 flex-shrink-0"
-                >
-                  Aksi
-                </button>
-              </div>
-
-              {/* Main content grid */}
-              <div className="grid grid-cols-1 gap-2 text-xs">
-                <div className="flex">
-                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                    Mesin:
-                  </span>
-                  <span className="text-neutral-500 dark:text-white">
-                    {data.mesin}
-                  </span>
-                </div>
-
-                <div className="flex">
-                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                    No JO:
-                  </span>
-                  <span className="text-neutral-500 dark:text-white">
-                    {data.no_jo}
-                  </span>
-                </div>
-
-                <div className="flex">
-                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                    Item:
-                  </span>
-                  <span className="text-neutral-500 dark:text-white break-words">
-                    {data.nama_produk}
-                  </span>
-                </div>
-
-                <div className="flex">
-                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                    Kendala:
-                  </span>
-                  <span className="text-neutral-500 dark:text-white break-words">
-                    {data.kode_lkh + ' - ' + data.nama_kendala}
-                  </span>
-                </div>
-
-                <div className="flex items-center">
-                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                    Progress:
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 rounded-full text-xs font-medium text-orange-600 bg-orange-200">
-                      {skorAwal}%
-                    </span>
-                    <svg
-                      width="16"
-                      height="8"
-                      viewBox="0 0 23 8"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M0 3.82353H22M22 3.82353L19.25 1M22 3.82353L19.25 7"
-                        stroke="#0065DE"
-                      />
-                    </svg>
-                    <span className="px-2 py-1 rounded-full text-xs font-medium text-[#FCBF11] bg-[#FFF2B1]">
-                      {skorBaru}%
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex">
-                  <span className="font-semibold text-slate-600 dark:text-white w-20 flex-shrink-0">
-                    Eksekutor:
-                  </span>
-                  <span className="text-neutral-500 dark:text-white break-words">
-                    {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Modal - works for both desktop and mobile */}
-      {showModal1.some((show: boolean) => show) && (
-        <>
-          {ticketVerifikasi?.data.map((data: any, index: number) => {
-            if (!showModal1[index]) return null;
-
-            const lengthProses = data.proses_mtcs.length - 1;
-            const lengthProsesSebelum = lengthProses - 1;
-            const skorAwal =
-              lengthProses == 0
-                ? 0
-                : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
-            const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
-            const waktuPengerjaan = calculateTime(
-              data.proses_mtcs[lengthProses].waktu_mulai_mtc,
-              data.proses_mtcs[lengthProses].waktu_selesai_mtc,
-            );
-
-            return (
-              <ModalVerifikasi
-                key={index}
-                kodeTiket={data.kode_ticket}
-                isOpen={showModal1[index]}
-                waktuMasuk={data.createdAt}
-                persentaseAwal={skorAwal}
-                onClose={() => closeModal1(index)}
-                onFinish={undefined}
-                kendala={data.kode_lkh + ' - ' + data.nama_kendala}
-                kodeLkh={data.kode_lkh}
-                machineName={data.kode_ticket}
-                tgl={data.waktu_respon}
-                jam={'19.09'}
-                namaPemeriksa={
-                  data.proses_mtcs[lengthProses].user_eksekutor.nama
-                }
-                no={'109299'}
-                idTiket={data.id}
-                idProses={data.proses_mtcs[lengthProses].id}
-                namaMesin={data.mesin}
-                skor_mtc={skorAwal}
-                jenis_perbaikan={data.proses_mtcs[lengthProses].cara_perbaikan}
-                persentaseBelumVerif={skorBaru}
-                kode_analisis={
-                  data.proses_mtcs[lengthProses].kode_analisis_mtc +
-                  ' - ' +
-                  data.proses_mtcs[lengthProses].nama_analisis_mtc
-                }
-                durasiPerbaikan={waktuPengerjaan}
-                eksekutor={data.operator}
-                unit={data.proses_mtcs[lengthProses].unit}
-                bagian={data.proses_mtcs[lengthProses].bagian_mesin}
-              >
-                <div>
-                  <label
-                    htmlFor="namaPemeriksa"
-                    className="form-label block text-black text-xs font-extrabold my-2"
-                  >
-                    CATATAN
-                  </label>
-                  <textarea
-                    onChange={(e) => setNote(e.target.value)}
-                    className="w-full border border-neutral-600 h-32 md:h-56 p-2 rounded-sm"
-                    name="note_qc"
-                    value={note || ''}
-                  ></textarea>
-                </div>
-                <div className="z-50 my-5 rounded-md">
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() =>
-                        verifikasiTicket(
-                          data.id,
-                          data.proses_mtcs[lengthProses].id,
-                        )
-                      }
-                      className="text-xs font-bold bg-blue-700 py-4 px-5 text-white rounded-md"
-                    >
-                      Verifikasi
-                    </button>
-                    <button
-                      onClick={() =>
-                        tolakTicket(data.id, data.proses_mtcs[lengthProses].id)
-                      }
-                      className="text-xs font-bold bg-red-700 py-4 px-5 text-white rounded-md"
-                    >
-                      Tolak
-                    </button>
-                  </div>
-                </div>
-              </ModalVerifikasi>
-            );
-          })}
-        </>
+      )}
+      {loadError && (
+        <div
+          role="alert"
+          className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700"
+        >
+          {loadError}
+        </div>
       )}
 
-      {/* Pagination */}
-      <div className="w-full flex justify-center md:justify-end mt-5">
-        <Stack spacing={2}>
-          <Pagination
-            count={ticketVerifikasi?.total_page}
-            color="primary"
-            size={window.innerWidth < 768 ? 'small' : 'medium'}
-            onChange={(e, i) => {
-              setPage(i);
-              console.log(i);
-            }}
-          />
-        </Stack>
+      <QcTicketList
+        rows={tickets}
+        columns={columns}
+        getKey={(t) => t.id}
+        onAction={openModal}
+        actionLabel="Aksi"
+        startNumber={(page - 1) * PAGE_SIZE + 1}
+        isLoading={isLoading}
+        emptyText="Tidak ada tiket yang menunggu verifikasi."
+      />
+
+      <div className="mt-5 flex w-full justify-center md:justify-end">
+        <Pagination
+          count={totalPage}
+          page={page}
+          color="primary"
+          onChange={(_, value) => setPage(value)}
+        />
       </div>
+
+      {selected && (
+        <ModalVerifikasi
+          key={selected.id}
+          isOpen
+          onClose={closeModal}
+          title="Verifikasi Maintenance"
+          items={buildInfoItems(selected)}
+        >
+          <QcActionForm
+            approveLabel="Verifikasi"
+            rejectLabel="Tolak"
+            isSubmitting={isSubmitting}
+            errorMessage={submitError}
+            onSubmit={handleSubmit}
+          />
+        </ModalVerifikasi>
+      )}
     </div>
   );
 };

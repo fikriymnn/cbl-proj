@@ -8,6 +8,13 @@ import convertTimeStampToDate from '../../../../../utils/convertDate';
 import * as XLSX from 'xlsx';
 import Select from 'react-select';
 
+// Pastikan jam lembur selalu angka valid dan tidak pernah minus
+const toSafeHours = (value: any): number => {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, n);
+};
+
 function TableAbsensi() {
   const [isLoading, setIsLoading] = useState(false);
   const [absen, setabsen] = useState<any>();
@@ -122,7 +129,7 @@ function TableAbsensi() {
         );
 
         setIsLoading(false);
-        alert('Berhasil Diaujukan');
+        alert('Berhasil Diajukan');
         closeAksi2(index);
         getabsen(formattedDate, formattedDate);
       } catch (error: any) {
@@ -145,6 +152,9 @@ function TableAbsensi() {
         `Apakah Anda yakin akan mengajukan Lembur ${type} untuk karyawan `,
       )
     ) {
+      // Pengaman terakhir: lama lembur absen tidak boleh minus / NaN
+      const lamaAman = toSafeHours(lama);
+
       const url = `${
         import.meta.env.VITE_API_LINK
       }/hr/pengajuanLembur/tidakSesuai/${id}`;
@@ -155,7 +165,7 @@ function TableAbsensi() {
           {
             catatan_ketidaksesuaian: catatan,
             type_ketidaksesuaian: type,
-            lama_lembur_absen: lama,
+            lama_lembur_absen: lamaAman,
             id_pengaju_ketidaksesuaian: idPengaju,
             alasan_ketidaksesuaian: '',
             penanganan: p,
@@ -166,7 +176,7 @@ function TableAbsensi() {
         );
 
         setIsLoading(false);
-        alert('Berhasil Diaujukan');
+        alert('Berhasil Diajukan');
         closeSPL(i);
         getabsen(formattedDate, formattedDate);
       } catch (error: any) {
@@ -413,6 +423,7 @@ function TableAbsensi() {
       'Status Lembur': item.status_lembur,
       'Status Lembur SPL': item.status_lembur_spl,
       'Status Ketidaksesuaian': item.status_ketidaksesuaian || '',
+      // Export tetap memakai nilai asli dari backend agar data minus mudah dilacak
       'Jam Lembur': item.jam_lembur || 0,
       'Jam Lembur SPL': item.jam_lembur_spl || 0,
       'Jam Terlambat': item.menit_terlambat || 0,
@@ -1010,15 +1021,18 @@ function TableAbsensi() {
               </thead>
               <tbody>
                 {filteredAbsen?.map((data: any, i: number) => {
+                  // Nilai asli (bisa minus dari backend) dan nilai aman (>= 0)
+                  const rawJamLembur = Number(data.jam_lembur) || 0;
+                  const jamLembur = toSafeHours(data.jam_lembur);
+                  const jamLemburSpl = toSafeHours(data.jam_lembur_spl);
+
                   let tipe_lembur = null;
                   let catatan_ketidaksesuaian = null;
 
-                  if ((data.jam_lembur ?? 0) < (data.jam_lembur_spl ?? 0)) {
+                  if (jamLembur < jamLemburSpl) {
                     tipe_lembur = 'kurang';
                     catatan_ketidaksesuaian = 'Jam Lembur Kurang Dari SPL ';
-                  } else if (
-                    (data.jam_lembur ?? 0) > (data.jam_lembur_spl ?? 0)
-                  ) {
+                  } else if (jamLembur > jamLemburSpl) {
                     tipe_lembur = 'lebih';
                     catatan_ketidaksesuaian = 'Jam Lembur Lebih Dari SPL ';
                   }
@@ -1104,11 +1118,11 @@ function TableAbsensi() {
                                 data.status_ketidaksesuaian == 0 ||
                                 (data.status_ketidaksesuaian == 'none' &&
                                   data.status_lembur_spl == 'dengan SPL' &&
-                                  data.jam_lembur == data.jam_lembur_spl)
+                                  jamLembur === jamLemburSpl)
                               ? ''
                               : data.status_ketidaksesuaian == 'none' &&
                                 data.status_lembur_spl == 'dengan SPL' &&
-                                data.jam_lembur != data.jam_lembur_spl
+                                jamLembur !== jamLemburSpl
                               ? 'Belum Diajukan'
                               : ''}
                           </span>
@@ -1119,13 +1133,16 @@ function TableAbsensi() {
                             </span>
                           )}
                           <span className="font-medium text-purple-600">
-                            {data.jam_lembur > 0
-                              ? `${data.jam_lembur} Jam`
-                              : '-'}
+                            {jamLembur > 0 ? `${jamLembur} Jam` : '-'}
                           </span>
-                          {data.jam_lembur_spl > 0 && (
+                          {rawJamLembur < 0 && (
+                            <span className="text-[10px] font-semibold text-red-500">
+                              Data minus ({rawJamLembur} Jam)
+                            </span>
+                          )}
+                          {jamLemburSpl > 0 && (
                             <span className="text-[10px] text-blue-500">
-                              SPL: {data.jam_lembur_spl} Jam
+                              SPL: {jamLemburSpl} Jam
                             </span>
                           )}
                           {data.status_lembur && (
@@ -1165,7 +1182,7 @@ function TableAbsensi() {
                           {data.status_lembur_spl == 'dengan SPL' &&
                           (data.status_ketidaksesuaian == 'none' ||
                             data.status_ketidaksesuaian == 'rejected') &&
-                          data.jam_lembur != data.jam_lembur_spl ? (
+                          jamLembur !== jamLemburSpl ? (
                             <>
                               <button
                                 onClick={() => openSPL(i)}
@@ -1214,13 +1231,20 @@ function TableAbsensi() {
                                             </div>
                                             <div className="flex flex-col">
                                               <label className="text-[#6c6b6b] text-sm">
-                                                : {data.jam_lembur_spl} Jam
+                                                : {jamLemburSpl} Jam
                                               </label>
                                               <label className="text-[#6c6b6b] text-sm">
-                                                : {data.jam_lembur} Jam
+                                                : {jamLembur} Jam
                                               </label>
                                             </div>
                                           </div>
+                                          {rawJamLembur < 0 && (
+                                            <label className="text-red-500 text-xs">
+                                              Jam lembur dari absen minus (
+                                              {rawJamLembur} Jam), dikirim
+                                              sebagai 0 Jam.
+                                            </label>
+                                          )}
                                         </div>
                                         <div className="flex flex-col gap-1">
                                           <label className="text-[#6c6b6b] text-sm font-semibold">
@@ -1253,7 +1277,7 @@ function TableAbsensi() {
                                               postLemburKurang(
                                                 catatan_ketidaksesuaian,
                                                 tipe_lembur,
-                                                data.jam_lembur,
+                                                jamLembur,
                                                 i,
                                                 data.id_pengajuan_lembur,
                                                 1,
@@ -1269,7 +1293,7 @@ function TableAbsensi() {
                                               postLemburKurang(
                                                 catatan_ketidaksesuaian,
                                                 tipe_lembur,
-                                                data.jam_lembur,
+                                                jamLembur,
                                                 i,
                                                 data.id_pengajuan_lembur,
                                                 0,
