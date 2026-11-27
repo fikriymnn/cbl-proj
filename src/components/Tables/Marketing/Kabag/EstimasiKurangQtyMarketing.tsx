@@ -150,6 +150,17 @@ const EstimasiKurangQtyMarketing: React.FC = () => {
     return `${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
+  const formatDate = (dateString?: string | null): string => {
+    if (!dateString) return '-';
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateString);
+    if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
+  };
+
   const formatNumber = (num: number | null | undefined): string => {
     if (num === null || num === undefined) return '-';
     return num.toLocaleString('id-ID');
@@ -261,6 +272,9 @@ const EstimasiKurangQtyMarketing: React.FC = () => {
                   Qty Kurang
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                  Waktu Tiket Masuk
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
                   Status
                 </th>
               </tr>
@@ -268,7 +282,7 @@ const EstimasiKurangQtyMarketing: React.FC = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-3 py-4 text-center">
+                  <td colSpan={8} className="px-3 py-4 text-center">
                     <div className="flex justify-center items-center">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
@@ -277,7 +291,7 @@ const EstimasiKurangQtyMarketing: React.FC = () => {
               ) : listData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-3 py-4 text-center text-gray-500 text-sm"
                   >
                     No data available
@@ -310,6 +324,9 @@ const EstimasiKurangQtyMarketing: React.FC = () => {
                       <span className="bg-orange-50 text-orange-700 px-2 py-0.5 rounded font-medium">
                         {formatNumber(item.qty_kurang_qty)}
                       </span>
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                      {formatDateTime(item.tgl_request)}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap">
                       <span
@@ -592,7 +609,7 @@ const EstimasiKurangQtyMarketing: React.FC = () => {
                         Tgl Kirim
                       </span>
                       <p className="text-gray-900 font-semibold">
-                        {selectedDetail.tgl_kirim || '-'}
+                        {formatDate(selectedDetail.tgl_kirim)}
                       </p>
                     </div>
                   </div>
