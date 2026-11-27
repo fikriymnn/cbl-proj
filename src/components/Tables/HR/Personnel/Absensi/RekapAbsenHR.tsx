@@ -9,12 +9,15 @@ import Select from 'react-select';
 // ===== Helper di luar komponen =====
 const normalize = (val: any) => (val ?? '').toString().trim().toLowerCase();
 
-// "17:00" / "17:00:00" -> menit
+// "17:00" / "17:00:00" / "4:8:26" (tanpa leading zero) -> menit
 const timeToMinutes = (t: any): number | null => {
   if (!t || t === '0' || t === '-') return null;
-  const m = t.toString().match(/(\d{1,2}):(\d{2})/);
+  const m = t.toString().match(/(\d{1,2}):(\d{1,2})/);
   if (!m) return null;
-  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+  const jam = parseInt(m[1], 10);
+  const menit = parseInt(m[2], 10);
+  if (jam > 23 || menit > 59) return null;
+  return jam * 60 + menit;
 };
 
 function RekapAbsenHR() {
@@ -147,10 +150,11 @@ function RekapAbsenHR() {
       }
     });
 
-    if (bestDiff === null || bestDiff <= 0) return 0;
+    // Minimal 30 menit baru dihitung lembur (khusus lembur tanpa SPL)
+    if (bestDiff === null || bestDiff < 30) return 0;
 
     // Bulatkan per record ke kelipatan 30 menit (0.5 jam), dibulatkan ke atas
-    // contoh: 1 mnt -> 0.5, 30 mnt -> 0.5, 31 mnt -> 1.0, 61 mnt -> 1.5
+    // contoh: 29 mnt -> 0, 30 mnt -> 0.5, 31 mnt -> 1.0, 61 mnt -> 1.5
     return Math.ceil(bestDiff / 30) * 0.5;
   };
 
@@ -171,6 +175,8 @@ function RekapAbsenHR() {
       // ===== TANPA SPL (hari + jam dari master shift) =====
       if (statusSPL === 'tidak dengan spl') {
         const jam = hitungJamLemburTanpaSPL(record);
+        // Jam 0 tidak dihitung sebagai hari lembur
+        if (jam <= 0) return;
         if (jenisHari === 'biasa') {
           lemburTanpaSPL += 1;
           lemburTanpaSPLJam += jam;
@@ -203,6 +209,7 @@ function RekapAbsenHR() {
   const calculateTimeMetrics = (absensiData: any[]) => {
     let totalTerlambat = 0;
     let totalPulangCepat = 0;
+    let jumlahHariPulangCepat = 0;
     let totalIstirahatLembur = 0;
     let jumlahHariTerlambat = 0;
     let terlambatKurangDari30Menit = 0;
@@ -220,6 +227,7 @@ function RekapAbsenHR() {
       ].includes(record.status_masuk?.toLowerCase());
 
       totalPulangCepat += menitPulangCepat;
+      if (menitPulangCepat > 0) jumlahHariPulangCepat++;
       totalIstirahatLembur += jamIstirahatLembur;
 
       // Only count tardiness metrics for denda if NOT Dinas or Pribadi
@@ -244,6 +252,7 @@ function RekapAbsenHR() {
     return {
       totalTerlambat: totalJamTerlambat,
       totalPulangCepat: totalJamPulangCepat,
+      jumlahHariPulangCepat,
       totalIstirahatLembur: totalIstirahatLembur.toFixed(1),
       jumlahHariTerlambat,
       terlambatKurangDari30Menit,
@@ -684,7 +693,7 @@ function RekapAbsenHR() {
                           </div>
 
                           {/* Lembur & Lembur Libur & Keterlambatan - Split into 3 sections */}
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                             {/* Lembur Dengan SPL */}
                             <div className="bg-blue-50 p-3 rounded-lg">
                               <h5 className="text-sm font-semibold text-blue-800 mb-2">
@@ -717,14 +726,14 @@ function RekapAbsenHR() {
                                     <span>Lembur:</span>
                                     <span className="font-medium">
                                       {overtimeCalc.lemburTanpaSPLJam} Jam,{' '}
-                                      {overtimeCalc.lemburTanpaSPL} Kali
+                                      {overtimeCalc.lemburTanpaSPL} Hari
                                     </span>
                                   </div>
                                   <div className="flex justify-between">
                                     <span>Lembur Libur:</span>
                                     <span className="font-medium">
                                       {overtimeCalc.lemburLiburTanpaSPLJam} Jam,{' '}
-                                      {overtimeCalc.lemburLiburTanpaSPL} Kali
+                                      {overtimeCalc.lemburLiburTanpaSPL} Hari
                                     </span>
                                   </div>
                                 </div>
@@ -760,6 +769,27 @@ function RekapAbsenHR() {
                                   <span>Total Hari Terlambat:</span>
                                   <span className="font-medium">
                                     {timeMetrics.jumlahHariTerlambat} hari
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Pulang Cepat */}
+                            <div className="bg-orange-50 p-3 rounded-lg">
+                              <h5 className="text-sm font-semibold text-orange-800 mb-2">
+                                PULANG CEPAT
+                              </h5>
+                              <div className="space-y-1 text-xs">
+                                <div className="flex justify-between">
+                                  <span>Total Jam:</span>
+                                  <span className="font-medium">
+                                    {timeMetrics.totalPulangCepat} Jam
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Total Hari Pulang Cepat:</span>
+                                  <span className="font-medium">
+                                    {timeMetrics.jumlahHariPulangCepat} hari
                                   </span>
                                 </div>
                               </div>
@@ -1148,7 +1178,9 @@ function RekapAbsenHR() {
                                             )}
                                           {normalize(
                                             record.status_lembur_spl,
-                                          ) === 'tidak dengan spl' && (
+                                          ) === 'tidak dengan spl' &&
+                                            hitungJamLemburTanpaSPL(record) >
+                                              0 && (
                                             <div className="text-purple-600">
                                               Lembur tanpa SPL:{' '}
                                               {hitungJamLemburTanpaSPL(

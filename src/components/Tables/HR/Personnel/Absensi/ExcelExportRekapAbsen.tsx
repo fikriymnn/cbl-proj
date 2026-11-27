@@ -206,12 +206,14 @@ const ExcelExportRekapAbsen = ({
       'Divisi',
       'Total Pelanggaran',
       'Total Jam Terlambat',
+      'Total Jam Pulang Cepat',
       'Total Denda (Rp)',
     ]);
 
     let grandTotalFine = 0;
     let grandTotalViolations = 0;
     let grandTotalJamTerlambat = 0;
+    let grandTotalJamPulangCepat = 0;
 
     // Store employee worksheets temporarily
     const employeeSheets: Array<{ ws: XLSX.WorkSheet; name: string }> = [];
@@ -229,6 +231,7 @@ const ExcelExportRekapAbsen = ({
       grandTotalFine += totalFine;
       grandTotalViolations += totalViolations;
       grandTotalJamTerlambat += parseFloat(timeMetrics.totalTerlambat);
+      grandTotalJamPulangCepat += parseFloat(timeMetrics.totalPulangCepat);
 
       // Add to summary
       summaryData.push([
@@ -239,6 +242,7 @@ const ExcelExportRekapAbsen = ({
         employee.divisi,
         totalViolations,
         `${timeMetrics.totalTerlambat} Jam`,
+        `${timeMetrics.totalPulangCepat} Jam`,
         `Rp ${totalFine.toLocaleString('id-ID')}`,
       ]);
 
@@ -282,11 +286,11 @@ const ExcelExportRekapAbsen = ({
       ]);
       sheetData.push([
         'Lembur tanpa SPL',
-        `${overtimeCalc.lemburTanpaSPLJam} Jam, ${overtimeCalc.lemburTanpaSPL} Kali`,
+        `${overtimeCalc.lemburTanpaSPLJam} Jam, ${overtimeCalc.lemburTanpaSPL} Hari`,
       ]);
       sheetData.push([
         'Lembur Libur tanpa SPL',
-        `${overtimeCalc.lemburLiburTanpaSPLJam} Jam, ${overtimeCalc.lemburLiburTanpaSPL} Kali`,
+        `${overtimeCalc.lemburLiburTanpaSPLJam} Jam, ${overtimeCalc.lemburLiburTanpaSPL} Hari`,
       ]);
       sheetData.push([]);
 
@@ -307,6 +311,18 @@ const ExcelExportRekapAbsen = ({
       sheetData.push([
         'Total Hari Terlambat',
         `${timeMetrics.jumlahHariTerlambat} hari`,
+      ]);
+      sheetData.push([]);
+
+      // Pulang Cepat Section
+      sheetData.push(['PULANG CEPAT']);
+      sheetData.push([
+        'Total Jam Pulang Cepat',
+        `${timeMetrics.totalPulangCepat} Jam`,
+      ]);
+      sheetData.push([
+        'Total Hari Pulang Cepat',
+        `${timeMetrics.jumlahHariPulangCepat} hari`,
       ]);
       sheetData.push([]);
 
@@ -550,6 +566,7 @@ const ExcelExportRekapAbsen = ({
       'TOTAL KESELURUHAN',
       grandTotalViolations,
       `${grandTotalJamTerlambat.toFixed(1)} Jam`,
+      `${grandTotalJamPulangCepat.toFixed(1)} Jam`,
       `Rp ${grandTotalFine.toLocaleString('id-ID')}`,
     ]);
 
@@ -561,6 +578,7 @@ const ExcelExportRekapAbsen = ({
       { wch: 5 },
       { wch: 15 },
       { wch: 25 },
+      { wch: 20 },
       { wch: 20 },
       { wch: 20 },
       { wch: 20 },
